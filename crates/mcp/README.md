@@ -53,5 +53,18 @@ is also a tool of its own, `engine.<name>`, whose arguments are its
 parameters. Every engine answer is sealed with a provenance naming the
 engine.
 
+Each tool's `inputSchema` is the record's JSON Schema, derived from the
+types its reader reads. The list is lean by default: the records a
+request carries by name (`chart.found`'s `kp`, `almanac.days`'s
+`muhurta`) are each one line, and `schema.describe` answers a tool's
+input and output schemas in full, or one part's:
+
+```json
+{"name": "schema.describe", "arguments": {"tool": "chart.found", "part": "kp"}}
+```
+
+`--schemas full` lists every schema inline, answers included, for a
+client that validates structured content.
+
 Nothing reaches the file system or the network: the ephemeris and the
 plugin are chosen on the command line and never by a tool argument.

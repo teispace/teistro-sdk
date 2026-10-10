@@ -19,6 +19,7 @@ use teistro_core::strict;
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct EngineCall {
     /// The operation's name, as `engine.manifest` lists it.
@@ -47,6 +48,7 @@ impl EngineCall {
 /// The request `engine.manifest` reads: nothing, refused if anything is
 /// written, so a misplaced argument is said rather than ignored.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct ManifestRequest {}
 

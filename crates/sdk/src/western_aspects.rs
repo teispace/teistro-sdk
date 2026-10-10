@@ -25,6 +25,7 @@ const SYNASTRY: &str = "synastry";
 /// A synastry against a partner's birth, as a binding asks it: the
 /// partner, and the [`SynastryRequest`] laid flat beside it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", try_from = "Map<String, Value>")]
 pub struct PartnerSynastry {
     /// Whose chart every chart is read against.
@@ -164,6 +165,21 @@ impl PartnerSynastry {
             davison,
         })
     }
+}
+
+/// The synastry record's schema: the request as [`SynastryRequest`]
+/// reads it, with the partner and the Davison flag beside it, as
+/// [`PartnerSynastry::split`] takes them out.
+#[cfg(feature = "schema")]
+pub(crate) fn synastry_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    let partner = generator.subschema_for::<Partner>();
+    crate::records::beside::<SynastryRequest>(
+        generator,
+        vec![
+            ("partner", partner),
+            ("davison", schemars::json_schema!({ "type": "boolean" })),
+        ],
+    )
 }
 
 impl TryFrom<Map<String, Value>> for PartnerSynastry {
@@ -359,6 +375,7 @@ impl ChartArea<'_> {
 /// One chart read against a partner: the aspects across the two, and the
 /// parallels and the antiscia across them when the request asked.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PartnerReading {
     /// The aspects, the chart's point first, closest first.

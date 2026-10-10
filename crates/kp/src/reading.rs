@@ -14,6 +14,7 @@ use crate::significators::Significators;
 /// still the moment's own, which the Reader takes "at the moment of
 /// judgment" (`03-design/kp.md`).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
 pub struct KpReading {
     /// The chart.

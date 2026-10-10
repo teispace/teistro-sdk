@@ -49,6 +49,7 @@ pub fn contrantiscion_deg(longitude_deg: f64) -> f64 {
 /// What the antiscia are asked: the orbs a pair is read under, and whether
 /// a reflection is read on the cusps.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
 pub struct AntisciaRequest {
     /// How wide a pair may be, read at the conjunction: Lilly's moieties
@@ -159,6 +160,7 @@ impl AntisciaRequest {
 /// A planet's two reflections, tropical degrees, as Lilly tabulates them
 /// beside a figure (p. 181).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Antiscion {
     /// Which planet.
@@ -172,6 +174,7 @@ pub struct Antiscion {
 /// A planet's reflection upon "the very degree" of a cusp (Lilly, p. 165;
 /// C251): in the cusp's own sign and whole degree.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct CuspAntiscion {
     /// Which planet.
@@ -239,6 +242,7 @@ pub fn antiscia_on_cusps(
 /// Two planets in antiscion: one's antiscion within the orb of the other,
 /// which is the other's within the orb of the first.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct AntiscionRow {
     /// The earlier planet of the pair, in the order given.
@@ -257,6 +261,7 @@ pub struct AntiscionRow {
 /// A chart's antiscia: every planet's reflections, and the pairs standing
 /// in one.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Antiscia {
     /// Each planet's two reflections, in the order given.

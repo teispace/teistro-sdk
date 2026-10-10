@@ -61,6 +61,7 @@ const fn starts() -> [i64; COUNT] {
 /// half of one a sign's end falls inside, so its sign, star and sub lords
 /// are the same throughout.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u16", into = "u16")]
 pub struct KpNumber(u8);
 

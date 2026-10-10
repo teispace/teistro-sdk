@@ -617,6 +617,7 @@ pub struct AlmanacAnswer {
 /// binding reads (`03-design/muhurta-at-the-boundary.md` §4). What
 /// [`AlmanacAnswer::sections`] gives; a section not asked is `None`.
 #[derive(Clone, Debug, Default, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct AlmanacSections {
     /// The muhurta search's answer.
@@ -706,6 +707,7 @@ pub struct MuhurtaDays {
 /// is the answer's input hash.
 #[cfg(feature = "muhurta")]
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct MuhurtaInput<'r> {
     from: String,
@@ -717,6 +719,7 @@ struct MuhurtaInput<'r> {
 
 /// What an eclipse answer is a function of, beside the settings.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct EclipseInput {
     from: String,
@@ -727,6 +730,7 @@ struct EclipseInput {
 
 /// What a festival answer is a function of, beside the settings.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct FestivalInput<'r> {
     from: String,

@@ -12,6 +12,7 @@ use teistro_core::time::UtcOffset;
 
 /// A civil day as a request names it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub(crate) struct DayAsked {
     pub(crate) year: i32,
     pub(crate) month: u8,

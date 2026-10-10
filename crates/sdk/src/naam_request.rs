@@ -12,6 +12,7 @@ const NAAM: &str = "naam";
 /// Two names to match star to star, and the readings they are matched
 /// under. Naam milan needs no chart, so this is the whole request.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct NaamRequest {
     /// The bride's name, in Devanagari or, when `rules.name.latin` says

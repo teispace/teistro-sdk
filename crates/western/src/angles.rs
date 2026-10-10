@@ -15,6 +15,7 @@ use crate::progression::TROPICAL_YEAR_DAYS;
 /// How the progressed midheaven moves (C237), spelled as its member in a
 /// request: `"NAIBOD_RIGHT_ASCENSION"`, `"SOLAR_ARC_LONGITUDE"`.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AngleMethod {
     /// The mean Sun's motion in right ascension: the chart cast for the

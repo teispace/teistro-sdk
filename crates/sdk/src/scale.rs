@@ -16,6 +16,7 @@ use teistro_astro::delta_t::DeltaT;
 /// A time scale, as a value a caller can choose at run time; JSON spells
 /// it by its key.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Scale {
     /// Universal time: the Earth's rotation, which is what a sunrise is
@@ -46,6 +47,7 @@ impl Scale {
 /// the same answer as 63.8 from another. A caching consumer needs the
 /// model; an auditing one needs all of it.
 #[derive(Clone, Copy, Debug, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Conversion {
     /// The instant, in the scale it was converted to.
     pub jd: f64,

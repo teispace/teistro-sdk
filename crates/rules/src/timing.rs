@@ -35,6 +35,7 @@ use crate::rule::Rule;
 
 /// In whose periods a rule gives what it says.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Timing {
     /// In the periods of the grahas that formed it, and in a sign-based

@@ -9,6 +9,7 @@ use crate::chain::{Lords, lords};
 
 /// Where a planet stands, what a [`KpChart`] is built from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
 pub struct Position {
     /// The planet.
@@ -39,6 +40,7 @@ impl Position {
 
 /// A cusp and its lords.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
 pub struct Cusp {
     /// The house the cusp opens, 1 to 12.
@@ -51,6 +53,7 @@ pub struct Cusp {
 
 /// A planet, its house and its lords.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
 pub struct Planet {
     /// The planet.
@@ -81,6 +84,7 @@ pub struct Planet {
 /// assert_eq!(chart.cusp(1).map(|cusp| cusp.lords.star.lord), Some(Graha::Ketu));
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
 pub struct KpChart {
     /// The house system the cusps were built by: Placidus unless the

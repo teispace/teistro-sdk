@@ -16,6 +16,7 @@ use crate::western_aspects::planets;
 /// A chart's distances from the equator: each planet's, and its two
 /// angles', all degrees north of it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Declinations {
     /// The true obliquity at the chart's instant, which every declination

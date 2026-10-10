@@ -63,6 +63,7 @@ impl From<Bird> for PakshiNative {
 /// One civil day's reading: `None` on a day the Sun does not both rise
 /// and set at the place, which has no yamas.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PakshiDay {
     /// The civil day.
@@ -91,6 +92,7 @@ pub struct PakshiRequest {
 /// Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha`
 /// with an optional `rule`.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 struct NativeAsked {
     bird: Option<Bird>,
@@ -101,8 +103,9 @@ struct NativeAsked {
 
 /// The request as a binding writes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct RequestAsked {
+pub(crate) struct RequestAsked {
     #[serde(default)]
     calendar: Option<Calendar>,
     first: DayAsked,

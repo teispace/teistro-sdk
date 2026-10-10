@@ -45,6 +45,7 @@ use crate::rule::Rule;
 
 /// A degree of a sign, 1 to 30: the first degree runs from 0° to 1°.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
 pub struct SignDegree(u8);
 
@@ -85,6 +86,7 @@ impl From<SignDegree> for u8 {
 
 /// A table's key: capital letters, digits and underscores, a letter first.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "String", into = "String")]
 pub struct TableKey(String);
 
@@ -137,6 +139,7 @@ impl core::fmt::Display for TableKey {
 
 /// A table, of one of the kinds a predicate reads.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
     tag = "kind",
     rename_all = "kebab-case",

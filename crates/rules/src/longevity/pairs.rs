@@ -32,6 +32,7 @@ use teistro_core::catalogue::Point;
 
 /// One of the three pairs.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Pair {
     /// The lagna lord and the eighth lord.
@@ -121,6 +122,7 @@ pub fn rectify(
 
 /// Which way a contributor's degrees rectify the years (v. 45).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Rectification {
     /// As the verse says it: a contributor at the start of a sign gives the
@@ -133,6 +135,7 @@ pub enum Rectification {
 
 /// What the rectification multiplies (v. 46).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Basis {
     /// The class's years once, as vv. 41 to 44 give them.
@@ -145,6 +148,7 @@ pub enum Basis {
 
 /// What Saturn among the contributors does to the class (v. 47).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum SaturnAmongThem {
     /// Lowers it a class, as the verse says first.
@@ -157,6 +161,7 @@ pub enum SaturnAmongThem {
 /// The choices the three pairs are read under; every field is optional
 /// where a request reads it.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct ThreePairsRules {
     /// Which way the degrees count.
@@ -187,6 +192,7 @@ impl ThreePairsRules {
 
 /// What one pair stands at.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PairReading {
     /// Which pair.
     pub pair: Pair,
@@ -200,6 +206,7 @@ pub struct PairReading {
 
 /// How the class was decided.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "by", rename_all = "kebab-case")]
 pub enum Decided {
     /// Two or three pairs agreed.
@@ -216,6 +223,7 @@ pub enum Decided {
 
 /// A shift of class (vv. 47 to 50).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Shift {
     /// Saturn among the contributors, neither in his own sign nor exalted,
@@ -228,6 +236,7 @@ pub enum Shift {
 
 /// The three pairs' reading of a chart.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ThreePairs {
     /// Each pair, in the verses' order.
     pub pairs: [PairReading; 3],

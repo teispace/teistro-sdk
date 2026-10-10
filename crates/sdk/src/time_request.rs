@@ -105,6 +105,7 @@ impl CivilRequest {
 /// An instant to carry from one time scale into another: what
 /// [`TimeArea::convert`](crate::TimeArea::convert) takes.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct ScaleRequest {
     /// The instant as a Julian day in `from`.
@@ -163,6 +164,7 @@ impl CalendarRequest {
 
 /// An instant read on a zone's clock: what `time.civil` answers.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CivilReading {
     /// The civil date and time.
     pub civil: CivilDateTime,
@@ -172,6 +174,7 @@ pub struct CivilReading {
 
 /// A date written in another calendar: what `calendar.convert` answers.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CalendarReading {
     /// The date in the calendar asked for.
     pub date: CalendarDate,
@@ -181,8 +184,9 @@ pub struct CalendarReading {
 
 /// A resolve request as a binding writes it.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
-struct ResolveAsked {
+pub(crate) struct ResolveAsked {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     calendar: Option<Calendar>,
     date: DayAsked,
@@ -193,8 +197,9 @@ struct ResolveAsked {
 
 /// A civil request as a binding writes it.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
-struct CivilAsked {
+pub(crate) struct CivilAsked {
     instant: f64,
     zone: ZoneSpec,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -203,8 +208,9 @@ struct CivilAsked {
 
 /// A calendar request as a binding writes it.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
-struct CalendarAsked {
+pub(crate) struct CalendarAsked {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     calendar: Option<Calendar>,
     date: DayAsked,

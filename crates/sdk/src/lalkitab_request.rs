@@ -18,6 +18,7 @@ const LALKITAB: &str = "lalkitab";
 /// `y`, and its entry `h − 1` the house natal house `h` reaches that year
 /// (`03-design/lalkitab.md` §3.6). The SDK does not ship the book's list.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct VarshphalRows {
     /// The 120 rows, one per year of life.
@@ -42,6 +43,7 @@ pub struct VarshphalRows {
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 pub struct LalKitabRequest {
     /// Where the cycle starts; the book's general table (Saturn from the

@@ -34,6 +34,7 @@ const STAR: f64 = 360.0 / 27.0;
 
 /// Which untraversed part a graha's years are taken in proportion to.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum ChakraPortion {
     /// The whole nakshatra's, as the note's figure takes it.
@@ -45,6 +46,7 @@ pub enum ChakraPortion {
 
 /// The choices Chakrayus is read under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct ChakrayusRules {
     /// Which untraversed part.
@@ -53,6 +55,7 @@ pub struct ChakrayusRules {
 
 /// One graha's part of Chakrayus.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChakraGiver {
     /// Which graha.
     pub graha: Graha,
@@ -64,6 +67,7 @@ pub struct ChakraGiver {
 
 /// The seven grahas' years in the wheel of time and their sum.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Chakrayus {
     /// The seven, the Sun to Saturn.
     pub grahas: [ChakraGiver; 7],

@@ -53,6 +53,7 @@ pub const MAX_UNCERTAINTY_MINUTES: f64 = 720.0;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Birth {
     /// The instant, UTC.
@@ -91,6 +92,7 @@ impl Birth {
 
 /// When a rule counts as holding on a chart.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Holds {
     /// It is formed and its cancellations do not undo it: present, and
@@ -147,6 +149,7 @@ impl<'s> Study<'s> {
 /// pre-registration: publish it before the data are collected
 /// (`research.md` §1.7).
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct StudyInput<'a, T: Serialize> {
     births: &'a [Birth],
@@ -522,6 +525,7 @@ fn by_place(births: &[Birth]) -> Vec<Vec<usize>> {
 /// One subject of an event study: a birth and the dated event of its life
 /// the study is about.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Subject {
     /// The birth.
@@ -532,6 +536,7 @@ pub struct Subject {
 
 /// What the shuffled-event null keeps (`research.md` §1.4).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EventShuffle {
     /// Event dates move among people: the calendar of events is kept, each
@@ -615,6 +620,7 @@ impl<'s> EventStudy<'s> {
 
 /// What an event study seals into its input hash.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct EventInput<'a> {
     subjects: &'a [Subject],
@@ -632,6 +638,7 @@ struct EventInput<'a> {
 /// subject's date and place kept and its clock time taken from another
 /// subject, drawn inside strata (`research.md` §1.3).
 #[derive(Clone, Debug, PartialEq, Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Recombine {
     /// The study's seed; required.

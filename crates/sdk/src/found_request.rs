@@ -131,10 +131,27 @@ impl FoundRequest {
     }
 }
 
+/// The record's schema: the request as [`Asked`] reads it, each section
+/// a flag beside it, and each record by its own reader's schema.
+#[cfg(feature = "schema")]
+pub(crate) fn schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    let mut extra: Vec<(&str, schemars::Schema)> = SECTIONS
+        .iter()
+        .map(|(name, _)| (*name, schemars::json_schema!({ "type": "boolean" })))
+        .collect();
+    for name in ChartRecords::NAMES {
+        let schema =
+            ChartRecords::schema(name, generator).unwrap_or_else(|| crate::records::unstated(name));
+        extra.push((name, schema));
+    }
+    crate::records::beside::<Asked>(generator, extra)
+}
+
 /// The request as a binding writes it, the sections and records taken out.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct Asked {
+pub(crate) struct Asked {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     instant: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -156,6 +173,7 @@ struct Asked {
 
 /// A drawing: a layout of a divisional chart.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 struct DrawingAsked {
     layout: ChartLayout,

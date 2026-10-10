@@ -55,6 +55,7 @@ use crate::timing::Timing;
 
 /// Where a rule applies.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Scope {
     /// A birth chart: the default.
@@ -70,11 +71,13 @@ pub enum Scope {
 
 /// A group of conditions found from one reference point.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Group {
     /// The point its houses are counted from, which a house-weighted severity
     /// reads: a body's key, or the engine's `lagna`, `moon` or `venus`.
     #[serde(with = "reference_point")]
+    #[cfg_attr(feature = "schema", schemars(with = "String"))]
     pub reference: Body,
     /// What a result says it was found from.
     pub label: String,
@@ -102,6 +105,23 @@ impl From<Condition> for Cancellation {
             label: None,
             condition,
         }
+    }
+}
+
+/// A condition as the rule language writes it, with an optional `label`
+/// laid beside its parts; the condition's own reader checks the rest.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Cancellation {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Cancellation")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "object",
+            "properties": { "label": { "type": "string" } },
+            "description": "A condition, as a rule's `when` is written, and its `label`.",
+        })
     }
 }
 
@@ -134,6 +154,7 @@ impl<'de> Deserialize<'de> for Cancellation {
 /// How grave a present rule is, out of the scale its values use (the engine's
 /// is 100).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
     tag = "type",
     rename_all = "kebab-case",
@@ -155,6 +176,7 @@ pub enum Severity {
         planet: Body,
         /// Each weighted house's severity.
         #[serde(with = "house_keys")]
+        #[cfg_attr(feature = "schema", schemars(with = "BTreeMap<String, u16>"))]
         weights: BTreeMap<House, u16>,
         /// Every other house's.
         default: u16,
@@ -219,6 +241,7 @@ fn is_mars(body: &Body) -> bool {
 /// class where a text gives one and the verse's own statement where it does
 /// not, and the SDK invents none of them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
     tag = "type",
     rename_all = "kebab-case",
@@ -248,6 +271,7 @@ pub enum Outcome {
 
 /// The unit a span is counted in, as the verse counts it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum Unit {
     /// Days.
@@ -271,6 +295,7 @@ pub enum Unit {
 /// # Ok::<(), ()>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum LifeClass {
     /// Death in infancy: eight years.
@@ -407,6 +432,7 @@ fn effect(outcomes: &[Outcome]) -> Option<&str> {
 
 /// Whether a present rule stands, after its cancellations.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum NetStatus {
     /// No cancellation held.
@@ -433,6 +459,7 @@ impl NetStatus {
 
 /// A rule.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "Written", into = "Written")]
 pub struct Rule {
     /// Its key.
@@ -611,6 +638,7 @@ impl Rule {
 
 /// A rule as the recording engine writes one.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct Written {
     key: String,

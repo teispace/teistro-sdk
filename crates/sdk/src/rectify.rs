@@ -333,6 +333,7 @@ impl ChartArea<'_> {
 
 /// What a rectification was asked, which its input hash seals.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct RectifyInput<'r> {
     window: Window,
@@ -343,6 +344,7 @@ struct RectifyInput<'r> {
 
 /// What a conception report was asked, which its input hash seals.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct ConceptionInput<'r> {
     at: JulianDay<Utc>,
@@ -353,6 +355,7 @@ struct ConceptionInput<'r> {
 
 /// What a baseline rectification was asked, which its input hash seals.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct BaselineInput<'r> {
     place: Place,
@@ -362,6 +365,7 @@ struct BaselineInput<'r> {
 
 /// What a Svarodaya reading was asked, which its input hash seals.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct SvarodayaInput {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -374,6 +378,7 @@ struct SvarodayaInput {
 
 /// What a circumstance report was asked, which its input hash seals.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct CircumstanceInput<'r> {
     at: JulianDay<Utc>,

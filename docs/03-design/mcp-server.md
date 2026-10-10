@@ -237,6 +237,25 @@ rule): a gate sends every tool's example through both and holds that
 what the reader takes the schema takes. A model then fills fields it
 reads rather than fields it guesses from prose.
 
+*Built.* Every record tool states both; a part whose reader reads no
+single type (`chart.found`'s `rules`, a dasha year) is written by hand
+beside the type, and a gate lists any left unstated, so none is. The
+lint that holds a serialised type to carrying a schema also holds a
+field serialised `with` a module to naming the schema it writes. The
+whole list measured nearly a megabyte, most of it `chart.found` and its
+answer, which is more than a model should read to pick a tool. So the
+list is **lean** by default: each record a request carries by name
+(`chart.found`'s `kp`, `almanac.days`'s `muhurta`) is one line naming
+`schema.describe`, the definitions nothing then reaches are dropped,
+and no `outputSchema` is listed (the revision makes it optional).
+`schema.describe` answers a tool's input and output schemas in full, or
+one part's with the definitions it reaches. `--schemas full` lists
+everything inline for a client that validates structured content. The
+lean list is about a fourteenth of the full one, a gate holds it under
+a quarter, and the server builds it once and keeps it. Every example
+holds to both details, and every chart record its reader takes holds to
+the full schema and to the part `schema.describe` answers.
+
 **P2. Resources for what an agent reads rather than computes.** The
 catalogue (`teistro://catalogue/{kind}`, a resource template), the
 shipped profiles and the settings schema (`teistro://profiles/{id}`,

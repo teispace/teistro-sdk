@@ -29,6 +29,7 @@ pub const MAX_HARMONIC_ORB_DEG: f64 = 30.0;
 
 /// What a chart's harmonic is asked: which, and the orb of a meeting.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HarmonicRequest {
     /// Which harmonic, 1 to [`MAX_HARMONIC`]: the number every longitude
@@ -119,6 +120,7 @@ impl HarmonicRequest {
 /// A point of a harmonic chart, in the order a tie is broken: the grahas
 /// in the catalogue's order, then the ascendant, then the midheaven.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "point", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum HarmonicPoint {
     /// A planet.
@@ -134,6 +136,7 @@ pub enum HarmonicPoint {
 
 /// A point's place in the harmonic chart.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct HarmonicPlaced {
     /// Which point.
@@ -148,6 +151,7 @@ pub struct HarmonicPlaced {
 /// there, and so within the orb divided by the harmonic of an aspect of
 /// it in the chart itself.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct HarmonicRow {
     /// The earlier point, in [`HarmonicPoint`]'s order.
@@ -167,6 +171,7 @@ pub struct HarmonicRow {
 
 /// A chart's harmonic chart.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct HarmonicChart {
     /// Which harmonic.

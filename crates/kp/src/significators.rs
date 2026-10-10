@@ -29,6 +29,7 @@ use crate::chart::{KpChart, Planet, house_of, is_node};
 /// in the 5th is both (a) and (b) of the 5th. Within a level the planets
 /// keep the chart's order.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct HouseSignificators {
@@ -81,6 +82,7 @@ impl HouseSignificators {
 
 /// Whose results a node gives, in the Reader's order.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct NodeAgency {
@@ -116,6 +118,7 @@ impl NodeAgency {
 /// The houses one planet signifies at each level: the inverse of the
 /// houses' table.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct Signified {
@@ -157,6 +160,7 @@ pub struct Signified {
 /// assert_eq!(significators.signified_by(Graha::Mars).owns, [1, 8]);
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
 pub struct Significators {
     /// The twelve houses, the 1st first.

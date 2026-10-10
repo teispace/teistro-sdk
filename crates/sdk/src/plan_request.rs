@@ -29,6 +29,7 @@ use crate::sade_sati_request::SadeSatiRequest;
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 // **Why a bool a composer rather than a bit set.** `struct_excessive_bools` asks
 // whether a bit set was meant; this design answered that before the fourth

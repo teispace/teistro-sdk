@@ -179,8 +179,9 @@ const SADE_SATI: &str = "sadeSati";
 /// [`SadeSatiRequest`] as the bindings write it, camel-cased as every
 /// request record is; every field but `from` is optional.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct Asked {
+pub(crate) struct Asked {
     from: f64,
     #[serde(default)]
     to: Option<f64>,
