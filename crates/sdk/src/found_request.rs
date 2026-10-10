@@ -65,6 +65,17 @@ impl FoundRequest {
     /// agent server's `chart.found`).
     pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga}`) by their catalogue keys, bare or full (`varga.D9` or `D9`); a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent.";
 
+    /// The sections beside the foundation a request asks for by a `true`
+    /// flag, by the flag every binding writes (`shadbala`, `bhavaBala`).
+    ///
+    /// ```
+    /// assert!(teistro::FoundRequest::sections().contains(&"jaimini"));
+    /// ```
+    #[must_use]
+    pub fn sections() -> [&'static str; 13] {
+        SECTIONS.map(|(name, _)| name)
+    }
+
     /// The request a binding writes as a chart request's options, read and
     /// checked: `instant` or `instants`; `latitudeDeg`, `longitudeDeg`,
     /// `altitudeM` and `utcOffsetSeconds`; `kind`, `vargas`, `dashas` and

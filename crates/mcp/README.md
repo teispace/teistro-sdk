@@ -66,5 +66,18 @@ input and output schemas in full, or one part's:
 `--schemas full` lists every schema inline, answers included, for a
 client that validates structured content.
 
+Beside the tools, the server answers resources, prompts and
+completions:
+
+- **Resources:** `teistro://catalogue` and `teistro://catalogue/{kind}`
+  (each kind whole, members, attributes and sources), `teistro://profiles/{id}`,
+  `teistro://settings/schema`, `teistro://document/schema`, and
+  `teistro://tools/{tool}/schema`.
+- **Prompts:** `birth-chart`, `day-panchanga` and `match` take a date,
+  a time, a zone and a place as text and answer the call to make,
+  already resolved and checked.
+- **Completions:** a template's argument and a prompt's chart sections
+  and festival packs.
+
 Nothing reaches the file system or the network: the ephemeris and the
 plugin are chosen on the command line and never by a tool argument.
