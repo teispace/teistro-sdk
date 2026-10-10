@@ -1,6 +1,6 @@
 # Progressions and directions (the `western` module, step 1)
 
-Status: `building`, 2026-10-03 — written from Leo's text before any code,
+Status: `built`, 2026-10-03 — written from Leo's text before any code,
 its worked figures recast with pyswisseph's Moshier series. Every step
 is built: the measures in `crates/western`, the charts and the contacts
 in the SDK's chart area, the boundary with every binding, and the

@@ -1,6 +1,6 @@
 # The surface areas
 
-Status: `designed`, written 2026-09-12 from the falsification pass in
+Status: `built`, written 2026-09-12 from the falsification pass in
 [`surface-areas-measured.md`](surface-areas-measured.md). Decides
 ADR-0030's first and fourth points — the surface becomes
 `sdk.<area>.<operation>`, and the engine's own functions sit under
@@ -246,7 +246,8 @@ as a single key that is not there.
    and a `cached_property` — and each green on its own gate. **Done.**
 4. ~~`check-parity` gains the grouping~~, which is what holds all three to
    one shape. **Done**, and proven red.
-5. Rust's own consumer surface, the READMEs and the site's prose.
+5. ~~Rust's own consumer surface, the READMEs and the site's prose.~~
+   **Done** ([`rust-consumer-surface.md`](rust-consumer-surface.md) §8).
 
 The measured page turned over as step 2 landed, which was expected: it
 measured a flat surface and the surface is not flat any more. It now

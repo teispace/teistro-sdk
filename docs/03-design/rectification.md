@@ -1,10 +1,11 @@
 # Rectification: the birth time narrowed by the verses that test it (the `rectification` module)
 
-Status: steps 3 to 6 `built` (`crates/rectification`: the purifier and the
+Status: steps 3 to 8 `built` (`crates/rectification`: the purifier and the
 façade's `ChartArea::rectify`, 2026-10-08; the conception reports and
 `ChartArea::conception`, the circumstances and `ChartArea::circumstance`, the
-baseline cascade and `ChartArea::rectify_baseline`, 2026-10-09); steps 7 and
-8 open. The sources are read on
+baseline cascade and `ChartArea::rectify_baseline`, `TATTVA` under
+`SVARODAYA`, and the `rectification` record in every binding, 2026-10-09).
+The sources are read on
 their pages ([`rectification-sources.md`](rectification-sources.md)); the cruxes
 are numbered X1 onwards and take C-numbers when they enter the register.
 Each was decided on 2026-10-08 as its recommendation reads, on the

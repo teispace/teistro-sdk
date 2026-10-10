@@ -1,6 +1,8 @@
 # Essential dignities (the `hellenistic` module, step 1)
 
-Status: `draft`, 2026-10-01 — written **after** the falsification pass
+Status: `building`, 2026-10-01: every step of the order of work built
+but Ibn Ezra's weights for the almuten, which wait on a rank 1 reading.
+Written **after** the falsification pass
 ([`terms-measured.md`](terms-measured.md), `check-terms`) and before any
 crate. Phase 7's `hellenistic` module begins here (crux C46, step 1).
 
@@ -536,7 +538,7 @@ the other.
    what will hold that move.
 3. The façade and the chart document: dignities per planet, with the
    sect and the rules that made them (§The façade).
-4. The boundary and the four bindings, under the parity gate.
+4. The boundary and every binding, under the parity gate.
    **Done** (§The boundary).
 5. Mutual reception, the almuten (Lilly's own definition, and Ibn
    Ezra's weights once they are read), and Lilly's accidental

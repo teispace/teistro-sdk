@@ -1,6 +1,7 @@
 # `research`: statistics over chart batches
 
-Status: `draft`, 2026-10-08. Track B row 7 of the completion plan
+Status: `built`, 2026-10-10 (drafted 2026-10-08; every step of §4 built).
+Track B row 7 of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `research` row
 ("batch computation, statistics, rule search over sets") and
 `01-research/feature-universe/14-remedies-numerology-misc.md`, "Research and

@@ -1,6 +1,6 @@
 # The transit hit list: every event of a window, against one chart
 
-Status: `draft`, 2026-09-27; §6 steps 1 to 4 **built** the same day. Written
+Status: `built`, 2026-09-27; every step of §6 built. Written
 before any code; the building is expected to correct it.
 
 Derives from `gochar.md` §6 step 4 and the research page's P0 row "transit

@@ -1,6 +1,6 @@
 # The lots (the `hellenistic` module, step 6)
 
-Status: `draft`, 2026-10-02 — written from Valens's text before the
+Status: `built`, 2026-10-02 — written from Valens's text before the
 crate, and corrected by building it (Love and Necessity under his rule).
 
 The lots are points a chart does not place: each is the distance between

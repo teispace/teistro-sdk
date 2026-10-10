@@ -1,6 +1,6 @@
 # The engine passthrough: how a shape crosses
 
-Status: `designed`, written 2026-09-13 from the measurement in
+Status: `built`, written 2026-09-13 from the measurement in
 [`engine-passthrough-measured.md`](engine-passthrough-measured.md).
 Derives from [`ephemeris-port-and-adapters.md`](ephemeris-port-and-adapters.md)
 (the port, and `native_manifest`/`native_call`) and ADR-0030 (the
