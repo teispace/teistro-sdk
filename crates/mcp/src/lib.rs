@@ -19,7 +19,9 @@
 //!
 //! let mut server = Server::new(Engine::None);
 //! let reply = server
-//!     .handle(r#"{"jsonrpc":"2.0","id":1,"method":"server/discover"}"#)
+//!     .handle(r#"{"jsonrpc":"2.0","id":1,"method":"server/discover","params":{"_meta":{
+//!         "io.modelcontextprotocol/protocolVersion":"2026-07-28",
+//!         "io.modelcontextprotocol/clientCapabilities":{}}}}"#)
 //!     .expect("a request is answered");
 //! assert!(reply.contains(r#""supportedVersions":["2026-07-28","2025-11-25"]"#));
 //! ```
@@ -65,6 +67,7 @@ const SERVER_INFO_META: &str = "io.modelcontextprotocol/serverInfo";
 const CAPABILITIES_META: &str = "io.modelcontextprotocol/clientCapabilities";
 /// Where a request carries the token its progress is reported under.
 const PROGRESS_META: &str = "progressToken";
+const SUBSCRIPTION_META: &str = "io.modelcontextprotocol/subscriptionId";
 
 /// How long a client may keep a list or a resource: each changes only with the
 /// binary, so a day.
@@ -409,11 +412,27 @@ impl Server {
             }
             return None;
         };
+        // An id is a string or an integer, never null (JSON-RPC 2.0 as
+        // the revision restricts it).
+        if !(id.is_string() || id.is_i64() || id.is_u64()) {
+            return Some(coded(
+                &Value::Null,
+                &Fault::new(
+                    INVALID_REQUEST,
+                    "a request's `id` is a string or an integer",
+                ),
+            ));
+        }
         let token = params.get("_meta").and_then(|meta| meta.get(PROGRESS_META));
         if let watch::Begun::Cancelled = self.watch.begin(id, token) {
             return None;
         }
-        let reply = match self.request(method, params) {
+        let answered = if method == "subscriptions/listen" {
+            self.listen(id, params)
+        } else {
+            self.request(method, params)
+        };
+        let reply = match answered {
             Ok(result) => (success(id, &result), None),
             Err(fault) => coded(id, &fault),
         };
@@ -426,7 +445,10 @@ impl Server {
         match method {
             "initialize" => Ok(self.initialize()),
             "ping" => Ok(json!({})),
-            "server/discover" => Ok(discover()),
+            "server/discover" => {
+                let era = self.era(params)?;
+                Ok(complete(era, self.discover()))
+            }
             "tools/list" => {
                 let era = self.era(params)?;
                 first_page(params)?;
@@ -436,7 +458,7 @@ impl Server {
                     .listed
                     .get_or_insert_with(|| tools::list(operations, detail))
                     .clone();
-                Ok(complete(era, cacheable(era, list)))
+                Ok(complete(era, self.cacheable(era, list)))
             }
             "tools/call" => {
                 let era = self.era(params)?;
@@ -445,17 +467,17 @@ impl Server {
             "resources/list" => {
                 let era = self.era(params)?;
                 first_page(params)?;
-                Ok(complete(era, cacheable(era, resources::list())))
+                Ok(complete(era, self.cacheable(era, resources::list())))
             }
             "resources/templates/list" => {
                 let era = self.era(params)?;
                 first_page(params)?;
-                Ok(complete(era, cacheable(era, resources::templates())))
+                Ok(complete(era, self.cacheable(era, resources::templates())))
             }
             "prompts/list" => {
                 let era = self.era(params)?;
                 first_page(params)?;
-                Ok(complete(era, cacheable(era, prompts::list())))
+                Ok(complete(era, self.cacheable(era, prompts::list())))
             }
             "prompts/get" => {
                 let era = self.era(params)?;
@@ -506,7 +528,7 @@ impl Server {
                     ),
                     data: Some(json!({ "uri": uri })),
                 })?;
-                Ok(complete(era, cacheable(era, contents)))
+                Ok(complete(era, self.cacheable(era, contents)))
             }
             _ => Err(Fault::new(
                 METHOD_NOT_FOUND,
@@ -702,17 +724,71 @@ impl Server {
     }
 }
 
-/// The modern revision's discovery answer.
-fn discover() -> Value {
-    json!({
-        "resultType": "complete",
-        "supportedVersions": SUPPORTED,
-        "capabilities": capabilities(),
-        "instructions": INSTRUCTIONS,
-        "ttlMs": TTL_MS,
-        "cacheScope": "public",
-        "_meta": { SERVER_INFO_META: server_info() },
-    })
+impl Server {
+    /// The modern revision's discovery answer.
+    fn discover(&self) -> Map<String, Value> {
+        let answer = json!({
+            "resultType": "complete",
+            "supportedVersions": SUPPORTED,
+            "capabilities": capabilities(),
+            "instructions": INSTRUCTIONS,
+            "ttlMs": self.ttl_ms(),
+            "cacheScope": "public",
+        });
+        answer.as_object().cloned().unwrap_or_default()
+    }
+
+    /// How long a caller may keep what the server lists: a day for the
+    /// shipped server, whose lists change only with the binary, and an
+    /// hour once a plugin is loaded, since a host in front may outlive a
+    /// restart under another one.
+    fn ttl_ms(&self) -> u64 {
+        if self.plugin.is_some() {
+            TTL_MS / 24
+        } else {
+            TTL_MS
+        }
+    }
+
+    /// A subscription (`subscriptions/listen`): nothing the server lists
+    /// changes while it runs, so it honours no notification type, says so
+    /// in the acknowledgment sent first, and ends the subscription at once
+    /// with its graceful closure, rather than holding open a stream that
+    /// would never carry anything. Both carry the request's id as the
+    /// subscription's.
+    fn listen(&self, id: &Value, params: &Value) -> Result<Value, Fault> {
+        let era = self.era(params)?;
+        if era == Era::Legacy {
+            return Err(Fault::new(
+                METHOD_NOT_FOUND,
+                format!("`subscriptions/listen` is a {MODERN} method"),
+            ));
+        }
+        self.watch.say(
+            json!({
+                "jsonrpc": "2.0",
+                "method": "notifications/subscriptions/acknowledged",
+                "params": {
+                    "_meta": { SUBSCRIPTION_META: id },
+                    "notifications": {},
+                },
+            })
+            .to_string(),
+        );
+        let mut closed = Map::new();
+        closed.insert(String::from("_meta"), json!({ SUBSCRIPTION_META: id }));
+        Ok(complete(era, closed))
+    }
+
+    /// A result every caller may keep for [`Server::ttl_ms`]. The
+    /// handshake revision has no caching fields.
+    fn cacheable(&self, era: Era, mut result: Map<String, Value>) -> Map<String, Value> {
+        if era == Era::Modern {
+            result.insert(String::from("ttlMs"), json!(self.ttl_ms()));
+            result.insert(String::from("cacheScope"), json!("public"));
+        }
+        result
+    }
 }
 
 /// What the server offers: tools, resources and prompts, none of which
@@ -732,18 +808,10 @@ fn server_info() -> Value {
         "name": env!("CARGO_PKG_NAME"),
         "title": "Teistro",
         "version": env!("CARGO_PKG_VERSION"),
+        "description": "The Teistro astrology SDK as tools: charts, almanacs, dashas, \
+                        matching and more, each answer carrying its settings and inputs",
+        "websiteUrl": "https://github.com/teispace/teistro-sdk",
     })
-}
-
-/// A result every caller may keep a day: everything the server lists or
-/// serves changes only with the binary, so a day. The handshake revision
-/// has no caching fields.
-fn cacheable(era: Era, mut result: Map<String, Value>) -> Map<String, Value> {
-    if era == Era::Modern {
-        result.insert(String::from("ttlMs"), json!(TTL_MS));
-        result.insert(String::from("cacheScope"), json!("public"));
-    }
-    result
 }
 
 /// Every list fits one page, so a cursor is one the server never gave.

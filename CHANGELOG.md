@@ -2556,6 +2556,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   carries. A modern MCP request missing its revision or its client's
   capabilities is `-32602` naming the field, and every modern result
   names the server. **Numbers:** none move.
+- **The 2026-07-28 revision's remaining rules.** `server/discover`
+  names its revision like every request; a null id, or one that is
+  neither a string nor an integer, is `-32600`; `subscriptions/listen`
+  is acknowledged with an empty filter and closed gracefully; HTTP
+  decodes a Base64 `Mcp-Name` and holds each peer to `--http-rate`
+  messages a second (`429`); a plugin operation the tool-name rule
+  refuses is reached through `engine.call` only; `serverInfo` carries a
+  description and website, and the lists' cache lifetime is an hour
+  once a plugin is loaded. **Numbers:** none move.
 - **Streamable HTTP.** `teistro-mcp --http ADDRESS` serves the
   2026-07-28 revision statelessly at `/mcp`: the revision, method and
   name headers are checked against the body, a browser origin must be a

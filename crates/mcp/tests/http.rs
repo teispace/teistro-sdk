@@ -347,3 +347,51 @@ fn closing_the_connection_cancels_its_call() {
         "the cancelled call ran on: stopped after {stopped:?}, a whole call took {whole:?}"
     );
 }
+
+/// **A subscription is a stream** (P8): its acknowledgment and its
+/// graceful closure are events of one response.
+#[test]
+fn a_subscription_is_acknowledged_and_closed_on_one_stream() {
+    let served = Served::start(&["--ephemeris", "NONE"]);
+    let listen = json!({ "jsonrpc": "2.0", "id": 12, "method": "subscriptions/listen",
+                         "params": { "_meta": meta(), "notifications": { "toolsListChanged": true } } });
+    let answer = post(&served, &listen);
+    assert_eq!(answer.header("content-type"), Some("text/event-stream"));
+    let events: Vec<Value> = answer
+        .body
+        .lines()
+        .filter_map(|line| line.strip_prefix("data: "))
+        .map(|data| serde_json::from_str(data).unwrap())
+        .collect();
+    assert_eq!(events.len(), 2, "{events:?}");
+    assert_eq!(
+        events[0]["method"],
+        "notifications/subscriptions/acknowledged"
+    );
+    assert_eq!(events[1]["id"], 12);
+    assert_eq!(events[1]["result"]["resultType"], "complete");
+}
+
+/// **A peer past its rate waits** (P8): a burst past twice the rate is
+/// `429` with a `Retry-After`.
+#[test]
+fn a_peer_past_its_rate_is_told_to_wait() {
+    let served = Served::start(&["--ephemeris", "NONE", "--http-rate", "1"]);
+    let ping =
+        json!({ "jsonrpc": "2.0", "id": 13, "method": "ping", "params": { "_meta": meta() } });
+    let statuses: Vec<u16> = (0..3).map(|_| post(&served, &ping).status).collect();
+    assert_eq!(statuses, [200, 200, 429]);
+}
+
+/// **An encoded name is read decoded** (P8): `Mcp-Name` in the
+/// revision's Base64 form agrees with the body it names.
+#[test]
+fn an_encoded_name_header_is_decoded() {
+    let served = Served::start(&["--ephemeris", "NONE"]);
+    let answered = post_with(
+        &served,
+        &numerology(14),
+        &[("Mcp-Name", Some("=?base64?bnVtZXJvbG9neS5wcm9maWxl?="))],
+    );
+    assert_eq!(answered.status, 200, "{}", answered.body);
+}
