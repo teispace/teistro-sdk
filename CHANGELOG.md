@@ -2546,6 +2546,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **Every record refuses a key given twice.** The `rules` and
+  `interpret` records were read by plain serde, which keeps the last of
+  two duplicate keys and names no field; both are parsed strictly now,
+  as every other record is, and so is each MCP message: a key given
+  twice is `-32602` inside `params` and `-32600` in the envelope, naming
+  its path. `FoundRequest::DESCRIPTION` names `theme`,
+  and a test holds it to every section and record a chart request
+  carries. A modern MCP request missing its revision or its client's
+  capabilities is `-32602` naming the field, and every modern result
+  names the server. **Numbers:** none move.
+- **Cancellation and progress.** `teistro-mcp` reads stdin on its own
+  thread, so `notifications/cancelled` stops a running call at its next
+  engine request and the call is not answered; a call carrying a
+  `progressToken` hears `notifications/progress`. `Server::interrupt`
+  and `Server::with_notify` do the same for an embedding program, and
+  `ContextBuilder::wrapping` lays a provider of the caller's own over
+  whichever one a context's chain opens. **Numbers:** none move.
 - **Limits.** `teistro-mcp` bounds a message's bytes, any array's
   members and the days a record's ranges span, and refuses a request
   past one as `LIMIT` naming the field, the bound and the option moving

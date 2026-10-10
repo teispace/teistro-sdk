@@ -111,6 +111,8 @@ fn a_reading_without_rules_is_refused_and_so_is_a_composer_that_is_not_one() {
 
     // Nothing asked for is not an error; it is nothing to do.
     assert!(!PlanRequest::from_json("{}").unwrap().asks_for_something());
+    let twice = PlanRequest::from_json(r#"{"placements": true, "placements": false}"#).unwrap_err();
+    assert_eq!(twice.field(), Some("placements"), "{twice}");
 }
 
 /// The strengths are the third kind of composer: over a section rather than

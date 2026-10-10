@@ -5,7 +5,7 @@
 use std::io::{BufRead, Write as _};
 use std::process::ExitCode;
 
-use teistro_mcp::{Adapter, Detail, Engine, LEGACY, Limits, MODERN, Server};
+use teistro_mcp::{Adapter, Detail, Engine, Interrupt, LEGACY, Limits, MODERN, Server};
 
 const USAGE: &str = "teistro-mcp: the Teistro SDK as Model Context Protocol tools, over stdio
 
@@ -56,29 +56,30 @@ fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     };
-    let mut server = match server(&options) {
+    let server = match server(&options) {
         Ok(server) => server,
         Err(why) => {
             let _ = writeln!(stderr, "teistro-mcp: {why}");
             return ExitCode::FAILURE;
         }
     };
-    let mut stdout = std::io::stdout().lock();
-    let mut stdin = std::io::stdin().lock();
-    let mut line = Vec::new();
-    loop {
-        match read_line(&mut stdin, options.limits.message_bytes, &mut line) {
-            Ok(false) => return ExitCode::SUCCESS,
-            Ok(true) => {}
+    let mut server = server.with_notify(|notification| {
+        // A progress line beside the replies; a closed stdout ends the
+        // server at its next reply.
+        let mut stdout = std::io::stdout().lock();
+        let _ = writeln!(stdout, "{notification}").and_then(|()| stdout.flush());
+    });
+    let lines = reading(server.interrupt(), options.limits.message_bytes);
+    for line in lines {
+        let line = match line {
+            Ok(line) => line,
             Err(why) => {
                 let _ = writeln!(stderr, "teistro-mcp: stdin: {why}");
                 return ExitCode::FAILURE;
             }
-        }
-        if line.trim_ascii().is_empty() {
-            continue;
-        }
+        };
         if let Some(reply) = server.handle_bytes(&line) {
+            let mut stdout = std::io::stdout().lock();
             if writeln!(stdout, "{reply}")
                 .and_then(|()| stdout.flush())
                 .is_err()
@@ -88,6 +89,58 @@ fn main() -> ExitCode {
             }
         }
     }
+    ExitCode::SUCCESS
+}
+
+/// Every line of stdin, read on a thread of its own so a cancellation is
+/// heard while a call computes: a `notifications/cancelled` is handed to
+/// `interrupt` as it arrives, and every other line is queued for the
+/// server in order.
+fn reading(
+    interrupt: Interrupt,
+    most: Option<usize>,
+) -> std::sync::mpsc::Receiver<std::io::Result<Vec<u8>>> {
+    let (send, lines) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let mut stdin = std::io::stdin().lock();
+        loop {
+            let mut line = Vec::new();
+            match read_line(&mut stdin, most, &mut line) {
+                Ok(false) => return,
+                Ok(true) => {}
+                Err(why) => {
+                    let _ = send.send(Err(why));
+                    return;
+                }
+            }
+            if line.trim_ascii().is_empty() {
+                continue;
+            }
+            if let Some(id) = cancelled(&line) {
+                interrupt.cancel(&id);
+                continue;
+            }
+            if send.send(Ok(line)).is_err() {
+                return;
+            }
+        }
+    });
+    lines
+}
+
+/// The request a `notifications/cancelled` line cancels, or None for any
+/// other line; only a line naming the method is parsed here.
+fn cancelled(line: &[u8]) -> Option<serde_json::Value> {
+    const METHOD: &[u8] = b"notifications/cancelled";
+    if !line.windows(METHOD.len()).any(|window| window == METHOD) {
+        return None;
+    }
+    let message: serde_json::Value = serde_json::from_slice(line).ok()?;
+    if message.get("method")?.as_str()? != "notifications/cancelled" || message.get("id").is_some()
+    {
+        return None;
+    }
+    message.get("params")?.get("requestId").cloned()
 }
 
 /// The next line of `input` into `line`, without its newline; false at

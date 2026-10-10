@@ -18,7 +18,8 @@ const MODERN: &str = "2026-07-28";
 
 /// The whole reply to `method`, asked under the stateless revision.
 fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
-    params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": MODERN });
+    params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": MODERN,
+        "io.modelcontextprotocol/clientCapabilities": {} });
     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
     serde_json::from_str(&server.handle(&message.to_string()).unwrap()).unwrap()
 }

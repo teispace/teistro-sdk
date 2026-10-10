@@ -14,7 +14,8 @@ use serde_json::{Map, Value, json};
 use teistro_mcp::{Engine, Server};
 
 fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
-    params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28" });
+    params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientCapabilities": {} });
     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
     serde_json::from_str(&server.handle(&message.to_string()).unwrap()).unwrap()
 }

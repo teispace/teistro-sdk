@@ -14,9 +14,10 @@ teistro-mcp --plugin /opt/adapters/libteimeris_teistro.so   # a real engine, the
 A host starts it as a child process and speaks either revision:
 
 - **2026-07-28**, stateless: each request carries
-  `_meta["io.modelcontextprotocol/protocolVersion"]`, and
-  `server/discover` answers the revisions, the capabilities and the
-  server's identity;
+  `_meta["io.modelcontextprotocol/protocolVersion"]` and
+  `_meta["io.modelcontextprotocol/clientCapabilities"]` (`{}` for none),
+  each result names the server in `_meta`, and `server/discover`
+  answers the revisions, the capabilities and the server's identity;
 - **2025-11-25**, after `initialize`, for the rest of the process.
 
 Each record tool takes `{request, profile, settings, locale}`. `request`
@@ -78,6 +79,13 @@ completions:
   already resolved and checked.
 - **Completions:** a template's argument and a prompt's chart sections
   and festival packs.
+
+A call whose `_meta` carries a `progressToken` hears
+`notifications/progress` while it computes, and `notifications/cancelled`
+stops a running call at its next engine request; a cancelled call is not
+answered. A program embedding the server sends progress through
+`Server::with_notify` and cancels from another thread through
+`Server::interrupt`.
 
 A request is bounded, and a request past a bound is refused naming its
 field, the bound and the option moving it: a message's bytes

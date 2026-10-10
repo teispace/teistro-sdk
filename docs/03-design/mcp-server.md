@@ -338,6 +338,33 @@ is refused while the next one answers.
 batch between items, and a call carrying a `progressToken` hears
 `notifications/progress` per item on its own response stream.
 
+*Built.* The watch sits on the engine rather than in the SDK's loops:
+`ContextBuilder::wrapping` lays a provider over whichever one a chain
+opens, under whatever the settings name, and the server's own forwards
+every request after a check. Every computation reaches the engine, so a
+batch of charts, a range of days, a study and an adapter's own
+operations all stop at their next position once cancelled, with no
+hook threaded through any loop. The stdio transport reads its input on
+a thread of its own and hands a `notifications/cancelled` to
+`Server::interrupt`'s handle as it arrives; a cancelled call's answer
+is not sent, and a request cancelled before it begins is not answered.
+A call whose `_meta` carries a `progressToken` hears
+`notifications/progress` while it computes: the engine requests
+answered so far, with no `total`, since a call does not know its
+count beforehand, and at most one every quarter of a second. Over
+Streamable HTTP the 2026-07-28 revision cancels by closing the stream,
+which P8 maps to the same handle. Gated through the binary: progress
+increases under its token before the answer and an untokened call hears
+none, a call cancelled mid-computation is never answered and stops
+sooner than a whole call takes, and a cancellation before a request
+begins is spent on it once.
+
+**Conformance.** Read against the revision's own pages: a modern request
+missing its revision or its client's capabilities is `-32602` naming the
+`_meta` field (an unknown revision stays `-32022`), and every modern
+result carries `_meta["io.modelcontextprotocol/serverInfo"]`. Gated in
+`tests/eras.rs`.
+
 **P7. Long work as a task.** A research study over a large corpus is
 the case for the `io.modelcontextprotocol/tasks` extension: the call
 answers a task handle, `tasks/get` polls it. Taken up when a study is

@@ -148,7 +148,7 @@ fn call(server: &mut Server, name: &str, arguments: &Value) -> Value {
     let reply = server
         .handle(
             &json!({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
-                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"},
+                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {}},
                 "name": name, "arguments": arguments}})
             .to_string(),
         )
@@ -219,7 +219,7 @@ fn each_operation_of_a_loaded_engine_is_a_tool_with_its_parameters() {
     let reply = server
         .handle(
             &json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
-                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}}})
+                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {}}}})
             .to_string(),
         )
         .unwrap();
@@ -244,7 +244,7 @@ fn each_operation_of_a_loaded_engine_is_a_tool_with_its_parameters() {
     let reply = Server::new(Engine::Builtin)
         .handle(
             &json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
-                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}}})
+                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {}}}})
             .to_string(),
         )
         .unwrap();
@@ -291,7 +291,7 @@ fn a_tool_reads_the_settings_and_the_locale_it_names() {
 fn every_record_tool_is_described_by_its_boundary_function() {
     let mut server = Server::new(Engine::None);
     let reply = server
-        .handle(r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}"#)
+        .handle(r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}}}"#)
         .unwrap();
     let reply: Value = serde_json::from_str(&reply).unwrap();
     for tool in reply["result"]["tools"].as_array().unwrap() {
@@ -431,7 +431,7 @@ fn listed(server: &mut Server) -> Vec<Value> {
     let reply = server
         .handle(
             &json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
-                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}}})
+                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {}}}})
             .to_string(),
         )
         .unwrap();

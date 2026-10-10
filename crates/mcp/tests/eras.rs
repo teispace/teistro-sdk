@@ -128,8 +128,11 @@ fn the_modern_revision_is_served_without_a_handshake() {
     );
     assert_eq!(unsupported["data"]["requested"], "2024-01-01");
     let unnamed = &replies[4]["error"];
-    assert_eq!(unnamed["code"], -32_022, "no revision and no handshake");
-    assert_eq!(unnamed["data"]["requested"], Value::Null);
+    assert_eq!(unnamed["code"], -32_602, "no revision and no handshake");
+    assert_eq!(
+        unnamed["data"]["field"],
+        "_meta.io.modelcontextprotocol/protocolVersion"
+    );
     assert_eq!(replies[5]["error"]["code"], -32_602, "an unknown tool");
     assert_eq!(replies[6]["error"]["code"], -32_601);
 }
@@ -269,4 +272,71 @@ fn the_command_line_refuses_a_plugin_it_cannot_load() {
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(2), "a configuration with no plugin");
+}
+
+/// **What the revision requires of each request and result**: a modern
+/// request declares its client's capabilities or is refused naming the
+/// field, and every modern result names the server that answered it.
+#[test]
+fn a_modern_request_declares_capabilities_and_each_result_names_its_server() {
+    let replies = session(
+        &[],
+        &[
+            json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list",
+                   "params": {"_meta": {"io.modelcontextprotocol/protocolVersion": MODERN}}}),
+            json!({"jsonrpc": "2.0", "id": 2, "method": "prompts/list", "params": {"_meta": meta()}}),
+            json!({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"_meta": meta(),
+                "name": "numerology.profile", "arguments": {"request": numerology()}}}),
+        ],
+    );
+    let undeclared = &replies[0]["error"];
+    assert_eq!(undeclared["code"], -32_602, "{undeclared}");
+    assert_eq!(
+        undeclared["data"]["field"],
+        "_meta.io.modelcontextprotocol/clientCapabilities"
+    );
+    for reply in &replies[1..] {
+        assert_eq!(
+            reply["result"]["_meta"]["io.modelcontextprotocol/serverInfo"]["name"], "teistro-mcp",
+            "{reply}"
+        );
+    }
+}
+
+/// **A key given twice is refused** rather than read as its last copy:
+/// inside `params` it is invalid params naming the key's path, in the
+/// envelope an invalid request; a notification carrying one is not
+/// answered, and text that is not JSON is a parse error.
+#[test]
+fn a_key_given_twice_is_refused_naming_its_path() {
+    let mut server = teistro_mcp::Server::new(teistro_mcp::Engine::None);
+    let mut reply = |message: &str| -> Option<Value> {
+        server
+            .handle(message)
+            .map(|reply| serde_json::from_str(&reply).unwrap())
+    };
+    let meta = meta();
+    let inside = reply(&format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"_meta":{meta},
+            "name":"numerology.profile","arguments":{{"request":{{"name":"A","name":"B"}}}}}}}}"#
+    ))
+    .unwrap();
+    assert_eq!(inside["id"], 1, "{inside}");
+    assert_eq!(inside["error"]["code"], -32_602, "{inside}");
+    assert_eq!(
+        inside["error"]["data"]["field"],
+        "params.arguments.request.name"
+    );
+    let envelope =
+        reply(r#"{"jsonrpc":"2.0","id":2,"method":"ping","method":"tools/list"}"#).unwrap();
+    assert_eq!(envelope["id"], 2, "{envelope}");
+    assert_eq!(envelope["error"]["code"], -32_600, "{envelope}");
+    assert_eq!(envelope["error"]["data"]["field"], "method");
+    assert_eq!(
+        reply(r#"{"jsonrpc":"2.0","method":"notifications/x","params":{"a":1,"a":2}}"#),
+        None
+    );
+    let broken = reply("{\"jsonrpc\":").unwrap();
+    assert_eq!(broken["error"]["code"], -32_700, "{broken}");
+    assert_eq!(broken["id"], Value::Null);
 }

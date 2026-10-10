@@ -307,3 +307,20 @@ fn a_json_chart_request_refuses_by_the_field_written() {
     );
     assert!(FoundRequest::from_json("[]").is_err());
 }
+
+/// The chart request's description names every section flag and every
+/// record a request carries, so the tool an agent reads it from offers
+/// none it leaves out.
+#[test]
+fn the_chart_requests_description_names_every_section_and_record() {
+    let description = teistro::FoundRequest::DESCRIPTION;
+    for name in teistro::FoundRequest::sections()
+        .into_iter()
+        .chain(teistro::ChartRecords::NAMES)
+    {
+        assert!(
+            description.contains(&format!("`{name}`")),
+            "the description leaves out `{name}`"
+        );
+    }
+}
