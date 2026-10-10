@@ -2546,6 +2546,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **Time and calendar records, and their tools.** `ResolveRequest`,
+  `CivilRequest`, `ScaleRequest` and `CalendarRequest` read a civil time
+  in a zone, an instant on a zone's clock, an instant between scales and
+  a date for another calendar from JSON; the agent server answers them
+  as `time.resolve`, `time.civil`, `time.convert` and
+  `calendar.convert`. `Scale` and `Conversion` serialise. **Numbers:**
+  none move.
 - **A range of days read from JSON, and `almanac.days`.**
   `DaysRequest::from_json` reads a range of days, the place and clock,
   a `muhurta` search, a `festivals` reckoning and the section flags.

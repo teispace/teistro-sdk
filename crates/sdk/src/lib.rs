@@ -53,6 +53,7 @@ mod reading;
 #[cfg(feature = "svg")]
 mod render;
 mod scale;
+mod time_request;
 
 #[cfg(feature = "muhurta")]
 pub use area::MuhurtaDays;
@@ -275,8 +276,13 @@ pub use crate::festival_request::{FestivalPack, FestivalRequest};
 // A range of days and what is asked beside them, read whole from JSON
 // (`03-design/mcp-server.md`, step 2).
 pub use crate::days_request::DaysRequest;
+// A civil time, an instant, a scale and a date, each read whole from JSON
+// (`03-design/mcp-server.md`, step 3).
 #[cfg(feature = "muhurta")]
 pub use crate::muhurta_request::{Activity, MuhurtaRequest};
+pub use crate::time_request::{
+    CalendarReading, CalendarRequest, CivilReading, CivilRequest, ResolveRequest, ScaleRequest,
+};
 pub use teistro_astro::visibility::Criterion;
 // Eclipses: found over the sky, each with how a place sees it
 // (`03-design/eclipses.md`); `almanac().eclipses` answers in these.

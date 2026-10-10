@@ -39,5 +39,10 @@ each day's `nepalSambat` date. It answers every day's panchanga, the
 days' own hashes, and each section asked as its own
 `{value, provenance}`.
 
+`time.resolve`, `time.civil`, `time.convert` and `calendar.convert`
+resolve a civil time in a zone to an instant, read an instant on a
+zone's clock, carry an instant between UT1, TT and UTC with what was
+applied, and write a date in another calendar with its weekday.
+
 Nothing reaches the file system or the network: the ephemeris is chosen
 on the command line and never by a tool argument.

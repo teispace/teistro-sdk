@@ -106,7 +106,10 @@ the protocol's own failures.
 | `settings.describe` | none: the knobs and the profiles | step 1, built |
 | `chart.found` | `FoundRequest`: when, where, the sections and each family's record | step 2, built |
 | `almanac.days` | `DaysRequest`: a range of days, the place and clock, and what is asked beside them | step 2, built |
-| `time.resolve`, `calendar.convert` | a civil time and zone; a date | step 3 |
+| `time.resolve` | `ResolveRequest`: a civil date and time and a zone | step 3, built |
+| `time.civil` | `CivilRequest`: an instant, a zone and a calendar | step 3, built |
+| `time.convert` | `ScaleRequest`: an instant and two scales | step 3, built |
+| `calendar.convert` | `CalendarRequest`: a date and the calendar wanted | step 3, built |
 | `engine.manifest`, `engine.call` | the engine passthrough (ADR-0029) | step 3 |
 
 Step 2 needs the chart's composition in the façade. Today
@@ -150,7 +153,17 @@ full and seals each over what it writes; the boundary's
 them, so the two share one writer. `almanac.days` answers the days,
 their own hashes and each section as its own `{value, provenance}`,
 with the days' provenance as the answer's; a section not asked is left
-out. The third gate holds the table (§5); next comes step 3.
+out. The third gate holds the table (§5).
+
+Step 3's time and calendar tools read a record each, spelt as the others
+are: a zone as `ZoneSpec` serialises, which is how a stored chart keeps
+it, and a scale by its key. They answer without an envelope, as
+numerology does, because each answer already names what produced it:
+the zone resolution carries the database's version and what each policy
+did, and a conversion carries the Delta T with its model and source.
+The engine passthrough is next: the plugin loader moves out of the C
+boundary into the port, so the SDK, the boundary and this server load
+an adapter the same way, and `--plugin` names one.
 
 ## 4. What is not a tool
 
