@@ -38,11 +38,13 @@ pub use teistro_port_ephemeris::load::Adapter;
 use teistro_port_ephemeris::native::NativeFunction;
 
 mod completion;
+mod limits;
 mod prompts;
 mod resources;
 mod schemas;
 mod tools;
 
+pub use limits::Limits;
 pub use schemas::Detail;
 
 /// The stateless revision the server speaks.
@@ -170,6 +172,7 @@ pub struct Server {
     plugin: Option<Plugin>,
     legacy: bool,
     detail: Detail,
+    limits: Limits,
     /// The tool list, built on the first `tools/list`: it changes only
     /// with the binary and the engine, both fixed for the process.
     listed: Option<Map<String, Value>>,
@@ -183,6 +186,7 @@ impl core::fmt::Debug for Server {
             .field("plugin", &self.plugin.as_ref().map(|p| p.name.as_str()))
             .field("legacy", &self.legacy)
             .field("detail", &self.detail)
+            .field("limits", &self.limits)
             .field("listed", &self.listed.is_some())
             .field("contexts", &self.contexts.len())
             .finish()
@@ -198,6 +202,7 @@ impl Server {
             plugin: None,
             legacy: false,
             detail: Detail::Lean,
+            limits: Limits::default(),
             listed: None,
             contexts: HashMap::new(),
         }
@@ -213,6 +218,13 @@ impl Server {
             listed: None,
             ..self
         }
+    }
+
+    /// The same server, each request held to `limits` rather than the
+    /// shipped [`Limits::default`].
+    #[must_use]
+    pub fn with_limits(self, limits: Limits) -> Server {
+        Server { limits, ..self }
     }
 
     /// A server computing with the engine `open` gives first and
@@ -265,7 +277,29 @@ impl Server {
 
     /// The reply to one JSON-RPC message, or `None` for a notification.
     pub fn handle(&mut self, message: &str) -> Option<String> {
-        let message: Value = match serde_json::from_str(message) {
+        self.handle_bytes(message.as_bytes())
+    }
+
+    /// The reply to one JSON-RPC message as the bytes a transport read,
+    /// or `None` for a notification. A message longer than the limit is
+    /// refused unread, so a transport may stop reading one a byte past
+    /// it.
+    pub fn handle_bytes(&mut self, message: &[u8]) -> Option<String> {
+        if let Some(most) = self
+            .limits
+            .message_bytes
+            .filter(|most| message.len() > *most)
+        {
+            return Some(failure(
+                &Value::Null,
+                &Fault {
+                    code: INVALID_REQUEST,
+                    message: limits::too_long(most),
+                    data: Some(json!({ "limit": most })),
+                },
+            ));
+        }
+        let message: Value = match serde_json::from_slice(message) {
             Ok(message) => message,
             Err(why) => {
                 return Some(failure(
@@ -342,6 +376,7 @@ impl Server {
             }
             "prompts/get" => {
                 let era = self.era(params)?;
+                let limits = self.limits;
                 let mut ask = |tool: &str, request: &Value| -> Result<Value, Error> {
                     let record = teistro::records::record(tool).ok_or_else(|| {
                         Error::internal(format!("this build carries no `{tool}`"))
@@ -351,7 +386,7 @@ impl Server {
                     let mut answer = self.answer(record, &arguments)?;
                     Ok(answer.get_mut("value").map(Value::take).unwrap_or_default())
                 };
-                let written = prompts::get(params, &mut ask).map_err(|refused| Fault {
+                let written = prompts::get(params, &mut ask, &limits).map_err(|refused| Fault {
                     code: INVALID_PARAMS,
                     message: refused.message,
                     data: refused
@@ -454,6 +489,9 @@ impl Server {
         } else if name == schemas::DESCRIBE {
             schemas::describe(arguments)
         } else if let Some(operation) = self.operation(name) {
+            if let Err(refusal) = self.limits.check_fields(arguments) {
+                return Ok(tool_result(refused(&refusal), true));
+            }
             let request = json!({ "name": operation, "arguments": arguments }).to_string();
             self.engine_answer(request)
         } else {
@@ -474,6 +512,9 @@ impl Server {
     /// A record tool's answer: the arguments read, the context they name,
     /// and the record answered under it as the envelope.
     fn answer(&mut self, record: Record, arguments: &Map<String, Value>) -> Result<Value, Error> {
+        if let Some(request) = arguments.get("request") {
+            self.limits.check(request)?;
+        }
         let asked = tools::Arguments::read(arguments)?;
         let context = self.context(&asked)?;
         envelope(record.answer(context, &asked.request)?)

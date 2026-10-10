@@ -79,5 +79,19 @@ completions:
 - **Completions:** a template's argument and a prompt's chart sections
   and festival packs.
 
+A request is bounded, and a request past a bound is refused naming its
+field, the bound and the option moving it: a message's bytes
+(`--max-message-bytes`), any array's members (`--max-items`) and the
+days a record's ranges span (`--max-days`). Each takes `none`, and
+`--help` gives the defaults. A program embedding the server sets them with
+`Server::with_limits`:
+
+```rust
+use teistro_mcp::{Engine, Limits, Server};
+
+let server = Server::new(Engine::Builtin)
+    .with_limits(Limits { days: Some(732), ..Limits::default() });
+```
+
 Nothing reaches the file system or the network: the ephemeris and the
 plugin are chosen on the command line and never by a tool argument.
