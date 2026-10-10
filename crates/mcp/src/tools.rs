@@ -208,22 +208,32 @@ pub(crate) fn describe(arguments: &Map<String, Value>) -> Result<Value, Error> {
     }
     let profiles = SHIPPED_PROFILES
         .iter()
-        .filter_map(|id| Profile::shipped(id))
-        .map(|profile| {
-            Ok(json!({
-                "id": profile.id.as_str(),
-                "version": profile.version,
-                "base": profile.base.as_ref().map(teistro_core::settings::ProfileId::as_str),
-                "patch": written(&profile.patch)?,
-            }))
-        })
+        .filter_map(|id| profile(id))
         .collect::<Result<Vec<Value>, Error>>()?;
-    let schema = schemas::generator().into_root_schema_for::<SettingsPatch>();
     Ok(json!({
         "defaultProfile": DEFAULT_PROFILE,
         "profiles": profiles,
-        "settings": written(&schema)?,
+        "settings": settings_schema()?,
     }))
+}
+
+/// The shipped profile `id`: its version, its base and what it sets, or
+/// None where no shipped profile has the id.
+pub(crate) fn profile(id: &str) -> Option<Result<Value, Error>> {
+    let profile = Profile::shipped(id)?;
+    Some(written(&profile.patch).map(|patch| {
+        json!({
+            "id": profile.id.as_str(),
+            "version": profile.version,
+            "base": profile.base.as_ref().map(teistro_core::settings::ProfileId::as_str),
+            "patch": patch,
+        })
+    }))
+}
+
+/// The JSON Schema of the settings patch every tool's `settings` takes.
+pub(crate) fn settings_schema() -> Result<Value, Error> {
+    written(&schemas::generator().into_root_schema_for::<SettingsPatch>())
 }
 
 fn written<T: serde::Serialize>(value: &T) -> Result<Value, Error> {

@@ -263,10 +263,33 @@ shipped profiles and the settings schema (`teistro://profiles/{id}`,
 Each is a `CacheableResult` with `ttlMs` and `cacheScope: "public"`:
 nothing in them varies by caller.
 
+*Built.* `resources/list` names the settings schema, the document
+schema, the catalogue's index, each shipped profile and each catalogue
+kind, every one written once per process; the build script carries
+`catalogue/catalogue.json` in a kind at a time, so a kind's text is
+the file's own. `resources/templates/list` names three templates,
+`teistro://catalogue/{kind}`, `teistro://profiles/{id}` and
+`teistro://tools/{tool}/schema` (what `schema.describe` answers, kept
+once a tool). A resource the server lacks is refused, never an empty
+`contents`: `-32602` with the URI under 2026-07-28 and `-32002` under
+2025-11-25, as each revision says. Every list is one page, so a cursor
+is refused. Gated: every listed resource reads as its list gives it,
+every kind the binary compiles is served under its name and number and
+none other, and each resource is the answer its tool gives.
+
 **P3. Completions.** `completion/complete` answers a resource
 template's `{kind}` and `{id}` and a prompt's arguments from the
 catalogue and the profiles, so a client offers the keys the reader
 takes.
+
+*Built.* One table holds each template's argument and the values it
+takes, and both the template list and the completion read it, so a
+completion cannot offer what a template does not take. Values rank by
+prefix, then substring, then letters in order, ignoring case. A
+prompt's argument completes from its table where one holds it (a
+chart's sections, a list completing its last item from those not yet
+named; the festival packs) and offers nothing for a date, a time or a
+place. Gated: every value a template's completion offers reads.
 
 **P4. Prompts as worked requests.** A prompt is a request the SDK
 answers well, written out: a birth chart with its sections, a day's
@@ -274,6 +297,17 @@ panchanga at a place, a match between two births. Its arguments are
 the fields a person supplies (date, time, place); its messages name
 the tool and the record, so an agent learns the record from one that
 works.
+
+*Built.* `birth-chart`, `day-panchanga` and `match` read a date, a
+time, a zone (an IANA name, a fixed offset or LMT) and a place as text.
+`prompts/get` resolves each civil time through `time.resolve` and reads
+the record it writes with the tool's own reader before answering, so a
+prompt is never a call that fails; its messages give the call as JSON
+and link the tool's schemas. A refusal names the prompt's argument, not
+the record's field: a thirteenth month is `date`, a latitude of 97 is
+`latitude`. Gated: the call each prompt writes is made and answers, a
+birth chart's instant is the one `time.resolve` answers, and each
+required argument left out is refused by its name.
 
 **P5. Limits.** A request's text, a batch's length and a range of days
 are bounded, and the bound is a refusal naming the field and the

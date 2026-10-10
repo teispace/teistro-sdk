@@ -2546,6 +2546,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **Resources, completions and prompts.** `teistro-mcp` serves the
+  catalogue a kind at a time, the shipped profiles, the settings and
+  document schemas and each tool's schemas as resources, completes a
+  template's or a prompt's argument from the table that holds it, and
+  offers `birth-chart`, `day-panchanga` and `match` as prompts that
+  write a checked call from a date, a time, a zone and a place.
+  `FoundRequest::sections` names a chart request's section flags.
+  **Numbers:** none move.
 - **Typed tool schemas.** Every `teistro-mcp` record tool states its
   record's JSON Schema 2020-12 as `inputSchema` and its envelope as
   `outputSchema`, derived from the reader's and answer's types through a

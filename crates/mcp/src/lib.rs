@@ -37,6 +37,9 @@ use teistro_port_ephemeris::EphemerisProvider;
 pub use teistro_port_ephemeris::load::Adapter;
 use teistro_port_ephemeris::native::NativeFunction;
 
+mod completion;
+mod prompts;
+mod resources;
 mod schemas;
 mod tools;
 
@@ -52,9 +55,9 @@ pub const SUPPORTED: [&str; 2] = [MODERN, LEGACY];
 const VERSION_META: &str = "io.modelcontextprotocol/protocolVersion";
 const SERVER_INFO_META: &str = "io.modelcontextprotocol/serverInfo";
 
-/// How long a client may keep the tool list: it changes only with the
+/// How long a client may keep a list or a resource: each changes only with the
 /// binary, so a day.
-const LIST_TTL_MS: u64 = 86_400_000;
+const TTL_MS: u64 = 86_400_000;
 
 /// The contexts kept before the cache starts again. A context is the
 /// profile resolved and the locale engine loaded, which is what a call
@@ -67,6 +70,9 @@ const INVALID_REQUEST: i64 = -32_600;
 const METHOD_NOT_FOUND: i64 = -32_601;
 const INVALID_PARAMS: i64 = -32_602;
 const UNSUPPORTED_VERSION: i64 = -32_022;
+/// What the handshake revision answered for a resource it does not
+/// have; the stateless revision answers [`INVALID_PARAMS`].
+const RESOURCE_NOT_FOUND: i64 = -32_002;
 
 const INSTRUCTIONS: &str = "Every tool computes; nothing is recalled. An answer is \
 `{value, provenance}`: the provenance names the settings hash, the input hash and every \
@@ -306,27 +312,91 @@ impl Server {
             "server/discover" => Ok(discover()),
             "tools/list" => {
                 let era = self.era(params)?;
+                first_page(params)?;
                 let detail = self.detail;
                 let operations = self.plugin.as_ref().map_or(&[][..], |p| &p.operations);
-                let mut list = self
+                let list = self
                     .listed
                     .get_or_insert_with(|| tools::list(operations, detail))
                     .clone();
-                if era == Era::Modern {
-                    list.insert(String::from("ttlMs"), json!(LIST_TTL_MS));
-                    list.insert(String::from("cacheScope"), json!("public"));
-                }
-                Ok(complete(era, list))
+                Ok(complete(era, cacheable(era, list)))
             }
             "tools/call" => {
                 let era = self.era(params)?;
                 Ok(complete(era, self.call(params)?))
             }
+            "resources/list" => {
+                let era = self.era(params)?;
+                first_page(params)?;
+                Ok(complete(era, cacheable(era, resources::list())))
+            }
+            "resources/templates/list" => {
+                let era = self.era(params)?;
+                first_page(params)?;
+                Ok(complete(era, cacheable(era, resources::templates())))
+            }
+            "prompts/list" => {
+                let era = self.era(params)?;
+                first_page(params)?;
+                Ok(complete(era, cacheable(era, prompts::list())))
+            }
+            "prompts/get" => {
+                let era = self.era(params)?;
+                let mut ask = |tool: &str, request: &Value| -> Result<Value, Error> {
+                    let record = teistro::records::record(tool).ok_or_else(|| {
+                        Error::internal(format!("this build carries no `{tool}`"))
+                    })?;
+                    let mut arguments = Map::new();
+                    arguments.insert(String::from("request"), request.clone());
+                    let mut answer = self.answer(record, &arguments)?;
+                    Ok(answer.get_mut("value").map(Value::take).unwrap_or_default())
+                };
+                let written = prompts::get(params, &mut ask).map_err(|refused| Fault {
+                    code: INVALID_PARAMS,
+                    message: refused.message,
+                    data: refused
+                        .argument
+                        .map(|argument| json!({ "argument": argument })),
+                })?;
+                Ok(complete(era, written))
+            }
+            "completion/complete" => {
+                let era = self.era(params)?;
+                let completed = completion::complete(params).map_err(|refused| Fault {
+                    code: INVALID_PARAMS,
+                    message: refused.message,
+                    data: Some(json!({ "field": refused.field })),
+                })?;
+                Ok(complete(era, completed))
+            }
+            "resources/read" => {
+                let era = self.era(params)?;
+                let uri = params.get("uri").and_then(Value::as_str).ok_or_else(|| {
+                    Fault::new(
+                        INVALID_PARAMS,
+                        "`resources/read` names its resource in `uri`",
+                    )
+                })?;
+                let contents = resources::read(uri).ok_or_else(|| Fault {
+                    code: match era {
+                        Era::Modern => INVALID_PARAMS,
+                        Era::Legacy => RESOURCE_NOT_FOUND,
+                    },
+                    message: format!(
+                        "no resource `{uri}`: `resources/list` and \
+                         `resources/templates/list` name every one"
+                    ),
+                    data: Some(json!({ "uri": uri })),
+                })?;
+                Ok(complete(era, cacheable(era, contents)))
+            }
             _ => Err(Fault::new(
                 METHOD_NOT_FOUND,
                 format!(
-                    "no method `{method}`: the server answers `server/discover`, `tools/list` \
-                     and `tools/call`, and `initialize` and `ping` under {LEGACY}"
+                    "no method `{method}`: the server answers `server/discover`, `tools/list`, \
+                     `tools/call`, `resources/list`, `resources/templates/list` and \
+                     `resources/read`, `prompts/list`, `prompts/get` and \
+                     `completion/complete`, and `initialize` and `ping` under {LEGACY}"
                 ),
             )),
         }
@@ -337,7 +407,7 @@ impl Server {
         self.legacy = true;
         json!({
             "protocolVersion": LEGACY,
-            "capabilities": { "tools": { "listChanged": false } },
+            "capabilities": capabilities(),
             "serverInfo": server_info(),
             "instructions": INSTRUCTIONS,
         })
@@ -484,11 +554,23 @@ fn discover() -> Value {
     json!({
         "resultType": "complete",
         "supportedVersions": SUPPORTED,
-        "capabilities": { "tools": { "listChanged": false } },
+        "capabilities": capabilities(),
         "instructions": INSTRUCTIONS,
-        "ttlMs": LIST_TTL_MS,
+        "ttlMs": TTL_MS,
         "cacheScope": "public",
         "_meta": { SERVER_INFO_META: server_info() },
+    })
+}
+
+/// What the server offers: tools, resources and prompts, none of which
+/// changes while it runs, so none sends a change, and completions of a
+/// template's or a prompt's argument.
+fn capabilities() -> Value {
+    json!({
+        "tools": { "listChanged": false },
+        "resources": {},
+        "prompts": {},
+        "completions": {},
     })
 }
 
@@ -498,6 +580,29 @@ fn server_info() -> Value {
         "title": "Teistro",
         "version": env!("CARGO_PKG_VERSION"),
     })
+}
+
+/// A result every caller may keep a day: everything the server lists or
+/// serves changes only with the binary, so a day. The handshake revision
+/// has no caching fields.
+fn cacheable(era: Era, mut result: Map<String, Value>) -> Map<String, Value> {
+    if era == Era::Modern {
+        result.insert(String::from("ttlMs"), json!(TTL_MS));
+        result.insert(String::from("cacheScope"), json!("public"));
+    }
+    result
+}
+
+/// Every list fits one page, so a cursor is one the server never gave.
+fn first_page(params: &Value) -> Result<(), Fault> {
+    match params.get("cursor") {
+        None | Some(Value::Null) => Ok(()),
+        Some(cursor) => Err(Fault {
+            code: INVALID_PARAMS,
+            message: String::from("no page follows the first: every list is one page"),
+            data: Some(json!({ "cursor": cursor })),
+        }),
+    }
 }
 
 /// A result as its revision writes it: the modern one marks it complete.

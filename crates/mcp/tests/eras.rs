@@ -66,7 +66,7 @@ fn the_modern_revision_is_served_without_a_handshake() {
             json!({"jsonrpc": "2.0", "id": 5, "method": "tools/list", "params": {}}),
             json!({"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"_meta": meta(),
                 "name": "chart.horoscope", "arguments": {}}}),
-            json!({"jsonrpc": "2.0", "id": 7, "method": "resources/list", "params": {"_meta": meta()}}),
+            json!({"jsonrpc": "2.0", "id": 7, "method": "teistro/nothing", "params": {"_meta": meta()}}),
         ],
     );
     assert_eq!(replies.len(), 7);
