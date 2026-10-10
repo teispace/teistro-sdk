@@ -6,7 +6,7 @@ use core::cell::{Ref, RefCell, RefMut};
 use serde::Serialize;
 use teistro_astro::DeltaTModel;
 use teistro_astro::completion::{Completed, Completion};
-use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
+use teistro_core::envelope::{Envelope, Hash, PackStamp, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
     DEFAULT_PROFILE, Diagnostic, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
@@ -270,7 +270,32 @@ impl Context {
         provenance.time.delta_t_model = self.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance.time.tzdb_version = EmbeddedTzdb::bundled_version().to_string();
+        provenance.packs = self.pack_stamps(provenance.catalogue_version);
         provenance
+    }
+
+    /// Each pack loaded at run time, as an answer's provenance names it
+    /// (ADR-0020): what shaped the words an answer may say. The embedded
+    /// locales are named by the SDK's own version and are not listed. A
+    /// pack built for another catalogue is refused at load, so the
+    /// catalogue version the context reads under is the pack's.
+    pub(crate) fn pack_stamps(&self, catalogue_version: u32) -> Vec<PackStamp> {
+        let version = catalogue_version.to_string();
+        self.locale_engine()
+            .loaded()
+            .iter()
+            .filter_map(|loaded| {
+                // The loader writes the digest it computed as hex, so one
+                // that does not read back is a defect, not a pack.
+                let hash = Hash::from_hex(&loaded.sha256);
+                debug_assert!(hash.is_some(), "a pack digest that is not hex");
+                Some(PackStamp {
+                    id: format!("{}/{}", loaded.locale, loaded.namespaces.join(",")),
+                    version: version.clone(),
+                    hash: hash?,
+                })
+            })
+            .collect()
     }
 
     /// The locale engine: a message, an entity's forms,

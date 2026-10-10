@@ -1229,10 +1229,13 @@ provider's DUT1).
    over one loader in the port with `--plugin` and a tool per engine
    operation). §7's P1 is built: every record tool states its schemas,
    a lean list by default with `schema.describe` answering the rest.
-   P2 to P6 and P8 are built: resources, completions, prompts, the
-   limits, cancellation and progress, the revision's required `_meta`,
-   and Streamable HTTP. Next is P9 (`--pack`, `Server::with_tool`);
-   P7's tasks wait on a study measured to outlast a client's timeout.
+   P2 to P6, P8 and most of P9 are built: resources, completions,
+   prompts, the limits, cancellation and progress, the revision's
+   required rules, Streamable HTTP, packs and a program's own tools.
+   Left: a registered dasha system or layout named in a request (the
+   registration readers move from the boundary into the façade first),
+   and packaging the binary with the release; P7's tasks wait on a study
+   measured to outlast a client's timeout.
    A question that is **decided** may not be named in this step or in
    `## Next` — the same lint refuses it — because a settled question on
    a list of what remains is work someone will go looking for.
@@ -4785,3 +4788,4 @@ on pub.dev (checked 2026-09-07).
 | 2026-10-10 | **Cancellation and progress** (`mcp-server.md` §7, P6). `ContextBuilder::wrapping` lays a provider of the caller's own over whichever one a context's chain opens, under whatever its settings name; the agent server lays a watch there, so every computation stops at its next engine request once cancelled and no SDK loop carries a hook. The stdio transport reads on its own thread and hands `notifications/cancelled` to `Server::interrupt` as it arrives; a cancelled call is not answered, nor is a request cancelled before it began. A `progressToken` hears `notifications/progress`, the engine requests answered so far, rate-limited. Gated through the binary. **Next:** the 2026-07-28 conformance gaps, then P8. |
 | 2026-10-11 | **Streamable HTTP** (`mcp-server.md` §7, P8). `--http` serves `/mcp` on the standard library's sockets, a server per worker thread because a context is neither `Send` nor `Sync`. The revision, method and name headers are checked against the body before anything computes (`-32020`), a foreign origin is refused, a progress token turns the answer into an event stream, and a closed connection stops its call through P6's watch — but only while that call runs, since a closure noticed after the answer must not cancel a later request reusing its id. Every check was shown red by breaking it. |
 | 2026-10-11 | **The revision's remaining rules**, read against its own pages rather than the summary P8 was built from. Five MUSTs were missing: `server/discover` answered a request naming no revision (the crate's own doctest sent one), a null id was answered as a request, `subscriptions/listen` was an unknown method although the message patterns are mandatory, a Base64 `Mcp-Name` was compared undecoded, and nothing limited the call rate over HTTP. Each is built and gated, each gate shown red by breaking it. A rate refusal first went out before its request was read and reached the peer as a reset; counting after the read is what made the `429` arrive. Declined with reasons on the page: stopping a running call when stdin closes (a piping host waits for its answers) and HTTP authorization (left to the host in front). |
+| 2026-10-11 | **Packs and a program's own tools** (`mcp-server.md` §7, P9). `--pack` loads a pack into every context the server builds, before the call's locale, since a pack may bring the locale. **`Provenance.packs` was declared and never filled**: two consumers with different readings were told the same provenance for different words, in every binding; it is filled now wherever a pack's words are said. `Server::with_tool` serves a program's tools beside the records; the namespace refusal was first computed over the program's own tools too, so its second tool collided with its first, which the tests caught. A registered dasha system or layout named in a request is the one part of P9 left: the readers take catalogue members. |

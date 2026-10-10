@@ -418,18 +418,48 @@ closes, and a closure after the answer cancels nothing later. Gated in
 `tests/http.rs` through the binary on a loopback port, each check shown
 red by breaking it.
 
-**P9. Extended where the SDK is.** Designed, not built: a provider
-plugin and `engine.call` are reached today (step 3), and the rest of
-this paragraph is the design. The server reaches what a context
+**P9. Extended where the SDK is.** The server reaches what a context
 registers, not only what ships: a provider plugin by `--plugin`, an
-interpretation pack by `--pack` (not yet an option), a plugin's own functions as tools of
-their own and through `engine.call` (step 3, built), and a context's registered dasha systems and
-layouts by their keys. A program embedding `teistro_mcp::Server` adds
-tools of its own beside the records (`Server::with_tool`, not yet
-written), answered and
-listed as the SDK's are, so a product built on the SDK serves its own
-operations without forking the server. A new SDK record is one row in
-`teistro::records`, and the server lists it with nothing else changed.
+interpretation pack by `--pack`, a plugin's own functions as tools of
+their own and through `engine.call` (step 3), and a context's registered
+dasha systems and layouts by their keys. A program embedding
+`teistro_mcp::Server` adds tools of its own beside the records
+(`Server::with_tool`), answered and listed as the SDK's are, so a
+product built on the SDK serves its own operations without forking the
+server. A new SDK record is one row in `teistro::records`, and the
+server lists it with nothing else changed.
+
+*Built: packs and a program's tools.* `Server::with_pack` (and
+`--pack PATH`, repeatable, read once at start) loads a pack into every
+context the server builds, in the order given, before the call's locale
+is set, since a pack may bring the locale; a file that is not a pack
+fails the start, and `settings.describe` lists each pack's locale,
+namespaces, entries and digest. Building it found `Provenance.packs`
+declared and never filled, so two consumers with different readings got
+the same provenance for different words; `Context::pack_stamps` now
+fills it on every answer stamped through the context and on every
+interpreted chart, which is where a pack's words are said, by locale,
+namespaces and digest.
+
+`Server::with_tool` takes a `Tool` (a name, a description, an object
+input schema and a handler, with a title, an output schema, read-only
+annotations and `in_context` beside them). A name outside the
+protocol's tool-name rule, one already listed, or one under a namespace
+the SDK lists tools in (`chart.`, `engine.`, …, computed from the list
+itself) is refused at registration, so an SDK upgrade can never quietly
+shadow a program's tool. A tool `in_context` reads `profile`, `settings`
+and `locale` as a record tool does and its handler reaches that context,
+with the server's engine, watch and packs, through `Call::context`. The
+request bounds hold for its arguments, a refusal its handler gives is
+the tool's result with `isError`, and a handler that panics is the
+tool's `INTERNAL` refusal while the server answers the next call.
+Gated in `tests/packs.rs` and `tests/extend.rs`.
+
+Not built: a registered dasha system or layout named in a request. The
+JSON readers take catalogue members, so a registered key is refused
+before any context sees it; the registration readers sit in the C
+boundary and move into the façade first, as the chart's composition
+did.
 
 **P10. Quick by construction.** A context is built once per profile,
 settings and locale, the settings keyed by their canonical JSON so two

@@ -619,6 +619,9 @@ impl<'a> ChartArea<'a> {
                 content_hash,
             });
         }
+        // The words are a pack's as much as the SDK's.
+        let mut provenance = provenance;
+        provenance.packs = self.context.pack_stamps(provenance.catalogue_version);
         Ok(Envelope::new(charts, provenance))
     }
 

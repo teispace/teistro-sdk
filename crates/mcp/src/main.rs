@@ -15,7 +15,7 @@ or Streamable HTTP
 
 usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                    [--schemas DETAIL] [--max-message-bytes N] [--max-items N]
-                   [--max-days N]
+                   [--max-days N] [--pack PATH]...
                    [--http ADDRESS [--http-workers N] [--http-rate N]
                                    [--allow-origin ORIGIN]...]
 
@@ -26,6 +26,11 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                          ships, computed with first; its own operations become
                          tools named `engine.<name>`
   --plugin-config JSON   the adapter's own options
+  --pack PATH            an interpretation or locale pack (`.tpack` or
+                         `.tbundle`, as `teistro-intl build` writes it) loaded
+                         into every context, in the order given; a locale it
+                         brings is one a call may name. Read and verified at
+                         start; repeatable
   --schemas DETAIL       how much schema the tool list states: lean (the
                          default; the records a request carries by name are
                          answered by `schema.describe`, and no answer schema
@@ -62,6 +67,8 @@ struct Options {
     limits: Limits,
     /// The address `--http` serves at, and how.
     http: Option<(String, Http)>,
+    /// Each `--pack` by its path, read.
+    packs: Vec<(String, Arc<[u8]>)>,
 }
 
 fn main() -> ExitCode {
@@ -234,10 +241,23 @@ fn serve_http(options: Options, address: &str, http: &Http) -> ExitCode {
 /// The server the options name: the plugin loaded ahead of the engine
 /// when there is one.
 fn server(options: &Options) -> Result<Server, teistro::Error> {
+    let mut server = engine(options)?
+        .with_detail(options.detail)
+        .with_limits(options.limits);
+    for (path, bytes) in &options.packs {
+        server = server.with_pack(Arc::clone(bytes)).map_err(|refusal| {
+            teistro::Error::new(teistro::Status::Pack, format!("--pack {path}: {refusal}"))
+                .with_field("bytes")
+        })?;
+    }
+    Ok(server)
+}
+
+/// The server computing with the engine the options name: the plugin
+/// loaded ahead of it when there is one.
+fn engine(options: &Options) -> Result<Server, teistro::Error> {
     let Some(path) = &options.plugin else {
-        return Ok(Server::new(options.engine)
-            .with_detail(options.detail)
-            .with_limits(options.limits));
+        return Ok(Server::new(options.engine));
     };
     #[allow(
         unsafe_code,
@@ -246,9 +266,7 @@ fn server(options: &Options) -> Result<Server, teistro::Error> {
     // SAFETY: the operator named this library on the server's own command
     // line, which is the trust the binary itself runs with.
     let adapter = unsafe { Adapter::load(path, options.plugin_config.as_deref()) }?;
-    Ok(Server::with_plugin(options.engine, adapter)?
-        .with_detail(options.detail)
-        .with_limits(options.limits))
+    Server::with_plugin(options.engine, adapter)
 }
 
 /// The options the command line names, `None` when it asked only for
@@ -260,6 +278,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
     let mut limits = Limits::default();
     let (mut address, mut workers, mut origins) = (None, None, Vec::new());
     let mut rate = None;
+    let mut packs = Vec::new();
     let mut stdout = std::io::stdout();
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -311,6 +330,13 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
                         .ok_or_else(|| format!("`--http-workers` takes a count, not `{count}`"))?,
                 );
             }
+            "--pack" => {
+                let path = args.next().ok_or("`--pack` takes a path")?;
+                // Read once, here: every worker's server is built from
+                // the same bytes and none reads the disk again.
+                let bytes = std::fs::read(&path).map_err(|why| format!("--pack {path}: {why}"))?;
+                packs.push((path, Arc::<[u8]>::from(bytes)));
+            }
             "--http-rate" => rate = Some(bound::<u32>(&arg, args.next())?),
             "--allow-origin" => {
                 origins.push(args.next().ok_or("`--allow-origin` takes an origin")?);
@@ -344,6 +370,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
         detail,
         limits,
         http,
+        packs,
     }))
 }
 
