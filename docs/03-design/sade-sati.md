@@ -1,7 +1,7 @@
 # Sade Sati: Saturn's spells from the natal Moon
 
-Status: `draft`, 2026-09-29; §7 steps 1 to 4 **built** the same day.
-Written before any code; the building corrected it (§7).
+Status: `built`, 2026-09-29; every step of §7 built. Written before any
+code; the building corrected it (§7).
 
 Derives from `transit-hit-list.md` §6 step 5 and the research page's P0 row
 "Sade Sati and Dhaiyya (Saturn from the Moon) with phases and exact dates,
@@ -181,8 +181,9 @@ longitudes, and reckons the houses itself rather than through the SDK's
    crossing is the same bits in every window that holds it
    (`astro-events-and-crossings.md` §4, proved red at 37.5 days).
 3. The measured pass: **done** (`sade-sati-measured.md`,
-   `check-sade-sati`). Every claim holds over 55 births and a century;
-   the baseline engine's 270-day rule holds too, with 33 days to spare.
+   `check-sade-sati`). Every claim holds over the corpus's births and a
+   century; the baseline engine's 270-day rule holds too, and the page states
+   how far inside it the longest pause falls.
 
    **Found building it:** the first read-back reckoned the houses through
    the SDK's `Reckoning::origin_deg`, the function under test, so a
@@ -204,7 +205,7 @@ longitudes, and reckons the houses itself rather than through the SDK's
    absent bound is NaN, as the balance's span is. Node, Python and Dart
    rebuild `{ reference, reckoning, sadeSati: [{ phases }], spells }`,
    Dart with value equality so a period found twice compares equal;
-   parity agrees on every visit of ten years in five runners, and the ABI
+   parity agrees on every visit of ten years in every runner, and the ABI
    test holds each cell to the façade's own report, to the bit.
 
    **Found building it:** the boundary answers a batch of no charts with
@@ -212,7 +213,7 @@ longitudes, and reckons the houses itself rather than through the SDK's
    which refuses one by `natals`, a field no caller of the boundary wrote.
    Both searches now ask the façade nothing for an empty batch; a test
    asks for both over no charts and was red first.
-5. The readings: **done**. The baseline corpus's five `sade-sati-phala`
+5. The readings: **done**. The baseline corpus's `sade-sati-phala`
    records are Saturn's house from the Moon, so they land on the open
    kind `gochar_bhava` (`SATURN_IN_12`, `SATURN_IN_1`, `SATURN_IN_2`,
    `SATURN_IN_4`, `SATURN_IN_8`) under the form `sadeSati`, the shape
@@ -228,11 +229,11 @@ longitudes, and reckons the houses itself rather than through the SDK's
    now takes `PlanInputs` (the rules and the window) and leaves each
    chart's report on it; the boundary encodes those reports rather than
    searching again, so the data and the words come from one scan. The
-   shared `phala` example says a thirty-year window's five houses in all
-   four languages, and each binding's test holds the refusal and the empty
+   shared `phala` example says a thirty-year window's houses in every
+   language the corpus carries, and each binding's test holds the refusal and the empty
    plan without a pack.
 
    **Found building it:** the first rendering left out the frame's
-   house, and every one of the ten fell back with a warning; the
+   house, and every one of them fell back with a warning; the
    state-readings pass wrote *falsified* onto its page and passed. It
    refuses a claim that does not hold now, and was red first.

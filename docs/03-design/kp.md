@@ -1,7 +1,8 @@
 # KP: Krishnamurti Paddhati
 
-Status: `draft`, 2026-09-29; §6 steps 1 to 7 **built** by 2026-09-30. Written
-from the Readers before any code; the building is expected to correct it.
+Status: `built`, 2026-09-30 (drafted 2026-09-29; every step of §6 built).
+Written from the Readers before any code; the building is expected to
+correct it.
 
 Derives from `01-research/feature-universe/06-kp.md` (P0: the 249
 sub-lord table, the star, sub and sub-sub lords of every body and cusp,
@@ -59,7 +60,7 @@ their facts and quotes a few words, never a table or a passage.
 ## 2. What the baseline engine does
 
 The baseline engine's KP module (rank 2) builds the same 249 rows, and
-parts from the Readers in five places, each a fork below:
+parts from the Readers in the places below, each a fork in §3:
 
 | | the Readers | the baseline engine |
 |---|---|---|
@@ -174,7 +175,7 @@ Jupiter's, the only subs a sign's end falls inside.
   rather than `TypedDict`s over strings. Dart builds `final` classes
   over one private field-wise value base, so a reading compares by
   value. Parity prints every cusp, planet, house, node and ruler in
-  all five runners.
+  every runner.
 
 ## 6. Order of work
 
@@ -203,7 +204,7 @@ Jupiter's, the only subs a sign's end falls inside.
    node knob shown to move (f).
 4. **Built**: the ruling planets. `RulingPlanets::of(&KpChart, day_lord,
    RulingRules)` and `sdk.chart().kp_ruling(&chart, &KpRequest)`, under
-   a new `kp` settings group whose four knobs are C150 to C153. Each
+   a new `kp` settings group whose knobs are C150 to C153. Each
    ruler is listed once with every reason it rules (`Reason`), a node's
    as the agent of which ruler and how; a rejection names the retrograde
    planet, and the sub reading's rejection is reported under either
