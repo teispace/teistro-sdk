@@ -68,7 +68,6 @@ impl Answered {
         })
     }
 
-    #[cfg(any(feature = "chart", feature = "numerology"))]
     fn plain<T: serde::Serialize>(value: &T) -> Result<Answered, Error> {
         Ok(Answered {
             value: written(value)?,
@@ -174,8 +173,63 @@ pub fn records() -> Vec<Record> {
             },
         },
     ];
+    all.extend(time_records());
     all.sort_by_key(|record| record.name);
     all
+}
+
+/// The clock and calendar records: what `TimeArea` and `CalendarArea`
+/// answer, each read from its own request record.
+fn time_records() -> [Record; 4] {
+    [
+        Record {
+            name: "time.resolve",
+            boundary: "ts_time_resolve",
+            title: "A civil date and time in a zone, as an instant",
+            reads: Some(crate::ResolveRequest::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::ResolveRequest::from_json(json)?;
+                Answered::plain(&context.time().resolve(&asked.civil, &asked.zone)?)
+            },
+        },
+        Record {
+            name: "time.civil",
+            boundary: "ts_time_civil",
+            title: "An instant read on a zone's clock, in a calendar",
+            reads: Some(crate::CivilRequest::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::CivilRequest::from_json(json)?;
+                let (civil, zone) =
+                    context
+                        .time()
+                        .civil_of(asked.instant, &asked.zone, asked.calendar)?;
+                Answered::plain(&crate::CivilReading { civil, zone })
+            },
+        },
+        Record {
+            name: "time.convert",
+            boundary: "ts_time_convert",
+            title: "An instant carried between UT1, TT and UTC, and what was applied",
+            reads: Some(crate::ScaleRequest::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::ScaleRequest::from_json(json)?;
+                Answered::plain(&context.time().convert(asked.jd, asked.from, asked.to)?)
+            },
+        },
+        Record {
+            name: "calendar.convert",
+            boundary: "ts_calendar_convert",
+            title: "A date written in another calendar, with its weekday",
+            reads: Some(crate::CalendarRequest::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::CalendarRequest::from_json(json)?;
+                let calendars = context.calendar();
+                let date = calendars.convert(&asked.date, asked.into)?;
+                let weekday = calendars.weekday_of(&date)?;
+                Answered::plain(&crate::CalendarReading { date, weekday })
+            },
+        },
+    ]
 }
 
 /// The record entry point called `name`, if this build carries it.

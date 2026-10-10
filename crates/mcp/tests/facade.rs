@@ -41,6 +41,25 @@ fn examples() -> Vec<(&'static str, Value)> {
         ),
         ("matching.naam", json!({"bride": "सीता", "groom": "राम"})),
         (
+            "time.resolve",
+            json!({"date": {"year": 1990, "month": 4, "day": 5},
+                "time": {"hour": 4, "minute": 30, "second": 0},
+                "zone": {"kind": "IANA", "zone": "Asia/Kathmandu"}}),
+        ),
+        (
+            "time.civil",
+            json!({"instant": 2_447_986.458_333_333_5, "zone": {"kind": "FIXED", "offset": 20700},
+                "calendar": "BIKRAM_SAMBAT"}),
+        ),
+        (
+            "time.convert",
+            json!({"jd": 2_451_545.0, "from": "UTC", "to": "TT"}),
+        ),
+        (
+            "calendar.convert",
+            json!({"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}),
+        ),
+        (
             "numerology.profile",
             json!({"name": "Henry Elder", "date": {"year": 1872, "month": 1, "day": 17},
                 "rules": {"masters": "NONE"}}),
@@ -258,4 +277,44 @@ fn a_days_request_answers_its_days_and_each_section_sealed_as_the_boundary_seals
         .keys()
         .collect();
     assert_eq!(keys, ["days", "dayHashes"]);
+}
+
+#[test]
+fn a_civil_time_resolves_and_reads_back_on_the_same_clock() {
+    let mut server = Server::new(Engine::None);
+    let resolved = call(
+        &mut server,
+        "time.resolve",
+        &json!({"request": {"date": {"year": 1990, "month": 4, "day": 5},
+            "time": {"hour": 4, "minute": 30, "second": 0},
+            "zone": {"kind": "IANA", "zone": "Asia/Kathmandu"}}}),
+    );
+    let resolved = &resolved["structuredContent"]["value"];
+    assert_eq!(resolved["zone"]["offset"], json!(20700));
+    let back = call(
+        &mut server,
+        "time.civil",
+        &json!({"request": {"instant": resolved["instant"],
+            "zone": {"kind": "IANA", "zone": "Asia/Kathmandu"}}}),
+    );
+    // The date and the time read back; the era is a view the reading
+    // adds, which a date as given does not carry.
+    let civil = &back["structuredContent"]["value"]["civil"];
+    for part in ["calendar", "year", "month", "day"] {
+        assert_eq!(
+            civil["date"][part], resolved["civil"]["date"][part],
+            "{part}"
+        );
+    }
+    assert_eq!(civil["time"], resolved["civil"]["time"]);
+    let converted = call(
+        &mut server,
+        "calendar.convert",
+        &json!({"request": {"date": {"year": 2026, "month": 10, "day": 10},
+            "into": "BIKRAM_SAMBAT"}}),
+    );
+    assert_eq!(
+        converted["structuredContent"]["value"]["weekday"],
+        json!("SATURDAY")
+    );
 }
