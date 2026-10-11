@@ -10,7 +10,9 @@
 //! with no effect whose births peak in the early morning, as births did
 //! before induction, read against a uniform expectation and against its
 //! own recombined population (test 4); and event studies with no effect
-//! under each shuffle (test 5).
+//! under each shuffle (test 5); and births uncertain by an hour's rounding
+//! and by a quarter of a day, read across their windows and at their
+//! edges alone.
 //!
 //! `cargo xtask research` writes the page; `check-research` regenerates it
 //! in memory and fails on any difference.
@@ -21,8 +23,9 @@ use std::path::Path;
 use teistro::catalogue::DashaSystem;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::research::{
-    AfterBirth, Birth, Cell, Contrast, Design, EventShuffle, EventStudy, EventTest, GroupTest,
-    Matrix, Recombine, ReplicateTest, SplitMix64, Study, Subject, Tested, compare,
+    AfterBirth, Birth, Cell, Contrast, DEFAULT_UNCERTAINTY_STEP_MINUTES, Design, EventShuffle,
+    EventStudy, EventTest, GroupTest, Matrix, Recombine, ReplicateTest, SplitMix64, Study, Subject,
+    Tested, compare,
 };
 use teistro::rules::Rule;
 use teistro::{ChartRequest, Context, Ephemeris, RuleRequest, RuleSet, ShippedRules, UtcOffset};
@@ -65,6 +68,12 @@ const SUBJECTS: usize = 60;
 const EVENT_STUDIES: u64 = 20;
 const EVENT_PERMUTATIONS: u32 = 199;
 const EVENT_AGES: (u64, u64) = (25, 32);
+
+/// The uncertain births: how many, at Kathmandu at any hour, and the
+/// windows they are read across, in minutes either side: a time rounded
+/// to the hour, and one known only to a quarter of the day.
+const UNCERTAIN_BIRTHS: usize = 60;
+const WINDOWS: [f64; 2] = [30.0, 180.0];
 
 /// 1950 January 1, 0h UTC, and the forty years after it in days.
 const FROM_JD: f64 = 2_433_282.5;
@@ -420,6 +429,56 @@ fn subjects(seed: u64) -> Result<Vec<Subject>, String> {
         .collect()
 }
 
+/// What one window width finds unstable among the shipped yogas' cells,
+/// read across the window every default step and at its edges alone.
+struct Window {
+    minutes: f64,
+    cells: usize,
+    across: u32,
+    edges: u32,
+}
+
+/// The shipped yogas over births uncertain by `minutes` either side: the
+/// unstable cells read every [`DEFAULT_UNCERTAINTY_STEP_MINUTES`], and
+/// read with a step as wide as the window, which reads its edges alone.
+fn window(sdk: &Context, minutes: f64) -> Result<Window, String> {
+    let kathmandu = place(27.7172, 85.324)?;
+    let mut rng = SplitMix64::new(1_008);
+    let births = (0..UNCERTAIN_BIRTHS)
+        .map(|_| {
+            let day = rng.below(SPAN_DAYS);
+            Ok(born(kathmandu, 20_700, day, unit(&mut rng))?.uncertain_by(minutes))
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    let rules = RuleRequest::shipped([ShippedRules::Yogas])
+        .rule_set()
+        .map_err(|why| why.to_string())?;
+    let request = ChartRequest::at(kathmandu, offset(20_700)?);
+    let design = Design::new(
+        (0..UNCERTAIN_BIRTHS)
+            .map(|i| u16::from(i % 2 == 0))
+            .collect(),
+    );
+    let unstable = |step: f64| -> Result<u32, String> {
+        let study = Study::new(&births, &request, &rules).stepping(step);
+        Ok(sdk
+            .research()
+            .counts(study, &design)
+            .map_err(|why| why.to_string())?
+            .value
+            .rows
+            .iter()
+            .flat_map(|row| row.counts.iter().map(|count| count.unstable))
+            .sum())
+    };
+    Ok(Window {
+        minutes,
+        cells: UNCERTAIN_BIRTHS * rules.rules().len(),
+        across: unstable(DEFAULT_UNCERTAINTY_STEP_MINUTES)?,
+        edges: unstable(minutes)?,
+    })
+}
+
 /// How often a null event study's raw p fell under alpha, over the rows a
 /// study could read (a rule delivered on some pair and not on all).
 struct EventNull {
@@ -469,12 +528,17 @@ fn page() -> Result<String, String> {
     let sectors = artefact(&sdk)?;
     let ages = event_nulls(&sdk, EventShuffle::AgesAtEvent)?;
     let dates = event_nulls(&sdk, EventShuffle::EventDates)?;
+    let windows = WINDOWS
+        .iter()
+        .map(|&minutes| window(&sdk, minutes))
+        .collect::<Result<Vec<_>, _>>()?;
     let mut out = String::new();
     header(&mut out);
     calibration(&mut out, &null);
     power(&mut out, &found);
     gauquelin(&mut out, &sectors);
     shuffles(&mut out, &ages, &dates);
+    uncertainty(&mut out, &windows);
     Ok(out)
 }
 
@@ -697,6 +761,37 @@ fn shuffles(out: &mut String, ages: &EventNull, dates: &EventNull) {
          each person at ages far from any event's (C364).\n\n{}",
         EVENT_AGES.0,
         EVENT_AGES.1,
+        table(&claims)
+    );
+}
+
+fn uncertainty(out: &mut String, windows: &[Window]) {
+    let claims: Vec<Claim> = windows
+        .iter()
+        .map(|seen| {
+            Claim::stated(
+                format!(
+                    "within {} minutes either side, the edges alone find every unstable cell",
+                    seen.minutes
+                ),
+                verdict_of(seen.edges == seen.across),
+                format!(
+                    "{} of {} cells unstable across the window, {} at its edges",
+                    seen.across, seen.cells, seen.edges
+                ),
+            )
+        })
+        .collect();
+    let _ = writeln!(
+        out,
+        "## 5. An uncertain birth's window\n\n\
+         {UNCERTAIN_BIRTHS} births at Kathmandu at any hour over 1950 to \
+         1990, each uncertain by the minutes either side named, and the \
+         shipped yogas counted on them: read across the window every \
+         {DEFAULT_UNCERTAINTY_STEP_MINUTES} minutes (the default step), \
+         and read at its two edges alone, as every window was before. A \
+         cell is one rule on one chart; it is unstable when its answer \
+         differs anywhere it is read from the answer at the birth.\n\n{}",
         table(&claims)
     );
 }

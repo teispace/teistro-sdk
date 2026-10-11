@@ -129,6 +129,83 @@ fn a_rule_that_flips_inside_the_uncertainty_is_unstable() {
     assert!(unstable(&rounded) > 0);
 }
 
+/// A consumer's rule: the lagna rises in a dual sign.
+fn lagna_dual() -> teistro::RuleSet {
+    let rule: teistro::rules::Rule = serde_json::from_value(serde_json::json!({
+        "key": "LAGNA_DUAL", "category": "test", "source": {"text": "test"},
+        "conditions": [{"type": "lagna-in-sign",
+                        "signs": ["GEMINI", "VIRGO", "SAGITTARIUS", "PISCES"]}]
+    }))
+    .unwrap();
+    RuleRequest::shipped([])
+        .with_rules([rule])
+        .rule_set()
+        .unwrap()
+}
+
+/// How many births a single-rule study reads as unstable.
+fn unstable_births(sdk: &Context, births: &[Birth], set: &teistro::RuleSet, step: f64) -> u32 {
+    let request = template();
+    let design = Design::new((0..births.len()).map(|i| u16::from(i % 2 == 0)).collect());
+    sdk.research()
+        .counts(Study::new(births, &request, set).stepping(step), &design)
+        .unwrap()
+        .value
+        .rows[0]
+        .counts
+        .iter()
+        .map(|count| count.unstable)
+        .sum()
+}
+
+#[test]
+fn an_uncertain_birth_is_read_across_its_window_not_at_its_edges() {
+    // The lagna turns the zodiac in a day, a sign in about two hours, so a
+    // birth uncertain by twelve hours either side passes every sign. Its
+    // two edges are a day apart, so rise within a sign or so of each
+    // other and about half a turn from the centre, where a dual sign's
+    // opposite is dual too. Read at its edges only, a dual-lagna birth
+    // often looks stable; read across the window, none is.
+    let sdk = sdk();
+    let set = lagna_dual();
+    let births: Vec<Birth> = births(24, 3)
+        .into_iter()
+        .map(|b| b.uncertain_by(720.0))
+        .collect();
+    assert_eq!(
+        unstable_births(&sdk, &births, &set, 2.0),
+        24,
+        "every birth passes through a movable sign"
+    );
+    // A step as wide as the window reads the edges alone, which is how
+    // every window was read before, and calls some of them stable.
+    let edges = unstable_births(&sdk, &births, &set, 720.0);
+    assert!(edges < 24, "the edges alone found {edges} of 24 unstable");
+}
+
+#[test]
+fn a_slow_predicate_stays_stable_across_a_narrow_window() {
+    // The Sun keeps its sign for a month: ten minutes either side moves it
+    // a fortieth of a degree, so only a birth that close to an ingress
+    // could read unstable, and none of these is.
+    let sdk = sdk();
+    let rule: teistro::rules::Rule = serde_json::from_value(serde_json::json!({
+        "key": "SUN_FIRE", "category": "test", "source": {"text": "test"},
+        "conditions": [{"type": "planet-in-sign", "planet": "SUN",
+                        "signs": ["ARIES", "LEO", "SAGITTARIUS"]}]
+    }))
+    .unwrap();
+    let set = RuleRequest::shipped([])
+        .with_rules([rule])
+        .rule_set()
+        .unwrap();
+    let births: Vec<Birth> = births(24, 4)
+        .into_iter()
+        .map(|b| b.uncertain_by(10.0))
+        .collect();
+    assert_eq!(unstable_births(&sdk, &births, &set, 1.0), 0);
+}
+
 #[test]
 fn a_rule_on_a_point_is_unreadable_on_a_day_with_no_sunrise() {
     // The baseline's profile founds a polar day by its nearest events; the
@@ -539,6 +616,25 @@ fn a_study_sent_as_a_record_answers_as_the_call_does() {
     let direct = sdk.research().counts(study, &design).unwrap();
     assert_eq!(counted, ResearchAnswer::Counts(direct));
 
+    let uncertain: Vec<Birth> = births.iter().map(|b| b.uncertain_by(30.0)).collect();
+    let stepped = sent(
+        &sdk,
+        &serde_json::json!({"study": "COUNTS", "rules": rules, "holds": "FORMED",
+            "births": uncertain.iter().map(birth_json).collect::<Vec<_>>(),
+            "design": {"groups": design.groups}, "uncertaintyStepMinutes": 10}),
+    )
+    .unwrap();
+    let direct = sdk
+        .research()
+        .counts(
+            Study::new(&uncertain, &request, &set)
+                .holding(Holds::Formed)
+                .stepping(10.0),
+            &design,
+        )
+        .unwrap();
+    assert_eq!(stepped, ResearchAnswer::Counts(direct));
+
     let test = GroupTest::new(11, 199, Contrast::CaseVsRest { case: 1 });
     let compared = sent(
         &sdk,
@@ -638,6 +734,13 @@ fn a_record_is_refused_where_it_stands() {
         Some("births[1].uncertaintyMinutes"),
         "a façade refusal names the field the façade does",
     );
+    for step in [0.0, -1.0, 721.0] {
+        assert_eq!(
+            refused(with("uncertaintyStepMinutes", serde_json::json!(step))).field(),
+            Some("uncertaintyStepMinutes"),
+            "{step}",
+        );
+    }
     let compare = |test: serde_json::Value| {
         let mut request = with("study", serde_json::json!("COMPARE"));
         request["test"] = test;
@@ -657,5 +760,16 @@ fn a_record_is_refused_where_it_stands() {
     let mut unshuffled = timed;
     unshuffled["depth"] = serde_json::json!(2);
     unshuffled.as_object_mut().unwrap().remove("shuffle");
-    assert_eq!(refused(unshuffled).field(), Some("research.shuffle"));
+    assert_eq!(
+        refused(unshuffled.clone()).field(),
+        Some("research.shuffle")
+    );
+    // A timed study reads each birth at its instant; a step is not its own.
+    let mut stepped = unshuffled;
+    stepped["shuffle"] = serde_json::json!("EVENT_DATES");
+    stepped["uncertaintyStepMinutes"] = serde_json::json!(5);
+    assert_eq!(
+        refused(stepped).field(),
+        Some("research.uncertaintyStepMinutes")
+    );
 }

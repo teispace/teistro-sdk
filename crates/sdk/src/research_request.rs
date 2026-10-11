@@ -12,7 +12,10 @@ use teistro_core::quantity::{Depth, JulianDay, Utc};
 use teistro_research::{Counts, Design, EventTest, GroupTest, ReplicateTest, Tested};
 
 use crate::area::ResearchArea;
-use crate::area::research::{Birth, EventShuffle, EventStudy, Holds, Recombine, Study, Subject};
+use crate::area::research::{
+    Birth, DEFAULT_UNCERTAINTY_STEP_MINUTES, EventShuffle, EventStudy, Holds, Recombine, Study,
+    Subject,
+};
 use crate::asked::{offset_of, place_of};
 use crate::reading::ChartRequest;
 use crate::rule_request::{RuleRequest, RuleSet};
@@ -76,6 +79,9 @@ pub struct ResearchRequest {
     pub rules: RuleSet,
     /// When a rule counts as holding.
     pub holds: Holds,
+    /// How far apart, in minutes, an uncertain birth's window is read
+    /// ([`Study::stepping`]); a timed study does not read it.
+    pub uncertainty_step_minutes: f64,
     /// The study and what it reads.
     pub study: ResearchStudy,
 }
@@ -155,6 +161,8 @@ pub(crate) struct RequestAsked {
     rules: Value,
     #[serde(default)]
     holds: Holds,
+    #[serde(default)]
+    uncertainty_step_minutes: Option<f64>,
     #[serde(default)]
     design: Option<Design>,
     #[serde(default)]
@@ -249,8 +257,10 @@ impl ResearchRequest {
     /// `shuffle`, a `test` and optionally `depth` and `strata`. A birth is
     /// `{instant, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
     /// uncertaintyMinutes}`, the instant a Julian day in UTC and the last
-    /// and the altitude optional, and a subject `{birth, event}`. A seed is
-    /// a number or a decimal string.
+    /// and the altitude optional, and a subject `{birth, event}`. A study
+    /// of `births` also takes `uncertaintyStepMinutes`, how far apart an
+    /// uncertain birth's window is read, 2 unless it says. A seed is a
+    /// number or a decimal string.
     ///
     /// ```
     /// use teistro::research::Contrast;
@@ -295,13 +305,17 @@ impl RequestAsked {
     /// the one its author meant.
     fn strays(&self) -> Result<(), Error> {
         let reads: &[&str] = match self.study {
-            StudyKind::Counts => &["births", "design"],
-            StudyKind::Compare => &["births", "design", "test"],
-            StudyKind::Expected => &["births", "control", "test"],
+            StudyKind::Counts => &["births", "uncertaintyStepMinutes", "design"],
+            StudyKind::Compare => &["births", "uncertaintyStepMinutes", "design", "test"],
+            StudyKind::Expected => &["births", "uncertaintyStepMinutes", "control", "test"],
             StudyKind::Timed => &["subjects", "dasha", "depth", "shuffle", "strata", "test"],
         };
         let given = [
             ("births", self.births.is_some()),
+            (
+                "uncertaintyStepMinutes",
+                self.uncertainty_step_minutes.is_some(),
+            ),
             ("subjects", self.subjects.is_some()),
             ("design", self.design.is_some()),
             ("test", self.test.is_some()),
@@ -400,6 +414,9 @@ impl RequestAsked {
         Ok(ResearchRequest {
             rules,
             holds: self.holds,
+            uncertainty_step_minutes: self
+                .uncertainty_step_minutes
+                .unwrap_or(DEFAULT_UNCERTAINTY_STEP_MINUTES),
             study,
         })
     }
@@ -411,7 +428,9 @@ fn study_of<'s>(
     request: &'s ChartRequest,
     asked: &'s ResearchRequest,
 ) -> Study<'s> {
-    Study::new(births, request, &asked.rules).holding(asked.holds)
+    Study::new(births, request, &asked.rules)
+        .holding(asked.holds)
+        .stepping(asked.uncertainty_step_minutes)
 }
 
 impl ResearchArea<'_> {

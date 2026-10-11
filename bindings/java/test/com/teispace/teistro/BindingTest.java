@@ -485,6 +485,18 @@ public final class BindingTest {
                         DashaSystem.VIMSHOTTARI, ResearchEventShuffle.AGES_AT_EVENT,
                         Map.of("seed", 1, "permutations", 19), null));
                 same("research.subjects", refused.field(), "named by its record");
+                // An uncertain birth's window is read every step, and the step is part of the study.
+                List<ResearchBirth> uncertain = new java.util.ArrayList<>();
+                for (ResearchBirth birth : births) {
+                    uncertain.add(new ResearchBirth(birth.instant(), birth.place(), birth.utcOffsetSeconds(), 30));
+                }
+                String fine = sky.research().counts(uncertain, yogas, design, Map.of("uncertaintyStepMinutes", 10))
+                        .provenance().inputHash();
+                check(!fine.equals(sky.research().counts(uncertain, yogas, design, null).provenance().inputHash()),
+                        "the step is sealed with the study");
+                TeistroException still = refusal(() -> sky.research().counts(uncertain, yogas, design,
+                        Map.of("uncertaintyStepMinutes", 0)));
+                same("uncertaintyStepMinutes", still.field(), "a step is above zero");
             }
         });
 

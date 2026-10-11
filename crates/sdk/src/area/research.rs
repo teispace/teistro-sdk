@@ -33,6 +33,15 @@ use crate::rules_bridge::{RuleInputs, rule_periods};
 /// minutes: half a day, past which the record is not of one birth.
 pub const MAX_UNCERTAINTY_MINUTES: f64 = 720.0;
 
+/// How far apart, in minutes, an uncertain birth is read across its
+/// window unless a study says otherwise: under half the shortest dwell of
+/// a navamsa on the lagna (about five minutes at ordinary latitudes), so a
+/// navamsa that comes and goes inside the window is seen. A study reading
+/// a finer varga, or a lagna at a high latitude, sets a smaller step
+/// ([`Study::stepping`]); the step is sealed into the study's
+/// pre-registration either way.
+pub const DEFAULT_UNCERTAINTY_STEP_MINUTES: f64 = 2.0;
+
 /// One birth of a study: when, where, under which clock, and how far its
 /// recorded time is trusted.
 ///
@@ -82,7 +91,9 @@ impl Birth {
     }
 
     /// The same birth with its recorded time trusted only to `minutes`
-    /// either side.
+    /// either side: a study reads it across that window every
+    /// [`Study::uncertainty_step_minutes`], and a rule that changes
+    /// anywhere in it is unstable on the chart.
     #[must_use]
     pub const fn uncertain_by(mut self, minutes: f64) -> Birth {
         self.uncertainty_minutes = minutes;
@@ -118,6 +129,10 @@ pub struct Study<'s> {
     pub rules: &'s RuleSet,
     /// When a rule counts as holding.
     pub holds: Holds,
+    /// How far apart, in minutes, an uncertain birth is read across its
+    /// window ([`DEFAULT_UNCERTAINTY_STEP_MINUTES`]). A change shorter than
+    /// the step can still be missed, which is why the answer seals it.
+    pub uncertainty_step_minutes: f64,
 }
 
 impl<'s> Study<'s> {
@@ -134,7 +149,16 @@ impl<'s> Study<'s> {
             request,
             rules,
             holds: Holds::Standing,
+            uncertainty_step_minutes: DEFAULT_UNCERTAINTY_STEP_MINUTES,
         }
+    }
+
+    /// The same study, an uncertain birth read every `minutes` across its
+    /// window rather than every [`DEFAULT_UNCERTAINTY_STEP_MINUTES`].
+    #[must_use]
+    pub const fn stepping(mut self, minutes: f64) -> Study<'s> {
+        self.uncertainty_step_minutes = minutes;
+        self
     }
 
     /// The same study, a rule counting as `holds` says.
@@ -155,6 +179,10 @@ struct StudyInput<'a, T: Serialize> {
     births: &'a [Birth],
     rules: Vec<&'a str>,
     holds: Holds,
+    /// The step an uncertain birth was read at; absent from a study whose
+    /// births are all exact, which it does not touch.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    uncertainty_step_minutes: Option<f64>,
     design: &'a Design,
     #[serde(skip_serializing_if = "Option::is_none")]
     test: Option<&'a T>,
@@ -237,8 +265,8 @@ impl<'a> ResearchArea<'a> {
             let PlaceReads {
                 instants,
                 owners,
-                edges,
-            } = instants_of(study.births, &group)?;
+                windows,
+            } = instants_of(study.births, &group, study.uncertainty_step_minutes)?;
             let answered = self.read_rules(&instants, &owners, &request, study.rules)?;
             let standing: Vec<Vec<Option<bool>>> = answered
                 .value
@@ -247,18 +275,21 @@ impl<'a> ResearchArea<'a> {
                 .collect();
             for (position, &chart) in group.iter().enumerate() {
                 let centre = standing.get(position);
-                let sides = edges.iter().position(|&i| i == chart).map(|k| {
-                    let at = group.len() + 2 * k;
-                    [standing.get(at), standing.get(at + 1)]
-                });
+                let window = windows
+                    .get(position)
+                    .cloned()
+                    .flatten()
+                    .and_then(|range| standing.get(range));
                 for (j, column) in columns.iter_mut().enumerate() {
                     let at = |reading: Option<&Vec<Option<bool>>>| {
                         reading.and_then(|r| r.get(j).copied().flatten())
                     };
-                    let cell = match (at(centre), sides) {
+                    let cell = match (at(centre), window) {
                         (None, _) => Cell::Unreadable,
-                        (Some(holds), Some(sides))
-                            if sides.iter().any(|&side| at(side) != Some(holds)) =>
+                        (Some(holds), Some(window))
+                            if window
+                                .iter()
+                                .any(|reading| at(Some(reading)) != Some(holds)) =>
                         {
                             Cell::Unstable
                         }
@@ -377,6 +408,14 @@ fn check(study: Study<'_>) -> Result<(), Error> {
             .with_field(format!("births[{index}].uncertaintyMinutes")));
         }
     }
+    let step = study.uncertainty_step_minutes;
+    if !(step.is_finite() && step > 0.0 && step <= MAX_UNCERTAINTY_MINUTES) {
+        return Err(Error::invalid_arg(format!(
+            "an uncertain birth is read every so many minutes across its window, more than 0 and at most \
+             {MAX_UNCERTAINTY_MINUTES}, not {step}"
+        ))
+        .with_field("uncertaintyStepMinutes"));
+    }
     for (index, rule) in study.rules.rules().iter().enumerate() {
         if !rule.is_evaluable() {
             return Err(Error::invalid_arg(format!(
@@ -389,9 +428,14 @@ fn check(study: Study<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-/// The instants one place's charts are read at: each birth's own, then
-/// both edges of every uncertain one.
-fn instants_of(births: &[Birth], group: &[usize]) -> Result<PlaceReads, Error> {
+/// The instants one place's charts are read at: each birth's own, then,
+/// for every uncertain one, its window read every `step` minutes out from
+/// the birth to both edges, the edges themselves included.
+///
+/// Reading the edges alone called a rule stable that changed and changed
+/// back inside the window: across the widest window, a whole day, the
+/// lagna passes every sign and comes back to its own.
+fn instants_of(births: &[Birth], group: &[usize], step: f64) -> Result<PlaceReads, Error> {
     let mut instants = Vec::new();
     let mut owners = Vec::new();
     for &i in group {
@@ -400,40 +444,57 @@ fn instants_of(births: &[Birth], group: &[usize]) -> Result<PlaceReads, Error> {
             owners.push(format!("births[{i}]"));
         }
     }
-    let mut edges = Vec::new();
+    let mut windows = Vec::with_capacity(group.len());
     for &i in group {
         let Some(birth) = births
             .get(i)
             .filter(|birth| birth.uncertainty_minutes > 0.0)
         else {
+            windows.push(None);
             continue;
         };
-        let days = birth.uncertainty_minutes / 1440.0;
-        let edge = |days: f64| {
-            birth.instant.plus_days(days).map_err(|error| {
+        let start = instants.len();
+        for minutes in window_offsets(birth.uncertainty_minutes, step) {
+            let at = birth.instant.plus_days(minutes / 1440.0).map_err(|error| {
                 Error::from(error).with_field(format!("births[{i}].uncertaintyMinutes"))
-            })
-        };
-        instants.push(edge(-days)?);
-        instants.push(edge(days)?);
-        for side in ["earliest", "latest"] {
-            owners.push(format!("births[{i}], at its {side}"));
+            })?;
+            instants.push(at);
+            owners.push(format!("births[{i}], {minutes:+} minutes from it"));
         }
-        edges.push(i);
+        windows.push(Some(start..instants.len()));
     }
     Ok(PlaceReads {
         instants,
         owners,
-        edges,
+        windows,
     })
 }
 
+/// The minutes from an uncertain birth its window is read at: every
+/// `step` out to `uncertainty` on both sides, each edge exactly, the birth
+/// itself not again.
+fn window_offsets(uncertainty: f64, step: f64) -> Vec<f64> {
+    let mut offsets = Vec::new();
+    let mut k = 1.0_f64;
+    loop {
+        let minutes = (k * step).min(uncertainty);
+        offsets.push(-minutes);
+        offsets.push(minutes);
+        if minutes >= uncertainty {
+            return offsets;
+        }
+        k += 1.0;
+    }
+}
+
 /// The instants one place's charts are read at, the birth each belongs
-/// to, and the uncertain births in the order their edges follow.
+/// to, and where each uncertain birth's window is among them.
 struct PlaceReads {
     instants: Vec<JulianDay<Utc>>,
     owners: Vec<String>,
-    edges: Vec<usize>,
+    /// One per birth of the place, in its order: the readings of its
+    /// window, none for a birth known to the minute.
+    windows: Vec<Option<std::ops::Range<usize>>>,
 }
 
 /// Whether each rule holds on one reading; none where the chart cannot
@@ -499,6 +560,11 @@ fn seal<T: Serialize, Q: Serialize>(
             .map(|rule| rule.key.as_str())
             .collect(),
         holds: study.holds,
+        uncertainty_step_minutes: study
+            .births
+            .iter()
+            .any(|birth| birth.uncertainty_minutes > 0.0)
+            .then_some(study.uncertainty_step_minutes),
         design,
         test,
         read: read.inputs,

@@ -1057,10 +1057,11 @@ provider's DUT1).
    "The plan to the release candidate"; Track A's release blockers first,
    the modules the reviewers read beside them):
    1. **The Java binding's typed records** (`03-design/java-binding.md`
-      §4.1). The request types are generated and tested, and
-      `ChartOptions` and the areas take them; next
-      `typecheck/Wrong.java` with its lint, then the answers' keys as
-      enums. (The release rehearsal is done: run
+      §4.1). Done for the requests: generated, taken by `ChartOptions`
+      and the areas, and held by `typecheck/Wrong.java` and the
+      `java-request-is-typed` lint. The answers' keys as enums are
+      deferred past the release candidate, measured in §4.1: most
+      answers have no schema to generate from. (The release rehearsal is done: run
       38140578186 passed every job with nothing published. The JPL rows
       of `ACCURACY.md` are in; its Horizons half waits on JPL's
       permission, which is the maintainer's to ask.)
@@ -1078,8 +1079,8 @@ provider's DUT1).
       roadmap's install check after publishing.
    4. **Track B and C modules** (the roadmap's tables): research's
       transits and the age shuffle's `max_pairs` cap (`research.md` §4
-      step 4; steps 5 to 7 are built), and an uncertain birth window read
-      across its span rather than at its two ends, prashna's remaining
+      step 4; steps 5 to 7 are built; an uncertain birth's window is read
+      across its span, `research-measured.md` §5), prashna's remaining
       Tajika links, Saravali's readings, and
       the pakshi and Lal Kitab pipelines with their content handed to
       readers who can vet it. Pick the next item from

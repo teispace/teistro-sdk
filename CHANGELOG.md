@@ -167,6 +167,13 @@ latitude can no longer be passed where a longitude is wanted: the
 description says which quantity a number carries, TypeScript gets a
 branded type, Dart an extension type and Python a `float` subclass, and
 the constructor checks the range.
+A research study's uncertain births moved: an uncertain birth's
+window is now read every `uncertaintyStepMinutes` (2 by default) out to
+both edges, where it was read at its two edges alone, so a rule that
+changes and changes back inside the window is counted unstable on that
+chart rather than present or absent (`research-measured.md` §5 counts the
+cells the edges alone called stable). A study of births known to the
+minute is unchanged, and so is its input hash.
 
 **The Python binding computes for the first time** (`bindings/python`,
 generated `ctypes` declarations, value classes, catalogue enums and blob

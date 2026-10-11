@@ -1007,7 +1007,13 @@ function theResearch(ctx: Context): string {
     design: { groups: [0, 1], strata: [0, 0] },
     test: { seed: 1n, permutations: 9, contrast: { kind: 'ANY_DIFFERENCE' }, alternative: 'GREATER', parallelism: { THREADS: 2 } },
   });
-  const expected = ctx.research.expected({ births, rules, control: { seed: 2, replicates: 3 }, test: { alpha: 0.05 } });
+  const expected = ctx.research.expected({
+    births,
+    rules,
+    uncertaintyStepMinutes: 5,
+    control: { seed: 2, replicates: 3 },
+    test: { alpha: 0.05 },
+  });
   const timed = ctx.research.timed({
     subjects: births.map((birth) => ({ birth, event: birth.instant + 9000 })),
     rules,

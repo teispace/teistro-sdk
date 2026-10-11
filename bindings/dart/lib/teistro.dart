@@ -1197,6 +1197,11 @@ final class ResearchArea extends _Area {
   /// How often each rule holds in each group, the charts it cannot be read
   /// on and those it is unstable on counted apart. No null and no shuffle.
   ///
+  /// A birth uncertain by some minutes is read across its window every
+  /// [uncertaintyStepMinutes] (2 unless given), and a rule that changes
+  /// anywhere in it is unstable there; [compare] and [expected] read it
+  /// the same way.
+  ///
   /// ```dart
   /// final table = sdk.research.counts(
   ///   births: births,
@@ -1209,9 +1214,12 @@ final class ResearchArea extends _Area {
     required RuleRequest rules,
     required ResearchDesign design,
     ResearchHolds holds = ResearchHolds.standing,
+    double? uncertaintyStepMinutes,
   }) {
     final answer = _run('COUNTS', rules, holds, <String, Object?>{
       'births': [for (final birth in births) birth._record],
+      if (uncertaintyStepMinutes case final step?)
+        'uncertaintyStepMinutes': step,
       'design': design._record,
     });
     final value = answer['value']! as Map<String, Object?>;
@@ -1235,9 +1243,12 @@ final class ResearchArea extends _Area {
     required ResearchDesign design,
     required ResearchGroupTest test,
     ResearchHolds holds = ResearchHolds.standing,
+    double? uncertaintyStepMinutes,
   }) => _researchTested(
     _run('COMPARE', rules, holds, <String, Object?>{
       'births': [for (final birth in births) birth._record],
+      if (uncertaintyStepMinutes case final step?)
+        'uncertaintyStepMinutes': step,
       'design': design._record,
       'test': test._record,
     }),
@@ -1252,9 +1263,12 @@ final class ResearchArea extends _Area {
     required ResearchControl control,
     ResearchReplicateTest test = const ResearchReplicateTest(),
     ResearchHolds holds = ResearchHolds.standing,
+    double? uncertaintyStepMinutes,
   }) => _researchTested(
     _run('EXPECTED', rules, holds, <String, Object?>{
       'births': [for (final birth in births) birth._record],
+      if (uncertaintyStepMinutes case final step?)
+        'uncertaintyStepMinutes': step,
       'control': control._record,
       'test': test._record,
     }),
@@ -18720,8 +18734,8 @@ enum ResearchEventShuffle {
 
 /// One birth of a study: its [instant], a Julian day in UTC, where, under
 /// which clock, and how far either side its recorded time may be wrong, 0
-/// to 720 minutes. A rule whose answer differs at either edge is counted
-/// unstable on the chart.
+/// to 720 minutes. A rule whose answer differs anywhere in that window,
+/// read every step of the study, is counted unstable on the chart.
 final class ResearchBirth extends _Value {
   const ResearchBirth({
     required this.instant,

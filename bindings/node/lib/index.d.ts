@@ -6986,7 +6986,8 @@ export interface ResearchBirth {
   readonly utcOffsetSeconds: number;
   /**
    * How far either side the recorded time may be wrong, 0 to 720 minutes; a
-   * rule whose answer differs at either edge is counted unstable on the chart.
+   * rule whose answer differs anywhere in that window, read every step of
+   * the study, is counted unstable on the chart.
    */
   readonly uncertaintyMinutes?: number;
 }
@@ -7006,6 +7007,18 @@ export interface ResearchStudy {
   readonly rules: RuleRequest;
   /** When a rule counts as holding: standing (the default) or merely formed. */
   readonly holds?: 'STANDING' | 'FORMED';
+}
+
+/** The births a study reads, and how finely an uncertain one's window is read. */
+export interface ResearchBirths {
+  /** In the order the design labels them. */
+  readonly births: readonly ResearchBirth[];
+  /**
+   * How far apart, in minutes, an uncertain birth's window is read, out
+   * to both edges; a rule that changes anywhere in it is unstable there.
+   * 2 when left out.
+   */
+  readonly uncertaintyStepMinutes?: number;
 }
 
 /** Who is in which group, one label per birth, and the strata labels move within. */
@@ -7137,19 +7150,19 @@ export declare class ResearchArea {
    * @example
    * const table = ctx.research.counts({ births, rules: { shipped: ['YOGAS'] }, design: { groups } });
    */
-  counts(request: ResearchStudy & { readonly births: readonly ResearchBirth[]; readonly design: ResearchDesign }): ResearchCounts;
+  counts(request: ResearchStudy & ResearchBirths & { readonly design: ResearchDesign }): ResearchCounts;
   /** Whether the design's groups differ on each rule, labels permuted. */
   compare(
-    request: ResearchStudy & {
-      readonly births: readonly ResearchBirth[];
+    request: ResearchStudy &
+      ResearchBirths & {
       readonly design: ResearchDesign;
       readonly test: ResearchGroupTest;
     },
   ): ResearchTested;
   /** Whether each rule is commoner than in the sample's recombined population. */
   expected(
-    request: ResearchStudy & {
-      readonly births: readonly ResearchBirth[];
+    request: ResearchStudy &
+      ResearchBirths & {
       readonly control: { readonly seed: ResearchSeed; readonly replicates: number; readonly strata?: readonly number[] };
       readonly test?: { readonly alternative?: ResearchAlternative; readonly level?: number; readonly alpha?: number };
     },

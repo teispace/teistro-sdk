@@ -228,9 +228,22 @@ them as JSON. So do the research area's `rules`, `control` and `test`, whose
 `design` waits for the research area's own pass, since every parameter
 there is a map today.
 
-Still to come, in order: `typecheck/Wrong.java` with a lint that no area
-takes a schema-typed request as a `Map`, and then the answers' keys as
-enums.
+`typecheck/Wrong.java` holds the typing from the other side: each line
+marked `// expect:` must fail `javac` with that text (a swapped latitude
+and longitude, a map where `NaamRules` is wanted, a `SubLengths` where a
+`Clock` is), and `check-java` holds every error to its expectation. The
+`java-request-is-typed` lint fails when an area's public method takes a
+`Map` where the façade's schema types the request, unless the parameter
+is listed in `JAVA_UNTYPED` with its reason.
+
+**The answers' keys as enums are deferred past the release candidate.**
+Measured: only 13 record entry points carry an answer schema, the rest
+are hand-written decoders over the blob or the envelope, and one of the
+13 (pakshi's) is a shape the schema reader refuses ("neither an object
+nor a oneOf"). The other bindings answer keys as strings too, so a typed
+answer in Java alone would be a fork of the surface, not a fix to it.
+What it waits on is an answer schema for every entry point, which is the
+description's work, not this binding's.
 
 **Javadoc from the description.** Each item's documentation is the
 description's, with unit, range and example appended by
