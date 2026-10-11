@@ -27,6 +27,11 @@ const PACKAGE: &str = "bindings/dart";
 /// would be a broken package however green the SDK's gate was. Most of
 /// what it holds is the generated façade (ADR-0030).
 const ADAPTER: &str = "adapters/ephemeris-teimeris/dart";
+/// The Flutter build-hook package (`docs/03-design/flutter-build-hook.md`),
+/// plain Dart, so this gate's toolchain is all it needs: the hook's
+/// platform names, floors, cache and refusals, against the public
+/// `package:teistro/prebuilt.dart` it reads its table and its check from.
+const FLUTTER: &str = "bindings/flutter";
 /// The file whose whole purpose is to be wrong: every line marked
 /// `// expect:` must be reported, which is how the Dart half of Phase 1's
 /// "a swapped latitude and longitude does not compile" is proved.
@@ -82,28 +87,24 @@ fn wrong_usages(package: &Path) -> Result<(), ()> {
     Ok(())
 }
 
-/// The adapter package: resolved, analysed and formatted.
-///
-/// Its façade is generated from the engine's own description, so what
-/// this holds is that the generated extension composes with the SDK's
-/// `Engine` — which nothing else can say, because the SDK does not know
-/// the adapter exists.
-fn adapter(root: &Path) -> Result<(), ()> {
-    let package = root.join(ADAPTER);
+/// A package beside the binding, resolved, analysed and formatted, and its
+/// own tests run when it has them.
+fn companion(root: &Path, name: &str, analysed: &str, tests: Option<&str>) -> Result<(), ()> {
+    let package = root.join(name);
     step(
         Command::new("dart")
             .args(["pub", "get"])
             .current_dir(&package),
         "",
-        &format!("{ADAPTER}: `dart pub get` failed"),
+        &format!("{name}: `dart pub get` failed"),
     )
     .and_then(|()| {
         step(
             Command::new("dart")
                 .args(["analyze", "--fatal-infos"])
                 .current_dir(&package),
-            &format!("{ADAPTER}: the typed engine façade composes with the SDK"),
-            &format!("{ADAPTER} does not analyse clean"),
+            &format!("{name}: {analysed}"),
+            &format!("{name} does not analyse clean"),
         )
     })
     .and_then(|()| {
@@ -111,10 +112,43 @@ fn adapter(root: &Path) -> Result<(), ()> {
             Command::new("dart")
                 .args(["format", "--set-exit-if-changed", "."])
                 .current_dir(&package),
-            &format!("{ADAPTER} is formatted"),
-            &format!("{ADAPTER} is not formatted; run `dart format .`"),
+            &format!("{name} is formatted"),
+            &format!("{name} is not formatted; run `dart format .`"),
         )
     })
+    .and_then(|()| match tests {
+        Some(said) => step(
+            Command::new("dart").arg("test").current_dir(&package),
+            &format!("{name}/test: {said}"),
+            &format!("{name}/test did not pass"),
+        ),
+        None => Ok(()),
+    })
+}
+
+/// The adapter package: resolved, analysed and formatted.
+///
+/// Its façade is generated from the engine's own description, so what
+/// this holds is that the generated extension composes with the SDK's
+/// `Engine` — which nothing else can say, because the SDK does not know
+/// the adapter exists.
+fn adapter(root: &Path) -> Result<(), ()> {
+    companion(
+        root,
+        ADAPTER,
+        "the typed engine façade composes with the SDK",
+        None,
+    )
+}
+
+/// The Flutter hook package: what a build bundles, and every refusal.
+fn flutter_hook(root: &Path) -> Result<(), ()> {
+    companion(
+        root,
+        FLUTTER,
+        "the build hook composes with the SDK's prebuilt table",
+        Some("the hook names, checks, caches and refuses slices"),
+    )
 }
 
 pub(crate) fn check(root: &Path) -> i32 {
@@ -156,6 +190,7 @@ pub(crate) fn check(root: &Path) -> i32 {
             )
         })
         .and_then(|()| adapter(root))
+        .and_then(|()| flutter_hook(root))
         .and_then(|()| wrong_usages(&package))
         .and_then(|()| Binding::Dart.run(root, &Runtime::of(root)).map(drop))
         .and_then(|()| {

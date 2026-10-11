@@ -121,11 +121,37 @@ void main() {
         prebuiltUri('linux-x64').toString(),
         'https://github.com/teispace/teistro-sdk/releases/download/'
         'v$prebuiltVersion/libteistro_ffi-$prebuiltVersion-linux-x64.so.gz',
-        skip:
-            Platform.isMacOS || Platform.isWindows
-                ? 'the name is built from this host\'s library suffix'
-                : null,
       );
+    }
+  });
+
+  test('a platform\'s library is named by the platform, not the host', () {
+    // A build hook on a Mac fetches Android's `.so`; on Linux, iOS's
+    // `.dylib`. The name is the release's, whatever this host is.
+    const names = <String, String>{
+      'android-arm64': 'libteistro_ffi.so',
+      'android-arm': 'libteistro_ffi.so',
+      'android-x64': 'libteistro_ffi.so',
+      'ios-arm64': 'libteistro_ffi.dylib',
+      'ios-sim-arm64': 'libteistro_ffi.dylib',
+      'ios-sim-x64': 'libteistro_ffi.dylib',
+      'darwin-arm64': 'libteistro_ffi.dylib',
+      'win32-x64': 'teistro_ffi.dll',
+      'linux-x64': 'libteistro_ffi.so',
+    };
+    names.forEach((platform, file) {
+      expect(libraryFileNameOf(platform), file, reason: platform);
+    });
+    expect(libraryFileName, libraryFileNameOf(hostPlatform));
+    final uri = prebuiltUri('ios-arm64');
+    if (uri != null) expect(uri.path, endsWith('-ios-arm64.dylib.gz'));
+  });
+
+  test('an app opens the library its package bundled', () {
+    expect(bundledLibraryName('android'), 'libteistro_ffi.so');
+    expect(bundledLibraryName('ios'), 'teistro_ffi.framework/teistro_ffi');
+    for (final os in ['linux', 'macos', 'windows', 'fuchsia']) {
+      expect(bundledLibraryName(os), isNull, reason: os);
     }
   });
 }

@@ -1,0 +1,25 @@
+name: teistro_flutter
+description: >-
+  The Teistro SDK in a Flutter app: a build hook that bundles the SDK's
+  native library for every Android ABI and iOS SDK the app is built for,
+  fetched from the release and held to the digest this package carries.
+version: 0.0.0
+publish_to: none
+repository: https://github.com/teispace/teistro-sdk
+
+# Plain Dart: a build hook needs no Flutter SDK, so its tests run under
+# `dart test`, and a Flutter app depends on it like any other package.
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  code_assets: ^2.0.0
+  hooks: ^2.2.0
+  # The exact release this package's digests were cut from; staged as an
+  # exact version (`cargo xtask package stage`), a path in the repository.
+  teistro:
+    path: ../dart
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0
