@@ -1,4 +1,19 @@
 {
   "title": "Documentation",
-  "pages": ["index", "install", "surface", "mcp", "research", "---Reference---", "reference"]
+  "pages": [
+    "index",
+    "install",
+    "surface",
+    "---Guides---",
+    "birth-chart",
+    "calendars",
+    "almanac",
+    "interpretation",
+    "annual-chart",
+    "ephemeris",
+    "research",
+    "mcp",
+    "---Reference---",
+    "reference"
+  ]
 }

@@ -1,0 +1,103 @@
+---
+title: An almanac
+description: A week's panchanga in one crossing — the five limbs as spans, the day's periods, and nothing absent printed as a sentinel.
+---
+
+A chart is consulted once; a panchanga every morning. `sdk.almanac`
+computes the page a Nepali or Indian almanac prints, and a whole range of
+days in **one crossing**: consecutive days share a boundary, so day n's
+next sunrise is day n+1's sunrise, and seven days cost much less than
+seven days asked for one at a time.
+
+## A week
+
+```js title="bindings/node/example/almanac.mjs"
+const ctx = new Context({
+  profile: 'parashari-classical',
+  locale: 'ne-Deva-NP',
+  ephemeris: 'BUILTIN',
+});
+
+const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+
+// ── One crossing for the whole week ───────────────────────────────────
+const week = ctx.almanac.of({
+  from: date(Calendar.Gregorian, 2024, 6, 17),
+  to: date(Calendar.Gregorian, 2024, 6, 23),
+  place,
+  utcOffsetSeconds: 20700,
+});
+```
+
+Each day carries its sunrise and sunset, its lunar month and paksha, the
+five limbs, the periods it is planned around and the Moon's rising and
+setting. The first day prints:
+
+```text output="almanac"
+सोमबार       2024-06-17   sunrise 05:12  sunset 18:57   ज्येष्ठ शुक्ल
+  tithi      ‹एकादशी until 05:12›
+  nakshatra  ‹चित्रा until 14:06    स्वाती until 05:12›
+  yoga       ‹परिघ until 21:49    शिव until 05:12›
+  karana     ‹वणिज until 17:54    विष्टि until 05:12›
+  kaala      राहु काल 06:55–08:38  यमगण्ड 10:22–12:05  गुलिक काल 13:48–15:31
+  choghadiya अमृत 05:12  काल 06:55  शुभ 08:38 …
+  abhijit    11:37–12:32
+  moon       RISE 14:46  SET 01:54
+```
+
+## A limb is a span, not a name
+
+"Today's tithi" is a question with two answers on most days, and the SDK
+gives both, with the instant each gives way, which is what an almanac row
+prints. A span carries its **own** bounds as well as the clipped ones, so
+"the tithi began yesterday at 21:05" is a fact you can print:
+
+```js title="bindings/node/example/almanac.mjs"
+const printed = spans
+  .map((span) => {
+    // `whole` is the member's own span and `inside` the clipped one,
+    // so a member that began yesterday says so rather than looking
+    // as though it began at sunrise.
+    const began = span.whole.from < span.inside.from ? '‹' : ' ';
+    const ends = span.whole.to > span.inside.to ? '›' : ' ';
+    return `${began}${name(span.member)} until ${clock(span.inside.to)}${ends}`;
+  })
+  .join('  ');
+```
+
+The `‹` and `›` above are those bounds: every limb that morning began the
+day before, and the last of each runs past the next sunrise.
+
+## Absent is absent
+
+A value a day may not have is absent, never a sentinel: a day with no
+sankranti has `null`, not Julian day zero, and a Moon that does not rise
+inside the window contributes no event at all.
+
+```js title="bindings/node/example/almanac.mjs"
+if (day.sankranti !== null) {
+  console.log(`  ${'sankranti'.padEnd(10)} the Sun enters a new sign at ${clock(day.sankranti)}`);
+}
+```
+
+## One day
+
+A day on its own is the range of one, unwrapped: the same crossing, and
+the answer is a day rather than a list of one. It also carries the day's
+horas and muhurtas:
+
+```js title="bindings/node/example/almanac.mjs"
+const one = ctx.almanac.day({
+  date: date(Calendar.Gregorian, 2024, 6, 21),
+  place,
+  utcOffsetSeconds: 20700,
+});
+```
+
+```text output="almanac"
+day(one)       शुक्रबार  24 horas, 30 muhurtas, 16 choghadiya
+```
+
+`bindings/node/example/panchanga.mjs` computes the five limbs by hand
+from two longitudes, to show the arithmetic underneath; an application
+should ask `sdk.almanac`, which finds when each limb ends.

@@ -1,0 +1,113 @@
+---
+title: Positions and your own ephemeris
+description: A year of the sky in one call, read as typed columns, and an ephemeris of your own behind the same port.
+---
+
+The boundary takes a **grid**, instants by bodies, and answers with
+columns. That shape is why a year of positions costs one crossing rather
+than 365, and it is what a service computing tables, transits or
+ingresses should be using.
+
+## A year in one call
+
+```js title="bindings/node/example/ephemeris.mjs"
+const frame = { ...canonicalFrame(), sidereal: true, ayanamsha: Ayanamsha.Lahiri };
+const sky = ctx.positions({
+  instants: Array.from({ length: DAYS }, (_, day) => START_JD + day),
+  bodies: BODIES.map(([body]) => body),
+  frame,
+});
+// …
+const cells = sky.cells;
+if (!(cells.lon instanceof Float64Array)) throw new Error('lon is not a Float64Array');
+```
+
+```text output="ephemeris"
+grid     366 instants x 3 bodies = 1098 cells in one call
+columns  lon holds 1098 doubles in 8784 bytes
+```
+
+The columns are typed arrays over the answer's own bytes, not objects, so
+a table of a million cells costs one allocation rather than a million.
+Cells run instants outermost: body `j` at instant `i` is cell
+`i * bodyCount + j`. One grid answers both of these scans, a sign change
+in `lon` and a station in `lonSpeed`:
+
+```text output="ephemeris"
+  MARS       मंगल     retrograde at  -0.3280°/day, 7 sign change(s), 1 station(s)
+      day  21  enters GEMINI       मिथुन
+      day  92  enters CANCER       कर्कट
+      day 157  enters LEO          सिंह
+      … and 4 more
+      day  55  turns  direct
+```
+
+## What an answer says about itself
+
+Every result carries the steps applied and a provenance envelope: the
+settings hash, which is the cache key, since two contexts with the same
+hash compute the same numbers; a content hash over the value's canonical
+JSON, the same in every binding; and the provider that computed it.
+
+```js title="bindings/node/example/ephemeris.mjs"
+console.log(
+  `steps    ${sky.steps.map((step) => `${step.name}:${step.implementation}`).join(', ')}`,
+);
+const provenance = sky.provenance;
+```
+
+```text output="ephemeris"
+steps    positions:NATIVE, delta-t:SDK, equinox:SDK, obliquity:SDK, corrections:SDK, ayanamsha:SDK, zodiac-shift:SDK, speeds:SDK
+profile  nepali-default
+```
+
+## An ephemeris of your own
+
+A provider written in JavaScript, Dart, Python or Java is a first-class
+one: an application that already has an ephemeris, a cache or a table of
+precomputed rows puts it behind the port and gets the whole chart layer.
+The contract is small:
+
+```js title="bindings/node/example/your_own_ephemeris.mjs"
+  return {
+    state,
+    name: 'table-ephemeris',
+    version: '1.0.0',
+    // What identifies the data, not the code. A result's provenance
+    // carries it, so two runs against different data are distinguishable
+    // even when the code is identical.
+    dataVersion: 'demo-rows-2025a',
+    bodies: [Body.Sun, Body.Moon],
+    // Cover only what you have. A request outside this is refused before
+    // `positions` is ever called.
+    jdMin: 2451545.0,
+    jdMax: 2469807.0,
+    positions(request) {
+```
+
+- **One call for the whole grid, never a loop.** The SDK hands over
+  every instant and every body at once and expects every cell back.
+- **Return nothing for "not in that frame".** Answering at all asserts
+  the answer is in the frame asked for, so a provider that computes in
+  one frame returns `null` for any other, and the SDK asks again in the
+  provider's frame and completes the rest itself, stamping each step.
+- **Say what you cover.** A body outside `bodies` is refused by name
+  before the provider is called, and an instant outside `jdMin`..`jdMax`
+  comes back `OUT_OF_RANGE` while the rest are answered.
+- **Throwing is allowed.** What the provider threw reaches the caller as
+  itself, not as a code.
+
+```text output="your_own_ephemeris"
+refused  the provider does not support SATURN; it answers SUN, MOON
+         and the provider was asked 0 times
+
+coverage 2200000 is OUT_OF_RANGE and 2451545 is OK:
+         the provider was asked for 1 cell(s)
+
+frames   the provider answered 280.4600° tropical; a sidereal request is 256.6029°
+         it refused the frame 1 time(s), and the
+         SDK completed it: positions:NATIVE, delta-t:SDK, ayanamsha:SDK, zodiac-shift:SDK
+```
+
+A real engine is the intended path, and [Installing](/docs/install#choosing-an-ephemeris)
+says how to name one.
