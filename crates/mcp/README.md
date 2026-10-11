@@ -16,12 +16,24 @@ tagged checkout:
 cargo install --git https://github.com/teispace/teistro-sdk --tag vX.Y.Z teistro-mcp
 ```
 
-A host's configuration names the program and its options:
+A host's configuration names the program and its options. Through npm,
+which installs the prebuilt program for the host it runs on
+(`@teistro/mcp` and one `@teistro/mcp-<platform>` package):
+
+```json
+{ "mcpServers": { "teistro": { "command": "npx",
+                               "args": ["-y", "@teistro/mcp", "--ephemeris", "BUILTIN"] } } }
+```
+
+or the unpacked program itself:
 
 ```json
 { "mcpServers": { "teistro": { "command": "/opt/teistro-mcp/teistro-mcp",
                                "args": ["--pack", "/opt/packs/readings.tpack"] } } }
 ```
+
+`TEISTRO_MCP` names a program for the npm launcher to run instead of the
+one npm installed.
 
 ```sh
 teistro-mcp                       # the built-in ephemeris

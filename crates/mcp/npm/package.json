@@ -1,0 +1,35 @@
+{
+  "name": "@teistro/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Teistro SDK as Model Context Protocol tools: astrology computed with its provenance, never recalled. Runs the prebuilt server for this host.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teispace/teistro-sdk.git",
+    "directory": "crates/mcp/npm"
+  },
+  "mcpName": "io.github.teispace/teistro",
+  "type": "module",
+  "bin": {
+    "teistro-mcp": "bin/teistro-mcp.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "bin/",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "optionalDependencies": {
+    "@teistro/mcp-linux-x64": "0.0.0",
+    "@teistro/mcp-linux-arm64": "0.0.0",
+    "@teistro/mcp-darwin-arm64": "0.0.0",
+    "@teistro/mcp-darwin-x64": "0.0.0",
+    "@teistro/mcp-win32-x64": "0.0.0",
+    "@teistro/mcp-win32-arm64": "0.0.0",
+    "@teistro/mcp-linux-x64-musl": "0.0.0",
+    "@teistro/mcp-linux-arm64-musl": "0.0.0"
+  }
+}

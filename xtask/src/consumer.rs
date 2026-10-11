@@ -21,7 +21,7 @@ use std::process::Command;
 
 use crate::binding::{LIBRARY_STEM, StaticLink, present, step, tool};
 use crate::package;
-use crate::platform::{NPM_SCOPE, Platform};
+use crate::platform::{NPM_MCP, NPM_SCOPE, Platform};
 use crate::release;
 use crate::{read, rel};
 
@@ -52,7 +52,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         python_consumer(root, &dist, &check, &platform, &version),
         crate::java_consumer::check(root, &dist, &check, &platform, &version),
         adapter_consumer(root, &dist, &check, &platform),
-        mcp_consumer(&dist, &check, &platform, &version),
+        mcp_consumer(root, &dist, &check, &platform, &version),
     ];
     let recorded = crate::sizes::write_fragment(
         root,
@@ -181,10 +181,17 @@ fn unpack(archive: &Path, into: &Path) -> std::io::Result<()> {
 // ── the agent server ───────────────────────────────────────────────────────
 
 /// Unpacks the agent server's archive and runs the program from there, as
-/// a host configured with its path would: its version, then one session
-/// under each revision it speaks, each answer held to its shape. A musl
-/// row runs it inside Alpine, which proves the static build.
-fn mcp_consumer(dist: &Path, check: &Path, platform: &Platform, version: &str) -> Result<(), ()> {
+/// a host configured with its path would, then installs the npm launcher
+/// with this platform's package and runs it as `npx` would: each says its
+/// version, then answers one session under each revision it speaks. A
+/// musl row runs both inside Alpine, which proves the static build.
+fn mcp_consumer(
+    root: &Path,
+    dist: &Path,
+    check: &Path,
+    platform: &Platform,
+    version: &str,
+) -> Result<(), ()> {
     let into = check.join("mcp");
     unpack(
         &dist.join(package::mcp_archive_name(version, &platform.name())),
@@ -199,10 +206,43 @@ fn mcp_consumer(dist: &Path, check: &Path, platform: &Platform, version: &str) -
             return Err(());
         }
     }
-    let shown = Command::new(&program)
+    answers(
+        &|| Command::new(&program),
+        version,
+        "the unpacked agent server",
+    )?;
+    let Some(npm) = tool("npm", "--version") else {
+        crate::skip::skip("the agent server's npm launcher: no `npm` on this machine");
+        return Ok(());
+    };
+    let into = check.join("mcp-npm");
+    installed(
+        root,
+        &npm,
+        &dist.join("npm"),
+        &[NPM_MCP.to_string(), platform.npm_mcp_package()],
+        &into,
+    )?;
+    let launcher = into.join("node_modules/@teistro/mcp/bin/teistro-mcp.js");
+    answers(
+        &|| {
+            let mut node = Command::new("node");
+            node.arg(&launcher).env_remove("TEISTRO_MCP");
+            node
+        },
+        version,
+        "the agent server through npm",
+    )
+}
+
+/// That the program `run` starts says its version and both revisions, then
+/// answers one stdio session under each revision, each reply held to its
+/// shape.
+fn answers(run: &dyn Fn() -> Command, version: &str, what: &str) -> Result<(), ()> {
+    let shown = run()
         .arg("--version")
         .output()
-        .map_err(|err| println!("FAIL  {} did not run: {err}", program.display()))?;
+        .map_err(|err| println!("FAIL  {what} did not run: {err}"))?;
     let shown = String::from_utf8_lossy(&shown.stdout).into_owned();
     for said in [
         format!("teistro-mcp {version}"),
@@ -210,7 +250,7 @@ fn mcp_consumer(dist: &Path, check: &Path, platform: &Platform, version: &str) -
         String::from("2025-11-25"),
     ] {
         if !shown.contains(&said) {
-            println!("FAIL  `teistro-mcp --version` does not say {said}: {shown}");
+            println!("FAIL  {what}: `--version` does not say {said}: {shown}");
             return Err(());
         }
     }
@@ -221,7 +261,7 @@ fn mcp_consumer(dist: &Path, check: &Path, platform: &Platform, version: &str) -
     let mut call = convert.clone();
     call["_meta"] = meta.clone();
     let modern = session(
-        &program,
+        run(),
         &[
             serde_json::json!({ "jsonrpc": "2.0", "id": 1, "method": "server/discover", "params": { "_meta": meta } }),
             serde_json::json!({ "jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": { "_meta": meta } }),
@@ -229,7 +269,7 @@ fn mcp_consumer(dist: &Path, check: &Path, platform: &Platform, version: &str) -
         ],
     )?;
     let legacy = session(
-        &program,
+        run(),
         &[
             serde_json::json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
                 "protocolVersion": "2025-11-25", "capabilities": {},
@@ -267,25 +307,29 @@ fn mcp_consumer(dist: &Path, check: &Path, platform: &Platform, version: &str) -
                 .is_some_and(|r| r["result"]["isError"] == false),
         ),
     ];
-    for (what, holds) in held {
+    for (holds_what, holds) in held {
         if !holds {
-            println!("FAIL  the unpacked agent server: {what} ({modern:?} {legacy:?})");
+            println!("FAIL  {what}: {holds_what} ({modern:?} {legacy:?})");
             return Err(());
         }
     }
-    println!("ok    the agent server unpacked and answered under both revisions");
+    println!("ok    {what} answered under both revisions");
     Ok(())
 }
 
-/// The replies `program` writes to `messages` over stdio, in order.
-fn session(program: &Path, messages: &[serde_json::Value]) -> Result<Vec<serde_json::Value>, ()> {
+/// The replies the program `command` starts writes to `messages` over
+/// stdio, in order.
+fn session(
+    mut command: Command,
+    messages: &[serde_json::Value],
+) -> Result<Vec<serde_json::Value>, ()> {
     use std::io::Write as _;
-    let mut child = Command::new(program)
+    let mut child = command
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::inherit())
         .spawn()
-        .map_err(|err| println!("FAIL  {} did not start: {err}", program.display()))?;
+        .map_err(|err| println!("FAIL  the agent server did not start: {err}"))?;
     if let Some(mut stdin) = child.stdin.take() {
         for message in messages {
             writeln!(stdin, "{message}")
@@ -315,43 +359,12 @@ fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) ->
         return Ok(());
     };
     let into = check.join("node");
-    let tarballs = into.join("tarballs");
-    fs::create_dir_all(&tarballs).map_err(|err| println!("FAIL  {CHECK}/node: {err}"))?;
-
-    let staged = dist.join("npm");
-    for package in [NPM_SCOPE.to_string(), platform.npm_package()] {
-        step(
-            Command::new(&npm)
-                .args(["pack", "--silent", "--pack-destination"])
-                .arg(&tarballs)
-                .arg(staged.join(&package))
-                .current_dir(root),
-            "",
-            &format!("{package} did not pack"),
-        )?;
-    }
-    let packed: Vec<PathBuf> = fs::read_dir(&tarballs)
-        .map_err(|err| println!("FAIL  {CHECK}/node/tarballs: {err}"))?
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "tgz"))
-        .collect();
-    if packed.len() != 2 {
-        println!("FAIL  npm packed {} tarball(s), not two", packed.len());
-        return Err(());
-    }
-
-    write(
-        &into.join("package.json"),
-        "{\n  \"name\": \"teistro-packaging-check\",\n  \"private\": true,\n  \"type\": \"module\"\n}\n",
-    )?;
-    step(
-        Command::new(&npm)
-            .args(["install", "--silent", "--no-audit", "--no-fund"])
-            .args(&packed)
-            .current_dir(&into),
-        "",
-        "the Node packages did not install",
+    installed(
+        root,
+        &npm,
+        &dist.join("npm"),
+        &[NPM_SCOPE.to_string(), platform.npm_package()],
+        &into,
     )?;
 
     // Copied rather than run where it lives: a script inside the
@@ -367,6 +380,56 @@ fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) ->
             .env_remove("TEISTRO_ADDON"),
         "the installed Node package answers as the library does",
         "the installed Node package did not answer",
+    )
+}
+
+/// Packs each of `packages` from `staged` exactly as `npm publish` would
+/// and installs them together into an empty project at `into`.
+fn installed(
+    root: &Path,
+    npm: &str,
+    staged: &Path,
+    packages: &[String],
+    into: &Path,
+) -> Result<(), ()> {
+    let tarballs = into.join("tarballs");
+    fs::create_dir_all(&tarballs).map_err(|err| println!("FAIL  {}: {err}", into.display()))?;
+    for package in packages {
+        step(
+            Command::new(npm)
+                .args(["pack", "--silent", "--pack-destination"])
+                .arg(&tarballs)
+                .arg(staged.join(package))
+                .current_dir(root),
+            "",
+            &format!("{package} did not pack"),
+        )?;
+    }
+    let packed: Vec<PathBuf> = fs::read_dir(&tarballs)
+        .map_err(|err| println!("FAIL  {}: {err}", tarballs.display()))?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "tgz"))
+        .collect();
+    if packed.len() != packages.len() {
+        println!(
+            "FAIL  npm packed {} tarball(s), not {}",
+            packed.len(),
+            packages.len()
+        );
+        return Err(());
+    }
+    write(
+        &into.join("package.json"),
+        "{\n  \"name\": \"teistro-packaging-check\",\n  \"private\": true,\n  \"type\": \"module\"\n}\n",
+    )?;
+    step(
+        Command::new(npm)
+            .args(["install", "--silent", "--no-audit", "--no-fund"])
+            .args(&packed)
+            .current_dir(into),
+        "",
+        &format!("{} did not install", packages.join(" and ")),
     )
 }
 

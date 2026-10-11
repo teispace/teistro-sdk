@@ -1057,9 +1057,9 @@ provider's DUT1).
    "The plan to the release candidate"; Track A's release blockers first,
    the modules the reviewers read beside them):
    1. **The MCP server's last piece** (`03-design/mcp-server.md`): the
-      rest of its packaging (§6 step 5), the archives being built: an
-      npm wrapper, the registry's `server.json`, one `.mcpb`, and a
-      guide.
+      rest of its packaging (§6 step 5), the archives and the npm
+      launcher being built: the registry's `server.json`, one `.mcpb`,
+      and a guide.
       P7's tasks wait on a study measured to outlast a client's timeout.
       Step 1 below says what is built.
    2. **`ACCURACY.md`'s rows over the JPL recording.** The CSPICE states
@@ -4182,3 +4182,4 @@ kept here: the session log records them.
 | 2026-10-11 | **Packs and a program's own tools** (`mcp-server.md` §7, P9). `--pack` loads a pack into every context the server builds, before the call's locale, since a pack may bring the locale. **`Provenance.packs` was declared and never filled**: two consumers with different readings were told the same provenance for different words, in every binding; it is filled now wherever a pack's words are said. `Server::with_tool` serves a program's tools beside the records; the namespace refusal was first computed over the program's own tools too, so its second tool collided with its first, which the tests caught. |
 | 2026-10-11 | **Registered keys in a chart request** (`mcp-server.md` §7, P9). A chart request's `dashas` and drawings' `layout` read a key no catalogue has and `FoundRequest::resolved` reads it through the context's registries, in the order asked, refusing by its place a key nobody registered or one of another kind. The fix reaches past the server: `ts_chart_found` read catalogue members only, so **a consumer who registered a system through `dashas_json` could not ask for it in a JSON chart request in any binding**. The registration readers moved into the façade; `every-reader-reaches-a-tool` matched `::from_json` as a substring, so a `from_json_in` would have passed it, and it now matches the call. |
 | 2026-10-11 | **The agent server in the release** (`mcp-server.md` §6 step 5). Each platform row builds `teistro-mcp` through cargo-auditable and archives it with its README, terms and bill; the floor check, the embedded crate list, the digests and the attestation take it as they take the library. `check-package` runs the unpacked program under both revisions, in Alpine on the musl rows. The size record's C-bundle row looked for the first `.tar.gz` in a manifest, which a second archive would have answered, so it now passes over the server's archive by name. |
+| 2026-10-11 | **`npx -y @teistro/mcp`** (`mcp-server.md` §6 step 5). A launcher over a package a platform, built by the same writer as the SDK's addon packages, which this extracted rather than copied; `check-versions` and `cargo xtask version` now walk a table of npm manifests. Tried against the debug build laid out as npm installs it: the arguments, the exit status and `SIGTERM` reach the program and come back, a program whose mode a mirror dropped still starts, and a missing platform package names itself. |

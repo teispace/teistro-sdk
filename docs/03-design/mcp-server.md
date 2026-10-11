@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
 Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
-P8 to P10 built, P7 open, §6 step 5 (packaging) building: the archives and their install check built. Closes Q35 (`QUESTIONS.md`), which the
+P8 to P10 built, P7 open, §6 step 5 (packaging) building: the archives and the npm launcher built. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -230,8 +230,20 @@ dasha system of one's own are context configuration, reached through
    it as they cover every archive. `check-package` unpacks it and runs
    the program from there: its version, then one stdio session under
    each revision, each answer held to its shape; the musl rows run it
-   in Alpine. Not built: the npm wrapper, the registry's `server.json`,
-   the `.mcpb` bundle and the guide.
+   in Alpine.
+
+   *Built: the npm launcher.* `@teistro/mcp` runs as `npx -y
+   @teistro/mcp`: a launcher depending on one `@teistro/mcp-<platform>`
+   package a platform, each carrying the program with `os`, `cpu` and
+   `libc` set as the SDK's addon packages are, so npm installs the one
+   that matches. The launcher resolves it, passes the arguments, the
+   standard streams, the signals and the exit status through, and names
+   the package to install when npm installed none. The release publishes
+   them after the SDK's packages; `check-versions` holds the launcher's
+   manifest to the version and the platform list as it holds the SDK's;
+   `check-package` installs the two packages into a throwaway project and
+   holds the launcher to the same checks as the unpacked program. Not
+   built: the registry's `server.json`, the `.mcpb` bundle and the guide.
 
 ## 7. The rest of the protocol
 
