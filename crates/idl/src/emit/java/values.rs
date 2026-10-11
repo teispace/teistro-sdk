@@ -525,8 +525,7 @@ fn render_compact(out: &mut String, api: &Api, name: &str, shown: &[(&FieldDef, 
 /// rather than the record's every component spelt out again.
 fn render_withers(out: &mut String, api: &Api, name: &str, shown: &[(&FieldDef, &FieldRole)]) {
     let fields: Vec<String> = shown.iter().map(|(f, _)| identifier(&f.name)).collect();
-    for (index, (f, role)) in shown.iter().enumerate() {
-        let field = &fields[index];
+    for (index, ((f, role), field)) in shown.iter().zip(&fields).enumerate() {
         let ty = java_type(api, f, role);
         let arguments: Vec<&str> = fields
             .iter()
