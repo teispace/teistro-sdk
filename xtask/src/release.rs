@@ -83,7 +83,7 @@ fn workspace_version(text: &str) -> Option<String> {
 /// without leading zeros, and an optional pre-release of dot-separated
 /// alphanumeric parts. Build metadata is not accepted, because npm and pub
 /// treat it differently and the SDK would not be one version any more.
-fn is_semver(text: &str) -> bool {
+pub(crate) fn is_semver(text: &str) -> bool {
     let (core, pre) = text
         .split_once('-')
         .map_or((text, None), |(c, p)| (c, Some(p)));

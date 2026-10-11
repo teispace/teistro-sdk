@@ -185,6 +185,18 @@ of `teistro`, because the digests its hook checks are that version's.
 Each package carries the release's changelog entry as its
 `CHANGELOG.md`, which pub.dev shows on the version's page.
 
+**After the publish**, the `published` job installs every package back
+from its registry on each host family (Linux x64 and arm64, macOS arm64
+and x64, Windows x64) into throwaway projects outside the checkout, and
+runs each binding's consumer against it: `@teistro/sdk` from npm,
+`teistro` from PyPI, `teistro` from pub.dev with the library its
+installer fetches from the release, and both Maven coordinates from
+Central under a failing checksum policy (`cargo xtask check-published
+VERSION`). A registry may not serve a version for minutes after it was
+published, so each install is tried six times a minute apart. It is
+the one check that reads what the registries actually serve, so a
+release is not done until it passes.
+
 The manifest and `checksums.txt` are attached to the release, and the Dart
 package carries the digests of the libraries it will fetch, so a download
 is checked against a number recorded when the library was built rather
