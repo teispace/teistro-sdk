@@ -23,6 +23,13 @@
 # Node's own WASI (`crates/scenario/wasi.mjs`), printing the same values
 # file `cargo xtask hashes` writes natively.
 #
+# The phones are the same binary built for a mobile slice's triple and
+# run where that slice runs: Android x86-64 on an emulator at the
+# slices' API floor, and the arm64 iOS simulator. Neither reads a file,
+# so `values` on standard output is the whole run. A mobile row that
+# computes differently is a defect in the core, not in the Flutter
+# package (`docs/03-design/flutter-build-hook.md`, §5 step 3).
+#
 # It runs nightly and on demand rather than on every push: the fast check
 # stays fast (ADR-0014), and a difference here is a property of the
 # toolchain and the platform, not of a pull request.
@@ -101,9 +108,89 @@ jobs:
             digest-wasm32.txt
             values-wasm32.tsv
 
+  android:
+    name: digest (android-x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+      - name: The pinned Android NDK
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$(cat xtask/ndk.version)" > /dev/null
+      - name: The scenario, linked as the Android slices are
+        run: |
+          ndk="$ANDROID_HOME/ndk/$(cat xtask/ndk.version)"
+          export CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android24-clang"
+          cargo build --release -p teistro-scenario --target x86_64-linux-android
+      # The runner's KVM, which the emulator needs to run at speed.
+      - name: KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: What Android computes, at the slices' API floor
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 24
+          arch: x86_64
+          script: |
+            adb push target/x86_64-linux-android/release/teistro-scenario /data/local/tmp/teistro-scenario
+            adb shell chmod 755 /data/local/tmp/teistro-scenario
+            adb exec-out /data/local/tmp/teistro-scenario values > values-android-x86_64.tsv
+            wc -l values-android-x86_64.tsv | tee digest-android-x86_64.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: run-android-x86_64
+          path: |
+            digest-android-x86_64.txt
+            values-android-x86_64.tsv
+
+  ios:
+    name: digest (ios-sim-aarch64)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios-sim
+      - uses: Swatinem/rust-cache@v2
+      - name: The scenario, built as the simulator slice is
+        env:
+          IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+        run: cargo build --release -p teistro-scenario --target aarch64-apple-ios-sim
+      - name: What the iOS simulator computes
+        run: |
+          set -eu
+          device=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          runtimes = json.load(sys.stdin)["devices"]
+          phones = [d["udid"] for r, ds in sorted(runtimes.items()) if "iOS" in r
+                    for d in ds if d["name"].startswith("iPhone")]
+          print(phones[-1])')
+          xcrun simctl boot "$device"
+          xcrun simctl spawn "$device" \
+            "$PWD/target/aarch64-apple-ios-sim/release/teistro-scenario" values \
+            > values-ios-sim-aarch64.tsv
+          xcrun simctl shutdown "$device"
+          wc -l values-ios-sim-aarch64.tsv | tee digest-ios-sim-aarch64.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: run-ios-sim-aarch64
+          path: |
+            digest-ios-sim-aarch64.txt
+            values-ios-sim-aarch64.tsv
+
   compare:
     name: compare
-    needs: [digest, wasm32]
+    needs: [digest, wasm32, android, ios]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -134,7 +221,8 @@ jobs:
         run: |
           set -u
           status=0
-          for other in linux-aarch64 macos-aarch64 windows-x86_64 wasm32; do
+          for other in linux-aarch64 macos-aarch64 windows-x86_64 wasm32 \
+            android-x86_64 ios-sim-aarch64; do
             {
               echo "### Linux x86-64 against ${other}"
               echo '```'
