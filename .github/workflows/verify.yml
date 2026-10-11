@@ -232,7 +232,36 @@ jobs:
         with:
           channel: stable
       - name: An app built on them, and its APK read back
-        run: cargo xtask check-flutter
+        run: cargo xtask check-flutter android
+
+  # The same app for an iOS device, unsigned, on the release's own
+  # ios-arm64 slice: Xcode leaves the library as a framework whose binary
+  # is a universal file, which must hold that slice alone, at its floor.
+  flutter-ios:
+    name: flutter (ios)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+      - uses: Swatinem/rust-cache@v2
+      - id: auditable
+        name: The pinned cargo-auditable
+        shell: bash
+        run: echo "version=$(cat xtask/cargo-auditable.version)" >> "$GITHUB_OUTPUT"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-auditable@${{ steps.auditable.outputs.version }}
+      - name: The device slice, as the release builds it
+        run: cargo xtask package ios-arm64
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: An app built on it, and its framework read back
+        run: cargo xtask check-flutter ios
 
   # Every artefact the run built, held to `docs/05-testing/sizes.json`
   # within 2% and complete: every platform, profile and bundle

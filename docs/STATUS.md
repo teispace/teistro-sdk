@@ -1070,11 +1070,12 @@ provider's DUT1).
       the six mobile slices (`xtask/src/mobile.rs`, release rows, floor
       read-backs), the loader's bundled step and the public
       `package:teistro/prebuilt.dart`, `bindings/flutter` with its hook
-      and tests (in `check-dart`), and `check-flutter`, an APK built on
-      the Android slices and read back (verify). Next: the hash matrix's
-      mobile rows (§5 step 3), the device runs (step 7), the release
-      wiring (step 8: stage and pin `teistro_flutter`, `check-versions`,
-      sizes) and the docs (step 9).
+      and tests (in `check-dart`), `check-flutter`, an APK and an iOS
+      device app built on the slices and read back (verify), the hash
+      matrix's mobile rows, and the release wiring (`teistro_flutter`
+      staged and pinned, both pub packages validated by `check-pub` in
+      the `stage` job). Next: the device runs (§5 step 7) and the docs
+      (step 9).
    3. **The docs site's guides with executed examples**, beside the
       roadmap's install check after publishing.
    4. **Track B and C modules** (the roadmap's tables): research's

@@ -311,6 +311,15 @@ since an Apple silicon Mac runs no simulator older than 14.
    `Runner.app/Frameworks/teistro_ffi.framework/teistro_ffi` with arm64 and
    `minos` 13. The integration test runs on a booted iOS simulator
    (`xcrun simctl`), with the same suite.
+   *As built (the app build):* `check-flutter ios`, the `flutter (ios)`
+   verify row on macos-latest, with `check-flutter android` the ubuntu
+   row's and no argument building every app the host can. Xcode leaves
+   the framework's binary as a universal file even for one architecture
+   (`cafebabe`, one arm64 slice), with its install name rewritten to
+   `@rpath/teistro_ffi.framework/teistro_ffi`; the check reads the slice
+   out of it, refuses a second slice or another CPU, and holds the slice
+   to the same floor check `package` did (measured: 12 756 576 bytes,
+   `minos` 13.0). The integration test on a simulator is step 7's.
 5. **The hash matrix** (`hash-matrix.yml`, nightly) gains rows for
    `aarch64-linux-android`/`x86_64-linux-android` and `aarch64-apple-ios-sim`.
    *As built:* two rows, `android-x86_64` (the scenario linked by the
@@ -402,12 +411,15 @@ Changed:
 5. **The `teistro_flutter` package and its unit tests.** Gate:
    the hook package's tests in `check-dart`, proved red first (built).
 6. **APK inspection.** Gate: `check-flutter` on ubuntu (verify, dispatched
-   on the branch).
+   on the branch). Built, and the iOS device app beside it
+   (`check-flutter ios` on macOS).
 7. **Device runs.** Gates: `check-flutter-android` and `check-flutter-ios`.
 8. **Release wiring.** Gate: a release rehearsal (dispatch, nothing
    published) whose `stage` carries nine-plus-six digests and stages both
    pub packages. `dart pub publish --dry-run` must pass on both, with sizes
-   recorded.
+   recorded. *As built:* `cargo xtask check-pub` in the `stage` job, from
+   a copy outside the checkout, since pub publishes only what git tracks
+   and `dist/` is ignored; the publish steps work from such a copy too.
 9. **Docs**: README, the guide with an executed example, STATUS and the
    roadmap.
 
