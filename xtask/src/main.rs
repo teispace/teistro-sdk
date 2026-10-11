@@ -298,6 +298,7 @@ mod matching;
 mod maven_publish;
 mod measure;
 mod midpoints;
+mod mobile;
 mod moon;
 mod muhurta;
 mod muntha;

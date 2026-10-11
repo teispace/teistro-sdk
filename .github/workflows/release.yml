@@ -189,6 +189,59 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  # The mobile slices a Flutter app bundles (`xtask/src/mobile.rs`):
+  # cross-built, so nothing here runs them. `package` holds each to its
+  # floor by reading the file (Android's API level, needed libraries and
+  # 16 KB pages; iOS's platform and minimum version), and `check-flutter`
+  # builds an app on them in verify.
+  mobile:
+    name: build (${{ matrix.platform }})
+    needs: gate
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, platform: android-arm64, triple: aarch64-linux-android }
+          - { os: ubuntu-latest, platform: android-arm, triple: armv7-linux-androideabi }
+          - { os: ubuntu-latest, platform: android-x64, triple: x86_64-linux-android }
+          - { os: macos-latest, platform: ios-arm64, triple: aarch64-apple-ios }
+          - { os: macos-latest, platform: ios-sim-arm64, triple: aarch64-apple-ios-sim }
+          - { os: macos-latest, platform: ios-sim-x64, triple: x86_64-apple-ios }
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.triple }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.triple }}
+      # The NDK is pinned in the one file a failing local build names; the
+      # runner's SDK manager installs it beside the image's own.
+      - name: The pinned Android NDK
+        if: runner.os == 'Linux'
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$(cat xtask/ndk.version)" > /dev/null
+      - id: auditable
+        name: The pinned cargo-auditable
+        shell: bash
+        run: echo "version=$(cat xtask/cargo-auditable.version)" >> "$GITHUB_OUTPUT"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-auditable@${{ steps.auditable.outputs.version }}
+      - name: What this slice ships
+        run: cargo xtask package ${{ matrix.platform }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.platform }}
+          path: |
+            target/dist/*.gz
+            target/dist/teistro-*.json
+          if-no-files-found: error
+          retention-days: 7
+
   # The wasm package is the same layer over a wasm module, one artefact
   # for every host, so it is built here once rather than by each platform.
   # `check-wasm` is the gate that proves it: the Node suite through its own
@@ -227,7 +280,7 @@ jobs:
 
   stage:
     name: stage
-    needs: [gate, build, musl, wasm]
+    needs: [gate, build, musl, mobile, wasm]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

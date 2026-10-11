@@ -2233,16 +2233,25 @@ fn platform_runners(root: &Path, outcome: &mut Outcome) {
             let container = entry
                 .get("container")
                 .and_then(serde_yaml_ng::Value::as_str);
-            let complaint = match crate::platform::Platform::by_name(platform) {
-                Some(row) if row.runner == os && row.container == container => continue,
-                Some(row) if row.runner != os => format!(
-                    "`{platform}` runs on `{os}`; the platform table says `{}`",
-                    row.runner
-                ),
-                Some(row) => format!(
+            // A mobile slice is a row of its own table (`xtask/src/mobile.rs`),
+            // cross-built on a host runner and never in a container.
+            let row = crate::platform::Platform::by_name(platform)
+                .map(|row| (row.runner, row.container))
+                .or_else(|| {
+                    crate::mobile::MOBILE
+                        .iter()
+                        .find(|row| row.name == platform)
+                        .map(|row| (row.runner, None))
+                });
+            let complaint = match row {
+                Some((runner, wanted)) if runner == os && wanted == container => continue,
+                Some((runner, _)) if runner != os => {
+                    format!("`{platform}` runs on `{os}`; the platform table says `{runner}`")
+                }
+                Some((_, wanted)) => format!(
                     "`{platform}` runs in `{}`; the platform table says `{}`",
                     container.unwrap_or("no container"),
-                    row.container.unwrap_or("no container")
+                    wanted.unwrap_or("no container")
                 ),
                 None => format!("`{platform}` is not a row of the platform table"),
             };
