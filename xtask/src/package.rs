@@ -36,7 +36,7 @@ use sha2::{Digest, Sha256};
 use crate::binding::{LIBRARY_STEM, cargo, step};
 use crate::hashes::hex;
 use crate::node_binding::ADDON_STEM;
-use crate::platform::{NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
+use crate::platform::{NPM_MCP, NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
 use crate::{read, rel};
 use crate::{release, sbom};
 
@@ -201,6 +201,7 @@ fn stage_platform(
     let bundle = c_bundle(root, dist, platform, version, built, &library_bill)?;
     let package = npm_platform_package(root, dist, platform, version, &addon, &addon_bill)?;
     let mcp = mcp_archive(root, dist, platform, version, &server, &server_bill)?;
+    let mcp_package = npm_mcp_package(root, dist, platform, version, &server, &server_bill)?;
 
     let manifest = json!({
         "schema": SCHEMA,
@@ -213,6 +214,7 @@ fn stage_platform(
         "addon": entry(&addon, ADDON_FILE)?,
         "archives": [library, bundle, mcp],
         "npm": package,
+        "npmMcp": mcp_package,
         // What each file is made of, beside the files (`xtask/src/sbom.rs`).
         "sboms": [
             entry(&library_bill, &file_name(&library_bill))?,
@@ -411,22 +413,90 @@ fn npm_platform_package(
     addon: &Path,
     bill: &Path,
 ) -> io::Result<Value> {
-    let name = platform.npm_package();
-    let directory = dist.join("npm").join(&name);
+    let carried = Carried {
+        package: platform.npm_package(),
+        file: ADDON_FILE.to_string(),
+        from: addon,
+        what: "prebuilt Node addon",
+        instead: NPM_SCOPE,
+        source: "bindings/node",
+    };
+    let directory = platform_package(root, dist, platform, version, &carried, bill)?;
+    let addon = entry(&directory.join(ADDON_FILE), ADDON_FILE)?;
+    Ok(json!({
+        "package": carried.package,
+        "directory": rel(root, &directory),
+        "addon": addon,
+    }))
+}
+
+/// Stages the npm package that carries this platform's agent server, which
+/// `@teistro/mcp`'s launcher runs.
+fn npm_mcp_package(
+    root: &Path,
+    dist: &Path,
+    platform: &Platform,
+    version: &str,
+    server: &Path,
+    bill: &Path,
+) -> io::Result<Value> {
+    let carried = Carried {
+        package: platform.npm_mcp_package(),
+        file: platform.program(MCP_PROGRAM),
+        from: server,
+        what: "prebuilt agent server (`teistro-mcp`)",
+        instead: NPM_MCP,
+        source: "crates/mcp/npm",
+    };
+    let directory = platform_package(root, dist, platform, version, &carried, bill)?;
+    Ok(json!({
+        "package": carried.package,
+        "directory": rel(root, &directory),
+        "program": entry(&directory.join(&carried.file), &carried.file)?,
+    }))
+}
+
+/// One file a platform's npm package carries, and the package a consumer
+/// installs instead, which depends on it.
+struct Carried<'a> {
+    package: String,
+    file: String,
+    from: &'a Path,
+    what: &'static str,
+    instead: &'static str,
+    source: &'static str,
+}
+
+/// Writes a platform package: the file, the terms, the bill, a manifest
+/// npm can match against a host, and a readme that says what to install
+/// instead. Returns its directory.
+fn platform_package(
+    root: &Path,
+    dist: &Path,
+    platform: &Platform,
+    version: &str,
+    carried: &Carried<'_>,
+    bill: &Path,
+) -> io::Result<PathBuf> {
+    let name = &carried.package;
+    let directory = dist.join("npm").join(name);
     fs::create_dir_all(&directory)?;
-    fs::copy(addon, directory.join(ADDON_FILE))?;
+    // `fs::copy` keeps the mode, so a program stays runnable, and npm
+    // keeps it in the tarball.
+    fs::copy(carried.from, directory.join(&carried.file))?;
     for legal in LEGAL {
         fs::copy(root.join(legal), directory.join(legal))?;
     }
     fs::copy(bill, directory.join(sbom::FILE))?;
 
+    let (what, instead) = (carried.what, carried.instead);
     let mut manifest = Map::new();
     manifest.insert("name".to_string(), json!(name));
     manifest.insert("version".to_string(), json!(version));
     manifest.insert(
         "description".to_string(),
         json!(format!(
-            "The Teistro SDK's prebuilt Node addon for {}. Install {NPM_SCOPE}, which depends on this.",
+            "The Teistro SDK's {what} for {}. Install {instead}, which depends on this.",
             described(platform)
         )),
     );
@@ -436,7 +506,7 @@ fn npm_platform_package(
         json!({
             "type": "git",
             "url": "git+https://github.com/teispace/teistro-sdk.git",
-            "directory": "bindings/node",
+            "directory": carried.source,
         }),
     );
     manifest.insert("os".to_string(), json!([platform.os]));
@@ -444,8 +514,14 @@ fn npm_platform_package(
     if let Some(libc) = platform.libc {
         manifest.insert("libc".to_string(), json!([libc]));
     }
-    manifest.insert("engines".to_string(), json!({ "node": ">=20" }));
-    let mut files = vec![json!(ADDON_FILE), json!(sbom::FILE)];
+    // The SDK's own floor, which `node-is-tested-at-its-floor` holds every
+    // package to, so a platform package never promises an older Node.
+    let floor = serde_json::from_str::<Value>(&read(&root.join("bindings/node/package.json")))
+        .ok()
+        .and_then(|node| node["engines"]["node"].as_str().map(str::to_owned))
+        .ok_or_else(|| io::Error::other("bindings/node/package.json states no `engines.node`"))?;
+    manifest.insert("engines".to_string(), json!({ "node": floor }));
+    let mut files = vec![json!(carried.file), json!(sbom::FILE)];
     files.extend(LEGAL.map(|legal| json!(legal)));
     manifest.insert("files".to_string(), Value::Array(files));
     fs::write(
@@ -455,16 +531,11 @@ fn npm_platform_package(
     fs::write(
         directory.join("README.md"),
         format!(
-            "# {name}\n\nThe Teistro SDK's prebuilt Node addon for {}.\n\nThis package holds one file and no code. Install [`{NPM_SCOPE}`](https://www.npmjs.com/package/{NPM_SCOPE}) instead: it depends on this package for the host it is installed on, and loads the addon from it.\n\nApache-2.0. The sources are at <https://github.com/teispace/teistro-sdk>.\n",
+            "# {name}\n\nThe Teistro SDK's {what} for {}.\n\nThis package holds one file and no code. Install [`{instead}`](https://www.npmjs.com/package/{instead}) instead: it depends on this package for the host it is installed on, and loads the file from it.\n\nApache-2.0. The sources are at <https://github.com/teispace/teistro-sdk>.\n",
             described(platform)
         ),
     )?;
-    let addon = entry(&directory.join(ADDON_FILE), ADDON_FILE)?;
-    Ok(json!({
-        "package": name,
-        "directory": rel(root, &directory),
-        "addon": addon,
-    }))
+    Ok(directory)
 }
 
 /// A platform in words, for a description a person reads.
@@ -600,6 +671,7 @@ fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::R
     written.push(rel(root, &checksums));
 
     written.push(stage_node(root, dist)?);
+    written.push(stage_mcp_node(root, dist)?);
     written.push(stage_dart(root, dist, version, merged)?);
     written.push(stage_python(root, dist, version, merged)?);
     written.extend(python_wheels(root, dist, version, merged)?);
@@ -703,6 +775,31 @@ fn stage_node(root: &Path, dist: &Path) -> io::Result<String> {
     for file in ["package.json", "README.md"] {
         fs::copy(source.join(file), directory.join(file))?;
     }
+    for legal in LEGAL {
+        fs::copy(root.join(legal), directory.join(legal))?;
+    }
+    Ok(rel(root, &directory))
+}
+
+/// Stages the agent server's npm launcher: its manifest, which names the
+/// platform packages, the launcher, the server's README and the terms. No
+/// program: it comes from whichever platform package npm installed.
+fn stage_mcp_node(root: &Path, dist: &Path) -> io::Result<String> {
+    let directory = dist.join("npm").join(NPM_MCP);
+    if directory.exists() {
+        fs::remove_dir_all(&directory)?;
+    }
+    fs::create_dir_all(directory.join("bin"))?;
+    let source = root.join("crates/mcp/npm");
+    fs::copy(source.join("package.json"), directory.join("package.json"))?;
+    fs::copy(
+        source.join("bin/teistro-mcp.js"),
+        directory.join("bin/teistro-mcp.js"),
+    )?;
+    fs::copy(
+        root.join("crates/mcp/README.md"),
+        directory.join("README.md"),
+    )?;
     for legal in LEGAL {
         fs::copy(root.join(legal), directory.join(legal))?;
     }

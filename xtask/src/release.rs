@@ -23,7 +23,7 @@ use std::path::Path;
 use regex::Regex;
 use serde_json::{Map, Value};
 
-use crate::platform::PLATFORMS;
+use crate::platform::{PLATFORMS, Platform};
 use crate::{read, rel};
 
 /// The version the repository carries until a release is cut. Nothing may
@@ -32,6 +32,16 @@ pub(crate) const UNRELEASED: &str = "0.0.0";
 
 const WORKSPACE: &str = "Cargo.toml";
 const NODE_MANIFEST: &str = "bindings/node/package.json";
+/// How an npm manifest names a platform's package.
+type PlatformPackage = fn(&Platform) -> String;
+
+/// The npm manifests that depend on a package per platform, each with how
+/// it names one: the SDK's, whose loader finds the addon in one, and the
+/// agent server's launcher, which finds the program in one.
+const NPM_MANIFESTS: [(&str, PlatformPackage); 2] = [
+    (NODE_MANIFEST, Platform::npm_package),
+    ("crates/mcp/npm/package.json", Platform::npm_mcp_package),
+];
 const DART_MANIFEST: &str = "bindings/dart/pubspec.yaml";
 const PYTHON_MANIFEST: &str = "bindings/python/pyproject.toml";
 /// The Python installer's own table, which names the release it fetches
@@ -106,15 +116,11 @@ pub(crate) fn check(root: &Path) -> i32 {
     }
     let released = wanted != UNRELEASED;
 
-    let node = match parse_manifest(root, NODE_MANIFEST) {
-        Ok(value) => Some(value),
-        Err(failure) => {
-            failures.push(failure);
-            None
+    for (path, package) in NPM_MANIFESTS {
+        match parse_manifest(root, path) {
+            Ok(node) => failures.extend(check_node(&node, path, package, &wanted, released)),
+            Err(failure) => failures.push(failure),
         }
-    };
-    if let Some(node) = &node {
-        failures.extend(check_node(node, &wanted, released));
     }
     failures.extend(check_dart(root, &wanted, released));
     failures.extend(check_python(root, &wanted, released));
@@ -125,42 +131,48 @@ pub(crate) fn check(root: &Path) -> i32 {
         println!("FAIL  {failure}");
     }
     println!(
-        "one version, {wanted}, across five manifests and {} platform packages: {} failure(s)",
+        "one version, {wanted}, across every manifest and {} platform packages each: {} failure(s)",
         PLATFORMS.len(),
         failures.len()
     );
     i32::from(!failures.is_empty())
 }
 
-/// The Node manifest: the version, the platform packages, and whether it
-/// may be published.
-fn check_node(node: &Value, wanted: &str, released: bool) -> Vec<String> {
+/// An npm manifest at `path`: the version, the platform packages
+/// `package` names, and whether it may be published.
+fn check_node(
+    node: &Value,
+    path: &str,
+    package: PlatformPackage,
+    wanted: &str,
+    released: bool,
+) -> Vec<String> {
     let mut failures = Vec::new();
     if node["version"].as_str() != Some(wanted) {
         failures.push(format!(
-            "{NODE_MANIFEST} declares version {}, the workspace declares {wanted}",
+            "{path} declares version {}, the workspace declares {wanted}",
             node["version"]
         ));
     }
     let private = node["private"].as_bool().unwrap_or(false);
     if released && private {
         failures.push(format!(
-            "{NODE_MANIFEST} is `private` at version {wanted}; a released package is published, so the field is removed by `cargo xtask version`"
+            "{path} is `private` at version {wanted}; a released package is published, so the field is removed by `cargo xtask version`"
         ));
     }
     if !released && !private {
         failures.push(format!(
-            "{NODE_MANIFEST} is not `private` at the unreleased version; nothing may be published from {UNRELEASED}"
+            "{path} is not `private` at the unreleased version; nothing may be published from {UNRELEASED}"
         ));
     }
     let declared = node["optionalDependencies"].as_object();
     let expected: Vec<(String, String)> = PLATFORMS
         .iter()
-        .map(|p| (p.npm_package(), wanted.to_string()))
+        .map(|p| (package(p), wanted.to_string()))
         .collect();
     match declared {
         None => failures.push(format!(
-            "{NODE_MANIFEST} lists no optionalDependencies; the loader finds the addon in a platform package, so all {} are listed",
+            "{path} lists no optionalDependencies; each platform has a package of its own, so all {} are listed",
             PLATFORMS.len()
         )),
         Some(map) => {
@@ -168,17 +180,17 @@ fn check_node(node: &Value, wanted: &str, released: bool) -> Vec<String> {
                 match map.get(name).and_then(Value::as_str) {
                     Some(found) if found == version => {}
                     Some(found) => failures.push(format!(
-                        "{NODE_MANIFEST} depends on {name} {found}, which is not this build's {version}"
+                        "{path} depends on {name} {found}, which is not this build's {version}"
                     )),
                     None => failures.push(format!(
-                        "{NODE_MANIFEST} does not list {name}, which the release matrix builds"
+                        "{path} does not list {name}, which the release matrix builds"
                     )),
                 }
             }
             for name in map.keys() {
                 if !expected.iter().any(|(expected, _)| expected == name) {
                     failures.push(format!(
-                        "{NODE_MANIFEST} lists {name}, which no platform in the table builds"
+                        "{path} lists {name}, which no platform in the table builds"
                     ));
                 }
             }
@@ -343,7 +355,9 @@ pub(crate) fn set(root: &Path, wanted: &str) -> i32 {
     );
     write(&manifest, &updated, &mut written, root);
 
-    set_node(root, wanted, released, &mut written);
+    for (path, package) in NPM_MANIFESTS {
+        set_node(root, path, package, wanted, released, &mut written);
+    }
     set_dart(root, wanted, released, &mut written);
     set_python(root, wanted, released, &mut written);
 
@@ -356,12 +370,19 @@ pub(crate) fn set(root: &Path, wanted: &str) -> i32 {
     0
 }
 
-/// The Node manifest: the version, the platform packages at that version,
+/// An npm manifest: the version, the platform packages at that version,
 /// and `private` while there is nothing to publish.
-fn set_node(root: &Path, wanted: &str, released: bool, written: &mut Vec<String>) {
-    let path = root.join(NODE_MANIFEST);
-    let Ok(Value::Object(mut node)) = parse_manifest(root, NODE_MANIFEST) else {
-        eprintln!("{NODE_MANIFEST} is not an object");
+fn set_node(
+    root: &Path,
+    manifest: &str,
+    package: PlatformPackage,
+    wanted: &str,
+    released: bool,
+    written: &mut Vec<String>,
+) {
+    let path = root.join(manifest);
+    let Ok(Value::Object(mut node)) = parse_manifest(root, manifest) else {
+        eprintln!("{manifest} is not an object");
         return;
     };
     node.insert("version".to_string(), Value::String(wanted.to_string()));
@@ -385,7 +406,7 @@ fn set_node(root: &Path, wanted: &str, released: bool, written: &mut Vec<String>
     }
     let mut platforms = Map::new();
     for platform in PLATFORMS {
-        platforms.insert(platform.npm_package(), Value::String(wanted.to_string()));
+        platforms.insert(package(&platform), Value::String(wanted.to_string()));
     }
     node.insert("optionalDependencies".to_string(), Value::Object(platforms));
     let text = format!(

@@ -2568,6 +2568,8 @@ the astronomical numbers do not move. Nothing else computes yet.
   carry `teistro-mcp-{version}-{platform}.tar.gz`, built through
   cargo-auditable, held to the row's glibc floor, digested, attested and
   checked by unpacking it and running a session under each revision.
+  `npx -y @teistro/mcp` runs it through npm: a launcher over one
+  `@teistro/mcp-<platform>` package a platform, published with the SDK's.
 - **Registered dasha systems and layouts by key, in a chart request.**
   `FoundRequest` reads a key no catalogue has and
   `FoundRequest::resolved` reads it through a context's registries, so

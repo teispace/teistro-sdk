@@ -148,6 +148,7 @@ jobs:
             target/dist/*.gz
             target/dist/teistro-*.json
             target/dist/npm/@teistro/sdk-*
+            target/dist/npm/@teistro/mcp-*
           if-no-files-found: error
           retention-days: 7
 
@@ -184,6 +185,7 @@ jobs:
             target/dist/*.gz
             target/dist/teistro-*.json
             target/dist/npm/@teistro/sdk-*
+            target/dist/npm/@teistro/mcp-*
           if-no-files-found: error
           retention-days: 7
 
@@ -334,7 +336,7 @@ jobs:
       # that exists (`06-cicd/03-release-process.md`).
       - name: An npm that publishes by who the workflow is
         run: npm install --global npm@11
-      - name: The platform packages and the wasm one, then the one that depends on the platforms
+      - name: The platform packages and the wasm one, then the ones that depend on the platforms
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -346,6 +348,12 @@ jobs:
             npm publish --provenance --access public "${package}"
           done
           npm publish --provenance --access public dist/npm/@teistro/sdk
+          # The agent server the same way: a package a platform carrying
+          # the program, then the launcher that depends on them.
+          for package in dist/npm/@teistro/mcp-*; do
+            npm publish --provenance --access public "${package}"
+          done
+          npm publish --provenance --access public dist/npm/@teistro/mcp
 
       - name: The Dart package
         run: dart pub publish --force
