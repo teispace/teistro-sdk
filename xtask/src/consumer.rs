@@ -224,15 +224,55 @@ fn mcp_consumer(
         &into,
     )?;
     let launcher = into.join("node_modules/@teistro/mcp/bin/teistro-mcp.js");
-    answers(
-        &|| {
-            let mut node = Command::new("node");
-            node.arg(&launcher).env_remove("TEISTRO_MCP");
-            node
-        },
-        version,
-        "the agent server through npm",
-    )
+    answers(&|| node(&launcher), version, "the agent server through npm")?;
+    mcp_bundle_consumer(dist, check, version)
+}
+
+/// The Node a host runs the launcher with, told nothing of a program.
+fn node(launcher: &Path) -> Command {
+    let mut node = Command::new("node");
+    node.arg(launcher).env_remove("TEISTRO_MCP");
+    node
+}
+
+/// Unpacks Claude Desktop's bundle, where the stage wrote one for this
+/// host, and runs it as the host does: the launcher under Node, finding
+/// the program the bundle carries for this platform.
+fn mcp_bundle_consumer(dist: &Path, check: &Path, version: &str) -> Result<(), ()> {
+    let path = dist.join(format!("teistro-mcp-{version}.mcpb"));
+    let Ok(bytes) = fs::read(&path) else {
+        crate::skip::skip("the agent server's bundle: none for this platform");
+        return Ok(());
+    };
+    let into = check.join("mcpb");
+    let names = crate::zip::names(&bytes)
+        .map_err(|err| println!("FAIL  the agent server's bundle is not a zip: {err}"))?;
+    for name in &names {
+        let data = crate::zip::read(&bytes, name)
+            .ok()
+            .flatten()
+            .ok_or_else(|| println!("FAIL  the bundle's {name} does not read"))?;
+        let to = into.join(name);
+        if let Some(parent) = to.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|err| println!("FAIL  {}: {err}", parent.display()))?;
+        }
+        fs::write(&to, data).map_err(|err| println!("FAIL  {}: {err}", to.display()))?;
+    }
+    for expected in [
+        "manifest.json",
+        "server/package.json",
+        "README.md",
+        "LICENSE",
+        "NOTICE",
+    ] {
+        if !names.iter().any(|name| name == expected) {
+            println!("FAIL  the agent server's bundle carries no {expected}");
+            return Err(());
+        }
+    }
+    let launcher = into.join("server/bin/teistro-mcp.js");
+    answers(&|| node(&launcher), version, "the agent server's bundle")
 }
 
 /// That the program `run` starts says its version and both revisions, then

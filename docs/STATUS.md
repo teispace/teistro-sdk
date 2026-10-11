@@ -1057,8 +1057,8 @@ provider's DUT1).
    "The plan to the release candidate"; Track A's release blockers first,
    the modules the reviewers read beside them):
    1. **The MCP server's last piece** (`03-design/mcp-server.md`): the
-      rest of its packaging (§6 step 5), the archives, the npm launcher
-      and the registry entry being built: one `.mcpb`, and a guide.
+      site's guide to running it (§6 step 5), the rest of its packaging
+      being built.
       P7's tasks wait on a study measured to outlast a client's timeout.
       Step 1 below says what is built.
    2. **`ACCURACY.md`'s rows over the JPL recording.** The CSPICE states
@@ -4183,3 +4183,4 @@ kept here: the session log records them.
 | 2026-10-11 | **The agent server in the release** (`mcp-server.md` §6 step 5). Each platform row builds `teistro-mcp` through cargo-auditable and archives it with its README, terms and bill; the floor check, the embedded crate list, the digests and the attestation take it as they take the library. `check-package` runs the unpacked program under both revisions, in Alpine on the musl rows. The size record's C-bundle row looked for the first `.tar.gz` in a manifest, which a second archive would have answered, so it now passes over the server's archive by name. |
 | 2026-10-11 | **`npx -y @teistro/mcp`** (`mcp-server.md` §6 step 5). A launcher over a package a platform, built by the same writer as the SDK's addon packages, which this extracted rather than copied; `check-versions` and `cargo xtask version` now walk a table of npm manifests. Tried against the debug build laid out as npm installs it: the arguments, the exit status and `SIGTERM` reach the program and come back, a program whose mode a mirror dropped still starts, and a missing platform package names itself. |
 | 2026-10-11 | **The MCP Registry entry** (`mcp-server.md` §6 step 5). `crates/mcp/server.json`, held by a test to what the server says of itself and to the launcher's `mcpName`, and by `check-versions` to the release; the registry's own `mcp-publisher validate` accepts it. **The server described itself in more than the registry's 100 characters**, so a copied description would have been refused at publish time, after npm had already published; one sentence now serves both. The publisher is pinned by version and digest rather than `releases/latest`, as the registry's own guide shows, and runs last so a registry in preview cannot hold the release. |
+| 2026-10-11 | **Claude Desktop's bundle** (`mcp-server.md` §6 step 5). The design page asked for a `binary` server over a `lipo` universal macOS program and an x64 Windows one; a bundle's configuration cannot choose by architecture, so that left Windows on Arm emulated and needed a macOS tool on the Linux stage runner. The bundle is a `node` server instead, the npm launcher choosing by both, which Claude Desktop runs on the Node it brings. The zip writer the wheels and jars share gained a mode for a program. Validated by `mcpb validate` and `mcp-publisher validate`, and run unpacked. |

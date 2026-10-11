@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 /**
- * `teistro-mcp` for a host that starts servers through npm
- * (`npx -y @teistro/mcp`): finds the program in the platform package npm
- * installed beside this one and runs it with this process's arguments,
- * standard streams and exit status, so the host speaks to the program
- * itself.
+ * `teistro-mcp` for a host that starts servers through Node: npm's
+ * (`npx -y @teistro/mcp`), which installs the program in a platform
+ * package beside this one, and Claude Desktop's bundle (`.mcpb`), which
+ * carries one a platform under `platforms/`. Finds this host's and runs
+ * it with this process's arguments, standard streams and exit status,
+ * so the host speaks to the program itself.
  */
 
 import { spawn } from 'node:child_process';
 import { chmodSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const HERE = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 /**
@@ -27,12 +30,17 @@ function hostPlatform() {
   return header && !header.glibcVersionRuntime ? `${name}-musl` : name;
 }
 
-/** The program: the one `TEISTRO_MCP` names, else the platform package's. */
+/**
+ * The program: the one `TEISTRO_MCP` names, else the bundle's for this
+ * host, else the platform package's npm installed.
+ */
 function program() {
   const named = process.env.TEISTRO_MCP;
   if (named) return named;
-  const platform = `@teistro/mcp-${hostPlatform()}`;
   const file = process.platform === 'win32' ? 'teistro-mcp.exe' : 'teistro-mcp';
+  const bundled = join(HERE, '..', 'platforms', hostPlatform(), file);
+  if (existsSync(bundled)) return bundled;
+  const platform = `@teistro/mcp-${hostPlatform()}`;
   try {
     return join(dirname(require.resolve(`${platform}/package.json`)), file);
   } catch {

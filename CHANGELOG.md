@@ -2571,7 +2571,9 @@ the astronomical numbers do not move. Nothing else computes yet.
   `npx -y @teistro/mcp` runs it through npm: a launcher over one
   `@teistro/mcp-<platform>` package a platform, published with the SDK's.
   The release lists it in the MCP Registry as `io.github.teispace/teistro`
-  (`crates/mcp/server.json`), whose description is now the server's own.
+  (`crates/mcp/server.json`), whose description is now the server's own,
+  and carries `teistro-mcp-{version}.mcpb`, which Claude Desktop installs
+  on macOS and Windows.
 - **Registered dasha systems and layouts by key, in a chart request.**
   `FoundRequest` reads a key no catalogue has and
   `FoundRequest::resolved` reads it through a context's registries, so

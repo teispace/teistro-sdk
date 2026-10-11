@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
 Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
-P8 to P10 built, P7 open, §6 step 5 (packaging) building: the archives, the npm launcher and the registry entry built. Closes Q35 (`QUESTIONS.md`), which the
+P8 to P10 built, P7 open, §6 step 5 (packaging) building: everything but the site's guide built. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -255,8 +255,23 @@ dasha system of one's own are context configuration, reached through
    version` hold its versions to the release's; the publisher's own
    validator accepts it. The release publishes it last, after npm serves
    the launcher, with `mcp-publisher` pinned by version and digest and
-   logged in by the runner's OIDC token. Not built: the `.mcpb` bundle
-   and the guide.
+   logged in by the runner's OIDC token.
+
+   *Built: Claude Desktop's bundle.* `teistro-mcp-{version}.mcpb`
+   (MCPB manifest 0.3) carries the npm launcher as a `node` server and a
+   program a platform for macOS and Windows on both architectures under
+   `server/platforms/`, mode 0755. A bundle's configuration chooses by
+   operating system and never by architecture, so a `binary` server
+   would have needed a universal macOS program and left Windows on Arm
+   emulated; the launcher already chooses by both, and Claude Desktop
+   brings the Node it runs. `stage` writes it from the platform packages
+   and adds it to the registry entry it publishes by its digest, which
+   the release serves, attests and lists in `checksums.txt`; the
+   official `mcpb validate` and `mcp-publisher validate` accept both.
+   `check-package` unpacks a host's bundle and holds it to the same
+   checks as the program. The words are the registry entry's, its
+   ephemeris a choice in the host's settings, and it declares its tools
+   generated, since a plugin changes them. Not built: the guide.
 
 ## 7. The rest of the protocol
 

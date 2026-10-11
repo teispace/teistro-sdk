@@ -3,8 +3,8 @@
 //! order and the dates are the caller's and two stagings of one release
 //! write the same bytes.
 //!
-//! Every entry is deflated and dated 1980-01-01 00:00, with Unix mode 0644,
-//! no extra fields and no directory entries (no reader of either format
+//! Every entry is deflated and dated 1980-01-01 00:00, with Unix mode 0644
+//! (0755 for a program, through [`write_modes`]), no extra fields and no directory entries (no reader of either format
 //! needs them). An entry can arrive already deflated, so a library two
 //! archives carry is packed once.
 
@@ -41,16 +41,28 @@ pub(crate) fn pack(data: &[u8]) -> io::Result<Entry> {
     })
 }
 
-/// A zip of `entries`, in the order given.
+/// A zip of `entries`, in the order given, each mode 0644.
 pub(crate) fn write<'e, N: AsRef<str> + 'e>(
     entries: impl IntoIterator<Item = (N, &'e Entry)>,
+) -> io::Result<Vec<u8>> {
+    write_modes(
+        entries
+            .into_iter()
+            .map(|(name, entry)| (name, entry, 0o644)),
+    )
+}
+
+/// A zip of `entries`, in the order given, each with its Unix mode: 0755
+/// for a program a reader should be able to run once unpacked.
+pub(crate) fn write_modes<'e, N: AsRef<str> + 'e>(
+    entries: impl IntoIterator<Item = (N, &'e Entry, u32)>,
 ) -> io::Result<Vec<u8>> {
     /// 1980-01-01 in MS-DOS date format: day 1, month 1, year 0.
     const DOS_DATE: u16 = 0x21;
     let mut out = Vec::new();
     let mut central = Vec::new();
     let mut count = 0_usize;
-    for (name, entry) in entries {
+    for (name, entry, mode) in entries {
         let name = name.as_ref();
         let packed_here;
         let (crc, size, packed) = match entry {
@@ -102,7 +114,7 @@ pub(crate) fn write<'e, N: AsRef<str> + 'e>(
         for field in [0_u16, 0, 0, 0] {
             central.extend(field.to_le_bytes());
         }
-        central.extend((0o100_644_u32 << 16).to_le_bytes());
+        central.extend(((0o100_000 | mode) << 16).to_le_bytes());
         central.extend(offset.to_le_bytes());
         central.extend(name.as_bytes());
         count += 1;

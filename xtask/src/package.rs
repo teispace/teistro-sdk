@@ -38,7 +38,7 @@ use crate::hashes::hex;
 use crate::node_binding::ADDON_STEM;
 use crate::platform::{NPM_MCP, NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
 use crate::{read, rel};
-use crate::{release, sbom};
+use crate::{release, sbom, zip};
 
 /// The manifest's schema, versioned like every other file this repository
 /// writes for someone else to read.
@@ -514,13 +514,9 @@ fn platform_package(
     if let Some(libc) = platform.libc {
         manifest.insert("libc".to_string(), json!([libc]));
     }
-    // The SDK's own floor, which `node-is-tested-at-its-floor` holds every
-    // package to, so a platform package never promises an older Node.
-    let floor = serde_json::from_str::<Value>(&read(&root.join("bindings/node/package.json")))
-        .ok()
-        .and_then(|node| node["engines"]["node"].as_str().map(str::to_owned))
-        .ok_or_else(|| io::Error::other("bindings/node/package.json states no `engines.node`"))?;
-    manifest.insert("engines".to_string(), json!({ "node": floor }));
+    // The SDK's own floor, so a platform package never promises an older
+    // Node than the one it is tested at.
+    manifest.insert("engines".to_string(), json!({ "node": node_floor(root)? }));
     let mut files = vec![json!(carried.file), json!(sbom::FILE)];
     files.extend(LEGAL.map(|legal| json!(legal)));
     manifest.insert("files".to_string(), Value::Array(files));
@@ -628,7 +624,7 @@ pub(crate) fn stage(root: &Path, partial: bool) -> i32 {
         "version": version,
         "platforms": platforms,
     });
-    match write_stage(root, &dist, &version, &merged) {
+    match write_stage(root, &dist, &version, &merged, partial) {
         Ok(paths) => {
             for path in &paths {
                 println!("wrote {path}");
@@ -654,12 +650,26 @@ pub(crate) fn stage(root: &Path, partial: bool) -> i32 {
 ///
 /// The Java package is staged first, since the merged manifest records
 /// it (`maven`) and the checksum list lists its files.
-fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::Result<Vec<String>> {
+fn write_stage(
+    root: &Path,
+    dist: &Path,
+    version: &str,
+    merged: &Value,
+    partial: bool,
+) -> io::Result<Vec<String>> {
     let mut written = Vec::new();
     let mut merged = merged.clone();
     if let Some((jars, record)) = crate::java_package::stage(root, dist, version, &merged)? {
         written.extend(jars);
         merged["maven"] = record;
+    }
+    if let Some(bundle) = mcp_bundle(root, dist, version, partial)? {
+        written.push(rel(root, &dist.join(MCP_REGISTRY_ENTRY)));
+        written.push(rel(
+            root,
+            &dist.join(bundle["file"].as_str().unwrap_or_default()),
+        ));
+        merged["mcpb"] = bundle;
     }
     let merged = &merged;
     let manifest = dist.join("manifest.json");
@@ -749,7 +759,13 @@ fn checksum_list(merged: &Value) -> String {
             }
         }
     }
-    for file in merged["maven"]["files"].as_array().into_iter().flatten() {
+    let bundle = merged.get("mcpb").into_iter();
+    for file in merged["maven"]["files"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .chain(bundle)
+    {
         lines.push(format!(
             "{}  {}",
             file["sha256"].as_str().unwrap_or_default(),
@@ -779,6 +795,163 @@ fn stage_node(root: &Path, dist: &Path) -> io::Result<String> {
         fs::copy(root.join(legal), directory.join(legal))?;
     }
     Ok(rel(root, &directory))
+}
+
+/// The platforms Claude Desktop runs on, whose programs the agent
+/// server's bundle carries: one a platform, since a bundle's
+/// configuration chooses by operating system and never by architecture,
+/// and the launcher in it chooses by both.
+const MCP_BUNDLED: [&str; 4] = ["darwin-arm64", "darwin-x64", "win32-x64", "win32-arm64"];
+
+/// The registry entry the release publishes: the repository's, with the
+/// bundle beside the npm launcher.
+const MCP_REGISTRY_ENTRY: &str = "server.json";
+
+/// The agent server's bundle for Claude Desktop, `teistro-mcp-{version}.mcpb`
+/// (MCPB manifest 0.3): the npm launcher run by the host's Node, beside a
+/// program a platform under `server/platforms/`. Written from the platform
+/// packages the matrix staged, with the registry entry that names it by
+/// its digest. A partial stage bundles the platforms present, so the
+/// host's install check can run it; `None` when none of them is.
+fn mcp_bundle(root: &Path, dist: &Path, version: &str, partial: bool) -> io::Result<Option<Value>> {
+    let mut programs = Vec::new();
+    for name in MCP_BUNDLED {
+        let platform = Platform::by_name(name)
+            .ok_or_else(|| io::Error::other(format!("{name} is not a platform the SDK ships")))?;
+        let program = platform.program(MCP_PROGRAM);
+        let path = dist
+            .join("npm")
+            .join(platform.npm_mcp_package())
+            .join(&program);
+        match fs::read(&path) {
+            Ok(bytes) => programs.push((format!("server/platforms/{name}/{program}"), bytes)),
+            Err(_) if partial => {}
+            Err(err) => {
+                return Err(io::Error::other(format!(
+                    "the bundle carries {name}'s program, and {} cannot be read: {err}",
+                    rel(root, &path)
+                )));
+            }
+        }
+    }
+    if programs.is_empty() {
+        return Ok(None);
+    }
+    let registered: Value = serde_json::from_str(&read(&root.join("crates/mcp/server.json")))
+        .map_err(io::Error::other)?;
+    let manifest = bundle_manifest(root, &registered, version)?;
+    let mut files: Vec<(String, Vec<u8>, u32)> = vec![
+        (
+            String::from("manifest.json"),
+            format!("{}\n", to_json(&manifest)).into_bytes(),
+            0o644,
+        ),
+        (
+            String::from("server/package.json"),
+            b"{ \"type\": \"module\" }\n".to_vec(),
+            0o644,
+        ),
+        (
+            String::from("server/bin/teistro-mcp.js"),
+            fs::read(root.join("crates/mcp/npm/bin/teistro-mcp.js"))?,
+            0o644,
+        ),
+        (
+            String::from("README.md"),
+            fs::read(root.join("crates/mcp/README.md"))?,
+            0o644,
+        ),
+    ];
+    for legal in LEGAL {
+        files.push((legal.to_string(), fs::read(root.join(legal))?, 0o644));
+    }
+    files.extend(
+        programs
+            .into_iter()
+            .map(|(name, bytes)| (name, bytes, 0o755)),
+    );
+    let entries: Vec<(String, zip::Entry, u32)> = files
+        .into_iter()
+        .map(|(name, bytes, mode)| (name, zip::Entry::Plain(bytes), mode))
+        .collect();
+    let name = format!("{MCP_PROGRAM}-{version}.mcpb");
+    let path = dist.join(&name);
+    fs::write(
+        &path,
+        zip::write_modes(
+            entries
+                .iter()
+                .map(|(name, entry, mode)| (name, entry, *mode)),
+        )?,
+    )?;
+    let bundle = entry(&path, &name)?;
+
+    let mut published = registered;
+    if let Some(packages) = published["packages"].as_array_mut() {
+        packages.push(json!({
+            "registryType": "mcpb",
+            "identifier": format!(
+                "https://github.com/teispace/teistro-sdk/releases/download/v{version}/{name}"
+            ),
+            "fileSha256": bundle["sha256"],
+            "transport": { "type": "stdio" },
+        }));
+    }
+    fs::write(
+        dist.join(MCP_REGISTRY_ENTRY),
+        format!("{}\n", to_json(&published)),
+    )?;
+    Ok(Some(bundle))
+}
+
+/// The bundle's manifest (MCPB 0.3), its words the registry entry's.
+fn bundle_manifest(root: &Path, registered: &Value, version: &str) -> io::Result<Value> {
+    Ok(json!({
+        "manifest_version": "0.3",
+        "name": "teistro",
+        "display_name": registered["title"],
+        "version": version,
+        "description": registered["description"],
+        "author": { "name": "Teispace", "email": "support@teispace.com", "url": "https://github.com/teispace" },
+        "repository": { "type": "git", "url": "https://github.com/teispace/teistro-sdk" },
+        "homepage": registered["websiteUrl"],
+        "support": "https://github.com/teispace/teistro-sdk/issues",
+        "license": "Apache-2.0",
+        "keywords": ["astrology", "jyotish", "panchanga", "horoscope", "ephemeris"],
+        "server": {
+            "type": "node",
+            "entry_point": "server/bin/teistro-mcp.js",
+            "mcp_config": {
+                "command": "node",
+                "args": ["${__dirname}/server/bin/teistro-mcp.js", "--ephemeris", "${user_config.ephemeris}"],
+                "env": {},
+            },
+        },
+        "user_config": {
+            "ephemeris": {
+                "type": "string",
+                "title": "Ephemeris",
+                "description": "The ephemeris every tool computes with: BUILTIN, SURYA_SIDDHANTA or NONE",
+                "default": "BUILTIN",
+                "required": false,
+            },
+        },
+        // The list depends on a plugin and on an embedder's own tools.
+        "tools_generated": true,
+        "compatibility": {
+            "platforms": ["darwin", "win32"],
+            "runtimes": { "node": node_floor(root)? },
+        },
+    }))
+}
+
+/// The Node the SDK is tested at, from its manifest, which
+/// `node-is-tested-at-its-floor` holds every package to.
+fn node_floor(root: &Path) -> io::Result<String> {
+    serde_json::from_str::<Value>(&read(&root.join("bindings/node/package.json")))
+        .ok()
+        .and_then(|node| node["engines"]["node"].as_str().map(str::to_owned))
+        .ok_or_else(|| io::Error::other("bindings/node/package.json states no `engines.node`"))
 }
 
 /// Stages the agent server's npm launcher: its manifest, which names the
