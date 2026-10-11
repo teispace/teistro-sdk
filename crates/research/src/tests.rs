@@ -275,7 +275,7 @@ fn the_answer_speaks_camel_case() {
     test.alpha = Some(0.5);
     let json = serde_json::to_value(compare(&matrix, &design, &test).unwrap()).unwrap();
     snake_free(&json);
-    assert_eq!(json["shuffle"], "research/shuffle/1");
+    assert_eq!(json["shuffle"], "research/shuffle/2");
     let back: GroupTest = serde_json::from_str(
         r#"{"seed":3,"permutations":99,"contrast":{"kind":"CASE_VS_REST","case":1},"alpha":0.5}"#,
     )
@@ -458,8 +458,123 @@ fn a_pairing_before_a_birth_is_refused_or_never_drawn() {
     stuck.forbid(1, 2);
     stuck.forbid(1, 0);
     stuck.push("any", |_, _| Cell::Absent).unwrap();
-    // Only the identity remains, which a shuffle draws a sixth of the time.
+    // No dates make this board (subject 0 would be born after event 1 and
+    // before event 0, subject 1 the other way round), so the exact sampler
+    // refuses it; rejection, which asks nothing of the board, draws the
+    // identity a sixth of the time.
+    assert_eq!(
+        timed(&stuck, None, &test).unwrap_err().field(),
+        Some("afterBirth")
+    );
+    test.shuffle = ShuffleVersion::V1;
     assert!(timed(&stuck, None, &test).is_ok());
+}
+
+/// A board whose event `j` may go to the subjects `0..eligible[j]`, as
+/// subjects born in order and events dated after the first `eligible[j]`
+/// births make it.
+fn board_of(eligible: &[usize]) -> PairMatrix {
+    let n = eligible.len();
+    let mut matrix = PairMatrix::new(n).unwrap();
+    for (j, &count) in eligible.iter().enumerate() {
+        for i in count..n {
+            matrix.forbid(i, j);
+        }
+    }
+    matrix
+}
+
+/// How often each pairing of `board` is drawn in `draws` draws, by the
+/// exact sampler or by rejection.
+fn drawn(board: &PairMatrix, draws: u64, exact: bool) -> BTreeMap<Vec<u16>, u64> {
+    let n = board.subjects();
+    let identity: Vec<u16> = (0..u16::try_from(n).unwrap()).collect();
+    let layout = Layout::new(&identity, 0, None);
+    let exact_board = events::Board::of(board, &layout).unwrap();
+    let (mut pairing, mut pool) = (vec![0; n], Vec::new());
+    let mut seen = BTreeMap::new();
+    for k in 0..draws {
+        let mut rng = SplitMix64::for_permutation(77, k);
+        if exact {
+            exact_board.draw(&mut rng, &mut pairing, &mut pool);
+        } else {
+            loop {
+                layout.permute_with(&mut rng, &mut pairing, &mut pool);
+                let allowed = pairing
+                    .iter()
+                    .enumerate()
+                    .all(|(i, &j)| board.allows(i, usize::from(j)));
+                if allowed {
+                    break;
+                }
+            }
+        }
+        *seen.entry(pairing.clone()).or_default() += 1;
+    }
+    seen
+}
+
+#[test]
+fn a_board_of_one_pairing_draws_it_every_time() {
+    // Eligible counts 1, 2, 3: one pairing, 1·1·1.
+    let seen = drawn(&board_of(&[1, 2, 3]), 1_000, true);
+    assert_eq!(seen.len(), 1);
+    assert_eq!(seen.get(&vec![0, 1, 2]), Some(&1_000));
+}
+
+#[test]
+fn the_exact_sampler_draws_every_allowed_pairing_alike() {
+    // Eligible counts 2, 3, 4, 4: 2·2·2·1 = 8 pairings, each within its
+    // binomial over 80 000 draws, and rejection agrees cell for cell.
+    let board = board_of(&[2, 3, 4, 4]);
+    for exact in [true, false] {
+        let seen = drawn(&board, 80_000, exact);
+        assert_eq!(seen.len(), 8, "exact {exact}: {seen:?}");
+        for (pairing, &count) in &seen {
+            assert!(
+                near(count, 80_000, 1.0 / 8.0),
+                "exact {exact}: {pairing:?} {count}"
+            );
+            for (i, &j) in pairing.iter().enumerate() {
+                assert!(board.allows(i, usize::from(j)), "{pairing:?}");
+            }
+        }
+    }
+}
+
+#[test]
+fn a_cohort_rejection_cannot_pair_is_paired_exactly() {
+    // Sixty subjects born in order, each event twenty births after its
+    // own: a random pairing almost never keeps every event after its
+    // birth, so rejection gives up, and the exact sampler does not.
+    let n = 60;
+    let mut matrix = board_of(&(0..n).map(|j| (j + 21).min(n)).collect::<Vec<_>>());
+    matrix
+        .push("p", |i, j| {
+            if (i + j) % 3 == 0 {
+                Cell::Present
+            } else {
+                Cell::Absent
+            }
+        })
+        .unwrap();
+    let mut test = EventTest::new(5, 199);
+    test.after_birth = AfterBirth::RestrictPairings;
+    test.shuffle = ShuffleVersion::V1;
+    assert_eq!(
+        timed(&matrix, None, &test).unwrap_err().field(),
+        Some("afterBirth")
+    );
+    test.shuffle = ShuffleVersion::V2;
+    let tested = timed(&matrix, None, &test).unwrap();
+    assert_eq!(tested.shuffle, ShuffleVersion::V2);
+    // An unrestricted study draws what /1 drew, bit for bit.
+    let free = events(40, 0.5, 0.4, 9);
+    let mut plain = EventTest::new(5, 299);
+    let second = timed(&free, None, &plain).unwrap();
+    plain.shuffle = ShuffleVersion::V1;
+    let first = timed(&free, None, &plain).unwrap();
+    assert_eq!(first.rows, second.rows);
 }
 
 #[test]

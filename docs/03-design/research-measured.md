@@ -83,7 +83,7 @@ The rising Sun, the sector the early hours fill, reads z 2.8 alone: the 12th and
 | proposed rule | verdict | measured |
 |---|---|---|
 | under `AGES_AT_EVENT`, a null event study's raw p is under 0.05 no more often than 5% | **holds** | 6 of 154 rows, 0.039 |
-| under `EVENT_DATES`, a null event study's raw p is under 0.05 no more often than 5% | **holds** | 5 of 158 rows, 0.032 |
+| under `EVENT_DATES`, a null event study's raw p is under 0.05 no more often than 5% | **holds** | 6 of 158 rows, 0.038 |
 
 ## 5. An uncertain birth's window
 

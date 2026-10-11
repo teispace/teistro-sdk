@@ -21,7 +21,8 @@ use crate::{Alternative, Expectation, GroupCount, Parallelism, PredicateRow, Tes
 pub const MAX_SUBJECTS: usize = 20_000;
 
 /// The most attempts one permutation may make to draw a pairing that puts
-/// no event before its birth, under [`AfterBirth::RestrictPairings`].
+/// no event before its birth, under [`AfterBirth::RestrictPairings`] and
+/// `research/shuffle/1`, which draws by rejection.
 pub const MAX_ATTEMPTS: u32 = 10_000;
 
 /// What a pair a permutation may not make is: an event placed before the
@@ -35,8 +36,9 @@ pub enum AfterBirth {
     #[default]
     Refuse,
     /// Permute only among pairings that keep every event after its birth,
-    /// each drawn uniformly by rejection. This changes the reference set,
-    /// which the answer says.
+    /// each drawn uniformly: exactly under `research/shuffle/2`, by
+    /// rejection under `/1`. This changes the reference set, which the
+    /// answer says.
     RestrictPairings,
 }
 
@@ -98,6 +100,15 @@ impl PairMatrix {
         if subject < self.subjects && event < self.subjects {
             self.allowed.remove(subject * self.subjects + event);
         }
+    }
+
+    /// Whether a permutation may pair subject `subject` with event
+    /// `event`.
+    #[must_use]
+    pub fn allows(&self, subject: usize, event: usize) -> bool {
+        subject < self.subjects
+            && event < self.subjects
+            && self.allowed.contains(subject * self.subjects + event)
     }
 
     /// Whether any pairing is forbidden.
@@ -196,6 +207,91 @@ impl EventTest {
     }
 }
 
+/// The allowed pairings of each stratum as a Ferrers board (Goldman,
+/// Joichi and White, *Proc. AMS* 52, 1975): an event's subjects are those
+/// born before it, so an earlier event's are among a later one's. Each
+/// stratum lists its events with the fewest subjects first, and with each
+/// event the subjects it adds to the ones before it.
+pub(crate) struct Board {
+    strata: Vec<Vec<(u16, Vec<u16>)>>,
+}
+
+impl Board {
+    /// The board of `matrix`'s allowed pairs inside `layout`'s strata.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on `afterBirth` when the allowed pairs are not nested,
+    /// which no study of births and dated events makes, or when an event
+    /// has fewer subjects born before it than the events before it need,
+    /// so no pairing keeps every event after its birth.
+    pub(crate) fn of(matrix: &PairMatrix, layout: &Layout<'_>) -> Result<Board, Error> {
+        let n = matrix.subjects;
+        let mut strata = Vec::with_capacity(layout.strata.len());
+        for positions in &layout.strata {
+            let mut events: Vec<(usize, Vec<u16>)> = positions
+                .iter()
+                .map(|&event| {
+                    let subjects = positions
+                        .iter()
+                        .filter(|&&subject| matrix.allowed.contains(subject * n + event))
+                        .filter_map(|&subject| u16::try_from(subject).ok())
+                        .collect();
+                    (event, subjects)
+                })
+                .collect();
+            events.sort_by(|a, b| a.1.len().cmp(&b.1.len()).then(a.0.cmp(&b.0)));
+            let mut added = Vec::with_capacity(events.len());
+            let mut before: &[u16] = &[];
+            for (rank, (event, subjects)) in events.iter().enumerate() {
+                if subjects.len() <= rank {
+                    return Err(Error::invalid_arg(format!(
+                        "event {event} has {} subjects born before it, and the {rank} earlier events of its stratum need one each, so no pairing keeps every event after its birth",
+                        subjects.len()
+                    ))
+                    .with_field("afterBirth"));
+                }
+                if !before
+                    .iter()
+                    .all(|subject| subjects.binary_search(subject).is_ok())
+                {
+                    return Err(Error::invalid_arg(format!(
+                        "the subjects allowed event {event} do not include those of an earlier event, so the pairings are not ordered by date"
+                    ))
+                    .with_field("afterBirth"));
+                }
+                let new: Vec<u16> = subjects
+                    .iter()
+                    .filter(|subject| before.binary_search(subject).is_err())
+                    .copied()
+                    .collect();
+                added.push((u16::try_from(*event).unwrap_or(u16::MAX), new));
+                before = subjects;
+            }
+            strata.push(added);
+        }
+        Ok(Board { strata })
+    }
+
+    /// Draws a pairing uniformly from the board into `pairing`: each
+    /// event, fewest subjects first, takes one uniformly from the pool of
+    /// its subjects not yet taken, whose size does not depend on which
+    /// were taken before.
+    pub(crate) fn draw(&self, rng: &mut SplitMix64, pairing: &mut [u16], pool: &mut Vec<u16>) {
+        for stratum in &self.strata {
+            pool.clear();
+            for (event, new) in stratum {
+                pool.extend_from_slice(new);
+                let at = usize::try_from(rng.below(pool.len() as u64)).unwrap_or(0);
+                let subject = pool.swap_remove(at);
+                if let Some(slot) = pairing.get_mut(usize::from(subject)) {
+                    *slot = *event;
+                }
+            }
+        }
+    }
+}
+
 /// An event study's pairings, permuted inside strata, and the
 /// standardised count each predicate reads off them.
 struct Paired<'a> {
@@ -203,6 +299,8 @@ struct Paired<'a> {
     layout: &'a Layout<'a>,
     seed: u64,
     restricted: bool,
+    /// The board an exact restricted draw reads, under `research/shuffle/2`.
+    board: Option<Board>,
     alternative: Alternative,
     /// Each predicate's share over every allowed pair it was read on:
     /// what a random pairing expects.
@@ -267,6 +365,11 @@ impl Permuted for Paired<'_> {
 
     fn read(&self, k: u64, scratch: &mut PairScratch, out: &mut [f64]) -> Result<(), Error> {
         let mut rng = SplitMix64::for_permutation(self.seed, k);
+        if let Some(board) = &self.board {
+            board.draw(&mut rng, &mut scratch.pairing, &mut scratch.stratum);
+            self.statistics(&scratch.pairing, out);
+            return Ok(());
+        }
         let mut attempts = 0;
         loop {
             self.layout
@@ -362,7 +465,8 @@ fn diagonal_row(
 ///
 /// `INVALID_ARG` naming its field: strata not one per subject, or none
 /// that holds two subjects (`strata`); a forbidden pairing under
-/// [`AfterBirth::Refuse`], or a restricted pairing rejection cannot meet
+/// [`AfterBirth::Refuse`], a restricted pairing no permutation can make
+/// or, under `research/shuffle/1`, one rejection cannot meet
 /// (`afterBirth`, with a hint); permutations outside 1 to
 /// [`MAX_PERMUTATIONS`], or too few to reach `alpha` over the family
 /// (`permutations`); `level` or `alpha` outside (0, 1); no predicate
@@ -411,11 +515,16 @@ pub fn timed(
             }
         })
         .collect();
+    let board = match test.shuffle {
+        ShuffleVersion::V2 if restricted => Some(Board::of(matrix, &layout)?),
+        ShuffleVersion::V1 | ShuffleVersion::V2 => None,
+    };
     let paired = Paired {
         matrix,
         layout: &layout,
         seed: test.seed,
         restricted,
+        board,
         alternative: test.alternative,
         null,
     };

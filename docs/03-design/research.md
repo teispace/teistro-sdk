@@ -183,9 +183,16 @@ count**:
 - **Shuffle**: Fisher–Yates with Lemire's unbiased bounded integer
   (multiply-shift with rejection). Within strata, each stratum is shuffled
   in its key order (`BTreeMap`).
-- **Versioned**: the answer's provenance names `research/shuffle/1`. A
-  change to the generator or the shuffle is a new version, and the old one
-  stays selectable so a published study can be rerun.
+- **Versioned**: the answer's provenance names the version,
+  `research/shuffle/2` by default. A change to the generator or the
+  shuffle is a new version, and the old one stays selectable so a
+  published study can be rerun. `/2` differs from `/1` only in an event
+  study's restricted pairing, which it draws exactly (C368): the allowed
+  pairings form a Ferrers board, since an earlier event's subjects are
+  among a later one's, and each event, fewest subjects first, takes one
+  uniformly from a pool of its subjects not yet taken, whose size never
+  depends on what was taken. `/1` drew whole permutations and rejected
+  them, which can refuse a study for want of luck.
 - **Integer statistics**: counts are summed as integers, so a sum across
   threads is order-free. A floating statistic (a weighted score) is
   computed per permutation in a fixed order, and only integers cross
@@ -292,7 +299,7 @@ pub struct GroupTest {
     pub level: f64,                        // every interval's confidence, 0.95
     pub alpha: Option<f64>,                // only to list which fall under it
     pub parallelism: Parallelism,
-    pub shuffle: ShuffleVersion,           // research/shuffle/1
+    pub shuffle: ShuffleVersion,           // research/shuffle/2 by default
 }
 
 pub struct Recombine {
@@ -350,7 +357,7 @@ the event's instant is designed, not built.
 | `level` | 0.95 | the confidence of every interval; the p-value's and the effects' alike |
 | `strata` | none | exchangeability by decade, region or sex is the study's claim |
 | `EventShuffle` | none: required | §1.4: the two keep different margins |
-| `after_birth` | `Refuse` | `RestrictPairings` permutes only among people born before the event, which changes the reference set; the answer says so |
+| `after_birth` | `Refuse` | `RestrictPairings` permutes only among people born before the event, which changes the reference set; the answer says so. Drawn exactly under `research/shuffle/2`, and refused only when no pairing exists, naming the event |
 | `uncertaintyMinutes` (per birth) | 0 | rounded hours are the field's commonest data error |
 | `Readings` | the rule set's own | the predicate's meaning is part of the request |
 | `parallelism` | `One` | the answer is the same either way |
@@ -551,8 +558,13 @@ uses fixed seeds, so the counts are exact and also golden.
    (§7). The measured page's §6 holds a stratified study at its
    level where the same study read without its strata finds every
    predicate whose prevalence differs between them (63% to 97% of null
-   labellings). Still to come from the same draft: the self-matched null
-   (C367) and the exact restricted pairing (C368).
+   labellings). The exact restricted pairing (C368) followed the same
+   day as `research/shuffle/2`, now the default: a cohort whose pairings
+   rejection could not meet in 10 000 draws is paired exactly, every
+   allowed pairing drawn alike (within its binomial over 80 000 draws, as
+   rejection's are), and every other draw is `/1`'s bit for bit. Still to
+   come: complete enumeration when the reference set is smaller than the
+   permutations asked, and the self-matched null (C367).
 
 ## Sources
 

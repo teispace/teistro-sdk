@@ -1,4 +1,5 @@
-//! The generator and the shuffle, `research/shuffle/1` (`research.md` §2.2).
+//! The generator and the shuffle, `research/shuffle/1` and `/2`
+//! (`research.md` §2.2).
 //!
 //! Both are part of the answer's contract, so they are written here and
 //! never taken from a dependency whose minor release could move a
@@ -18,21 +19,32 @@ const GOLDEN: u64 = 0x9E37_79B9_7F4A_7C15;
 pub enum ShuffleVersion {
     /// `SplitMix64` keyed per permutation by [`stream_seed`], and
     /// Fisher–Yates drawing each index with Lemire's unbiased bounded
-    /// integer; strata shuffled in their key order.
-    #[default]
+    /// integer; strata shuffled in their key order. An event study's
+    /// restricted pairing is drawn by rejection, which can fail for want
+    /// of luck.
     #[serde(rename = "research/shuffle/1")]
     V1,
+    /// `/1`, except that an event study's restricted pairing is drawn
+    /// exactly: the allowed pairings are a Ferrers board (C368), and each
+    /// event, earliest first, takes a subject uniformly among those born
+    /// before it and not yet taken. Every allowed pairing is equally
+    /// likely and none is ever refused for want of luck. Every other draw
+    /// is `/1`'s, bit for bit.
+    #[default]
+    #[serde(rename = "research/shuffle/2")]
+    V2,
 }
 
 impl ShuffleVersion {
     /// Every version this build carries, oldest first.
-    pub const ALL: [ShuffleVersion; 1] = [ShuffleVersion::V1];
+    pub const ALL: [ShuffleVersion; 2] = [ShuffleVersion::V1, ShuffleVersion::V2];
 
     /// The name the answer's provenance prints.
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
             ShuffleVersion::V1 => "research/shuffle/1",
+            ShuffleVersion::V2 => "research/shuffle/2",
         }
     }
 }
