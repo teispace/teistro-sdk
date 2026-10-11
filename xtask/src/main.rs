@@ -29,6 +29,10 @@
 //! - `check-pub [--dist DIR]`: the staged pub packages through pub's own
 //!   validation from a copy outside the repository, nothing uploaded; every
 //!   error and every unlisted warning fails (the release's `stage` job).
+//! - `check-published VERSION`: every package of a published release
+//!   installed from npm, `PyPI`, pub.dev and Maven Central into throwaway
+//!   projects, and each binding's consumer run against it (the release's
+//!   last job, after a publish).
 //! - `check-java`: the Java binding compiled at its floor's release with
 //!   every lint an error, and its tests against the real library (needs a
 //!   JDK).
@@ -325,6 +329,7 @@ mod pluto;
 mod points;
 mod progressed_angles;
 mod pub_check;
+mod published;
 mod python_binding;
 mod rashi_dashas;
 mod rashifal;
@@ -643,6 +648,7 @@ fn main() {
         Some("check-dart") => dart_binding::check(&repo_root()),
         Some("check-flutter") => flutter_package::check(&repo_root(), &args[1..]),
         Some("check-pub") => pub_check::check(&repo_root(), &args[1..]),
+        Some("check-published") => published::check(&repo_root(), &args[1..]),
         Some("check-python") => python_binding::check(&repo_root()),
         Some("check-java") => java_binding::check(&repo_root()),
         Some("check-rust") => rust_binding::check(&repo_root()),
@@ -738,7 +744,7 @@ fn usage() -> i32 {
          vsop [DIR] | moon | wasm-crates [MODULE] | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
-         check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-python | check-java | check-rust | check-parity | check-lints | \
+         check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
          conformance --from DIR | check-conformance --from DIR | \
          check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | check-site | check-tag TAG | version [X] | changelog-entry X | \

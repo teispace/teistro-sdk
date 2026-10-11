@@ -270,6 +270,66 @@ fn maven(
     maven.checksums_enforced(layout)
 }
 
+/// The published jar from Maven Central, both coordinates, each resolved
+/// alone into a repository of its own and the consumer run against it
+/// (`cargo xtask check-published`).
+pub(crate) fn published(
+    root: &Path,
+    into: &Path,
+    platform: &Platform,
+    version: &str,
+) -> Result<(), ()> {
+    if !(present("javac", "--version") && present("java", "--version")) {
+        crate::skip::skip("the published Java package: no javac and java on this machine");
+        return Ok(());
+    }
+    let Some(mvn) = tool("mvn", "--version") else {
+        crate::skip::skip("the published Java package: no `mvn` on this machine");
+        return Ok(());
+    };
+    let into = into.join("java");
+    let maven = Maven {
+        mvn,
+        repository: into.join("m2"),
+        into: &into,
+        version,
+    };
+    for (project, classifier) in [
+        ("central-default", None),
+        ("central-classifier", Some(platform.name())),
+    ] {
+        let lib = maven
+            .resolve(project, CENTRAL, classifier.as_deref())
+            .map_err(|said| {
+                println!(
+                    "FAIL  Maven Central did not give {GROUP}:{ARTIFACT}:{version}{}:\n{said}",
+                    classifier
+                        .as_deref()
+                        .map(|name| format!(":{name}"))
+                        .unwrap_or_default()
+                );
+            })?;
+        let wanted = match classifier.as_deref() {
+            Some(name) => format!("{ARTIFACT}-{version}-{name}.jar"),
+            None => format!("{ARTIFACT}-{version}.jar"),
+        };
+        let jar = lib.join(&wanted);
+        if !jar.is_file() {
+            println!("FAIL  Maven Central's {project} resolved no {wanted}");
+            return Err(());
+        }
+        let dir = into.join(project);
+        run_consumer(
+            root,
+            &dir,
+            &Arm::class_path(&jar, platform.is_windows()),
+            &dir.join("cache"),
+        )?;
+        println!("ok    {project}: the published jar resolves from Maven Central and answers");
+    }
+    Ok(())
+}
+
 /// Maven, resolving into a local repository of its own.
 struct Maven<'a> {
     /// The launcher, as [`tool`] found it.
@@ -287,7 +347,7 @@ impl Maven<'_> {
     fn resolve(
         &self,
         project: &str,
-        from: &Path,
+        from: &str,
         classifier: Option<&str>,
     ) -> Result<PathBuf, String> {
         // The artefact always comes from the staged layout, never from a
@@ -330,7 +390,7 @@ impl Maven<'_> {
         staged: &Path,
         classifier: Option<&str>,
     ) -> Result<(), ()> {
-        let lib = self.resolve(project, layout, classifier).map_err(|said| {
+        let lib = self.resolve(project, &file_url(layout), classifier).map_err(|said| {
             println!(
                 "FAIL  Maven did not resolve {GROUP}:{ARTIFACT}:{}{} from the staged repository (it needs the network once, for its dependency plugin):\n{said}",
                 self.version,
@@ -380,7 +440,7 @@ impl Maven<'_> {
         )?;
         // Any refusal would pass a check that only asked for one, a machine
         // without the network among them: this one must name the checksum.
-        match self.resolve("maven-broken", &broken, None) {
+        match self.resolve("maven-broken", &file_url(&broken), None) {
             Err(said) if said.contains("Checksum validation failed") => {
                 println!("ok    Maven refuses a jar whose checksum is wrong");
                 Ok(())
@@ -401,16 +461,23 @@ impl Maven<'_> {
     }
 }
 
-/// A project depending on the coordinate from a repository on disk, its
-/// checksums enforced.
-fn pom(version: &str, repository: &Path, classifier: Option<&str>) -> String {
-    // Forward slashes, also on Windows, and three after the scheme.
+/// A repository on disk as Maven names it: forward slashes, also on
+/// Windows, and three after the scheme.
+fn file_url(repository: &Path) -> String {
     let path = repository.display().to_string().replace('\\', "/");
-    let url = if path.starts_with('/') {
+    if path.starts_with('/') {
         format!("file://{path}")
     } else {
         format!("file:///{path}")
-    };
+    }
+}
+
+/// Maven Central, where a release's jars are published.
+const CENTRAL: &str = "https://repo.maven.apache.org/maven2";
+
+/// A project depending on the coordinate from the repository at `url`,
+/// its checksums enforced.
+fn pom(version: &str, url: &str, classifier: Option<&str>) -> String {
     let classifier = classifier
         .map(|name| format!("\n      <classifier>{name}</classifier>"))
         .unwrap_or_default();
@@ -536,21 +603,19 @@ mod tests {
 
     #[test]
     fn a_repository_url_has_three_slashes_on_every_host() {
-        assert!(pom("1.0.0", Path::new("/a/maven"), None).contains("<url>file:///a/maven</url>"));
-        assert!(
-            pom("1.0.0", Path::new(r"C:\a\maven"), None).contains("<url>file:///C:/a/maven</url>")
-        );
+        assert_eq!(file_url(Path::new("/a/maven")), "file:///a/maven");
+        assert_eq!(file_url(Path::new(r"C:\a\maven")), "file:///C:/a/maven");
+        assert!(pom("1.0.0", "file:///a/maven", None).contains("<url>file:///a/maven</url>"));
     }
 
     #[test]
     fn a_classifier_is_named_only_when_asked() {
-        assert!(!pom("1.0.0", Path::new("/m"), None).contains("<classifier>"));
+        assert!(!pom("1.0.0", "file:///m", None).contains("<classifier>"));
         assert!(
-            pom("1.0.0", Path::new("/m"), Some("linux-x64"))
+            pom("1.0.0", "file:///m", Some("linux-x64"))
                 .contains("<classifier>linux-x64</classifier>")
         );
-        assert!(
-            pom("1.0.0", Path::new("/m"), None).contains("<checksumPolicy>fail</checksumPolicy>")
-        );
+        // Central is held to the same checksums as the staged repository.
+        assert!(pom("1.0.0", CENTRAL, None).contains("<checksumPolicy>fail</checksumPolicy>"));
     }
 }
