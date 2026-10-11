@@ -167,19 +167,34 @@ final class ResearchReads {
                 Reads.number(one, "high"));
     }
 
+    private static ResearchTested.Estimate maybeEstimate(Object raw) {
+        return raw == null ? null : estimate(raw);
+    }
+
+    private static ResearchTested.Pooled pooled(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        Map<?, ?> one = Reads.object(raw);
+        return new ResearchTested.Pooled(
+                maybeEstimate(one.get("riskRatio")),
+                maybeEstimate(one.get("oddsRatio")),
+                Reads.optionalNumber(one, "homogeneityP"));
+    }
+
     private static ResearchTested.Effect effect(Object raw) {
         if (raw == null) {
             return null;
         }
         Map<?, ?> one = Reads.object(raw);
-        Object ratio = one.get("riskRatio");
         return new ResearchTested.Effect(
                 estimate(Reads.field(one, "riskCase")),
                 estimate(Reads.field(one, "riskRest")),
                 estimate(Reads.field(one, "riskDifference")),
-                ratio == null ? null : estimate(ratio),
+                maybeEstimate(one.get("riskRatio")),
                 Reads.optionalNumber(one, "oddsRatio"),
-                Reads.number(one, "cohenH"));
+                Reads.number(one, "cohenH"),
+                pooled(one.get("pooled")));
     }
 
     private static ResearchTested.Row row(Object raw) {

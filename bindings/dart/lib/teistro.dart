@@ -19047,9 +19047,31 @@ final class ResearchAdjusted extends _Value {
   List<Object?> get _fields => [maxT, holm, bonferroni, bh, by];
 }
 
+/// The cases against the rest within strata, pooled: Mantel–Haenszel's
+/// [riskRatio] (Greenland and Robins's interval) and [oddsRatio] (Robins,
+/// Breslow and Greenland's), each null where every stratum leaves it
+/// undefined, and Breslow–Day's [homogeneityP] with Tarone's correction
+/// that the strata share one odds ratio, null under two informative strata.
+final class ResearchPooled extends _Value {
+  const ResearchPooled({
+    required this.riskRatio,
+    required this.oddsRatio,
+    required this.homogeneityP,
+  });
+
+  final ResearchInterval? riskRatio;
+  final ResearchInterval? oddsRatio;
+  final double? homogeneityP;
+
+  @override
+  List<Object?> get _fields => [riskRatio, oddsRatio, homogeneityP];
+}
+
 /// The cases against the rest: each group's share, their difference and
 /// ratio with intervals, the odds ratio and Cohen's *h*. The ratio and the
-/// odds are null where a cell is empty.
+/// odds are null where a cell is empty. A design with strata adds the
+/// ratios [pooled] over them, which beside the crude ones show the
+/// confounding the strata removed.
 final class ResearchEffect extends _Value {
   const ResearchEffect({
     required this.riskCase,
@@ -19058,6 +19080,7 @@ final class ResearchEffect extends _Value {
     required this.riskRatio,
     required this.oddsRatio,
     required this.cohenH,
+    this.pooled,
   });
 
   final ResearchInterval riskCase;
@@ -19066,6 +19089,7 @@ final class ResearchEffect extends _Value {
   final ResearchInterval? riskRatio;
   final double? oddsRatio;
   final double cohenH;
+  final ResearchPooled? pooled;
 
   @override
   List<Object?> get _fields => [
@@ -19075,6 +19099,7 @@ final class ResearchEffect extends _Value {
     riskRatio,
     oddsRatio,
     cohenH,
+    pooled,
   ];
 }
 
@@ -19223,6 +19248,16 @@ ResearchTested _researchTested(Map<String, Object?> answer) {
     low: _real(at(value)['low']),
     high: _real(at(value)['high']),
   );
+  ResearchInterval? maybeInterval(Object? value) =>
+      value == null ? null : interval(value);
+  ResearchPooled? pooled(Object? value) =>
+      value == null
+          ? null
+          : ResearchPooled(
+            riskRatio: maybeInterval(at(value)['riskRatio']),
+            oddsRatio: maybeInterval(at(value)['oddsRatio']),
+            homogeneityP: maybe(at(value)['homogeneityP']),
+          );
   ResearchRow row(Map<String, Object?> raw) {
     final p = at(raw['p']);
     final adjusted = at(raw['adjusted']);
@@ -19254,12 +19289,10 @@ ResearchTested _researchTested(Map<String, Object?> answer) {
                 riskCase: interval(effect['riskCase']),
                 riskRest: interval(effect['riskRest']),
                 riskDifference: interval(effect['riskDifference']),
-                riskRatio:
-                    effect['riskRatio'] == null
-                        ? null
-                        : interval(effect['riskRatio']),
+                riskRatio: maybeInterval(effect['riskRatio']),
                 oddsRatio: maybe(effect['oddsRatio']),
                 cohenH: _real(effect['cohenH']),
+                pooled: pooled(effect['pooled']),
               ),
       expected:
           expected == null

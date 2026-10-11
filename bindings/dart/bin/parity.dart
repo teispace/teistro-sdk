@@ -2753,8 +2753,8 @@ void main() {
   // The studies every runner sends (`03-design/research.md`): eight births
   // at Kathmandu a few years apart, the shipped yogas as the predicates,
   // compared by alternate labels, read against their own recombined
-  // population, and each delivered by the Vimshottari at an event of its
-  // life under the age shuffle.
+  // population, each delivered by the Vimshottari at an event of its life
+  // under the age shuffle, and compared again inside two strata of four.
   final kathmandu = Observer(
     latitudeDeg: Latitude(27.7172),
     longitudeDeg: Longitude(85.324),
@@ -2787,7 +2787,10 @@ void main() {
             '${r.p.exceed} ${number(r.p.value)} ${number(r.adjusted.maxT)} '
             '${number(r.adjusted.holm)} ${number(r.adjusted.bh)} '
             '${optional(r.exact)} ${optional(r.effect?.riskDifference.estimate)} '
-            '${optional(r.expected?.expected)}',
+            '${optional(r.expected?.expected)} '
+            '${optional(r.effect?.pooled?.riskRatio?.estimate)} '
+            '${optional(r.effect?.pooled?.oddsRatio?.estimate)} '
+            '${optional(r.effect?.pooled?.homogeneityP)}',
       );
     }
   }
@@ -2838,6 +2841,22 @@ void main() {
       dasha: DashaSystem.vimshottari,
       shuffle: ResearchEventShuffle.agesAtEvent,
       test: ResearchEventTest(seed: BigInt.from(3), permutations: 49),
+    ),
+  );
+  putTested(
+    'strata',
+    geo.research.compare(
+      births: births,
+      rules: yogas,
+      design: ResearchDesign(
+        groups: groups.groups,
+        strata: [for (var i = 0; i < 8; i++) i ~/ 4],
+      ),
+      test: ResearchGroupTest(
+        seed: BigInt.from(6),
+        permutations: 199,
+        contrast: const ResearchContrast.caseVsRest(1),
+      ),
     ),
   );
   geo.dispose();

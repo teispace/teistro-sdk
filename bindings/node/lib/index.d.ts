@@ -7112,6 +7112,19 @@ export interface ResearchRow extends ResearchCountRow {
     readonly riskRatio: ResearchInterval | null;
     readonly oddsRatio: number | null;
     readonly cohenH: number;
+    /**
+     * The ratios pooled over the design's strata, for a design that has
+     * them; beside the crude ones, the difference is the confounding the
+     * strata removed.
+     */
+    readonly pooled?: {
+      /** Mantel–Haenszel's risk ratio, with Greenland and Robins's interval. */
+      readonly riskRatio: ResearchInterval | null;
+      /** Mantel–Haenszel's odds ratio, with Robins, Breslow and Greenland's interval. */
+      readonly oddsRatio: ResearchInterval | null;
+      /** Breslow–Day's p (Tarone's correction) that the strata share one odds ratio. */
+      readonly homogeneityP: number | null;
+    };
   };
   /** The share observed against the share the null expects, for a one-group study. */
   readonly expected?: { readonly observed: number; readonly expected: number; readonly ratio?: number };

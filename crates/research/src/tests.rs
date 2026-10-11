@@ -582,3 +582,210 @@ fn the_hint_is_the_fewest_permutations_the_check_accepts() {
     assert_eq!(refused.hint(), Some("at least 10 permutations"));
     assert_eq!(crate::least_reaching(73, 0.01), 7299);
 }
+
+/// A batch built from two-by-two tables, one per stratum, each
+/// `(case_present, case_read, rest_present, rest_read)` and keyed by its
+/// index; the charts interleaved (chart `i` is the `37·i mod n`-th
+/// drawn) so that no stratum arrives contiguous.
+fn stratified_batch(tables: &[(u32, u32, u32, u32)]) -> (Matrix, Design) {
+    let mut drawn: Vec<(u32, u16, bool)> = Vec::new();
+    for (key, &(case_present, case_read, rest_present, rest_read)) in tables.iter().enumerate() {
+        let key = u32::try_from(key).unwrap();
+        drawn.extend((0..case_read).map(|i| (key, 1, i < case_present)));
+        drawn.extend((0..rest_read).map(|i| (key, 0, i < rest_present)));
+    }
+    let n = drawn.len();
+    assert_ne!(n % 37, 0, "37 must be coprime to the batch");
+    let charts: Vec<(u32, u16, bool)> = (0..n).map(|i| drawn[(37 * i) % n]).collect();
+    let cells: Vec<Cell> = charts
+        .iter()
+        .map(|&(_, _, present)| if present { Cell::Present } else { Cell::Absent })
+        .collect();
+    let mut matrix = Matrix::new(n);
+    matrix.push("p", &cells).unwrap();
+    let design = Design::new(charts.iter().map(|&(_, group, _)| group).collect())
+        .with_strata(charts.iter().map(|&(key, _, _)| key).collect());
+    (matrix, design)
+}
+
+#[test]
+fn the_chi_square_tail_meets_its_table() {
+    // scipy.stats.chi2.sf at each point.
+    for (x, df, sf) in [
+        (3.841_458_820_694_124, 1, 0.05),
+        (5.991_464_547_107_979, 2, 0.05),
+        (7.814_727_903_251_178, 3, 0.05),
+        (9.487_729_036_781_154, 4, 0.05),
+        (18.307_038_053_275_146, 10, 0.05),
+        (0.5, 7, 0.999_446_481_390_424_9),
+        (123.0, 99, 0.051_444_916_997_488_76),
+    ] {
+        let got = special::chi_square_upper(x, df);
+        assert!(
+            (got - sf).abs() < 1e-12,
+            "chi2({x}, {df}) = {got}, not {sf}"
+        );
+    }
+    assert_eq!(special::chi_square_upper(0.0, 3), 1.0);
+}
+
+#[test]
+fn the_strata_meet_a_reference_implementation() {
+    // Three strata whose odds ratios differ (2.97, 0.20, 1.29). The
+    // figures are statsmodels 0.15's `StratifiedTable` over the same
+    // tables: the pooled odds ratio and its Robins–Breslow–Greenland
+    // interval, the Mantel–Haenszel risk ratio, Breslow–Day with
+    // Tarone's correction, and the CMH chi-square, which is the square
+    // of this test's statistic when every chart is read.
+    let (matrix, design) = stratified_batch(&[(12, 30, 5, 40), (3, 25, 9, 20), (7, 18, 7, 22)]);
+    let tested = compare(&matrix, &design, &case_test(1, 999)).unwrap();
+    let row = &tested.rows[0];
+    let observed = row.observed.unwrap();
+    assert!(
+        (observed * observed - 0.395_101_645_492_143_3).abs() < 1e-12,
+        "{observed}"
+    );
+    let pooled = row.effect.unwrap().pooled.unwrap();
+    let odds = pooled.odds_ratio.unwrap();
+    assert!((odds.estimate - 1.229_626_153_605_506_2).abs() < 1e-12);
+    assert!(
+        (odds.low - 0.626_057_285_298_923_7).abs() < 1e-9,
+        "{odds:?}"
+    );
+    assert!(
+        (odds.high - 2.415_083_272_944_817_5).abs() < 1e-9,
+        "{odds:?}"
+    );
+    let risk = pooled.risk_ratio.unwrap();
+    assert!((risk.estimate - 1.169_789_498_033_772_9).abs() < 1e-12);
+    assert!(risk.low < risk.estimate && risk.estimate < risk.high);
+    let homogeneity = pooled.homogeneity_p.unwrap();
+    assert!(
+        (homogeneity - 0.001_432_938_224_786_850_5).abs() < 1e-9,
+        "{homogeneity}"
+    );
+}
+
+#[test]
+fn a_pooled_ratio_removes_what_the_strata_confound() {
+    // Simpson's table: within each stratum the cases and the rest share
+    // one rate (0.5, then 0.2), so every stratum's ratio is 1; the cases
+    // crowd into the low stratum, so the crude ratio is 0.59.
+    let (matrix, design) = stratified_batch(&[(5, 10, 20, 40), (8, 40, 2, 10)]);
+    let stratified = compare(&matrix, &design, &case_test(4, 999)).unwrap();
+    let row = &stratified.rows[0];
+    let effect = row.effect.unwrap();
+    let pooled = effect.pooled.unwrap();
+    assert_eq!(pooled.risk_ratio.unwrap().estimate, 1.0);
+    assert_eq!(pooled.odds_ratio.unwrap().estimate, 1.0);
+    assert_eq!(pooled.homogeneity_p, Some(1.0));
+    assert!((effect.risk_ratio.unwrap().estimate - 13.0 / 22.0).abs() < 1e-12);
+    // Every stratum's count is its mean, so the statistic is zero and
+    // every permutation reaches it; the crude statistic is not zero.
+    assert_eq!(row.observed, Some(0.0));
+    assert_eq!(row.p.exceed, 999);
+    let crude = compare(
+        &matrix,
+        &Design::new(design.groups.clone()),
+        &case_test(4, 999),
+    )
+    .unwrap();
+    assert!(crude.rows[0].observed.unwrap() > 1.0);
+    assert!(crude.rows[0].effect.unwrap().pooled.is_none());
+}
+
+#[test]
+fn one_stratum_is_no_strata_to_the_bit() {
+    // The regression lock: a design whose strata are all one key answers
+    // exactly as the design without strata, under either contrast.
+    let (matrix, design) = study(83, 29, 7, 13);
+    let one = design.clone().with_strata(vec![42; 83]);
+    for contrast in [Contrast::CaseVsRest { case: 1 }, Contrast::AnyDifference] {
+        let mut test = GroupTest::new(9, 1_999, contrast);
+        test.alpha = Some(0.05);
+        assert_eq!(
+            compare(&matrix, &design, &test).unwrap(),
+            compare(&matrix, &one, &test).unwrap(),
+            "{contrast:?}"
+        );
+    }
+}
+
+#[test]
+fn a_contiguous_layout_draws_the_labels_it_drew_before() {
+    // Laying the strata out contiguously must not change which label any
+    // chart gets under any permutation.
+    let (matrix, design) = study(71, 23, 1, 17);
+    let keys: Vec<u32> = (0..71_u32).map(|i| (i * 7 + i / 5) % 6).collect();
+    let laid = Contiguous::new(&matrix, &design.groups, &keys);
+    let mut order: Vec<usize> = (0..71).collect();
+    order.sort_by_key(|&at| keys[at]);
+    let scattered = Layout::new(&design.groups, 2, Some(&keys));
+    let contiguous = Layout::new(&laid.groups, 2, Some(&laid.keys));
+    let (mut before, mut after, mut scratch) = (vec![0; 71], vec![0; 71], Vec::new());
+    for k in 0..200 {
+        scattered.permute(5, k, &mut before, &mut scratch);
+        contiguous.permute(5, k, &mut after, &mut scratch);
+        for (to, &from) in order.iter().enumerate() {
+            assert_eq!(after[to], before[from], "permutation {k}, chart {from}");
+        }
+    }
+}
+
+#[test]
+fn the_stratified_exact_p_meets_an_enumeration() {
+    // Test 3 under strata: two strata of six charts, every arrangement of
+    // the cases inside each enumerated, against the convolution.
+    let (matrix, design) = stratified_batch(&[(3, 3, 1, 3), (1, 2, 3, 4)]);
+    let strata: [(u32, u32, u32); 2] = [(6, 4, 3), (6, 4, 2)]; // (charts, present, cases)
+    let z_of = |counts: [u32; 2]| {
+        let (mut departure, mut variance) = (0.0, 0.0);
+        for (&(n, m, c), &a) in strata.iter().zip(&counts) {
+            let (mean, spread) = engine::moments(c, m, n).unwrap();
+            departure += f64::from(a) - mean;
+            variance += spread;
+        }
+        departure / variance.sqrt()
+    };
+    // The present charts are the first `m` of each stratum's six; an
+    // arrangement is a six-bit mask with `c` bits set.
+    let arrangements = |n: u32, c: u32| (0..1_u32 << n).filter(move |mask| mask.count_ones() == c);
+    for alternative in [
+        Alternative::TwoSided,
+        Alternative::Greater,
+        Alternative::Less,
+    ] {
+        let mut test = case_test(23, 20_000);
+        test.alternative = alternative;
+        test.level = 0.999;
+        let row = compare(&matrix, &design, &test).unwrap().rows.remove(0);
+        let observed = row.observed.unwrap();
+        let (mut reached, mut total) = (0_u32, 0_u32);
+        for first in arrangements(6, 3) {
+            for second in arrangements(6, 2) {
+                let z = z_of([
+                    (first & 0b1111).count_ones(),
+                    (second & 0b1111).count_ones(),
+                ]);
+                let stat = match alternative {
+                    Alternative::Greater => z,
+                    Alternative::Less => -z,
+                    Alternative::TwoSided => z.abs(),
+                };
+                total += 1;
+                reached += u32::from(engine::reaches(stat, observed));
+            }
+        }
+        let enumerated = f64::from(reached) / f64::from(total);
+        let exact = row.exact.unwrap();
+        assert!(
+            (exact - enumerated).abs() < 1e-12,
+            "{alternative:?}: {exact} against {enumerated}"
+        );
+        assert!(
+            row.p.low <= exact && exact <= row.p.high,
+            "{alternative:?}: {:?}",
+            row.p
+        );
+    }
+}

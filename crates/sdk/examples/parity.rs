@@ -6289,9 +6289,10 @@ const PAKSHI_JSON: [&str; 2] = [
 /// The studies every runner sends (`03-design/research.md`): eight births
 /// at Kathmandu a few years apart, the shipped yogas as the predicates,
 /// compared by alternate labels, read against their own recombined
-/// population, and each delivered by the Vimshottari at an event of its
-/// life under the age shuffle. Sent as the record a binding writes.
-fn research_studies() -> [(&'static str, serde_json::Value); 4] {
+/// population, each delivered by the Vimshottari at an event of its life
+/// under the age shuffle, and compared again inside two strata of four.
+/// Sent as the record a binding writes.
+fn research_studies() -> [(&'static str, serde_json::Value); 5] {
     let births: Vec<serde_json::Value> = (0..8_u32)
         .map(|i| {
             serde_json::json!({
@@ -6309,6 +6310,7 @@ fn research_studies() -> [(&'static str, serde_json::Value); 4] {
         })
         .collect();
     let groups: Vec<u32> = (0..8).map(|i| i % 2).collect();
+    let strata: Vec<u32> = (0..8).map(|i| i / 4).collect();
     let rules = serde_json::json!({"shipped": ["YOGAS"]});
     [
         (
@@ -6333,6 +6335,13 @@ fn research_studies() -> [(&'static str, serde_json::Value); 4] {
             serde_json::json!({"study": "TIMED", "rules": rules, "subjects": subjects,
             "dasha": "dasha_system.VIMSHOTTARI", "shuffle": "AGES_AT_EVENT",
             "test": {"seed": 3, "permutations": 49}}),
+        ),
+        (
+            "strata",
+            serde_json::json!({"study": "COMPARE", "rules": rules, "births": births,
+            "design": {"groups": groups, "strata": strata},
+            "test": {"seed": 6, "permutations": 199,
+                     "contrast": {"kind": "CASE_VS_REST", "case": 1}}}),
         ),
     ]
 }
@@ -6383,11 +6392,12 @@ fn the_research(report: &mut Report, geo: &Context) {
                     ),
                 );
                 for (k, r) in value.rows.iter().enumerate() {
+                    let pooled = r.effect.and_then(|e| e.pooled);
                     put(
                         report,
                         &format!("research-{name}-row-{k}"),
                         format!(
-                            "{} {} {} {} {} {} {} {} {} {} {}",
+                            "{} {} {} {} {} {} {} {} {} {} {} {} {} {}",
                             r.predicate,
                             counted(&r.counts),
                             optional(r.observed),
@@ -6399,6 +6409,9 @@ fn the_research(report: &mut Report, geo: &Context) {
                             optional(r.exact),
                             optional(r.effect.map(|e| e.risk_difference.estimate)),
                             optional(r.expected.map(|e| e.expected)),
+                            optional(pooled.and_then(|p| p.risk_ratio).map(|i| i.estimate)),
+                            optional(pooled.and_then(|p| p.odds_ratio).map(|i| i.estimate)),
+                            optional(pooled.and_then(|p| p.homogeneity_p)),
                         ),
                     );
                 }
