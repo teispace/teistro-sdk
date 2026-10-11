@@ -2,9 +2,9 @@
   "schema": "teistro-sizes/1",
   "why": "A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fails, and so does more than 5% under it. Each budget is 2% over the module measured on CI's Linux runner, to the next ten kilobytes, and moves only through `cargo xtask sizes --from DIR --why SENTENCE`, which adds a row here saying what moved it; the figures before this record began are in the history of `bindings/wasm/size.json`.",
   "recorded": {
-    "run": "37968132237",
-    "commit": "39635cdf1a30044b15915821af50339c98f6de95",
-    "date": "2026-10-09",
+    "run": "38133623988",
+    "commit": "2eb84de536d114fc29ce21548d0c572b099ca325",
+    "date": "2026-10-11",
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
     "flate2": "1.1.10"
   },
@@ -12,242 +12,242 @@
     {
       "subject": "linux-x64",
       "artefact": "library",
-      "raw": 14700968,
-      "gzip": 5053843
+      "raw": 14508720,
+      "gzip": 4968353
     },
     {
       "subject": "linux-x64",
       "artefact": "c-bundle",
-      "gzip": 24237198
+      "gzip": 24254439
     },
     {
       "subject": "linux-x64",
       "artefact": "addon",
-      "raw": 15151344,
-      "gzip": 5210997
+      "raw": 14959104,
+      "gzip": 5127112
     },
     {
       "subject": "linux-x64",
       "artefact": "wheel",
-      "raw": 5382752
+      "raw": 5297780
     },
     {
       "subject": "linux-x64",
       "artefact": "jar",
-      "raw": 6464533
+      "raw": 6382649
     },
     {
       "subject": "linux-arm64",
       "artefact": "library",
-      "raw": 13364264,
-      "gzip": 4729699
+      "raw": 13169000,
+      "gzip": 4637865
     },
     {
       "subject": "linux-arm64",
       "artefact": "c-bundle",
-      "gzip": 23840931
+      "gzip": 23821508
     },
     {
       "subject": "linux-arm64",
       "artefact": "addon",
-      "raw": 13740216,
-      "gzip": 4879293
+      "raw": 13544960,
+      "gzip": 4787979
     },
     {
       "subject": "linux-arm64",
       "artefact": "wheel",
-      "raw": 5058612
+      "raw": 4967293
     },
     {
       "subject": "linux-arm64",
       "artefact": "jar",
-      "raw": 6140480
+      "raw": 6052253
     },
     {
       "subject": "darwin-arm64",
       "artefact": "library",
-      "raw": 18124144,
-      "gzip": 5281387
+      "raw": 17786688,
+      "gzip": 5172501
     },
     {
       "subject": "darwin-arm64",
       "artefact": "c-bundle",
-      "gzip": 22997066
+      "gzip": 22976322
     },
     {
       "subject": "darwin-arm64",
       "artefact": "addon",
-      "raw": 18624192,
-      "gzip": 5458386
+      "raw": 18270192,
+      "gzip": 5348056
     },
     {
       "subject": "darwin-arm64",
       "artefact": "wheel",
-      "raw": 5610310
+      "raw": 5501933
     },
     {
       "subject": "darwin-arm64",
       "artefact": "jar",
-      "raw": 6692178
+      "raw": 6586898
     },
     {
       "subject": "darwin-x64",
       "artefact": "library",
-      "raw": 18456328,
-      "gzip": 5408448
+      "raw": 18109456,
+      "gzip": 5298572
     },
     {
       "subject": "darwin-x64",
       "artefact": "c-bundle",
-      "gzip": 22810368
+      "gzip": 22784896
     },
     {
       "subject": "darwin-x64",
       "artefact": "addon",
-      "raw": 19018312,
-      "gzip": 5598880
+      "raw": 18675536,
+      "gzip": 5487318
     },
     {
       "subject": "darwin-x64",
       "artefact": "wheel",
-      "raw": 5737364
+      "raw": 5628003
     },
     {
       "subject": "darwin-x64",
       "artefact": "jar",
-      "raw": 6819148
+      "raw": 6712878
     },
     {
       "subject": "win32-x64",
       "artefact": "library",
-      "raw": 15878144,
-      "gzip": 5094582
+      "raw": 15754752,
+      "gzip": 5012513
     },
     {
       "subject": "win32-x64",
       "artefact": "c-bundle",
-      "gzip": 25984900
+      "gzip": 26085351
     },
     {
       "subject": "win32-x64",
       "artefact": "addon",
-      "raw": 16475136,
-      "gzip": 5282628
+      "raw": 16351232,
+      "gzip": 5202341
     },
     {
       "subject": "win32-x64",
       "artefact": "wheel",
-      "raw": 5423479
+      "raw": 5341931
     },
     {
       "subject": "win32-x64",
       "artefact": "jar",
-      "raw": 6505356
+      "raw": 6426896
     },
     {
       "subject": "win32-arm64",
       "artefact": "library",
-      "raw": 13768192,
-      "gzip": 4718043
+      "raw": 13615616,
+      "gzip": 4631677
     },
     {
       "subject": "win32-arm64",
       "artefact": "c-bundle",
-      "gzip": 24800819
+      "gzip": 24864212
     },
     {
       "subject": "win32-arm64",
       "artefact": "addon",
-      "raw": 14262784,
-      "gzip": 4894149
+      "raw": 14111744,
+      "gzip": 4812323
     },
     {
       "subject": "win32-arm64",
       "artefact": "wheel",
-      "raw": 5046941
+      "raw": 4961091
     },
     {
       "subject": "win32-arm64",
       "artefact": "jar",
-      "raw": 6128827
+      "raw": 6046068
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "library",
-      "raw": 20200416,
-      "gzip": 6031826
+      "raw": 19830336,
+      "gzip": 5906437
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "c-bundle",
-      "gzip": 25223881
+      "gzip": 25189200
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "addon",
-      "raw": 20778256,
-      "gzip": 6228981
+      "raw": 20407856,
+      "gzip": 6105238
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "wheel",
-      "raw": 6360737
+      "raw": 6235862
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "jar",
-      "raw": 7442435
+      "raw": 7320653
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "library",
-      "raw": 20106704,
-      "gzip": 5861749
+      "raw": 19719712,
+      "gzip": 5725945
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "c-bundle",
-      "gzip": 24967788
+      "gzip": 24906081
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "addon",
-      "raw": 20671752,
-      "gzip": 6051682
+      "raw": 20219152,
+      "gzip": 5919999
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "wheel",
-      "raw": 6190663
+      "raw": 6055374
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "jar",
-      "raw": 7272459
+      "raw": 7140263
     },
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 7854779,
-      "gzip": 2065161
+      "raw": 7854549,
+      "gzip": 2063221
     },
     {
       "subject": "full",
       "artefact": "glue",
-      "raw": 57524,
-      "gzip": 12397
+      "raw": 57609,
+      "gzip": 12407
     },
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 3368488,
-      "gzip": 1072796
+      "raw": 3371007,
+      "gzip": 1072967
     },
     {
       "subject": "panchanga",
       "artefact": "glue",
-      "raw": 57524,
-      "gzip": 12397
+      "raw": 57609,
+      "gzip": 12407
     },
     {
       "subject": "esbuild catalogue",
@@ -257,12 +257,12 @@
     {
       "subject": "esbuild everything",
       "artefact": "bundle",
-      "raw": 201621
+      "raw": 201763
     },
     {
       "subject": "esbuild panchanga",
       "artefact": "bundle",
-      "raw": 201631
+      "raw": 201773
     },
     {
       "subject": "vite catalogue",
@@ -272,12 +272,12 @@
     {
       "subject": "vite everything",
       "artefact": "bundle",
-      "raw": 200460
+      "raw": 200618
     },
     {
       "subject": "vite panchanga",
       "artefact": "bundle",
-      "raw": 200460
+      "raw": 200618
     },
     {
       "subject": "webpack catalogue",
@@ -287,12 +287,12 @@
     {
       "subject": "webpack everything",
       "artefact": "bundle",
-      "raw": 205500
+      "raw": 205676
     },
     {
       "subject": "webpack panchanga",
       "artefact": "bundle",
-      "raw": 205496
+      "raw": 205672
     }
   ],
   "budgets": [
