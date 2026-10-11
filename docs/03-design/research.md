@@ -545,7 +545,10 @@ uses fixed seeds, so the counts are exact and also golden.
    stratum's charts out contiguously first, in the order the stratified
    shuffle already walks, so a stratum's counts cost its own words and
    every permutation gives every chart the label it gave before, which a
-   test holds. The measured page's §6 holds a stratified study at its
+   test holds. The measured page also gained the draft's missing rows:
+   the raw p's validity at every level, the effect intervals' coverage
+   of a planted ratio, and a partial null for the false discovery rate
+   (§7). The measured page's §6 holds a stratified study at its
    level where the same study read without its strata finds every
    predicate whose prevalence differs between them (63% to 97% of null
    labellings). Still to come from the same draft: the self-matched null
