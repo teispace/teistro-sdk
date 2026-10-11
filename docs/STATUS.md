@@ -1056,29 +1056,27 @@ provider's DUT1).
 0. **Next, in this order** (the dated plan, `07-roadmap/00-roadmap.md`,
    "The plan to the release candidate"; Track A's release blockers first,
    the modules the reviewers read beside them):
-   1. **`ACCURACY.md`'s rows over the JPL recording.** The CSPICE states
-      are in the corpus (v0.12.0) and every built-in tier is scored
-      against them (`05-testing/CONFORMANCE.md`, the `jpl` rows);
-      `ACCURACY.md` has no row for them yet. The Horizons half is
-      withheld until JPL's permission is asked for, which is the
-      maintainer's to send.
-   2. **A release rehearsal**: one release run end to end with nothing
-      published.
-   3. **The Java binding's typed records** (`03-design/java-binding.md`).
-   4. **The Flutter build-hook package**, which carries the library into
+   1. **A release rehearsal**: one release run end to end with nothing
+      published. Run 38133623988 built, staged and checked every
+      platform, the agent server's packages included, and failed only
+      the size record, re-recorded since; one more dispatch, green, closes
+      it. The JPL rows of `ACCURACY.md` are in; its Horizons half waits
+      on JPL's permission, which is the maintainer's to ask.
+   2. **The Java binding's typed records** (`03-design/java-binding.md`).
+   3. **The Flutter build-hook package**, which carries the library into
       an Android or iOS build.
-   5. **The docs site's guides with executed examples**, beside the
+   4. **The docs site's guides with executed examples**, beside the
       roadmap's install check after publishing.
-   6. **Track B and C modules** (the roadmap's tables): research steps 4
+   5. **Track B and C modules** (the roadmap's tables): research steps 4
       to 7, prashna's remaining Tajika links, Saravali's readings, and
       the pakshi and Lal Kitab pipelines with their content handed to
       readers who can vet it. Pick the next item from
       `04-yogas-doshas.md` and the roadmap, and research it first.
-   7. **The hardening pass**: every gate, the parity checklist, sizes and
+   6. **The hardening pass**: every gate, the parity checklist, sizes and
       the bench read against their budgets, every module's design page
       against what shipped, and the rows `05-testing/01-quality-bar.md`
       marks as not yet enforced.
-   8. **The release candidate**: version, changelog, and a tag on a
+   7. **The release candidate**: version, changelog, and a tag on a
       rehearsal run.
 
    What only the maintainer can do, wanted before the release run: the
@@ -4180,3 +4178,4 @@ kept here: the session log records them.
 | 2026-10-11 | **The MCP Registry entry** (`mcp-server.md` §6 step 5). `crates/mcp/server.json`, held by a test to what the server says of itself and to the launcher's `mcpName`, and by `check-versions` to the release; the registry's own `mcp-publisher validate` accepts it. **The server described itself in more than the registry's 100 characters**, so a copied description would have been refused at publish time, after npm had already published; one sentence now serves both. The publisher is pinned by version and digest rather than `releases/latest`, as the registry's own guide shows, and runs last so a registry in preview cannot hold the release. |
 | 2026-10-11 | **Claude Desktop's bundle** (`mcp-server.md` §6 step 5). The design page asked for a `binary` server over a `lipo` universal macOS program and an x64 Windows one; a bundle's configuration cannot choose by architecture, so that left Windows on Arm emulated and needed a macOS tool on the Linux stage runner. The bundle is a `node` server instead, the npm launcher choosing by both, which Claude Desktop runs on the Node it brings. The zip writer the wheels and jars share gained a mode for a program. Validated by `mcpb validate` and `mcp-publisher validate`, and run unpacked. |
 | 2026-10-11 | **The guide to the agent server, and the release's size held** (`mcp-server.md` §6 step 5, built). `site/content/docs/mcp.mdx` installs the server each way the release offers, lists its options and shows a call and a refusal; `tests/guide.rs` makes each call the page shows and holds the answer to what the page prints, and holds each option it names to `--help`, both proved red. The nightly run's size record caught the release building the server in the library's cargo build, which unified the server's features into every shipped library and grew the C bundle by a fifth; it builds alone now. **Next:** `ACCURACY.md`'s JPL rows, then a release rehearsal. |
+| 2026-10-11 | **The built-in ephemeris in `ACCURACY.md`, stable schema names, and a rehearsal.** The tier's DE440 test records its worst geometric direction and distance by group of bodies, each group naming the bodies whose every value is inside the band, so a printed bound is one each value meets; the tiers a default build leaves out are measured by hand and dated. Every schema definition the agent server states now names its own type: schemars had numbered a second type of one name in visit order (`Asked2`, `Outcome3`), so adding a record could rename another, and a test refuses a numbered or generic name; this is the Java typed records' step 1. The release rehearsal failed only on the Linux rows' skipped bundle check (the bundle carries macOS and Windows only, so there is nothing to check) and on sizes about 2% smaller, which `866d00a3` alone brought; both settled. **Next:** a green rehearsal, then the Java typed records' generator (`java-binding.md`). |
