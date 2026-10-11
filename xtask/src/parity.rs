@@ -614,6 +614,13 @@ fn examples_agree(root: &Path, present: impl Fn(Binding) -> bool) -> i32 {
         return 0;
     }
     let names: Vec<&str> = sets.iter().map(|(binding, _)| binding.name()).collect();
+    // What the guides show an example printing, held to what it printed:
+    // one binding's output stands for all, since they are compared next.
+    if let Some((_, ran)) = sets.first()
+        && crate::guides::printed(root, ran) != 0
+    {
+        return 1;
+    }
     match differences(&sets, &EXCUSED) {
         0 => {
             let count = sets.first().map_or(0, |(_, ran)| ran.len());

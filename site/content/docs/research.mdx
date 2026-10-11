@@ -9,23 +9,39 @@ find what is not there. A study names its **births**, its **rules** (each
 one a predicate, read once on every chart), its **labels** and its
 **test**, and the answer comes back per rule, never as one verdict.
 
-```js
+```js title="bindings/node/example/research.mjs"
+const rules = { shipped: ['YOGAS'] };
+const design = { groups: births.map((_, i) => (i < 16 ? 1 : 0)) };
+// …
 const tested = ctx.research.compare({
   births,
-  rules: { shipped: ['YOGAS'] },
-  design: { groups: births.map((_, i) => (i < 16 ? 1 : 0)) },
+  rules,
+  design,
   test: { seed: 2026, permutations: 999, contrast: { kind: 'CASE_VS_REST', case: 1 }, alpha: 0.05 },
 });
+// The registration: the births, the rules, the labels and the test.
 console.log(`registered as ${tested.provenance.inputHash}`);
-const best = tested.rows.reduce((kept, row) => (row.p.value < kept.p.value ? row : kept));
-console.log(best.predicate, best.p.value, best.adjusted.maxT);
+console.log(`${tested.permutations} permutations, none can say less than p = ${tested.resolution.toFixed(4)}`);
+
+const under = (method) => tested.rows.filter((row) => row.underAlpha[method]).length;
+console.log(`under 0.05: ${under('raw')} raw, ${under('maxT')} after max-T, ${under('holm')} after Holm`);
 ```
 
-This is the shared example `research`, executed in every binding by
-`cargo xtask check-parity`, which holds that Node, Python, Dart, Rust and
-Java print the same lines. Its labels mean nothing, which is the case a
-study's corrections exist for: run it and see what the smallest raw p
-becomes once the family is accounted for.
+This is cut from the shared example `research`, which every binding
+carries and `cargo xtask check-parity` runs in all of them, holding that
+Node, Python, Dart, Rust and Java print the same lines. Its births are
+forty-eight at Kathmandu, and its labels mean nothing, which is the case a
+study's corrections exist for. It prints, in every binding:
+
+```text output="research"
+registered as f60e8e40ba8f3729c5a00886af56723c6dc93c6de64908a59849d1a7f1bc655d
+999 permutations, none can say less than p = 0.0010
+under 0.05: 0 raw, 0 after max-T, 0 after Holm
+NEECHA_BHANGA_DEBIL_LORD_KENDRA: 2 of 16 cases, 12 of 32 others, p 0.095, max-T 0.447
+```
+
+The smallest raw p, 0.095, is not small, and the family makes it 0.447:
+nothing is found, because there was nothing to find.
 
 ## The four studies
 
@@ -53,9 +69,12 @@ becomes once the family is accounted for.
   say. An `alpha` the permutations cannot reach over the family is
   refused rather than answered.
 - **A chart a rule cannot be read on is not counted absent.** A birth
-  whose recorded time is uncertain is read at both edges, and a rule that
-  differs between them is counted unstable and left out of the
-  denominator.
+  whose recorded time is uncertain is read across its whole window, every
+  `uncertaintyStepMinutes` (2 by default) out to both edges, and a rule
+  that differs anywhere in it is counted unstable and left out of the
+  denominator. The edges alone are not enough: over sixty Kathmandu
+  births uncertain by three hours they missed a quarter of the unstable
+  readings (`research-measured.md` §5).
 - **A seed is a whole 64-bit number** in every binding: a `bigint` in
   Node, a `BigInt` in Dart and a `BigInteger` in Java past what a plain
   number holds.

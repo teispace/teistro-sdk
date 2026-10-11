@@ -3,6 +3,8 @@
 //! Invoked as `cargo xtask <task>` through the alias in `.cargo/config.toml`:
 //!
 //! - `check-docs`: the documentation gates.
+//! - `check-guides`: every program a hand-written guide shows is an
+//!   excerpt of a file a gate runs or type-checks, named in its `title`.
 //! - `check-dco BASE HEAD`: every commit in `BASE..HEAD` carries a sign-off.
 //! - `check-fixtures`: the golden-vector corpus is well formed and listed.
 //! - `check-catalogue` and `gen catalogue`: the entity catalogue's generated
@@ -293,6 +295,7 @@ mod flutter_package;
 mod fortitudes;
 mod generated;
 mod gochar;
+mod guides;
 mod hashes;
 mod hits;
 mod houses;
@@ -618,6 +621,29 @@ fn pass_with_arguments(command: &str, args: &[String]) -> Option<i32> {
     }
 }
 
+/// The gates that hold a binding, a package or the site to what the
+/// build produced: `None` for any other command.
+fn binding_gate(command: &str, args: &[String]) -> Option<i32> {
+    let root = repo_root();
+    Some(match command {
+        "check-c" => c_binding::check(&root),
+        "check-node" => node_binding::check(&root),
+        "check-wasm" => wasm_binding::check(&root),
+        "check-dart" => dart_binding::check(&root),
+        "check-flutter" => flutter_package::check(&root, &args[1..]),
+        "check-pub" => pub_check::check(&root, &args[1..]),
+        "check-published" => published::check(&root, &args[1..]),
+        "check-python" => python_binding::check(&root),
+        "check-java" => java_binding::check(&root),
+        "check-rust" => rust_binding::check(&root),
+        "check-parity" => parity::check(&root),
+        "check-package" => consumer::check(&root),
+        "check-site" => site::check(&root),
+        "check-guides" => guides::check(&root),
+        _ => return None,
+    })
+}
+
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     let Some(command) = args.first().map(String::as_str) else {
@@ -628,6 +654,9 @@ fn main() {
     }
     if let Some(code) = generated_page(command) {
         std::process::exit(skip::verdict(code));
+    }
+    if let Some(code) = binding_gate(command, &args) {
+        process::exit(skip::verdict(code));
     }
     let code = match Some(command) {
         Some("check-docs") => check_docs(),
@@ -642,17 +671,6 @@ fn main() {
         Some("check-accuracy") => accuracy::check_generated(&repo_root()),
         Some("check-intl") => intl::check_generated(&repo_root()),
         Some("check-ffi") => ffi::check_generated(&repo_root()),
-        Some("check-c") => c_binding::check(&repo_root()),
-        Some("check-node") => node_binding::check(&repo_root()),
-        Some("check-wasm") => wasm_binding::check(&repo_root()),
-        Some("check-dart") => dart_binding::check(&repo_root()),
-        Some("check-flutter") => flutter_package::check(&repo_root(), &args[1..]),
-        Some("check-pub") => pub_check::check(&repo_root(), &args[1..]),
-        Some("check-published") => published::check(&repo_root(), &args[1..]),
-        Some("check-python") => python_binding::check(&repo_root()),
-        Some("check-java") => java_binding::check(&repo_root()),
-        Some("check-rust") => rust_binding::check(&repo_root()),
-        Some("check-parity") => parity::check(&repo_root()),
         Some("check-lints") => lints::check(&repo_root()),
         Some("ephemgen") => ephemgen::generate(
             &repo_root(),
@@ -665,9 +683,7 @@ fn main() {
         Some("check-moon") => moon::check_generated(&repo_root()),
         Some("vsop") => vsop::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("check-versions") => release::check(&repo_root()),
-        Some("check-package") => consumer::check(&repo_root()),
         Some(command @ ("sizes" | "check-sizes")) => sizes::command(&repo_root(), command, &args),
-        Some("check-site") => site::check(&repo_root()),
         Some("check-tag") => match args.as_slice() {
             [_, tag] => release::check_tag(&repo_root(), tag),
             _ => usage(),
@@ -747,7 +763,7 @@ fn usage() -> i32 {
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
          conformance --from DIR | check-conformance --from DIR | \
-         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | check-site | check-tag TAG | version [X] | changelog-entry X | \
+         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | check-site | check-guides | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \

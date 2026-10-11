@@ -33,9 +33,24 @@ than imported thirty-six times.
 
 Add an `.mdx` file under `content/docs/` and list it in the `meta.json`
 beside it. Frontmatter is `title` and `description`. Prose is British
-spelling, like the rest of the project, and every example is one that
-runs: the four facts on the home page are the four the C smoke test, the
-Node consumer and the Dart consumer all print.
+spelling, like the rest of the project.
+
+A guide holds no code of its own. A program is cut from a file a gate
+runs, and its fence names that file:
+
+````md
+```js title="bindings/node/example/quickstart.mjs"
+const ctx = new Context({
+// …
+```
+````
+
+`cargo xtask check-guides` holds every such block to its file, run by run
+between the `// …` elisions; `fragment` marks a block that is not a
+program on purpose, and `` ```text output="research" `` shows lines a
+shared example prints, which `check-parity` holds to what it printed.
+The rules are in
+[`06-cicd/05-docs-deploy.md`](../docs/06-cicd/05-docs-deploy.md).
 
 ## Building
 

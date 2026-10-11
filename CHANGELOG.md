@@ -201,6 +201,17 @@ guessing at — and the fact that each binding's reserved-word rule fires
 in a different place, so the three word lists moved into one module
 where they can be counted.
 
+**The documentation site's guides hold no code of their own.** Every
+program a guide shows names the file it was cut from in its title, which
+the site prints above it, and `cargo xtask check-guides` holds each run
+of its lines to that file, in order and unbroken but for comments: a
+shared example, which `check-parity` runs in every binding, or an
+adapter's consumer or the Flutter app, which their gates type-check or
+build. A guide's output block is held by `check-parity` to what its
+example printed. Writing it found the research guide still saying an
+uncertain birth was read at its edges, and every install snippet differed
+from the example it was copied from.
+
 **Every binding ships six worked examples** (`bindings/*/example/`), the
 same six scenarios in JavaScript, Dart and Python, each a program
 `cargo xtask check-{node,dart,python}` runs — every file in the
