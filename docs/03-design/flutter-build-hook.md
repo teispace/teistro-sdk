@@ -313,6 +313,14 @@ since an Apple silicon Mac runs no simulator older than 14.
    (`xcrun simctl`), with the same suite.
 5. **The hash matrix** (`hash-matrix.yml`, nightly) gains rows for
    `aarch64-linux-android`/`x86_64-linux-android` and `aarch64-apple-ios-sim`.
+   *As built:* two rows, `android-x86_64` (the scenario linked by the
+   pinned NDK at API 24, run on an API 24 emulator by `adb exec-out`) and
+   `ios-sim-aarch64` (run by `xcrun simctl spawn`), each compared with
+   Linux x86-64 like every other row. An arm64 Android emulator needs KVM
+   on an Arm runner, which GitHub does not offer; aarch64's arithmetic is
+   held by the `linux-aarch64` row, since the core takes its maths from one
+   pure-Rust `libm`. Before the rows landed, the simulator was run on this
+   machine: 486 039 values, every one bit for bit what macOS computes.
    The `teistro-scenario` binary is pushed with `adb` and run in the
    emulator, or run with `xcrun simctl spawn booted`, and compared by
    `compare-hashes` like every row. This holds ADR-0022's byte-identity on
