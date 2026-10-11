@@ -5,7 +5,42 @@ description: "Text from one script into another (`deva`, `iast`), as a string le
 
 Text from one script into another (`deva`, `iast`), as a string lent until the next call on the context. A pair the build has no table for is `UNSUPPORTED` naming both scripts; anything the table does not know passes through, so a name written in two scripts is transliterated in the half that needs it.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.intl.transliterate
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.intl.transliterate
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.intl.transliterate
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.intl().transliterate
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.intl().transliterate
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_intl_transliterate(const ts_context * context, const char * text, c
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.intl_transliterate(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.intlTransliterate(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `intl.transliterate` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

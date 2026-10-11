@@ -5,33 +5,11 @@ description: "The fixed day a Julian day falls in, and, when `out_fraction` is n
 
 The fixed day a Julian day falls in, and, when `out_fraction` is not null, the fraction of that day elapsed since its midnight.
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 int64_t ts_calendar_fixed_of_jd(double jd, double * out_fraction);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-calendar_fixed_of_jd(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.calendarFixedOfJd(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 ## Parameters
 

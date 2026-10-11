@@ -9,7 +9,42 @@ The document names each operation, its parameters and the role of each — which
 
 `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the engine describes nothing of its own.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.engine.manifestJson
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.engine.manifest_json
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.engine.manifestJson
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.ephemeris().manifestJson
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.engine().manifest_json
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -17,25 +52,9 @@ ts_status ts_ephemeris_manifest(const ts_context * context, ts_string * out_json
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.ephemeris_manifest(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.ephemerisManifest(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `engine.manifest_json` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

@@ -5,33 +5,11 @@ description: "Frees a blob the library allocated and zeroes the descriptor; null
 
 Frees a blob the library allocated and zeroes the descriptor; null or an empty blob is ignored.
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 void ts_blob_free(ts_blob * blob);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-blob_free(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.blobFree(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 ## Parameters
 

@@ -7,33 +7,11 @@ What this build is, as a static NUL-terminated JSON object: the SDK version, the
 
 A binding reads it when it loads the library and refuses one that is not the build its own half was generated for (`02-architecture/07-binding-architecture.md`, "Loading and identity"). The document is written when the library is compiled, so it costs nothing to ask and cannot disagree with the library it describes.
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 const char * ts_build_info(void);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-build_info(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.buildInfo(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 The call takes no arguments.
 

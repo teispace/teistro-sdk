@@ -5,7 +5,42 @@ description: "Delta T (TT less UT1) at a UT1 instant under the context's model, 
 
 Delta T (TT less UT1) at a UT1 instant under the context's model, with what produced it and its uncertainty where the source has one.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.time.deltaT
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.time.delta_t
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.time.deltaT
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.time().deltaT
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.time().delta_t
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_time_delta_t(const ts_context * context, double jd_ut1, ts_delta_t 
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.time_delta_t(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.timeDeltaT(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `time.delta_t` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

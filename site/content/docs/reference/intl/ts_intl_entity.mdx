@@ -7,7 +7,42 @@ An entity's forms in the current locale or its fallbacks, as a JSON object lent 
 
 The typed accessors each binding generates read entities through this, so an application spells `graha.SUN` once and never a name.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.intl.entity
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.intl.entity
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.intl.entity
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.intl().entity
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.intl().entity
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -15,25 +50,9 @@ ts_status ts_intl_entity(const ts_context * context, const char * key, ts_str * 
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.intl_entity(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.intlEntity(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `intl.entity` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

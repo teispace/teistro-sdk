@@ -11,33 +11,11 @@ Opens an adapter and the provider inside it.
 
 <Callout type="info">Native builds only: a wasm module cannot open a shared library, so the wasm build has the built-in ephemeris and a host provider instead (ADR-0029), and this function is not in it.</Callout>
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_error * out_error);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-provider_load(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.providerLoad(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 ## Parameters
 

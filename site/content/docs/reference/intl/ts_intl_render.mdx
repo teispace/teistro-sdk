@@ -5,7 +5,42 @@ description: "Renders a message with parameters given as a JSON object: a string
 
 Renders a message with parameters given as a JSON object: a string, an integer, a number or an array is itself; an entity is `{"$entity": "graha.SUN"}`; a date `{"$date": {"calendar": "GREGORIAN", "year": 2026, "month": 9, "day": 6}}`; a time `{"$time": {"hour": 6, "minute": 15, "second": 0}}`; a date and time `{"$datetime": {"date": {...}, "time": {...}}}`; a ghati count `{"$ghati": {"ghati": 12, "pala": 30, "vipala": 0}}`. A null `params_json` renders with none. The result blob carries the text, its parts, where it resolved from and the warnings; a missing message renders as its key with a warning, never an error.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.intl.render
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.intl.render
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.intl.render
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.intl().render
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.intl().render
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_intl_render(const ts_context * context, const char * key, const cha
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.intl_render(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.intlRender(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `intl.render` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

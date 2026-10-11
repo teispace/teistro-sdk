@@ -532,8 +532,10 @@ fn outputs(root: &Path) -> Vec<Output> {
             .into_iter()
             .map(|file| Output::new(format!("{JAVA_GENERATED}/{}", file.path), file.text)),
     );
+    let reach = crate::areas::reach(root)
+        .unwrap_or_else(|complaint| panic!("the reference's spellings: {complaint}"));
     outputs.extend(
-        mdx::render(&api)
+        mdx::render(&api, &reach)
             .into_iter()
             .map(|page| Output::new(format!("{REFERENCE}/{}", page.path), page.text)),
     );

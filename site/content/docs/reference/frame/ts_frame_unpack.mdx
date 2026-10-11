@@ -5,7 +5,42 @@ description: "Reads packed frame bits back into their fields; bits no frame sets
 
 Reads packed frame bits back into their fields; bits no frame sets are `INVALID_ARG`.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.frame.unpack
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.frame.unpack
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.frame.unpack
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.frame().unpack
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.frame().unpack
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_frame_unpack(uint32_t bits, ts_frame * out_frame);
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-frame_unpack(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.frameUnpack(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `frame.unpack` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

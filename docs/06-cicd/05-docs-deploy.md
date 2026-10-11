@@ -15,10 +15,25 @@ sidebar. There were 42 pages when this was written, and the count is
 whatever the boundary has.
 
 Each entry point's page carries what the description knows and nothing
-invented: the doc comment, the C declaration, tabs naming what the Node
-addon and the Dart library call it, a parameter table with each
-parameter's role, unit, range and example, what the call hands back, the
-blob schema it fills, its safety contract and the file it is declared in.
+invented: the doc comment, a tab per binding with the operation a
+consumer calls to reach it and the C declaration beside them, a
+parameter table with each parameter's role, unit, range and example,
+what the call hands back, the blob schema it fills, its safety contract
+and the file it is declared in.
+
+The tabs are the one part the description cannot know, since the
+ergonomic layers are written by hand, so `gen ffi` reads them
+(`xtask/src/areas.rs`, `reach`): which members of the Node layer call the
+entry point, as canonical `area.operation` paths, and how each binding's
+parity runner spells each path, which is the spelling that compiles and
+runs (Java's `engine.call` is `ctx.ephemeris().call`). Rust's runner
+lists paths without members, so Rust's tab is the façade's rule,
+`sdk.<area>().<operation>`, refused unless the façade defines that
+operation. An entry point no operation calls by name says so: a
+binding calls it itself or offers it outside a context. Until
+2026-10-12 the tabs were derived by a naming rule, and said Node's
+addon called `context.calendar_convert`, which napi exposes as
+`calendarConvert`.
 
 The reference documents the **C ABI** rather than one binding's
 ergonomics, because that is the surface every binding is generated from:

@@ -5,33 +5,11 @@ description: "Releases the strings of a record a failed constructor wrote, and z
 
 Releases the strings of a record a failed constructor wrote, and zeroes it but for its size; null, a lent record from `ts_context_last_error`, and a record already freed are all ignored.
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 void ts_error_free(ts_error * error);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-error_free(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.errorFree(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 ## Parameters
 

@@ -5,33 +5,11 @@ description: "A static NUL-terminated English phrase for a status code; `unknown
 
 A static NUL-terminated English phrase for a status code; `unknown status` for a code this build does not know.
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 const char * ts_status_message(int32_t status);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-status_message(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.statusMessage(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 ## Parameters
 

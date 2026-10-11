@@ -7,7 +7,47 @@ Reads a native's bird over each civil day of a range at a place and answers with
 
 `request_json` is `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`: the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the place, the offset and `native` optional. A key it does not read, a place or offset out of range or a native that is neither is `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context without an ephemeris is `CAPABILITY`, as is a build that leaves the `pakshi` family out.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.day
+ctx.almanac.pakshi
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.day
+ctx.almanac.pakshi
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.day
+ctx.almanac.pakshi
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().day
+ctx.almanac().pakshi
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().day
+sdk.almanac().pakshi
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -15,25 +55,9 @@ ts_status ts_pakshi(const ts_context * context, const char * request_json, ts_st
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.pakshi(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.pakshi(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `almanac.day` and `almanac.pakshi` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

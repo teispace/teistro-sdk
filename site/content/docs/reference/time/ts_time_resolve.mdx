@@ -5,7 +5,42 @@ description: "Resolves a civil date-time in a zone to a UTC instant under the co
 
 Resolves a civil date-time in a zone to a UTC instant under the context's daylight-saving and unknown-time policies, with the metadata a stored chart keeps. An unknown zone is `UNSUPPORTED` with the nearest names as the hint; a civil time inside a gap under the `error` policy is `INVALID_ARG` with the `DST_GAP` detail.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.time.resolve
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.time.resolve
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.time.resolve
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.time().resolve
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.time().resolve
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_time_resolve(const ts_context * context, const ts_civil_date_time *
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.time_resolve(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.timeResolve(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `time.resolve` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

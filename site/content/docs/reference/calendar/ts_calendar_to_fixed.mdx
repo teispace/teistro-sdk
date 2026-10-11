@@ -5,7 +5,42 @@ description: "The fixed day of a date, validated: a date the calendar does not h
 
 The fixed day of a date, validated: a date the calendar does not have is `INVALID_ARG` with the `NONEXISTENT_DATE` detail.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.calendar.fixedOf
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.calendar.fixed_of
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.calendar.fixedOf
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.calendar().fixedOf
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.calendar().fixed_of
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_calendar_to_fixed(const ts_context * context, const ts_calendar_dat
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.calendar_to_fixed(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.calendarToFixed(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `calendar.fixed_of` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

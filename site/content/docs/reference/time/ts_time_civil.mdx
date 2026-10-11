@@ -5,7 +5,42 @@ description: "The civil date-time of a UTC instant in a zone, in a calendar, wit
 
 The civil date-time of a UTC instant in a zone, in a calendar, with the resolution that applied.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.time.civilOf
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.time.civil_of
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.time.civilOf
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.time().civilOf
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.time().civil_of
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_time_civil(const ts_context * context, double jd_utc, const ts_zone
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.time_civil(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.timeCivil(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `time.civil_of` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

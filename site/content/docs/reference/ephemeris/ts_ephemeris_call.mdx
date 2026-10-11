@@ -9,7 +9,42 @@ Calls one of the engine's own operations by the name its manifest gives.
 
 `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the engine describes nothing of its own or names no such operation, and `PROVIDER` when the engine itself refuses.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.engine.callJson
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.engine.call_json
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.engine.callJson
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.ephemeris().callJson
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.engine().call_json
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -17,25 +52,9 @@ ts_status ts_ephemeris_call(const ts_context * context, const char * function, c
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.ephemeris_call(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.ephemerisCall(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `engine.call_json` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

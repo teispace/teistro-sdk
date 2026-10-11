@@ -7,7 +7,42 @@ Matches two names star to star (naam milan) and answers with the `naam` blob: ea
 
 `request_json` is `{"bride", "groom", "rules"}`: the two names, in Devanagari or, when `rules.name.latin` is `IAST`, in IAST, and the `NaamRules` with every field optional. A name the cakra does not read, a Latin name while `latin` refuses, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or `naam.groom`.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.matching.naam
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.matching.naam
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.matching.naam
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.matching().naam
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.matching().naam
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -15,25 +50,9 @@ ts_status ts_naam_milan(const ts_context * context, const char * request_json, t
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.naam_milan(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.naamMilan(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `matching.naam` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

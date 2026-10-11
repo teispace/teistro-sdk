@@ -7,7 +7,47 @@ Reads periods of civil days at a place for each of the twelve signs and answers 
 
 `request_json` is `{"periods", "baseline"}`: each period `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as `{"year", "month", "day"}` and everything but `first`, the place and the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY` and `YEARLY`. A key it does not read, a last day before the first, a clock off the clock or a graha named twice is `INVALID_ARG`, named under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is a build that leaves the `rashifal` family out.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.chart.foundMany
+ctx.chart.rashifalMany
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.chart.found_many
+ctx.chart.rashifal_many
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.chart.foundMany
+ctx.chart.rashifalMany
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.chart().foundMany
+ctx.chart().rashifalMany
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.chart().found_many
+sdk.chart().rashifal_many
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -15,25 +55,9 @@ ts_status ts_rashifal(const ts_context * context, const char * request_json, ts_
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.rashifal(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.rashifal(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `chart.found_many` and `chart.rashifal_many` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

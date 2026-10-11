@@ -5,7 +5,42 @@ description: "Whether the current locale or its fallbacks have a message: `1` or
 
 Whether the current locale or its fallbacks have a message: `1` or `0`.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.intl.has
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.intl.has
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.intl.has
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.intl().has
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.intl().has
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_intl_has(const ts_context * context, const char * key, uint8_t * ou
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.intl_has(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.intlHas(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `intl.has` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

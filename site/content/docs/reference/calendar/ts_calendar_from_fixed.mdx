@@ -5,7 +5,42 @@ description: "The date a fixed day falls on in a calendar."
 
 The date a fixed day falls on in a calendar.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.calendar.dateOf
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.calendar.date_of
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.calendar.dateOf
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.calendar().dateOf
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.calendar().date_of
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_calendar_from_fixed(const ts_context * context, uint16_t calendar, 
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.calendar_from_fixed(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.calendarFromFixed(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `calendar.date_of` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 
