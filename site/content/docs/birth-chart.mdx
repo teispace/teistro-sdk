@@ -30,6 +30,9 @@ rule it used and from which tzdb, and a stored chart keeps both.
 
 ## The chart
 
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust']}>
+<Tab value="Node">
+
 ```js title="bindings/node/example/birth_chart.mjs"
 const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
 const chart = ctx.chart.found({
@@ -39,6 +42,72 @@ const chart = ctx.chart.found({
   kind: ChartKind.Natal,
 });
 ```
+
+</Tab>
+<Tab value="Python">
+
+```python title="bindings/python/example/birth_chart.py"
+place = Observer(
+    latitude_deg=Latitude(27.7172),
+    longitude_deg=Longitude(85.324),
+    altitude_m=Altitude(1400),
+)
+chart = ctx.chart.found(
+    instant=when.instant_jd_utc,
+    place=place,
+    utc_offset_seconds=when.offset_seconds,
+    kind=ChartKind.NATAL,
+)
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart title="bindings/dart/example/birth_chart.dart"
+final place = Observer(
+  latitudeDeg: Latitude(27.7172),
+  longitudeDeg: Longitude(85.324),
+  altitudeM: Altitude(1400),
+);
+final chart = ctx.chart.found(
+  instant: when.instantJdUtc,
+  place: place,
+  utcOffsetSeconds: when.offsetSeconds,
+);
+```
+
+</Tab>
+<Tab value="Java">
+
+```java title="bindings/java/example/BirthChart.java"
+Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+Chart chart = ctx.chart().found(when.instantJdUtc(), place, when.offsetSeconds(),
+        ChartOptions.builder().kind(ChartKind.NATAL).build());
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust title="crates/sdk/examples/birth_chart.rs"
+let place = Place::new(
+    Latitude::try_new(27.7172)?,
+    Longitude::try_new(85.324)?,
+    Altitude::try_new(1400.0)?,
+);
+let founded = sdk.chart().found(
+    resolved.instant,
+    &place,
+    resolved.zone.offset,
+    ChartKind::Natal,
+)?;
+```
+
+</Tab>
+</Tabs>
+
+In Python, Dart, Java and Rust a latitude is its own type, checked for
+range when it is made, so it cannot be passed where a longitude is
+wanted, in whichever order a constructor takes them.
 
 The SDK's canonical frame is tropical, because that is what an ephemeris
 computes. The profile asks for the sidereal zodiac, Lahiri's ayanamsha and
