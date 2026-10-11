@@ -216,6 +216,126 @@ const PARITY_CLASSES: &str = "target/java-parity";
 /// The Teimeris adapter's Java package.
 const ADAPTER: &str = "adapters/ephemeris-teimeris/java";
 
+/// The file whose whole purpose is to be wrong: every `// expect:` line
+/// must be answered by an error on the statement after it, which is how
+/// the Java half of "a swapped latitude and longitude does not compile"
+/// and of "a request is typed" is proved.
+const WRONG: &str = "typecheck/Wrong.java";
+
+/// Compiles the file of wrong usages against the module and holds it to
+/// what it expects: each `// expect: <text>` is answered by exactly one
+/// error on the lines up to the next expectation, carrying that text in
+/// its message or the detail javac indents under it, and no error falls
+/// before the first.
+fn wrong_usages(root: &Path, classes: &Path, main: &Path) -> Result<(), ()> {
+    let file = root.join(PACKAGE).join(WRONG);
+    let source = std::fs::read_to_string(&file).map_err(|e| {
+        println!("FAIL  {PACKAGE}/{WRONG}: {e}");
+    })?;
+    let expected: Vec<(usize, &str)> = source
+        .lines()
+        .enumerate()
+        .filter_map(|(at, line)| Some((at + 1, line.trim().strip_prefix("// expect:")?.trim())))
+        .collect();
+    let output = Command::new("javac")
+        .args([
+            "--release",
+            FLOOR,
+            "-encoding",
+            "UTF-8",
+            "-Xmaxerrs",
+            "1000",
+            "-d",
+        ])
+        .arg(classes.join("wrong"))
+        .arg("--module-path")
+        .arg(main)
+        .args(["--add-modules", MODULE])
+        .arg(&file)
+        .current_dir(root)
+        .output()
+        .map_err(|e| println!("FAIL  {PACKAGE}/{WRONG} could not be compiled: {e}"))?;
+    let errors = javac_errors(&String::from_utf8_lossy(&output.stderr));
+    let failures = held_to(&expected, &errors);
+    for failure in &failures {
+        println!("FAIL  {PACKAGE}/{WRONG}: {failure}");
+    }
+    if failures.is_empty() && !output.status.success() {
+        println!(
+            "ok    {PACKAGE}/{WRONG}: {} wrong usage(s) do not compile",
+            expected.len()
+        );
+        Ok(())
+    } else {
+        if failures.is_empty() {
+            println!("FAIL  {PACKAGE}/{WRONG} compiled, and every line in it is wrong");
+        }
+        Err(())
+    }
+}
+
+/// javac's errors, each its line and its whole block: the message and the
+/// detail lines indented under it (`required:`, `reason: argument
+/// mismatch; ...`).
+fn javac_errors(report: &str) -> Vec<(usize, String)> {
+    let mut errors: Vec<(usize, String)> = Vec::new();
+    let mut open = false;
+    for line in report.lines() {
+        let head = line.split_once(": error: ").and_then(|(place, message)| {
+            let (_, number) = place.rsplit_once(':')?;
+            Some((number.parse::<usize>().ok()?, message))
+        });
+        if let Some((number, message)) = head {
+            errors.push((number, message.to_owned()));
+            open = true;
+        } else if line.contains(": warning: ")
+            || line.ends_with(" error")
+            || line.ends_with(" errors")
+        {
+            open = false;
+        } else if open {
+            if let Some((_, block)) = errors.last_mut() {
+                block.push('\n');
+                block.push_str(line.trim());
+            }
+        }
+    }
+    errors
+}
+
+/// What is wrong with `errors` against `expected`, each as a sentence.
+fn held_to(expected: &[(usize, &str)], errors: &[(usize, String)]) -> Vec<String> {
+    let mut failures = Vec::new();
+    for (index, (at, want)) in expected.iter().enumerate() {
+        let until = expected.get(index + 1).map_or(usize::MAX, |next| next.0);
+        let answered: Vec<&String> = errors
+            .iter()
+            .filter(|(line, _)| line > at && *line < until)
+            .map(|(_, block)| block)
+            .collect();
+        match answered.as_slice() {
+            [one] if one.contains(want) => {}
+            [one] => failures.push(format!(
+                "line {at} expects `{want}`, and javac said `{}`",
+                one.lines().next().unwrap_or_default()
+            )),
+            [] => failures.push(format!("line {at} expects `{want}`, which compiled")),
+            many => failures.push(format!(
+                "line {at} expects one error, and javac reported {}",
+                many.len()
+            )),
+        }
+    }
+    let first = expected.first().map_or(usize::MAX, |first| first.0);
+    for (line, block) in errors.iter().filter(|(line, _)| *line < first) {
+        failures.push(format!(
+            "line {line} is no expected error: `{}`",
+            block.lines().next().unwrap_or_default()
+        ));
+    }
+    failures
+}
+
 /// Compiles the Teimeris adapter's module against the binding's, and its
 /// typecheck consumer against both, each at the floor's release with every
 /// lint an error: the gate the other bindings' adapters get from their own
@@ -267,7 +387,8 @@ pub(crate) fn check(root: &Path) -> i32 {
             &format!("{PACKAGE}'s tests pass against the real library"),
             &format!("{PACKAGE}'s tests did not pass"),
         )?;
-        adapter(root, &classes, &main)
+        adapter(root, &classes, &main)?;
+        wrong_usages(root, &classes, &main)
     });
     let outcome = outcome.and_then(|()| {
         crate::examples::Binding::Java
@@ -275,4 +396,58 @@ pub(crate) fn check(root: &Path) -> i32 {
             .map(drop)
     });
     i32::from(outcome.is_err())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{held_to, javac_errors};
+
+    const REPORT: &str = "\
+typecheck/Wrong.java:10: error: incompatible types: Latitude cannot be converted to Longitude
+        new Observer(new Latitude(1), new Longitude(2), new Altitude(3));
+                     ^
+typecheck/Wrong.java:13: error: method kp in class Builder cannot be applied to given types;
+        ChartOptions.builder().kp(Map.of(\"number\", 108));
+                              ^
+  required: KpRequest
+  found:    Map<String,Integer>
+  reason: argument mismatch; Map<String,Integer> cannot be converted to KpRequest
+2 errors
+";
+
+    #[test]
+    fn an_error_is_read_with_the_detail_under_it() {
+        let errors = javac_errors(REPORT);
+        assert_eq!(errors.len(), 2);
+        assert_eq!(errors[0].0, 10);
+        assert!(
+            errors[1].1.contains("cannot be converted to KpRequest"),
+            "{:?}",
+            errors[1]
+        );
+    }
+
+    #[test]
+    fn each_expectation_is_answered_by_one_error_after_it() {
+        let errors = javac_errors(REPORT);
+        let expected = [
+            (9, "Latitude cannot be converted to Longitude"),
+            (12, "cannot be converted to KpRequest"),
+        ];
+        assert_eq!(held_to(&expected, &errors), Vec::<String>::new());
+        // A usage that compiled, one answered wrongly, and an error nothing expects.
+        let failures = held_to(
+            &[(9, "cannot be converted to Altitude"), (11, "x")],
+            &errors,
+        );
+        assert_eq!(failures.len(), 2, "{failures:?}");
+        let stray = held_to(&[(12, "cannot be converted to KpRequest")], &errors);
+        assert_eq!(stray.len(), 1, "{stray:?}");
+        assert!(
+            stray[0].contains("line 10 is no expected error"),
+            "{stray:?}"
+        );
+        let silent = held_to(&[(1, "anything")], &[]);
+        assert!(silent[0].contains("which compiled"), "{silent:?}");
+    }
 }

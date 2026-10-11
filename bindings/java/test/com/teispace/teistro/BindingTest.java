@@ -427,9 +427,19 @@ public final class BindingTest {
                 same(List.of("SLEEPING", "DYING"),
                         List.of(second.yamas().get(1).activity(), second.yamas().get(2).activity()), "the activities");
                 same("OWN", second.yamas().get(0).subs().get(0).ownerIs(), "the native's own sub-period");
-                TeistroException refused = refusal(() -> sky.almanac().pakshi(wednesday, null, madras, 19_800,
-                        PakshiNative.bird("OWL"), Map.of("clock", "SUNDIAL")));
-                same("pakshi.rules.clock", refused.field(), "named by its record");
+                try {
+                    PakshiRules.of(Map.of("clock", "SUNDIAL"));
+                    throw new AssertionError("a clock the SDK does not read was read");
+                } catch (IllegalArgumentException e) {
+                    check(e.getMessage().contains("PakshiRules.clock"), e.getMessage());
+                }
+                // A map built in Java may hold the member itself, as a builder's would.
+                same(SubLengths.PULIPPANI, PakshiRules.of(Map.of("subs", SubLengths.PULIPPANI)).subs(),
+                        "a request member reads as itself");
+                same(SubLengths.AGASTYA, SubLengths.of(SubLengths.AGASTYA), "and on its own");
+                check(sky.almanac().pakshi(wednesday, null, madras, 19_800, PakshiNative.bird("OWL"),
+                        PakshiRules.builder().subs(SubLengths.PULIPPANI).build()) != null,
+                        "a typed rule reaches the SDK");
             }
             try (Context polar = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN)
                     .settingsJson("{\"day\": {\"polar_day_policy\": \"NEAREST_EVENT\"}}").build())) {

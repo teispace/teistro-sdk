@@ -144,8 +144,9 @@ public final class AlmanacArea {
      * As {@link #pakshi(CalendarDate, CalendarDate, Observer, int, PakshiNative)}, under {@code rules}:
      * {@code clock} ({@code STRETCHED} or {@code NAZHIGAI}), {@code subs} and {@code relations}
      * ({@code AGASTYA} or {@code PULIPPANI}), each optional, as
-     * {@code Map.of("subs", "PULIPPANI")}; a key it does not read is refused as
-     * {@code pakshi.rules.<key>}.
+     * {@code PakshiRules.builder().subs(SubLengths.PULIPPANI).build()}, or
+     * {@code PakshiRules.of(map)} from a map, which refuses a member it does
+     * not read by its field, as {@code PakshiRules.clock}.
      *
      * @param from the first day
      * @param to the last day, both ends included
@@ -156,7 +157,7 @@ public final class AlmanacArea {
      * @return one entry a day, in order, with the provenance that sealed the request
      */
     public PakshiDays pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
-            PakshiNative whose, Map<String, ?> rules) {
+            PakshiNative whose, com.teispace.teistro.request.PakshiRules rules) {
         return PakshiReads.pakshi(context, from, to, place, utcOffsetSeconds, whose, rules);
     }
 }
