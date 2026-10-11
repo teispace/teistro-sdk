@@ -545,10 +545,11 @@ uses fixed seeds, so the counts are exact and also golden.
    stratum's charts out contiguously first, in the order the stratified
    shuffle already walks, so a stratum's counts cost its own words and
    every permutation gives every chart the label it gave before, which a
-   test holds. Still to come from the same draft: the measured page's
-   row for the CMH statistic's calibration under strata of unequal
-   prevalence, the self-matched null (C367) and the exact restricted
-   pairing (C368).
+   test holds. The measured page's §6 holds a stratified study at its
+   level where the same study read without its strata finds every
+   predicate whose prevalence differs between them (63% to 97% of null
+   labellings). Still to come from the same draft: the self-matched null
+   (C367) and the exact restricted pairing (C368).
 
 ## Sources
 

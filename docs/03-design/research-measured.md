@@ -89,3 +89,25 @@ The rising Sun, the sector the early hours fill, reads z 2.8 alone: the 12th and
 | within 30 minutes either side, the edges alone find every unstable cell | **holds** | 13 of 480 cells unstable across the window, 13 at its edges |
 | within 180 minutes either side, the edges alone find every unstable cell | falsified | 40 of 480 cells unstable across the window, 30 at its edges |
 
+## 6. Strata (C369)
+
+400 charts in two strata of 200, interleaved, whose case shares differ (0.15 and 0.45) as a confounder's would. Three predicates hold equally often in both strata and three do not. 400 labellings draw each chart a case with its stratum's share, independently of every predicate, and each is tested twice over 499 permutations: with its strata, which shuffles inside them and ranks by the Cochran–Mantel–Haenszel statistic, and without them. A rate is judged against 0.0781.
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| with its strata, a raw p is under 0.05 no more often than 5% | **holds** | 0 of 6 disagree |
+| with its strata, every correction holds the familywise rate at 0.05 | **holds** | 0 of 5 disagree |
+| with its strata, the exact p lies inside the permutation p's 95% interval at least 95% of the time | **holds** | 111 of 2400 rows outside |
+| without its strata, every predicate whose prevalence differs between them reads as an effect more often than 5% | **holds** | 0 of 3 disagree |
+
+| predicate | prevalence by stratum | raw p under 0.05, with strata | without |
+|---|--:|--:|--:|
+| `E10` | 0.1 / 0.1 | 0.030 | 0.015 |
+| `E30` | 0.3 / 0.3 | 0.028 | 0.058 |
+| `E50` | 0.5 / 0.5 | 0.037 | 0.028 |
+| `U10_40` | 0.1 / 0.4 | 0.043 | 0.625 |
+| `U40_10` | 0.4 / 0.1 | 0.052 | 0.655 |
+| `U05_60` | 0.05 / 0.6 | 0.037 | 0.968 |
+
+The cases crowd into the second stratum, so a predicate commoner there is commoner among the cases, and one rarer there rarer, with no effect at all: read without its strata, the study finds both. Given its strata, it compares each case only with the charts of its own stratum, and finds neither.
+
