@@ -1200,8 +1200,7 @@ mod tests {
         let read = spelt(node, "shape.");
         assert_eq!(read["calendar.month_length"], "ctx.calendar.monthLength");
         assert_eq!(read["(root).dispose"], "ctx.dispose");
-        let java =
-            r#"            surface("engine.call", () -> ctx.engine().call("", Map.of()));"#;
+        let java = r#"            surface("engine.call", () -> ctx.engine().call("", Map.of()));"#;
         assert_eq!(spelt(java, "ctx.")["engine.call"], "ctx.engine().call");
         let closed = r#"            surface("(root).dispose", ctx::close);"#;
         assert_eq!(spelt(closed, "ctx.")["(root).dispose"], "ctx.close");
