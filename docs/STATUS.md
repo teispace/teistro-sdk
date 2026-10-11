@@ -1056,34 +1056,29 @@ provider's DUT1).
 0. **Next, in this order** (the dated plan, `07-roadmap/00-roadmap.md`,
    "The plan to the release candidate"; Track A's release blockers first,
    the modules the reviewers read beside them):
-   1. **The MCP server's last piece** (`03-design/mcp-server.md`): the
-      site's guide to running it (§6 step 5), the rest of its packaging
-      being built.
-      P7's tasks wait on a study measured to outlast a client's timeout.
-      Step 1 below says what is built.
-   2. **`ACCURACY.md`'s rows over the JPL recording.** The CSPICE states
+   1. **`ACCURACY.md`'s rows over the JPL recording.** The CSPICE states
       are in the corpus (v0.12.0) and every built-in tier is scored
       against them (`05-testing/CONFORMANCE.md`, the `jpl` rows);
       `ACCURACY.md` has no row for them yet. The Horizons half is
       withheld until JPL's permission is asked for, which is the
       maintainer's to send.
-   3. **A release rehearsal**: one release run end to end with nothing
+   2. **A release rehearsal**: one release run end to end with nothing
       published.
-   4. **The Java binding's typed records** (`03-design/java-binding.md`).
-   5. **The Flutter build-hook package**, which carries the library into
+   3. **The Java binding's typed records** (`03-design/java-binding.md`).
+   4. **The Flutter build-hook package**, which carries the library into
       an Android or iOS build.
-   6. **The docs site's guides with executed examples**, beside the
+   5. **The docs site's guides with executed examples**, beside the
       roadmap's install check after publishing.
-   7. **Track B and C modules** (the roadmap's tables): research steps 4
+   6. **Track B and C modules** (the roadmap's tables): research steps 4
       to 7, prashna's remaining Tajika links, Saravali's readings, and
       the pakshi and Lal Kitab pipelines with their content handed to
       readers who can vet it. Pick the next item from
       `04-yogas-doshas.md` and the roadmap, and research it first.
-   8. **The hardening pass**: every gate, the parity checklist, sizes and
+   7. **The hardening pass**: every gate, the parity checklist, sizes and
       the bench read against their budgets, every module's design page
       against what shipped, and the rows `05-testing/01-quality-bar.md`
       marks as not yet enforced.
-   9. **The release candidate**: version, changelog, and a tag on a
+   8. **The release candidate**: version, changelog, and a tag on a
       rehearsal run.
 
    What only the maintainer can do, wanted before the release run: the
@@ -4184,3 +4179,4 @@ kept here: the session log records them.
 | 2026-10-11 | **`npx -y @teistro/mcp`** (`mcp-server.md` §6 step 5). A launcher over a package a platform, built by the same writer as the SDK's addon packages, which this extracted rather than copied; `check-versions` and `cargo xtask version` now walk a table of npm manifests. Tried against the debug build laid out as npm installs it: the arguments, the exit status and `SIGTERM` reach the program and come back, a program whose mode a mirror dropped still starts, and a missing platform package names itself. |
 | 2026-10-11 | **The MCP Registry entry** (`mcp-server.md` §6 step 5). `crates/mcp/server.json`, held by a test to what the server says of itself and to the launcher's `mcpName`, and by `check-versions` to the release; the registry's own `mcp-publisher validate` accepts it. **The server described itself in more than the registry's 100 characters**, so a copied description would have been refused at publish time, after npm had already published; one sentence now serves both. The publisher is pinned by version and digest rather than `releases/latest`, as the registry's own guide shows, and runs last so a registry in preview cannot hold the release. |
 | 2026-10-11 | **Claude Desktop's bundle** (`mcp-server.md` §6 step 5). The design page asked for a `binary` server over a `lipo` universal macOS program and an x64 Windows one; a bundle's configuration cannot choose by architecture, so that left Windows on Arm emulated and needed a macOS tool on the Linux stage runner. The bundle is a `node` server instead, the npm launcher choosing by both, which Claude Desktop runs on the Node it brings. The zip writer the wheels and jars share gained a mode for a program. Validated by `mcpb validate` and `mcp-publisher validate`, and run unpacked. |
+| 2026-10-11 | **The guide to the agent server, and the release's size held** (`mcp-server.md` §6 step 5, built). `site/content/docs/mcp.mdx` installs the server each way the release offers, lists its options and shows a call and a refusal; `tests/guide.rs` makes each call the page shows and holds the answer to what the page prints, and holds each option it names to `--help`, both proved red. The nightly run's size record caught the release building the server in the library's cargo build, which unified the server's features into every shipped library and grew the C bundle by a fifth; it builds alone now. **Next:** `ACCURACY.md`'s JPL rows, then a release rehearsal. |
