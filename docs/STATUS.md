@@ -1074,8 +1074,8 @@ provider's DUT1).
       device app built on the slices and read back (verify), the hash
       matrix's mobile rows, and the release wiring (`teistro_flutter`
       staged and pinned, both pub packages validated by `check-pub` in
-      the `stage` job). Next: the device runs (§5 step 7) and the docs
-      (step 9).
+      the `stage` job), and the device runs (the four facts inside the app
+      on an emulator and a simulator). Next: the docs (§5 step 9).
    3. **The docs site's guides with executed examples**, beside the
       roadmap's install check after publishing.
    4. **Track B and C modules** (the roadmap's tables): research's
