@@ -1075,7 +1075,9 @@ provider's DUT1).
       matrix's mobile rows, and the release wiring (`teistro_flutter`
       staged and pinned, both pub packages validated by `check-pub` in
       the `stage` job), and the device runs (the four facts inside the app
-      on an emulator and a simulator). Next: the docs (§5 step 9).
+      on an emulator and a simulator), and the docs: the package README
+      (sizes, how it is tested) and the site's install page. What is left
+      is the first publish, which waits on the maintainer.
    3. **The docs site's guides with executed examples**, beside the
       roadmap's install check after publishing.
    4. **Track B and C modules** (the roadmap's tables): research's
