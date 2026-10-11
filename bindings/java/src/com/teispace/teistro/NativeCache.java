@@ -3,10 +3,13 @@ package com.teispace.teistro;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.DigestInputStream;
@@ -25,6 +28,12 @@ import java.util.Set;
  * found, and on POSIX the directory must be this user's alone: under a
  * shared temporary directory a predictable path is one another user could
  * fill first.
+ *
+ * <p>Writing is serialised, by a monitor among this JVM's threads and by a
+ * lock file in the directory among processes, so the first writer writes
+ * and every later one finds its file. Racing renames instead failed on
+ * Windows: a rename that replaces a file can find it missing for a moment
+ * while another thread replaces it.
  */
 final class NativeCache {
     private NativeCache() {}
@@ -33,6 +42,15 @@ final class NativeCache {
     static final String CACHE_PROPERTY = "teistro.cache";
 
     private static final Set<PosixFilePermission> PRIVATE = PosixFilePermissions.fromString("rwx------");
+
+    /** The file in a cache directory whose lock its writers take. */
+    static final String LOCK_FILE = ".lock";
+
+    /**
+     * Held by the thread writing a library; a JVM's threads may not each
+     * hold a lock on one file, so the file lock is for other processes.
+     */
+    private static final Object WRITING = new Object();
 
     /** The directory the cache lives under: {@value #CACHE_PROPERTY}, else {@code java.io.tmpdir}. */
     static Path root() {
@@ -63,13 +81,37 @@ final class NativeCache {
         }
         Path target = dir.resolve(fileName);
         if (Files.isRegularFile(target)) {
-            String found = sha256(target);
-            if (found.equals(digest)) {
-                return target;
-            }
-            throw new IOException("the cached library " + target + " hashes to " + found + ", not the "
-                    + digest + " it was staged with: delete it, and it is written again");
+            return verified(target, digest);
         }
+        synchronized (WRITING) {
+            try (FileChannel channel = FileChannel.open(dir.resolve(LOCK_FILE), StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE)) {
+                FileLock held = channel.lock();
+                try {
+                    if (Files.isRegularFile(target)) {
+                        return verified(target, digest);
+                    }
+                    return write(library, digest, dir, target, fileName);
+                } finally {
+                    held.release();
+                }
+            }
+        }
+    }
+
+    /** {@code target}, when it hashes to {@code digest}. */
+    private static Path verified(Path target, String digest) throws IOException {
+        String found = sha256(target);
+        if (found.equals(digest)) {
+            return target;
+        }
+        throw new IOException("the cached library " + target + " hashes to " + found + ", not the " + digest
+                + " it was staged with: delete it, and it is written again");
+    }
+
+    /** Writes the library beside {@code target} and moves it there, under the directory's lock. */
+    private static Path write(InputStream library, String digest, Path dir, Path target, String fileName)
+            throws IOException {
         Path part = Files.createTempFile(dir, fileName, ".part");
         try {
             String written;
@@ -88,9 +130,9 @@ final class NativeCache {
             try {
                 Files.move(part, target, StandardCopyOption.ATOMIC_MOVE);
             } catch (IOException raced) {
-                // Another process wrote it first; Windows will not replace a
-                // library another process has mapped. Either way the file
-                // there is used if it is the one staged.
+                // A process of a release before the lock wrote it first, and
+                // Windows will not replace a library another process has
+                // mapped: the file there is used if it is the one staged.
                 if (!(Files.isRegularFile(target) && sha256(target).equals(digest))) {
                     throw raced;
                 }

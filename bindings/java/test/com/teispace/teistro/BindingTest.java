@@ -976,7 +976,8 @@ public final class BindingTest {
                 check(expected.getMessage().contains(other), "names the digest: " + expected.getMessage());
             }
             try (var left = java.nio.file.Files.list(root.resolve("teistro-9.9.9-" + other))) {
-                same(0L, left.count(), "no file left behind");
+                same(0L, left.filter(path -> !path.getFileName().toString().equals(NativeCache.LOCK_FILE)).count(),
+                        "no library or part file left behind");
             }
             // A cached file someone changed is refused, not replaced.
             if (root.getFileSystem().supportedFileAttributeViews().contains("posix")) {
@@ -1010,7 +1011,9 @@ public final class BindingTest {
                 same(first, one.get(), "one file");
             }
             try (var left = java.nio.file.Files.list(first.getParent())) {
-                same(1L, left.count(), "and no part files");
+                same(List.of("lib.so"), left.map(path -> path.getFileName().toString())
+                        .filter(name -> !name.equals(NativeCache.LOCK_FILE)).sorted().toList(),
+                        "and no part files");
             }
         });
 
