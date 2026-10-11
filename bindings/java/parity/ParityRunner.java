@@ -753,8 +753,9 @@ public final class ParityRunner {
             groups.add(i % 2);
         }
         Map<String, Object> yogas = map("shipped", List.of("YOGAS"));
-        Map<String, Object> design = map("groups", groups);
-        ResearchCounts table = geo.research().counts(births, yogas, design, map("holds", "FORMED"));
+        Design design = Design.of(map("groups", groups));
+        ResearchCounts table = geo.research().counts(births, yogas, design,
+                ResearchOptions.builder().holds(Holds.FORMED).build());
         put("research-counts-hash", table.provenance().inputHash());
         for (int k = 0; k < table.rows().size(); k += 1) {
             ResearchCounts.Row row = table.rows().get(k);
@@ -1357,8 +1358,8 @@ public final class ParityRunner {
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
-            surface("research.counts", () -> ctx.research().counts(List.of(), Map.of(), Map.of(), null));
-            surface("research.compare", () -> ctx.research().compare(List.of(), Map.of(), Map.of(), Map.of(), null));
+            surface("research.counts", () -> ctx.research().counts(List.of(), Map.of(), new Design(List.of(), null), null));
+            surface("research.compare", () -> ctx.research().compare(List.of(), Map.of(), new Design(List.of(), null), Map.of(), null));
             surface("research.expected", () -> ctx.research().expected(List.of(), Map.of(), Map.of(), null, null));
             surface("research.timed", () -> ctx.research().timed(List.of(), Map.of(), DashaSystem.VIMSHOTTARI,
                     ResearchEventShuffle.AGES_AT_EVENT, Map.of(), null));

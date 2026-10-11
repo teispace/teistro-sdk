@@ -459,7 +459,8 @@ public final class BindingTest {
                     births.add(new ResearchBirth(2447000.25 + 977.3 * i, kathmandu, 20_700));
                 }
                 Map<String, Object> yogas = Map.of("shipped", List.of("YOGAS"));
-                Map<String, Object> design = Map.of("groups", List.of(0, 1, 0, 1, 0, 1));
+                com.teispace.teistro.request.Design design = com.teispace.teistro.request.Design.of(
+                        Map.of("groups", List.of(0, 1, 0, 1, 0, 1)));
                 ResearchCounts table = sky.research().counts(births, yogas, design, null);
                 check(!table.rows().isEmpty(), "a row per rule");
                 for (ResearchCounts.Row row : table.rows()) {
@@ -490,12 +491,17 @@ public final class BindingTest {
                 for (ResearchBirth birth : births) {
                     uncertain.add(new ResearchBirth(birth.instant(), birth.place(), birth.utcOffsetSeconds(), 30));
                 }
-                String fine = sky.research().counts(uncertain, yogas, design, Map.of("uncertaintyStepMinutes", 10))
+                String fine = sky.research().counts(uncertain, yogas, design,
+                        ResearchOptions.builder().uncertaintyStepMinutes(10).build())
                         .provenance().inputHash();
                 check(!fine.equals(sky.research().counts(uncertain, yogas, design, null).provenance().inputHash()),
                         "the step is sealed with the study");
                 TeistroException still = refusal(() -> sky.research().counts(uncertain, yogas, design,
-                        Map.of("uncertaintyStepMinutes", 0)));
+                        ResearchOptions.builder().uncertaintyStepMinutes(0).build()));
+                // A field the study does not read is refused by name, not dropped.
+                TeistroException stray = refusal(() -> sky.research().counts(births, yogas, design,
+                        ResearchOptions.builder().depth(3).build()));
+                same("research.depth", stray.field(), "a counts study reads no depth");
                 same("uncertaintyStepMinutes", still.field(), "a step is above zero");
             }
         });

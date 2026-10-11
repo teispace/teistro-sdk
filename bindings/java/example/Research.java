@@ -15,6 +15,7 @@ import com.teispace.teistro.ResearchBirth;
 import com.teispace.teistro.ResearchCounts;
 import com.teispace.teistro.ResearchTested;
 import com.teispace.teistro.Teistro;
+import com.teispace.teistro.request.Design;
 
 /**
  * A two-group study, as {@code 03-design/research.md} asks one to be run: the predicates named, the
@@ -48,7 +49,7 @@ public final class Research {
                 groups.add(i < 16 ? 1 : 0);
             }
             Map<String, Object> rules = Map.of("shipped", List.of("YOGAS"));
-            Map<String, Object> design = Map.of("groups", groups);
+            Design design = new Design(groups, null);
 
             ResearchCounts table = ctx.research().counts(births, rules, design, null);
             System.out.println(table.rows().size() + " rules over " + births.size() + " births");

@@ -2924,7 +2924,7 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
 /// taken does not compile, and this list keeps a new area method from
 /// taking a map in the first place. An entry that no longer matches is
 /// refused too, so the list cannot outlive the parameter it excuses.
-const JAVA_UNTYPED: [(&str, &str); 32] = [
+const JAVA_UNTYPED: [(&str, &str); 26] = [
     ("ChartArea.layout(layout)", MEMBER_OR_KEY),
     ("ChartOptions.ChartOptions(readings)", WRITTEN),
     ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
@@ -2946,18 +2946,12 @@ const JAVA_UNTYPED: [(&str, &str); 32] = [
     ("RashifalRequest.RashifalRequest(events)", MEMBER_OR_KEY),
     ("RashifalRequest.withEvents(grahas)", MEMBER_OR_KEY),
     ("Remedies.Remedies(rules)", ANSWERED),
-    ("ResearchArea.compare(design)", RESEARCH),
-    ("ResearchArea.compare(options)", RESEARCH),
     ("ResearchArea.compare(rules)", RULES_JSON),
     ("ResearchArea.compare(test)", RULES_JSON),
-    ("ResearchArea.counts(design)", RESEARCH),
-    ("ResearchArea.counts(options)", RESEARCH),
     ("ResearchArea.counts(rules)", RULES_JSON),
     ("ResearchArea.expected(control)", RULES_JSON),
-    ("ResearchArea.expected(options)", RESEARCH),
     ("ResearchArea.expected(rules)", RULES_JSON),
     ("ResearchArea.expected(test)", RULES_JSON),
-    ("ResearchArea.timed(options)", RESEARCH),
     ("ResearchArea.timed(rules)", RULES_JSON),
     ("ResearchArea.timed(test)", RULES_JSON),
 ];
@@ -2972,8 +2966,6 @@ const OPEN: &str = "an open door by design, whose shape is the callee's (SDK ope
 const ANSWERED: &str = "an answer's echo of the rules it was read under, as the SDK wrote them";
 /// The schema reads it as JSON.
 const RULES_JSON: &str = "the schema reads it as JSON: a rule set or a test the consumer writes";
-/// Research's own pass.
-const RESEARCH: &str = "typed by the research area's pass; every parameter there is a map today";
 /// The readings already written.
 const WRITTEN: &str = "the readings as written, one JSON text a field";
 

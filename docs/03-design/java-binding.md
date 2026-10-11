@@ -224,9 +224,10 @@ holds that each typed rule reaches the SDK by turning a refusal into an
 answer: a mixed-script name under `nonLatin(SKIP)`, a Latin name under
 `latin(IAST)`. A rule set the consumer writes, and a muhurta's or
 festival's own rules, stay a map in `rules`, because the schema reads
-them as JSON. So do the research area's `rules`, `control` and `test`, whose
-`design` waits for the research area's own pass, since every parameter
-there is a map today.
+them as JSON. So do the research area's `rules`, `control` and `test`; its
+`design` is the generated `Design`, and its options a hand-written
+`ResearchOptions` (holds, the uncertainty step, an event study's depth and
+strata), whose fields a study does not read are refused by name.
 
 `typecheck/Wrong.java` holds the typing from the other side: each line
 marked `// expect:` must fail `javac` with that text (a swapped latitude

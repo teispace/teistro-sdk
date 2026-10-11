@@ -42,11 +42,10 @@ final class ResearchReads {
 
     /**
      * The study's answer: every field given crosses, and one the study does not read is refused by
-     * name there rather than dropped here; {@code options} adds {@code holds} and, for an event study,
-     * {@code depth}, {@code shuffle} and {@code strata}.
+     * name there rather than dropped here; {@code options}, when given, adds its fields.
      */
     static Map<?, ?> run(Context context, String study, Map<String, ?> rules, Map<String, Object> fields,
-            Map<String, ?> options) {
+            ResearchOptions options) {
         Map<String, Object> asked = new LinkedHashMap<>();
         asked.put("study", study);
         String written = Reads.recordJson(rules, "rules", "Map.of(\"shipped\", List.of(\"YOGAS\"))");
@@ -57,9 +56,7 @@ final class ResearchReads {
             }
         }
         if (options != null) {
-            for (Map.Entry<String, ?> option : options.entrySet()) {
-                asked.put(option.getKey(), Reads.written(option.getValue()));
-            }
+            asked.putAll(options.fields());
         }
         String json = Json.write(asked);
         return Reads.object(Json.read(context.locked((lib, raw) -> Calls.research(lib, raw, json))));
