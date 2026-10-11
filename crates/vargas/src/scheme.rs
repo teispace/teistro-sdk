@@ -113,6 +113,7 @@ impl SignBase {
 /// How a part of a sign becomes a sign.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "VargaMap"))]
 #[serde(tag = "map", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Map {
     /// Step through the signs: `(a·rashi + step·part + offset) mod 12`.
@@ -159,6 +160,7 @@ pub enum Spans {
 /// one sends a body.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "VargaGroup"))]
 pub struct Group {
     /// Where its parts begin.
     pub spans: Spans,

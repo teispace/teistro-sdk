@@ -36,6 +36,7 @@ pub enum Purifier {
 /// of the three v. 76 attaches to Gulika.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PurifierReference"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reference {
     /// The purifier's own sign.
@@ -51,6 +52,7 @@ pub enum Reference {
 /// The species vv. 77–78 assign the twelve houses to.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RectificationSpecies"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Native {
     /// A human: the sign and its trines, houses 1, 5 and 9 (v. 77).
@@ -146,6 +148,7 @@ pub enum GulikaExtension {
 /// One test of the lagna against one point of one purifier.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PurifierClause"))]
 #[serde(rename_all = "camelCase")]
 pub struct Clause {
     /// The purifier read.
@@ -183,6 +186,7 @@ impl Clause {
 /// held.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PurifierVerdict"))]
 #[serde(rename_all = "camelCase")]
 pub struct Verdict {
     /// Every clause judged, in the order pranapada, Gulika, Moon.

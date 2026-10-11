@@ -343,6 +343,7 @@ const HITS: &str = "hits";
 /// the default.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "HitRequest"))]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Asked {
     from: f64,

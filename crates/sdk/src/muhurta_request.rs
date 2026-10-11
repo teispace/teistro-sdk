@@ -321,6 +321,7 @@ fn named<T: Copy>(name: &str, names: &[(&str, T)], field: &str) -> Result<T, Err
 /// field was wrong rather than that no shape matched.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaRequest"))]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Asked {
     rules: Value,

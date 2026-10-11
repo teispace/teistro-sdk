@@ -87,6 +87,7 @@ pub struct MoonRules {
 /// A clause of vv. 73–74, in the verses' order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "TajikaMoonClause"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MoonClause {
     /// v. 73: in the 12th sign from the Sun's.

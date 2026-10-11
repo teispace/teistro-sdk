@@ -374,6 +374,7 @@ fn pack(name: &str, field: &str) -> Result<FestivalPack, Error> {
 /// should say which item was wrong rather than that no shape matched.
 #[derive(Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FestivalRequest"))]
 pub(crate) struct Asked {
     rules: Value,
 }

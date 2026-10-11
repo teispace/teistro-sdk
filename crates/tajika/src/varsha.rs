@@ -48,6 +48,7 @@ pub const MOST_YEARS: u16 = 200;
 /// Which longitude a return returns to.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ReturnLongitude"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reading {
     /// The natal **sidereal** longitude, read on the chart's own ayanamsha

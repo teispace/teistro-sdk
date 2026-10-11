@@ -25,6 +25,7 @@ const NATURAL_BENEFICS: [Graha; 4] = [Graha::Jupiter, Graha::Venus, Graha::Mercu
 /// How a graha's summary nature is derived from its lordships.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FunctionalScheme"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Scheme {
     /// *Laghu Parashari* vv. 6 to 20 and BPHS ch. 13 vv. 1 to 13: the
@@ -63,6 +64,7 @@ impl FunctionalRules {
 /// A graha's functional nature for a lagna, summarised.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FunctionalNature"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Nature {
     /// One graha owning a kendra and a trikona (LP v. 20).
@@ -80,6 +82,7 @@ pub enum Nature {
 /// reads.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FunctionalClauseKind"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ClauseKind {
     /// It owns the 1st (BPHS ch. 13 v. 12; LP v. 9).
@@ -139,6 +142,7 @@ impl ClauseKind {
 /// One clause that holds for a graha, and the house that makes it hold.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FunctionalClause"))]
 #[serde(rename_all = "camelCase")]
 pub struct Clause {
     /// What it says.

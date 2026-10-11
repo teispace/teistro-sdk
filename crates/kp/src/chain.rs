@@ -23,6 +23,7 @@ pub const MAX_LEVELS: usize = 9;
 /// for the last part of Revati.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ChainSpan"))]
 pub struct Span {
     /// The first longitude inside the level.
     pub start: Nas,

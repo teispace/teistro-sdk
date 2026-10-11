@@ -23,6 +23,7 @@ use teistro_core::quantity::{JulianDay, Utc};
 /// Which way a graha was moving, through a line or out of a station.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "HitMotion"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Motion {
     /// Forward through the zodiac.

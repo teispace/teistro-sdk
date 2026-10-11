@@ -133,6 +133,7 @@ impl ChartArea<'_> {
 /// [`ProgressionsRequest`] as the bindings write it.
 #[derive(Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ProgressionsRequest"))]
 #[serde(rename_all = "camelCase", default)]
 pub(crate) struct Asked {
     #[serde(skip_serializing_if = "Option::is_none")]

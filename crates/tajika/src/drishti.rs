@@ -56,6 +56,7 @@ pub const RASHYANTA_DEG: f64 = 29.0;
 /// do not, so it is carried rather than collapsed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "TajikaDrishti"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Drishti {
     /// **Pratyaksha Mitra**, at houses 5 and 9: openly friendly.
@@ -174,6 +175,7 @@ pub const POORNA_DEG: f64 = 1.0;
 /// Ithasala of any kind.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "TajikaAspectYoga"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Yoga {
     /// **Vartamana Ithasala**, the present one: the faster planet is

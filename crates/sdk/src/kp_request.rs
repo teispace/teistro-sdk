@@ -157,6 +157,7 @@ const KP: &str = "kp";
 /// record is; every member optional.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "KpRequest"))]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Asked {
     #[serde(default)]

@@ -241,6 +241,7 @@ impl RectificationRequest {
 /// A chart's rectification: each reading the request asked for.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ChartRectification"))]
 #[serde(rename_all = "camelCase")]
 pub struct Rectification {
     /// What the purifier leaves standing of the window.

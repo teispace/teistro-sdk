@@ -72,6 +72,7 @@ pub enum Scope {
 /// A group of conditions found from one reference point.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RuleGroup"))]
 #[serde(deny_unknown_fields)]
 pub struct Group {
     /// The point its houses are counted from, which a house-weighted severity
@@ -242,6 +243,7 @@ fn is_mars(body: &Body) -> bool {
 /// not, and the SDK invents none of them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RuleOutcome"))]
 #[serde(
     tag = "type",
     rename_all = "kebab-case",
@@ -460,6 +462,7 @@ impl NetStatus {
 /// A rule.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RuleDefinition"))]
 #[serde(try_from = "Written", into = "Written")]
 pub struct Rule {
     /// Its key.

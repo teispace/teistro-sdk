@@ -69,6 +69,7 @@ pub enum Presentation {
 /// gloss names: a sign's start, its middle and its end.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "LampLevel"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Level {
     /// Full oil, an unburnt wick.

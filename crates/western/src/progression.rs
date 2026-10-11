@@ -57,6 +57,7 @@ impl Span {
 /// native's life, spelled `{"sky": "DAY", "life": "YEAR"}` in a request.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ProgressionRate"))]
 pub struct Rate {
     /// The span of the sky's time.
     pub sky: Span,

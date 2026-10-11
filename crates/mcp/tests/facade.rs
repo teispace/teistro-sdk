@@ -599,6 +599,41 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
 /// record a request carries by name one line naming `schema.describe`,
 /// every definition kept reached, and the whole a small fraction of the
 /// full list.
+/// Names schemars falls back to or that say nothing of what they name:
+/// a model reads them in the tool list, and a generated binding would
+/// make each a public type.
+const GENERIC: [&str; 11] = [
+    "Asked", "Group", "Map", "Native", "Options", "Place", "Rate", "Rule", "Rules", "Source",
+    "Term",
+];
+
+/// **Every schema definition names its own type.** schemars numbers a
+/// second type of one name in the order it visits them (`Outcome2`), so a
+/// record added anywhere could rename another; each such type is named
+/// at its source (`schemars(rename = …)`), as is each generic one.
+#[test]
+fn every_schema_definition_names_its_own_type() {
+    let tools = listed(&mut Server::new(Engine::Builtin).with_detail(Detail::Full));
+    let mut wrong = std::collections::BTreeSet::new();
+    for tool in &tools {
+        for side in ["inputSchema", "outputSchema"] {
+            let Some(defs) = tool[side]["$defs"].as_object() else {
+                continue;
+            };
+            for name in defs.keys() {
+                if name.ends_with(|c: char| c.is_ascii_digit()) || GENERIC.contains(&name.as_str())
+                {
+                    wrong.insert(format!("{} {side}: {name}", tool["name"]));
+                }
+            }
+        }
+    }
+    assert!(
+        wrong.is_empty(),
+        "name each at its type with `#[cfg_attr(feature = \"schema\", schemars(rename = \"…\"))]`: {wrong:#?}"
+    );
+}
+
 #[test]
 fn the_lean_list_names_each_part_and_keeps_only_what_it_reaches() {
     let lean = listed(&mut Server::new(Engine::Builtin));

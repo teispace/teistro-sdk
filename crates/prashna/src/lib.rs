@@ -447,6 +447,7 @@ pub struct Clause {
 /// The three outcomes of *Shatpanchashika* I.4.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PrashnaOutcome"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Outcome {
     /// Every clause is for it.
@@ -460,6 +461,7 @@ pub enum Outcome {
 /// Whether the matter succeeds.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PrashnaVerdict"))]
 #[serde(rename_all = "camelCase")]
 pub struct Verdict {
     /// Every clause that holds.
@@ -483,6 +485,7 @@ pub enum Change {
 /// The unit a time is counted in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PrashnaUnit"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Unit {
     /// Days.
