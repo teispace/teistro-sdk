@@ -1054,7 +1054,7 @@ fn java(
     let mut out = header(version, "//");
     let _ = writeln!(
         out,
-        "\npackage com.teispace.teistro.teimeris;\n\nimport java.util.LinkedHashMap;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Objects;\n\nimport com.teispace.teistro.Engine;\n\n/**\n * The engine's own operations, typed: pass {{@code sky.ephemeris()}}, and\n * every method calls the engine by its own name.\n */\npublic final class TeimerisEngine {{\n    private final Engine engine;\n\n    /**\n     * The façade over an engine.\n     *\n     * @param engine the engine a context computes on\n     */\n    public TeimerisEngine(Engine engine) {{\n        this.engine = Objects.requireNonNull(engine, \"engine\");\n    }}"
+        "\npackage com.teispace.teistro.teimeris;\n\nimport java.util.LinkedHashMap;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Objects;\n\nimport com.teispace.teistro.Engine;\n\n/**\n * The engine's own operations, typed: pass {{@code sky.engine()}}, and\n * every method calls the engine by its own name.\n */\npublic final class TeimerisEngine {{\n    private final Engine engine;\n\n    /**\n     * The façade over an engine.\n     *\n     * @param engine the engine a context computes on\n     */\n    public TeimerisEngine(Engine engine) {{\n        this.engine = Objects.requireNonNull(engine, \"engine\");\n    }}"
     );
     for one in described {
         out.push_str(&java_method(one, vocabulary));

@@ -52,7 +52,7 @@ public final class Consumer {
             // And the engine's own, typed by the façade this package
             // carries: one value comes back as itself, more than one as a
             // record.
-            TeimerisEngine typed = Teimeris.engine(sky.ephemeris());
+            TeimerisEngine typed = Teimeris.engine(sky.engine());
             String name = typed.tmBodyName(0);
             double seconds = typed.tmDeltaT(2451545.0);
             TmVersion version = typed.tmVersion();

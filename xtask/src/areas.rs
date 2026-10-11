@@ -985,8 +985,9 @@ struct Speller {
 }
 
 /// Read rather than derived by a naming rule: a rule would say Java's
-/// `engine.call` is `ctx.engine().call`, and the Java runner, which
-/// compiles, says it is `ctx.ephemeris().call`.
+/// `(root).dispose` is `ctx.dispose`, and the Java runner, which
+/// compiles, says it is `ctx.close`, the `AutoCloseable` a
+/// try-with-resources calls.
 const SPELLERS: [Speller; 4] = [
     Speller {
         binding: "Node",
@@ -1055,7 +1056,12 @@ fn spelt(source: &str, receiver: &str) -> BTreeMap<String, String> {
         }
         let rest = rest.trim_start_matches([',', ' ']);
         let rest = rest.strip_prefix("() -> ").unwrap_or(rest);
-        let Some(member) = rest.strip_prefix(receiver) else {
+        // A Java method reference, `ctx::close`, names its member too.
+        let referenced = receiver
+            .strip_suffix('.')
+            .and_then(|name| rest.strip_prefix(name))
+            .and_then(|rest| rest.strip_prefix("::"));
+        let Some(member) = rest.strip_prefix(receiver).or(referenced) else {
             continue;
         };
         out.insert(path.to_owned(), format!("ctx.{}", member_of(member)));
@@ -1195,8 +1201,10 @@ mod tests {
         assert_eq!(read["calendar.month_length"], "ctx.calendar.monthLength");
         assert_eq!(read["(root).dispose"], "ctx.dispose");
         let java =
-            r#"            surface("engine.call", () -> ctx.ephemeris().call("", Map.of()));"#;
-        assert_eq!(spelt(java, "ctx.")["engine.call"], "ctx.ephemeris().call");
+            r#"            surface("engine.call", () -> ctx.engine().call("", Map.of()));"#;
+        assert_eq!(spelt(java, "ctx.")["engine.call"], "ctx.engine().call");
+        let closed = r#"            surface("(root).dispose", ctx::close);"#;
+        assert_eq!(spelt(closed, "ctx.")["(root).dispose"], "ctx.close");
         let python = r#"        ("calendar.is_leap", ctx.calendar.is_leap),"#;
         assert_eq!(
             spelt(python, "ctx.")["calendar.is_leap"],

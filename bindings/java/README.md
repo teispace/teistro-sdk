@@ -126,7 +126,7 @@ A chain is a caller *saying* they will accept the fallback: a context
 asked for an engine and given the built-in without being told is the
 silence this refuses, and nothing in the chain opening is one refusal
 naming each entry that failed. An engine brings its own operations with
-it at `context.ephemeris()`, and the adapter's package carries a typed
+it at `context.engine()`, and the adapter's package carries a typed
 façade over them.
 
 ## An ephemeris of your own

@@ -23,7 +23,7 @@ import java.util.Objects;
 import com.teispace.teistro.Engine;
 
 /**
- * The engine's own operations, typed: pass {@code sky.ephemeris()}, and
+ * The engine's own operations, typed: pass {@code sky.engine()}, and
  * every method calls the engine by its own name.
  */
 public final class TeimerisEngine {

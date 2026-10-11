@@ -41,7 +41,7 @@ public final class Context implements AutoCloseable {
     private final MatchingArea matching = new MatchingArea(this);
     private final NumerologyArea numerology = new NumerologyArea(this);
     private final ResearchArea research = new ResearchArea(this);
-    private final Engine ephemeris = new Engine(this);
+    private final Engine engine = new Engine(this);
     private final FrameArea frame;
 
     /** The handle, apart from the context, so the cleaner can free it. */
@@ -389,8 +389,8 @@ public final class Context implements AutoCloseable {
      *
      * @return the engine of this context
      */
-    public Engine ephemeris() {
-        return ephemeris;
+    public Engine engine() {
+        return engine;
     }
 
     /**
