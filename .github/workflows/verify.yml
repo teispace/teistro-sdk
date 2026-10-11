@@ -192,6 +192,48 @@ jobs:
           path: target/sizes/
           if-no-files-found: error
 
+  # A Flutter app on the release's own Android slices: the three built as
+  # the release builds them, the packages staged with their digests, and
+  # `flutter build apk --release` run with the hook reading the archives.
+  # The APK is read back (`xtask/src/flutter_package.rs`): each ABI's
+  # library stored, 16 KB-aligned on the 64-bit rows, and still the slice
+  # for its ABI after Gradle stripped it.
+  flutter:
+    name: flutter (android)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+      - name: The pinned Android NDK
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$(cat xtask/ndk.version)" > /dev/null
+      - id: auditable
+        name: The pinned cargo-auditable
+        shell: bash
+        run: echo "version=$(cat xtask/cargo-auditable.version)" >> "$GITHUB_OUTPUT"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-auditable@${{ steps.auditable.outputs.version }}
+      - name: The three Android slices, as the release builds them
+        run: |
+          for row in android-arm64 android-arm android-x64; do
+            cargo xtask package "$row"
+          done
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: An app built on them, and its APK read back
+        run: cargo xtask check-flutter
+
   # Every artefact the run built, held to `docs/05-testing/sizes.json`
   # within 2% and complete: every platform, profile and bundle
   # (03-design/generated-pages.md §1). When it fails, the record the run

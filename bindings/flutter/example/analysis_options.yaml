@@ -1,0 +1,3 @@
+# The app is held to Flutter's recommended lints, as `flutter create`
+# would hold it.
+include: package:flutter_lints/flutter.yaml

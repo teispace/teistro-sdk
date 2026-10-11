@@ -1065,9 +1065,15 @@ provider's DUT1).
       of `ACCURACY.md` are in; its Horizons half waits on JPL's
       permission, which is the maintainer's to ask.)
    2. **The Flutter build-hook package**, which carries the library into
-      an Android or iOS build: designed in
-      `03-design/flutter-build-hook.md`; build its §5 in order, the
-      platform rows and the cross build first.
+      an Android or iOS build (`03-design/flutter-build-hook.md`). Built:
+      the six mobile slices (`xtask/src/mobile.rs`, release rows, floor
+      read-backs), the loader's bundled step and the public
+      `package:teistro/prebuilt.dart`, `bindings/flutter` with its hook
+      and tests (in `check-dart`), and `check-flutter`, an APK built on
+      the Android slices and read back (verify). Next: the hash matrix's
+      mobile rows (§5 step 3), the device runs (step 7), the release
+      wiring (step 8: stage and pin `teistro_flutter`, `check-versions`,
+      sizes) and the docs (step 9).
    3. **The docs site's guides with executed examples**, beside the
       roadmap's install check after publishing.
    4. **Track B and C modules** (the roadmap's tables): research's
@@ -3704,9 +3710,8 @@ kept here: the session log records them.
 1. **The horizon.** The settable atmosphere for the rise and set solver
    (C34) is built (`03-design/horizon-atmosphere.md`); the dip of a
    raised horizon waits for a consumer who asks.
-2. **The bindings.** The Flutter build-hook package (step 0's item 5) is
-   the one binding deliverable left for the release; Java's typed
-   records are step 0's item 4.
+2. **The bindings.** The Flutter build-hook package's remaining steps
+   and Java's typed records are step 0's items 2 and 1.
 3. **The dasha systems neither kernel expresses.** A consumer registers a
    system of either kernel (`RashiDefinition` beside `UduDefinition`), so
    what is left is rows neither kernel can hold: a karakamsha start, a

@@ -413,6 +413,13 @@ jobs:
         run: dart pub publish --force
         working-directory: dist/pub/teistro
 
+      # After `teistro`, which it depends on at exactly this version. Its
+      # first upload is the maintainer's, by hand: pub.dev configures
+      # automated publishing only on a package that exists.
+      - name: The Flutter build-hook package
+        run: dart pub publish --force
+        working-directory: dist/pub/teistro_flutter
+
       - name: The Python package, built
         run: |
           set -eu

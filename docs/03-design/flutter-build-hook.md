@@ -277,6 +277,13 @@ since an Apple silicon Mac runs no simulator older than 14.
    cached file is reused without a fetch, and a cached file with a wrong
    hash is refused. iOS gives one file name for all three (SDK, arch). These
    tests are proved red first.
+   *As built:* the tests run inside `check-dart` (verify), beside the
+   adapter package, not as a fast-check gate: fast-check stays Rust-only
+   (ADR-0014), and the hook package is plain Dart, so `check-dart`'s
+   toolchain is all it needs. The hash, cache and floor refusals were each
+   proved red by breaking them. A Rust test in `xtask/src/mobile.rs` holds
+   the hook's `androidFloor`/`iosFloor` to the floors the slices are built
+   for.
 2. `check-flutter` (verify.yml, ubuntu): build the three Android slices.
    Stage the packages with a merged manifest so the digests are real (as
    `check-package` does), and create a throwaway app from
@@ -286,6 +293,13 @@ since an Apple silicon Mac runs no simulator older than 14.
    of ours. Each `.so` must report its own triple through the `ts_build_info`
    JSON string read from the file (the `BuildInfo.target` field), and
    `zipalign -c -P 16 -v 4` must pass.
+   *As built:* the APK is read by xtask's own zip reader, not by `unzip`
+   and `zipalign`, so the gate needs no build-tools on the path. Each
+   entry must be stored (a deflated library cannot be mapped from the
+   APK), start on a 16 KB page on the 64-bit rows, and pass the same floor
+   check `package` held the slice to: its ELF machine is the ABI's, which
+   is what the triple check was for, and it still needs only bionic after
+   Gradle strips it, so the bytes are not compared with the slice's.
 3. `check-flutter-android` (verify.yml, ubuntu with KVM, an x86_64 emulator
    at API 24 and API 35): `flutter test integration_test` in the example app
    asserts **consumer.dart's four facts**. `packaging/consumer.dart` is moved
@@ -378,7 +392,7 @@ Changed:
    `check-dart` (the existing tests are unchanged) and a test that
    `searchPath` on a faked Android/iOS lists the bundled name first.
 5. **The `teistro_flutter` package and its unit tests.** Gate:
-   `check-flutter-hook` in fast-check, proved red first.
+   the hook package's tests in `check-dart`, proved red first (built).
 6. **APK inspection.** Gate: `check-flutter` on ubuntu (verify, dispatched
    on the branch).
 7. **Device runs.** Gates: `check-flutter-android` and `check-flutter-ios`.
@@ -421,6 +435,10 @@ Changed:
    **Decided:** the mobile rows ship the release profile every row ships
    until step 2 measures the alternative by gzipped and installed bytes; a
    profile is changed only by that measurement.
+   *Measured (2026-10-11, the first `check-flutter` run):* as Gradle
+   stripped and stored them in the APK, the libraries are 13.2 MB
+   (arm64-v8a), 9.2 MB (armeabi-v7a) and 14.5 MB (x86_64). The release
+   archives are about 5.6 MB gzipped each. A Play bundle delivers one ABI.
 - **O5 The Teimeris adapter on mobile.** `PluginEphemeris` names a path,
    and in an app that path is the bundled name of the adapter's own asset.
    That requires the adapter's package to call `bundlePrebuilt` and the
