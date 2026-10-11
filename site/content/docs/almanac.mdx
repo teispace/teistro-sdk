@@ -11,6 +11,9 @@ seven days asked for one at a time.
 
 ## A week
 
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust']}>
+<Tab value="Node">
+
 ```js title="bindings/node/example/almanac.mjs"
 const ctx = new Context({
   profile: 'parashari-classical',
@@ -28,6 +31,61 @@ const week = ctx.almanac.of({
   utcOffsetSeconds: 20700,
 });
 ```
+
+</Tab>
+<Tab value="Python">
+
+```python title="bindings/python/example/almanac.py"
+week = ctx.almanac.of(
+    from_date=date(Calendar.GREGORIAN, 2024, 6, 17),
+    to_date=date(Calendar.GREGORIAN, 2024, 6, 23),
+    place=place,
+    utc_offset_seconds=OFFSET_SECONDS,
+)
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart title="bindings/dart/example/almanac.dart"
+final week = ctx.almanac.of(
+  from: Calendar.gregorian.date(2024, 6, 17),
+  to: Calendar.gregorian.date(2024, 6, 23),
+  place: place,
+  utcOffsetSeconds: offsetSeconds,
+);
+```
+
+</Tab>
+<Tab value="Java">
+
+```java title="bindings/java/example/Almanac.java"
+com.teispace.teistro.Almanac week = ctx.almanac().of(
+        date(Calendar.GREGORIAN, 2024, 6, 17),
+        date(Calendar.GREGORIAN, 2024, 6, 23),
+        place,
+        OFFSET_SECONDS);
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust title="crates/sdk/examples/almanac.rs"
+let place = Place::new(
+    Latitude::try_new(27.7172)?,
+    Longitude::try_new(85.324)?,
+    Altitude::try_new(1400.0)?,
+);
+let offset = UtcOffset::try_from_seconds(OFFSET_SECONDS)?;
+
+// ── One crossing for the whole week ───────────────────────────────
+let from = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 17);
+let to = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 23);
+let week = sdk.almanac().of(&from, &to, &place, offset)?;
+```
+
+</Tab>
+</Tabs>
 
 Each day carries its sunrise and sunset, its lunar month and paksha, the
 five limbs, the periods it is planned around and the Moon's rising and

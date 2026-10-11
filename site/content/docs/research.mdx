@@ -9,6 +9,9 @@ find what is not there. A study names its **births**, its **rules** (each
 one a predicate, read once on every chart), its **labels** and its
 **test**, and the answer comes back per rule, never as one verdict.
 
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust']}>
+<Tab value="Node">
+
 ```js title="bindings/node/example/research.mjs"
 const rules = { shipped: ['YOGAS'] };
 const design = { groups: births.map((_, i) => (i < 16 ? 1 : 0)) };
@@ -26,6 +29,64 @@ console.log(`${tested.permutations} permutations, none can say less than p = ${t
 const under = (method) => tested.rows.filter((row) => row.underAlpha[method]).length;
 console.log(`under 0.05: ${under('raw')} raw, ${under('maxT')} after max-T, ${under('holm')} after Holm`);
 ```
+
+</Tab>
+<Tab value="Python">
+
+```python title="bindings/python/example/research.py"
+tested = ctx.research.compare(
+    births=births,
+    rules=rules,
+    design=design,
+    test={"seed": 2026, "permutations": 999, "contrast": {"kind": "CASE_VS_REST", "case": 1}, "alpha": 0.05},
+)
+# The registration: the births, the rules, the labels and the test.
+print(f"registered as {tested.provenance.input_hash}")
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart title="bindings/dart/example/research.dart"
+final tested = ctx.research.compare(
+  births: births,
+  rules: rules,
+  design: design,
+  test: ResearchGroupTest(
+    seed: BigInt.from(2026),
+    permutations: 999,
+    contrast: const ResearchContrast.caseVsRest(1),
+    alpha: 0.05,
+  ),
+);
+```
+
+</Tab>
+<Tab value="Java">
+
+```java title="bindings/java/example/Research.java"
+ResearchTested tested = ctx.research().compare(births, rules, design, Map.of("seed", 2026,
+        "permutations", 999, "contrast", Map.of("kind", "CASE_VS_REST", "case", 1), "alpha", 0.05),
+        null);
+// The registration: the births, the rules, the labels and the test.
+System.out.println("registered as " + tested.provenance().inputHash());
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust title="crates/sdk/examples/research.rs"
+let test = GroupTest {
+    alpha: Some(0.05),
+    ..GroupTest::new(2026, 999, Contrast::CaseVsRest { case: 1 })
+};
+let tested = sdk.research().compare(study, &design, &test)?;
+// The registration: the births, the rules, the labels and the test.
+println!("registered as {}", tested.provenance.input_hash);
+```
+
+</Tab>
+</Tabs>
 
 This is cut from the shared example `research`, which every binding
 carries and `cargo xtask check-parity` runs in all of them, holding that
