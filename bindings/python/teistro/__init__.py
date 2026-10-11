@@ -15515,7 +15515,7 @@ class PositionGrid:
         """The blob as its generated decoder read it."""
 
     @property
-    def instant_count(self) -> int:
+    def jd_count(self) -> int:
         """How many instants the grid covers."""
         return self.decoded.jd_count
 
@@ -15563,10 +15563,10 @@ class PositionGrid:
 
     def at(self, instant: int, body: int) -> Cell:
         """One cell of the grid."""
-        if not 0 <= instant < self.instant_count or not 0 <= body < self.body_count:
+        if not 0 <= instant < self.jd_count or not 0 <= body < self.body_count:
             raise IndexError(
                 f"({instant}, {body}) is outside a "
-                f"{self.instant_count}x{self.body_count} grid"
+                f"{self.jd_count}x{self.body_count} grid"
             )
         index = instant * self.body_count + body
         cells = self.decoded.cells

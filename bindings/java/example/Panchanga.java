@@ -17,11 +17,9 @@ import com.teispace.teistro.Frame;
 import com.teispace.teistro.Karana;
 import com.teispace.teistro.Nakshatra;
 import com.teispace.teistro.PositionGrid;
-import com.teispace.teistro.PositionRequest;
 import com.teispace.teistro.Rashi;
 import com.teispace.teistro.Teistro;
 import com.teispace.teistro.Tithi;
-import com.teispace.teistro.TimeScale;
 import com.teispace.teistro.Vara;
 import com.teispace.teistro.Yoga;
 import com.teispace.teistro.ZoneResolution;
@@ -137,12 +135,8 @@ public final class Panchanga {
      * for it: a vara is a property of the day, not of the moment.
      */
     private static Limbs panchangaAt(Context ctx, Teistro teistro, double instant, int weekday) {
-        Frame canonical = teistro.canonicalFrame();
-        Frame frame = new Frame(Ayanamsha.LAHIRI, canonical.centre(), canonical.equinox(), canonical.coordinates(),
-                true, canonical.lightTime(), canonical.aberration(), canonical.deflection(), canonical.nutation());
-        PositionGrid sky = ctx.positions(new PositionRequest(
-                TimeScale.UT1, teistro.packFrame(frame), true, null, new double[] {instant},
-                List.of(Body.SUN, Body.MOON)));
+        Frame frame = teistro.canonicalFrame().withSidereal(true).withAyanamsha(Ayanamsha.LAHIRI);
+        PositionGrid sky = ctx.positions(new double[] {instant}, List.of(Body.SUN, Body.MOON), frame);
         double sun = sky.at(0, 0).longitude();
         double moon = sky.at(0, 1).longitude();
         double elongation = mod360(moon - sun);

@@ -448,7 +448,7 @@ class Positions(WithLibrary):
             instants=[2451545.0, 2451546.0],
             bodies=[Body.SUN, Body.MOON, Body.MARS],
         )
-        self.assertEqual((sky.instant_count, sky.body_count), (2, 3))
+        self.assertEqual((sky.jd_count, sky.body_count), (2, 3))
         self.assertEqual(sky.cell_count, 6)
         self.assertEqual(sky.time_scale, TimeScale.UT1)
         self.assertEqual(sky.body_keys, [Body.SUN, Body.MOON, Body.MARS])

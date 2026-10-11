@@ -102,7 +102,7 @@ def main() -> None:
             instants=instants, bodies=[body for body, _ in BODIES], frame=frame
         )
         print(
-            f"grid     {sky.instant_count} instants x {sky.body_count} bodies"
+            f"grid     {sky.jd_count} instants x {sky.body_count} bodies"
             f" = {sky.cell_count} cells in one call"
         )
 

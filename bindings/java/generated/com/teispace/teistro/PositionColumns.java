@@ -136,6 +136,96 @@ public record PositionColumns(
         return source.clone();
     }
 
+    /**
+     * This value with another frameBits.
+     *
+     * @param value the frameBits
+     * @return a copy with {@code frameBits} replaced
+     */
+    public PositionColumns withFrameBits(long value) {
+        return new PositionColumns(value, lon, lat, dist, lonSpeed, latSpeed, distSpeed, status, source);
+    }
+
+    /**
+     * This value with another lon.
+     *
+     * @param value the lon
+     * @return a copy with {@code lon} replaced
+     */
+    public PositionColumns withLon(double[] value) {
+        return new PositionColumns(frameBits, value, lat, dist, lonSpeed, latSpeed, distSpeed, status, source);
+    }
+
+    /**
+     * This value with another lat.
+     *
+     * @param value the lat
+     * @return a copy with {@code lat} replaced
+     */
+    public PositionColumns withLat(double[] value) {
+        return new PositionColumns(frameBits, lon, value, dist, lonSpeed, latSpeed, distSpeed, status, source);
+    }
+
+    /**
+     * This value with another dist.
+     *
+     * @param value the dist
+     * @return a copy with {@code dist} replaced
+     */
+    public PositionColumns withDist(double[] value) {
+        return new PositionColumns(frameBits, lon, lat, value, lonSpeed, latSpeed, distSpeed, status, source);
+    }
+
+    /**
+     * This value with another lonSpeed.
+     *
+     * @param value the lonSpeed
+     * @return a copy with {@code lonSpeed} replaced
+     */
+    public PositionColumns withLonSpeed(double[] value) {
+        return new PositionColumns(frameBits, lon, lat, dist, value, latSpeed, distSpeed, status, source);
+    }
+
+    /**
+     * This value with another latSpeed.
+     *
+     * @param value the latSpeed
+     * @return a copy with {@code latSpeed} replaced
+     */
+    public PositionColumns withLatSpeed(double[] value) {
+        return new PositionColumns(frameBits, lon, lat, dist, lonSpeed, value, distSpeed, status, source);
+    }
+
+    /**
+     * This value with another distSpeed.
+     *
+     * @param value the distSpeed
+     * @return a copy with {@code distSpeed} replaced
+     */
+    public PositionColumns withDistSpeed(double[] value) {
+        return new PositionColumns(frameBits, lon, lat, dist, lonSpeed, latSpeed, value, status, source);
+    }
+
+    /**
+     * This value with another status.
+     *
+     * @param value the status
+     * @return a copy with {@code status} replaced
+     */
+    public PositionColumns withStatus(int[] value) {
+        return new PositionColumns(frameBits, lon, lat, dist, lonSpeed, latSpeed, distSpeed, value, source);
+    }
+
+    /**
+     * This value with another source.
+     *
+     * @param value the source
+     * @return a copy with {@code source} replaced
+     */
+    public PositionColumns withSource(long[] value) {
+        return new PositionColumns(frameBits, lon, lat, dist, lonSpeed, latSpeed, distSpeed, status, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.PositionColumnsC.STRUCT_SIZE.set(raw, 0L, (int) Native.PositionColumnsC.SIZE);

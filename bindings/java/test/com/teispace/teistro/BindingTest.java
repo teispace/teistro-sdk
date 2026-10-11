@@ -242,6 +242,12 @@ public final class BindingTest {
         tests.put("the library's own calls need no context", () -> {
             Frame canonical = teistro.canonicalFrame();
             same(canonical, teistro.unpackFrame(teistro.packFrame(canonical)), "a frame packs and unpacks");
+            // A wither replaces one component and keeps the rest.
+            Frame lahiri = canonical.withSidereal(true).withAyanamsha(Ayanamsha.LAHIRI);
+            same(new Frame(Ayanamsha.LAHIRI, canonical.centre(), canonical.equinox(), canonical.coordinates(),
+                    true, canonical.lightTime(), canonical.aberration(), canonical.deflection(),
+                    canonical.nutation()), lahiri, "withSidereal and withAyanamsha");
+            same(canonical, lahiri.withSidereal(false).withAyanamsha(null), "and back");
             double jd = teistro.julianDayOfFixed(739_000);
             same(739_000 + 1_721_424.5, jd, "fixed + 1721424.5");
             CalendarFixedOfJdResult back = teistro.fixedOfJulianDay(jd + 0.25);

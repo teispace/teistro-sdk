@@ -143,7 +143,7 @@ def main() -> None:
             bodies=[Body.SUN, Body.MOON],
         )
         print(f"asked    {provider.calls} time(s) for {provider.cells} cells")
-        print(f"answered {sky.cell_count} cells over {sky.instant_count} days")
+        print(f"answered {sky.cell_count} cells over {sky.jd_count} days")
         print(
             f"  sun  {sky.at(0, 0).longitude:8.4f}°"
             f" -> {sky.at(6, 0).longitude:8.4f}° in a week"

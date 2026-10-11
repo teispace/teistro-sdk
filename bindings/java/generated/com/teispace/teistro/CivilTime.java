@@ -31,6 +31,56 @@ public record CivilTime(
     public CivilTime {
     }
 
+    /**
+     * This value with another hour.
+     *
+     * @param value the hour
+     * @return a copy with {@code hour} replaced
+     */
+    public CivilTime withHour(int value) {
+        return new CivilTime(value, minute, second, hasTime, nanos);
+    }
+
+    /**
+     * This value with another minute.
+     *
+     * @param value the minute
+     * @return a copy with {@code minute} replaced
+     */
+    public CivilTime withMinute(int value) {
+        return new CivilTime(hour, value, second, hasTime, nanos);
+    }
+
+    /**
+     * This value with another second.
+     *
+     * @param value the second
+     * @return a copy with {@code second} replaced
+     */
+    public CivilTime withSecond(int value) {
+        return new CivilTime(hour, minute, value, hasTime, nanos);
+    }
+
+    /**
+     * This value with another hasTime.
+     *
+     * @param value the hasTime
+     * @return a copy with {@code hasTime} replaced
+     */
+    public CivilTime withHasTime(boolean value) {
+        return new CivilTime(hour, minute, second, value, nanos);
+    }
+
+    /**
+     * This value with another nanos.
+     *
+     * @param value the nanos
+     * @return a copy with {@code nanos} replaced
+     */
+    public CivilTime withNanos(long value) {
+        return new CivilTime(hour, minute, second, hasTime, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.TsCivilTime.STRUCT_SIZE.set(raw, 0L, (int) Native.TsCivilTime.SIZE);

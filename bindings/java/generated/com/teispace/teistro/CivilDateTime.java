@@ -27,6 +27,26 @@ public record CivilDateTime(
         Objects.requireNonNull(time, "time");
     }
 
+    /**
+     * This value with another date.
+     *
+     * @param value the date
+     * @return a copy with {@code date} replaced
+     */
+    public CivilDateTime withDate(CalendarDate value) {
+        return new CivilDateTime(value, time);
+    }
+
+    /**
+     * This value with another time.
+     *
+     * @param value the time
+     * @return a copy with {@code time} replaced
+     */
+    public CivilDateTime withTime(CivilTime value) {
+        return new CivilDateTime(date, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.TsCivilDateTime.STRUCT_SIZE.set(raw, 0L, (int) Native.TsCivilDateTime.SIZE);

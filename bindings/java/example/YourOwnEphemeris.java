@@ -13,12 +13,10 @@ import com.teispace.teistro.Frame;
 import com.teispace.teistro.PositionAnswer;
 import com.teispace.teistro.PositionGrid;
 import com.teispace.teistro.PositionQuery;
-import com.teispace.teistro.PositionRequest;
 import com.teispace.teistro.ProviderCode;
 import com.teispace.teistro.ProviderException;
 import com.teispace.teistro.Teistro;
 import com.teispace.teistro.TeistroException;
-import com.teispace.teistro.TimeScale;
 import com.teispace.teistro.record.ProviderStamp;
 
 /**
@@ -195,7 +193,7 @@ public final class YourOwnEphemeris {
             }
             PositionGrid sky = ctx.positions(week, List.of(Body.SUN, Body.MOON));
             System.out.println("asked    " + provider.calls + " time(s) for " + provider.cells + " cells");
-            System.out.println("answered " + sky.cellCount() + " cells over " + sky.instantCount() + " days");
+            System.out.println("answered " + sky.cellCount() + " cells over " + sky.jdCount() + " days");
             System.out.printf(Locale.ROOT, "  sun  %8.4f° -> %8.4f° in a week%n",
                     sky.at(0, 0).longitude(), sky.at(6, 0).longitude());
             System.out.printf(Locale.ROOT, "  moon %8.4f° -> %8.4f° in a week%n",
@@ -235,12 +233,8 @@ public final class YourOwnEphemeris {
         provider = new TableEphemeris(teistro);
         try (Context ctx = teistro.context(with(provider))) {
             PositionGrid tropical = ctx.positions(new double[] {2451545.0}, List.of(Body.SUN));
-            Frame canonical = teistro.canonicalFrame();
-            Frame lahiri = new Frame(Ayanamsha.LAHIRI, canonical.centre(), canonical.equinox(),
-                    canonical.coordinates(), true, canonical.lightTime(), canonical.aberration(),
-                    canonical.deflection(), canonical.nutation());
-            PositionGrid sidereal = ctx.positions(new PositionRequest(TimeScale.UT1, teistro.packFrame(lahiri), true,
-                    null, new double[] {2451545.0}, List.of(Body.SUN)));
+            Frame lahiri = teistro.canonicalFrame().withSidereal(true).withAyanamsha(Ayanamsha.LAHIRI);
+            PositionGrid sidereal = ctx.positions(new double[] {2451545.0}, List.of(Body.SUN), lahiri);
             String steps = sidereal.stepsApplied().stream()
                     .map(step -> step.name() + ":" + step.implementation().key())
                     .collect(Collectors.joining(", "));

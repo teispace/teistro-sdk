@@ -27,6 +27,36 @@ public record CrossingEvent(
     public CrossingEvent {
     }
 
+    /**
+     * This value with another jdUt1.
+     *
+     * @param value the jdUt1
+     * @return a copy with {@code jdUt1} replaced
+     */
+    public CrossingEvent withJdUt1(double value) {
+        return new CrossingEvent(value, boundaryDeg, direction);
+    }
+
+    /**
+     * This value with another boundaryDeg.
+     *
+     * @param value the boundaryDeg
+     * @return a copy with {@code boundaryDeg} replaced
+     */
+    public CrossingEvent withBoundaryDeg(double value) {
+        return new CrossingEvent(jdUt1, value, direction);
+    }
+
+    /**
+     * This value with another direction.
+     *
+     * @param value the direction
+     * @return a copy with {@code direction} replaced
+     */
+    public CrossingEvent withDirection(int value) {
+        return new CrossingEvent(jdUt1, boundaryDeg, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.CrossingEventC.JD_UT1.set(raw, 0L, jdUt1);

@@ -11,10 +11,8 @@ import com.teispace.teistro.ContextOptions;
 import com.teispace.teistro.Frame;
 import com.teispace.teistro.Graha;
 import com.teispace.teistro.PositionGrid;
-import com.teispace.teistro.PositionRequest;
 import com.teispace.teistro.Rashi;
 import com.teispace.teistro.Teistro;
-import com.teispace.teistro.TimeScale;
 import com.teispace.teistro.blob.Positions;
 import com.teispace.teistro.record.Provenance;
 import com.teispace.teistro.record.ProviderStamp;
@@ -149,18 +147,13 @@ public final class Ephemeris {
             // answer, and is printed last.
 
             // ── One call for the whole year ───────────────────────────────
-            Frame canonical = teistro.canonicalFrame();
-            Frame frame = new Frame(Ayanamsha.LAHIRI, canonical.centre(), canonical.equinox(),
-                    canonical.coordinates(), true, canonical.lightTime(), canonical.aberration(),
-                    canonical.deflection(), canonical.nutation());
+            Frame frame = teistro.canonicalFrame().withSidereal(true).withAyanamsha(Ayanamsha.LAHIRI);
             double[] instants = new double[DAYS];
             for (int day = 0; day < DAYS; day++) {
                 instants[day] = START_JD + day;
             }
-            PositionGrid sky = ctx.positions(new PositionRequest(
-                    TimeScale.UT1, teistro.packFrame(frame), true, null, instants,
-                    BODIES.stream().map(Tracked::body).toList()));
-            System.out.println("grid     " + sky.instantCount() + " instants x " + sky.bodyCount()
+            PositionGrid sky = ctx.positions(instants, BODIES.stream().map(Tracked::body).toList(), frame);
+            System.out.println("grid     " + sky.jdCount() + " instants x " + sky.bodyCount()
                     + " bodies = " + sky.cellCount() + " cells in one call");
 
             // ── The columns ───────────────────────────────────────────────

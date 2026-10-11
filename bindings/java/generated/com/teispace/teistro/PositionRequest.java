@@ -48,6 +48,66 @@ public record PositionRequest(
         return jds.clone();
     }
 
+    /**
+     * This value with another scale.
+     *
+     * @param value the scale
+     * @return a copy with {@code scale} replaced
+     */
+    public PositionRequest withScale(TimeScale value) {
+        return new PositionRequest(value, frameBits, speeds, observer, jds, bodies);
+    }
+
+    /**
+     * This value with another frameBits.
+     *
+     * @param value the frameBits
+     * @return a copy with {@code frameBits} replaced
+     */
+    public PositionRequest withFrameBits(long value) {
+        return new PositionRequest(scale, value, speeds, observer, jds, bodies);
+    }
+
+    /**
+     * This value with another speeds.
+     *
+     * @param value the speeds
+     * @return a copy with {@code speeds} replaced
+     */
+    public PositionRequest withSpeeds(boolean value) {
+        return new PositionRequest(scale, frameBits, value, observer, jds, bodies);
+    }
+
+    /**
+     * This value with another observer.
+     *
+     * @param value the observer
+     * @return a copy with {@code observer} replaced
+     */
+    public PositionRequest withObserver(Observer value) {
+        return new PositionRequest(scale, frameBits, speeds, value, jds, bodies);
+    }
+
+    /**
+     * This value with another jds.
+     *
+     * @param value the jds
+     * @return a copy with {@code jds} replaced
+     */
+    public PositionRequest withJds(double[] value) {
+        return new PositionRequest(scale, frameBits, speeds, observer, value, bodies);
+    }
+
+    /**
+     * This value with another bodies.
+     *
+     * @param value the bodies
+     * @return a copy with {@code bodies} replaced
+     */
+    public PositionRequest withBodies(List<Body> value) {
+        return new PositionRequest(scale, frameBits, speeds, observer, jds, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.PositionRequestC.STRUCT_SIZE.set(raw, 0L, (int) Native.PositionRequestC.SIZE);

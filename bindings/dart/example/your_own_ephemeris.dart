@@ -209,17 +209,7 @@ void main() {
     final sidereal = ctx.positions(
       instants: [2451545.0],
       bodies: [Body.sun],
-      frame: Frame(
-        ayanamsha: Ayanamsha.lahiri,
-        centre: canonical.centre,
-        equinox: canonical.equinox,
-        coordinates: canonical.coordinates,
-        sidereal: true,
-        lightTime: canonical.lightTime,
-        aberration: canonical.aberration,
-        deflection: canonical.deflection,
-        nutation: canonical.nutation,
-      ),
+      frame: canonical.copyWith(sidereal: true, ayanamsha: Ayanamsha.lahiri),
     );
     final steps = sidereal.stepsApplied
         .map((step) => '${step.name}:${step.implementation.key}')

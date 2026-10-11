@@ -10,6 +10,12 @@ ingresses should be using.
 
 ## A year in one call
 
+The frame is the canonical one with its zodiac changed, which each
+binding spells as its language copies a value:
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust']}>
+<Tab value="Node">
+
 ```js title="bindings/node/example/ephemeris.mjs"
 const frame = { ...canonicalFrame(), sidereal: true, ayanamsha: Ayanamsha.Lahiri };
 const sky = ctx.positions({
@@ -21,6 +27,57 @@ const sky = ctx.positions({
 const cells = sky.cells;
 if (!(cells.lon instanceof Float64Array)) throw new Error('lon is not a Float64Array');
 ```
+
+</Tab>
+<Tab value="Python">
+
+```python title="bindings/python/example/ephemeris.py"
+frame = dataclasses.replace(
+    teistro.canonical_frame, sidereal=True, ayanamsha=Ayanamsha.LAHIRI
+)
+instants = [START_JD + day for day in range(DAYS)]
+sky = ctx.positions(
+    instants=instants, bodies=[body for body, _ in BODIES], frame=frame
+)
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart title="bindings/dart/example/ephemeris.dart"
+final frame = teistro.canonicalFrame.copyWith(
+  sidereal: true,
+  ayanamsha: Ayanamsha.lahiri,
+);
+final sky = ctx.positions(
+  instants: [for (var day = 0; day < days; day++) startJd + day],
+  bodies: [for (final (body, _) in bodies) body],
+  frame: frame,
+);
+```
+
+</Tab>
+<Tab value="Java">
+
+```java title="bindings/java/example/Ephemeris.java"
+Frame frame = teistro.canonicalFrame().withSidereal(true).withAyanamsha(Ayanamsha.LAHIRI);
+double[] instants = new double[DAYS];
+for (int day = 0; day < DAYS; day++) {
+    instants[day] = START_JD + day;
+}
+PositionGrid sky = ctx.positions(instants, BODIES.stream().map(Tracked::body).toList(), frame);
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust title="crates/sdk/examples/ephemeris.rs"
+let frame = Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri));
+let stamped = sdk.positions(&PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame))?;
+```
+
+</Tab>
+</Tabs>
 
 ```text output="ephemeris"
 grid     366 instants x 3 bodies = 1098 cells in one call

@@ -56,6 +56,146 @@ public record PanchangaRequest(
         Objects.requireNonNull(calendar, "calendar");
     }
 
+    /**
+     * This value with another calendar.
+     *
+     * @param value the calendar
+     * @return a copy with {@code calendar} replaced
+     */
+    public PanchangaRequest withCalendar(Calendar value) {
+        return new PanchangaRequest(value, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another fromYear.
+     *
+     * @param value the fromYear
+     * @return a copy with {@code fromYear} replaced
+     */
+    public PanchangaRequest withFromYear(int value) {
+        return new PanchangaRequest(calendar, value, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another fromMonth.
+     *
+     * @param value the fromMonth
+     * @return a copy with {@code fromMonth} replaced
+     */
+    public PanchangaRequest withFromMonth(int value) {
+        return new PanchangaRequest(calendar, fromYear, value, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another fromDay.
+     *
+     * @param value the fromDay
+     * @return a copy with {@code fromDay} replaced
+     */
+    public PanchangaRequest withFromDay(int value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, value, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another toMonth.
+     *
+     * @param value the toMonth
+     * @return a copy with {@code toMonth} replaced
+     */
+    public PanchangaRequest withToMonth(int value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, value, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another toDay.
+     *
+     * @param value the toDay
+     * @return a copy with {@code toDay} replaced
+     */
+    public PanchangaRequest withToDay(int value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, value, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another toYear.
+     *
+     * @param value the toYear
+     * @return a copy with {@code toYear} replaced
+     */
+    public PanchangaRequest withToYear(int value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, value, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another latitudeDeg.
+     *
+     * @param value the latitudeDeg
+     * @return a copy with {@code latitudeDeg} replaced
+     */
+    public PanchangaRequest withLatitudeDeg(double value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, value, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another longitudeDeg.
+     *
+     * @param value the longitudeDeg
+     * @return a copy with {@code longitudeDeg} replaced
+     */
+    public PanchangaRequest withLongitudeDeg(double value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, value, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another altitudeM.
+     *
+     * @param value the altitudeM
+     * @return a copy with {@code altitudeM} replaced
+     */
+    public PanchangaRequest withAltitudeM(double value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, value, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another utcOffsetSeconds.
+     *
+     * @param value the utcOffsetSeconds
+     * @return a copy with {@code utcOffsetSeconds} replaced
+     */
+    public PanchangaRequest withUtcOffsetSeconds(int value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, value, sections, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another sections.
+     *
+     * @param value the sections
+     * @return a copy with {@code sections} replaced
+     */
+    public PanchangaRequest withSections(long value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, value, muhurtaJson, festivalsJson);
+    }
+
+    /**
+     * This value with another muhurtaJson.
+     *
+     * @param value the muhurtaJson
+     * @return a copy with {@code muhurtaJson} replaced
+     */
+    public PanchangaRequest withMuhurtaJson(String value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, value, festivalsJson);
+    }
+
+    /**
+     * This value with another festivalsJson.
+     *
+     * @param value the festivalsJson
+     * @return a copy with {@code festivalsJson} replaced
+     */
+    public PanchangaRequest withFestivalsJson(String value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.TsPanchangaRequest.STRUCT_SIZE.set(raw, 0L, (int) Native.TsPanchangaRequest.SIZE);
