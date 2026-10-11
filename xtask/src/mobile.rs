@@ -62,6 +62,9 @@ pub(crate) struct Mobile {
     /// iOS: the `LC_BUILD_VERSION` platform, the device's or the
     /// simulator's. Android: unused.
     pub(crate) apple_platform: u32,
+    /// Where a Flutter build puts it: the APK's ABI directory
+    /// (`lib/arm64-v8a`) on Android, the SDK it is built for on iOS.
+    pub(crate) bundle: &'static str,
     /// iOS: the deployment target the slice is built for and held to,
     /// [`IOS_FLOOR`] unless the target cannot go that low. Android: unused.
     pub(crate) minos: (u32, u32),
@@ -109,6 +112,7 @@ pub(crate) const MOBILE: [Mobile; 6] = [
         machine: EM_AARCH64,
         sixteen_k: true,
         apple_platform: 0,
+        bundle: "arm64-v8a",
         minos: (0, 0),
     },
     // 32-bit Arm: no runner can run it, and a default `flutter build apk`
@@ -122,6 +126,7 @@ pub(crate) const MOBILE: [Mobile; 6] = [
         machine: EM_ARM,
         sixteen_k: false,
         apple_platform: 0,
+        bundle: "armeabi-v7a",
         minos: (0, 0),
     },
     Mobile {
@@ -132,6 +137,7 @@ pub(crate) const MOBILE: [Mobile; 6] = [
         machine: EM_X86_64,
         sixteen_k: true,
         apple_platform: 0,
+        bundle: "x86_64",
         minos: (0, 0),
     },
     Mobile {
@@ -142,6 +148,7 @@ pub(crate) const MOBILE: [Mobile; 6] = [
         machine: CPU_TYPE_ARM64,
         sixteen_k: false,
         apple_platform: PLATFORM_IOS,
+        bundle: "iphoneos",
         minos: IOS_FLOOR,
     },
     Mobile {
@@ -152,6 +159,7 @@ pub(crate) const MOBILE: [Mobile; 6] = [
         machine: CPU_TYPE_ARM64,
         sixteen_k: false,
         apple_platform: PLATFORM_IOSSIMULATOR,
+        bundle: "iphonesimulator",
         minos: IOS_SIM_ARM64_FLOOR,
     },
     Mobile {
@@ -162,6 +170,7 @@ pub(crate) const MOBILE: [Mobile; 6] = [
         machine: CPU_TYPE_X86_64,
         sixteen_k: false,
         apple_platform: PLATFORM_IOSSIMULATOR,
+        bundle: "iphonesimulator",
         minos: IOS_FLOOR,
     },
 ];

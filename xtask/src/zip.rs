@@ -138,8 +138,10 @@ struct Record {
     name: String,
     /// Where its local header starts.
     offset: usize,
-    /// Its deflated length.
+    /// Its length as stored.
     packed: usize,
+    /// How it is stored: 0 as it is, 8 deflated.
+    method: usize,
 }
 
 /// A little-endian field of a zip, or why it is not there.
@@ -176,6 +178,7 @@ fn directory(bytes: &[u8]) -> io::Result<Vec<Record>> {
             name: String::from_utf8(name.to_vec()).map_err(io::Error::other)?,
             offset: field(bytes, at + 42, 4)?,
             packed: field(bytes, at + 20, 4)?,
+            method: field(bytes, at + 10, 2)?,
         });
         at += 46 + length + extra;
     }
@@ -191,7 +194,27 @@ pub(crate) fn names(bytes: &[u8]) -> io::Result<Vec<String>> {
         .collect())
 }
 
-/// An entry's bytes, inflated, or nothing when the zip has no such entry.
+/// Where an entry's data starts in the file, and whether it is stored as
+/// it is (which is what a loader maps straight from an APK, and so what
+/// must be page-aligned), or nothing when the zip has no such entry.
+pub(crate) fn placed(bytes: &[u8], name: &str) -> io::Result<Option<(usize, bool)>> {
+    let Some(record) = directory(bytes)?
+        .into_iter()
+        .find(|record| record.name == name)
+    else {
+        return Ok(None);
+    };
+    Ok(Some((start(bytes, &record)?, record.method == 0)))
+}
+
+/// Where a record's data starts, past its local header.
+fn start(bytes: &[u8], record: &Record) -> io::Result<usize> {
+    let at = record.offset;
+    Ok(at + 30 + field(bytes, at + 26, 2)? + field(bytes, at + 28, 2)?)
+}
+
+/// An entry's bytes, inflated when they were deflated, or nothing when
+/// the zip has no such entry.
 pub(crate) fn read(bytes: &[u8], name: &str) -> io::Result<Option<Vec<u8>>> {
     let Some(record) = directory(bytes)?
         .into_iter()
@@ -199,14 +222,21 @@ pub(crate) fn read(bytes: &[u8], name: &str) -> io::Result<Option<Vec<u8>>> {
     else {
         return Ok(None);
     };
-    let at = record.offset;
-    let start = at + 30 + field(bytes, at + 26, 2)? + field(bytes, at + 28, 2)?;
+    let start = start(bytes, &record)?;
     let packed = bytes
         .get(start..start + record.packed)
         .ok_or_else(foreign)?;
-    let mut data = Vec::new();
-    io::Read::read_to_end(&mut flate2::read::DeflateDecoder::new(packed), &mut data)?;
-    Ok(Some(data))
+    match record.method {
+        0 => Ok(Some(packed.to_vec())),
+        8 => {
+            let mut data = Vec::new();
+            io::Read::read_to_end(&mut flate2::read::DeflateDecoder::new(packed), &mut data)?;
+            Ok(Some(data))
+        }
+        other => Err(io::Error::other(format!(
+            "{name} is stored by method {other}, which is neither stored nor deflated"
+        ))),
+    }
 }
 
 #[cfg(test)]
@@ -239,6 +269,52 @@ mod tests {
         assert_eq!(read(&bytes, "b").unwrap().unwrap(), b"second");
         assert_eq!(read(&bytes, "c").unwrap(), None);
         assert!(names(b"not a zip").is_err());
+    }
+
+    /// A one-entry zip whose entry is stored as it is, after `pad` bytes
+    /// of local extra field, the way an APK aligns a native library.
+    fn stored(name: &str, data: &[u8], pad: u16) -> Vec<u8> {
+        let length = u16::try_from(name.len()).unwrap();
+        let size = u32::try_from(data.len()).unwrap();
+        let mut out = Vec::new();
+        out.extend(b"PK\x03\x04");
+        out.extend([20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        out.extend(size.to_le_bytes());
+        out.extend(size.to_le_bytes());
+        out.extend(length.to_le_bytes());
+        out.extend(pad.to_le_bytes());
+        out.extend(name.as_bytes());
+        out.extend(vec![0; usize::from(pad)]);
+        out.extend(data);
+        let central = out.len();
+        out.extend(b"PK\x01\x02");
+        out.extend([20, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        out.extend(size.to_le_bytes());
+        out.extend(size.to_le_bytes());
+        out.extend(length.to_le_bytes());
+        out.extend([0; 12]);
+        out.extend(0_u32.to_le_bytes());
+        out.extend(name.as_bytes());
+        let directory = u32::try_from(out.len() - central).unwrap();
+        out.extend(b"PK\x05\x06");
+        out.extend([0, 0, 0, 0, 1, 0, 1, 0]);
+        out.extend(directory.to_le_bytes());
+        out.extend(u32::try_from(central).unwrap().to_le_bytes());
+        out.extend([0, 0]);
+        out
+    }
+
+    #[test]
+    fn a_stored_entry_is_read_as_it_is_and_placed_where_it_starts() {
+        let bytes = stored("lib/x86_64/a.so", b"\x7fELF", 7);
+        assert_eq!(
+            read(&bytes, "lib/x86_64/a.so").unwrap().unwrap(),
+            b"\x7fELF"
+        );
+        assert_eq!(placed(&bytes, "lib/x86_64/a.so").unwrap(), Some((52, true)));
+        assert_eq!(placed(&bytes, "lib/a.so").unwrap(), None);
+        let deflated = written(&plain(&[("a", b"first")]));
+        assert_eq!(placed(&deflated, "a").unwrap(), Some((31, false)));
     }
 
     /// The bytes the wheel's own writer wrote before it moved here: the

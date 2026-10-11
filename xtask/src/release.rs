@@ -43,6 +43,9 @@ const NPM_MANIFESTS: [(&str, PlatformPackage); 2] = [
     ("crates/mcp/npm/package.json", Platform::npm_mcp_package),
 ];
 const DART_MANIFEST: &str = "bindings/dart/pubspec.yaml";
+/// The Flutter build-hook package, released with the Dart one at the same
+/// version, which its exact dependency on `teistro` is staged as.
+const FLUTTER_MANIFEST: &str = "bindings/flutter/pubspec.yaml";
 const PYTHON_MANIFEST: &str = "bindings/python/pyproject.toml";
 /// The Python installer's own table, which names the release it fetches
 /// from; the Dart one is [`PREBUILT`].
@@ -208,27 +211,29 @@ fn check_node(
 /// was written for.
 fn check_dart(root: &Path, wanted: &str, released: bool) -> Vec<String> {
     let mut failures = Vec::new();
-    let text = read(&root.join(DART_MANIFEST));
-    let declared = text
-        .lines()
-        .find_map(|line| line.strip_prefix("version: "))
-        .map(str::trim);
-    if declared != Some(wanted) {
-        failures.push(format!(
-            "{DART_MANIFEST} declares version {}, the workspace declares {wanted}",
-            declared.unwrap_or("nothing")
-        ));
-    }
-    let unpublishable = text.lines().any(|line| line.trim() == "publish_to: none");
-    if released && unpublishable {
-        failures.push(format!(
-            "{DART_MANIFEST} says `publish_to: none` at version {wanted}; a released package is published"
-        ));
-    }
-    if !released && !unpublishable {
-        failures.push(format!(
-            "{DART_MANIFEST} does not say `publish_to: none` at the unreleased version"
-        ));
+    for manifest in [DART_MANIFEST, FLUTTER_MANIFEST] {
+        let text = read(&root.join(manifest));
+        let declared = text
+            .lines()
+            .find_map(|line| line.strip_prefix("version: "))
+            .map(str::trim);
+        if declared != Some(wanted) {
+            failures.push(format!(
+                "{manifest} declares version {}, the workspace declares {wanted}",
+                declared.unwrap_or("nothing")
+            ));
+        }
+        let unpublishable = text.lines().any(|line| line.trim() == "publish_to: none");
+        if released && unpublishable {
+            failures.push(format!(
+                "{manifest} says `publish_to: none` at version {wanted}; a released package is published"
+            ));
+        }
+        if !released && !unpublishable {
+            failures.push(format!(
+                "{manifest} does not say `publish_to: none` at the unreleased version"
+            ));
+        }
     }
     let prebuilt = root.join(PREBUILT);
     if prebuilt.is_file() {
@@ -462,9 +467,31 @@ fn set_registry_entry(root: &Path, wanted: &str, written: &mut Vec<String>) {
     write(&root.join(REGISTRY_ENTRY), &text, written, root);
 }
 
-/// The Dart manifest and the installer's table.
+/// The Dart manifests and the installer's table.
 fn set_dart(root: &Path, wanted: &str, released: bool, written: &mut Vec<String>) {
-    let path = root.join(DART_MANIFEST);
+    for manifest in [DART_MANIFEST, FLUTTER_MANIFEST] {
+        set_pubspec(root, manifest, wanted, released, written);
+    }
+    let prebuilt = root.join(PREBUILT);
+    let table = read(&prebuilt);
+    let line = Regex::new(r"(?m)^const String prebuiltVersion = '[^']*';$").expect("valid regex");
+    let updated = line.replace(
+        &table,
+        format!("const String prebuiltVersion = '{wanted}';").as_str(),
+    );
+    write(&prebuilt, &updated, written, root);
+}
+
+/// One pubspec's version, and `publish_to: none` beside it at the
+/// unreleased version.
+fn set_pubspec(
+    root: &Path,
+    manifest: &str,
+    wanted: &str,
+    released: bool,
+    written: &mut Vec<String>,
+) {
+    let path = root.join(manifest);
     let text = read(&path);
     // The field is dropped wherever it stands and written back beside the
     // version, so that moving to and from the unreleased version is the
@@ -486,15 +513,6 @@ fn set_dart(root: &Path, wanted: &str, released: bool, written: &mut Vec<String>
         }
     }
     write(&path, &format!("{}\n", lines.join("\n")), written, root);
-
-    let prebuilt = root.join(PREBUILT);
-    let table = read(&prebuilt);
-    let line = Regex::new(r"(?m)^const String prebuiltVersion = '[^']*';$").expect("valid regex");
-    let updated = line.replace(
-        &table,
-        format!("const String prebuiltVersion = '{wanted}';").as_str(),
-    );
-    write(&prebuilt, &updated, written, root);
 }
 
 /// The Python manifest: the version, whether it may be published, and the

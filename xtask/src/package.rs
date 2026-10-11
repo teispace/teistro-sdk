@@ -723,6 +723,7 @@ fn write_stage(
     written.push(stage_node(root, dist)?);
     written.push(stage_mcp_node(root, dist)?);
     written.push(stage_dart(root, dist, version, merged)?);
+    written.push(stage_flutter(root, dist, version)?);
     written.push(stage_python(root, dist, version, merged)?);
     written.extend(python_wheels(root, dist, version, merged)?);
     Ok(written)
@@ -1055,6 +1056,43 @@ fn stage_dart(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::Re
     Ok(rel(root, &directory))
 }
 
+/// Stages the Flutter build-hook package beside the Dart one, its
+/// dependency on `teistro` turned from the repository's path into the
+/// exact version being released: the digests the hook checks are that
+/// version's table, so no other version of `teistro` will do.
+fn stage_flutter(root: &Path, dist: &Path, version: &str) -> io::Result<String> {
+    let directory = dist.join("pub").join("teistro_flutter");
+    if directory.exists() {
+        fs::remove_dir_all(&directory)?;
+    }
+    fs::create_dir_all(&directory)?;
+    let source = root.join("bindings/flutter");
+    for tree in ["lib", "hook", "example"] {
+        copy_tree(&source.join(tree), &directory.join(tree))?;
+    }
+    for file in ["README.md", "analysis_options.yaml"] {
+        fs::copy(source.join(file), directory.join(file))?;
+    }
+    for legal in LEGAL {
+        fs::copy(root.join(legal), directory.join(legal))?;
+    }
+    let pubspec = pinned(&read(&source.join("pubspec.yaml")), version)?;
+    fs::write(directory.join("pubspec.yaml"), pubspec)?;
+    Ok(rel(root, &directory))
+}
+
+/// The hook package's pubspec with `teistro`'s path dependency replaced by
+/// the exact version, or why it could not be.
+fn pinned(pubspec: &str, version: &str) -> io::Result<String> {
+    const PATH: &str = "  teistro:\n    path: ../dart\n";
+    if pubspec.matches(PATH).count() != 1 {
+        return Err(io::Error::other(
+            "bindings/flutter/pubspec.yaml does not depend on `teistro` by `path: ../dart` once",
+        ));
+    }
+    Ok(pubspec.replace(PATH, &format!("  teistro: {version}\n")))
+}
+
 /// Stages the Python package: the sources as they are, and the digest
 /// table its installer holds a download to, written from what the matrix
 /// built.
@@ -1100,7 +1138,7 @@ fn digest_rows(merged: &Value, keys: &[&str], quote: char) -> Vec<String> {
 /// The Dart file that says where a prebuilt library is and what it must
 /// hash to. The header is the checked-in file's, so that the two differ in
 /// the table alone and a reader can see what the release added.
-fn prebuilt_table(root: &Path, version: &str, merged: &Value) -> String {
+pub(crate) fn prebuilt_table(root: &Path, version: &str, merged: &Value) -> String {
     let checked_in = read(&root.join("bindings/dart/lib/src/prebuilt.dart"));
     let head = checked_in
         .split_once("const Map<String, String> prebuiltDigests")
@@ -1214,6 +1252,19 @@ mod tests {
             checksum_list(&merged),
             "aa  a.gz\nbb  b.gz\ncc  b.cdx.json\n"
         );
+    }
+
+    #[test]
+    fn the_hook_package_depends_on_exactly_the_release_it_carries() {
+        let checked_in = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../bindings/flutter/pubspec.yaml"),
+        )
+        .unwrap();
+        let staged = super::pinned(&checked_in, "1.2.3").unwrap();
+        assert!(staged.contains("\n  teistro: 1.2.3\n"), "{staged}");
+        assert!(!staged.contains("path:"), "{staged}");
+        assert!(super::pinned("name: x\n", "1.2.3").is_err());
     }
 
     #[test]
