@@ -62,7 +62,7 @@ public record FunctionalRules(FunctionalScheme scheme) implements RequestJson {
     public static FunctionalRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "FunctionalRules");
         return new FunctionalRules(
-            Read.orNull(json.get("scheme"), present -> FunctionalScheme.of(present)));
+            Read.orNull(json.get("scheme"), present -> Read.member(present, "FunctionalRules.scheme", FunctionalScheme::byKey)));
     }
 
     @Override

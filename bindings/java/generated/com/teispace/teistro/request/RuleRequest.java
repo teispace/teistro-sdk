@@ -197,9 +197,9 @@ public record RuleRequest(AshtakavargaAyusRules ashtakavarga, AyurdayaRules ayur
             Read.orNull(json.get("houses"), present -> Read.bool(present, "RuleRequest.houses")),
             Read.orNull(json.get("longevity"), present -> Read.bool(present, "RuleRequest.longevity")),
             Read.orNull(json.get("rasmi"), present -> RasmiRules.of(present)),
-            Read.orNull(json.get("readings"), present -> RuleReadings.of(present)),
+            Read.orNull(json.get("readings"), present -> Read.member(present, "RuleRequest.readings", RuleReadings::byKey)),
             Read.orNull(json.get("rules"), present -> Read.list(present, "RuleRequest.rules", item0 -> RuleDefinition.of(item0))),
-            Read.orNull(json.get("shipped"), present -> Read.list(present, "RuleRequest.shipped", item0 -> ShippedRules.of(item0))),
+            Read.orNull(json.get("shipped"), present -> Read.list(present, "RuleRequest.shipped", item0 -> Read.member(item0, "RuleRequest.shipped", ShippedRules::byKey))),
             Read.orNull(json.get("threePairs"), present -> ThreePairsRules.of(present)));
     }
 

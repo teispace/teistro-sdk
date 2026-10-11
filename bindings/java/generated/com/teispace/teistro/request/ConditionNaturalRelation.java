@@ -44,7 +44,7 @@ public record ConditionNaturalRelation(Object of, List<Relation> relations, Obje
         Map<String, Object> json = Read.object(raw, "ConditionNaturalRelation");
         return new ConditionNaturalRelation(
             Read.required(json.get("of"), "ConditionNaturalRelation.of"),
-            Read.list(Read.required(json.get("relations"), "ConditionNaturalRelation.relations"), "ConditionNaturalRelation.relations", item0 -> Relation.of(item0)),
+            Read.list(Read.required(json.get("relations"), "ConditionNaturalRelation.relations"), "ConditionNaturalRelation.relations", item0 -> Read.member(item0, "ConditionNaturalRelation.relations", Relation::byKey)),
             Read.required(json.get("to"), "ConditionNaturalRelation.to"));
     }
 

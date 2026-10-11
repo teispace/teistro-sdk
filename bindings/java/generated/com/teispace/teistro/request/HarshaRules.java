@@ -62,7 +62,7 @@ public record HarshaRules(VenusPlace venus) implements RequestJson {
     public static HarshaRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "HarshaRules");
         return new HarshaRules(
-            Read.orNull(json.get("venus"), present -> VenusPlace.of(present)));
+            Read.orNull(json.get("venus"), present -> Read.member(present, "HarshaRules.venus", VenusPlace::byKey)));
     }
 
     @Override

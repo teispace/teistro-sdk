@@ -62,7 +62,7 @@ public record DevataRules(SunWithKetu sunWithKetu) implements RequestJson {
     public static DevataRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "DevataRules");
         return new DevataRules(
-            Read.orNull(json.get("sunWithKetu"), present -> SunWithKetu.of(present)));
+            Read.orNull(json.get("sunWithKetu"), present -> Read.member(present, "DevataRules.sunWithKetu", SunWithKetu::byKey)));
     }
 
     @Override

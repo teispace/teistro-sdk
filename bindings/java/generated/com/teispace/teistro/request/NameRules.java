@@ -75,8 +75,8 @@ public record NameRules(AbhijitPada abhijit, LatinName latin) implements Request
     public static NameRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "NameRules");
         return new NameRules(
-            Read.orNull(json.get("abhijit"), present -> AbhijitPada.of(present)),
-            Read.orNull(json.get("latin"), present -> LatinName.of(present)));
+            Read.orNull(json.get("abhijit"), present -> Read.member(present, "NameRules.abhijit", AbhijitPada::byKey)),
+            Read.orNull(json.get("latin"), present -> Read.member(present, "NameRules.latin", LatinName::byKey)));
     }
 
     @Override

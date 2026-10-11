@@ -40,7 +40,7 @@ public record ConditionPlanetIs(GrahaClass classValue, Object planet) implements
     public static ConditionPlanetIs of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ConditionPlanetIs");
         return new ConditionPlanetIs(
-            GrahaClass.of(Read.required(json.get("class"), "ConditionPlanetIs.class")),
+            Read.member(Read.required(json.get("class"), "ConditionPlanetIs.class"), "ConditionPlanetIs.class", GrahaClass::byKey),
             Read.required(json.get("planet"), "ConditionPlanetIs.planet"));
     }
 

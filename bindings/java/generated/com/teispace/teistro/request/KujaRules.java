@@ -75,8 +75,8 @@ public record KujaRules(KujaFrom from, KujaHouses houses) implements RequestJson
     public static KujaRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "KujaRules");
         return new KujaRules(
-            Read.orNull(json.get("from"), present -> KujaFrom.of(present)),
-            Read.orNull(json.get("houses"), present -> KujaHouses.of(present)));
+            Read.orNull(json.get("from"), present -> Read.member(present, "KujaRules.from", KujaFrom::byKey)),
+            Read.orNull(json.get("houses"), present -> Read.member(present, "KujaRules.houses", KujaHouses::byKey)));
     }
 
     @Override

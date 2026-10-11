@@ -127,12 +127,12 @@ public record DashaAsked(AfterCycle afterCycle, AshtottariGrouping ashtottariGro
     public static DashaAsked of(Object raw) {
         Map<String, Object> json = Read.object(raw, "DashaAsked");
         return new DashaAsked(
-            Read.orNull(json.get("afterCycle"), present -> AfterCycle.of(present)),
-            Read.orNull(json.get("ashtottariGrouping"), present -> AshtottariGrouping.of(present)),
+            Read.orNull(json.get("afterCycle"), present -> Read.member(present, "DashaAsked.afterCycle", AfterCycle::byKey)),
+            Read.orNull(json.get("ashtottariGrouping"), present -> Read.member(present, "DashaAsked.ashtottariGrouping", AshtottariGrouping::byKey)),
             Read.orNull(json.get("balance"), present -> Read.member(present, "DashaAsked.balance", com.teispace.teistro.Balance::byKey)),
-            Read.orNull(json.get("birthPeriod"), present -> BirthPeriod.of(present)),
-            Read.orNull(json.get("seedOverflow"), present -> SeedOverflow.of(present)),
-            Read.orNull(json.get("yearLength"), present -> YearLength.of(present)));
+            Read.orNull(json.get("birthPeriod"), present -> Read.member(present, "DashaAsked.birthPeriod", BirthPeriod::byKey)),
+            Read.orNull(json.get("seedOverflow"), present -> Read.member(present, "DashaAsked.seedOverflow", SeedOverflow::byKey)),
+            Read.orNull(json.get("yearLength"), present -> Read.member(present, "DashaAsked.yearLength", YearLength::byKey)));
     }
 
     @Override

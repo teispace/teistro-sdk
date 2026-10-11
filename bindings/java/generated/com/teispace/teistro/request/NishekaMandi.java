@@ -32,19 +32,29 @@ public enum NishekaMandi implements RequestJson {
     }
 
     /**
-     * The member a key names.
+     * The member a key names, if any does.
      *
-     * @param raw the JSON value
+     * @param key the key
+     * @return the member
+     */
+    public static java.util.Optional<NishekaMandi> byKey(String key) {
+        for (NishekaMandi member : values()) {
+            if (member.key.equals(key)) {
+                return java.util.Optional.of(member);
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * The member a key names, or the member itself.
+     *
+     * @param raw the JSON value, or a member
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
     public static NishekaMandi of(Object raw) {
-        for (NishekaMandi member : values()) {
-            if (member.key.equals(raw)) {
-                return member;
-            }
-        }
-        throw new IllegalArgumentException("not a NishekaMandi: " + raw);
+        return Read.member(raw, "NishekaMandi", NishekaMandi::byKey);
     }
 
     @Override

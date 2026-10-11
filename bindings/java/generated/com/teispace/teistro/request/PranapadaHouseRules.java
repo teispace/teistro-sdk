@@ -88,9 +88,9 @@ public record PranapadaHouseRules(HouseCount count, Boolean firstAuspicious, Pra
     public static PranapadaHouseRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PranapadaHouseRules");
         return new PranapadaHouseRules(
-            Read.orNull(json.get("count"), present -> HouseCount.of(present)),
+            Read.orNull(json.get("count"), present -> Read.member(present, "PranapadaHouseRules.count", HouseCount::byKey)),
             Read.orNull(json.get("firstAuspicious"), present -> Read.bool(present, "PranapadaHouseRules.firstAuspicious")),
-            Read.orNull(json.get("pranapada"), present -> PranapadaRule.of(present)));
+            Read.orNull(json.get("pranapada"), present -> Read.member(present, "PranapadaHouseRules.pranapada", PranapadaRule::byKey)));
     }
 
     @Override

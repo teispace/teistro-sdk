@@ -65,7 +65,7 @@ public record ConditionBirthDuringEclipse(EclipseKind kind) implements RequestJs
     public static ConditionBirthDuringEclipse of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ConditionBirthDuringEclipse");
         return new ConditionBirthDuringEclipse(
-            Read.orNull(json.get("kind"), present -> EclipseKind.of(present)));
+            Read.orNull(json.get("kind"), present -> Read.member(present, "ConditionBirthDuringEclipse.kind", EclipseKind::byKey)));
     }
 
     @Override

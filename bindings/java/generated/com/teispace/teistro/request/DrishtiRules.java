@@ -62,7 +62,7 @@ public record DrishtiRules(SubDegree subDegree) implements RequestJson {
     public static DrishtiRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "DrishtiRules");
         return new DrishtiRules(
-            Read.orNull(json.get("subDegree"), present -> SubDegree.of(present)));
+            Read.orNull(json.get("subDegree"), present -> Read.member(present, "DrishtiRules.subDegree", SubDegree::byKey)));
     }
 
     @Override

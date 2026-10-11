@@ -159,6 +159,9 @@ struct Types<'a> {
     catalogue: BTreeMap<&'a str, String>,
     /// The records that are the data of a union's variant, with the union.
     variants: BTreeMap<&'a str, (&'a str, Option<&'a str>)>,
+    /// The records that are one of a closed set of keys: an enum, read as a
+    /// member is, so a refusal names the field it was under.
+    keys: std::collections::BTreeSet<&'a str>,
 }
 
 impl<'a> Types<'a> {
@@ -192,10 +195,18 @@ impl<'a> Types<'a> {
                 _ => {}
             }
         }
+        let keys = api
+            .requests
+            .records
+            .iter()
+            .filter(|record| matches!(record.shape, RecordShape::Keys { .. }))
+            .map(|record| record.name.as_str())
+            .collect();
         Types {
             api,
             catalogue,
             variants,
+            keys,
         }
     }
 
@@ -306,6 +317,9 @@ impl<'a> Types<'a> {
                 "Read.member({expr}, {at}, {}::byKey)",
                 self.record_type(name)
             ),
+            RecordType::Record { name } if self.keys.contains(name.as_str()) => {
+                format!("Read.member({expr}, {at}, {name}::byKey)")
+            }
             RecordType::Record { name } => format!("{name}.of({expr})"),
             RecordType::List { of } => format!(
                 "Read.list({expr}, {at}, {item} -> {})",
@@ -618,7 +632,7 @@ impl<'a> Types<'a> {
         out.push_str(&javadoc(&described(doc, name), ""));
         let _ = writeln!(out, "public enum {name} implements RequestJson {{");
         out.push_str(&Self::constants(keys));
-        let _ = writeln!(out, ";\n\n{}\n}}", key_methods(name));
+        let _ = writeln!(out, ";\n\n{}\n}}", key_methods(name, name));
         out
     }
 
@@ -751,7 +765,7 @@ impl<'a> Types<'a> {
                 out,
                 "\n    /** The variants written as a bare key. */\n    enum Key implements {name} {{\n{};\n\n{}\n    }}",
                 indent(&Self::constants(&keys), "    "),
-                indent(&key_methods("Key"), "    ")
+                indent(&key_methods("Key", &format!("{name}.Key")), "    ")
             );
         }
         out.push_str("}\n");
@@ -892,9 +906,9 @@ impl<'a> Types<'a> {
         };
         let _ = writeln!(
             out,
-            "public sealed interface {name} extends RequestJson permits {name}.Key, {value} {{\n{constants}{make}    /**\n     * A {{@code {name}}} from its JSON: one of the names, or the value.\n     *\n     * @param raw the JSON value\n     * @return the union\n     * @throws IllegalArgumentException for JSON that is neither\n     */\n    static {name} of(Object raw) {{\n        for (Key key : Key.values()) {{\n            if (key.key().equals(raw)) {{\n                return key;\n            }}\n        }}\n        return {value}.of(raw);\n    }}\n\n    /** The names. */\n    enum Key implements {name} {{\n{};\n\n{}\n    }}\n}}",
+            "public sealed interface {name} extends RequestJson permits {name}.Key, {value} {{\n{constants}{make}    /**\n     * A {{@code {name}}} from its JSON: one of the names, or the value.\n     *\n     * @param raw the JSON value\n     * @return the union\n     * @throws IllegalArgumentException for JSON that is neither\n     */\n    static {name} of(Object raw) {{\n        if (raw instanceof {name} same) {{\n            return same;\n        }}\n        for (Key key : Key.values()) {{\n            if (key.key().equals(raw)) {{\n                return key;\n            }}\n        }}\n        return {value}.of(raw);\n    }}\n\n    /** The names. */\n    enum Key implements {name} {{\n{};\n\n{}\n    }}\n}}",
             indent(&Self::constants(&keys), "    "),
-            indent(&key_methods("Key"), "    ")
+            indent(&key_methods("Key", &format!("{name}.Key")), "    ")
         );
         files.push((name.to_owned(), out));
         files
@@ -902,9 +916,9 @@ impl<'a> Types<'a> {
 }
 
 /// The methods every key enum has: its key, `of`, and `toJson`.
-fn key_methods(name: &str) -> String {
+fn key_methods(name: &str, label: &str) -> String {
     format!(
-        "    private final String key;\n\n    {name}(String key) {{\n        this.key = key;\n    }}\n\n    /**\n     * The key the SDK reads.\n     *\n     * @return the key\n     */\n    public String key() {{\n        return key;\n    }}\n\n    /**\n     * The member a key names.\n     *\n     * @param raw the JSON value\n     * @return the member\n     * @throws IllegalArgumentException for a key the SDK does not read\n     */\n    public static {name} of(Object raw) {{\n        for ({name} member : values()) {{\n            if (member.key.equals(raw)) {{\n                return member;\n            }}\n        }}\n        throw new IllegalArgumentException(\"not a {name}: \" + raw);\n    }}\n\n    @Override\n    public Object toJson() {{\n        return key;\n    }}"
+        "    private final String key;\n\n    {name}(String key) {{\n        this.key = key;\n    }}\n\n    /**\n     * The key the SDK reads.\n     *\n     * @return the key\n     */\n    public String key() {{\n        return key;\n    }}\n\n    /**\n     * The member a key names, if any does.\n     *\n     * @param key the key\n     * @return the member\n     */\n    public static java.util.Optional<{name}> byKey(String key) {{\n        for ({name} member : values()) {{\n            if (member.key.equals(key)) {{\n                return java.util.Optional.of(member);\n            }}\n        }}\n        return java.util.Optional.empty();\n    }}\n\n    /**\n     * The member a key names, or the member itself.\n     *\n     * @param raw the JSON value, or a member\n     * @return the member\n     * @throws IllegalArgumentException for a key the SDK does not read\n     */\n    public static {name} of(Object raw) {{\n        return Read.member(raw, \"{label}\", {name}::byKey);\n    }}\n\n    @Override\n    public Object toJson() {{\n        return key;\n    }}"
     )
 }
 
@@ -1176,7 +1190,11 @@ const READ_MORE: &str = r#"
     static <M> M member(Object raw, String at, Function<String, Optional<M>> byKey) {
         // A member itself, as a map built in Java holds it and as
         // `Json.write` takes it, is read by its key.
-        String key = raw instanceof com.teispace.teistro.Member member ? member.key() : text(raw, at);
+        String key = raw instanceof com.teispace.teistro.Member member
+                ? member.key()
+                : raw instanceof RequestJson request && request.toJson() instanceof String written
+                        ? written
+                        : text(raw, at);
         return byKey.apply(key).orElseThrow(() -> refused(at, "a key the SDK reads", raw));
     }
 

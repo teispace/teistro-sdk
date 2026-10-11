@@ -87,7 +87,7 @@ public record BatchAsked(Period baseline, List<PeriodAsked> periods) implements 
     public static BatchAsked of(Object raw) {
         Map<String, Object> json = Read.object(raw, "BatchAsked");
         return new BatchAsked(
-            Read.orNull(json.get("baseline"), present -> Period.of(present)),
+            Read.orNull(json.get("baseline"), present -> Read.member(present, "BatchAsked.baseline", Period::byKey)),
             Read.list(Read.required(json.get("periods"), "BatchAsked.periods"), "BatchAsked.periods", item0 -> PeriodAsked.of(item0)));
     }
 

@@ -252,7 +252,7 @@ public record RuleDefinition(Scope applicableTo, List<Cancellation> cancellation
     public static RuleDefinition of(Object raw) {
         Map<String, Object> json = Read.object(raw, "RuleDefinition");
         return new RuleDefinition(
-            Read.orNull(json.get("applicableTo"), present -> Scope.of(present)),
+            Read.orNull(json.get("applicableTo"), present -> Read.member(present, "RuleDefinition.applicableTo", Scope::byKey)),
             Read.orNull(json.get("cancellations"), present -> Read.list(present, "RuleDefinition.cancellations", item0 -> Cancellation.of(item0))),
             Read.text(Read.required(json.get("category"), "RuleDefinition.category"), "RuleDefinition.category"),
             Read.orNull(json.get("conditions"), present -> Read.list(present, "RuleDefinition.conditions", item0 -> Condition.of(item0))),
@@ -265,7 +265,7 @@ public record RuleDefinition(Scope applicableTo, List<Cancellation> cancellation
             Read.orNull(json.get("remedyKeys"), present -> Read.list(present, "RuleDefinition.remedyKeys", item0 -> Read.text(item0, "RuleDefinition.remedyKeys"))),
             Read.orNull(json.get("severityRule"), present -> Severity.of(present)),
             RuleSource.of(Read.required(json.get("source"), "RuleDefinition.source")),
-            Read.orNull(json.get("timing"), present -> Timing.of(present)));
+            Read.orNull(json.get("timing"), present -> Read.member(present, "RuleDefinition.timing", Timing::byKey)));
     }
 
     @Override

@@ -101,10 +101,10 @@ public record AshtakavargaAyusRules(Divisor divisor, SignMeasures measures, Occu
     public static AshtakavargaAyusRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "AshtakavargaAyusRules");
         return new AshtakavargaAyusRules(
-            Read.orNull(json.get("divisor"), present -> Divisor.of(present)),
-            Read.orNull(json.get("measures"), present -> SignMeasures.of(present)),
-            Read.orNull(json.get("occupied"), present -> OccupiedBindus.of(present)),
-            Read.orNull(json.get("reductions"), present -> AshtakaReductions.of(present)));
+            Read.orNull(json.get("divisor"), present -> Read.member(present, "AshtakavargaAyusRules.divisor", Divisor::byKey)),
+            Read.orNull(json.get("measures"), present -> Read.member(present, "AshtakavargaAyusRules.measures", SignMeasures::byKey)),
+            Read.orNull(json.get("occupied"), present -> Read.member(present, "AshtakavargaAyusRules.occupied", OccupiedBindus::byKey)),
+            Read.orNull(json.get("reductions"), present -> Read.member(present, "AshtakavargaAyusRules.reductions", AshtakaReductions::byKey)));
     }
 
     @Override

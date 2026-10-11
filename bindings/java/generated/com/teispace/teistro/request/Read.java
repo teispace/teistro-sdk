@@ -99,7 +99,11 @@ final class Read {
     static <M> M member(Object raw, String at, Function<String, Optional<M>> byKey) {
         // A member itself, as a map built in Java holds it and as
         // `Json.write` takes it, is read by its key.
-        String key = raw instanceof com.teispace.teistro.Member member ? member.key() : text(raw, at);
+        String key = raw instanceof com.teispace.teistro.Member member
+                ? member.key()
+                : raw instanceof RequestJson request && request.toJson() instanceof String written
+                        ? written
+                        : text(raw, at);
         return byKey.apply(key).orElseThrow(() -> refused(at, "a key the SDK reads", raw));
     }
 

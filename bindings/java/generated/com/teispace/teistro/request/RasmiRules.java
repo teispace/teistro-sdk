@@ -62,7 +62,7 @@ public record RasmiRules(RayPlace place) implements RequestJson {
     public static RasmiRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "RasmiRules");
         return new RasmiRules(
-            Read.orNull(json.get("place"), present -> RayPlace.of(present)));
+            Read.orNull(json.get("place"), present -> Read.member(present, "RasmiRules.place", RayPlace::byKey)));
     }
 
     @Override

@@ -38,7 +38,7 @@ public record RuleOutcomeLifeClass(LifeClass classValue) implements RequestJson,
     public static RuleOutcomeLifeClass of(Object raw) {
         Map<String, Object> json = Read.object(raw, "RuleOutcomeLifeClass");
         return new RuleOutcomeLifeClass(
-            LifeClass.of(Read.required(json.get("class"), "RuleOutcomeLifeClass.class")));
+            Read.member(Read.required(json.get("class"), "RuleOutcomeLifeClass.class"), "RuleOutcomeLifeClass.class", LifeClass::byKey));
     }
 
     @Override

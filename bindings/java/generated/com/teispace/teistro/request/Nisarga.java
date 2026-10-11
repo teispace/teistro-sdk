@@ -32,19 +32,29 @@ public enum Nisarga implements RequestJson {
     }
 
     /**
-     * The member a key names.
+     * The member a key names, if any does.
      *
-     * @param raw the JSON value
+     * @param key the key
+     * @return the member
+     */
+    public static java.util.Optional<Nisarga> byKey(String key) {
+        for (Nisarga member : values()) {
+            if (member.key.equals(key)) {
+                return java.util.Optional.of(member);
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * The member a key names, or the member itself.
+     *
+     * @param raw the JSON value, or a member
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
     public static Nisarga of(Object raw) {
-        for (Nisarga member : values()) {
-            if (member.key.equals(raw)) {
-                return member;
-            }
-        }
-        throw new IllegalArgumentException("not a Nisarga: " + raw);
+        return Read.member(raw, "Nisarga", Nisarga::byKey);
     }
 
     @Override

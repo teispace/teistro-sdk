@@ -167,13 +167,13 @@ public record RectificationRules(Boolean gulika, GulikaAt gulikaAt, GulikaExtens
         Map<String, Object> json = Read.object(raw, "RectificationRules");
         return new RectificationRules(
             Read.orNull(json.get("gulika"), present -> Read.bool(present, "RectificationRules.gulika")),
-            Read.orNull(json.get("gulikaAt"), present -> GulikaAt.of(present)),
-            Read.orNull(json.get("gulikaExtension"), present -> GulikaExtension.of(present)),
+            Read.orNull(json.get("gulikaAt"), present -> Read.member(present, "RectificationRules.gulikaAt", GulikaAt::byKey)),
+            Read.orNull(json.get("gulikaExtension"), present -> Read.member(present, "RectificationRules.gulikaExtension", GulikaExtension::byKey)),
             Read.orNull(json.get("moon"), present -> Read.bool(present, "RectificationRules.moon")),
-            Read.orNull(json.get("native"), present -> RectificationSpecies.of(present)),
+            Read.orNull(json.get("native"), present -> Read.member(present, "RectificationRules.native", RectificationSpecies::byKey)),
             Read.orNull(json.get("pranapada"), present -> Read.bool(present, "RectificationRules.pranapada")),
-            Read.orNull(json.get("pranapadaRule"), present -> PranapadaRule.of(present)),
-            Read.orNull(json.get("purifyAs"), present -> PurifyAs.of(present)),
+            Read.orNull(json.get("pranapadaRule"), present -> Read.member(present, "RectificationRules.pranapadaRule", PranapadaRule::byKey)),
+            Read.orNull(json.get("purifyAs"), present -> Read.member(present, "RectificationRules.purifyAs", PurifyAs::byKey)),
             Read.orNull(json.get("seedMinutes"), present -> Read.number(present, "RectificationRules.seedMinutes")));
     }
 

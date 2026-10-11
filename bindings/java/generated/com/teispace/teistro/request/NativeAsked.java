@@ -101,10 +101,10 @@ public record NativeAsked(Bird bird, com.teispace.teistro.Nakshatra nakshatra, c
     public static NativeAsked of(Object raw) {
         Map<String, Object> json = Read.object(raw, "NativeAsked");
         return new NativeAsked(
-            Read.orNull(json.get("bird"), present -> Bird.of(present)),
+            Read.orNull(json.get("bird"), present -> Read.member(present, "NativeAsked.bird", Bird::byKey)),
             Read.orNull(json.get("nakshatra"), present -> Read.member(present, "NativeAsked.nakshatra", com.teispace.teistro.Nakshatra::byKey)),
             Read.orNull(json.get("paksha"), present -> Read.member(present, "NativeAsked.paksha", com.teispace.teistro.Paksha::byKey)),
-            Read.orNull(json.get("rule"), present -> BirthBird.of(present)));
+            Read.orNull(json.get("rule"), present -> Read.member(present, "NativeAsked.rule", BirthBird::byKey)));
     }
 
     @Override

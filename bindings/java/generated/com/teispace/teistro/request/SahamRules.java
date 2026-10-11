@@ -88,9 +88,9 @@ public record SahamRules(AddSign addSign, HousePoints houses, RogaReading roga) 
     public static SahamRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "SahamRules");
         return new SahamRules(
-            Read.orNull(json.get("addSign"), present -> AddSign.of(present)),
-            Read.orNull(json.get("houses"), present -> HousePoints.of(present)),
-            Read.orNull(json.get("roga"), present -> RogaReading.of(present)));
+            Read.orNull(json.get("addSign"), present -> Read.member(present, "SahamRules.addSign", AddSign::byKey)),
+            Read.orNull(json.get("houses"), present -> Read.member(present, "SahamRules.houses", HousePoints::byKey)),
+            Read.orNull(json.get("roga"), present -> Read.member(present, "SahamRules.roga", RogaReading::byKey)));
     }
 
     @Override

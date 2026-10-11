@@ -115,9 +115,9 @@ public record YogaRules(DrishtiRules drishti, MoonBenefic moonBenefic, Long stro
         Map<String, Object> json = Read.object(raw, "YogaRules");
         return new YogaRules(
             Read.orNull(json.get("drishti"), present -> DrishtiRules.of(present)),
-            Read.orNull(json.get("moonBenefic"), present -> MoonBenefic.of(present)),
+            Read.orNull(json.get("moonBenefic"), present -> Read.member(present, "YogaRules.moonBenefic", MoonBenefic::byKey)),
             Read.orNull(json.get("strongFrom"), present -> Read.integer(present, "YogaRules.strongFrom")),
-            Read.orNull(json.get("tambira"), present -> TambiraMover.of(present)),
+            Read.orNull(json.get("tambira"), present -> Read.member(present, "YogaRules.tambira", TambiraMover::byKey)),
             Read.orNull(json.get("weakBelow"), present -> Read.integer(present, "YogaRules.weakBelow")));
     }
 

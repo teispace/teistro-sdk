@@ -199,7 +199,7 @@ public record PartnerSynastry(AntisciaRequest antiscia, List<com.teispace.teistr
             Read.orNull(json.get("orbs"), present -> OrbModel.of(present)),
             Read.orNull(json.get("parallels"), present -> ParallelRequest.of(present)),
             Read.orNull(json.get("partner"), present -> Partner.of(present)),
-            Read.orNull(json.get("zodiac"), present -> SynastryZodiac.of(present)));
+            Read.orNull(json.get("zodiac"), present -> Read.member(present, "PartnerSynastry.zodiac", SynastryZodiac::byKey)));
     }
 
     @Override

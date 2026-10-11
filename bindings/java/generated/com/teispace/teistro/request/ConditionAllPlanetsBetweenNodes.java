@@ -65,7 +65,7 @@ public record ConditionAllPlanetsBetweenNodes(NodeSide side) implements RequestJ
     public static ConditionAllPlanetsBetweenNodes of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ConditionAllPlanetsBetweenNodes");
         return new ConditionAllPlanetsBetweenNodes(
-            Read.orNull(json.get("side"), present -> NodeSide.of(present)));
+            Read.orNull(json.get("side"), present -> Read.member(present, "ConditionAllPlanetsBetweenNodes.side", NodeSide::byKey)));
     }
 
     @Override

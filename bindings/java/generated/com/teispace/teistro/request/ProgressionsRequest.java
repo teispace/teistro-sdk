@@ -127,12 +127,12 @@ public record ProgressionsRequest(AngleMethod angles, Double at, ContactsAsked c
     public static ProgressionsRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ProgressionsRequest");
         return new ProgressionsRequest(
-            Read.orNull(json.get("angles"), present -> AngleMethod.of(present)),
+            Read.orNull(json.get("angles"), present -> Read.member(present, "ProgressionsRequest.angles", AngleMethod::byKey)),
             Read.orNull(json.get("at"), present -> Read.number(present, "ProgressionsRequest.at")),
             Read.orNull(json.get("contacts"), present -> ContactsAsked.of(present)),
             Read.orNull(json.get("direction"), present -> DirectionAsked.of(present)),
             Read.orNull(json.get("rate"), present -> ProgressionRate.of(present)),
-            Read.orNull(json.get("year"), present -> YearMeasure.of(present)));
+            Read.orNull(json.get("year"), present -> Read.member(present, "ProgressionsRequest.year", YearMeasure::byKey)));
     }
 
     @Override

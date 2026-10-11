@@ -41,9 +41,9 @@ public record ConditionAtLimbEdge(Edge edge, double ghatikas, Limb limb) impleme
     public static ConditionAtLimbEdge of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ConditionAtLimbEdge");
         return new ConditionAtLimbEdge(
-            Edge.of(Read.required(json.get("edge"), "ConditionAtLimbEdge.edge")),
+            Read.member(Read.required(json.get("edge"), "ConditionAtLimbEdge.edge"), "ConditionAtLimbEdge.edge", Edge::byKey),
             Read.number(Read.required(json.get("ghatikas"), "ConditionAtLimbEdge.ghatikas"), "ConditionAtLimbEdge.ghatikas"),
-            Limb.of(Read.required(json.get("limb"), "ConditionAtLimbEdge.limb")));
+            Read.member(Read.required(json.get("limb"), "ConditionAtLimbEdge.limb"), "ConditionAtLimbEdge.limb", Limb::byKey));
     }
 
     @Override

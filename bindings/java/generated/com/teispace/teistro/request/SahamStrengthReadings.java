@@ -88,8 +88,8 @@ public record SahamStrengthReadings(SahamFriendship friendship, SahamNatures nat
     public static SahamStrengthReadings of(Object raw) {
         Map<String, Object> json = Read.object(raw, "SahamStrengthReadings");
         return new SahamStrengthReadings(
-            Read.orNull(json.get("friendship"), present -> SahamFriendship.of(present)),
-            Read.orNull(json.get("natures"), present -> SahamNatures.of(present)),
+            Read.orNull(json.get("friendship"), present -> Read.member(present, "SahamStrengthReadings.friendship", SahamFriendship::byKey)),
+            Read.orNull(json.get("natures"), present -> Read.member(present, "SahamStrengthReadings.natures", SahamNatures::byKey)),
             Read.orNull(json.get("weakBelow"), present -> Read.integer(present, "SahamStrengthReadings.weakBelow")));
     }
 
