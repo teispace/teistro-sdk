@@ -128,6 +128,7 @@ pub struct VarsheshaRules {
 /// Which step of the chain decided the year's lord.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "VarsheshaChosen"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Chosen {
     /// The strongest office-bearer that aspects the annual lagna: the

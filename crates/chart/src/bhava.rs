@@ -22,6 +22,7 @@ use teistro_core::catalogue::HouseSystem;
 /// middles.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "CuspReading"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reading {
     /// The cusps are the sandhi: a house runs from one cusp to the next,

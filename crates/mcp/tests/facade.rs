@@ -607,23 +607,34 @@ const GENERIC: [&str; 11] = [
     "Term",
 ];
 
-/// **Every schema definition names its own type.** schemars numbers a
-/// second type of one name in the order it visits them (`Outcome2`), so a
-/// record added anywhere could rename another; each such type is named
-/// at its source (`schemars(rename = …)`), as is each generic one.
+/// **Every schema definition names its own type**, one type a name across
+/// every tool. schemars numbers a second type of one name in the order it
+/// visits them (`Outcome2`), so a record added anywhere could rename
+/// another, and a generator over every tool at once would number two
+/// tools' types of one name; each such type is named at its source
+/// (`schemars(rename = …)`), as is each generic one.
 #[test]
 fn every_schema_definition_names_its_own_type() {
     let tools = listed(&mut Server::new(Engine::Builtin).with_detail(Detail::Full));
     let mut wrong = std::collections::BTreeSet::new();
-    for tool in &tools {
-        for side in ["inputSchema", "outputSchema"] {
+    for side in ["inputSchema", "outputSchema"] {
+        // One name, one type across every tool, as one generator over all
+        // of them would need: a second definition under a name is a type
+        // the generator would number.
+        let mut first: std::collections::BTreeMap<&str, (&Value, &Value)> =
+            std::collections::BTreeMap::new();
+        for tool in &tools {
             let Some(defs) = tool[side]["$defs"].as_object() else {
                 continue;
             };
-            for name in defs.keys() {
+            for (name, def) in defs {
                 if name.ends_with(|c: char| c.is_ascii_digit()) || GENERIC.contains(&name.as_str())
                 {
                     wrong.insert(format!("{} {side}: {name}", tool["name"]));
+                }
+                let (seen, by) = *first.entry(name).or_insert((def, &tool["name"]));
+                if seen != def {
+                    wrong.insert(format!("{side}: {name} in {by} and {}", tool["name"]));
                 }
             }
         }

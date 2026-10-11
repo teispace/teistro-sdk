@@ -144,6 +144,7 @@ struct SubjectAsked {
 /// study gives it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ResearchRequest"))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct RequestAsked {
     study: StudyKind,

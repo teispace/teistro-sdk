@@ -104,6 +104,7 @@ struct NativeAsked {
 /// The request as a binding writes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PakshiRequest"))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct RequestAsked {
     #[serde(default)]

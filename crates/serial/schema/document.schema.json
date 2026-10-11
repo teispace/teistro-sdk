@@ -1388,7 +1388,7 @@
           "description": "The chalit's own name, which is what a result reports."
         },
         "reading": {
-          "$ref": "#/$defs/Reading",
+          "$ref": "#/$defs/CuspReading",
           "description": "What those cusps are."
         },
         "source": {
@@ -1770,6 +1770,21 @@
         {
           "const": "TO_REFERENCE",
           "description": "Backwards to the reference: Dwadashottari to Revati.",
+          "type": "string"
+        }
+      ]
+    },
+    "CuspReading": {
+      "description": "Whether a system's cusps are the boundaries of its houses or their middles.",
+      "oneOf": [
+        {
+          "const": "SANDHI",
+          "description": "The cusps are the sandhi: a house runs from one cusp to the next, and its madhya is midway between them. Every system but Sripati.",
+          "type": "string"
+        },
+        {
+          "const": "MADHYA",
+          "description": "The cusps are the madhya: each cusp is the middle of its house, and the sandhi are midway between consecutive middles. Sripati, which is the classical Indian bhava.",
           "type": "string"
         }
       ]
@@ -5901,21 +5916,6 @@
         {
           "const": "LAGNA",
           "description": "The recording engine: each from the lagna.",
-          "type": "string"
-        }
-      ]
-    },
-    "Reading": {
-      "description": "Whether a system's cusps are the boundaries of its houses or their middles.",
-      "oneOf": [
-        {
-          "const": "SANDHI",
-          "description": "The cusps are the sandhi: a house runs from one cusp to the next, and its madhya is midway between them. Every system but Sripati.",
-          "type": "string"
-        },
-        {
-          "const": "MADHYA",
-          "description": "The cusps are the madhya: each cusp is the middle of its house, and the sandhi are midway between consecutive middles. Sripati, which is the classical Indian bhava.",
           "type": "string"
         }
       ]
