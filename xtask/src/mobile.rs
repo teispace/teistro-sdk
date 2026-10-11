@@ -287,6 +287,42 @@ fn compile(root: &Path, row: Mobile) -> Result<PathBuf, ()> {
 /// The NDK's clang for the row at [`ANDROID_API`], from the pinned NDK: in
 /// `$ANDROID_NDK_HOME`, or under the SDK (`$ANDROID_HOME`, then the
 /// default macOS and Linux places) by its version.
+/// The first of `candidates` that is an NDK at the pinned release.
+///
+/// One at another release is passed over, not refused: a runner's
+/// `ANDROID_NDK_HOME` names the image's own NDK (GitHub's Ubuntu image
+/// says 27.3), while the pinned one is installed beside it. A mismatch is
+/// reported only when no candidate is the pinned release.
+fn pinned_ndk(candidates: impl Iterator<Item = PathBuf>, pinned: &str) -> Result<PathBuf, String> {
+    let mut passed = Vec::new();
+    for dir in candidates {
+        let Ok(properties) = fs::read_to_string(dir.join("source.properties")) else {
+            continue;
+        };
+        let revision = properties
+            .lines()
+            .find_map(|line| line.strip_prefix("Pkg.Revision"))
+            .map(|rest| rest.trim_start_matches([' ', '=']).trim().to_owned());
+        if revision.as_deref() == Some(pinned) {
+            return Ok(dir);
+        }
+        passed.push(format!(
+            "{} is {}",
+            dir.display(),
+            revision.as_deref().unwrap_or("of no stated version")
+        ));
+    }
+    Err(format!(
+        "no Android NDK {pinned} was found ({NDK_VERSION}){}; install it with \
+         `sdkmanager \"ndk;{pinned}\"`, or name it with ANDROID_NDK_HOME",
+        if passed.is_empty() {
+            String::new()
+        } else {
+            format!(", and {}", passed.join(", "))
+        }
+    ))
+}
+
 fn ndk_linker(root: &Path, row: Mobile) -> Result<PathBuf, String> {
     let pinned = fs::read_to_string(root.join(NDK_VERSION))
         .map_err(|err| format!("{NDK_VERSION}: {err}"))?
@@ -301,29 +337,7 @@ fn ndk_linker(root: &Path, row: Mobile) -> Result<PathBuf, String> {
         home.as_ref()
             .map(|home| home.join("Android/Sdk/ndk").join(&pinned)),
     ];
-    let ndk = candidates
-        .into_iter()
-        .flatten()
-        .find(|dir| dir.join("source.properties").is_file())
-        .ok_or_else(|| {
-            format!(
-                "no Android NDK {pinned} was found (`sdkmanager \"ndk;{pinned}\"`, or name one \
-                 with ANDROID_NDK_HOME)"
-            )
-        })?;
-    let properties = fs::read_to_string(ndk.join("source.properties"))
-        .map_err(|err| format!("{}: {err}", ndk.display()))?;
-    let revision = properties
-        .lines()
-        .find_map(|line| line.strip_prefix("Pkg.Revision"))
-        .map(|rest| rest.trim_start_matches([' ', '=']).trim());
-    if revision != Some(pinned.as_str()) {
-        return Err(format!(
-            "the NDK at {} is {}, and the Android rows link with {pinned} ({NDK_VERSION})",
-            ndk.display(),
-            revision.unwrap_or("of no stated version")
-        ));
-    }
+    let ndk = pinned_ndk(candidates.into_iter().flatten(), &pinned)?;
     let host = if cfg!(target_os = "macos") {
         "darwin-x86_64"
     } else if cfg!(target_os = "windows") {
@@ -756,6 +770,34 @@ mod tests {
             assert!(hook.contains(&line), "bundle.dart must say `{line}`");
         }
         assert_eq!(IOS_FLOOR.1, 0, "the hook compares whole iOS versions");
+    }
+
+    #[test]
+    fn an_ndk_at_another_release_is_passed_over_for_the_pinned_one() {
+        let scratch = std::env::temp_dir().join(format!("teistro-ndk-{}", std::process::id()));
+        let ndk = |name: &str, revision: &str| {
+            let dir = scratch.join(name);
+            fs::create_dir_all(&dir).unwrap();
+            fs::write(
+                dir.join("source.properties"),
+                format!("Pkg.Desc = Android NDK\nPkg.Revision = {revision}\n"),
+            )
+            .unwrap();
+            dir
+        };
+        let image = ndk("image", "27.3.13750724");
+        let pinned = ndk("pinned", "28.2.13676358");
+        let missing = scratch.join("missing");
+        assert_eq!(
+            pinned_ndk(
+                [image.clone(), missing.clone(), pinned.clone()].into_iter(),
+                "28.2.13676358"
+            ),
+            Ok(pinned)
+        );
+        let refused = pinned_ndk([image, missing].into_iter(), "28.2.13676358").unwrap_err();
+        assert!(refused.contains("is 27.3.13750724"), "{refused}");
+        fs::remove_dir_all(&scratch).unwrap();
     }
 
     #[test]

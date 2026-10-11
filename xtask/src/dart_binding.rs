@@ -91,9 +91,11 @@ fn wrong_usages(package: &Path) -> Result<(), ()> {
 /// own tests run when it has them.
 fn companion(root: &Path, name: &str, analysed: &str, tests: Option<&str>) -> Result<(), ()> {
     let package = root.join(name);
+    // Not the example's: an example may be a Flutter app, which only
+    // `flutter pub` resolves, and this gate is plain Dart's.
     step(
         Command::new("dart")
-            .args(["pub", "get"])
+            .args(["pub", "get", "--no-example"])
             .current_dir(&package),
         "",
         &format!("{name}: `dart pub get` failed"),
