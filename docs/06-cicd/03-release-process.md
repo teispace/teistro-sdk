@@ -62,7 +62,7 @@ It is the one command that has to know the list; nobody else does.
 | `build` | a runner a platform, each `cargo xtask package <platform>` then `cargo xtask check-package`, each uploading its own artefacts and manifest |
 | `wasm` | one runner, `cargo xtask package wasm` then `cargo xtask check-wasm` (the Node suite through the package's own loader, headless Chrome and Cloudflare's workerd each held to Node bit for bit, the package installed and run), uploading `@teistro/sdk-wasm` |
 | `stage` | downloads all six, `cargo xtask package stage` (which refuses a release missing the wasm package as it refuses one missing a platform), and publishes the checksum list into the run's summary |
-| `publish` | after `verify` and `stage`: the GitHub release with every archive and `checksums.txt`; then every platform package and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages, then the agent server's platform packages and `@teistro/mcp`; then the Dart package |
+| `publish` | after `verify` and `stage`: the GitHub release with every archive and `checksums.txt`; then every platform package and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages, then the agent server's platform packages and `@teistro/mcp`; then the Dart package; last, the agent server's MCP Registry entry, by the runner's OIDC token |
 
 Every job runs under `TEISTRO_STRICT`, so a gate that skips part of
 itself for a missing tool fails rather than passing on what it did not

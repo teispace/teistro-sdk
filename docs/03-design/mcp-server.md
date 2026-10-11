@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
 Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
-P8 to P10 built, P7 open, §6 step 5 (packaging) building: the archives and the npm launcher built. Closes Q35 (`QUESTIONS.md`), which the
+P8 to P10 built, P7 open, §6 step 5 (packaging) building: the archives, the npm launcher and the registry entry built. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -242,8 +242,21 @@ dasha system of one's own are context configuration, reached through
    them after the SDK's packages; `check-versions` holds the launcher's
    manifest to the version and the platform list as it holds the SDK's;
    `check-package` installs the two packages into a throwaway project and
-   holds the launcher to the same checks as the unpacked program. Not
-   built: the registry's `server.json`, the `.mcpb` bundle and the guide.
+   holds the launcher to the same checks as the unpacked program.
+
+   *Built: the registry's entry.* `crates/mcp/server.json` lists the
+   server in the MCP Registry as `io.github.teispace/teistro`, the npm
+   launcher its package, with the ephemeris choices and the repeatable
+   pack a host may offer. `tests/registry.rs` holds its title, its
+   description (the registry's 100 characters, which shortened the
+   server's own) and its website to what the server says of itself, and
+   its name to the launcher's `mcpName`, which is how the registry
+   proves the package is the server's; `check-versions` and `cargo xtask
+   version` hold its versions to the release's; the publisher's own
+   validator accepts it. The release publishes it last, after npm serves
+   the launcher, with `mcp-publisher` pinned by version and digest and
+   logged in by the runner's OIDC token. Not built: the `.mcpb` bundle
+   and the guide.
 
 ## 7. The rest of the protocol
 

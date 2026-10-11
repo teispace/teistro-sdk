@@ -1,0 +1,44 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.teispace/teistro",
+  "title": "Teistro",
+  "description": "Astrology as tools: charts, almanacs, dashas and matching, each answer with its settings and inputs",
+  "version": "0.0.0",
+  "websiteUrl": "https://github.com/teispace/teistro-sdk",
+  "repository": {
+    "url": "https://github.com/teispace/teistro-sdk",
+    "source": "github",
+    "subfolder": "crates/mcp"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@teistro/mcp",
+      "version": "0.0.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "named",
+          "name": "--ephemeris",
+          "description": "The ephemeris every tool computes with",
+          "choices": [
+            "BUILTIN",
+            "SURYA_SIDDHANTA",
+            "NONE"
+          ],
+          "default": "BUILTIN"
+        },
+        {
+          "type": "named",
+          "name": "--pack",
+          "description": "An interpretation or locale pack loaded into every context",
+          "format": "filepath",
+          "isRepeated": true
+        }
+      ]
+    }
+  ]
+}
