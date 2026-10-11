@@ -60,7 +60,7 @@ public record Keyed<M extends com.teispace.teistro.Catalogued>(M member, String 
      * @throws IllegalArgumentException for JSON that is not a key
      */
     public static <M extends com.teispace.teistro.Catalogued> Keyed<M> of(Object raw, String at, Function<String, Optional<M>> byKey) {
-        String key = Read.text(raw, at);
+        String key = raw instanceof com.teispace.teistro.Member member ? member.key() : Read.text(raw, at);
         return byKey.apply(key).map(Keyed::of).orElseGet(() -> Keyed.registered(key));
     }
 

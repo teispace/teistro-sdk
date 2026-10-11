@@ -1127,7 +1127,7 @@ public record Keyed<M extends com.teispace.teistro.Catalogued>(M member, String 
      * @throws IllegalArgumentException for JSON that is not a key
      */
     public static <M extends com.teispace.teistro.Catalogued> Keyed<M> of(Object raw, String at, Function<String, Optional<M>> byKey) {
-        String key = Read.text(raw, at);
+        String key = raw instanceof com.teispace.teistro.Member member ? member.key() : Read.text(raw, at);
         return byKey.apply(key).map(Keyed::of).orElseGet(() -> Keyed.registered(key));
     }
 
@@ -1143,10 +1143,22 @@ public record Keyed<M extends com.teispace.teistro.Catalogued>(M member, String 
 fn read() -> String {
     let shared = READ
         .replace("Pair<", "com.teispace.teistro.record.Pair<")
+        // A request is also built in Java, where a literal is an `Integer`.
+        .replace(
+            INTEGER_FROM_JSON,
+            "if (raw instanceof Long || raw instanceof Integer || raw instanceof Short || raw instanceof Byte) {\n            return ((Number) raw).longValue();",
+        )
         .replace("import java.util.ArrayList;\n", "import java.util.ArrayList;\nimport java.util.LinkedHashMap;\nimport java.util.Optional;\n");
+    assert!(
+        shared.contains("raw instanceof Integer"),
+        "the records' reader no longer reads an integer as `{INTEGER_FROM_JSON}`"
+    );
     let end = shared.rfind("}\n").unwrap_or(shared.len());
     format!("{}{READ_MORE}}}\n", &shared[..end])
 }
+
+/// The JSON reader's whole number, which [`read`] widens to Java's own.
+const INTEGER_FROM_JSON: &str = "if (raw instanceof Long number) {\n            return number;";
 
 const READ_MORE: &str = r#"
     static int int32(Object raw, String at) {
@@ -1162,7 +1174,9 @@ const READ_MORE: &str = r#"
     }
 
     static <M> M member(Object raw, String at, Function<String, Optional<M>> byKey) {
-        String key = text(raw, at);
+        // A member itself, as a map built in Java holds it and as
+        // `Json.write` takes it, is read by its key.
+        String key = raw instanceof com.teispace.teistro.Member member ? member.key() : text(raw, at);
         return byKey.apply(key).orElseThrow(() -> refused(at, "a key the SDK reads", raw));
     }
 

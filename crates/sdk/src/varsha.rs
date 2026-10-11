@@ -329,6 +329,11 @@ pub trait Askable: sealed::Sealed + Copy + PartialEq + 'static {
     fn read(wire: Self::Wire) -> Result<Self, String>;
     /// The member as the wire writes it.
     fn wire(self) -> Self::Wire;
+    /// The schema of one item of the list: what the wire takes, stated as
+    /// the member it names where it names a catalogue's, so a binding
+    /// types it as that catalogue's member and not as text.
+    #[cfg(feature = "schema")]
+    fn item_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema;
 }
 
 impl Askable for House {
@@ -345,6 +350,11 @@ impl Askable for House {
     fn wire(self) -> u8 {
         self.get()
     }
+
+    #[cfg(feature = "schema")]
+    fn item_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({ "type": "integer", "format": "uint8", "minimum": 1, "maximum": 12 })
+    }
 }
 
 impl Askable for Saham {
@@ -360,6 +370,11 @@ impl Askable for Saham {
 
     fn wire(self) -> Saham {
         self
+    }
+
+    #[cfg(feature = "schema")]
+    fn item_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        generator.subschema_for::<Saham>()
     }
 }
 
@@ -388,6 +403,13 @@ impl Askable for DashaSystem {
 
     fn wire(self) -> String {
         self.full_key().to_owned()
+    }
+
+    /// The catalogue's member, which [`Askable::read`] takes by either key;
+    /// a system that is not annual is still refused there.
+    #[cfg(feature = "schema")]
+    fn item_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        generator.subschema_for::<DashaSystem>()
     }
 }
 
@@ -433,7 +455,7 @@ where
                 { "const": "all" },
                 {
                     "type": "array",
-                    "items": generator.subschema_for::<T::Wire>(),
+                    "items": T::item_schema(generator),
                     "uniqueItems": true,
                 },
             ],

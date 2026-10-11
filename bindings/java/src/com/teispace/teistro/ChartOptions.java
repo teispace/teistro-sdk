@@ -6,6 +6,32 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.teispace.teistro.request.AntisciaRequest;
+import com.teispace.teistro.request.AspectRequest;
+import com.teispace.teistro.request.DignityRequest;
+import com.teispace.teistro.request.FortitudeRequest;
+import com.teispace.teistro.request.GocharRequest;
+import com.teispace.teistro.request.HarmonicRequest;
+import com.teispace.teistro.request.HitRequest;
+import com.teispace.teistro.request.HouseRequest;
+import com.teispace.teistro.request.KpRequest;
+import com.teispace.teistro.request.LalKitabRequest;
+import com.teispace.teistro.request.LotRequest;
+import com.teispace.teistro.request.MidpointRequest;
+import com.teispace.teistro.request.ParallelRequest;
+import com.teispace.teistro.request.PartnerMatching;
+import com.teispace.teistro.request.PartnerSynastry;
+import com.teispace.teistro.request.PerfectionRequest;
+import com.teispace.teistro.request.PlanRequest;
+import com.teispace.teistro.request.PrashnaRequest;
+import com.teispace.teistro.request.ProgressionsRequest;
+import com.teispace.teistro.request.RectificationRequest;
+import com.teispace.teistro.request.RemedyRequest;
+import com.teispace.teistro.request.RuleRequest;
+import com.teispace.teistro.request.SadeSatiRequest;
+import com.teispace.teistro.request.ThemePatch;
+import com.teispace.teistro.request.VarshaRequest;
+
 import com.teispace.teistro.ffi.Native;
 
 /**
@@ -18,13 +44,15 @@ import com.teispace.teistro.ffi.Native;
  *         .state(true)
  *         .vargas(Varga.D9)
  *         .dashas(DashaSystem.VIMSHOTTARI)
- *         .kp(Map.of("number", 108))
+ *         .kp(KpRequest.builder().number(108).build())
  *         .build();
  * }</pre>
  *
- * <p>A reading's request object is written as JSON as {@link Json#write}
- * writes it, so a catalogue member may stand for its key; the library
- * checks each and refuses a mistake naming the field.
+ * <p>Each reading takes its request type from
+ * {@code com.teispace.teistro.request}, which checks a required field, a
+ * width and a member's key as it is made, so a misspelt field cannot be
+ * written. {@link Builder#reading(String, Object)} takes any reading by
+ * its field's name as a map or its JSON, a newer library's among them.
  *
  * @param kind what kind of chart to found
  * @param sections the sections beside the foundation, as the boundary's bit set
@@ -280,30 +308,30 @@ public record ChartOptions(
         /**
          * The theme every drawing is written as SVG in.
          *
-         * @param theme an object of {@code style} and {@code content}, or its JSON
+         * @param theme the request; null takes it away
          * @return this builder
          */
-        public Builder theme(Object theme) {
+        public Builder theme(ThemePatch theme) {
             return json("theme_json", theme);
         }
 
         /**
          * Rules to answer over every chart.
          *
-         * @param rules the rule request, or its JSON
+         * @param rules the request; null takes it away
          * @return this builder
          */
-        public Builder rules(Object rules) {
+        public Builder rules(RuleRequest rules) {
             return json("rules_json", rules);
         }
 
         /**
          * Narrative plans to compose over every chart.
          *
-         * @param interpret the plan request, or its JSON
+         * @param interpret the request; null takes it away
          * @return this builder
          */
-        public Builder interpret(Object interpret) {
+        public Builder interpret(PlanRequest interpret) {
             return json("interpret_json", interpret);
         }
 
@@ -324,210 +352,210 @@ public record ChartOptions(
         /**
          * The varsha.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder varsha(Object request) {
+        public Builder varsha(VarshaRequest request) {
             return json("varsha_json", request);
         }
 
         /**
          * The gochar.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder gochar(Object request) {
+        public Builder gochar(GocharRequest request) {
             return json("gochar_json", request);
         }
 
         /**
          * The transit hit.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder hits(Object request) {
+        public Builder hits(HitRequest request) {
             return json("hits_json", request);
         }
 
         /**
          * The Sade Sati.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder sadeSati(Object request) {
+        public Builder sadeSati(SadeSatiRequest request) {
             return json("sade_sati_json", request);
         }
 
         /**
          * The KP.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder kp(Object request) {
+        public Builder kp(KpRequest request) {
             return json("kp_json", request);
         }
 
         /**
          * The dignities.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder dignities(Object request) {
+        public Builder dignities(DignityRequest request) {
             return json("dignities_json", request);
         }
 
         /**
          * The fortitudes.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder fortitudes(Object request) {
+        public Builder fortitudes(FortitudeRequest request) {
             return json("fortitudes_json", request);
         }
 
         /**
          * The lots.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder lots(Object request) {
+        public Builder lots(LotRequest request) {
             return json("lots_json", request);
         }
 
         /**
          * The considerations.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder considerations(Object request) {
+        public Builder considerations(com.teispace.teistro.request.ConsiderationRules request) {
             return json("considerations_json", request);
         }
 
         /**
          * The perfection.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder perfection(Object request) {
+        public Builder perfection(PerfectionRequest request) {
             return json("perfection_json", request);
         }
 
         /**
          * The progressions.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder progressions(Object request) {
+        public Builder progressions(ProgressionsRequest request) {
             return json("progressions_json", request);
         }
 
         /**
          * The Western aspects.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder westernAspects(Object request) {
+        public Builder westernAspects(AspectRequest request) {
             return json("western_aspects_json", request);
         }
 
         /**
          * The synastry.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder synastry(Object request) {
+        public Builder synastry(PartnerSynastry request) {
             return json("synastry_json", request);
         }
 
         /**
          * The parallels.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder parallels(Object request) {
+        public Builder parallels(ParallelRequest request) {
             return json("parallels_json", request);
         }
 
         /**
          * The antiscia.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder antiscia(Object request) {
+        public Builder antiscia(AntisciaRequest request) {
             return json("antiscia_json", request);
         }
 
         /**
          * The midpoints.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder midpoints(Object request) {
+        public Builder midpoints(MidpointRequest request) {
             return json("midpoints_json", request);
         }
 
         /**
          * The Western houses.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder westernHouses(Object request) {
+        public Builder westernHouses(HouseRequest request) {
             return json("western_houses_json", request);
         }
 
         /**
          * The harmonic.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder harmonic(Object request) {
+        public Builder harmonic(HarmonicRequest request) {
             return json("harmonic_json", request);
         }
 
         /**
          * The matching.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder matching(Object request) {
+        public Builder matching(PartnerMatching request) {
             return json("matching_json", request);
         }
 
         /**
          * The prashna.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder prashna(Object request) {
+        public Builder prashna(PrashnaRequest request) {
             return json("prashna_json", request);
         }
 
         /**
          * The remedies.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder remedies(Object request) {
+        public Builder remedies(RemedyRequest request) {
             return json("remedies_json", request);
         }
 
@@ -536,10 +564,10 @@ public record ChartOptions(
          * {@code Map.of("cycle", Map.of("planet", Graha.VENUS, "year", 17), "year", 30)}
          * ({@code 03-design/lalkitab.md}).
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder lalkitab(Object request) {
+        public Builder lalkitab(LalKitabRequest request) {
             return json("lalkitab_json", request);
         }
 
@@ -547,10 +575,10 @@ public record ChartOptions(
          * The rectification: each reading asked by its member, as
          * {@code Map.of("purify", Map.of("minutes", 30))}.
          *
-         * @param request the request object, or its JSON
+         * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder rectification(Object request) {
+        public Builder rectification(RectificationRequest request) {
             return json("rectification_json", request);
         }
 

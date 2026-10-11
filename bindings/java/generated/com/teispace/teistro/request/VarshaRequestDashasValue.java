@@ -12,7 +12,7 @@ import java.util.Objects;
  *
  * @param value the value
  */
-public record VarshaRequestDashasValue(List<String> value) implements RequestJson, VarshaRequestDashas {
+public record VarshaRequestDashasValue(List<com.teispace.teistro.DashaSystem> value) implements RequestJson, VarshaRequestDashas {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -33,11 +33,11 @@ public record VarshaRequestDashasValue(List<String> value) implements RequestJso
      * @throws IllegalArgumentException for JSON that is not one
      */
     public static VarshaRequestDashasValue of(Object raw) {
-        return new VarshaRequestDashasValue(Read.list(raw, "VarshaRequestDashas.value", item0 -> Read.text(item0, "VarshaRequestDashas.value")));
+        return new VarshaRequestDashasValue(Read.list(raw, "VarshaRequestDashas.value", item0 -> Read.member(item0, "VarshaRequestDashas.value", com.teispace.teistro.DashaSystem::byKey)));
     }
 
     @Override
     public Object toJson() {
-        return value;
+        return value.stream().map(item0 -> item0.fullKey()).toList();
     }
 }

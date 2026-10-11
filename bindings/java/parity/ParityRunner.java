@@ -20,6 +20,7 @@ import com.teispace.teistro.blob.IntlRender;
 import com.teispace.teistro.messages.Messages;
 import com.teispace.teistro.record.Deviation;
 import com.teispace.teistro.record.Provenance;
+import com.teispace.teistro.request.*;
 
 /**
  * One scenario through the Java binding, printed as the parity report.
@@ -1396,11 +1397,11 @@ public final class ParityRunner {
                 .drawing(ChartLayout.WESTERN_WHEEL, Varga.D1)
                 .drawing("chart_layout.ACME_KERALA", Varga.D9)
                 // Python's `theme="DARK"` crosses as `{"extends": "DARK"}`.
-                .theme(map("extends", "DARK"))
-                .rules(map("shipped", List.of("NABHASAS"), "longevity", true,
-                        "ayurdaya", map("enemy_exempt", "mars", "enmity", "compound", "rising", "every")))
-                .interpret(map("placements", true, "readings", true, "strength", true, "houses", true,
-                        "positions", true, "aspects", true, "conditions", true, "karakas", true))
+                .theme(ThemePatch.of(map("extends", "DARK")))
+                .rules(RuleRequest.of(map("shipped", List.of("NABHASAS"), "longevity", true,
+                        "ayurdaya", map("enemy_exempt", "mars", "enmity", "compound", "rising", "every"))))
+                .interpret(PlanRequest.of(map("placements", true, "readings", true, "strength", true, "houses", true,
+                        "positions", true, "aspects", true, "conditions", true, "karakas", true)))
                 .aspects(true)
                 .points(true)
                 .houses(true)
@@ -1411,12 +1412,12 @@ public final class ParityRunner {
                 .jaimini(true)
                 .avakahada(true)
                 .outerPlanets(true)
-                .gochar(map("instants", List.of(2460676.5, 2460736.5), "ashtakavarga", true))
-                .hits(map("from", 2460676.5, "to", 2460736.5, "grahas", List.of("SUN", "MERCURY", "SATURN"),
-                        "aspects", List.of(0, 90, 180), "orbDeg", 2))
-                .sadeSati(map("from", 2460676.5, "to", 2464329.0, "reckoning", "DEGREE", "spells", List.of(4, 7, 8)))
-                .kp(map("number", 74, "anyAyanamsha", true))
-                .fortitudes(map(
+                .gochar(GocharRequest.of(map("instants", List.of(2460676.5, 2460736.5), "ashtakavarga", true)))
+                .hits(HitRequest.of(map("from", 2460676.5, "to", 2460736.5, "grahas", List.of("SUN", "MERCURY", "SATURN"),
+                        "aspects", List.of(0, 90, 180), "orbDeg", 2)))
+                .sadeSati(SadeSatiRequest.of(map("from", 2460676.5, "to", 2464329.0, "reckoning", "DEGREE", "spells", List.of(4, 7, 8))))
+                .kp(KpRequest.of(map("number", 74, "anyAyanamsha", true)))
+                .fortitudes(FortitudeRequest.of(map(
                         "dignities", map("sectRule", "DAYLIGHT",
                                 "rules", map("terms", "EGYPTIAN", "triplicities", "PTOLEMY"),
                                 "scores", map("peregrine", 0)),
@@ -1424,40 +1425,41 @@ public final class ParityRunner {
                                 "partile", map("WITHIN", map("orbDeg", 1)),
                                 "siege", map("WITHIN", map("spanDeg", 30))),
                         "scores", map("regulus", 5),
-                        "almuten", map("fortune", "REVERSED_BY_NIGHT")))
-                .lots(map("fortune", "REVERSED_WHILE_MOON_UP"))
-                .considerations(map("moonLateFromDeg", 25))
-                .perfection(map("house", 7, "rules", map("horizonDays", 120)))
-                .prashna(map("question", map("house", 7, "number", 14), "rules", map("score", "BASELINE")))
-                .remedies(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA"))))
+                        "almuten", map("fortune", "REVERSED_BY_NIGHT"))))
+                .lots(LotRequest.of(map("fortune", "REVERSED_WHILE_MOON_UP")))
+                .considerations(com.teispace.teistro.request.ConsiderationRules.of(map("moonLateFromDeg", 25)))
+                .perfection(PerfectionRequest.of(map("house", 7, "rules", map("horizonDays", 120))))
+                .prashna(PrashnaRequest.of(map("question", map("house", 7, "number", 14), "rules", map("score", "BASELINE"))))
+                .remedies(RemedyRequest.of(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA")))))
                 // A varshphal list with the book's structure and none of its numbers:
                 // year y sends natal house h to h + y - 1, round the twelve.
-                .lalkitab(map("cycle", map("planet", "graha.VENUS", "year", 17), "year", 43,
-                        "varshphal", map("rows", varshphalRotation())))
-                .rectification(map("purify", map("minutes", 20), "conception", map(),
+                .lalkitab(LalKitabRequest.of(map("cycle", map("planet", "graha.VENUS", "year", 17), "year", 43,
+                        "varshphal", map("rows", varshphalRotation()))))
+                .rectification(RectificationRequest.of(map("purify", map("minutes", 20), "conception", map(),
                         "circumstance", map("facts", map("fatherPresent", false)),
                         "baseline", map("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
                                 map("kind", "MARRIAGE", "on", 2469000.5),
                                 map("kind", "ACCIDENT", "on", 2471000.5, "heldOut", true))),
-                        "svarodaya", map("minutes", 20)))
-                .westernAspects(map(
+                        "svarodaya", map("minutes", 20))))
+                .westernAspects(AspectRequest.of(map(
                         "aspects", List.of("CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"),
-                        "orbs", map("model", "MOIETIES", "orbs", orbs)))
-                .parallels(map("orbDeg", 1.5))
-                .antiscia(map("cusps", map()))
-                .midpoints(map("orbDeg", 1.5))
-                .westernHouses(map())
-                .harmonic(map("number", 5))
-                .matching(map("partner", partner(), "partnerRole", "BRIDE", "rules", map("bhakootLift", "GARGA"),
+                        "orbs", map("model", "MOIETIES", "orbs", orbs))))
+                .parallels(ParallelRequest.of(map("orbDeg", 1.5)))
+                .antiscia(AntisciaRequest.of(map("cusps", map())))
+                .midpoints(MidpointRequest.of(map("orbDeg", 1.5)))
+                .westernHouses(HouseRequest.of(map()))
+                .harmonic(HarmonicRequest.of(map("number", 5)))
+                .matching(PartnerMatching.of(map("partner", partner(), "partnerRole", "BRIDE", "rules", map("bhakootLift", "GARGA"),
                         "porutham", map("lordsFriendship", "ONE_WAY"),
-                        "kuja", map("houses", "WITH_SECOND", "from", "LAGNA_MOON_VENUS")))
-                .synastry(map("partner", partner(), "aspects", List.of("CONJUNCTION", "SQUARE", "TRINE", "OPPOSITION"),
+                        "kuja", map("houses", "WITH_SECOND", "from", "LAGNA_MOON_VENUS"))))
+                .synastry(PartnerSynastry.of(map("partner", partner(), "aspects", List.of("CONJUNCTION", "SQUARE", "TRINE", "OPPOSITION"),
                         "zodiac", "CHARTS", "parallels", map("orbDeg", 1.5), "antiscia", map("orbs", map("model", "LEO")),
-                        "midpoints", map("orbDeg", 1.5), "composite", true, "davison", true))
-                .progressions(map("at", 2470000.5, "year", "NOON_SIDEREAL_TIME", "angles", "SOLAR_ARC_LONGITUDE",
+                        "midpoints", map("orbDeg", 1.5), "composite", true, "davison", true)))
+                .progressions(ProgressionsRequest.of(map("at", 2470000.5, "year", "NOON_SIDEREAL_TIME", "angles", "SOLAR_ARC_LONGITUDE",
                         "direction", "NAIBOD", "contacts", map("from", 2462000.5, "to", 2465652.5,
-                                "grahas", List.of("MOON", "SUN"), "points", List.of("LAGNA", "MARS", "VENUS"),
-                                "aspects", List.of(0, 45, 90, 135, 180))))
+                                "grahas", List.of("MOON", "SUN"), "points", List.of(map("point", "LAGNA"), map("point", "GRAHA", "graha", "MARS"),
+                                        map("point", "GRAHA", "graha", "VENUS")),
+                                "aspects", List.of(0, 45, 90, 135, 180)))))
                 .shadbala(true)
                 .bhavaBala(true)
                 .state(true)
@@ -1516,7 +1518,7 @@ public final class ParityRunner {
                         "depth", 3));
             }
             ChartBatch years = geo.chart().foundMany(new double[] {2460482.5, 2460600.25}, place, 20700,
-                    ChartOptions.builder().varsha(varsha).build());
+                    ChartOptions.builder().varsha(VarshaRequest.of(varsha)).build());
             for (int i = 0; i < years.size(); i += 1) {
                 varsha(years.get(i), i, reading);
             }

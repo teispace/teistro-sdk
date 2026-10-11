@@ -5,7 +5,6 @@ import static com.teispace.teistro.Civil.ianaZone;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -35,6 +34,12 @@ import com.teispace.teistro.TeistroException;
 import com.teispace.teistro.YearClaim;
 import com.teispace.teistro.YearLord;
 import com.teispace.teistro.ZoneResolution;
+import com.teispace.teistro.request.AnnualPlace;
+import com.teispace.teistro.request.ReturnLongitude;
+import com.teispace.teistro.request.VarshaRequest;
+import com.teispace.teistro.request.VarshaRequestDashas;
+import com.teispace.teistro.request.VarshaRequestMatters;
+import com.teispace.teistro.request.VarshaRequestSahams;
 
 /**
  * The annual chart: the one instant every Tajika judgement is made from.
@@ -69,14 +74,14 @@ public final class AnnualChart {
     private AnnualChart() {}
 
     /** A chart founded at the birth, with the varsha request given. */
-    private static Chart found(Context ctx, ZoneResolution when, Observer place, Object varsha) {
+    private static Chart found(Context ctx, ZoneResolution when, Observer place, VarshaRequest varsha) {
         return ctx.chart().found(when.instantJdUtc(), place, when.offsetSeconds(),
                 ChartOptions.builder().varsha(varsha).build());
     }
 
     /** The thirtieth year's own chart, founded with the varsha request given. */
     private static com.teispace.teistro.AnnualChart thirtieth(
-            Context ctx, ZoneResolution when, Observer place, Object varsha) {
+            Context ctx, ZoneResolution when, Observer place, VarshaRequest varsha) {
         com.teispace.teistro.AnnualChart annual = found(ctx, when, place, varsha).praveshas().get(29).annual();
         if (annual == null) {
             throw new IllegalStateException("a varsha request naming a place casts the year's chart");
@@ -106,7 +111,7 @@ public final class AnnualChart {
             Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
 
             // ── The years a birth opens ──────────────────────────────────
-            Chart chart = found(ctx, when, place, Map.of("reading", "SIDEREAL", "through", 40));
+            Chart chart = found(ctx, when, place, VarshaRequest.builder().reading(ReturnLongitude.SIDEREAL).through(40).build());
             List<Pravesha> years = chart.praveshas();
             System.out.println("returns computed: " + years.size());
             Pravesha thirtieth = years.stream().filter(one -> one.year() == 30).findFirst().orElseThrow();
@@ -128,7 +133,7 @@ public final class AnnualChart {
             // ── Its five office-bearers, cast where you say ───────────────
             // Here the birthplace, the one Tajika text read casts every chart
             // for; a residence is {"observer": {...}, ...} instead.
-            Pravesha cast = found(ctx, when, place, Map.of("through", 30, "place", "birth")).praveshas().get(29);
+            Pravesha cast = found(ctx, when, place, VarshaRequest.builder().through(30).place(AnnualPlace.BIRTH).build()).praveshas().get(29);
             com.teispace.teistro.AnnualChart year = cast.annual();
             if (year == null) {
                 throw new IllegalStateException("a varsha request naming a place casts the year's chart");
@@ -153,7 +158,8 @@ public final class AnnualChart {
             // you ask about, so you name the houses: marriage (7) and career
             // (10) here.
             com.teispace.teistro.AnnualChart judged = thirtieth(ctx, when, place,
-                    Map.of("through", 30, "place", "birth", "matters", List.of(7, 10)));
+                    VarshaRequest.builder().through(30).place(AnnualPlace.BIRTH)
+                            .matters(VarshaRequestMatters.value(List.of(7, 10))).build());
             for (TajikaMatter matter : judged.matters()) {
                 String held = matter.held().stream().map(one -> one.yoga().key()).collect(Collectors.joining(", "));
                 System.out.println("house " + matter.house() + ": " + matter.lagnesha().key() + " with "
@@ -166,8 +172,9 @@ public final class AnnualChart {
             // that sign's lord and the house it fell in, as the source reads
             // them.
             com.teispace.teistro.AnnualChart points = thirtieth(ctx, when, place,
-                    Map.of("through", 30, "place", "birth",
-                            "sahams", List.of(Saham.PUNYA, Saham.VIVAHA, Saham.KARYA_SIDDHI)));
+                    VarshaRequest.builder().through(30).place(AnnualPlace.BIRTH)
+                            .sahams(VarshaRequestSahams.value(List.of(Saham.PUNYA, Saham.VIVAHA, Saham.KARYA_SIDDHI)))
+                            .build());
             for (TajikaSaham point : points.sahams()) {
                 String added = point.addedSign() ? " (a sign added)" : "";
                 System.out.printf(Locale.ROOT, "%-12s %6.2f°  %s, lord %s, house %d%s%n",
@@ -191,8 +198,9 @@ public final class AnnualChart {
             // over the year once for both, and each year closes on the next
             // return.
             com.teispace.teistro.AnnualChart divided = thirtieth(ctx, when, place,
-                    Map.of("through", 30, "place", "birth",
-                            "dashas", List.of(DashaSystem.MUDDA, DashaSystem.PATYAYINI)));
+                    VarshaRequest.builder().through(30).place(AnnualPlace.BIRTH)
+                            .dashas(VarshaRequestDashas.value(List.of(DashaSystem.MUDDA, DashaSystem.PATYAYINI)))
+                            .build());
             for (AnnualDasha dasha : divided.dashas()) {
                 String days = dasha.periods().stream()
                         .filter(p -> p.level() == 1)
@@ -204,8 +212,8 @@ public final class AnnualChart {
             }
 
             // ── The readings are named, and they are not each other ──────
-            for (String reading : List.of("SIDEREAL", "TROPICAL", "MEAN")) {
-                List<Pravesha> one = found(ctx, when, place, Map.of("reading", reading, "through", 30)).praveshas();
+            for (ReturnLongitude reading : ReturnLongitude.values()) {
+                List<Pravesha> one = found(ctx, when, place, VarshaRequest.builder().reading(reading).through(30).build()).praveshas();
                 double apart = (one.get(29).instant() - years.get(29).instant()) * 24;
                 System.out.printf(Locale.ROOT, "%-9s thirtieth year, %.2f hours from the sidereal one%n",
                         reading, apart);
@@ -213,7 +221,7 @@ public final class AnnualChart {
 
             // ── What it refuses, and by which field ──────────────────────
             try {
-                found(ctx, when, place, Map.of("reading", "SIDEREAL", "through", 0));
+                found(ctx, when, place, VarshaRequest.builder().reading(ReturnLongitude.SIDEREAL).through(0).build());
             } catch (TeistroException error) {
                 System.out.println("refused  " + error.field() + ": " + error.getMessage());
             }

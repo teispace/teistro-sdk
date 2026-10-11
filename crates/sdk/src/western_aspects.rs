@@ -169,17 +169,19 @@ impl PartnerSynastry {
 
 /// The synastry record's schema: the request as [`SynastryRequest`]
 /// reads it, with the partner and the Davison flag beside it, as
-/// [`PartnerSynastry::split`] takes them out.
+/// [`PartnerSynastry::split`] takes them out, defined under its type's
+/// name.
 #[cfg(feature = "schema")]
 pub(crate) fn synastry_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
     let partner = generator.subschema_for::<Partner>();
-    crate::records::beside::<SynastryRequest>(
+    let schema = crate::records::beside::<SynastryRequest>(
         generator,
         vec![
             ("partner", partner),
             ("davison", schemars::json_schema!({ "type": "boolean" })),
         ],
-    )
+    );
+    crate::records::defined(generator, "PartnerSynastry", schema)
 }
 
 impl TryFrom<Map<String, Value>> for PartnerSynastry {

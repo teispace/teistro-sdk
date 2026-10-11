@@ -11,9 +11,7 @@ import com.teispace.teistro.blob.Positions;
 import com.teispace.teistro.ffi.Native;
 import com.teispace.teistro.record.Provenance;
 import com.teispace.teistro.record.Step;
-import com.teispace.teistro.request.RequestJson;
-import com.teispace.teistro.request.Requests;
-import com.teispace.teistro.request.VarshaRequest;
+import com.teispace.teistro.request.*;
 
 /**
  * The binding's tests, with no test framework: each is a method, a failure
@@ -401,7 +399,7 @@ public final class BindingTest {
                 Chart bare = sky.chart().found(2_460_676.5, kathmandu, 20_700, ChartOptions.builder().build());
                 check(bare.dignities().isEmpty(), "not asked, not read");
                 Dignities read = sky.chart().found(2_460_676.5, kathmandu, 20_700,
-                        ChartOptions.builder().dignities(Map.of()).build()).dignities().orElseThrow();
+                        ChartOptions.builder().dignities(DignityRequest.of(Map.of())).build()).dignities().orElseThrow();
                 same(SectRule.HORIZON, read.sectRule(), "the horizon decides the sect");
                 same(List.of(Graha.SATURN, Graha.JUPITER, Graha.MARS, Graha.SUN, Graha.VENUS, Graha.MERCURY,
                         Graha.MOON), read.planets().stream().map(PlanetDignity::planet).toList(), "the Chaldean order");
@@ -487,7 +485,7 @@ public final class BindingTest {
                 check(sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder().build()).lalkitab()
                         .isEmpty(), "none unless asked");
                 LalKitab plain = sky.chart().found(instant, kathmandu, 20_700,
-                        ChartOptions.builder().lalkitab(Map.of()).build()).lalkitab().orElseThrow();
+                        ChartOptions.builder().lalkitab(LalKitabRequest.of(Map.of())).build()).lalkitab().orElseThrow();
                 same(new LalKitab.Cycle(Graha.SATURN, 1), plain.cycle(), "the book's general table");
                 check(plain.year() == null, "no year unless asked");
                 same(9, plain.reading().planets().size(), "nine planets");
@@ -502,8 +500,8 @@ public final class BindingTest {
                     rows.add(row);
                 }
                 LalKitab read = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
-                        .lalkitab(Map.of("cycle", Map.of("planet", Graha.VENUS, "year", 17), "year", 43,
-                                "varshphal", Map.of("rows", rows)))
+                        .lalkitab(LalKitabRequest.of(Map.of("cycle", Map.of("planet", Graha.VENUS, "year", 17), "year", 43,
+                                "varshphal", Map.of("rows", rows))))
                         .build()).lalkitab().orElseThrow();
                 same(Graha.JUPITER, read.year().ruler(), "the year's ruler");
                 same(List.of(Graha.KETU, Graha.JUPITER, Graha.SUN), read.year().thirds(), "its thirds");
@@ -513,7 +511,7 @@ public final class BindingTest {
                     same((natal.get(n).house() + 41) % 12 + 1, moved.get(n).house(), "the annual teva's house");
                 }
                 TeistroException refused = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
-                        ChartOptions.builder().lalkitab(Map.of("year", 121)).build()));
+                        ChartOptions.builder().lalkitab(LalKitabRequest.of(Map.of("year", 121))).build()));
                 same("lalkitab.year", refused.field(), "named by its record");
             }
         });
@@ -525,9 +523,9 @@ public final class BindingTest {
                 ChartOptions everything = ChartOptions.builder().state(true).aspects(true).points(true).houses(true)
                         .ashtakavarga(true).vimshopaka(true).vaiseshikamsa(true).dashaPhala(true).jaimini(true)
                         .avakahada(true).outerPlanets(true).shadbala(true).bhavaBala(true)
-                        .vargas(Varga.D9).dashas(DashaSystem.VIMSHOTTARI).remedies(Map.of())
-                        .fortitudes(Map.of()).lots(Map.of()).westernAspects(Map.of())
-                        .westernHouses(Map.of()).antiscia(Map.of()).midpoints(Map.of()).parallels(Map.of())
+                        .vargas(Varga.D9).dashas(DashaSystem.VIMSHOTTARI).remedies(RemedyRequest.of(Map.of()))
+                        .fortitudes(FortitudeRequest.of(Map.of())).lots(LotRequest.of(Map.of())).westernAspects(AspectRequest.of(Map.of()))
+                        .westernHouses(HouseRequest.of(Map.of())).antiscia(AntisciaRequest.of(Map.of())).midpoints(MidpointRequest.of(Map.of())).parallels(ParallelRequest.of(Map.of()))
                         .build();
                 ChartBatch batch = sky.chart().foundMany(new double[] {2_447_995.489_583_333_5, 2_451_545.0},
                         kathmandu, 20_700, everything);
@@ -575,7 +573,7 @@ public final class BindingTest {
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
                 Chart chart = sky.chart().found(2_447_995.489_583_333_5, kathmandu, 20_700,
-                        ChartOptions.builder().kp(Map.of()).build());
+                        ChartOptions.builder().kp(KpRequest.of(Map.of())).build());
                 check(chart.kp().isPresent(), "the KP reading");
             }
         });
@@ -592,7 +590,7 @@ public final class BindingTest {
                                 Map.of("kind", "ACCIDENT", "on", 2_471_000.5, "heldOut", true))),
                         "svarodaya", Map.of("minutes", 20));
                 Rectification read = sky.chart().found(2_460_482.5, kathmandu, 20_700,
-                        ChartOptions.builder().rectification(asked).build()).rectification().orElseThrow();
+                        ChartOptions.builder().rectification(RectificationRequest.of(asked)).build()).rectification().orElseThrow();
                 Purified purified = read.purified().orElseThrow();
                 check(!purified.intervals().isEmpty(), "the purifier leaves a run standing");
                 Purified.Clause clause = purified.intervals().get(0).verdict().clauses().get(0);
@@ -644,7 +642,7 @@ public final class BindingTest {
                 same(2, svarodaya.at().junctions().size(), "the turn's two junctions");
 
                 Rectification alone = sky.chart().found(2_460_482.5, kathmandu, 20_700,
-                        ChartOptions.builder().rectification(Map.of("purify", Map.of("minutes", 20))).build())
+                        ChartOptions.builder().rectification(RectificationRequest.of(Map.of("purify", Map.of("minutes", 20)))).build())
                         .rectification().orElseThrow();
                 check(alone.purified().isPresent(), "the purifier asked");
                 check(alone.conception().isEmpty() && alone.circumstance().isEmpty() && alone.baseline().isEmpty()
@@ -854,6 +852,28 @@ public final class BindingTest {
                 same(request, Requests.read(record, Json.read(Json.write(request))), record + " written and read again");
             }
             same(new java.util.TreeSet<>(Requests.records()), read, "the records with a typed request");
+        });
+
+        tests.put("every reading a chart's options name takes the request type the SDK reads", () -> {
+            // `ChartOptions` is written by hand and `ChartFoundRequest` is
+            // generated from the SDK's schema of the same request, so each
+            // setter named after a field of the one takes the other's type:
+            // a setter left on `Object`, or on the wrong type, fails here.
+            Map<String, java.lang.reflect.Type> fields = new java.util.HashMap<>();
+            for (java.lang.reflect.RecordComponent field : ChartFoundRequest.class.getRecordComponents()) {
+                fields.put(field.getName(), field.getGenericType());
+            }
+            int checked = 0;
+            for (java.lang.reflect.Method setter : ChartOptions.Builder.class.getMethods()) {
+                java.lang.reflect.Type field = fields.get(setter.getName());
+                if (setter.getParameterCount() != 1 || field == null
+                        || !(field instanceof Class<?> type && RequestJson.class.isAssignableFrom(type))) {
+                    continue;
+                }
+                same(field, setter.getGenericParameterTypes()[0], "ChartOptions.Builder." + setter.getName());
+                checked += 1;
+            }
+            check(checked >= 20, "the readings were found: " + checked);
         });
 
         tests.put("a request type refuses what the SDK would, naming the field", () -> {

@@ -111,6 +111,25 @@ pub(crate) fn beside<T: schemars::JsonSchema>(
     schema
 }
 
+/// `schema` as a definition of its own under `name`, answered as a
+/// reference to it: a schema written by hand ([`beside`]) for a field of a
+/// request is otherwise inlined, and a binding has to name its type after
+/// the field it sits in.
+#[cfg(feature = "schema")]
+pub(crate) fn defined(
+    generator: &mut schemars::SchemaGenerator,
+    name: &str,
+    schema: schemars::Schema,
+) -> schemars::Schema {
+    let path = generator.settings().definitions_path.clone();
+    let path = path.strip_prefix('#').unwrap_or(&path);
+    let path = path.strip_suffix('/').unwrap_or(path);
+    generator
+        .definitions_mut()
+        .insert(name.to_owned(), schema.to_value());
+    schemars::Schema::new_ref(format!("#{path}/{name}"))
+}
+
 /// The schemas of a record whose request reader reads `$request` and
 /// whose answer serde writes from `$answer`; `schemas!()` for one whose
 /// types carry none yet.

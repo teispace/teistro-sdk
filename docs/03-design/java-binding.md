@@ -204,9 +204,22 @@ names is a catalogue enum. `BindingTest` reads every example request of
 `crates/sdk/tests/requests.json`, the fixture the agent server's tests send
 too, into its type and back, and holds the refusals.
 
-Still to come, in order: the hand-written areas taking these types
-(`ChartOptions` and the rest), the examples and the parity runner moved
-over, `typecheck/Wrong.java` with a lint that no area takes a request as a
+`ChartOptions` takes them: each reading's setter takes the type
+`ChartFoundRequest` gives the field of its name, which a test holds by
+reflection (proved red on `kp` left on `Object`), and
+`reading(field, request)` stays the way to any reading as a map or its
+JSON, a newer library's among them. A request type reads a map built in
+Java as well as one `Json.read` answers: a member is read by its key, and
+a whole number from any of Java's integral types. The examples build
+their requests with the builders; the tests and the parity runner read
+their maps through each type's `of`, so every scenario the runners agree
+on passes through the decoder. A natal point is written in the tagged form
+an answer writes (`{"point": "LAGNA"}`): the reader also takes the bare
+key, and the schema states only the form a binding writes back.
+
+Still to come, in order: the other areas' request parameters
+(`MatchingArea`, `NumerologyArea`, `RashifalRequest` and the almanac's),
+`typecheck/Wrong.java` with a lint that no area takes a request as a
 `Map`, and then the answers' keys as enums.
 
 **Javadoc from the description.** Each item's documentation is the

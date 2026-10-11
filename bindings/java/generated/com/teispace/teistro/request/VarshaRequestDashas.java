@@ -19,7 +19,7 @@ public sealed interface VarshaRequestDashas extends RequestJson permits VarshaRe
      * @param value the value
      * @return the union
      */
-    static VarshaRequestDashas value(List<String> value) {
+    static VarshaRequestDashas value(List<com.teispace.teistro.DashaSystem> value) {
         return new VarshaRequestDashasValue(value);
     }
 
