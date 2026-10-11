@@ -25,6 +25,9 @@
 #[path = "../../core/tests/support/conformance.rs"]
 mod conformance;
 
+#[path = "../../astro/tests/common/mod.rs"]
+mod accuracy;
+
 use conformance::Tally;
 use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_ephemeris_builtin::tables::TIER_NAME;
@@ -162,6 +165,7 @@ fn the_built_in_ephemeris_holds_to_de440_within_its_tiers_band() {
             .map(|divergence| divergence.name)
             .collect::<Vec<_>>()
     );
+    record_accuracy(&run.report);
     let mut tally = Tally::new(
         "jpl",
         format!("geometric positions over the built-in {TIER_NAME} tier"),
@@ -172,4 +176,98 @@ fn the_built_in_ephemeris_holds_to_de440_within_its_tiers_band() {
         tally.explained(divergence.name, count);
     }
     tally.record();
+}
+
+/// The accuracy document's `ephemeris` row: the worst difference from
+/// DE440 a group of bodies shows, in arcseconds or kilometres, under its
+/// band. A body enters a group only when every one of its values is
+/// inside the band, so a bound the document prints is one each value
+/// meets; the others' misses are the divergences [`jpl::KNOWN`] explains,
+/// which `CONFORMANCE.md` counts. The bodies are named from the report,
+/// so the document says which ones it measured.
+///
+/// [`jpl::KNOWN`]: teistro_ephemeris_kit::jpl::KNOWN
+fn record_accuracy(report: &teistro_ephemeris_kit::corpus::CorpusReport) {
+    use std::collections::BTreeMap;
+
+    /// A body's values in a group: the worst, how many, the band and
+    /// whether every one was inside it.
+    type Body = (f64, usize, f64, bool);
+    let mut groups: BTreeMap<&str, BTreeMap<String, Body>> = BTreeMap::new();
+    let mut order: Vec<String> = Vec::new();
+    for field in report.results.iter().flat_map(|result| &result.fields) {
+        let path = field.path.trim_start_matches("jpl.geometric.");
+        let (outer, path) = path
+            .strip_prefix("outer.")
+            .map_or((false, path), |rest| (true, rest));
+        let (body, quantity) = path.split_once('.').expect("a body and a quantity");
+        let group = match (quantity, outer) {
+            ("direction_deg", false) => "direction, inner",
+            ("direction_deg", true) => "direction, outer",
+            ("distance_km", _) => "distance",
+            _ => panic!("an unknown DE440 field {}", field.path),
+        };
+        if !order.iter().any(|known| known == body) {
+            order.push(body.to_owned());
+        }
+        let entry = groups
+            .entry(group)
+            .or_default()
+            .entry(body.to_owned())
+            .or_insert((0.0, 0, field.tolerance, true));
+        entry.0 = entry.0.max(field.difference);
+        entry.1 += 1;
+        entry.3 &= field.within;
+    }
+    for (group, bodies) in groups {
+        let (mut named, mut worst, mut count, mut band) = (Vec::new(), 0.0_f64, 0, 0.0);
+        for body in &order {
+            if let Some(&(body_worst, body_count, body_band, true)) = bodies.get(body) {
+                named.push(name(body));
+                worst = worst.max(body_worst);
+                count += body_count;
+                band = body_band;
+            }
+        }
+        if named.is_empty() {
+            continue;
+        }
+        let (what, scale, unit) = if group == "distance" {
+            ("distance", 1.0, " km")
+        } else {
+            ("direction", 3600.0, "″")
+        };
+        accuracy::record(
+            "ephemeris",
+            &format!(
+                "the {TIER_NAME} tier's geometric {what} against DE440 of {}",
+                listed(&named)
+            ),
+            worst * scale,
+            unit,
+            band * scale,
+            count,
+        );
+    }
+}
+
+/// Names as a sentence lists them: `a`, `a and b`, `a, b and c`.
+fn listed(names: &[String]) -> String {
+    match names {
+        [] => String::new(),
+        [only] => only.clone(),
+        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+    }
+}
+
+/// A body as the document names it.
+fn name(body: &str) -> String {
+    let mut chars = body.chars();
+    chars.next().map_or_else(String::new, |first| {
+        let rest: String = chars.as_str().to_lowercase();
+        match body {
+            "SUN" | "MOON" => format!("the {first}{rest}"),
+            _ => format!("{first}{rest}"),
+        }
+    })
 }

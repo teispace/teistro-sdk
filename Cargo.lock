@@ -1698,6 +1698,7 @@ dependencies = [
 name = "teistro-ephemeris-builtin"
 version = "0.0.0"
 dependencies = [
+ "serde_json",
  "teistro-astro",
  "teistro-calendar",
  "teistro-chart",

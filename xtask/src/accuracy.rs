@@ -21,6 +21,19 @@ const DOCUMENT: &str = "docs/05-testing/ACCURACY.md";
 const MEASUREMENTS: &str = "measurements.jsonl";
 const DIR_ENV: &str = "TEISTRO_ACCURACY_DIR";
 
+/// The tests that record a measurement: the astronomy layer's, and the
+/// built-in ephemeris's against DE440 (the tier a default build compiles).
+const TESTS: &[(&[&str], &str)] = &[
+    (
+        &["-p", "teistro-astro", "--tests"],
+        "the astronomy layer's tests",
+    ),
+    (
+        &["-p", "teistro-ephemeris-builtin", "--test", "conformance"],
+        "the built-in ephemeris's conformance tests",
+    ),
+];
+
 #[derive(Deserialize)]
 struct Rows {
     rows: Vec<Row>,
@@ -54,13 +67,16 @@ fn measure(root: &Path) -> Vec<Measurement> {
     let file = dir.join(MEASUREMENTS);
     let _ = std::fs::remove_file(&file);
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".into());
-    let status = Command::new(cargo)
-        .args(["test", "-p", "teistro-astro", "--tests", "--quiet"])
-        .env(DIR_ENV, &dir)
-        .current_dir(root)
-        .status()
-        .expect("cargo runs");
-    assert!(status.success(), "the astronomy layer's tests failed");
+    for (tests, what) in TESTS {
+        let status = Command::new(&cargo)
+            .args(["test", "--quiet"])
+            .args(*tests)
+            .env(DIR_ENV, &dir)
+            .current_dir(root)
+            .status()
+            .expect("cargo runs");
+        assert!(status.success(), "{what} failed");
+    }
     let text = std::fs::read_to_string(&file).unwrap_or_default();
     let mut measurements: Vec<Measurement> = text
         .lines()
@@ -77,7 +93,10 @@ fn quantity(value: f64, unit: &str) -> String {
     if value == 0.0 {
         return format!("0{unit}");
     }
-    if (0.01..1000.0).contains(&value.abs()) {
+    if value.abs() >= 1000.0 {
+        return format!("{value:.0}{unit}");
+    }
+    if value.abs() >= 0.01 {
         let text = format!("{value:.3}");
         let trimmed = text.trim_end_matches('0').trim_end_matches('.');
         return format!("{trimmed}{unit}");
@@ -101,6 +120,7 @@ fn render(rows: &Rows, measurements: &[Measurement]) -> String {
          (`01-research/platform/13-astronomy-layer.md`) with its conformance\n\
          target, what CI measures on every run (the tests under `crates/astro/tests`\n\
          against the recorded tables in `fixtures/teimeris/` and `fixtures/baseline/`,\n\
+         and the built-in ephemeris against DE440 in `fixtures/jpl/`,\n\
          the worst difference over every value compared, and the bound the test holds\n\
          it to), the measurements that need the reference engine present and are run\n\
          by hand with their date, and the evidence a reader can rerun. A difference\n\
