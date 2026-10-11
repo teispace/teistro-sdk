@@ -210,7 +210,10 @@ adapter's consumer or the Flutter app, which their gates type-check or
 build. A guide's output block is held by `check-parity` to what its
 example printed. Writing it found the research guide still saying an
 uncertain birth was read at its edges, and every install snippet differed
-from the example it was copied from.
+from the example it was copied from. Six guides join it, each walking
+through shared examples with what they print: a birth chart, calendars,
+an almanac, interpretation, the annual chart, and positions with an
+ephemeris of your own.
 
 **Every binding ships six worked examples** (`bindings/*/example/`), the
 same six scenarios in JavaScript, Dart and Python, each a program

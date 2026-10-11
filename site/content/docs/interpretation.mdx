@@ -1,0 +1,126 @@
+---
+title: Interpretation
+description: A chart said in any language — plans of message keys composed in the chart's own crossing, and the reading packs loaded beside them.
+---
+
+A **composer** turns what a chart holds into a narrative plan: an ordered
+list of message keys and their slots, and the locale engine says it. The
+plan holds no words at all, which is why one plan says the same chart in
+English and in Nepali without the composer knowing either language.
+
+## The plan comes back with the chart
+
+`interpret` is an option on `found`, like `rules` and `vargas`. Nothing is
+founded or evaluated twice, and a chart with no `interpret` pays nothing:
+
+```js title="bindings/node/example/interpretation.mjs"
+const chart = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+  utcOffsetSeconds: when.offsetSeconds,
+  // The rules whose answers the readings composer will say. The sections
+  // they read are computed whether or not they are asked for here.
+  rules: { shipped: ['NABHASAS', 'ARISHTAS'] },
+  interpret: {
+    placements: true,
+    readings: true,
+    strength: true,
+    houses: true,
+    positions: true,
+    aspects: true,
+    conditions: true,
+    karakas: true,
+  },
+});
+```
+
+```text output="interpretation"
+plan     22 placement items, 83 reading items, 14 strengths, 24 lordships, 10 positions, 47 drishtis, 21 conditions, 15 karakas
+```
+
+## One plan, every locale
+
+An item's `params` are `intl.render`'s own params, so there is no
+conversion step, in this file or in the binding. The same plan is said
+twice, and each rendering says whether the locale answered or fell back:
+
+```js title="bindings/node/example/interpretation.mjs"
+for (const locale of ['en-Latn', 'ne-Deva-NP']) {
+  ctx.intl.locale = locale;
+  console.log(`\n${locale}`);
+  for (const item of [
+    ...placements,
+    ...strength,
+    ...houses,
+    ...positions,
+    ...aspects,
+    ...conditions,
+    ...karakas,
+  ]) {
+    const said = ctx.intl.render(item.key, item.params);
+    console.log(`  ${said.text}${said.isFallback ? '  (fallback)' : ''}`);
+  }
+```
+
+```text output="interpretation"
+en-Latn
+  Ascendant in Virgo
+  Sun in Sagittarius
+  Sun in the 4th house
+  Moon in Leo
+  Moon in the 12th house
+```
+
+A composer says only what a locale has words for: the Shadbala knows
+whether a graha reaches its required rupas, and no locale says it, so the
+plan does not either. Asking for `readings` without the `rules` they
+compose is refused by name:
+
+```text output="interpretation"
+refused  interpret.readings: `readings` says what the rules a chart held answer, so it needs rules to answer
+hint     name the rules in the rule request beside this one
+```
+
+## The readings are a pack you load
+
+The SDK carries a corpus of readings, one for each of 649 yogas and
+doshas, in Sanskrit, Nepali, English and Hindi. It is **not compiled into
+the library**: it is several times the size of every message pack
+together, and a consumer computing a Julian day should not carry every
+Nepali yoga reading to do it. A pack is bytes, from a file beside your
+program, a download or an asset in your application bundle, and loading
+it changes what a composer says, not how it is called:
+
+```js title="bindings/node/example/readings.mjs"
+const plan = ctx.chart.found({
+  instant: 2447995.4895833335,
+  place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+  utcOffsetSeconds: 20700,
+  rules: { shipped: ['YOGAS', 'DOSHAS'] },
+  interpret: { readings: true },
+}).plans.readings;
+```
+
+```text output="readings"
+loaded en-Latn         649 readings,  453786 bytes
+loaded hi-Deva-IN      649 readings,  801439 bytes
+loaded ne-Deva-NP      649 readings,  754549 bytes
+loaded sa-Deva         649 readings,  633671 bytes
+loaded sa-Latn         649 readings,  346738 bytes
+```
+
+```text output="readings"
+ne-Deva-NP
+  नीचभङ्ग राजयोग — समग्र — नीच-दोष निवारण राजयोग।
+  चन्द्र संलग्न छ
+```
+
+A second corpus reads what a chart *is* without holding anything —
+Jupiter in the first house, the lagna's sign, the nakshatra the Moon
+stands in — and loads beside the first. A record gains forms from a pack
+and does not lose the ones it had, so packs load in either order
+(`bindings/node/example/phala.mjs`):
+
+```text output="phala"
+packs/states    ne-Deva-NP     355 records,  216 merged,  373604 bytes
+```

@@ -1,0 +1,82 @@
+---
+title: The annual chart
+description: The Tajika year — the solar return's instant, the chart cast where you name, and the year's office-bearers, sahams and dashas.
+---
+
+A birth chart is cast for a birth. An **annual** chart is cast for the
+moment the Sun comes back to the longitude it held then: once a year,
+never quite on the birthday, and the one instant every Tajika judgement
+of that year is made from.
+
+## The instant, then the chart
+
+Whether the year's chart is cast for the birthplace or for where the
+native lives now is a question the schools answer differently, so the SDK
+answers the instant and casts the chart only where you name a place,
+`'birth'` or a residence, in the same `varsha` request:
+
+```js title="bindings/node/example/annual_chart.mjs"
+const chart = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place,
+  utcOffsetSeconds: when.offsetSeconds,
+  varsha: { reading: 'SIDEREAL', through: 40 },
+});
+const years = chart.praveshas;
+```
+
+```text output="annual_chart"
+returns computed: 40
+the thirtieth year opens at jd 2458953.185830
+between returns: 365.2482 to 365.2644 days
+```
+
+Fewer years than you asked for is an answer, not a refusal: an ephemeris
+that ends before your hundredth year says so by giving you the years it
+has.
+
+## The year's judgement
+
+Cast at the birthplace, a year carries its Muntha, its five
+office-bearers and the year lord chosen among them, the matters asked
+about, the sahams and the year's own dashas. Each is asked for by name:
+
+```js title="bindings/node/example/annual_chart.mjs"
+const cast = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place,
+  utcOffsetSeconds: when.offsetSeconds,
+  varsha: { through: 30, place: 'birth' },
+}).praveshas[29];
+```
+
+```text output="annual_chart"
+muntha in VIRGO; office-bearers MERCURY JUPITER MARS VENUS JUPITER, by night
+year lord VENUS at 16:29:45, chosen STRONGEST
+```
+
+A saham's strength is the source's clauses, reported and never scored
+into one number:
+
+```text output="annual_chart"
+KARYA_SIDDHI 293.12°  CAPRICORN, lord SATURN, house 3
+  strong: LORD_OWN_SIGN, WITH_BENEFIC, LORD_CONJOINS, LORD_ASPECTS_SAHAM, LORD_ASPECTS_LAGNA; weak: WITH_ENEMY, WITH_MALEFIC
+```
+
+## Which longitude is a choice with a name
+
+`SIDEREAL` is the tradition's return. `TROPICAL` is the Western solar
+return and is most of a circle of lagna away by the fortieth year. `MEAN`
+is the older arithmetic and needs no ephemeris at all. None of them is a
+fallback for another:
+
+```js title="bindings/node/example/annual_chart.mjs"
+for (const reading of ['SIDEREAL', 'TROPICAL', 'MEAN']) {
+```
+
+```text output="annual_chart"
+SIDEREAL  thirtieth year, 0.00 hours from the sidereal one
+TROPICAL  thirtieth year, -10.30 hours from the sidereal one
+MEAN      thirtieth year, -0.13 hours from the sidereal one
+refused  varsha.through: a return is asked for by the years it completes, 1 to 200, not 0
+```

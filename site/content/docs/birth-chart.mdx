@@ -1,0 +1,198 @@
+---
+title: A birth chart
+description: From a Nepali birth record to the nine grahas placed, and the whole reading in one call.
+---
+
+A birth chart is the scenario the SDK exists for, and it is not one call.
+A record as people write one — a Bikram Sambat date, a clock time, a
+place — becomes an **instant** through the zone's own history, the chart
+is **founded** at that instant and place, and every section a reader
+wants is asked for by name and computed in the same crossing.
+
+## From the record to the instant
+
+```js title="bindings/node/example/birth_chart.mjs"
+const ctx = new Context({
+  profile: 'nepali-default',
+  locale: 'ne-Deva-NP',
+  ephemeris: 'BUILTIN',
+});
+// …
+const birthDay = date(Calendar.BikramSambat, 2042, 9, 17);
+const gregorian = ctx.calendar.convert(birthDay, Calendar.Gregorian);
+// …
+const when = ctx.time.resolve(at(birthDay, { hour: 0, minute: 20 }), ianaZone('Asia/Kathmandu'));
+```
+
+The record sits on the day Nepal moved from +05:30 to +05:45, so a fixed
+offset would be wrong by a quarter of an hour. The resolution says which
+rule it used and from which tzdb, and a stored chart keeps both.
+
+## The chart
+
+```js title="bindings/node/example/birth_chart.mjs"
+const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+const chart = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place,
+  utcOffsetSeconds: when.offsetSeconds,
+  kind: ChartKind.Natal,
+});
+```
+
+The SDK's canonical frame is tropical, because that is what an ephemeris
+computes. The profile asks for the sidereal zodiac, Lahiri's ayanamsha and
+the Moon seen from Kathmandu rather than from the Earth's centre, and the
+founder completes the frame and stamps every step it applied. Positions
+asked for directly would not know the profile wants a topocentric Moon,
+which moves it most of a degree. The example prints:
+
+```text output="birth_chart"
+born  BS 2042-09-17  (1986-01-01)  00:20  Kathmandu
+      JD 2446431.274306 UTC   offset +05:45   IANA (tzdb 2026c)
+
+graha             sign               deg  nakshatra      pada bhava
+───────────────────────────────────────────────────────────────────
+सूर्य        ☉    धनु           16.3747°  पूर्वाषाढा     1    4
+चन्द्र       ☽    सिंह           9.1739°  मघा            3   12
+मंगल         ♂    तुला          16.7725°  स्वाती         4    2
+बुध          ☿    वृश्चिक       28.8950°  ज्येष्ठा       4    3
+गुरु         ♃    मकर           24.5447°  धनिष्ठा        1    5
+शुक्र        ♀    धनु           11.8592°  मूल            4    4
+शनि          ♄    वृश्चिक       11.4750°  अनुराधा        3    3
+राहु         ☊  ℞ मेष           12.1715°  अश्विनी        4    8
+केतु         ☋  ℞ तुला          12.1715°  स्वाती         2    2
+
+lagna          168.9291° -- कन्या at 18.9291°, vara vara.MANGALAVARA
+ayanamsha      23.661525° applied (ayanamsha.LAHIRI)
+```
+
+`ayanamsha` is `null` on a tropical chart, and it means what it says: a
+tropical chart has no ayanamsha, not one of nought.
+
+## A birth with no recorded time
+
+The commonest data problem in the field, and the SDK does not pick a time
+for you. `whenUnknown` says the time is unknown, and what happens next is
+the profile's `time.unknown_time` policy. By default there is none, so the
+call is refused with a hint naming the choices:
+
+```js title="bindings/node/example/birth_chart.mjs"
+const noTime = whenUnknown(birthDay);
+for (const policy of [undefined, 'NOON', 'MIDNIGHT']) {
+  const scoped = new Context({
+    profile: 'nepali-default',
+    locale: 'ne-Deva-NP',
+    ephemeris: 'BUILTIN',
+    settings: policy ? { time: { unknown_time: policy } } : undefined,
+  });
+```
+
+```text output="birth_chart"
+refuse    BIKRAM_SAMBAT 2042-09-17 (time unknown) has no time of day
+          hint: give a time, or choose NOON, MIDNIGHT or SUNRISE as the unknown-time policy
+NOON      JD 2446431.760417  time known false  TIME_UNKNOWN_FALLBACK
+MIDNIGHT  BIKRAM_SAMBAT 2042-09-17 (time unknown) does not exist in Asia/Kathmandu: the clocks jumped from +05:30 to +05:45
+          hint: choose SHIFT_FORWARD as the gap policy to move the time past the jump
+```
+
+MIDNIGHT is refused for this record's own reason: the clocks jumped at
+midnight on that date, so 00:00 never happened in Kathmandu. NOON answers
+and says so twice, so a stored chart can never quietly claim a birth time
+it never had.
+
+## The whole reading in one call
+
+A reading is what comes after the placements: the divisional charts, the
+houses, what each graha *is* rather than where it stands, which grahas
+look at which, the derived points and a drawing. Each is a section asked
+for by name and computed from the same founded chart, so asking for all
+of them costs one call and asking for none costs nothing:
+
+```js title="bindings/node/example/chart_reading.mjs"
+const chart = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+  utcOffsetSeconds: when.offsetSeconds,
+  vargas: [Varga.D9, Varga.D10],
+  aspects: true,
+  points: true,
+  houses: true,
+  state: true,
+  drawings: [{ layout: ChartLayout.NorthIndian, varga: Varga.D9 }],
+});
+const [navamsha, dasamsha] = chart.vargas;
+```
+
+```text output="chart_reading"
+graha        house  dignity          age            D9 sign      vargottama  combust
+────────────────────────────────────────────────────────────────────────────────────────
+सूर्य            4  अधिमित्र         युवा           सिंह         no          NONE
+चन्द्र          12  सम               कुमार          मिथुन        no          NONE
+मंगल             2  मित्र            युवा           मीन          no          NONE
+बुध              3  मित्र            बाल            मीन          no          NONE
+गुरु             5  नीच              बाल            सिंह         no          NONE
+शुक्र            4  मित्र            कुमार          कर्कट        no          DEEP
+शनि              3  सम               वृद्ध          तुला         no          NONE
+राहु             8  सम               युवा           कर्कट        no          NONE
+केतु             2  सम               युवा           मकर          no          NONE
+
+bhava 10 मिथुन, ruled by बुध (KENDRA)
+drishti  35 under PARASHARA; on the Moon:
+```
+
+- **Vargottama is a comparison, not a flag**: a graha whose navamsha sign
+  is the sign it stands in. The layer gives both signs.
+- **A dignity and a house are different questions**, answered by
+  different sections: `states` says how a graha fares in its sign,
+  `bhavas` who rules a house.
+- **The drishti are ragged**: how many there are depends on where the
+  grahas stand, not on how many grahas there are.
+- **A drawing is geometry, not pixels**: each cell's outline in a unit
+  square, the sign and house it shows and the grahas in it, so any
+  renderer draws the same chart.
+
+## When the time is known only roughly
+
+A record that says "some time before dawn" is narrowed by the lagna,
+which changes sign every couple of hours. A rectification pass wants many
+charts at one place, and `foundMany` founds them in one crossing: the
+settings are resolved once, the solar model built once, and every
+instant's day is reckoned against the same sunrise.
+
+```js title="bindings/node/example/rectification.mjs"
+const instants = Array.from({ length: count }, (_, i) => start.instantJdUtc + i * step);
+
+const charts = ctx.chart.foundMany({
+  instants,
+  place,
+  utcOffsetSeconds: start.offsetSeconds,
+  kind: ChartKind.Natal,
+});
+```
+
+```text output="rectification"
+local   lagna        sign            moon         bhava
+──────────────────────────────────────────────────────────
+00:00    163.8175°  कन्या           161.6693°   1
+00:10    166.0387°  कन्या           161.7492°   1
+00:20    168.2575°  कन्या           161.8279°   1
+00:30    170.4734°  कन्या           161.9052°   1
+00:40    172.6860°  कन्या           161.9812°   1
+00:50    174.8949°  कन्या           162.0560°   1
+01:00    177.0997°  कन्या           162.1295°   1
+01:10    179.3001°  कन्या           162.2017°   1
+01:20    181.4958°  तुला            162.2726°  12   ← lagna changes sign
+01:30    183.6867°  तुला            162.3423°  12
+```
+
+The family that remembers a Kanya lagna has narrowed three hours to the
+first eighty minutes. A study of many births whose times are uncertain is
+[`sdk.research`](/docs/research), which reads each one across its window.
+
+## In every binding
+
+Each example is one program in every binding, and `cargo xtask
+check-parity` holds that they print the same lines: `birth_chart.py`,
+`birth_chart.dart`, `BirthChart.java` and `birth_chart.rs` beside the
+Node file, under each binding's `example` directory.

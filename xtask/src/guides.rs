@@ -503,7 +503,8 @@ fn outputs_held(blocks: &[Block], ran: &[Ran]) -> usize {
             continue;
         };
         let lines: Vec<&str> = output.output.lines().map(str::trim_end).collect();
-        let shown: Vec<&str> = block.lines.iter().map(|line| line.trim()).collect();
+        // Trimmed at the end only: an output's indentation is what it printed.
+        let shown: Vec<&str> = block.lines.iter().map(|line| line.trim_end()).collect();
         if lines
             .windows(shown.len())
             .any(|window| window == shown.as_slice())
@@ -617,6 +618,8 @@ mod tests {
             0
         );
         assert_eq!(outputs_held(&shown("registered as abd"), &ran), 1);
+        // Indentation is part of what was printed.
+        assert_eq!(outputs_held(&shown("  registered as abc"), &ran), 1);
         // In order and unbroken.
         assert_eq!(outputs_held(&shown("8 rules\n999 permutations"), &ran), 1);
         let other = blocks_of("p.mdx", "```text output=\"quickstart\"\nx\n```\n").unwrap();

@@ -1,0 +1,98 @@
+---
+title: Calendars
+description: Bikram Sambat and the other calendars — month lengths asked for, never assumed, and every date saying how it was decided.
+---
+
+The Nepali calendar is not a formula. Its month lengths are decided by
+where the Sun stands when a month begins, so they vary from year to year:
+Baisakh is 30, 31 or 32 days depending on the year. The official table
+covers BS 1970 to 2095, and outside it the SDK computes the months from
+the Surya Siddhanta as the text prints it.
+
+So every date the SDK returns says **how it was decided**: `TABULAR` from
+the official table, `COMPUTED` from the engine, or `DIVERGENT` where the
+two disagree and the table wins. A calendar application that shows a date
+without that is hiding the one thing its reader might need to know.
+
+## A year, month by month
+
+A calendar needs no ephemeris, so this context names none:
+
+```js title="bindings/node/example/calendars.mjs"
+const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP' });
+const say = messages({
+  render: (key, params) => ctx.intl.render(key, params).text,
+  entity: (key) => ctx.intl.entity(key),
+});
+const year = 2082;
+// …
+for (let month = 1; month <= 12; month++) {
+  const length = ctx.calendar.monthLength(Calendar.BikramSambat, year, month);
+  total += length;
+  const starts = ctx.calendar.convert(date(Calendar.BikramSambat, year, month, 1), Calendar.Gregorian);
+  const ends = ctx.calendar.convert(date(Calendar.BikramSambat, year, month, length), Calendar.Gregorian);
+  const name = say.sdk.calendar.bikramSambat.monthName({ month });
+```
+
+```text output="calendars"
+BS 2082
+   1  बैशाख      31 days   2025-04-14 to 2025-05-14
+   2  जेठ        31 days   2025-05-15 to 2025-06-14
+   3  असार       32 days   2025-06-15 to 2025-07-16
+   4  साउन       31 days   2025-07-17 to 2025-08-16
+   5  भदौ        31 days   2025-08-17 to 2025-09-16
+   6  असोज       31 days   2025-09-17 to 2025-10-17
+   7  कात्तिक    30 days   2025-10-18 to 2025-11-16
+   8  मंसिर      29 days   2025-11-17 to 2025-12-15
+   9  पुष        30 days   2025-12-16 to 2026-01-14
+  10  माघ        29 days   2026-01-15 to 2026-02-12
+  11  फागुन      30 days   2026-02-13 to 2026-03-14
+  12  चैत        30 days   2026-03-15 to 2026-04-13
+                 365 days in the year
+```
+
+A BS year is 365 or 366 days like any solar year, but its months are
+not: the shortest here is 29 days and the longest 32, which is why a
+month's length is asked for and never assumed. A calendar page built from
+converted dates rather than counted ones is right by construction when a
+month gains or loses a day at either end.
+
+## What a date says about itself
+
+A date a caller *states* is always `DEFINED`: it is what was asked for. A
+date the SDK *returns* says how it was decided, so the resolution to read
+is the one on the answer:
+
+```js title="bindings/node/example/calendars.mjs"
+for (const asked of [2082, 2200, 1960]) {
+  const greg = ctx.calendar.convert(date(Calendar.BikramSambat, asked, 1, 1), Calendar.Gregorian);
+  const answer = ctx.calendar.convert(greg, Calendar.BikramSambat);
+```
+
+```text output="calendars"
+  BS 2082 began 2025-04-14, and the answer is [TABULAR]
+  BS 2200 began 2143-04-16, and the answer is [COMPUTED]
+  BS 1960 began 1903-04-13, and the answer is [COMPUTED]
+```
+
+## Said in the reader's language
+
+A date rendered for a reader goes through the locale, not through string
+concatenation: the key is spelled once, in the generator, and its
+parameters are typed.
+
+```js title="bindings/node/example/calendars.mjs"
+  `  rendered  ${say.sdk.calendar.bikramSambat.date.long({
+    day: 1,
+    monthName: say.sdk.calendar.bikramSambat.monthName({ month: 1 }),
+    year,
+  })}`,
+```
+
+```text output="calendars"
+  rendered  २०८२ बैशाख १ गते
+```
+
+The same program is `calendars.py`, `calendars.dart`, `Calendars.java`
+and `calendars.rs` in the other bindings' example directories, and
+`cargo xtask check-parity` holds that all five print these lines.

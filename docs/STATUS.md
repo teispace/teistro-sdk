@@ -1083,9 +1083,12 @@ provider's DUT1).
       named in its title (`check-guides`), and its output blocks are held
       to what the example printed (`check-parity`); the install check
       after publishing is `check-published`, the release's last job.
-      What is left is a guide per shared example the site does not yet
-      walk through (birth chart, panchanga, calendars, almanac, readings,
-      rectification, your own ephemeris), each cut from the example.
+      The guides walk through every shared example: a birth chart (with
+      the reading and rectification), calendars, an almanac,
+      interpretation (plans and the reading packs), the annual chart,
+      positions and your own ephemeris, and research: 33 programs and
+      24 output blocks. What is left is tabs per binding, which the gate
+      already holds (a block's title names the binding's own file).
    4. **Track B and C modules** (the roadmap's tables): research's
       transits and the age shuffle's `max_pairs` cap (`research.md` §4
       step 4; steps 5 to 7 are built; an uncertain birth's window is read
