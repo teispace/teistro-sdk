@@ -1065,7 +1065,9 @@ provider's DUT1).
       of `ACCURACY.md` are in; its Horizons half waits on JPL's
       permission, which is the maintainer's to ask.)
    2. **The Flutter build-hook package**, which carries the library into
-      an Android or iOS build.
+      an Android or iOS build: designed in
+      `03-design/flutter-build-hook.md`; build its §5 in order, the
+      platform rows and the cross build first.
    3. **The docs site's guides with executed examples**, beside the
       roadmap's install check after publishing.
    4. **Track B and C modules** (the roadmap's tables): research's
