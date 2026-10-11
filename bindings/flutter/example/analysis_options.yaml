@@ -1,3 +1,8 @@
-# The app is held to Flutter's recommended lints, as `flutter create`
-# would hold it.
-include: package:flutter_lints/flutter.yaml
+# Held to the same strictness as the packages, with nothing to resolve:
+# `dart format` reads this file from plain Dart, where no Flutter lint
+# package is installed.
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
