@@ -4,9 +4,12 @@
 //! Half of it needs no sky. A seeded synthetic batch carries a family of
 //! predicates of spread prevalence, two pairs of them nested in one
 //! another as yogas sharing a condition are, and null labellings measure
-//! each method's error rate (test 1) and the exact p against the
-//! permutation p's interval (test 3); a planted risk ratio measures what
-//! each method finds (test 2). The other half founds charts: a sample
+//! each method's error rate and the raw p's validity at every level
+//! (test 1) and the exact p against the permutation p's interval (test
+//! 3); a planted risk ratio measures what each method finds and whether
+//! the effect's intervals cover it (test 2); and a partial null, two
+//! predicates planted among six true nulls, measures the false discovery
+//! rate BH and BY promise and the familywise rate over the true nulls. The other half founds charts: a sample
 //! with no effect whose births peak in the early morning, as births did
 //! before induction, read against a uniform expectation and against its
 //! own recombined population (test 4); and event studies with no effect
@@ -208,12 +211,26 @@ fn case_test(seed: u64) -> GroupTest {
 
 const METHODS: [&str; 5] = ["max-T", "Holm", "Bonferroni", "BH", "BY"];
 
+/// The levels a raw p is read at: valid means under each no more often
+/// than the level, not only at 0.05.
+const LEVELS: [f64; 5] = [0.01, 0.05, 0.1, 0.25, 0.5];
+
+/// The partial null: the predicates planted (`P20` and `P30`, which share
+/// nothing with the rest), the base case share, and what each adds.
+const PARTIAL_PLANTED: [usize; 2] = [2, 3];
+const PARTIAL_BASE: f64 = 0.22;
+const PARTIAL_LIFT: f64 = 0.18;
+const PARTIAL_STUDIES: u64 = 400;
+
 /// What a set of studies rejected, method by method.
 #[derive(Default)]
 struct Rejections {
     studies: usize,
     /// Per predicate, how often its raw p was under alpha.
     raw: Vec<usize>,
+    /// Per predicate, how often its raw p was at or under each of
+    /// [`LEVELS`].
+    levels: Vec<[usize; 5]>,
     /// Per predicate, by method, how often its adjusted p was.
     each: Vec<[usize; 5]>,
     /// Studies in which any predicate was under alpha, by method.
@@ -232,8 +249,18 @@ impl Rejections {
         self.studies += 1;
         self.raw.resize(tested.rows.len(), 0);
         self.each.resize(tested.rows.len(), [0; 5]);
+        self.levels.resize(tested.rows.len(), [0; 5]);
         let mut any = [false; 5];
-        for ((row, raw), each) in tested.rows.iter().zip(&mut self.raw).zip(&mut self.each) {
+        for (((row, raw), each), levels) in tested
+            .rows
+            .iter()
+            .zip(&mut self.raw)
+            .zip(&mut self.each)
+            .zip(&mut self.levels)
+        {
+            for (slot, level) in levels.iter_mut().zip(LEVELS) {
+                *slot += usize::from(row.p.value <= level);
+            }
             let a = &row.adjusted;
             let under = [a.max_t, a.holm, a.bonferroni, a.bh, a.by].map(|p| p <= ALPHA);
             *raw += usize::from(row.p.value <= ALPHA);
@@ -277,9 +304,46 @@ fn nulls(batch: &Batch) -> Result<Rejections, String> {
     Ok(seen)
 }
 
+/// How often the planted studies' intervals covered the planted effect.
+struct Covered {
+    studies: usize,
+    ratio: usize,
+    difference: usize,
+    /// The planted effect on the effect's own scale, the share of cases
+    /// and of the rest the target holds on: its risk ratio and difference.
+    planted: (f64, f64),
+}
+
+/// The planted effect on the effect's scale over this batch: the share
+/// of cases the target holds on against the share of the rest, from the
+/// expected counts the case shares give.
+#[allow(
+    clippy::cast_precision_loss,
+    reason = "chart counts are far inside f64's exact integers"
+)]
+fn planted_effect(batch: &Batch) -> (f64, f64) {
+    let holding = batch
+        .holds
+        .iter()
+        .filter(|chart| chart.get(TARGET).copied().unwrap_or(false))
+        .count() as f64;
+    let rest = CHARTS as f64 - holding;
+    let (on, off) = PLANTED_SHARES;
+    let case = on * holding / (on * holding + off * rest);
+    let other = (1.0 - on) * holding / ((1.0 - on) * holding + (1.0 - off) * rest);
+    (case / other, case - other)
+}
+
 /// Studies whose case share is raised on the charts the target holds on.
-fn planted(batch: &Batch) -> Result<Rejections, String> {
+fn planted(batch: &Batch) -> Result<(Rejections, Covered), String> {
     let mut seen = Rejections::default();
+    let planted = planted_effect(batch);
+    let mut covered = Covered {
+        studies: 0,
+        ratio: 0,
+        difference: 0,
+        planted,
+    };
     for k in 0..PLANTED {
         let design = labels(5_000 + k, CHARTS, |chart| {
             let holds = batch
@@ -296,7 +360,94 @@ fn planted(batch: &Batch) -> Result<Rejections, String> {
         });
         let tested =
             compare(&batch.matrix, &design, &case_test(k)).map_err(|why| why.to_string())?;
+        let effect = tested.rows.get(TARGET).and_then(|row| row.effect);
+        let inside = |low: f64, high: f64, value: f64| low <= value && value <= high;
+        covered.studies += 1;
+        covered.ratio += usize::from(
+            effect
+                .and_then(|e| e.risk_ratio)
+                .is_some_and(|i| inside(i.low, i.high, planted.0)),
+        );
+        covered.difference += usize::from(
+            effect
+                .is_some_and(|e| inside(e.risk_difference.low, e.risk_difference.high, planted.1)),
+        );
         seen.add(&tested);
+    }
+    Ok((seen, covered))
+}
+
+/// What a partial null's studies rejected: per method, the false
+/// discovery proportion's sum and sum of squares, and the studies that
+/// rejected any true null.
+#[derive(Default)]
+struct Partial {
+    studies: usize,
+    proportion: [f64; 5],
+    squares: [f64; 5],
+    any_false: [usize; 5],
+}
+
+impl Partial {
+    /// The mean false discovery proportion under `method`, and the upper
+    /// end of its 99% interval.
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "study counts are far inside f64's exact integers"
+    )]
+    fn rate(&self, method: usize) -> (f64, f64) {
+        let n = self.studies.max(1) as f64;
+        let sum = self.proportion.get(method).copied().unwrap_or(0.0);
+        let squares = self.squares.get(method).copied().unwrap_or(0.0);
+        let mean = sum / n;
+        let variance = (squares / n - mean * mean).max(0.0);
+        (mean, mean + 2.576 * (variance / n).sqrt())
+    }
+}
+
+/// Studies in which two predicates are planted and the other six are
+/// true nulls: each chart a case with the base share, raised by the lift
+/// for each planted predicate it holds.
+#[allow(clippy::cast_precision_loss, reason = "a family is eight predicates")]
+fn partial(batch: &Batch) -> Result<Partial, String> {
+    let mut seen = Partial::default();
+    for k in 0..PARTIAL_STUDIES {
+        let design = labels(7_000 + k, CHARTS, |chart| {
+            let row = batch.holds.get(chart);
+            PARTIAL_PLANTED.iter().fold(PARTIAL_BASE, |share, &j| {
+                let holds = row.and_then(|r| r.get(j)).copied().unwrap_or(false);
+                share + if holds { PARTIAL_LIFT } else { 0.0 }
+            })
+        });
+        let tested =
+            compare(&batch.matrix, &design, &case_test(k)).map_err(|why| why.to_string())?;
+        let (mut rejected, mut false_found) = ([0_usize; 5], [0_usize; 5]);
+        for (j, row) in tested.rows.iter().enumerate() {
+            let a = &row.adjusted;
+            let under = [a.max_t, a.holm, a.bonferroni, a.bh, a.by].map(|p| p <= ALPHA);
+            let null = !PARTIAL_PLANTED.contains(&j);
+            for ((r, f), hit) in rejected.iter_mut().zip(&mut false_found).zip(under) {
+                *r += usize::from(hit);
+                *f += usize::from(hit && null);
+            }
+        }
+        seen.studies += 1;
+        for m in 0..METHODS.len() {
+            let (r, f) = (
+                rejected.get(m).copied().unwrap_or(0),
+                false_found.get(m).copied().unwrap_or(0),
+            );
+            let proportion = if r == 0 { 0.0 } else { f as f64 / r as f64 };
+            if let (Some(sum), Some(squares), Some(any)) = (
+                seen.proportion.get_mut(m),
+                seen.squares.get_mut(m),
+                seen.any_false.get_mut(m),
+            ) {
+                *sum += proportion;
+                *squares += proportion * proportion;
+                *any += usize::from(f > 0);
+            }
+        }
     }
     Ok(seen)
 }
@@ -580,7 +731,8 @@ fn event_nulls(sdk: &Context, shuffle: EventShuffle) -> Result<EventNull, String
 fn page() -> Result<String, String> {
     let batch = synthetic(2_026)?;
     let null = nulls(&batch)?;
-    let found = planted(&batch)?;
+    let (found, covered) = planted(&batch)?;
+    let partial_null = partial(&batch)?;
     let sdk = Context::builder()
         .ephemeris([Ephemeris::Builtin])
         .build()
@@ -596,11 +748,12 @@ fn page() -> Result<String, String> {
     let mut out = String::new();
     header(&mut out);
     calibration(&mut out, &null);
-    power(&mut out, &found);
+    power(&mut out, &found, &covered);
     gauquelin(&mut out, &sectors);
     shuffles(&mut out, &ages, &dates);
     uncertainty(&mut out, &windows);
     strata(&mut out, &with, &without);
+    discoveries(&mut out, &partial_null);
     Ok(out)
 }
 
@@ -633,6 +786,25 @@ fn calibration(out: &mut String, null: &Rejections) {
         .filter(|&(_, hits)| share(hits, n) > bound)
         .count();
     let exact_bound = ceiling(0.05, null.exact_rows);
+    let invalid = NAMES
+        .iter()
+        .enumerate()
+        .flat_map(|(j, _)| {
+            LEVELS
+                .iter()
+                .enumerate()
+                .map(move |(i, &level)| (j, i, level))
+        })
+        .filter(|&(j, i, level)| {
+            let hits = null
+                .levels
+                .get(j)
+                .and_then(|row| row.get(i))
+                .copied()
+                .unwrap_or(0);
+            share(hits, n) > ceiling(level, n)
+        })
+        .count();
     let claims = [
         Claim::counted(
             "on labels that mean nothing, a raw p is under 0.05 no more often than 5%",
@@ -643,6 +815,12 @@ fn calibration(out: &mut String, null: &Rejections) {
             "every correction holds the familywise rate at 0.05 under the complete null",
             family_over,
             METHODS.len(),
+        ),
+        Claim::counted(
+            "a raw p is valid at every level: under 0.01, 0.05, 0.10, 0.25 and 0.50 \
+             no more often than the level",
+            invalid,
+            NAMES.len() * LEVELS.len(),
         ),
         Claim::stated(
             "the exact p lies inside the permutation p's 95% interval at least 95% of the time",
@@ -686,18 +864,36 @@ fn calibration(out: &mut String, null: &Rejections) {
     );
 }
 
-fn power(out: &mut String, found: &Rejections) {
+fn power(out: &mut String, found: &Rejections, covered: &Covered) {
     let n = found.studies;
     let bound = ceiling(ALPHA, n);
     let leaked = UNRELATED
         .iter()
         .filter(|&&j| share(found.raw_of(j), n) > bound)
         .count();
-    let claims = [Claim::counted(
-        "a predicate that shares nothing with the planted one stays at the null rate",
-        leaked,
-        UNRELATED.len(),
-    )];
+    let floor = 0.95 - (ceiling(0.05, covered.studies) - 0.05);
+    let coverage = |hits: usize, what: &str, interval: &str| {
+        Claim::stated(
+            format!(
+                "the {what}'s 95% interval ({interval}) covers the planted value at least 95% of the time"
+            ),
+            verdict_of(share(hits, covered.studies) >= floor),
+            format!(
+                "{hits} of {} studies, {:.3}",
+                covered.studies,
+                share(hits, covered.studies)
+            ),
+        )
+    };
+    let claims = [
+        Claim::counted(
+            "a predicate that shares nothing with the planted one stays at the null rate",
+            leaked,
+            UNRELATED.len(),
+        ),
+        coverage(covered.ratio, "risk ratio", "Katz"),
+        coverage(covered.difference, "risk difference", "Newcombe"),
+    ];
     let _ = writeln!(
         out,
         "## 2. Power (test 2)\n\n\
@@ -718,7 +914,18 @@ fn power(out: &mut String, found: &Rejections) {
             share(found.method_of(TARGET, m), n)
         );
     }
-    let _ = writeln!(out, "\n{}", table(&claims));
+    let _ = writeln!(
+        out,
+        "\nOn the effect's own scale, the share of cases the planted predicate \
+         holds on against the share of the rest, the planted effect over this \
+         batch is a risk ratio of {:.3} and a difference of {:.3}, from the \
+         counts the case shares give. A coverage is judged against {floor:.4}, \
+         the lower end of a 99% interval on 0.95 over {} studies.\n\n{}",
+        covered.planted.0,
+        covered.planted.1,
+        covered.studies,
+        table(&claims)
+    );
 }
 
 fn gauquelin(out: &mut String, sectors: &[Sector]) {
@@ -941,5 +1148,51 @@ fn strata(out: &mut String, with: &Rejections, without: &Rejections) {
          no effect at all: read without its strata, the study finds both. \
          Given its strata, it compares each case only with the charts of \
          its own stratum, and finds neither.\n"
+    );
+}
+
+fn discoveries(out: &mut String, partial: &Partial) {
+    let n = partial.studies;
+    let fdr = |method: usize, name: &str| {
+        let (mean, upper) = partial.rate(method);
+        Claim::stated(
+            format!("under {name}, the mean false discovery proportion is at most 0.05"),
+            verdict_of(mean - (upper - mean) <= ALPHA),
+            format!("{mean:.4}, its 99% interval reaching {upper:.4}"),
+        )
+    };
+    let family = |method: usize, name: &str| {
+        let hits = partial.any_false.get(method).copied().unwrap_or(0);
+        Claim::stated(
+            format!("under {name}, a study rejects any true null no more often than 5%"),
+            verdict_of(share(hits, n) <= ceiling(ALPHA, n)),
+            format!("{hits} of {n} studies, {:.3}", share(hits, n)),
+        )
+    };
+    let claims = [
+        fdr(3, "BH"),
+        fdr(4, "BY"),
+        family(0, "max-T"),
+        family(1, "Holm"),
+        family(2, "Bonferroni"),
+    ];
+    let planted: Vec<&str> = PARTIAL_PLANTED
+        .iter()
+        .filter_map(|&j| NAMES.get(j).copied())
+        .collect();
+    let _ = writeln!(
+        out,
+        "## 7. A partial null (test 1, the false discovery rate)\n\n\
+         {PARTIAL_STUDIES} labellings of the first batch plant two predicates, \
+         `{}`, which share nothing with the other six: a chart is a case with \
+         probability {PARTIAL_BASE}, raised by {PARTIAL_LIFT} for each planted \
+         predicate it holds. The other six are true nulls, and a discovery \
+         among them is false. BH and BY promise the false discovery rate, the \
+         mean share of false discoveries among a study's discoveries; max-T, \
+         Holm and Bonferroni promise the familywise rate over the true nulls. \
+         A mean is judged by its 99% interval: it fails only when the whole \
+         interval lies above 0.05.\n\n{}",
+        planted.join("` and `"),
+        table(&claims)
     );
 }

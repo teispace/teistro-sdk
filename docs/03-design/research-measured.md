@@ -12,6 +12,7 @@ A synthetic batch of 200 charts carries eight predicates: four independent, of p
 |---|---|---|
 | on labels that mean nothing, a raw p is under 0.05 no more often than 5% | **holds** | 0 of 8 disagree |
 | every correction holds the familywise rate at 0.05 under the complete null | **holds** | 0 of 5 disagree |
+| a raw p is valid at every level: under 0.01, 0.05, 0.10, 0.25 and 0.50 no more often than the level | **holds** | 0 of 40 disagree |
 | the exact p lies inside the permutation p's 95% interval at least 95% of the time | **holds** | 298 of 8000 rows outside |
 | Holm never adjusts above Bonferroni | **holds** | 0 of 8000 disagree |
 
@@ -49,9 +50,13 @@ A permutation test conditions on the margins, so a rare predicate cannot reach 0
 | BH | 0.500 |
 | BY | 0.335 |
 
+On the effect's own scale, the share of cases the planted predicate holds on against the share of the rest, the planted effect over this batch is a risk ratio of 1.739 and a difference of 0.209, from the counts the case shares give. A coverage is judged against 0.9103, the lower end of a 99% interval on 0.95 over 200 studies.
+
 | proposed rule | verdict | measured |
 |---|---|---|
 | a predicate that shares nothing with the planted one stays at the null rate | **holds** | 0 of 3 disagree |
+| the risk ratio's 95% interval (Katz) covers the planted value at least 95% of the time | **holds** | 190 of 200 studies, 0.950 |
+| the risk difference's 95% interval (Newcombe) covers the planted value at least 95% of the time | **holds** | 190 of 200 studies, 0.950 |
 
 ## 3. The Gauquelin artefact (test 4)
 
@@ -110,4 +115,16 @@ The rising Sun, the sector the early hours fill, reads z 2.8 alone: the 12th and
 | `U05_60` | 0.05 / 0.6 | 0.037 | 0.968 |
 
 The cases crowd into the second stratum, so a predicate commoner there is commoner among the cases, and one rarer there rarer, with no effect at all: read without its strata, the study finds both. Given its strata, it compares each case only with the charts of its own stratum, and finds neither.
+
+## 7. A partial null (test 1, the false discovery rate)
+
+400 labellings of the first batch plant two predicates, `P20` and `P30`, which share nothing with the other six: a chart is a case with probability 0.22, raised by 0.18 for each planted predicate it holds. The other six are true nulls, and a discovery among them is false. BH and BY promise the false discovery rate, the mean share of false discoveries among a study's discoveries; max-T, Holm and Bonferroni promise the familywise rate over the true nulls. A mean is judged by its 99% interval: it fails only when the whole interval lies above 0.05.
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| under BH, the mean false discovery proportion is at most 0.05 | **holds** | 0.0300, its 99% interval reaching 0.0481 |
+| under BY, the mean false discovery proportion is at most 0.05 | **holds** | 0.0025, its 99% interval reaching 0.0089 |
+| under max-T, a study rejects any true null no more often than 5% | **holds** | 19 of 400 studies, 0.048 |
+| under Holm, a study rejects any true null no more often than 5% | **holds** | 6 of 400 studies, 0.015 |
+| under Bonferroni, a study rejects any true null no more often than 5% | **holds** | 6 of 400 studies, 0.015 |
 
