@@ -20,7 +20,7 @@
 //!     schema: SCHEMA.into(), abi_version: 1, sdk_version: "0".into(), prefix: "ts_".into(),
 //!     sources: vec![], constants: vec![], enums: vec![], opaques: vec![], callbacks: vec![],
 //!     structs: vec![], functions: vec![], blobs: vec![],
-//!     records: from_schema(&schema, &["Stamp"]).unwrap(),
+//!     records: from_schema(&schema, &["Stamp"]).unwrap(), requests: Default::default(),
 //! };
 //! assert!(typescript_declarations(&api).contains("readonly settingsHash: string;"));
 //! ```

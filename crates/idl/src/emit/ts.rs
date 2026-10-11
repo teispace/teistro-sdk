@@ -951,6 +951,7 @@ mod tests {
                 ],
             }],
             records: Vec::new(),
+            requests: crate::records::Requests::default(),
         }
     }
 

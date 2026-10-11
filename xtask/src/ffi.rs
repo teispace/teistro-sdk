@@ -86,6 +86,86 @@ fn records_schema() -> serde_json::Value {
     serde_json::json!({ "$defs": generator.definitions() })
 }
 
+/// The record entry points whose request stays a JSON value in every
+/// binding: an engine's own operations, whose arguments only the engine
+/// knows.
+const UNTYPED_REQUESTS: [&str; 2] = ["engine.call", "engine.manifest"];
+
+/// The parts of a request that are a JSON value and nothing narrower: the
+/// rule language's untagged references (a subject, a sign, a body), a
+/// record read in a second step by its own reader (a rule set, research's
+/// test and control), and a theme's open style and content.
+const RAW_REQUEST_PARTS: [&str; 11] = [
+    "BodyRef",
+    "BodySubject",
+    "FestivalRequest.rules",
+    "MuhurtaRequest.rules",
+    "ResearchRequest.control",
+    "ResearchRequest.rules",
+    "ResearchRequest.test",
+    "SignRef",
+    "Subject",
+    "ThemePatch.content",
+    "ThemePatch.style",
+];
+
+/// Every record entry point's request, as the façade's own schemas state
+/// it, under one generator so a name is one type across them all. A
+/// request written inline is named after its record (`chart.found` is
+/// `ChartFoundRequest`).
+fn requests() -> teistro_idl::records::Requests {
+    let mut generator = schemars::generate::SchemaSettings::draft2020_12().into_generator();
+    let mut roots = Vec::new();
+    let mut inline = serde_json::Map::new();
+    let records = teistro::records::records();
+    for untyped in UNTYPED_REQUESTS {
+        assert!(
+            records.iter().any(|record| record.name == untyped),
+            "{untyped} is listed as an untyped request and is no record; take it off the list"
+        );
+    }
+    for record in records {
+        if UNTYPED_REQUESTS.contains(&record.name) {
+            continue;
+        }
+        let schema = record
+            .request_schema(&mut generator)
+            .unwrap_or_else(|| panic!("{} states no request schema", record.name))
+            .to_value();
+        let name = if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
+            reference.trim_start_matches("#/$defs/").to_owned()
+        } else {
+            let name = format!(
+                "{}Request",
+                teistro_idl::names::pascal(&record.name.replace('.', "_"))
+            );
+            inline.insert(name.clone(), schema);
+            name
+        };
+        roots.push(teistro_idl::records::RequestRoot {
+            record: record.name.to_owned(),
+            name,
+        });
+    }
+    let mut defs = generator.take_definitions(true);
+    for (name, schema) in inline {
+        assert!(
+            defs.insert(name.clone(), schema).is_none(),
+            "{name} is a request written inline and a definition both"
+        );
+    }
+    let names: Vec<&str> = roots.iter().map(|root| root.name.as_str()).collect();
+    let records = teistro_idl::records::read(
+        &serde_json::json!({ "$defs": defs }),
+        &names,
+        teistro_idl::records::Reading {
+            raw: &RAW_REQUEST_PARTS,
+        },
+    )
+    .unwrap_or_else(|e| panic!("the requests do not describe: {e}"));
+    teistro_idl::records::Requests { roots, records }
+}
+
 /// The boundary's description with the JSON records it carries: what every
 /// generated file and every measurement of the surfaces reads.
 pub(crate) fn api(root: &Path) -> teistro_idl::model::Api {
@@ -97,6 +177,7 @@ pub(crate) fn api(root: &Path) -> teistro_idl::model::Api {
     .unwrap_or_else(|e| panic!("the boundary does not describe: {e}"));
     api.records = teistro_idl::records::from_schema(&records_schema(), &RECORDS)
         .unwrap_or_else(|e| panic!("the records do not describe: {e}"));
+    api.requests = requests();
     // The answer records' emitters render the subset the answers use; the
     // request side's constructs reach Java alone, through its own
     // emitter, so an answer carrying one is refused here rather than at
@@ -236,4 +317,42 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
         }
     }
     i32::from(failures != 0)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::*;
+
+    /// **Every record entry point but the engine's has its request read**,
+    /// each by a name of its own, and the request records name one type
+    /// a name.
+    #[test]
+    fn every_typed_request_is_read_once() {
+        let requests = requests();
+        let records = teistro::records::records();
+        assert_eq!(
+            requests.roots.len(),
+            records.len() - UNTYPED_REQUESTS.len(),
+            "a record's request was left unread"
+        );
+        let mut names: Vec<&str> = requests
+            .records
+            .iter()
+            .map(|record| record.name.as_str())
+            .collect();
+        let all = names.len();
+        names.sort_unstable();
+        names.dedup();
+        assert_eq!(names.len(), all, "two request records share a name");
+        for root in &requests.roots {
+            assert!(
+                names.binary_search(&root.name.as_str()).is_ok(),
+                "{} names {}, which was not read",
+                root.record,
+                root.name
+            );
+        }
+    }
 }
