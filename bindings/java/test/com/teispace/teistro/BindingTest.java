@@ -406,6 +406,115 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac reads a native's bird over its days", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer madras = new Observer(new Longitude(80.2707), new Latitude(13.0827), new Altitude(6));
+                CalendarDate tuesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 30, Resolution.DEFINED, 0, 0);
+                CalendarDate wednesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 31, Resolution.DEFINED, 0, 0);
+                PakshiDays sealed = sky.almanac().pakshi(tuesday, wednesday, madras, 19_800,
+                        PakshiNative.star(Nakshatra.UTTARA_ASHADHA, Paksha.SHUKLA));
+                check(!sealed.provenance().inputHash().isEmpty(), "the request is sealed");
+                List<PakshiDay> days = sealed.value();
+                same(2, days.size(), "two days");
+                PakshiDay.Reading first = days.get(0).reading();
+                PakshiDay.Reading second = days.get(1).reading();
+                same(first.day().nextSunrise(), second.day().sunrise(), "one day runs into the next");
+                same(Vara.BUDHAVARA, second.day().vara(), "a Wednesday");
+                same(Paksha.SHUKLA, second.day().paksha(), "in the bright half");
+                same("COCK", second.bird(), "Uttara Ashadha's bird");
+                // PUL p. vii: the cock sleeps in the day's second yama and dies from the third.
+                same(List.of("SLEEPING", "DYING"),
+                        List.of(second.yamas().get(1).activity(), second.yamas().get(2).activity()), "the activities");
+                same("OWN", second.yamas().get(0).subs().get(0).ownerIs(), "the native's own sub-period");
+                TeistroException refused = refusal(() -> sky.almanac().pakshi(wednesday, null, madras, 19_800,
+                        PakshiNative.bird("OWL"), Map.of("clock", "SUNDIAL")));
+                same("pakshi.rules.clock", refused.field(), "named by its record");
+            }
+            try (Context polar = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN)
+                    .settingsJson("{\"day\": {\"polar_day_policy\": \"NEAREST_EVENT\"}}").build())) {
+                Observer tromso = new Observer(new Longitude(18.9553), new Latitude(69.6492), new Altitude(0));
+                CalendarDate midsummer = new CalendarDate(Calendar.GREGORIAN, null, 2024, 0, 6, 21, Resolution.DEFINED, 0, 0);
+                List<PakshiDay> days = polar.almanac().pakshi(midsummer, null, tromso, 7_200, PakshiNative.bird("OWL"))
+                        .value();
+                check(days.get(0).reading() == null, "no sunset, no yamas");
+            }
+        });
+
+        tests.put("a study counts and tests its rules over a batch of births", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(0));
+                List<ResearchBirth> births = new java.util.ArrayList<>();
+                for (int i = 0; i < 6; i += 1) {
+                    births.add(new ResearchBirth(2447000.25 + 977.3 * i, kathmandu, 20_700));
+                }
+                Map<String, Object> yogas = Map.of("shipped", List.of("YOGAS"));
+                Map<String, Object> design = Map.of("groups", List.of(0, 1, 0, 1, 0, 1));
+                ResearchCounts table = sky.research().counts(births, yogas, design, null);
+                check(!table.rows().isEmpty(), "a row per rule");
+                for (ResearchCounts.Row row : table.rows()) {
+                    for (ResearchCounts.Group group : row.counts()) {
+                        same(3, group.present() + group.absent() + group.unreadable() + group.unstable(),
+                                row.predicate());
+                    }
+                }
+                // A seed past Long.MAX_VALUE is a BigInteger, and the same seed in every binding.
+                java.math.BigInteger widest = java.math.BigInteger.TWO.pow(64).subtract(java.math.BigInteger.ONE);
+                ResearchTested tested = sky.research().compare(births, yogas, design, Map.of("seed", widest,
+                        "permutations", 199, "contrast", Map.of("kind", "CASE_VS_REST", "case", 1), "alpha", 0.05),
+                        null);
+                same(199, tested.permutations(), "the permutations asked");
+                same(1.0 / 200, tested.resolution(), "the resolution they give");
+                for (ResearchTested.Row row : tested.rows()) {
+                    check(row.p().value() >= tested.resolution(), "never under the resolution");
+                    check(row.adjusted().maxT() >= row.p().value(), "an adjustment never lowers a p-value");
+                    check(row.underAlpha() != null, "alpha was given");
+                }
+                check(!tested.provenance().inputHash().equals(table.provenance().inputHash()), "another study");
+                TeistroException refused = refusal(() -> sky.research().timed(List.of(), yogas,
+                        DashaSystem.VIMSHOTTARI, ResearchEventShuffle.AGES_AT_EVENT,
+                        Map.of("seed", 1, "permutations", 19), null));
+                same("research.subjects", refused.field(), "named by its record");
+            }
+        });
+
+        tests.put("a chart carries its Lal Kitab", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                double instant = 2_447_995.489_583_333_5;
+                check(sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder().build()).lalkitab()
+                        .isEmpty(), "none unless asked");
+                LalKitab plain = sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().lalkitab(Map.of()).build()).lalkitab().orElseThrow();
+                same(new LalKitab.Cycle(Graha.SATURN, 1), plain.cycle(), "the book's general table");
+                check(plain.year() == null, "no year unless asked");
+                same(9, plain.reading().planets().size(), "nine planets");
+                same(1, plain.periods().get(0).from(), "the cycle from the first year");
+                same(120, plain.periods().get(plain.periods().size() - 1).to(), "to the 120th");
+                List<List<Integer>> rows = new ArrayList<>();
+                for (int y = 0; y < 120; y++) {
+                    List<Integer> row = new ArrayList<>();
+                    for (int h = 0; h < 12; h++) {
+                        row.add((h + y) % 12 + 1);
+                    }
+                    rows.add(row);
+                }
+                LalKitab read = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .lalkitab(Map.of("cycle", Map.of("planet", Graha.VENUS, "year", 17), "year", 43,
+                                "varshphal", Map.of("rows", rows)))
+                        .build()).lalkitab().orElseThrow();
+                same(Graha.JUPITER, read.year().ruler(), "the year's ruler");
+                same(List.of(Graha.KETU, Graha.JUPITER, Graha.SUN), read.year().thirds(), "its thirds");
+                List<LalKitab.Planet> natal = read.reading().planets();
+                List<LalKitab.Planet> moved = read.year().annual().planets();
+                for (int n = 0; n < natal.size(); n++) {
+                    same((natal.get(n).house() + 41) % 12 + 1, moved.get(n).house(), "the annual teva's house");
+                }
+                TeistroException refused = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().lalkitab(Map.of("year", 121)).build()));
+                same("lalkitab.year", refused.field(), "named by its record");
+            }
+        });
+
         tests.put("every reading a chart was asked for reads back", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
@@ -447,8 +556,8 @@ public final class BindingTest {
                     check(chart.antiscia().isPresent(), "the antiscia");
                     check(chart.midpoints().isPresent(), "the midpoints");
                     check(chart.parallels().isPresent(), "the parallels");
-                    check(chart.prashna().isEmpty() && chart.matching().isEmpty() && chart.synastry().isEmpty(),
-                            "what was not asked is empty");
+                    check(chart.prashna().isEmpty() && chart.matching().isEmpty() && chart.synastry().isEmpty()
+                            && chart.rectification().isEmpty(), "what was not asked is empty");
                     check(chart.hits().isEmpty() && chart.gochar().isEmpty() && chart.drawings().isEmpty(),
                             "and every list not asked for is empty");
                     same(chart.states(), chart.states(), "read twice, the same");
@@ -468,6 +577,79 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart read as a birth time to rectify carries each reading asked, and only those", () -> {
+            try (Context sky = context(teistro)) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                Map<String, Object> asked = Map.of(
+                        "purify", Map.of("minutes", 20),
+                        "conception", Map.of(),
+                        "circumstance", Map.of("facts", Map.of("fatherPresent", false)),
+                        "baseline", Map.of("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
+                                Map.of("kind", "MARRIAGE", "on", 2_469_000.5),
+                                Map.of("kind", "ACCIDENT", "on", 2_471_000.5, "heldOut", true))),
+                        "svarodaya", Map.of("minutes", 20));
+                Rectification read = sky.chart().found(2_460_482.5, kathmandu, 20_700,
+                        ChartOptions.builder().rectification(asked).build()).rectification().orElseThrow();
+                Purified purified = read.purified().orElseThrow();
+                check(!purified.intervals().isEmpty(), "the purifier leaves a run standing");
+                Purified.Clause clause = purified.intervals().get(0).verdict().clauses().get(0);
+                same("PRANAPADA", clause.purifier(), "the pranapada judged first");
+                check(clause.sign().fullKey().startsWith("rashi."), "a clause's sign is a rashi");
+                Conception conception = read.conception().orElseThrow();
+                check(conception.moon().moonSign().fullKey().startsWith("rashi."), "the Moon's sign is a rashi");
+                check(conception.moon().predicted().nakshatra().isPresent(),
+                        "the default count predicts a nakshatra");
+                Circumstance circumstance = read.circumstance().orElseThrow();
+                same(7, circumstance.sky().grahasDeg().size(), "the seven grahas' longitudes");
+                check(circumstance.presentation().lord().fullKey().startsWith("graha."), "the lagna's lord");
+                same("FATHER", circumstance.weights().get(0).indication(), "the one fact given, weighed");
+                BaselineRectification baseline = read.baseline().orElseThrow();
+                check(baseline.candidates().get(0).lagnaNakshatra().fullKey().startsWith("nakshatra."),
+                        "a candidate's nakshatra");
+                same(1, baseline.holdOut().size(), "the held-out event, tested");
+                List<String> kinds = new ArrayList<>();
+                for (BaselineRectification.Stage stage : baseline.stages()) {
+                    for (BaselineNote note : stage.notes()) {
+                        switch (note) {
+                            case BaselineNote.TattvaSex sex -> same("MALE", sex.sex(), "the sex asked");
+                            case BaselineNote.ReportedTime time ->
+                                    same(30.0, time.uncertaintyMinutes(), "the uncertainty asked");
+                            case BaselineNote.EventFit fit -> {
+                                check(fit.id().isEmpty(), "an event given no name has none");
+                                check(fit.lords().stream().allMatch(g -> g.fullKey().startsWith("graha.")),
+                                        "the period lords are grahas");
+                            }
+                        }
+                        kinds.add(note.kind());
+                    }
+                }
+                same(List.of("TATTVA_SEX", "REPORTED_TIME", "EVENT_FIT"), kinds, "a note of each kind");
+                SvarodayaAround svarodaya = read.svarodaya().orElseThrow();
+                List<SvarodayaAround.Run> runs = svarodaya.runs();
+                check(!runs.isEmpty(), "the window's runs");
+                check(Math.abs(runs.get(0).from() - (2_460_482.5 - 20.0 / 1440.0)) < 1e-9,
+                        "the runs start at the window's start");
+                check(Math.abs(runs.get(runs.size() - 1).to() - (2_460_482.5 + 20.0 / 1440.0)) < 1e-9,
+                        "and end at its end");
+                for (int k = 1; k < runs.size(); k += 1) {
+                    same(runs.get(k - 1).to(), runs.get(k).from(), "each run starts where the last ended");
+                }
+                SvarodayaAround.Run now = svarodaya.at().run();
+                check(now.from() <= 2_460_482.5 && 2_460_482.5 < now.to(), "the chart's instant falls in its run");
+                check(svarodaya.at().tithi().fullKey().startsWith("tithi."), "the sunrise's tithi is a tithi");
+                same(now.nadi().equals("MOON") ? Sex.FEMALE : Sex.MALE, now.sex(), "the nadi gives the sex");
+                same(2, svarodaya.at().junctions().size(), "the turn's two junctions");
+
+                Rectification alone = sky.chart().found(2_460_482.5, kathmandu, 20_700,
+                        ChartOptions.builder().rectification(Map.of("purify", Map.of("minutes", 20))).build())
+                        .rectification().orElseThrow();
+                check(alone.purified().isPresent(), "the purifier asked");
+                check(alone.conception().isEmpty() && alone.circumstance().isEmpty() && alone.baseline().isEmpty()
+                        && alone.svarodaya().isEmpty(),
+                        "what was not asked is empty");
+            }
+        });
+
         tests.put("the areas beside the chart answer", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
@@ -481,8 +663,13 @@ public final class BindingTest {
                         sky.calendar().dateOf(first.calendar(), sky.calendar().fixedOf(first) + 6), kathmandu, 20_700);
                 same(7, week.size(), "a day per date");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
-                RashifalAnswer read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
+                RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
+                check(!read.provenance().inputHash().isEmpty(), "the request is sealed");
+                same(read.provenance().inputHash(),
+                        sky.chart().rashifalMany(List.of(RashifalRequest.of(first, kathmandu, 20_700)), null)
+                                .provenance().inputHash(),
+                        "a batch of one seals as the one does");
                 same(Status.UNSUPPORTED, refusal(() -> sky.ephemeris().names()).status(),
                         "the built-in engine describes no operations of its own");
             }

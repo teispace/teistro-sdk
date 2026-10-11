@@ -1566,6 +1566,7 @@ checksum = "c3a6bfce3d99adfa72d24750a61f782f3036a81e7f86d8841ee1326deaebd171"
 name = "teistro"
 version = "0.0.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
@@ -1582,9 +1583,11 @@ dependencies = [
  "teistro-interpret",
  "teistro-intl",
  "teistro-kp",
+ "teistro-lalkitab",
  "teistro-matching",
  "teistro-muhurta",
  "teistro-numerology",
+ "teistro-pakshi",
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",
@@ -1593,6 +1596,7 @@ dependencies = [
  "teistro-rectification",
  "teistro-remedies",
  "teistro-render-svg",
+ "teistro-research",
  "teistro-rules",
  "teistro-serial",
  "teistro-siddhanta",
@@ -1718,7 +1722,6 @@ dependencies = [
 name = "teistro-ffi"
 version = "0.0.0"
 dependencies = [
- "libloading",
  "serde",
  "serde_json",
  "teistro",
@@ -1735,6 +1738,7 @@ dependencies = [
  "teistro-port-ephemeris",
  "teistro-serial",
  "teistro-state",
+ "teistro-test-adapter",
  "teistro-time",
  "teistro-vargas",
 ]
@@ -1799,6 +1803,7 @@ dependencies = [
 name = "teistro-interpret"
 version = "0.0.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
@@ -1838,11 +1843,21 @@ dependencies = [
 name = "teistro-kp"
 version = "0.0.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
  "teistro-core",
  "teistro-dasha",
+]
+
+[[package]]
+name = "teistro-lalkitab"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "teistro-core",
 ]
 
 [[package]]
@@ -1853,6 +1868,20 @@ dependencies = [
  "serde",
  "serde_json",
  "teistro-core",
+]
+
+[[package]]
+name = "teistro-mcp"
+version = "0.0.0"
+dependencies = [
+ "boon",
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro",
+ "teistro-core",
+ "teistro-port-ephemeris",
+ "teistro-test-adapter",
 ]
 
 [[package]]
@@ -1896,6 +1925,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-pakshi"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-panchanga"
 version = "0.0.0"
 dependencies = [
@@ -1928,11 +1966,13 @@ dependencies = [
 name = "teistro-port-ephemeris"
 version = "0.0.0"
 dependencies = [
+ "libloading",
  "schemars",
  "serde",
  "serde_json",
  "sha2",
  "teistro-core",
+ "teistro-test-adapter",
 ]
 
 [[package]]
@@ -1977,6 +2017,7 @@ dependencies = [
  "serde_json",
  "teistro-aspect",
  "teistro-core",
+ "teistro-dasha",
  "teistro-points",
  "teistro-vargas",
 ]
@@ -2005,10 +2046,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-research"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-rules"
 version = "0.0.0"
 dependencies = [
  "criterion",
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
@@ -2176,6 +2228,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-test-adapter"
+version = "0.0.0"
+dependencies = [
+ "teistro-port-ephemeris",
+]
+
+[[package]]
 name = "teistro-test-allocator"
 version = "0.0.0"
 
@@ -2231,6 +2290,7 @@ dependencies = [
 name = "teistro-western"
 version = "0.0.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
@@ -2564,6 +2624,7 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-ephemeris-builtin",
+ "teistro-ephemeris-kit",
  "teistro-ffi",
  "teistro-hellenistic",
  "teistro-houses",

@@ -4079,6 +4079,136 @@ test('a chart carries its prashna', () => {
 });
 
 /**
+ * Lal Kitab crosses whole: grahas as full keys, the cycle from the
+ * book's general start unless asked, the year and its annual teva only
+ * when asked, and a bad year refused by its record's name
+ * (`03-design/lalkitab.md`).
+ */
+/**
+ * Pancha Pakshi crosses as days, each its yamas over the almanac's own
+ * sunrise, the weekday and paksha by full key and the birds bare; a day
+ * the Sun does not both rise and set has none, and a native that is both
+ * a bird and a star is refused by name (`03-design/pakshi.md`).
+ */
+test('an almanac reads a native\'s bird over its days', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const madras = { latitude: 13.0827, longitude: 80.2707, altitude: 6 };
+  const { value: days, provenance } = ctx.almanac.pakshi({
+    from: date('calendar.GREGORIAN', 1984, 10, 30),
+    to: date('calendar.GREGORIAN', 1984, 10, 31),
+    place: madras,
+    utcOffsetSeconds: 19800,
+    native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
+  });
+  assert.equal(days.length, 2);
+  assert.equal(typeof provenance.inputHash, 'string', 'the request is sealed');
+  const [tuesday, wednesday] = days.map((d) => d.reading);
+  assert.equal(tuesday.day.nextSunrise, wednesday.day.sunrise, 'one day runs into the next');
+  assert.deepEqual([wednesday.day.vara, wednesday.day.paksha], ['vara.BUDHAVARA', 'paksha.SHUKLA']);
+  assert.equal(wednesday.bird, 'COCK');
+  // PUL p. vii: the cock sleeps in the day's second yama and dies from the third.
+  assert.deepEqual(wednesday.yamas.slice(1, 3).map((y) => y.activity), ['SLEEPING', 'DYING']);
+  assert.equal(wednesday.yamas.length, 10);
+  assert.equal(wednesday.yamas[0].subs[0].ownerIs, 'OWN', "the native's own sub-period");
+  assert.equal(days[1].date.day, 31);
+  assert.ok(Object.isFrozen(wednesday.yamas[0].subs), 'frozen to its leaves');
+
+  const polar = context({ testProvider: false, ephemeris: 'BUILTIN', settings: { day: { polar_day_policy: 'NEAREST_EVENT' } } });
+  const [midsummer] = polar.almanac.pakshi({
+    from: date('calendar.GREGORIAN', 2024, 6, 21),
+    place: { latitude: 69.6492, longitude: 18.9553 },
+    utcOffsetSeconds: 7200,
+    native: { bird: 'OWL' },
+  }).value;
+  assert.equal(midsummer.reading, null, 'no sunset, no yamas');
+
+  assert.throws(
+    () =>
+      ctx.almanac.pakshi({
+        from: date('calendar.GREGORIAN', 1984, 10, 31),
+        place: madras,
+        utcOffsetSeconds: 19800,
+        native: { bird: 'OWL', nakshatra: 'nakshatra.BHARANI', paksha: 'paksha.SHUKLA' },
+      }),
+    (error) => error.field === 'pakshi.native.bird',
+  );
+});
+
+/**
+ * A study crosses with its provenance, whose input hash is its
+ * pre-registration: the same study under a seed sent as a number and as a
+ * bigint is one study, and a field it does not read is refused by name
+ * (`03-design/research.md`).
+ */
+test('a study counts and tests its rules over a batch of births', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324 };
+  const births = [0, 1, 2, 3, 4, 5].map((i) => ({ instant: 2447000.25 + 977.3 * i, place, utcOffsetSeconds: 20700 }));
+  const rules = { shipped: ['YOGAS'] };
+  const design = { groups: [0, 1, 0, 1, 0, 1] };
+  const counted = ctx.research.counts({ births, rules, design });
+  assert.ok(counted.rows.length > 0);
+  for (const row of counted.rows) {
+    const [rest, cases] = row.counts;
+    assert.equal(rest.present + rest.absent + rest.unreadable + rest.unstable, 3, row.predicate);
+    assert.equal(cases.present + cases.absent + cases.unreadable + cases.unstable, 3, row.predicate);
+  }
+  const contrast = { kind: 'CASE_VS_REST', case: 1 };
+  const tested = ctx.research.compare({ births, rules, design, test: { seed: 9, permutations: 19, contrast } });
+  const big = ctx.research.compare({ births, rules, design, test: { seed: 9n, permutations: 19, contrast } });
+  assert.equal(tested.provenance.inputHash, big.provenance.inputHash, 'one seed, however it is written');
+  assert.equal(tested.permutations, 19);
+  assert.equal(tested.resolution, 1 / 20);
+  assert.ok(tested.rows.every((row) => row.p.value >= tested.resolution && row.adjusted.maxT >= row.p.value));
+  assert.notEqual(tested.provenance.inputHash, counted.provenance.inputHash);
+  assert.ok(Object.isFrozen(tested.rows[0].adjusted), 'frozen to its leaves');
+  const huge = ctx.research.compare({ births, rules, design, test: { seed: 2n ** 64n - 1n, permutations: 19, contrast } });
+  assert.notEqual(huge.provenance.inputHash, tested.provenance.inputHash);
+  assert.throws(
+    () => ctx.research.counts({ births, rules, design, dasha: 'dasha_system.VIMSHOTTARI' }),
+    (error) => error.field === 'research.dasha',
+  );
+  assert.throws(
+    () => ctx.research.compare({ births, rules, design }),
+    (error) => error.field === 'research.test',
+  );
+});
+
+test('a chart carries its Lal Kitab', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2447995.4895833335;
+  assert.equal(ctx.chart.found({ instant, ...at }).lalkitab, null);
+
+  const plain = ctx.chart.found({ instant, ...at, lalkitab: {} }).lalkitab;
+  assert.deepEqual(plain.cycle, { planet: 'graha.SATURN', year: 1 });
+  assert.equal(plain.year, null, 'no year asked, none read');
+  assert.equal(plain.reading.planets.length, 9);
+  assert.equal(plain.reading.houses.length, 12);
+  assert.ok(plain.reading.planets.every((p) => p.graha.startsWith('graha.') && p.house >= 1 && p.house <= 12));
+  assert.equal(plain.periods[0].from, 1);
+  assert.equal(plain.periods.at(-1).to, 120);
+  assert.ok(Object.isFrozen(plain.reading.planets), 'frozen to its leaves');
+
+  const rows = Array.from({ length: 120 }, (_, y) => Array.from({ length: 12 }, (_, h) => ((h + y) % 12) + 1));
+  const read = ctx.chart.found({
+    instant,
+    ...at,
+    lalkitab: { cycle: { planet: 'graha.VENUS', year: 17 }, year: 43, varshphal: { rows } },
+  }).lalkitab;
+  assert.equal(read.year.ruler, 'graha.JUPITER', 'Venus from the 17th year gives the 43rd to Jupiter');
+  assert.deepEqual(read.year.thirds, ['graha.KETU', 'graha.JUPITER', 'graha.SUN']);
+  read.reading.planets.forEach((natal, n) =>
+    assert.equal(read.year.annual.planets[n].house, ((natal.house + 41) % 12) + 1, 'the list moves each house 42 on'),
+  );
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, lalkitab: { year: 121 } }),
+    (error) => error.field === 'lalkitab.year',
+  );
+});
+
+/**
  * Remedies cross whole: every catalogue key in full, the antardaśā's śānti
  * only once `at` asks for the running periods (the request asks for the
  * Vimśottarī daśā itself), and a bad rule refused by its record's name
@@ -4155,6 +4285,7 @@ test('a rashifal period is read for each of the twelve signs', () => {
   const read = ctx.chart.rashifal(week, 'WEEKLY');
   assert.ok(Object.isFrozen(read) && Object.isFrozen(read.period.readings[0].gochar.grahas[0]), 'frozen');
   const { period } = read;
+  assert.equal(typeof read.provenance.inputHash, 'string', 'the request is sealed');
   assert.deepEqual([period.reference.calendar, period.reference.day], ['calendar.GREGORIAN', 7]);
   assert.equal(period.transits.length, 9);
   assert.equal(period.retrograde.length, 9);
@@ -4185,8 +4316,8 @@ test('a rashifal period is read for each of the twelve signs', () => {
   const six = ctx.chart.rashifal({ ...week, snapshot: { at: 'CLOCK', hour: 6, minute: 0 } });
   assert.ok(Math.abs(six.period.instant - (2461320.5 + 15 / 1440)) < 1e-9);
   // A batch reads each period as it reads alone.
-  const [alone] = ctx.chart.rashifalMany([week]);
-  assert.deepEqual(alone, ctx.chart.rashifal(week));
+  const { value: [alone], provenance } = ctx.chart.rashifalMany([week]);
+  assert.deepEqual({ ...alone, provenance }, ctx.chart.rashifal(week));
 
   for (const [request, field] of [
     [{ ...week, last: gregorian(3) }, 'rashifal.periods[0].last'],
@@ -4197,5 +4328,65 @@ test('a rashifal period is read for each of the twelve signs', () => {
   }
   assert.throws(() => ctx.chart.rashifal(week, 'HOURLY'), (error) => error instanceof TeistroError && error.field === 'rashifal.baseline');
   assert.throws(() => ctx.chart.rashifalMany(week), TypeError);
+  ctx.dispose();
+});
+
+/**
+ * A rectification crosses whole: each reading the record names around the
+ * chart's instant, catalogue keys in full, a member not asked for `null`,
+ * and a bad window refused by the field the caller sent
+ * (`03-design/rectification.md`).
+ */
+test('a chart carries its rectification', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2460482.5;
+  assert.equal(ctx.chart.found({ instant, ...at }).rectification, null);
+
+  const only = ctx.chart.found({ instant, ...at, rectification: { purify: { minutes: 20 } } }).rectification;
+  assert.equal(only.conception, null, 'not asked, not read');
+  assert.equal(only.baseline, null);
+  assert.ok(only.purified.intervals.length + only.purified.removed.length > 0);
+  assert.ok(Object.isFrozen(only.purified.intervals), 'frozen to its leaves');
+
+  const read = ctx.chart.found({
+    instant,
+    ...at,
+    rectification: {
+      conception: {},
+      circumstance: { facts: { fatherPresent: false } },
+      baseline: {
+        uncertaintyMinutes: 30,
+        sex: 'MALE',
+        events: [{ id: 'wedding', kind: 'MARRIAGE', on: 2469000.5 }, { kind: 'ACCIDENT', on: 2471000.5, heldOut: true }],
+      },
+    },
+  }).rectification;
+  assert.equal(read.purified, null);
+  // Keys in full, as every other accessor gives them.
+  assert.ok(read.conception.moon.moonSign.startsWith('rashi.'));
+  assert.ok(read.conception.nisheka.verdict.clauses.every((c) => c.sign.startsWith('rashi.') && c.lagna.startsWith('rashi.')));
+  assert.ok(read.circumstance.presentation.lord.startsWith('graha.'));
+  assert.deepEqual(read.circumstance.weights.map((w) => w.indication), ['FATHER']);
+  const { baseline } = read;
+  assert.ok(baseline.candidates.every((c) => c.lagna.startsWith('rashi.') && c.lagnaNakshatra.startsWith('nakshatra.')));
+  const notes = baseline.stages.flatMap((stage) => stage.notes);
+  assert.deepEqual([...new Set(notes.map((n) => n.kind))].sort(), ['EVENT_FIT', 'REPORTED_TIME', 'TATTVA_SEX']);
+  const fit = notes.find((n) => n.kind === 'EVENT_FIT');
+  assert.equal(fit.id, 'wedding');
+  assert.ok(fit.lords.every((lord) => lord.startsWith('graha.')));
+  assert.equal(typeof notes.find((n) => n.kind === 'TATTVA_SEX').admittedMinutes, 'number');
+  assert.equal(baseline.eventsHeldOut, 1);
+  assert.equal(baseline.holdOut[0].kind, 'ACCIDENT');
+
+  const { svarodaya } = ctx.chart.found({ instant, ...at, rectification: { svarodaya: { minutes: 20 } } }).rectification;
+  assert.ok(svarodaya.at.tithi.startsWith('tithi.'));
+  assert.ok(svarodaya.runs.slice(1).every((run, k) => run.from === svarodaya.runs[k].to), 'the runs tile the window');
+  assert.ok(svarodaya.at.run.from <= instant && instant < svarodaya.at.run.to);
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, rectification: { purify: { minutes: 0 } } }),
+    (error) => error.field === 'rectification.purify.minutes',
+  );
   ctx.dispose();
 });

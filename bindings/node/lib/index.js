@@ -1078,6 +1078,35 @@ export class Chart {
   }
 
   /**
+   * The chart read as Lal Kitab reads it (`lalkitab: { year: 30 }`): the
+   * teva's reading — each planet's house, dignities, sleep and aspects,
+   * each house, the masnui pairs, the debts and the flags — the 35-year
+   * cycle's periods, and the year asked for with its ruler, its thirds and,
+   * given a `varshphal` list, the annual teva's reading. `null` unless
+   * asked (`03-design/lalkitab.md`).
+   *
+   * @returns {object|null}
+   */
+  get lalkitab() {
+    return lalkitabsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The chart read as a birth time to rectify (`rectification: { purify:
+   * { minutes: 30 } }`): what BPHS ch. 2's purifier leaves standing of the
+   * minutes either side, the conception the birth counts back to, *Brihat
+   * Jataka* ch. V's circumstances set against the family's facts, and the
+   * baseline engine's cascade over the dated events. Each member `null`
+   * unless asked; the whole `null` unless `rectification` asked
+   * (`03-design/rectification.md`).
+   *
+   * @returns {object|null}
+   */
+  get rectification() {
+    return rectificationsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The seven planets' essential dignities (`dignities: { sectRule, rules,
    * scores }`), with the chart's sect and everything that made them;
    * `null` unless asked for (`03-design/essential-dignities.md`).
@@ -2662,6 +2691,16 @@ export class ChartArea extends Area {
           'remedies',
           "a remedies request record, e.g. { at: 2460676.5 } or { rules: { shanti: { rik: 'YAJNAVALKYA' } } }",
         ),
+        lalkitabJson: recordJson(
+          request.lalkitab,
+          'lalkitab',
+          "a Lal Kitab request record, e.g. { year: 30 } or { cycle: { planet: 'graha.VENUS', year: 17 } }",
+        ),
+        rectificationJson: recordJson(
+          request.rectification,
+          'rectification',
+          "a rectification request record, e.g. { purify: { minutes: 30 } } or { baseline: { uncertaintyMinutes: 60, sex: 'MALE' } }",
+        ),
         matchingJson: recordJson(
           request.matching,
           'matching',
@@ -2698,22 +2737,25 @@ export class ChartArea extends Area {
    *   utcOffsetSeconds: 20700,
    * }, 'WEEKLY');
    * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
+   * const sealed = week.provenance.inputHash;
    *
    * @param {object} request the period: `first`, `last`, `place`, `utcOffsetSeconds`, and optionally `snapshot`, `events` and `spells`
    * @param {string} [baseline] `'DAILY'`, `'WEEKLY'`, `'MONTHLY'` or `'YEARLY'`, for the baseline engine's score
-   * @returns {object}
+   * @returns {object} the period's answer with its `provenance` beside it
    */
   rashifal(request, baseline) {
-    const [one] = this.rashifalMany([request], baseline);
-    return one;
+    const { value: [one], provenance } = this.rashifalMany([request], baseline);
+    return Object.freeze({ ...one, provenance });
   }
 
   /**
-   * Many periods, each read as `rashifal` reads it alone, under one founder.
+   * Many periods, each read as `rashifal` reads it alone, under one founder,
+   * as the envelope: `value` the answers in the requests' order, and the
+   * batch's `provenance`.
    *
    * @param {object[]} requests
    * @param {string} [baseline]
-   * @returns {object[]}
+   * @returns {{ value: object[], provenance: object }}
    */
   rashifalMany(requests, baseline) {
     if (!Array.isArray(requests)) {
@@ -2721,8 +2763,13 @@ export class ChartArea extends Area {
     }
     const asked = { periods: requests.map(rashifalPeriodAsked) };
     if (baseline !== undefined && baseline !== null) asked.baseline = baseline;
-    const answers = JSON.parse(run(this, (inner) => inner.rashifal(JSON.stringify(asked))));
-    return deepFreeze(answers.map(rashifalAnswerFrom));
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.rashifal(JSON.stringify(asked))),
+    );
+    return deepFreeze({
+      value: value.map(rashifalAnswerFrom),
+      provenance: decodeProvenance(provenance),
+    });
   }
 }
 
@@ -4880,6 +4927,140 @@ function prashnaFrom(read) {
   };
 }
 
+/** Each batch's rectifications, parsed once however many charts read them. */
+const RECTIFICATIONS = new WeakMap();
+
+/**
+ * Every chart's rectification in a batch: the `rectification` section's
+ * JSON, one entry a chart, catalogue keys in full and a member not asked
+ * for `null` (`03-design/rectification.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function rectificationsOf(batch) {
+  return sectionOf(RECTIFICATIONS, batch, 'rectification', rectificationFrom);
+}
+
+/**
+ * A chart's rectification as the boundary's JSON writes it, its bare keys
+ * made full and its members left out `null`.
+ */
+function rectificationFrom({ purified = null, conception = null, circumstance = null, baseline = null, svarodaya = null }) {
+  const graha = (key) => `graha.${key}`;
+  const rashi = (key) => `rashi.${key}`;
+  const nakshatra = (key) => (key === null ? null : `nakshatra.${key}`);
+  const verdict = ({ clauses, pure }) => ({
+    clauses: clauses.map((clause) => ({ ...clause, sign: rashi(clause.sign), lagna: rashi(clause.lagna) })),
+    pure,
+  });
+  const run = (one) => ({ ...one, verdict: verdict(one.verdict) });
+  // An event's `id` is left out of the JSON when the request gave none.
+  const note = (one) =>
+    one.kind === 'EVENT_FIT' ? { ...one, id: one.id ?? null, lords: one.lords.map(graha) } : one;
+  return {
+    purified: purified === null ? null : { ...purified, intervals: purified.intervals.map(run), removed: purified.removed.map(run) },
+    conception:
+      conception === null
+        ? null
+        : {
+            ...conception,
+            nisheka: { ...conception.nisheka, verdict: verdict(conception.nisheka.verdict) },
+            moon: {
+              ...conception.moon,
+              predicted: {
+                ...conception.moon.predicted,
+                sign: rashi(conception.moon.predicted.sign),
+                nakshatra: nakshatra(conception.moon.predicted.nakshatra),
+              },
+              moonSign: rashi(conception.moon.moonSign),
+              moonNakshatra: nakshatra(conception.moon.moonNakshatra),
+              rising: rashi(conception.moon.rising),
+            },
+          },
+    circumstance:
+      circumstance === null
+        ? null
+        : {
+            ...circumstance,
+            presentation: { ...circumstance.presentation, lord: graha(circumstance.presentation.lord) },
+            attending: {
+              ...circumstance.attending,
+              between: circumstance.attending.between.map(graha),
+              visible: circumstance.attending.visible.map(graha),
+            },
+          },
+    baseline:
+      baseline === null
+        ? null
+        : {
+            ...baseline,
+            candidates: baseline.candidates.map((one) => ({
+              ...one,
+              lagna: rashi(one.lagna),
+              lagnaNakshatra: nakshatra(one.lagnaNakshatra),
+            })),
+            stages: baseline.stages.map((stage) => ({ ...stage, notes: stage.notes.map(note) })),
+          },
+    svarodaya: svarodaya === null ? null : { ...svarodaya, at: { ...svarodaya.at, tithi: `tithi.${svarodaya.at.tithi}` } },
+  };
+}
+
+/** Each batch's Lal Kitab readings, parsed once however many charts read them. */
+const LALKITAB = new WeakMap();
+
+/**
+ * Every chart's Lal Kitab in a batch: the `lalkitab` section's JSON, one
+ * entry a chart, grahas as full keys (`03-design/lalkitab.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function lalkitabsOf(batch) {
+  return sectionOf(LALKITAB, batch, 'lalkitab', lalkitabFrom);
+}
+
+/** A teva's reading as the boundary writes it, its grahas made full keys. */
+function tevaFrom({ planets, houses, masnui, rinas, pitri, flags }) {
+  const graha = (key) => `graha.${key}`;
+  return {
+    planets: planets.map((one) => ({
+      ...one,
+      graha: graha(one.graha),
+      owners: one.owners.map((owner) => ({ ...owner, owner: graha(owner.owner) })),
+      casts: one.casts.map((cast) => ({ ...cast, onto: cast.onto.map(graha) })),
+    })),
+    houses: houses.map((one) => ({ ...one, occupants: one.occupants.map(graha), waker: graha(one.waker) })),
+    masnui: masnui.map((one) => ({ ...one, pair: one.pair.map(graha) })),
+    rinas: rinas.map((debt) => ({
+      ...debt,
+      of: graha(debt.of),
+      seated: debt.seated.map((seat) => ({ ...seat, enemy: graha(seat.enemy) })),
+    })),
+    pitri: pitri.map((state) => ({ ...state, ninth: graha(state.ninth) })),
+    flags: { ...flags, dharmi: flags.dharmi.map(graha), sathi: flags.sathi.map((pair) => pair.map(graha)) },
+  };
+}
+
+/** A chart's Lal Kitab as the boundary writes it, its grahas made full keys. */
+function lalkitabFrom({ reading, cycle, periods, year }) {
+  const graha = (key) => `graha.${key}`;
+  return {
+    reading: tevaFrom(reading),
+    cycle: { ...cycle, planet: graha(cycle.planet) },
+    periods: periods.map((period) => ({ ...period, planet: graha(period.planet) })),
+    year:
+      year === null
+        ? null
+        : {
+            ...year,
+            ruler: graha(year.ruler),
+            thirds: year.thirds.map(graha),
+            annual: year.annual === null ? null : tevaFrom(year.annual),
+          },
+  };
+}
+
 /** Each batch's remedies, parsed once however many charts read them. */
 const REMEDIES = new WeakMap();
 
@@ -5960,6 +6141,136 @@ export class NumerologyArea extends Area {
 }
 
 /**
+ * `sdk.research` — counts and permutation tests over a batch of births
+ * (`03-design/research.md`). Every rule of the request is a predicate,
+ * read once on every chart, and the predicates are one family for the
+ * corrections. A study's answer carries its provenance, whose
+ * `inputHash` seals the births, the rules, the design and the test: the
+ * study's pre-registration, published before its data are collected.
+ *
+ * A birth is `{ instant, place, utcOffsetSeconds, uncertaintyMinutes }`,
+ * the instant a Julian day in UTC and the last optional. A seed is a
+ * number or, past `Number.MAX_SAFE_INTEGER`, a `bigint`.
+ */
+export class ResearchArea extends Area {
+  /**
+   * How often each rule holds in each group, the charts it cannot be
+   * read on and those it is unstable on counted apart. No null and no
+   * shuffle.
+   *
+   * @example
+   * const table = ctx.research.counts({
+   *   births,
+   *   rules: { shipped: ['YOGAS'] },
+   *   design: { groups: births.map((_, i) => i % 2) },
+   * });
+   * const first = table.rows[0].counts[1].present;
+   *
+   * @param {object} request
+   * @param {object[]} request.births the births, in the order the design labels them
+   * @param {object} request.rules the rules, as a chart request's `rules` record
+   * @param {string} [request.holds] `'STANDING'` (the default) or `'FORMED'`
+   * @param {object} request.design `{ groups, strata }`, one group per birth, `strata` optional
+   * @returns {object}
+   */
+  counts(request) {
+    return researchOf('COUNTS', request, (json) => run(this, (inner) => inner.research(json)));
+  }
+
+  /**
+   * Whether the design's groups differ on each rule, the labels permuted
+   * (within strata when the design has them), with the family's
+   * corrections and the effect sizes.
+   *
+   * @example
+   * const tested = ctx.research.compare({
+   *   births,
+   *   rules: { shipped: ['YOGAS'] },
+   *   design: { groups },
+   *   test: { seed: 7, permutations: 9999, contrast: { kind: 'CASE_VS_REST', case: 1 } },
+   * });
+   * const holm = tested.rows[0].adjusted.holm;
+   *
+   * @param {object} request as `counts` takes it, with `test`: `{ seed, permutations, contrast, alternative, level, alpha, parallelism }`
+   * @returns {object}
+   */
+  compare(request) {
+    return researchOf('COMPARE', request, (json) => run(this, (inner) => inner.research(json)));
+  }
+
+  /**
+   * Whether each rule is commoner (or rarer) in this sample than in its
+   * own recombined population: the sample refounded with clock times
+   * shuffled among its births, date and place kept (Gauquelin's control).
+   *
+   * @param {object} request the `births` and `rules`, `control` `{ seed, replicates, strata }` and an optional `test` `{ alternative, level, alpha }`
+   * @returns {object}
+   */
+  expected(request) {
+    return researchOf('EXPECTED', request, (json) => run(this, (inner) => inner.research(json)));
+  }
+
+  /**
+   * Whether each rule is delivered by a dasha's running periods at the
+   * subjects' own events more (or less) often than at events shuffled
+   * among them.
+   *
+   * @param {object} request the `subjects`, each `{ birth, event }` with the event a Julian day in UTC; `rules`; `dasha`, a dasha system's key; `shuffle`, `'EVENT_DATES'` or `'AGES_AT_EVENT'`, which has no default because the two keep different margins; `test` `{ seed, permutations, alternative, afterBirth, level, alpha, parallelism }`; and optionally `depth` (2) and `strata`
+   * @returns {object}
+   */
+  timed(request) {
+    return researchOf('TIMED', request, (json) => run(this, (inner) => inner.research(json)));
+  }
+}
+
+/**
+ * A study's request as the boundary reads it, crossed by `cross`: each
+ * birth flattened, each seed a number or a decimal string, and every other
+ * field crossing as written, so a field the study does not read is refused
+ * by name there rather than dropped here.
+ */
+function researchOf(study, request, cross) {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+    throw new TypeError('research: expected a request, e.g. { births, rules, design }');
+  }
+  const birth = (given, what) => {
+    const place = given?.place ?? {};
+    const out = {
+      instant: finite(given?.instant, `${what}.instant`),
+      latitudeDeg: finite(place.latitude, `${what}.place.latitude`),
+      longitudeDeg: finite(place.longitude, `${what}.place.longitude`),
+      altitudeM: finite(place.altitude ?? 0, `${what}.place.altitude`),
+      utcOffsetSeconds: finite(given?.utcOffsetSeconds, `${what}.utcOffsetSeconds`),
+    };
+    if (given?.uncertaintyMinutes !== undefined) {
+      out.uncertaintyMinutes = finite(given.uncertaintyMinutes, `${what}.uncertaintyMinutes`);
+    }
+    return out;
+  };
+  const seeded = (record) =>
+    record === undefined || record === null || typeof record.seed !== 'bigint'
+      ? record
+      : { ...record, seed: record.seed.toString() };
+  const list = (given, what) => {
+    if (!Array.isArray(given)) throw new TypeError(`${what}: expected an array`);
+    return given;
+  };
+  const { births, subjects, test, control, ...rest } = request;
+  const asked = { ...rest, study };
+  if (births !== undefined) asked.births = list(births, 'births').map((b, i) => birth(b, `births[${i}]`));
+  if (subjects !== undefined) {
+    asked.subjects = list(subjects, 'subjects').map((s, i) => ({
+      birth: birth(s?.birth, `subjects[${i}].birth`),
+      event: finite(s?.event, `subjects[${i}].event`),
+    }));
+  }
+  if (test !== undefined) asked.test = seeded(test);
+  if (control !== undefined) asked.control = seeded(control);
+  const { value, provenance } = JSON.parse(cross(JSON.stringify(asked)));
+  return deepFreeze({ ...value, provenance: decodeProvenance(provenance) });
+}
+
+/**
  * `sdk.almanac` — a day, or a run of days, with its limbs.
  *
  * The boundary calls this `panchanga` and the area takes the consumer's
@@ -6032,6 +6343,84 @@ export class AlmanacArea extends Area {
   day(request) {
     return this.of({ ...request, from: request.date, to: request.date }).at(0);
   }
+
+  /**
+   * A native's bird read over every day of a range under Pancha Pakshi
+   * (`03-design/pakshi.md`): each day's ten yamas from the almanac's own
+   * sunrise, sunset and next sunrise, each with the bird's activity and
+   * its timed sub-periods, the day's weekday that of its sunrise and its
+   * paksha the one at its sunrise. A day the Sun does not both rise and
+   * set has a `null` reading. The answer is the envelope: `value` the
+   * days in order, and the `provenance` that sealed the request.
+   *
+   * @example
+   * const days = ctx.almanac.pakshi({
+   *   from: date(1984, 10, 31),
+   *   place: { latitude: 13.0827, longitude: 80.2707, altitude: 6 },
+   *   utcOffsetSeconds: 19800,
+   *   native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
+   * });
+   * const second = days.value[0].reading.yamas[1].activity; // 'SLEEPING'
+   *
+   * @param {object} request
+   * @param {object} request.from the first day, as `date(...)` builds one
+   * @param {object} [request.to] the last day, both ends included; `from` when left out
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {object} request.native `{ bird }`, or `{ nakshatra, paksha, rule }` with `rule` optional
+   * @param {object} [request.rules] `{ clock, subs, relations }`, each optional
+   * @returns {{ value: object[], provenance: object }}
+   */
+  pakshi(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('pakshi: expected a request, e.g. { from, place, utcOffsetSeconds, native }');
+    }
+    const day = (given, what) => ({
+      year: finite(given?.year, `${what}.year`),
+      month: finite(given?.month, `${what}.month`),
+      day: finite(given?.day, `${what}.day`),
+    });
+    // Everything else crosses as written, so a key the SDK does not read is
+    // refused by name there rather than dropped here.
+    const { from: given, to, place: where, utcOffsetSeconds, ...rest } = request;
+    const place = where ?? {};
+    const from = given ?? {};
+    const asked = {
+      ...rest,
+      first: day(from, 'from'),
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    if (from.calendar !== undefined) asked.calendar = from.calendar;
+    if (to !== undefined && to !== null) asked.last = day(to, 'to');
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.pakshi(JSON.stringify(asked))),
+    );
+    return deepFreeze({ value: value.map(pakshiDayFrom), provenance: decodeProvenance(provenance) });
+  }
+}
+
+/**
+ * One day of `ts_pakshi`'s answer, its catalogue members by their full
+ * keys as the rest of the layer answers; the birds, activities and
+ * relations are Pancha Pakshi's own words and stay bare.
+ *
+ * @param {{ date: object, reading: object | null }} answer
+ * @returns {object}
+ */
+function pakshiDayFrom({ date: civil, reading }) {
+  return {
+    date: dateFrom({ ...civil, calendar: `calendar.${civil.calendar}` }),
+    reading:
+      reading === null
+        ? null
+        : {
+            ...reading,
+            day: { ...reading.day, vara: `vara.${reading.day.vara}`, paksha: `paksha.${reading.day.paksha}` },
+          },
+  };
 }
 
 export class Context {
@@ -6142,6 +6531,8 @@ export class Context {
     this.matching = new MatchingArea(reach);
     /** What a name and a birth date say under numerology's two systems. */
     this.numerology = new NumerologyArea(reach);
+    /** Counts and permutation tests over a batch of births. */
+    this.research = new ResearchArea(reach);
     this.#engine = new Engine(reach);
   }
 

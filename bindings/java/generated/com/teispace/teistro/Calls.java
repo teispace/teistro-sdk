@@ -616,8 +616,41 @@ final class Calls {
     }
 
     /**
+     * `ts_pakshi`: Reads a native's bird over each civil day of a range at a place and
+     * answers with `{value, provenance}` as canonical JSON, `value` an array
+     * of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+     * and next sunrise, each `{half, yama, span, activity, quality, subs}`
+     * with every sub-period's activity, owner, span and how the native
+     * regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+     * vara, paksha}`, the bird, its death bird and the first eaters; null on
+     * a day the Sun does not both rise and set.
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+     * the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+     * `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+     * place, the offset and `native` optional. A key it does not read, a
+     * place or offset out of range or a native that is neither is
+     * `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+     * without an ephemeris is `CAPABILITY`, as is a build that leaves the
+     * `pakshi` family out.
+     */
+    static String pakshi(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_pakshi.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_rashifal`: Reads periods of civil days at a place for each of the twelve signs and
-     * answers with an array of `{period, baseline}` as canonical JSON: the
+     * answers with `{value, provenance}` as canonical JSON, `value` an array
+     * of `{period, baseline}`, one per period: the
      * sky at the reference day's sunrise (or a clock time), each sign's
      * gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
      * and station of the period counted from each sign; `baseline` the
@@ -639,6 +672,44 @@ final class Calls {
             MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
             MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
             int status = Boundary.call(() -> (int) lib.ts_rashifal.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
+     * `ts_research`: Runs a study over a batch of births and answers with `{value,
+     * provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+     * study, each row `{predicate, counts}` with every group's `{present,
+     * absent, unreadable, unstable}`; for any other study it is `{rows,
+     * permutations, resolution, shuffle}`, each row adding `observed`, `p`
+     * (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+     * bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+     * four only where they apply. `provenance.input_hash` seals the study
+     * and is what a study publishes before its data are collected.
+     *
+     * `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+     * `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+     * request's rules are, and what the study reads: `births` and `design`
+     * (and a `test` for `COMPARE`); `births`, `control` and an optional
+     * `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
+     * optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
+     * latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+     * uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+     * number or a decimal string. A key it does not read, a field the study
+     * does not read or misses, or a value out of range is `INVALID_ARG`,
+     * named under `research`, as `research.test.seed`; what the study
+     * refuses once it runs is named as the façade names it. A context
+     * without an ephemeris is `CAPABILITY`, as is a build that leaves the
+     * `research` family out.
+     */
+    static String research(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_research.invokeExact(context, requestJsonRaw, outJson));
             if (status != 0) {
                 throw refused(lib, context, status);
             }

@@ -1737,6 +1737,14 @@ export function decodeCharts(bytes) {
     const at = section(blob, 121, 'remedies');
     out.remedies = text(blob, at);
   }
+  {
+    const at = section(blob, 122, 'rectification');
+    out.rectification = text(blob, at);
+  }
+  {
+    const at = section(blob, 123, 'lalkitab');
+    out.lalkitab = text(blob, at);
+  }
   return out;
 }
 

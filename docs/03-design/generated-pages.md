@@ -29,7 +29,7 @@ the per-class reports. Neither page exists yet.
   into `target/dist/manifest.json`. `check-package` (`consumer.rs`)
   runs `package::build` and `package::stage --partial` on every verify
   bindings row. `check-wasm` measures the staged module raw and
-  gzip-best against `bindings/wasm/size.json`, both ways.
+  gzip-best against its budget in `docs/05-testing/sizes.json`, both ways.
 - **The corpus is already scored.** `crates/ephemeris-kit/src/corpus.rs`
   writes a `CorpusReport` in the corpus's report format, judged against
   the exhaustive `KNOWN` divergences (which fail both ways).
@@ -112,9 +112,10 @@ A new **`xtask/src/sizes.rs`**:
   compares (everywhere, in fast-check). It then re-measures whatever
   artefacts exist under `target/dist`, so it is live in verify and release.
 
-**Budgets move into the record.** `bindings/wasm/size.json` holds
-today's budget and, in its `why`, every past re-measure as prose figures
-(the very form that rots). The design folds it into `sizes.json`:
+**Budgets move into the record.** `bindings/wasm/size.json` held the
+budget and, in its `why`, every past re-measure as prose figures (the very
+form that rots). The design folds it into `sizes.json`, which was built
+on 2026-10-09 (step 4), and `bindings/wasm/size.json` is gone:
 
 - `budget: {raw, gzip}` per budgeted artefact, under the file's existing
   rule (2% over, to the next ten kilobytes, held both ways);
@@ -325,16 +326,44 @@ re-checks.
    fast-check. Positions over the default tier.
    **Done** (2026-10-08), through the crates' tests rather than the
    passes (§2.3); `baseline/names.json` and `teimeris` are declared
-   unscored with their reasons. Not built yet: the check that each named
-   entry exists, and the corpus tag against the submodule's pin.
+   unscored with their reasons. **Then built** (2026-10-09): each entry a
+   score names is a `KNOWN` divergence (`teistro_ephemeris_kit::corpus`)
+   or ends by citing its page, `(page.md)` or `(page.md, ANCHOR)`, which
+   must be one file under `docs` naming the anchor as a word; and the
+   submodule's commit must be the one the corpus repository's tag for
+   `corpus.json`'s version points at, read with `git ls-remote`, so a pin
+   between releases fails as a stale one does.
 3. **`CONFORMANCE.md`, recorded half**: verify uploads the tier reports,
    `conformance --from`, the exact live comparison in verify. Then the
    dated same-ephemeris and native-frame columns from a run by hand.
+   **Built** (2026-10-09), through the score lines rather than the kit's
+   reports, so a recorded tier is scored by the same `Tally` as a live
+   one: verify's tier jobs set `TEISTRO_CONFORMANCE_DIR` and upload
+   `conformance-<tier>`, each line carrying the commit and run that wrote
+   it; `conformance --from DIR` keeps the compact and full tiers in
+   `docs/05-testing/conformance.json` with the corpus version, and
+   verify's `conformance` job runs `check-conformance --from DIR`, which
+   holds every tier to the record exactly and uploads the record the run
+   would write when it fails. `check-conformance` refuses a record of
+   another corpus or missing a tier, and checks the recorded entries as it
+   checks the live ones. The record was seeded by hand and is replaced by
+   the first verify run's. The same-ephemeris and native-frame columns
+   are still to do.
 4. **`SIZES.md`**: `sizes.json` absorbing `bindings/wasm/size.json`
    (`check-wasm` reading it), verify's `sizes-*` uploads and the `sizes`
    job, `sizes --from`, `check-sizes`. Then the release's attached exact
    page. Add wasm profile rows as each profile is staged
    (`wasm-profiles.md` step 3).
+   **Built** (2026-10-09): `xtask/src/sizes.rs`. `check-package` and
+   `check-wasm` each write the fragment of what they built to
+   `target/sizes/`, and verify uploads every row's. Verify's `sizes` job
+   runs `check-sizes --from` over them, which is the live-versus-record
+   gate in one place rather than on each row, and uploads the record the
+   run would write when it fails. `sizes --measure` and `sizes --render`
+   re-measure this machine and re-render after a budget is edited. **Not
+   recorded:** the npm packages' `.tgz`, which staging never packs (the
+   addon is recorded raw and gzipped instead), and the Dart and Node
+   root archives; the release's exact attached page is still to build.
 5. **The JPL recording** in the corpus repo (licence check, recorder
    script, a corpus release and tag), then the submodule bump, the astro
    tests and the ACCURACY rows. This is the largest piece and the only one

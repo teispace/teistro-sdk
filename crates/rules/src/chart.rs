@@ -188,6 +188,7 @@ pub struct Span {
 
 /// Which limb a condition measures.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Limb {
     /// The tithi.

@@ -11,6 +11,12 @@ readme = "README.md"
 # (docs/06-cicd/03-release-process.md).
 publish = false
 
+[features]
+# Derives `schemars::JsonSchema` on every type this crate serialises,
+# so the agent server states its tools' answers (`03-design/mcp-server.md`
+# §7, P1).
+schema = ["dep:schemars", "dep:serde_json", "teistro-aspect/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-gochar/schema", "teistro-houses/schema", "teistro-rules/schema", "teistro-state/schema", "teistro-strength/schema"]
+
 [dependencies]
 teistro-aspect = { path = "../aspect" }
 teistro-chart = { path = "../chart" }
@@ -22,6 +28,9 @@ teistro-rules = { path = "../rules" }
 teistro-state = { path = "../state" }
 teistro-strength = { path = "../strength" }
 serde = { version = "1", features = ["derive"] }
+schemars = { version = "1.2", optional = true }
+# A message's slots are described as JSON values (`Item::params`).
+serde_json = { version = "1", optional = true }
 
 [dev-dependencies]
 serde_json = "1"

@@ -8,6 +8,7 @@ use teistro_core::time::UtcOffset;
 
 /// A second birth, which every chart of a batch is read against.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Partner {
     /// The birth's instant.

@@ -7,7 +7,7 @@ them. Measured in
 the annual chart's instant ([`annual-chart.md`](annual-chart.md)).
 
 `crates/tajika` holds it; `sdk.chart().muntha(&document, completed_years,
-degree)` reaches it; and it crosses to C, Node, Dart and Python in the
+degree)` reaches it; and it crosses to C and every binding in the
 charts blob's `praveshas` section, beside the return it stands at.
 
 ## What it is

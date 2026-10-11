@@ -63,7 +63,8 @@ pub struct ContactWindow {
 }
 
 /// One birth's progressions, each `None` where the request asked for none.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Progressions {
     /// The progressed chart at the request's `at`.
     pub progressed: Option<Progressed>,
@@ -131,8 +132,9 @@ impl ChartArea<'_> {
 
 /// [`ProgressionsRequest`] as the bindings write it.
 #[derive(Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
-struct Asked {
+pub(crate) struct Asked {
     #[serde(skip_serializing_if = "Option::is_none")]
     at: Option<f64>,
     rate: Rate,
@@ -145,6 +147,7 @@ struct Asked {
 
 /// The direction's arc as a request spells it.
 #[derive(Clone, Copy, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 enum DirectionAsked {
     /// The Sun's arc under the request's measure.
@@ -160,6 +163,7 @@ enum DirectionAsked {
 
 /// The contacts as a request spells them.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct ContactsAsked {
     from: f64,

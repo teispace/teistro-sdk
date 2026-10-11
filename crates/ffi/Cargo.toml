@@ -43,11 +43,11 @@ teistro-state = { path = "../state" }
 teistro-vargas = { path = "../vargas" }
 teistro-time = { path = "../time" }
 
-# The plugin loader (ADR-0029), which a wasm build has no use for: a wasm
-# module cannot open a shared library, so there it has the built-in and a
-# host provider, and `src/provider.rs` is compiled out.
+# The plugin loader (ADR-0029), the port's own, which a wasm build has no
+# use for: a wasm module cannot open a shared library, so there it has the
+# built-in and a host provider, and `src/provider.rs` is compiled out.
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
-libloading = "0.8"
+teistro-port-ephemeris = { path = "../port-ephemeris", features = ["load"] }
 
 # The SDK's own ephemeris, so a consumer who installs nothing else still
 # computes a chart (ADR-0008, ADR-0028). It is a feature because a shared
@@ -61,16 +61,19 @@ libloading = "0.8"
 default = ["builtin-standard", "full"]
 # The façade's module families, forwarded (`03-design/wasm-profiles.md`):
 # an entry point into one this build leaves out answers `CAPABILITY`.
-full = ["teistro/full", "chart", "kp", "muhurta", "numerology", "prashna", "rashifal", "rectification", "remedies", "svg", "tajika", "western"]
+full = ["teistro/full", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area, and the document reader only it uses.
 chart = ["teistro/chart", "dep:teistro-serial"]
 kp = ["chart", "teistro/kp"]
+lalkitab = ["chart", "teistro/lalkitab"]
 muhurta = ["teistro/muhurta"]
 numerology = ["teistro/numerology"]
+pakshi = ["chart", "teistro/pakshi"]
 prashna = ["chart", "teistro/prashna"]
 rectification = ["chart", "teistro/rectification"]
 rashifal = ["chart", "teistro/rashifal"]
 remedies = ["chart", "teistro/remedies"]
+research = ["chart", "teistro/research"]
 svg = ["chart", "teistro/svg"]
 tajika = ["chart", "teistro/tajika"]
 western = ["chart", "teistro/western"]
@@ -111,6 +114,7 @@ required-features = ["full"]
 
 [dev-dependencies]
 teistro-idl = { path = "../idl" }
+teistro-test-adapter = { path = "../test-adapter" }
 
 # The one crate that may hold unsafe code: the C boundary. The workspace
 # forbids it everywhere else; here it is `deny` so that each module that

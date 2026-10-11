@@ -13,6 +13,7 @@ use crate::aspects::Placed;
 /// One chart as a composite reads it: its planets, and its two angles,
 /// all in one zodiac.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct ChartPoints {
     /// Its planets, with their speeds.
@@ -30,6 +31,7 @@ pub struct ChartPoints {
 /// A composite chart: every planet and both angles at the near midpoint of
 /// two charts'.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Composite {
     /// Each planet at the near midpoint of its two places, moving at the

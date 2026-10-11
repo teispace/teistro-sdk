@@ -31,6 +31,8 @@ mod keys;
 mod matching;
 #[cfg(feature = "numerology")]
 mod numerology;
+#[cfg(feature = "research")]
+pub(crate) mod research;
 mod time;
 
 use teistro_calendar::solar::drik::DrikSun;
@@ -82,7 +84,7 @@ pub(crate) fn drik_sun<'p>(
 
 #[cfg(feature = "muhurta")]
 pub use almanac::MuhurtaDays;
-pub use almanac::{AlmanacAnswer, AlmanacArea, AlmanacRequest, FestivalDays};
+pub use almanac::{AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, FestivalDays};
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]
 pub use chart::{ChartArea, Interpreted};
@@ -96,4 +98,6 @@ pub use keys::KeysArea;
 pub use matching::MatchingArea;
 #[cfg(feature = "numerology")]
 pub use numerology::NumerologyArea;
+#[cfg(feature = "research")]
+pub use research::ResearchArea;
 pub use time::TimeArea;

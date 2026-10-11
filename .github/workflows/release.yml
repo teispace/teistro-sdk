@@ -148,6 +148,7 @@ jobs:
             target/dist/*.gz
             target/dist/teistro-*.json
             target/dist/npm/@teistro/sdk-*
+            target/dist/npm/@teistro/mcp-*
           if-no-files-found: error
           retention-days: 7
 
@@ -184,6 +185,7 @@ jobs:
             target/dist/*.gz
             target/dist/teistro-*.json
             target/dist/npm/@teistro/sdk-*
+            target/dist/npm/@teistro/mcp-*
           if-no-files-found: error
           retention-days: 7
 
@@ -311,6 +313,7 @@ jobs:
         with:
           subject-path: |
             dist/*.gz
+            dist/*.mcpb
             dist/*.cdx.json
             dist/checksums.txt
             dist/manifest.json
@@ -325,7 +328,7 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --title "Teistro ${{ needs.gate.outputs.version }}" \
             --notes-file notes.md \
-            dist/*.gz dist/*.cdx.json dist/checksums.txt dist/manifest.json \
+            dist/*.gz dist/*.mcpb dist/*.cdx.json dist/checksums.txt dist/manifest.json \
             dist/maven/com/teispace/teistro/*/*.jar dist/maven/com/teispace/teistro/*/*.pom
 
       # npm 11.5.1 is the first to publish by the runner's OIDC token, which
@@ -334,7 +337,7 @@ jobs:
       # that exists (`06-cicd/03-release-process.md`).
       - name: An npm that publishes by who the workflow is
         run: npm install --global npm@11
-      - name: The platform packages and the wasm one, then the one that depends on the platforms
+      - name: The platform packages and the wasm one, then the ones that depend on the platforms
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -346,6 +349,12 @@ jobs:
             npm publish --provenance --access public "${package}"
           done
           npm publish --provenance --access public dist/npm/@teistro/sdk
+          # The agent server the same way: a package a platform carrying
+          # the program, then the launcher that depends on them.
+          for package in dist/npm/@teistro/mcp-*; do
+            npm publish --provenance --access public "${package}"
+          done
+          npm publish --provenance --access public dist/npm/@teistro/mcp
 
       - name: The Dart package
         run: dart pub publish --force
@@ -386,3 +395,25 @@ jobs:
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           MAVEN_GPG_FINGERPRINT: ${{ vars.MAVEN_GPG_FINGERPRINT }}
+
+      # The agent server's entry in the MCP Registry, as `stage` wrote it
+      # with the bundle's digest beside the npm launcher; last because the
+      # registry checks that `@teistro/mcp` names it (`mcpName`) and that
+      # the release serves the bundle at that digest, and because a registry still in preview must not
+      # hold up the packages above. The registry takes the runner's OIDC
+      # token as `io.github.teispace`, so no credential is stored. The
+      # publisher is pinned with its digest, as cargo-auditable is; a
+      # registry that calls it too old ("invalid audience") wants it
+      # bumped here.
+      - name: The agent server's entry in the MCP Registry
+        env:
+          MCP_PUBLISHER_VERSION: "1.8.1"
+          MCP_PUBLISHER_SHA256: "a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc"
+        run: |
+          set -eu
+          curl -sSfL -o mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/v${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum --check --strict -
+          tar -xzf mcp-publisher.tar.gz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish dist/server.json

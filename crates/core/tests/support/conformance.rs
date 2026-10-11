@@ -138,8 +138,15 @@ impl Tally {
                 quoted(entry)
             );
         }
+        // Where a CI run wrote it, so a recorded tier names its run.
+        let mut provenance = String::new();
+        for (key, var) in [("commit", "GITHUB_SHA"), ("run", "GITHUB_RUN_ID")] {
+            if let Some(value) = std::env::var(var).ok().filter(|v| !v.is_empty()) {
+                let _ = write!(provenance, ",\"{key}\":{}", quoted(&value));
+            }
+        }
         let line = format!(
-            "{{\"section\":{},\"reading\":{},\"compared\":{},\"explained\":[{explained}]}}\n",
+            "{{\"section\":{},\"reading\":{},\"compared\":{},\"explained\":[{explained}]{provenance}}}\n",
             quoted(self.section),
             quoted(&self.reading),
             self.compared,

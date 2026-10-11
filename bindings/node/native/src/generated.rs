@@ -2213,6 +2213,36 @@ pub struct ChartRequest {
     /// as `remedies.rules.devata`.
     /// Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
     pub remedies_json: Option<String>,
+    /// Every chart read as a birth time to rectify, the chart's instant
+    /// the time on record, as a JSON object, every member optional:
+    /// `purify` (`minutes` either side of the chart's instant, more than
+    /// none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+    /// vv. 67–78), `conception` (the pranapada's house, the nisheka and
+    /// the conception Moon, with its rules), `circumstance` (`facts` the
+    /// family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+    /// and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+    /// (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+    /// to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+    /// Each chart's readings come back in the `rectification` section,
+    /// one member for each reading asked. Null for none, which costs
+    /// nothing (`03-design/rectification.md`). Refusals are named from
+    /// the record every binding calls `rectification`, as
+    /// `rectification.purify.minutes`.
+    /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+    pub rectification_json: Option<String>,
+    /// Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+    /// object, every member optional: `cycle` (`{planet, year}`, where the
+    /// 35-year cycle starts, the book's general table from Saturn in the
+    /// first year when left out), `year` (a year of life from 1, the year
+    /// from birth to the first birthday, to read its ruler, its thirds and
+    /// its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+    /// annual teva is read from, which the SDK does not ship and checks
+    /// row by row). Each chart's reading comes back in the `lalkitab`
+    /// section. Null for none, which costs nothing
+    /// (`03-design/lalkitab.md`). Refusals are named from the record every
+    /// binding calls `lalkitab`, as `lalkitab.cycle.year`.
+    /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+    pub lalkitab_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2252,6 +2282,8 @@ pub struct HeldChartRequest {
     matching_json: Option<std::ffi::CString>,
     prashna_json: Option<std::ffi::CString>,
     remedies_json: Option<std::ffi::CString>,
+    rectification_json: Option<std::ffi::CString>,
+    lalkitab_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2355,6 +2387,14 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             remedies_json: self
                 .remedies_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            rectification_json: self
+                .rectification_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            lalkitab_json: self
+                .lalkitab_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2499,6 +2539,16 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            rectification_json: self
+                .rectification_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
+            lalkitab_json: self
+                .lalkitab_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2556,6 +2606,8 @@ impl ChartRequest {
             matching_json: unsafe { lent_text(raw.matching_json) },
             prashna_json: unsafe { lent_text(raw.prashna_json) },
             remedies_json: unsafe { lent_text(raw.remedies_json) },
+            rectification_json: unsafe { lent_text(raw.rectification_json) },
+            lalkitab_json: unsafe { lent_text(raw.lalkitab_json) },
         }
     }
 }
@@ -4257,8 +4309,42 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Reads a native's bird over each civil day of a range at a place and
+    /// answers with `{value, provenance}` as canonical JSON, `value` an array
+    /// of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+    /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
+    /// with every sub-period's activity, owner, span and how the native
+    /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+    /// vara, paksha}`, the bird, its death bird and the first eaters; null on
+    /// a day the Sun does not both rise and set.
+    ///
+    /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+    /// the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+    /// `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+    /// place, the offset and `native` optional. A key it does not read, a
+    /// place or offset out of range or a native that is neither is
+    /// `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+    /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+    /// `pakshi` family out.
+    #[napi]
+    pub fn pakshi(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::pakshi::ts_pakshi(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Reads periods of civil days at a place for each of the twelve signs and
-    /// answers with an array of `{period, baseline}` as canonical JSON: the
+    /// answers with `{value, provenance}` as canonical JSON, `value` an array
+    /// of `{period, baseline}`, one per period: the
     /// sky at the reference day's sunrise (or a clock time), each sign's
     /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
     /// and station of the period counted from each sign; `baseline` the
@@ -4283,6 +4369,45 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::rashifal::ts_rashifal(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// Runs a study over a batch of births and answers with `{value,
+    /// provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+    /// study, each row `{predicate, counts}` with every group's `{present,
+    /// absent, unreadable, unstable}`; for any other study it is `{rows,
+    /// permutations, resolution, shuffle}`, each row adding `observed`, `p`
+    /// (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+    /// bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+    /// four only where they apply. `provenance.input_hash` seals the study
+    /// and is what a study publishes before its data are collected.
+    ///
+    /// `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+    /// `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+    /// request's rules are, and what the study reads: `births` and `design`
+    /// (and a `test` for `COMPARE`); `births`, `control` and an optional
+    /// `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
+    /// optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
+    /// latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+    /// uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+    /// number or a decimal string. A key it does not read, a field the study
+    /// does not read or misses, or a value out of range is `INVALID_ARG`,
+    /// named under `research`, as `research.test.seed`; what the study
+    /// refuses once it runs is named as the façade names it. A context
+    /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+    /// `research` family out.
+    #[napi]
+    pub fn research(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::research::ts_research(self.handle, request_json.as_ptr(), &raw mut out_json)
         };
         self.leave()?;
         self.check(&env, status)?;

@@ -5,14 +5,17 @@ use serde::{Deserialize, Serialize};
 use teistro_calendar::{CalendarDate, FixedDay};
 use teistro_core::catalogue::{Calendar, Graha, Rashi};
 use teistro_core::error::Error;
-use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_gochar::Transit;
 use teistro_rashifal::RashiReading;
 use teistro_rashifal::baseline::{BaselineScore, Panchanga, Period};
 
+use crate::asked::{DayAsked, offset_of, place_of};
+
 /// The instant a period's sky is read at (C358).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "at", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Snapshot {
     /// Sunrise at the place on the reference day, as the context reckons
@@ -222,6 +225,7 @@ impl RashifalRequest {
 
 /// One period read for each of the twelve signs.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct RashifalPeriod {
     /// The period's first day.
@@ -270,18 +274,11 @@ impl RashifalPeriod {
 /// under.
 const RASHIFAL: &str = "rashifal";
 
-/// A civil day as a request names it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-struct DayAsked {
-    year: i32,
-    month: u8,
-    day: u8,
-}
-
 /// One period as a binding writes it, camel-cased as every request record
 /// is: the days, the place and the offset, and optionally the snapshot,
 /// the grahas whose events are reported and Saturn's spells.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct PeriodAsked {
     #[serde(default)]
@@ -305,8 +302,9 @@ struct PeriodAsked {
 /// Many periods as a binding writes them, and the period the baseline
 /// engine's score is read for, when it is asked.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct BatchAsked {
+pub(crate) struct BatchAsked {
     periods: Vec<PeriodAsked>,
     #[serde(default)]
     baseline: Option<Period>,
@@ -385,22 +383,11 @@ impl RashifalBatch {
 impl PeriodAsked {
     fn request(self) -> Result<RashifalRequest, Error> {
         let calendar = self.calendar.unwrap_or(Calendar::Gregorian);
-        let date = |day: DayAsked| CalendarDate::defined(calendar, day.year, day.month, day.day);
-        let place = Place::new(
-            Latitude::try_new(self.latitude_deg)
-                .map_err(|why| Error::from(why).with_field("latitudeDeg"))?,
-            Longitude::try_new(self.longitude_deg)
-                .map_err(|why| Error::from(why).with_field("longitudeDeg"))?,
-            Altitude::try_new(self.altitude_m)
-                .map_err(|why| Error::from(why).with_field("altitudeM"))?,
-        );
-        let offset = UtcOffset::try_from_seconds(self.utc_offset_seconds)
-            .map_err(|why| Error::from(why).with_field("utcOffsetSeconds"))?;
         let mut request = RashifalRequest::between(
-            date(self.first),
-            date(self.last.unwrap_or(self.first)),
-            place,
-            offset,
+            self.first.in_calendar(calendar),
+            self.last.unwrap_or(self.first).in_calendar(calendar),
+            place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
+            offset_of(self.utc_offset_seconds)?,
         );
         if let Some(snapshot) = self.snapshot {
             request = request.at(snapshot);
@@ -419,6 +406,7 @@ impl PeriodAsked {
 /// baseline engine's score of each sign, Aries to Pisces, when it was
 /// asked.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct RashifalAnswer {
     /// The period read.

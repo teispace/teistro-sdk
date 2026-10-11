@@ -280,7 +280,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 304,
+    "ts_chart_request": 320,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -310,7 +310,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 176,
+    "ts_chart_request": 184,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -730,6 +730,8 @@ class _ChartRequestStruct(ctypes.Structure):
         ("matching_json", ctypes.c_char_p),
         ("prashna_json", ctypes.c_char_p),
         ("remedies_json", ctypes.c_char_p),
+        ("rectification_json", ctypes.c_char_p),
+        ("lalkitab_json", ctypes.c_char_p),
     ]
 
 
@@ -2707,6 +2709,40 @@ class ChartRequest:
     Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
     """
 
+    rectification_json: Optional[str] = None
+    """Every chart read as a birth time to rectify, the chart's instant
+    the time on record, as a JSON object, every member optional:
+    `purify` (`minutes` either side of the chart's instant, more than
+    none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+    vv. 67–78), `conception` (the pranapada's house, the nisheka and
+    the conception Moon, with its rules), `circumstance` (`facts` the
+    family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+    and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+    (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+    to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+    Each chart's readings come back in the `rectification` section,
+    one member for each reading asked. Null for none, which costs
+    nothing (`03-design/rectification.md`). Refusals are named from
+    the record every binding calls `rectification`, as
+    `rectification.purify.minutes`.
+    Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+    """
+
+    lalkitab_json: Optional[str] = None
+    """Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+    object, every member optional: `cycle` (`{planet, year}`, where the
+    35-year cycle starts, the book's general table from Saturn in the
+    first year when left out), `year` (a year of life from 1, the year
+    from birth to the first birthday, to read its ruler, its thirds and
+    its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+    annual teva is read from, which the SDK does not ship and checks
+    row by row). Each chart's reading comes back in the `lalkitab`
+    section. Null for none, which costs nothing
+    (`03-design/lalkitab.md`). Refusals are named from the record every
+    binding calls `lalkitab`, as `lalkitab.cycle.year`.
+    Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2817,6 +2853,12 @@ class ChartRequest:
         _remedies_json = None if self.remedies_json is None else self.remedies_json.encode("utf-8")
         owned.append(_remedies_json)
         raw.remedies_json = _remedies_json
+        _rectification_json = None if self.rectification_json is None else self.rectification_json.encode("utf-8")
+        owned.append(_rectification_json)
+        raw.rectification_json = _rectification_json
+        _lalkitab_json = None if self.lalkitab_json is None else self.lalkitab_json.encode("utf-8")
+        owned.append(_lalkitab_json)
+        raw.lalkitab_json = _lalkitab_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2877,6 +2919,8 @@ class ChartRequest:
             matching_json=_text(raw.matching_json),
             prashna_json=_text(raw.prashna_json),
             remedies_json=_text(raw.remedies_json),
+            rectification_json=_text(raw.rectification_json),
+            lalkitab_json=_text(raw.lalkitab_json),
         )
 
 
@@ -3899,6 +3943,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_numerology_profile.restype = ctypes.c_int32
+        self.ts_pakshi: Any = library.ts_pakshi
+        self.ts_pakshi.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_pakshi.restype = ctypes.c_int32
         self.ts_rashifal: Any = library.ts_rashifal
         self.ts_rashifal.argtypes = [
             ctypes.POINTER(_Context),
@@ -3906,6 +3957,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_rashifal.restype = ctypes.c_int32
+        self.ts_research: Any = library.ts_research
+        self.ts_research.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_research.restype = ctypes.c_int32
         self.ts_ephemeris_manifest: Any = library.ts_ephemeris_manifest
         self.ts_ephemeris_manifest.argtypes = [
             ctypes.POINTER(_Context),
@@ -4640,9 +4698,45 @@ class TeistroContext:
         json = _take_string(self._lib, _out_json)
         return json
 
+    def pakshi(self, request_json: str) -> str:
+        """Reads a native's bird over each civil day of a range at a place and
+        answers with `{value, provenance}` as canonical JSON, `value` an array
+        of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+        and next sunrise, each `{half, yama, span, activity, quality, subs}`
+        with every sub-period's activity, owner, span and how the native
+        regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+        vara, paksha}`, the bird, its death bird and the first eaters; null on
+        a day the Sun does not both rise and set.
+
+        `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+        "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+        the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+        `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+        place, the offset and `native` optional. A key it does not read, a
+        place or offset out of range or a native that is neither is
+        `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+        without an ephemeris is `CAPABILITY`, as is a build that leaves the
+        `pakshi` family out.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_pakshi(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
+
     def rashifal(self, request_json: str) -> str:
         """Reads periods of civil days at a place for each of the twelve signs and
-        answers with an array of `{period, baseline}` as canonical JSON: the
+        answers with `{value, provenance}` as canonical JSON, `value` an array
+        of `{period, baseline}`, one per period: the
         sky at the reference day's sunrise (or a clock time), each sign's
         gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
         and station of the period counted from each sign; `baseline` the
@@ -4664,6 +4758,47 @@ class TeistroContext:
         owned.append(_request_json)
         _out_json = _StringStruct()
         status = Status(self._lib.ts_rashifal(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
+
+    def research(self, request_json: str) -> str:
+        """Runs a study over a batch of births and answers with `{value,
+        provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+        study, each row `{predicate, counts}` with every group's `{present,
+        absent, unreadable, unstable}`; for any other study it is `{rows,
+        permutations, resolution, shuffle}`, each row adding `observed`, `p`
+        (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+        bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+        four only where they apply. `provenance.input_hash` seals the study
+        and is what a study publishes before its data are collected.
+
+        `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+        `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+        request's rules are, and what the study reads: `births` and `design`
+        (and a `test` for `COMPARE`); `births`, `control` and an optional
+        `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
+        optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
+        latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+        uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+        number or a decimal string. A key it does not read, a field the study
+        does not read or misses, or a value out of range is `INVALID_ARG`,
+        named under `research`, as `research.test.seed`; what the study
+        refuses once it runs is named as the façade names it. A context
+        without an ephemeris is `CAPABILITY`, as is a build that leaves the
+        `research` family out.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_research(
             self._raw,
             _request_json,
             ctypes.byref(_out_json),

@@ -21,6 +21,9 @@ pub struct CivilTime {
     hour: u8,
     minute: u8,
     second: u8,
+    /// Left out, zero: what the reader below takes, so the schema read
+    /// against does not require what the reader does not.
+    #[cfg_attr(feature = "schema", schemars(default))]
     nanos: u32,
 }
 

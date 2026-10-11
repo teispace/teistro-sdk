@@ -50,6 +50,7 @@ pub(crate) const VARSHA: &str = "varsha";
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct VarshaRequest {
     /// Which longitude the Sun returns to; the tradition's by default.
@@ -262,6 +263,7 @@ fn take_field<T: Serialize + serde::de::DeserializeOwned>(
 /// are its own, the sahams' and the Harsha bala's having records of their
 /// own beside it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct SahamStrengthReadings {
     /// Which planets are benefic and malefic.
@@ -409,6 +411,36 @@ impl<T: Askable> Serialize for Asked<T> {
     }
 }
 
+/// The reader's two shapes: `"all"`, or the members by their wire
+/// spelling, none twice.
+#[cfg(feature = "schema")]
+impl<T: Askable> schemars::JsonSchema for Asked<T>
+where
+    T::Wire: schemars::JsonSchema,
+{
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Owned(format!("Asked{}", T::Wire::schema_name()))
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": T::SHAPES,
+            "anyOf": [
+                { "const": "all" },
+                {
+                    "type": "array",
+                    "items": generator.subschema_for::<T::Wire>(),
+                    "uniqueItems": true,
+                },
+            ],
+        })
+    }
+}
+
 impl<'de, T: Askable> Deserialize<'de> for Asked<T> {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct Shapes<T>(std::marker::PhantomData<T>);
@@ -479,6 +511,7 @@ pub enum AnnualPlace {
 
 /// The words `varsha.place` is written in, other than `"birth"`.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct Residence {
     latitude_deg: f64,
@@ -503,6 +536,24 @@ impl Serialize for AnnualPlace {
             }
             .serialize(serializer),
         }
+    }
+}
+
+/// The reader's two shapes: `"birth"`, or a residence and its clock.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for AnnualPlace {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("AnnualPlace")
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": PLACE_SHAPES,
+            "anyOf": [
+                { "const": "birth" },
+                generator.subschema_for::<Residence>(),
+            ],
+        })
     }
 }
 
@@ -553,7 +604,8 @@ impl<'de> Deserialize<'de> for AnnualPlace {
 
 /// One birth's answer to a [`VarshaRequest`]: its years, and its own
 /// sahams.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Varsha {
     /// The years, each with its chart when a place was asked for.
     pub years: Vec<VarshaYear>,
@@ -571,7 +623,8 @@ pub struct Varsha {
 /// the office-bearers are read from the birth and the chart founded at
 /// that instant, so a second pass to fetch either would be a second chance
 /// to disagree about which year it is (`03-design/muntha.md`).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct VarshaYear {
     /// The instant, and which year of the birth it opens.
     pub pravesha: Pravesha,
@@ -584,7 +637,8 @@ pub struct VarshaYear {
 
 /// What a year's own chart says, for the office-bearers and whoever reads
 /// the chart after them.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AnnualChart {
     /// The annual chart's lagna, sidereal degrees.
     pub lagna_deg: f64,

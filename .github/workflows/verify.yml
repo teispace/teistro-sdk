@@ -115,6 +115,12 @@ jobs:
         run: cargo xtask check-parity
       - name: The packages installed into throwaway projects and run
         run: cargo xtask check-package
+      # What the row built and measured, for `SIZES.md` (the `sizes` job).
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sizes-${{ matrix.platform }}
+          path: target/sizes/
+          if-no-files-found: error
       - name: The documentation site builds and renders every generated page
         # One machine is enough: the site is the same everywhere, and the
         # matrix is here for the libraries.
@@ -144,8 +150,14 @@ jobs:
           submodules: recursive
       - name: The C, Node, Python and Java bindings, and the packages installed
         run: >-
-          docker run --rm -v "$PWD:/w" -w /w -e TEISTRO_STRICT ${{ matrix.container }}
+          docker run --rm -v "$PWD:/w" -w /w -e TEISTRO_STRICT -e GITHUB_SHA -e GITHUB_RUN_ID
+          ${{ matrix.container }}
           sh xtask/alpine.sh check-c check-node check-python check-java check-package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sizes-${{ matrix.platform }}
+          path: target/sizes/
+          if-no-files-found: error
 
   # The staged wasm package against the Node binding's own suite,
   # unchanged, and in headless Chrome, whose answer must equal Node's to
@@ -170,6 +182,75 @@ jobs:
           node-version: "22"
       - name: The wasm package passes the Node suite unchanged, and in a browser as in Node
         run: cargo xtask check-wasm
+      # Uploaded when the budget fails too: a module over its budget is
+      # what `cargo xtask sizes --from DIR --why SENTENCE` moves it with,
+      # and a run that kept it back would leave nothing to record.
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sizes-wasm
+          path: target/sizes/
+          if-no-files-found: error
+
+  # Every artefact the run built, held to `docs/05-testing/sizes.json`
+  # within 2% and complete: every platform, profile and bundle
+  # (03-design/generated-pages.md §1). When it fails, the record the run
+  # would write is uploaded as `sizes-record`, to be committed with
+  # `cargo xtask sizes --from DIR` from the same fragments.
+  sizes:
+    needs: [bindings, musl, wasm]
+    # Run after a failed budget as well, so the record that would move it
+    # is written; an artefact a failed job never measured is refused as
+    # missing, so this cannot pass on part of a run.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sizes-*
+          path: target/sizes-run
+      - name: Every artefact the run built, against the record
+        run: cargo xtask check-sizes --from target/sizes-run
+      - name: The record this run would write
+        if: failure()
+        run: cargo xtask sizes --from target/sizes-run
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sizes-record
+          path: |
+            docs/05-testing/sizes.json
+            docs/05-testing/SIZES.md
+
+  # The tiers a default build does not compile are scored here and
+  # recorded in docs/05-testing/conformance.json; a corpus report is
+  # deterministic, so a run must match the record exactly.
+  conformance:
+    needs: [tiers]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: conformance-*
+          path: target/conformance-run
+      - name: Every recorded tier's corpus score, against the record
+        run: cargo xtask check-conformance --from target/conformance-run
+      - name: The record this run would write
+        if: failure()
+        run: cargo xtask conformance --from target/conformance-run
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-record
+          path: docs/05-testing/conformance.json
 
   # A slow body's crossing search strides by the shortest run between its
   # stations, a table; this holds the table to every body's stations over
@@ -212,9 +293,19 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: The provider kit and the crate's own tests at this tier
+        env:
+          TEISTRO_CONFORMANCE_DIR: ${{ github.workspace }}/target/conformance-tier
         run: >
+          mkdir -p target/conformance-tier &&
           cargo test -p teistro-ephemeris-builtin
           --no-default-features --features ${{ matrix.tier }}
+      # The tier's corpus score, which the `conformance` job holds to the
+      # record (03-design/generated-pages.md §2.3).
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conformance-${{ matrix.tier }}
+          path: target/conformance-tier/scores.jsonl
+          if-no-files-found: error
       - name: The boundary carries this tier too
         run: >
           cargo test -p teistro-ffi

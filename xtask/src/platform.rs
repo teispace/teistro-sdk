@@ -249,6 +249,16 @@ impl Platform {
         }
     }
 
+    /// The file name Cargo gives a program built from `name`: `name.exe`
+    /// on Windows.
+    pub(crate) fn program(&self, name: &str) -> String {
+        if self.is_windows() {
+            format!("{name}.exe")
+        } else {
+            name.to_string()
+        }
+    }
+
     /// The file name Cargo gives a static library built from `stem`.
     pub(crate) fn static_library(&self, stem: &str) -> String {
         if self.is_windows() {
@@ -280,11 +290,21 @@ impl Platform {
     pub(crate) fn npm_package(&self) -> String {
         format!("{NPM_SCOPE}-{}", self.name())
     }
+
+    /// The npm package that carries this platform's agent server.
+    pub(crate) fn npm_mcp_package(&self) -> String {
+        format!("{NPM_MCP}-{}", self.name())
+    }
 }
 
 /// The scoped name of the Node package; the platform packages are this
 /// name with the platform appended, which is what the loader resolves.
 pub(crate) const NPM_SCOPE: &str = "@teistro/sdk";
+
+/// The scoped name of the agent server's npm launcher, which a host runs
+/// as `npx -y @teistro/mcp`; its platform packages are this name with the
+/// platform appended, which is what the launcher resolves.
+pub(crate) const NPM_MCP: &str = "@teistro/mcp";
 
 /// The scoped name of the wasm package: the same layer over the wasm
 /// module, one package for every host. It matches the release's

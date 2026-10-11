@@ -532,6 +532,29 @@ public record ChartOptions(
         }
 
         /**
+         * Lal Kitab, the 1952 edition: every member optional, as
+         * {@code Map.of("cycle", Map.of("planet", Graha.VENUS, "year", 17), "year", 30)}
+         * ({@code 03-design/lalkitab.md}).
+         *
+         * @param request the request object, or its JSON
+         * @return this builder
+         */
+        public Builder lalkitab(Object request) {
+            return json("lalkitab_json", request);
+        }
+
+        /**
+         * The rectification: each reading asked by its member, as
+         * {@code Map.of("purify", Map.of("minutes", 30))}.
+         *
+         * @param request the request object, or its JSON
+         * @return this builder
+         */
+        public Builder rectification(Object request) {
+            return json("rectification_json", request);
+        }
+
+        /**
          * The options.
          *
          * @return the options

@@ -21,9 +21,11 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_port_ephemeris::EphemerisProvider;
+use teistro_rectification::baseline::{self, BaselineAnswer, BaselineRequest};
 use teistro_rectification::{
     Answer, Circumstance, CircumstanceRules, Conception, ConceptionRules, ConceptionSky, Day,
-    Facts, Rules, Sky, Window, circumstance, conception, narrow,
+    Facts, Rules, Sky, Svarodaya, SvarodayaRun, Window, circumstance, conception, narrow,
+    svarodaya, svarodaya_runs,
 };
 use teistro_time::ghati::Reckoning;
 
@@ -179,6 +181,122 @@ impl ChartArea<'_> {
         })
     }
 
+    /// The Shiva Svarodaya's nadi and tattva at an instant
+    /// (`03-design/rectification.md`, step 7, X12): the nadi the tithi at
+    /// sunrise starts (v. 62), its turn of two and a half ghatis (v. 63),
+    /// and the tattva flowing in it (vv. 71, 72, 154, 197), with the sex
+    /// v. 60 gives the nadi.
+    ///
+    /// **An application the text does not make**: no verse reads a nadi or
+    /// a tattva at a birth, so this is a report, never a bar.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{JulianDay, Place};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let place: Place = todo!();
+    /// let read = sdk.chart().svarodaya(JulianDay::literal(2_460_000.3), &place, UtcOffset::UTC)?.value;
+    /// println!("{:?} nadi, {:?}, turn {} of the day", read.run.nadi, read.run.tattva, read.run.turn);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A context with no ephemeris, and whatever founding a chart at the
+    /// instant or reckoning its day refuses.
+    pub fn svarodaya(
+        self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<Svarodaya>, Error> {
+        let input = SvarodayaInput {
+            window: None,
+            at: Some(at),
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+        };
+        self.over_sky(at, place, offset, &input, |sky| svarodaya(sky, at))
+    }
+
+    /// Every run of the Shiva Svarodaya's nadi and tattva inside a birth
+    /// window, clipped to it, as [`ChartArea::svarodaya`] reads each:
+    /// what a consumer sets beside [`ChartArea::rectify`]'s runs.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::svarodaya`], at every sunrise the window reaches.
+    pub fn svarodaya_runs(
+        self,
+        window: Window,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<Vec<SvarodayaRun>>, Error> {
+        let input = SvarodayaInput {
+            window: Some(window),
+            at: None,
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+        };
+        let middle = JulianDay::literal(window.from.get() + window.days() / 2.0);
+        self.over_sky(middle, place, offset, &input, |sky| {
+            svarodaya_runs(sky, window)
+        })
+    }
+
+    /// The baseline engine's rectification, reproduced
+    /// (`03-design/rectification.md`, step 6): a posterior over a grid of
+    /// candidate times, from a prior on the reported time and the tattva
+    /// of the child's sex, and from how well each candidate's Vimshottari
+    /// periods fit dated life events.
+    ///
+    /// **Rank 2, and unsourced**: no text gives either stage. It is never
+    /// combined with [`ChartArea::rectify`]'s verses, which remove times
+    /// where this only ranks them, so a consumer reads the two side by
+    /// side. The sky is this context's, so a context under the baseline's
+    /// profile reproduces the baseline's charts.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{JulianDay, Place};
+    /// # use teistro::rectification::{BaselineRequest, EventKind, LifeEvent};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let place: Place = todo!();
+    /// let mut request = BaselineRequest::around(JulianDay::literal(2_451_779.1354), 60.0);
+    /// request.events.push(LifeEvent::on(EventKind::Marriage, JulianDay::literal(2_459_000.5)));
+    /// let answer = sdk.chart().rectify_baseline(&place, UtcOffset::literal(5, 45, 0), &request)?.value;
+    /// for interval in &answer.intervals {
+    ///     println!("{} to {}", interval.from.get(), interval.to.get());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`BaselineRequest::check`] refuses, a context with no
+    /// ephemeris, and whatever founding a chart at a candidate refuses.
+    pub fn rectify_baseline(
+        self,
+        place: &Place,
+        offset: UtcOffset,
+        request: &BaselineRequest,
+    ) -> Result<Envelope<BaselineAnswer>, Error> {
+        request.check()?;
+        let minutes = offset.seconds().div_euclid(60);
+        let input = BaselineInput {
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+            request,
+        };
+        self.over_sky(request.reported, place, offset, &input, |sky| {
+            baseline::rectify(sky, request, minutes)
+        })
+    }
+
     /// Runs `read` over the sky of the chart founded at `founded_at`,
     /// sealing its answer under that chart's provenance and `input`'s hash.
     fn over_sky<T: Serialize, I: Serialize>(
@@ -215,6 +333,7 @@ impl ChartArea<'_> {
 
 /// What a rectification was asked, which its input hash seals.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct RectifyInput<'r> {
     window: Window,
@@ -225,6 +344,7 @@ struct RectifyInput<'r> {
 
 /// What a conception report was asked, which its input hash seals.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct ConceptionInput<'r> {
     at: JulianDay<Utc>,
@@ -233,8 +353,32 @@ struct ConceptionInput<'r> {
     rules: &'r ConceptionRules,
 }
 
+/// What a baseline rectification was asked, which its input hash seals.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+struct BaselineInput<'r> {
+    place: Place,
+    utc_offset_seconds: i32,
+    request: &'r BaselineRequest,
+}
+
+/// What a Svarodaya reading was asked, which its input hash seals.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+struct SvarodayaInput {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    window: Option<Window>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    at: Option<JulianDay<Utc>>,
+    place: Place,
+    utc_offset_seconds: i32,
+}
+
 /// What a circumstance report was asked, which its input hash seals.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct CircumstanceInput<'r> {
     at: JulianDay<Utc>,
@@ -352,6 +496,17 @@ impl ConceptionSky for ChartSky<'_, '_> {
             .founder
             .angles_at(at, &self.place, &self.zodiac)?
             .midheaven_deg)
+    }
+
+    fn grahas_deg(&self, grahas: &[Graha], at: JulianDay<Utc>) -> Result<Vec<f64>, Error> {
+        let read = self
+            .founder
+            .longitudes_in(at, &self.place, &self.zodiac, grahas)?;
+        if read.len() == grahas.len() {
+            Ok(read)
+        } else {
+            Err(Error::internal("grahas asked, and not as many answered"))
+        }
     }
 }
 

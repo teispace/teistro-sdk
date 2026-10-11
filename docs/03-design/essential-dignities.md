@@ -1,6 +1,8 @@
 # Essential dignities (the `hellenistic` module, step 1)
 
-Status: `draft`, 2026-10-01 — written **after** the falsification pass
+Status: `building`, 2026-10-01: every step of the order of work built
+but Ibn Ezra's weights for the almuten, which wait on a rank 1 reading.
+Written **after** the falsification pass
 ([`terms-measured.md`](terms-measured.md), `check-terms`) and before any
 crate. Phase 7's `hellenistic` module begins here (crux C46, step 1).
 
@@ -241,10 +243,10 @@ back as a request unchanged. Node's types make that a compile error
 (`terms: 'TABLE'` is not a `DignityRequest`), and the boundary refuses it
 by `dignities.rules.terms.TABLE`.
 
-Node, Python and Dart each rebuild Rust's `Dignities`, with the planet
+Every binding rebuilds Rust's `Dignities`, with the planet
 as a catalogue member and `peregrine` beside the flags. Parity asks every
 runner for a request with each knob turned from its default (`DAYLIGHT`,
-`EGYPTIAN`, `PTOLEMY`, a peregrine score of 0), and the five runners agree
+`EGYPTIAN`, `PTOLEMY`, a peregrine score of 0), and every runner agrees
 on every value. The ABI test holds every cell to the façade's own answer
 to the bit, and the keys test holds the four enums to serde's spelling.
 
@@ -536,7 +538,7 @@ the other.
    what will hold that move.
 3. The façade and the chart document: dignities per planet, with the
    sect and the rules that made them (§The façade).
-4. The boundary and the four bindings, under the parity gate.
+4. The boundary and every binding, under the parity gate.
    **Done** (§The boundary).
 5. Mutual reception, the almuten (Lilly's own definition, and Ibn
    Ezra's weights once they are read), and Lilly's accidental

@@ -1,6 +1,9 @@
 # Gochar: the transits read from the natal Moon
 
-Status: `draft`, 2026-09-26; §6 step 1 **built** the same day. Written
+Status: `built`, 2026-09-26: §6 steps 1 to 3 built here, and step 4's
+parts built on their own pages ([`sade-sati.md`](sade-sati.md),
+[`transit-hit-list.md`](transit-hit-list.md),
+[`gochar-ashtakavarga.md`](gochar-ashtakavarga.md)). Written
 from the text before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/11-transits-gochar.md` (P0:
@@ -149,9 +152,9 @@ that reads the reference once.
    `obstructed_by` a nine-graha bit set and the vedha house 0 for none.
    **Fixed, not ragged**, since the request settles how many instants
    every chart gets, so each binding checks the rows divide by the chart
-   count rather than trusting it. Node, Python and Dart read it as
+   count rather than trusting it. Every binding reads it as
    `chart.gochar`, the parity gate compares every graha of two instants
-   across all four, and an ABI test holds every cell to the façade's own
+   across every runner, and an ABI test holds every cell to the façade's own
    reading. Crossing it found a reading saying its reference sign but not
    **what** it was counted from: `Reference { from, sign }` now says both,
    and `GocharFrom` moved into the crate. The node knobs cross by `of`,

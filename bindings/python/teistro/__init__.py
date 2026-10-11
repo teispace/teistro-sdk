@@ -698,7 +698,12 @@ __all__ = [
     "PrashnaRequest",
     "PrashnaQuestion",
     "PrashnaRules",
+    "PiscesRising",
+    "TimingRule",
+    "MookRule",
+    "ScoreRule",
     "PrashnaMoonRules",
+    "KshinaRule",
     "Prashna",
     "PrashnaVerdict",
     "PrashnaClause",
@@ -713,8 +718,11 @@ __all__ = [
     "RemedyRequest",
     "RemedyRules",
     "FunctionalRules",
+    "FunctionalScheme",
     "ShantiRules",
+    "RikSource",
     "DevataRules",
+    "SunWithKetu",
     "Remedies",
     "Functional",
     "FunctionalRow",
@@ -730,6 +738,137 @@ __all__ = [
     "AmatyaDevatas",
     "IshtaDevata",
     "Devotion",
+    # Lal Kitab: the 1952 edition's teva, its reading and the 35-year cycle.
+    "LalKitabRequest",
+    "LalKitabCycle",
+    "VarshphalRows",
+    "LalKitab",
+    "LalKitabReading",
+    "LalKitabPlanet",
+    "LalKitabOwner",
+    "LalKitabCast",
+    "LalKitabHouse",
+    "LalKitabLook",
+    "LalKitabMasnui",
+    "LalKitabDebt",
+    "LalKitabSeat",
+    "PitriState",
+    "LalKitabFlags",
+    "LalKitabStart",
+    "LalKitabPeriod",
+    "LalKitabYear",
+    # Pancha Pakshi: a native's bird over days at a place.
+    "PakshiActivity",
+    "PakshiBird",
+    "PakshiBirdNative",
+    "PakshiDay",
+    "PakshiDays",
+    "PakshiDayBounds",
+    "PakshiReading",
+    "PakshiRelation",
+    "PakshiRules",
+    "PakshiSpan",
+    "PakshiStarNative",
+    "PakshiSub",
+    "PakshiYama",
+    # Research: counts and permutation tests over a batch of births.
+    "ResearchAdjusted",
+    "ResearchBirth",
+    "ResearchControl",
+    "ResearchCountRow",
+    "ResearchCounts",
+    "ResearchDesign",
+    "ResearchEffect",
+    "ResearchEventTest",
+    "ResearchExpectation",
+    "ResearchGroupCount",
+    "ResearchGroupTest",
+    "ResearchInterval",
+    "ResearchPValue",
+    "ResearchReplicateTest",
+    "ResearchRow",
+    "ResearchSubject",
+    "ResearchTested",
+    "ResearchUnderAlpha",
+    # Rectification: a chart read as a birth time to rectify.
+    "RectificationRequest",
+    "PurifyRequest",
+    "PurifierRules",
+    "PurifierNative",
+    "GulikaExtension",
+    "PurifyAs",
+    "PranapadaRule",
+    "GulikaAt",
+    "ConceptionRules",
+    "PranapadaHouseRules",
+    "HouseCount",
+    "NishekaRules",
+    "NishekaMonth",
+    "NishekaMandi",
+    "NinthBhava",
+    "SaturnTerm",
+    "InvisibleHalf",
+    "ConceptionMoonRules",
+    "ConceptionCount",
+    "ConceptionRising",
+    "ConceptionPisces",
+    "CircumstanceRequest",
+    "BirthFacts",
+    "BirthPresentation",
+    "LampLevel",
+    "AttendantFacts",
+    "CircumstanceRules",
+    "MoonSees",
+    "SunFallen",
+    "PresentationBy",
+    "BetweenBy",
+    "OutsideHalf",
+    "BaselineRectificationRequest",
+    "BirthTimeAccuracy",
+    "NativeSex",
+    "BaselineDashaRules",
+    "DashaYearLength",
+    "AfterCycle",
+    "SeedOverflow",
+    "AshtottariGrouping",
+    "LifeEventRequest",
+    "LifeEventKind",
+    "DatePrecision",
+    "EventConfidence",
+    "Rectification",
+    "Purified",
+    "PurifierRun",
+    "PurifierVerdict",
+    "PurifierClause",
+    "PurifierGrid",
+    "Conception",
+    "PranapadaHouse",
+    "Nisheka",
+    "NishekaCount",
+    "NishekaPoints",
+    "NishekaSpan",
+    "MonthsBefore",
+    "ConceptionMoon",
+    "MoonCount",
+    "Circumstance",
+    "BirthSky",
+    "FatherReading",
+    "PresentationReading",
+    "Lamp",
+    "Attending",
+    "CircumstanceWeight",
+    "BaselineAnswer",
+    "RankedCandidate",
+    "StageOutcome",
+    "StageNote",
+    "TattvaSexNote",
+    "ReportedTimeNote",
+    "EventFitNote",
+    "HeldOutEvent",
+    "SvarodayaRequest",
+    "SvarodayaAround",
+    "Svarodaya",
+    "SvarodayaRun",
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
@@ -743,6 +882,8 @@ __all__ = [
     "LuckyElements",
     "BaselineScore",
     "RashifalAnswer",
+    "RashifalAnswers",
+    "RashifalSealed",
     "GocharReference",
     "GocharRules",
     "GrahaGochar",
@@ -824,11 +965,14 @@ __all__ = [
     "TajikaRelation",
     "AnnualDasha",
     "AnnualDashaRules",
+    "BalanceMeasure",
+    "BirthPeriod",
     "AnnualDashaShare",
     "DashaRing",
     "YearOfDays",
     "RashiDashaDefinition",
     "UduDashaDefinition",
+    "UduCount",
     "DashaLord",
     "Sayanadi",
     "Lajjitadi",
@@ -1718,6 +1862,8 @@ class ChartArea(_Area):
         matching: Optional[MatchingRequest] = None,
         prashna: Optional[PrashnaRequest] = None,
         remedies: Optional[RemedyRequest] = None,
+        lalkitab: Optional[LalKitabRequest] = None,
+        rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1777,6 +1923,8 @@ class ChartArea(_Area):
             matching=matching,
             prashna=prashna,
             remedies=remedies,
+            lalkitab=lalkitab,
+            rectification=rectification,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1826,6 +1974,8 @@ class ChartArea(_Area):
         matching: Optional[MatchingRequest] = None,
         prashna: Optional[PrashnaRequest] = None,
         remedies: Optional[RemedyRequest] = None,
+        lalkitab: Optional[LalKitabRequest] = None,
+        rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1912,6 +2062,8 @@ class ChartArea(_Area):
             matching_json=_matching_json(matching),
             prashna_json=_record_json(prashna, "prashna", "{'question': {'house': 7}}"),
             remedies_json=_record_json(remedies, "remedies", "{'at': 2460676.5}"),
+            lalkitab_json=_lalkitab_json(lalkitab),
+            rectification_json=_record_json(rectification, "rectification", "{'purify': {'minutes': 30}}"),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -1919,7 +2071,7 @@ class ChartArea(_Area):
         )
 
 
-    def rashifal(self, request: "RashifalRequest", baseline: Optional[str] = None) -> "RashifalAnswer":
+    def rashifal(self, request: "RashifalRequest", baseline: Optional[str] = None) -> "RashifalSealed":
         """One period of civil days at a place read for each of the twelve
         signs (`03-design/rashifal.md`): the sky at sunrise on the middle
         day, or at `snapshot`'s clock time; each sign's gochar from
@@ -1930,14 +2082,18 @@ class ChartArea(_Area):
 
         >>> # week = ctx.chart.rashifal({"first": first, "last": last, "place": place, "utcOffsetSeconds": 20700}, "WEEKLY")
         >>> # leo = next(r for r in week.period.readings if r.rashi is Rashi.LEO)
+        >>> # sealed = week.provenance.input_hash
         """
-        return self.rashifal_many([request], baseline)[0]
+        many = self.rashifal_many([request], baseline)
+        one = many.value[0]
+        return RashifalSealed(period=one.period, baseline=one.baseline, provenance=many.provenance)
 
     def rashifal_many(
         self, requests: Sequence["RashifalRequest"], baseline: Optional[str] = None
-    ) -> List["RashifalAnswer"]:
+    ) -> "RashifalAnswers":
         """Many periods, each read as `rashifal` reads it alone, under one
-        founder."""
+        founder, as the envelope: the answers in the requests' order and the
+        batch's provenance."""
         if isinstance(requests, Mapping) or not isinstance(requests, Sequence):
             raise TeistroError(
                 Status.INVALID_ARG,
@@ -1948,7 +2104,11 @@ class ChartArea(_Area):
         if baseline is not None:
             asked["baseline"] = baseline
         answered = self._context._through_provider(lambda: self._context.inner.rashifal(json.dumps(asked)))
-        return [_rashifal_answer(one) for one in json.loads(answered)]
+        envelope = json.loads(answered)
+        return RashifalAnswers(
+            value=tuple(_rashifal_answer(one) for one in envelope["value"]),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
 
 class AlmanacArea(_Area):
     """`sdk.almanac` — a day, or a run of days, with its limbs.
@@ -2026,6 +2186,58 @@ class AlmanacArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
         ).at(0)
 
+    def pakshi(
+        self,
+        *,
+        from_date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        native: Union[PakshiBirdNative, PakshiStarNative],
+        to_date: Optional[CalendarDate] = None,
+        rules: Optional[PakshiRules] = None,
+    ) -> "PakshiDays":
+        """A native's bird read over every day from `from_date` to
+        `to_date` (the first when left out) under Pancha Pakshi
+        (`03-design/pakshi.md`): each day's ten yamas from the almanac's
+        own sunrise, sunset and next sunrise, with the bird's activity and
+        its timed sub-periods. A day the Sun does not both rise and set has
+        no reading. A native that is both a bird and a star, or neither, is
+        refused as `pakshi.native.bird` or `pakshi.native.nakshatra`. The
+        answer is the envelope: the days, and the provenance that sealed the
+        request.
+
+        >>> # days = ctx.almanac.pakshi(from_date=date, place=madras, utc_offset_seconds=19800,
+        >>> #     native={"nakshatra": Nakshatra.UTTARA_ASHADHA, "paksha": Paksha.SHUKLA})
+        """
+
+        def parts(day: CalendarDate) -> Dict[str, int]:
+            return {"year": day.year, "month": day.month, "day": day.day}
+
+        if not isinstance(native, Mapping):
+            raise TeistroError(
+                Status.INVALID_ARG, "native is {'bird': ...} or {'nakshatra': ..., 'paksha': ...}", field="native"
+            )
+        whose = {key: _member_key(value) if key in ("nakshatra", "paksha") else value for key, value in native.items()}
+        asked: Dict[str, Any] = {
+            "calendar": from_date.calendar.key,
+            "first": parts(from_date),
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "native": whose,
+        }
+        if to_date is not None:
+            asked["last"] = parts(to_date)
+        if rules is not None:
+            asked["rules"] = dict(rules)
+        answered = self._context._through_provider(lambda: self._context.inner.pakshi(json.dumps(asked)))
+        envelope = json.loads(answered)
+        return PakshiDays(
+            value=tuple(_pakshi_day(one) for one in envelope["value"]),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
 
 class MatchingArea(_Area):
     """`sdk.matching` — what matches without a chart: two names, star to
@@ -2100,6 +2312,335 @@ class NumerologyArea(_Area):
         if written is not None:
             request["rules"] = json.loads(written)
         return NumerologyProfile._of(json.loads(self._context.inner.numerology_profile(json.dumps(request))))
+
+@dataclass(frozen=True)
+class ResearchBirth:
+    """One birth of a study (`03-design/research.md`): its instant, a Julian
+    day in UTC, where, under which clock, and how far either side its
+    recorded time may be wrong, 0 to 720 minutes. A rule whose answer
+    differs at either edge is counted unstable on the chart."""
+
+    instant: float
+    place: Observer
+    utc_offset_seconds: int
+    uncertainty_minutes: float = 0.0
+
+
+@dataclass(frozen=True)
+class ResearchSubject:
+    """One subject of an event study: a birth and when the event of its
+    life happened, a Julian day in UTC."""
+
+    birth: ResearchBirth
+    event: float
+
+
+class ResearchDesign(TypedDict, total=False):
+    """Who is in which group, one label per birth, and the strata the labels
+    move within."""
+
+    groups: Sequence[int]
+    strata: Sequence[int]
+
+
+class ResearchGroupTest(TypedDict, total=False):
+    """A permutation test of a design's groups: `seed`, `permutations` (1 to
+    10 000 000) and `contrast` (`{"kind": "CASE_VS_REST", "case": 1}` or
+    `{"kind": "ANY_DIFFERENCE"}`) required; `alternative`, `level`, `alpha`
+    and `parallelism` optional."""
+
+    seed: int
+    permutations: int
+    contrast: Mapping[str, Any]
+    alternative: Literal["GREATER", "LESS", "TWO_SIDED"]
+    level: float
+    alpha: float
+    parallelism: Union[Literal["ONE"], Mapping[str, int]]
+
+
+class ResearchEventTest(TypedDict, total=False):
+    """A test of events against the shuffled-event null: `seed` and
+    `permutations` required, `afterBirth` `"REFUSE"` (the default) or
+    `"RESTRICT_PAIRINGS"`."""
+
+    seed: int
+    permutations: int
+    alternative: Literal["GREATER", "LESS", "TWO_SIDED"]
+    afterBirth: Literal["REFUSE", "RESTRICT_PAIRINGS"]
+    level: float
+    alpha: float
+    parallelism: Union[Literal["ONE"], Mapping[str, int]]
+
+
+class ResearchControl(TypedDict, total=False):
+    """Gauquelin's control: the sample refounded `replicates` times (1 to
+    100 000) from `seed`, clock times moving only inside `strata` when
+    given."""
+
+    seed: int
+    replicates: int
+    strata: Sequence[int]
+
+
+class ResearchReplicateTest(TypedDict, total=False):
+    """How a sample is read against its replicates, every member optional."""
+
+    alternative: Literal["GREATER", "LESS", "TWO_SIDED"]
+    level: float
+    alpha: float
+
+
+@dataclass(frozen=True)
+class ResearchGroupCount:
+    """A predicate's charts in one group: read and holding, read and not,
+    not read, and unstable inside the time uncertainty; the last two are
+    left out of every denominator."""
+
+    present: int
+    absent: int
+    unreadable: int
+    unstable: int
+
+
+@dataclass(frozen=True)
+class ResearchInterval:
+    """An estimate with its interval at the test's level."""
+
+    estimate: float
+    low: float
+    high: float
+
+
+@dataclass(frozen=True)
+class ResearchPValue:
+    """`(exceed + 1)/(m + 1)`, never zero, with its Clopper–Pearson
+    interval."""
+
+    exceed: int
+    value: float
+    low: float
+    high: float
+
+
+@dataclass(frozen=True)
+class ResearchAdjusted:
+    """The family's adjusted p-values: max-T, Holm, Bonferroni,
+    Benjamini–Hochberg and Benjamini–Yekutieli."""
+
+    max_t: float
+    holm: float
+    bonferroni: float
+    bh: float
+    by: float
+
+
+@dataclass(frozen=True)
+class ResearchEffect:
+    """The cases against the rest: each group's share, their difference and
+    ratio with intervals, the odds ratio and Cohen's *h*. The ratio and the
+    odds are `None` where a cell is empty."""
+
+    risk_case: ResearchInterval
+    risk_rest: ResearchInterval
+    risk_difference: ResearchInterval
+    risk_ratio: Optional[ResearchInterval]
+    odds_ratio: Optional[float]
+    cohen_h: float
+
+
+@dataclass(frozen=True)
+class ResearchExpectation:
+    """A one-group study's share against the share its null expects, and
+    their ratio where anything is expected."""
+
+    observed: float
+    expected: float
+    ratio: Optional[float]
+
+
+@dataclass(frozen=True)
+class ResearchUnderAlpha:
+    """Which methods put a predicate at or under the caller's alpha."""
+
+    raw: bool
+    max_t: bool
+    holm: bool
+    bonferroni: bool
+    bh: bool
+    by: bool
+
+
+@dataclass(frozen=True)
+class ResearchCountRow:
+    """One predicate's charts in each group, groups in index order."""
+
+    predicate: str
+    counts: Tuple[ResearchGroupCount, ...]
+
+
+@dataclass(frozen=True)
+class ResearchRow:
+    """One predicate's row of a test. `exact`, `effect`, `expected` and
+    `under_alpha` are `None` where they do not apply."""
+
+    predicate: str
+    counts: Tuple[ResearchGroupCount, ...]
+    observed: Optional[float]
+    """The statistic under the observed labels; `None` when it is
+    unbounded, a recombined sample beyond replicates that all agree."""
+    p: ResearchPValue
+    exact: Optional[float]
+    adjusted: ResearchAdjusted
+    effect: Optional[ResearchEffect]
+    expected: Optional[ResearchExpectation]
+    under_alpha: Optional[ResearchUnderAlpha]
+
+
+@dataclass(frozen=True)
+class ResearchCounts:
+    """A study's counts, with the provenance whose `input_hash` is its
+    pre-registration."""
+
+    rows: Tuple[ResearchCountRow, ...]
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class ResearchTested:
+    """A test's rows, per predicate and never a single verdict: how many
+    permutations, the smallest p-value they can give, and the generator
+    and shuffle that drew them, so a reader can rerun the study."""
+
+    rows: Tuple[ResearchRow, ...]
+    permutations: int
+    resolution: float
+    shuffle: str
+    provenance: Provenance
+
+
+class ResearchArea(_Area):
+    """`sdk.research` — counts and permutation tests over a batch of births
+    (`03-design/research.md`). Every rule of `rules` is a predicate, read
+    once on every chart, and the predicates are one family for the
+    corrections. A study's provenance seals it: its `input_hash` is the
+    pre-registration a study publishes before its data are collected."""
+
+    def counts(
+        self,
+        *,
+        births: Sequence[ResearchBirth],
+        rules: RuleRequest,
+        design: ResearchDesign,
+        holds: Optional[Literal["STANDING", "FORMED"]] = None,
+    ) -> ResearchCounts:
+        """How often each rule holds in each group, the charts it cannot be
+        read on and those it is unstable on counted apart.
+
+        >>> # table = ctx.research.counts(births=births, rules={"shipped": ["YOGAS"]},
+        >>> #     design={"groups": [i % 2 for i in range(len(births))]})
+        """
+        answer = self._run("COUNTS", rules, holds, births=births, design=design)
+        return ResearchCounts(
+            rows=tuple(
+                ResearchCountRow(predicate=row["predicate"], counts=_research_counts(row["counts"]))
+                for row in answer["value"]["rows"]
+            ),
+            provenance=decode_provenance(answer["provenance"]),
+        )
+
+    def compare(
+        self,
+        *,
+        births: Sequence[ResearchBirth],
+        rules: RuleRequest,
+        design: ResearchDesign,
+        test: ResearchGroupTest,
+        holds: Optional[Literal["STANDING", "FORMED"]] = None,
+    ) -> ResearchTested:
+        """Whether the design's groups differ on each rule, the labels
+        permuted (within strata when the design has them), with the
+        family's corrections and the effect sizes."""
+        return _research_tested(self._run("COMPARE", rules, holds, births=births, design=design, test=test))
+
+    def expected(
+        self,
+        *,
+        births: Sequence[ResearchBirth],
+        rules: RuleRequest,
+        control: ResearchControl,
+        test: Optional[ResearchReplicateTest] = None,
+        holds: Optional[Literal["STANDING", "FORMED"]] = None,
+    ) -> ResearchTested:
+        """Whether each rule is commoner (or rarer) in this sample than in
+        its own recombined population: the sample refounded with clock
+        times shuffled among its births, date and place kept."""
+        return _research_tested(self._run("EXPECTED", rules, holds, births=births, control=control, test=test))
+
+    def timed(
+        self,
+        *,
+        subjects: Sequence[ResearchSubject],
+        rules: RuleRequest,
+        dasha: Union[DashaSystem, str],
+        shuffle: Literal["EVENT_DATES", "AGES_AT_EVENT"],
+        test: ResearchEventTest,
+        depth: Optional[int] = None,
+        strata: Optional[Sequence[int]] = None,
+        holds: Optional[Literal["STANDING", "FORMED"]] = None,
+    ) -> ResearchTested:
+        """Whether each rule is delivered by `dasha`'s running periods, to
+        `depth` (2 when left out), at the subjects' own events more (or
+        less) often than at events shuffled among them: by date
+        (`EVENT_DATES`, the calendar of events kept) or by age
+        (`AGES_AT_EVENT`, each person's age at the event kept). The shuffle
+        has no default."""
+        return _research_tested(
+            self._run(
+                "TIMED",
+                rules,
+                holds,
+                subjects=subjects,
+                dasha=_member_key(dasha),
+                test=test,
+                depth=depth,
+                shuffle=shuffle,
+                strata=None if strata is None else list(strata),
+            )
+        )
+
+    def _run(self, study: str, rules: RuleRequest, holds: Optional[str], **fields: Any) -> Dict[str, Any]:
+        """The study's answer: every field given crosses, and one the study
+        does not read is refused by name there rather than dropped here."""
+
+        def birth(given: ResearchBirth) -> Dict[str, Any]:
+            return {
+                "instant": given.instant,
+                "latitudeDeg": given.place.latitude_deg,
+                "longitudeDeg": given.place.longitude_deg,
+                "altitudeM": given.place.altitude_m,
+                "utcOffsetSeconds": given.utc_offset_seconds,
+                "uncertaintyMinutes": given.uncertainty_minutes,
+            }
+
+        written = _rules_json(rules)
+        asked: Dict[str, Any] = {"study": study, "rules": {} if written is None else json.loads(written)}
+        if holds is not None:
+            asked["holds"] = holds
+        for name, value in fields.items():
+            if value is None:
+                continue
+            if name == "births":
+                asked[name] = [birth(one) for one in value]
+            elif name == "subjects":
+                asked[name] = [{"birth": birth(one.birth), "event": one.event} for one in value]
+            elif name in ("design", "test", "control"):
+                asked[name] = json.loads(_record_json(value, name, "{'seed': 1, 'permutations': 999}") or "{}")
+            else:
+                asked[name] = value
+        answered = self._context._through_provider(lambda: self._context.inner.research(json.dumps(asked)))
+        decoded: Dict[str, Any] = json.loads(answered)
+        return decoded
+
 
 class Context:
     """A context, and everything a consumer asks of one.
@@ -2190,6 +2731,11 @@ class Context:
     def numerology(self) -> NumerologyArea:
         """What a name and a birth date say under numerology's two systems."""
         return NumerologyArea(self)
+
+    @cached_property
+    def research(self) -> ResearchArea:
+        """Counts and permutation tests over a batch of births."""
+        return ResearchArea(self)
 
     # ── The context itself ────────────────────────────────────────────
 
@@ -6544,6 +7090,23 @@ class RashifalAnswer:
 
 
 @dataclass(frozen=True)
+class RashifalSealed(RashifalAnswer):
+    """One period's answer as `rashifal` hands it out, with what sealed it."""
+
+    provenance: Provenance
+    """What computed it, and under what; `input_hash` seals the request."""
+
+
+@dataclass(frozen=True)
+class RashifalAnswers:
+    """Many periods' answers, in the requests' order, under one provenance."""
+
+    value: Tuple[RashifalAnswer, ...]
+    provenance: Provenance
+    """What computed them, and under what; `input_hash` seals the request."""
+
+
+@dataclass(frozen=True)
 class Karakamsha:
     """A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1)."""
 
@@ -7256,6 +7819,16 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
     theirs by default."""
 
 
+BalanceMeasure = Literal["SPATIAL", "TEMPORAL"]
+"""How a dasha's balance is measured: by the elapsed arc of the seed span,
+or by the elapsed time."""
+
+BirthPeriod = Literal["COMPRESSED", "ELAPSED"]
+"""How a dasha's birth period is divided among its sub-periods: each its
+share of the balance the birth period runs for, or of the whole period,
+which began before birth."""
+
+
 class AnnualDashaRules(TypedDict, total=False):
     """Where the sources differ on an annual dasha, each a named reading
     (`03-design/annual-dashas.md`).
@@ -7275,12 +7848,12 @@ class AnnualDashaRules(TypedDict, total=False):
     remained of the birth Moon's nakshatra, the source's own; the Moon's at
     the return; or none."""
 
-    measure: Literal["SPATIAL", "TEMPORAL"]
+    measure: BalanceMeasure
     """How the balance is measured, by arc or by time; absent, each
     balance's source's own: by arc for the birth Moon, by time for the Moon
     at the return."""
 
-    birth_period: Literal["COMPRESSED", "ELAPSED"]
+    birth_period: BirthPeriod
     """How the first lord's two pieces are divided among sub-lords, as the
     natal birth period's; `"COMPRESSED"` by default."""
 
@@ -7643,12 +8216,30 @@ class PrashnaQuestion(TypedDict, total=False):
     number: int
 
 
+KshinaRule = Literal["DARK_EIGHTH_TO_BRIGHT_EIGHTH", "DARK_ELEVENTH_TO_NEW_MOON"]
+"""When the Moon is kshina, a `PrashnaMoonRules` `kshina`."""
+
+
 class PrashnaMoonRules(TypedDict, total=False):
     """How the Moon's weaknesses are read (Samjna Tantra vv. 73–74, C352):
     `kshina`, `DARK_EIGHTH_TO_BRIGHT_EIGHTH` (the gloss's, the default) or
     `DARK_ELEVENTH_TO_NEW_MOON` (its "some say")."""
 
-    kshina: str
+    kshina: KshinaRule
+
+
+PiscesRising = Literal["BOTH_WAYS", "SHIRSHODAYA"]
+"""How Pisces rises, a `PrashnaRules` `pisces`."""
+
+TimingRule = Literal["STRONGEST_GRAHA", "FIRST_OCCUPIED", "MOON_DAYS", "BASELINE"]
+"""Which rule times the matter, a `PrashnaRules` `timing`."""
+
+MookRule = Literal["SHATPANCHASHIKA", "MOON_HOUSE", "BASELINE"]
+"""Which rule reads an unspoken question, a `PrashnaRules` `mook`."""
+
+ScoreRule = Literal["OFF", "BASELINE"]
+"""Whether the baseline engine's points come beside the clauses, a
+`PrashnaRules` `score`."""
 
 
 class PrashnaRules(TypedDict, total=False):
@@ -7658,11 +8249,11 @@ class PrashnaRules(TypedDict, total=False):
     `BASELINE`), `mook` (`SHATPANCHASHIKA`, `MOON_HOUSE` or `BASELINE`),
     `moon` and `score` (`OFF` or `BASELINE`)."""
 
-    pisces: str
-    timing: str
-    mook: str
+    pisces: PiscesRising
+    timing: TimingRule
+    mook: MookRule
     moon: PrashnaMoonRules
-    score: str
+    score: ScoreRule
 
 
 class PrashnaRequest(TypedDict, total=False):
@@ -7798,26 +8389,39 @@ class Prashna:
     """The sign of the querent's number; `None` unless one was given."""
 
 
+FunctionalScheme = Literal["LAGHU_PARASHARI", "BASELINE"]
+"""Which scheme judges the grahas' functional natures, a `FunctionalRules`
+`scheme`."""
+
+
 class FunctionalRules(TypedDict, total=False):
     """Which scheme judges the grahas' functional natures: `scheme`,
     `LAGHU_PARASHARI` (the default) or the baseline engine's unsourced
     `BASELINE` (C331)."""
 
-    scheme: str
+    scheme: FunctionalScheme
+
+
+RikSource = Literal["BPHS", "YAJNAVALKYA"]
+"""Which text's ṛk Rahu's śānti gives, a `ShantiRules` `rik`."""
 
 
 class ShantiRules(TypedDict, total=False):
     """Which text's ṛk Rahu's śānti gives: `rik`, `BPHS` (the default) or
     `YAJNAVALKYA`."""
 
-    rik: str
+    rik: RikSource
+
+
+SunWithKetu = Literal["SHIVA", "SURYA"]
+"""Whom the Sun with Ketu is devoted to, a `DevataRules` `sunWithKetu`."""
 
 
 class DevataRules(TypedDict, total=False):
     """Whom the Sun with Ketu is devoted to: `sunWithKetu`, `SHIVA` (the
     default) or `SURYA` (C354)."""
 
-    sunWithKetu: str
+    sunWithKetu: SunWithKetu
 
 
 class RemedyRules(TypedDict, total=False):
@@ -8023,6 +8627,1197 @@ class Remedies:
     ishta_devata: IshtaDevatas
 
 
+PakshiBird = Literal["VULTURE", "OWL", "CROW", "COCK", "PEACOCK"]
+"""The five birds of Pancha Pakshi, in their order (`03-design/pakshi.md`)."""
+
+PakshiActivity = Literal["EATING", "WALKING", "RULING", "SLEEPING", "DYING"]
+"""What a bird does in a yama or a sub-period."""
+
+PakshiRelation = Literal["FRIEND", "ENEMY", "NEUTRAL", "OWN"]
+"""How a native regards a sub-period's owner; `OWN` for its own (P12)."""
+
+
+class PakshiBirdNative(TypedDict):
+    """A native named by the bird itself."""
+
+    bird: PakshiBird
+
+
+class PakshiStarNative(TypedDict, total=False):
+    """A native by birth star and paksha (each a member or its key, such as
+    `"nakshatra.BHARANI"`), the bird under `rule`: `"BY_PAKSHA"` (the dark
+    half reverses the birds, the default) or `"SINGLE"` (P1)."""
+
+    nakshatra: Union[Nakshatra, str]
+    paksha: Union[Paksha, str]
+    rule: Literal["BY_PAKSHA", "SINGLE"]
+
+
+class PakshiRules(TypedDict, total=False):
+    """What the days are read under, each the texts' default when left
+    out: `clock` (P3), `subs` (P4) and `relations` (P6)."""
+
+    clock: Literal["STRETCHED", "NAZHIGAI"]
+    subs: Literal["AGASTYA", "PULIPPANI"]
+    relations: Literal["AGASTYA", "PULIPPANI"]
+
+
+@dataclass(frozen=True)
+class PakshiSpan:
+    """A span of time, Julian days (UTC)."""
+
+    from_: float
+    to: float
+
+
+@dataclass(frozen=True)
+class PakshiSub:
+    """A sub-period: its activity, the bird whose main activity it is, its
+    share of the yama in 144ths, how the native regards that bird, and
+    when."""
+
+    activity: PakshiActivity
+    owner: PakshiBird
+    share: int
+    owner_is: PakshiRelation
+    span: PakshiSpan
+
+
+@dataclass(frozen=True)
+class PakshiYama:
+    """One yama: its half, its place in the half (1 to 5), when, the native
+    bird's activity and how it is judged, and its sub-periods in order."""
+
+    half: Literal["DAY", "NIGHT"]
+    yama: int
+    span: PakshiSpan
+    activity: PakshiActivity
+    quality: Literal["GOOD", "MIDDLING", "BAD"]
+    subs: Tuple[PakshiSub, ...]
+
+
+@dataclass(frozen=True)
+class PakshiDayBounds:
+    """A day as Pancha Pakshi reads it: its sunrise, sunset and next
+    sunrise, the weekday of its sunrise (P9) and the paksha then (P2)."""
+
+    sunrise: float
+    sunset: float
+    next_sunrise: float
+    vara: Vara
+    paksha: Paksha
+
+
+@dataclass(frozen=True)
+class PakshiReading:
+    """A native's bird over one day: the day, the bird, the bird dead the
+    whole day and night beside the yamas (P10), whether that is the
+    native's, the first eaters of the day and the night, and the ten
+    yamas."""
+
+    day: PakshiDayBounds
+    bird: PakshiBird
+    death_bird: PakshiBird
+    dead_today: bool
+    eaters: Tuple[PakshiBird, PakshiBird]
+    yamas: Tuple[PakshiYama, ...]
+
+
+@dataclass(frozen=True)
+class PakshiDays:
+    """A native's bird over a range of days.
+
+    >>> # days = ctx.almanac.pakshi(...)
+    >>> # second = days.value[0].reading.yamas[1].activity
+    """
+
+    value: Tuple["PakshiDay", ...]
+    provenance: Provenance
+    """What computed them, and under what; `input_hash` seals the request."""
+
+
+@dataclass(frozen=True)
+class PakshiDay:
+    """One civil day and its reading; `reading` is `None` on a day the Sun
+    does not both rise and set."""
+
+    date: CalendarDate
+    reading: Optional[PakshiReading]
+
+
+class LalKitabCycle(TypedDict):
+    """Where the 35-year cycle starts: a graha (a `Graha` or its key, such
+    as `"graha.VENUS"`) and the year of life, from 1, its period begins."""
+
+    planet: Union[Graha, str]
+    year: int
+
+
+class VarshphalRows(TypedDict):
+    """A varshphal list as a reader writes it: 120 rows, row `y − 1` for year
+    of life `y`, its entry `h − 1` the house natal house `h` reaches that
+    year. The SDK does not ship the book's list (`03-design/lalkitab.md`
+    §3.6) and refuses one that is not a permutation a row and a Latin
+    square every twelve years."""
+
+    rows: Sequence[Sequence[int]]
+
+
+class LalKitabRequest(TypedDict, total=False):
+    """Lal Kitab to read in every chart of a request
+    (`03-design/lalkitab.md`), every field optional: the cycle's start (the
+    book's general table, Saturn from the first year, when left out), a
+    year of life to read, and the list its annual teva is read from.
+
+    >>> asked: LalKitabRequest = {"cycle": {"planet": "graha.VENUS", "year": 17}, "year": 43}
+    """
+
+    cycle: LalKitabCycle
+    year: int
+    varshphal: VarshphalRows
+
+
+@dataclass(frozen=True)
+class LalKitabOwner:
+    """An owner of a planet's house and how the planet regards it (1952
+    p. 31): `FRIEND`, `EQUAL` or `ENEMY`."""
+
+    owner: Graha
+    regard: str
+
+
+@dataclass(frozen=True)
+class LalKitabCast:
+    """An aspect a planet casts, forward only: the house, its strength
+    (`QUARTER`, `HALF` or `FULL`) and the planets it falls on."""
+
+    to: int
+    strength: str
+    onto: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class LalKitabPlanet:
+    """One planet of a teva."""
+
+    graha: Graha
+    house: int
+    """Its whole-sign house from the lagna, 1 to 12."""
+    dignities: Tuple[str, ...]
+    """Among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`."""
+    owners: Tuple[LalKitabOwner, ...]
+    awake: bool
+    kayam: bool
+    """In a dignity, alone in its house, and looked at from no occupied
+    house."""
+    casts: Tuple[LalKitabCast, ...]
+
+
+@dataclass(frozen=True)
+class LalKitabLook:
+    """An occupied house looking at another, and how hard."""
+
+    from_house: int
+    strength: str
+
+
+@dataclass(frozen=True)
+class LalKitabHouse:
+    """One house of a teva."""
+
+    house: int
+    occupants: Tuple[Graha, ...]
+    looked_at_by: Tuple[LalKitabLook, ...]
+    awake: bool
+    """Occupied, or looked at from an occupied house."""
+    waker: Graha
+    """The planet whose presence wakes it (1952 p. 98)."""
+
+
+@dataclass(frozen=True)
+class LalKitabMasnui:
+    """An artificial planet a pair in one house makes (1952 p. 27), by what
+    it counts as (`JUPITER`, `MARS_MALEFIC`, …)."""
+
+    pair: Tuple[Graha, Graha]
+    house: int
+    counts_as: str
+
+
+@dataclass(frozen=True)
+class LalKitabSeat:
+    """An enemy seated in a planet's house."""
+
+    enemy: Graha
+    house: int
+
+
+@dataclass(frozen=True)
+class LalKitabDebt:
+    """A debt (*rin*, 1952 p. 125): which (`PITRI`, `MATRI`, …), whose, and
+    the enemies seated that raise it."""
+
+    rin: str
+    of: Graha
+    seated: Tuple[LalKitabSeat, ...]
+
+
+@dataclass(frozen=True)
+class PitriState:
+    """The ancestors' debt's first state (1952 p. 128): the planet in the
+    ninth house and Mercury's house, its root."""
+
+    ninth: Graha
+    mercury: int
+
+
+@dataclass(frozen=True)
+class LalKitabFlags:
+    """The teva's own conditions."""
+
+    ratandha: bool
+    nabalig: bool
+    dharmi: Tuple[Graha, ...]
+    sathi: Tuple[Tuple[Graha, Graha], ...]
+
+
+@dataclass(frozen=True)
+class LalKitabReading:
+    """What a teva says (`03-design/lalkitab.md` §3)."""
+
+    planets: Tuple[LalKitabPlanet, ...]
+    houses: Tuple[LalKitabHouse, ...]
+    masnui: Tuple[LalKitabMasnui, ...]
+    rinas: Tuple[LalKitabDebt, ...]
+    pitri: Tuple[PitriState, ...]
+    flags: LalKitabFlags
+
+
+@dataclass(frozen=True)
+class LalKitabStart:
+    """Where a life's 35-year cycle was started."""
+
+    planet: Graha
+    year: int
+
+
+@dataclass(frozen=True)
+class LalKitabPeriod:
+    """A planet's period of the cycle, years of life, both ends included."""
+
+    planet: Graha
+    from_year: int
+    to_year: int
+
+
+@dataclass(frozen=True)
+class LalKitabYear:
+    """One year of life: its ruler, the planets of its thirds (1952 p. 34),
+    and the annual teva's reading when a list was sent."""
+
+    year: int
+    ruler: Graha
+    thirds: Tuple[Graha, Graha, Graha]
+    annual: Optional[LalKitabReading]
+
+
+@dataclass(frozen=True)
+class LalKitab:
+    """A chart read as Lal Kitab reads it (`03-design/lalkitab.md`)."""
+
+    reading: LalKitabReading
+    cycle: LalKitabStart
+    periods: Tuple[LalKitabPeriod, ...]
+    """The cycle's periods over years 1 to 120 of life."""
+    year: Optional[LalKitabYear]
+    """The year asked for; `None` unless the request named one."""
+
+
+PurifierNative = Literal["HUMAN", "BEAST", "BIRD", "CREEPER"]
+"""What the native is, which decides the houses that purify, a
+`PurifierRules` `native`."""
+
+GulikaExtension = Literal["WHEN_TWO_FAIL", "ALWAYS", "NEVER"]
+"""When Gulika's extension (v. 76) is counted: when neither the pranapada
+nor the Moon holds, at every instant, or never, a `PurifierRules`
+`gulikaExtension`."""
+
+PurifyAs = Literal["BAR", "WEIGHT"]
+"""Whether a lagna no purifier holds is removed or only weighed, a
+`PurifierRules` `purifyAs`."""
+
+PranapadaRule = Literal["VERSE", "PRINTED_EXAMPLE", "SDK_POINT"]
+"""How the pranapada is reckoned, a `PurifierRules` `pranapadaRule` and a
+`PranapadaHouseRules` `pranapada`."""
+
+GulikaAt = Literal["END", "START"]
+"""Which end of Saturn's eighth is Gulika, a `PurifierRules` `gulikaAt`."""
+
+
+class PurifierRules(TypedDict, total=False):
+    """The purifier's knobs, one per crux (BPHS ch. 2 vv. 67–78), the texts'
+    own by default: `native` (`HUMAN`, `BEAST`, `BIRD` or `CREEPER`, which
+    decides the houses that purify), whether the `pranapada`, `gulika` and
+    `moon` may purify, `gulikaExtension` (`WHEN_TWO_FAIL`, `ALWAYS` or
+    `NEVER`), `purifyAs` (`BAR` or `WEIGHT`), `pranapadaRule` (`VERSE`,
+    `PRINTED_EXAMPLE` or `SDK_POINT`), `gulikaAt` (`END` or `START`) and
+    `seedMinutes`, the step every change is found between."""
+
+    native: PurifierNative
+    pranapada: bool
+    gulika: bool
+    moon: bool
+    gulikaExtension: GulikaExtension
+    purifyAs: PurifyAs
+    pranapadaRule: PranapadaRule
+    gulikaAt: GulikaAt
+    seedMinutes: float
+
+
+class PurifyRequest(TypedDict, total=False):
+    """The purifier over the minutes either side of the chart's instant:
+    `minutes`, more than none and at most 1080, and its `rules`."""
+
+    minutes: Required[float]
+    rules: PurifierRules
+
+
+HouseCount = Literal["SIGN", "SRIPATI_BHAVA"]
+"""How the pranapada's house is counted from the lagna, by sign or by
+Sripati's bhava, a `PranapadaHouseRules` `count`."""
+
+
+class PranapadaHouseRules(TypedDict, total=False):
+    """How the pranapada's house is judged (Jha's print ch. 3 vv. 71–74):
+    `pranapada` (a `PurifierRules` `pranapadaRule`), `count` (`SIGN` or
+    `SRIPATI_BHAVA`) and `firstAuspicious`, whether the 1st is."""
+
+    pranapada: PranapadaRule
+    count: HouseCount
+    firstAuspicious: bool
+
+
+NishekaMonth = Literal["THIRTY_DAYS", "SOLAR", "SYNODIC"]
+"""The month a sign is read as, a `NishekaRules` `month`."""
+
+NishekaMandi = Literal["START", "END"]
+"""Which end of Saturn's eighth Mandi is, for the conception, a
+`NishekaRules` `mandiAt`."""
+
+NinthBhava = Literal["SRIPATI", "WHOLE_SIGN", "EQUAL"]
+"""Which point the nisheka measures to as the 9th bhava, a `NishekaRules`
+`ninth`."""
+
+SaturnTerm = Literal["LONGITUDE", "BHAVA_MADHYA"]
+"""Which point of Saturn the nisheka measures from: his longitude, or the
+mid-point of his bhava, a `NishekaRules` `saturn`."""
+
+InvisibleHalf = Literal["BY_LONGITUDE", "BY_SIGN"]
+"""How the invisible half is read: the half-circle ahead of the lagna's
+degree, or the 1st to the 6th signs, a `NishekaRules` `invisibleHalf`."""
+
+
+class NishekaRules(TypedDict, total=False):
+    """How the nisheka counts back (BPHS ch. 3 vv. 25–29): `month`
+    (`THIRTY_DAYS`, `SOLAR` or `SYNODIC`), `mandiAt` (`START` or `END`),
+    `ninth` (`SRIPATI`, `WHOLE_SIGN` or `EQUAL`), `saturn` (`LONGITUDE` or
+    `BHAVA_MADHYA`) and `invisibleHalf` (`BY_LONGITUDE` or `BY_SIGN`)."""
+
+    month: NishekaMonth
+    mandiAt: NishekaMandi
+    ninth: NinthBhava
+    saturn: SaturnTerm
+    invisibleHalf: InvisibleHalf
+
+
+ConceptionCount = Literal["NEXT_AFTER_DVADASHAMSHA", "FROM_MOON_SIGN", "FROM_ARIES"]
+"""The count to the birth Moon's sign, a `ConceptionMoonRules` `count`."""
+
+ConceptionRising = Literal["SIGN", "NAVAMSHA"]
+"""What of the conception's rising point is classed as a day or a night
+sign, a `ConceptionMoonRules` `rising`."""
+
+ConceptionPisces = Literal["EITHER", "DAY"]
+"""What Pisces is: strong by day or by night, so either, or a day sign, a
+`ConceptionMoonRules` `pisces`."""
+
+
+class ConceptionMoonRules(TypedDict, total=False):
+    """How *Brihat Jataka* IV.21 is read: `count` (`NEXT_AFTER_DVADASHAMSHA`,
+    `FROM_MOON_SIGN` or `FROM_ARIES`), `rising` (`SIGN` or `NAVAMSHA`) and
+    `pisces` (`EITHER` or `DAY`)."""
+
+    count: ConceptionCount
+    rising: ConceptionRising
+    pisces: ConceptionPisces
+
+
+class ConceptionRules(TypedDict, total=False):
+    """What the conception reports read under: the `purifier`'s rules, which
+    judge the conception's lagna (v. 29: "as before"), and each report's
+    own, `pranapadaHouse`, `nisheka` and `moon`."""
+
+    purifier: PurifierRules
+    pranapadaHouse: PranapadaHouseRules
+    nisheka: NishekaRules
+    moon: ConceptionMoonRules
+
+
+class AttendantFacts(TypedDict, total=False):
+    """The women who attended, as many as the family can say: `total`,
+    `inside` the room and `outside` it."""
+
+    total: int
+    inside: int
+    outside: int
+
+
+BirthPresentation = Literal["HEAD", "FEET", "HANDS"]
+"""What came first at the birth, a `BirthFacts` `presentation`."""
+
+LampLevel = Literal["FULL", "HALF", "SPENT"]
+"""How much of the lamp's oil or wick was left, a `BirthFacts` `oil` and
+`wick`."""
+
+
+class BirthFacts(TypedDict, total=False):
+    """What the family remembers of the birth, every fact optional; a clause
+    whose fact is absent is reported and not weighed: `fatherPresent`
+    (V.1–2), `presentation` (`HEAD`, `FEET` or `HANDS`, V.17), `oil` and
+    `wick` (`FULL`, `HALF` or `SPENT`, V.18) and `attendants` (V.22)."""
+
+    fatherPresent: bool
+    presentation: BirthPresentation
+    oil: LampLevel
+    wick: LampLevel
+    attendants: AttendantFacts
+
+
+MoonSees = Literal["ANY_ASPECT", "FULL"]
+"""What the Moon's seeing the lagna asks of her aspect: any aspect, or only
+the full one, a `CircumstanceRules` `moonSees`."""
+
+SunFallen = Literal["NINTH_OR_EIGHTH", "EITHER_SIDE"]
+"""Which houses are fallen from the 10th for the Sun: the 9th or the 8th,
+or either side, a `CircumstanceRules` `sunFallen`."""
+
+PresentationBy = Literal["RISING_SIGN", "LAGNA_LORD_MOTION"]
+"""Which reading of the presentation is asked: as the rising sign rises, or
+by the lagna lord's motion, a `CircumstanceRules` `presentationBy`."""
+
+BetweenBy = Literal["DEGREE", "SIGN"]
+"""How the grahas between the lagna and the Moon are counted, by degree or
+by sign, a `CircumstanceRules` `betweenBy`."""
+
+OutsideHalf = Literal["VISIBLE", "INVISIBLE"]
+"""Which half of the attendants is outside the room, a `CircumstanceRules`
+`outside`."""
+
+
+class CircumstanceRules(TypedDict, total=False):
+    """The knobs *Brihat Jataka* ch. V's circumstances take, one per crux:
+    `moonSees` (`ANY_ASPECT` or `FULL`), `sunFallen` (`NINTH_OR_EIGHTH` or
+    `EITHER_SIDE`), `presentationBy` (`RISING_SIGN` or
+    `LAGNA_LORD_MOTION`), `betweenBy` (`DEGREE` or `SIGN`) and `outside`
+    (`VISIBLE` or `INVISIBLE`)."""
+
+    moonSees: MoonSees
+    sunFallen: SunFallen
+    presentationBy: PresentationBy
+    betweenBy: BetweenBy
+    outside: OutsideHalf
+
+
+class CircumstanceRequest(TypedDict, total=False):
+    """What the family remembers of the birth, and the readings it is
+    weighed under, the texts' own when left out."""
+
+    facts: BirthFacts
+    rules: CircumstanceRules
+
+
+LifeEventKind = Literal[
+    "MARRIAGE",
+    "ENGAGEMENT",
+    "CHILD_BIRTH",
+    "MISCARRIAGE",
+    "FIRST_JOB",
+    "JOB_CHANGE",
+    "JOB_LOSS",
+    "PROMOTION",
+    "BUSINESS_START",
+    "EDUCATION",
+    "RELOCATION",
+    "FOREIGN_TRAVEL",
+    "PROPERTY",
+    "VEHICLE",
+    "SURGERY",
+    "ACCIDENT",
+    "ILLNESS",
+    "DEATH_IN_FAMILY",
+    "LITIGATION",
+    "SPIRITUAL_INITIATION",
+    "OTHER",
+]
+"""What happened, a `LifeEventRequest` `kind`."""
+
+DatePrecision = Literal["DAY", "MONTH", "YEAR"]
+"""How finely a life event's date is known, a `LifeEventRequest`
+`precision`."""
+
+EventConfidence = Literal["CERTAIN", "PROBABLE", "UNCERTAIN"]
+"""How sure the family is of a life event, a `LifeEventRequest`
+`confidence`."""
+
+
+class LifeEventRequest(TypedDict, total=False):
+    """A dated life event: what happened (`kind`, `MARRIAGE`, `ACCIDENT`, …)
+    and when it began (`on`, a Julian day UTC); optionally the caller's
+    `id`, which its notes carry back, when it ended (`until`), how finely
+    `on` is known (`precision`, `DAY`, `MONTH` or `YEAR`), how sure the
+    family is (`confidence`, `CERTAIN`, `PROBABLE` or `UNCERTAIN`), and
+    `heldOut`, kept out of the fit and tested against it afterwards."""
+
+    id: str
+    kind: Required[LifeEventKind]
+    on: Required[float]
+    until: float
+    precision: DatePrecision
+    confidence: EventConfidence
+    heldOut: bool
+
+
+DashaYearLength = Literal["JULIAN_365_25", "SAVANA_360", "SIDEREAL", "TROPICAL", "LUNAR", "NAKSHATRA_324"]
+"""The length of a dasha year: 365.25 days, 360, the sidereal or tropical
+year, twelve lunar months, or 324 days."""
+
+AfterCycle = Literal["END", "REPEAT"]
+"""What a dasha answers past the end of its cycle: no period, or the cycle
+again from its first lord."""
+
+SeedOverflow = Literal["WRAP_TO_START", "REJECT"]
+"""What a seed outside a conditional dasha's cycle does: wrap to the start,
+flagged, or refuse."""
+
+AshtottariGrouping = Literal["THREE_EACH", "FOUR_AND_THREE"]
+"""How Ashtottari's eight lords share the nakshatras (crux C5)."""
+
+
+class BaselineDashaRules(TypedDict, total=False):
+    """The Vimshottari the baseline's event fit reads, every member the
+    baseline engine's own when left out: `balance` (`SPATIAL` or
+    `TEMPORAL`), `yearLength` (`JULIAN_365_25`, `SAVANA_360`, `SIDEREAL`,
+    `TROPICAL`, `LUNAR` or `NAKSHATRA_324`), `birthPeriod` (`COMPRESSED` or
+    `ELAPSED`), `afterCycle` (`END` or `REPEAT`), `seedOverflow`
+    (`WRAP_TO_START` or `REJECT`) and `ashtottariGrouping` (`THREE_EACH` or
+    `FOUR_AND_THREE`)."""
+
+    balance: BalanceMeasure
+    yearLength: DashaYearLength
+    birthPeriod: BirthPeriod
+    afterCycle: AfterCycle
+    seedOverflow: SeedOverflow
+    ashtottariGrouping: AshtottariGrouping
+
+
+BirthTimeAccuracy = Literal["EXACT", "APPROXIMATE", "RECTIFIED", "UNKNOWN"]
+"""How far a birth time on record is trusted, a
+`BaselineRectificationRequest` `accuracy`."""
+
+NativeSex = Literal["MALE", "FEMALE"]
+"""The child's sex, which the baseline's tattva prior reads, a
+`BaselineRectificationRequest` `sex`."""
+
+
+class BaselineRectificationRequest(TypedDict, total=False):
+    """The baseline engine's unsourced cascade around the chart's instant,
+    the time on record: `uncertaintyMinutes` either side, 1 to 720; how far
+    the time is trusted (`accuracy`, `EXACT`, `APPROXIMATE`, `RECTIFIED` or
+    `UNKNOWN`); the dated `events`; the child's `sex` (`MALE` or
+    `FEMALE`) for the tattva prior; the `coverage` of the posterior its
+    intervals hold, 0.5 to 0.99; and the `dasha` the event fit reads."""
+
+    uncertaintyMinutes: Required[float]
+    accuracy: BirthTimeAccuracy
+    events: Sequence[LifeEventRequest]
+    sex: NativeSex
+    coverage: float
+    dasha: BaselineDashaRules
+
+
+class SvarodayaRequest(TypedDict, total=False):
+    """The Shiva Svarodaya over the `minutes` either side of the chart's
+    instant: more than none and at most 1080."""
+
+    minutes: Required[float]
+
+
+class RectificationRequest(TypedDict, total=False):
+    """A chart read as a birth time to rectify, the chart's instant the time
+    on record (`03-design/rectification.md`), every member optional and
+    each answering only when asked.
+
+    >>> asked: RectificationRequest = {"purify": {"minutes": 30}, "circumstance": {"facts": {"fatherPresent": False}}}
+    """
+
+    purify: PurifyRequest
+    conception: ConceptionRules
+    circumstance: CircumstanceRequest
+    baseline: BaselineRectificationRequest
+    svarodaya: SvarodayaRequest
+
+
+@dataclass(frozen=True)
+class PurifierClause:
+    """One test of the lagna against one point of one purifier: the
+    `purifier` read (`PRANAPADA`, `GULIKA` or `MOON`) and which of its
+    points (`reference`, `ITSELF`, `SEVENTH`, `NAVAMSHA` or
+    `NAVAMSHA_SEVENTH`)."""
+
+    purifier: str
+    """The purifier read: `PRANAPADA`, `GULIKA` or `MOON`."""
+    reference: str
+    """Which of its points: `ITSELF`, or v. 76's `SEVENTH`, `NAVAMSHA` or
+    `NAVAMSHA_SEVENTH` (Gulika only)."""
+    sign: Rashi
+    """The sign that point stands in."""
+    lagna: Rashi
+    """The lagna's sign."""
+    house: int
+    """The lagna's house counted from that sign, 1 to 12."""
+    held: bool
+    """Whether the house is one that purifies this native."""
+    counted: bool
+    """Whether the clause counts toward the verdict: false only for v. 76's
+    extension while the pranapada or the Moon holds, under
+    `WHEN_TWO_FAIL`."""
+
+
+@dataclass(frozen=True)
+class PurifierVerdict:
+    """What the purifier finds at an instant: every clause, in the order
+    pranapada, Gulika, Moon, and whether at least one counted clause held
+    (v. 75)."""
+
+    clauses: Tuple[PurifierClause, ...]
+    """Every clause judged, in the order pranapada, Gulika, Moon."""
+    pure: bool
+    """Whether at least one counted clause held (v. 75)."""
+
+
+@dataclass(frozen=True)
+class PurifierRun:
+    """One run of the window between two edges, with the verdict every
+    instant of it shares."""
+
+    from_jd: float
+    """Where it starts, as a Julian day (UTC): the window's start or a
+    clause edge."""
+    to_jd: float
+    """Where it ends: a clause edge or the window's end."""
+    verdict: PurifierVerdict
+    """The verdict every instant of it shares."""
+
+
+@dataclass(frozen=True)
+class PurifierGrid:
+    """The grid that seeded the edges, so a run reproduces."""
+
+    step_days: float
+    """The seed step, in days."""
+    cells: int
+    """How many cells the window was cut into."""
+
+
+@dataclass(frozen=True)
+class Purified:
+    """What the purifier of BPHS ch. 2 vv. 67–78 leaves standing of the
+    window around the chart's instant."""
+
+    intervals: Tuple[PurifierRun, ...]
+    """The maximal runs no bar removed, in order; under `purifyAs: WEIGHT`
+    every run, its verdict saying whether it is pure."""
+    removed: Tuple[PurifierRun, ...]
+    """The runs a bar removed, in order, each verdict naming every clause
+    that failed."""
+    edges: Tuple[float, ...]
+    """Every instant inside the window where a clause changes, Julian days
+    (UTC)."""
+    grid: PurifierGrid
+    """The seed grid."""
+
+
+@dataclass(frozen=True)
+class PranapadaHouse:
+    """The pranapada's house from the lagna, and the birth it judges."""
+
+    pranapada_deg: float
+    """The pranapada, degrees."""
+    lagna_deg: float
+    """The lagna, degrees."""
+    house: int
+    """Its house from the lagna, 1 to 12."""
+    auspicious: bool
+    """Whether that house is auspicious (Jha's ch. 3 vv. 73–74)."""
+
+
+@dataclass(frozen=True)
+class NishekaPoints:
+    """The points v. 27 reads at the birth, degrees: Mandi, Saturn's point,
+    the lagna, the 9th bhava's point, the lagna's lord and the Moon."""
+
+    mandi_deg: float
+    """Mandi, degrees."""
+    saturn_deg: float
+    """Saturn's point, degrees."""
+    lagna_deg: float
+    """The lagna, degrees."""
+    ninth_deg: float
+    """The 9th bhava's point, degrees."""
+    lagna_lord_deg: float
+    """The lagna's lord's longitude, degrees."""
+    moon_deg: float
+    """The Moon, degrees."""
+
+
+@dataclass(frozen=True)
+class MonthsBefore:
+    """The arc v. 28 reads, written as v. 28 reads it: signs as months,
+    degrees as days, arc-minutes as ghatis and arc-seconds as palas."""
+
+    months: int
+    """Signs, read as months."""
+    days: int
+    """Degrees, read as days."""
+    ghatis: int
+    """Arc-minutes, read as ghatis."""
+    palas: int
+    """Arc-seconds, read as palas."""
+
+
+@dataclass(frozen=True)
+class NishekaSpan:
+    """v. 27's two arcs, their sum, and the span before birth they give."""
+
+    saturn_to_mandi_deg: float
+    """From Saturn forward to Mandi, degrees."""
+    lagna_to_ninth_deg: float
+    """From the lagna forward to the 9th bhava, degrees."""
+    moon_added_deg: Optional[float]
+    """The Moon's degrees elapsed in her sign, added when the lagna's lord
+    is in the invisible half (v. 28); `None` otherwise."""
+    arc_deg: float
+    """The whole arc, degrees."""
+    written: MonthsBefore
+    """The arc to the second."""
+    days_before: float
+    """The span before birth, in days, under the month length."""
+
+
+@dataclass(frozen=True)
+class NishekaCount:
+    """The conception a birth counts back to: the points read at the birth,
+    the span they give, and the instant."""
+
+    points: NishekaPoints
+    """The points read at the birth."""
+    span: NishekaSpan
+    """The span they give."""
+    instant: float
+    """The conception, the birth less the span, as a Julian day (UTC)."""
+    days_per_birth_minute: float
+    """How many days the conception moves when the birth moves a minute
+    later: why it is read at an instant."""
+
+
+@dataclass(frozen=True)
+class Nisheka:
+    """The conception BPHS counts back to (ch. 3 vv. 27–29), and its lagna
+    judged."""
+
+    count: NishekaCount
+    """The count back from the birth."""
+    lagna_deg: float
+    """The conception's lagna, degrees, in the conception chart's own
+    zodiac."""
+    verdict: PurifierVerdict
+    """That lagna under the purifier, at the birth's place (v. 29: "purify
+    it as before")."""
+
+
+@dataclass(frozen=True)
+class MoonCount:
+    """What *Brihat Jataka* IV.21 predicts from the Moon at conception."""
+
+    dvadashamsha: int
+    """The dvadashamsha the Moon occupies in her sign, 1 to 12."""
+    sign: Rashi
+    """The sign the Moon holds at birth."""
+    nakshatra: Optional[Nakshatra]
+    """The nakshatra Bhattotpala's proportion places her in, under
+    `NEXT_AFTER_DVADASHAMSHA` only."""
+
+
+@dataclass(frozen=True)
+class ConceptionMoon:
+    """*Brihat Jataka* IV.21 read at the conception and set against the
+    birth; its fractions are reported and not weighed."""
+
+    predicted: MoonCount
+    """The count from the conception's Moon."""
+    moon_sign: Rashi
+    """The birth's Moon sign."""
+    moon_nakshatra: Optional[Nakshatra]
+    """The birth's Moon nakshatra."""
+    sign_agrees: bool
+    """Whether the birth's Moon is in the predicted sign."""
+    nakshatra_agrees: Optional[bool]
+    """Whether the Moon is in the predicted nakshatra; `None` where none is
+    predicted."""
+    rising: Rashi
+    """The conception's rising sign or navamsha."""
+    predicted_part: str
+    """Its class: `DAY`, `NIGHT` or `EITHER`."""
+    born_by_day: bool
+    """Whether the birth is by day."""
+    part_agrees: bool
+    """Whether the birth's day or night is the predicted one."""
+    risen_fraction: float
+    """How much of the rising sign or navamsha had risen at conception, by
+    rising time."""
+    elapsed_fraction: float
+    """How much of the birth's day or night had passed."""
+
+
+@dataclass(frozen=True)
+class Conception:
+    """The three reports the chart's instant gives beside the purifier."""
+
+    birth: float
+    """The birth read, as a Julian day (UTC)."""
+    pranapada_house: PranapadaHouse
+    """The pranapada's house, as Jha's print judges the birth."""
+    nisheka: Nisheka
+    """The conception BPHS counts back to."""
+    moon: ConceptionMoon
+    """*Brihat Jataka* IV.21 read at that conception against the birth."""
+
+
+@dataclass(frozen=True)
+class BirthSky:
+    """The sky the circumstances read: the lagna, the seven grahas and
+    whether the lagna's lord is retrograde."""
+
+    lagna_deg: float
+    """The lagna, degrees."""
+    grahas_deg: Tuple[float, ...]
+    """The seven grahas' longitudes, degrees, Sun to Saturn."""
+    lord_retrograde: bool
+    """Read only under `presentationBy: LAGNA_LORD_MOTION`."""
+
+
+@dataclass(frozen=True)
+class FatherReading:
+    """V.1–2: whether the father was away, and where."""
+
+    moon_aspect: str
+    """The Moon's aspect on the lagna's sign (BJ II.13): `NONE`, `QUARTER`,
+    `HALF`, `THREE_QUARTERS` or `FULL`."""
+    unseen: bool
+    """V.1: the Moon does not see the lagna."""
+    saturn_rising: bool
+    """V.2: Saturn in the lagna."""
+    mars_setting: bool
+    """V.2: Mars in the 7th."""
+    moon_hemmed: bool
+    """V.2: the Moon between Mercury and Venus."""
+    away: bool
+    """Whether any of them holds: the father away."""
+    whereabouts: Optional[str]
+    """Where V.1 puts him (`ABROAD`, `OWN_COUNTRY` or `RETURNING`) where it
+    holds and the Sun has fallen from the 10th; `None` otherwise."""
+    sun_house: int
+    """The Sun's house from the lagna, by sign."""
+
+
+@dataclass(frozen=True)
+class PresentationReading:
+    """V.17's presentation as the sky foretells it, under the reading asked
+    (`by`)."""
+
+    by: str
+    """The reading asked: `RISING_SIGN` or `LAGNA_LORD_MOTION`."""
+    rising: str
+    """How the rising sign rises: `SIRSHODAYA`, `PRISHTODAYA` or
+    `UBHAYODAYA`."""
+    lord: Graha
+    """The lagna's lord."""
+    lord_retrograde: bool
+    """Whether the lagna's lord is retrograde."""
+    foretold: str
+    """What the reading foretells: `HEAD`, `FEET` or `HANDS`."""
+
+
+@dataclass(frozen=True)
+class Lamp:
+    """V.18's lamp as the sky foretells it, each with its nearest level
+    (`FULL`, `HALF` or `SPENT`)."""
+
+    oil: float
+    """The oil left, one at the start of the Moon's sign and none at its
+    end."""
+    oil_level: str
+    """Its nearest level."""
+    wick: float
+    """The wick left, one at the start of the rising sign and none at its
+    end."""
+    wick_level: str
+    """Its nearest level."""
+
+
+@dataclass(frozen=True)
+class Attending:
+    """V.22's attendants as the sky foretells them."""
+
+    between: Tuple[Graha, ...]
+    """The grahas between the lagna and the Moon, as `betweenBy` counts."""
+    visible: Tuple[Graha, ...]
+    """Those of them in the visible half."""
+    inside: int
+    """How many inside the room."""
+    outside: int
+    """How many outside it."""
+
+
+@dataclass(frozen=True)
+class CircumstanceWeight:
+    """One fact given, set against the clause that reads it (`indication`,
+    `FATHER`, `PRESENTATION`, `OIL`, `WICK`, `ATTENDANTS_TOTAL`,
+    `ATTENDANTS_INSIDE` or `ATTENDANTS_OUTSIDE`)."""
+
+    indication: str
+    """The clause."""
+    agrees: bool
+    """Whether the fact agrees with what the sky foretold."""
+
+
+@dataclass(frozen=True)
+class Circumstance:
+    """*Brihat Jataka* ch. V's circumstances at the chart's instant."""
+
+    sky: BirthSky
+    """The sky the clauses read."""
+    father: FatherReading
+    """V.1–2."""
+    presentation: PresentationReading
+    """V.17."""
+    lamp: Lamp
+    """V.18."""
+    attending: Attending
+    """V.22."""
+    weights: Tuple[CircumstanceWeight, ...]
+    """One per fact given, in the clauses' order; none for a fact absent."""
+
+
+@dataclass(frozen=True)
+class RankedCandidate:
+    """One candidate birth time, ranked."""
+
+    at: float
+    """The instant, as a Julian day (UTC)."""
+    probability: float
+    """Its share of the posterior."""
+    log_posterior: float
+    """Its log-posterior, the stages summed."""
+    lagna: Rashi
+    """Its lagna's sign."""
+    lagna_nakshatra: Nakshatra
+    """Its lagna's nakshatra."""
+
+
+@dataclass(frozen=True)
+class TattvaSexNote:
+    """The tattva prior: how many candidates a tattva of the other sex
+    penalised, not excluded."""
+
+    sex: str
+    """The sex: `MALE` or `FEMALE`."""
+    admitted_minutes: float
+    """The minutes of every 90 that admit the sex."""
+    penalised: int
+    """The candidates penalised."""
+    of: int
+    """The candidates."""
+    kind: Literal["TATTVA_SEX"] = "TATTVA_SEX"
+
+
+@dataclass(frozen=True)
+class ReportedTimeNote:
+    """The reported time's prior: how far it is trusted, and its
+    uncertainty, minutes."""
+
+    accuracy: str
+    """How far it is trusted: `EXACT`, `APPROXIMATE`, `RECTIFIED` or
+    `UNKNOWN`."""
+    uncertainty_minutes: float
+    """Its uncertainty, minutes."""
+    kind: Literal["REPORTED_TIME"] = "REPORTED_TIME"
+
+
+@dataclass(frozen=True)
+class EventFitNote:
+    """One event's fit."""
+
+    event: int
+    """Its index in the request."""
+    id: Optional[str]
+    """The caller's name for it; `None` where it was given none."""
+    event_kind: str
+    """What happened: `MARRIAGE`, `ACCIDENT`, …"""
+    lords: Tuple[Graha, ...]
+    """The period lords that fit it, mahadasha first, where any did."""
+    contribution: float
+    """Its best score over every candidate, weighted."""
+    kind: Literal["EVENT_FIT"] = "EVENT_FIT"
+
+
+StageNote = Union[TattvaSexNote, ReportedTimeNote, EventFitNote]
+"""What a baseline stage says it did, one class a note, each carrying its
+`kind`."""
+
+
+@dataclass(frozen=True)
+class StageOutcome:
+    """One baseline stage's outcome (`stage`, `PRIOR` or
+    `DASHA_BOUNDARY`)."""
+
+    stage: str
+    """The stage: `PRIOR` or `DASHA_BOUNDARY`."""
+    applied: bool
+    """Whether it ran."""
+    flat: bool
+    """Whether it told no candidate from another."""
+    resolution_minutes: float
+    """The finest it can tell, minutes."""
+    notes: Tuple[StageNote, ...]
+    """What it says it did."""
+
+
+@dataclass(frozen=True)
+class HeldOutEvent:
+    """A held-out event tested against the fit."""
+
+    event: int
+    """Its index in the request."""
+    kind: str
+    """What happened."""
+    score_at_fit: float
+    """Its score at the posterior's mode."""
+    baseline: float
+    """Its mean score over candidates spread across the grid."""
+    supported: bool
+    """Whether the mode fits it by more than the margin over the spread."""
+
+
+@dataclass(frozen=True)
+class BaselineAnswer:
+    """The baseline engine's unsourced cascade around the chart's instant."""
+
+    window: Interval
+    """The window searched."""
+    sunrise: float
+    """The sunrise the tattva cycle counted from, as a Julian day (UTC)."""
+    intervals: Tuple[Interval, ...]
+    """The intervals holding the request's `coverage` of the posterior."""
+    interval_width_minutes: float
+    """Their width in all, minutes, never finer than the resolution."""
+    resolution_minutes: float
+    """The finest the stages that told candidates apart can tell, minutes."""
+    suggested: float
+    """The posterior's mode, as a Julian day (UTC)."""
+    concentration: float
+    """How concentrated the posterior is, 0 (flat) to 1."""
+    candidates: Tuple[RankedCandidate, ...]
+    """The most probable candidates, most probable first."""
+    stages: Tuple[StageOutcome, ...]
+    """Each stage's outcome."""
+    events_used: int
+    """The events fitted."""
+    events_held_out: int
+    """The events held out."""
+    hold_out: Tuple[HeldOutEvent, ...]
+    """The held-out events, tested."""
+
+
+@dataclass(frozen=True)
+class SvarodayaRun:
+    """One stretch of a day under one nadi and one tattva (Shiva
+    Svarodaya)."""
+
+    from_jd: float
+    """Where it starts, as a Julian day (UTC)."""
+    to_jd: float
+    """Where it ends."""
+    nadi: str
+    """The nadi flowing: `MOON`, the left (ida), female, or `SUN`, the right
+    (pingala), male (v. 60)."""
+    turn: int
+    """Its turn in the day, 0 the one rising at sunrise, to 23."""
+    tattva: str
+    """The tattva flowing in it: `PRITHVI`, `JALA`, `AGNI`, `VAYU` or
+    `AKASHA`."""
+    sex: str
+    """The sex v. 60 gives the nadi: `MALE` or `FEMALE`."""
+
+
+@dataclass(frozen=True)
+class Svarodaya:
+    """The nadi and the tattva at the chart's instant, and the day they are
+    counted in."""
+
+    sunrise: float
+    """The sunrise the turns are counted from, as a Julian day (UTC)."""
+    next_sunrise: float
+    """The sunrise that ends the day."""
+    tithi: Tithi
+    """The tithi at the sunrise, which gives its nadi."""
+    sunrise_nadi: str
+    """The nadi rising at the sunrise: `MOON` or `SUN` (v. 62)."""
+    run: SvarodayaRun
+    """The run the instant falls in."""
+    junctions: Tuple[float, float]
+    """The turn's junctions, where the sushumna flows for a moment: its start
+    and its end."""
+
+
+@dataclass(frozen=True)
+class SvarodayaAround:
+    """The Shiva Svarodaya around the chart's instant: the reading at it and
+    every run of the window."""
+
+    at: Svarodaya
+    """The nadi and the tattva at the chart's instant."""
+    runs: Tuple[SvarodayaRun, ...]
+    """Every run of the window, in order and clipped to it."""
+
+
+@dataclass(frozen=True)
+class Rectification:
+    """A chart read as a birth time to rectify (`03-design/rectification.md`):
+    each reading the request asked for, `None` for one it did not."""
+
+    purified: Optional[Purified]
+    """What the purifier leaves standing of the window."""
+    conception: Optional[Conception]
+    """The conception reports at the chart's instant."""
+    circumstance: Optional[Circumstance]
+    """The circumstances at the chart's instant."""
+    baseline: Optional[BaselineAnswer]
+    """The baseline engine's cascade around it."""
+    svarodaya: Optional[SvarodayaAround]
+    """The Shiva Svarodaya around it."""
+
+
 @dataclass(frozen=True)
 class AnnualChart:
     """A return's own chart, read down to what Tajika reads from it."""
@@ -8213,6 +10008,11 @@ class DashaLord(TypedDict):
     years: int
 
 
+UduCount = Literal["FROM_REFERENCE", "TO_REFERENCE"]
+"""Which way a nakshatra-seeded system counts from its reference nakshatra
+to the seed, an `UduDashaDefinition` `count`."""
+
+
 class _UduDashaDefinitionRequired(TypedDict):
     kernel: Literal["UDU"]
     key: str
@@ -8235,14 +10035,14 @@ class UduDashaDefinition(_UduDashaDefinitionRequired, total=False):
     """
 
     sources: List[str]
-    count: str
+    count: UduCount
     span: int
     groups: List[int]
     wheel: Literal["NAKSHATRAS", "WITH_ABHIJIT"]
     offset: int
     repeats: bool
     scale: Dict[str, int]
-    year_length: str
+    year_length: DashaYearLength
     depth: int
 
 
@@ -8271,7 +10071,7 @@ class RashiDashaDefinition(_RashiDashaDefinitionRequired, total=False):
     length: Union[Literal["COUNT_TO_LORD", "COUNT_TO_LORD_BY_DIGNITY"], Dict[str, object]]
     named_lord: Literal["STRONGER", "FIRST"]
     stronger_of: List[int]
-    year_length: str
+    year_length: DashaYearLength
     depth: int
 
 
@@ -9113,6 +10913,225 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
     )
 
 
+def _lalkitab(raw: Mapping[str, Any]) -> LalKitab:
+    """A chart's Lal Kitab from the `lalkitab` section's JSON, its grahas
+    made members."""
+
+    def graha(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    def grahas(keys: Any) -> Tuple[Graha, ...]:
+        return tuple(graha(key) for key in keys)
+
+    def pair(keys: Any) -> Tuple[Graha, Graha]:
+        first, second = keys
+        return (graha(first), graha(second))
+
+    def teva(one: Mapping[str, Any]) -> LalKitabReading:
+        flags = one["flags"]
+        return LalKitabReading(
+            planets=tuple(
+                LalKitabPlanet(
+                    graha=graha(p["graha"]),
+                    house=p["house"],
+                    dignities=tuple(p["dignities"]),
+                    owners=tuple(LalKitabOwner(owner=graha(o["owner"]), regard=o["regard"]) for o in p["owners"]),
+                    awake=p["awake"],
+                    kayam=p["kayam"],
+                    casts=tuple(
+                        LalKitabCast(to=c["to"], strength=c["strength"], onto=grahas(c["onto"])) for c in p["casts"]
+                    ),
+                )
+                for p in one["planets"]
+            ),
+            houses=tuple(
+                LalKitabHouse(
+                    house=h["house"],
+                    occupants=grahas(h["occupants"]),
+                    looked_at_by=tuple(
+                        LalKitabLook(from_house=look["from"], strength=look["strength"]) for look in h["lookedAtBy"]
+                    ),
+                    awake=h["awake"],
+                    waker=graha(h["waker"]),
+                )
+                for h in one["houses"]
+            ),
+            masnui=tuple(
+                LalKitabMasnui(pair=pair(m["pair"]), house=m["house"], counts_as=m["countsAs"]) for m in one["masnui"]
+            ),
+            rinas=tuple(
+                LalKitabDebt(
+                    rin=d["rin"],
+                    of=graha(d["of"]),
+                    seated=tuple(LalKitabSeat(enemy=graha(e["enemy"]), house=e["house"]) for e in d["seated"]),
+                )
+                for d in one["rinas"]
+            ),
+            pitri=tuple(PitriState(ninth=graha(q["ninth"]), mercury=q["mercury"]) for q in one["pitri"]),
+            flags=LalKitabFlags(
+                ratandha=flags["ratandha"],
+                nabalig=flags["nabalig"],
+                dharmi=grahas(flags["dharmi"]),
+                sathi=tuple(pair(two) for two in flags["sathi"]),
+            ),
+        )
+
+    def year_of(one: Mapping[str, Any]) -> LalKitabYear:
+        first, second, third = one["thirds"]
+        return LalKitabYear(
+            year=one["year"],
+            ruler=graha(one["ruler"]),
+            thirds=(graha(first), graha(second), graha(third)),
+            annual=None if one["annual"] is None else teva(one["annual"]),
+        )
+
+    return LalKitab(
+        reading=teva(raw["reading"]),
+        cycle=LalKitabStart(planet=graha(raw["cycle"]["planet"]), year=raw["cycle"]["year"]),
+        periods=tuple(
+            LalKitabPeriod(planet=graha(p["planet"]), from_year=p["from"], to_year=p["to"]) for p in raw["periods"]
+        ),
+        year=None if raw["year"] is None else year_of(raw["year"]),
+    )
+
+
+def _research_counts(raw: Sequence[Mapping[str, Any]]) -> Tuple[ResearchGroupCount, ...]:
+    """A row's charts in each group."""
+    return tuple(
+        ResearchGroupCount(present=c["present"], absent=c["absent"], unreadable=c["unreadable"], unstable=c["unstable"])
+        for c in raw
+    )
+
+
+def _research_tested(answer: Mapping[str, Any]) -> ResearchTested:
+    """A test's answer from `ts_research`, the provenance decoded as every
+    other one is."""
+
+    def interval(raw: Mapping[str, Any]) -> ResearchInterval:
+        return ResearchInterval(estimate=raw["estimate"], low=raw["low"], high=raw["high"])
+
+    def effect(raw: Optional[Mapping[str, Any]]) -> Optional[ResearchEffect]:
+        if raw is None:
+            return None
+        ratio = raw["riskRatio"]
+        return ResearchEffect(
+            risk_case=interval(raw["riskCase"]),
+            risk_rest=interval(raw["riskRest"]),
+            risk_difference=interval(raw["riskDifference"]),
+            risk_ratio=None if ratio is None else interval(ratio),
+            odds_ratio=raw["oddsRatio"],
+            cohen_h=raw["cohenH"],
+        )
+
+    def row(raw: Mapping[str, Any]) -> ResearchRow:
+        p, adjusted = raw["p"], raw["adjusted"]
+        expected, under = raw.get("expected"), raw.get("underAlpha")
+        return ResearchRow(
+            predicate=raw["predicate"],
+            counts=_research_counts(raw["counts"]),
+            observed=raw["observed"],
+            p=ResearchPValue(exceed=p["exceed"], value=p["value"], low=p["low"], high=p["high"]),
+            exact=raw.get("exact"),
+            adjusted=ResearchAdjusted(
+                max_t=adjusted["maxT"],
+                holm=adjusted["holm"],
+                bonferroni=adjusted["bonferroni"],
+                bh=adjusted["bh"],
+                by=adjusted["by"],
+            ),
+            effect=effect(raw.get("effect")),
+            expected=None
+            if expected is None
+            else ResearchExpectation(
+                observed=expected["observed"], expected=expected["expected"], ratio=expected.get("ratio")
+            ),
+            under_alpha=None
+            if under is None
+            else ResearchUnderAlpha(
+                raw=under["raw"],
+                max_t=under["maxT"],
+                holm=under["holm"],
+                bonferroni=under["bonferroni"],
+                bh=under["bh"],
+                by=under["by"],
+            ),
+        )
+
+    value = answer["value"]
+    return ResearchTested(
+        rows=tuple(row(one) for one in value["rows"]),
+        permutations=value["permutations"],
+        resolution=value["resolution"],
+        shuffle=value["shuffle"],
+        provenance=decode_provenance(answer["provenance"]),
+    )
+
+
+def _pakshi_day(raw: Mapping[str, Any]) -> PakshiDay:
+    """One day of `ts_pakshi`'s answer, its catalogue keys made members and
+    Pancha Pakshi's own words kept as the library spells them."""
+
+    def span(one: Mapping[str, Any]) -> PakshiSpan:
+        return PakshiSpan(from_=one["from"], to=one["to"])
+
+    reading = raw["reading"]
+    if reading is None:
+        return PakshiDay(date=_serde_date(raw["date"]), reading=None)
+    day = reading["day"]
+    first, second = reading["eaters"]
+    return PakshiDay(
+        date=_serde_date(raw["date"]),
+        reading=PakshiReading(
+            day=PakshiDayBounds(
+                sunrise=day["sunrise"],
+                sunset=day["sunset"],
+                next_sunrise=day["nextSunrise"],
+                vara=_member(Vara, day["vara"]),
+                paksha=_member(Paksha, day["paksha"]),
+            ),
+            bird=reading["bird"],
+            death_bird=reading["deathBird"],
+            dead_today=reading["deadToday"],
+            eaters=(first, second),
+            yamas=tuple(
+                PakshiYama(
+                    half=yama["half"],
+                    yama=yama["yama"],
+                    span=span(yama["span"]),
+                    activity=yama["activity"],
+                    quality=yama["quality"],
+                    subs=tuple(
+                        PakshiSub(
+                            activity=sub["activity"],
+                            owner=sub["owner"],
+                            share=sub["share"],
+                            owner_is=sub["ownerIs"],
+                            span=span(sub["span"]),
+                        )
+                        for sub in yama["subs"]
+                    ),
+                )
+                for yama in reading["yamas"]
+            ),
+        ),
+    )
+
+
+def _lalkitab_json(asked: Optional[LalKitabRequest]) -> Optional[str]:
+    """A Lal Kitab request written down, its cycle's graha as the key the
+    boundary reads; nothing where none was given."""
+    if asked is None:
+        return None
+    if not isinstance(asked, Mapping):
+        return _record_json(asked, "lalkitab", "{'year': 30}")
+    record: dict[str, Any] = dict(asked)
+    cycle = record.get("cycle")
+    if isinstance(cycle, Mapping):
+        record["cycle"] = {**cycle, "planet": _member_key(cycle.get("planet"))}
+    return json.dumps(record)
+
+
 def _remedies(raw: Mapping[str, Any]) -> Remedies:
     """A chart's remedies from the `remedies` section's JSON, its keys made
     members."""
@@ -9223,6 +11242,287 @@ def _shanti(raw: Mapping[str, Any]) -> Shanti:
         substance=raw["substance"],
         direction=None if direction is None else _member(Direction, direction),
         mandala=raw["mandala"],
+    )
+
+
+def _rectification(raw: Mapping[str, Any]) -> Rectification:
+    """A chart's rectification from the `rectification` section's JSON, its
+    keys made members and each reading not asked for `None`."""
+    purified = raw.get("purified")
+    conception = raw.get("conception")
+    circumstance = raw.get("circumstance")
+    baseline = raw.get("baseline")
+    svarodaya = raw.get("svarodaya")
+    return Rectification(
+        purified=None if purified is None else _purified(purified),
+        conception=None if conception is None else _conception(conception),
+        circumstance=None if circumstance is None else _circumstance(circumstance),
+        baseline=None if baseline is None else _rectification_baseline(baseline),
+        svarodaya=None if svarodaya is None else _svarodaya(svarodaya),
+    )
+
+
+def _svarodaya_run(raw: Mapping[str, Any]) -> SvarodayaRun:
+    """One Svarodaya run, from its JSON."""
+    return SvarodayaRun(
+        from_jd=raw["from"],
+        to_jd=raw["to"],
+        nadi=raw["nadi"],
+        turn=raw["turn"],
+        tattva=raw["tattva"],
+        sex=raw["sex"],
+    )
+
+
+def _svarodaya(raw: Mapping[str, Any]) -> SvarodayaAround:
+    """The Shiva Svarodaya around a chart's instant, from its JSON, its tithi
+    made a member."""
+    at = raw["at"]
+    start, end = at["junctions"]
+    tithi: Tithi = _member(Tithi, at["tithi"])
+    return SvarodayaAround(
+        at=Svarodaya(
+            sunrise=at["sunrise"],
+            next_sunrise=at["nextSunrise"],
+            tithi=tithi,
+            sunrise_nadi=at["sunriseNadi"],
+            run=_svarodaya_run(at["run"]),
+            junctions=(start, end),
+        ),
+        runs=tuple(_svarodaya_run(one) for one in raw["runs"]),
+    )
+
+
+def _rashi(key: str) -> Rashi:
+    """A sign by its bare key."""
+    found: Rashi = _member(Rashi, key)
+    return found
+
+
+def _nakshatra(key: Optional[str]) -> Optional[Nakshatra]:
+    """A nakshatra by its bare key, or `None` for none."""
+    found: Optional[Nakshatra] = None if key is None else _member(Nakshatra, key)
+    return found
+
+
+def _graha(key: str) -> Graha:
+    """A graha by its bare key."""
+    found: Graha = _member(Graha, key)
+    return found
+
+
+def _purifier_verdict(raw: Mapping[str, Any]) -> PurifierVerdict:
+    """The purifier's verdict at an instant, from its JSON."""
+    return PurifierVerdict(
+        clauses=tuple(
+            PurifierClause(
+                purifier=c["purifier"],
+                reference=c["reference"],
+                sign=_rashi(c["sign"]),
+                lagna=_rashi(c["lagna"]),
+                house=c["house"],
+                held=c["held"],
+                counted=c["counted"],
+            )
+            for c in raw["clauses"]
+        ),
+        pure=raw["pure"],
+    )
+
+
+def _purified(raw: Mapping[str, Any]) -> Purified:
+    """What the purifier leaves standing, from its JSON."""
+
+    def run(one: Mapping[str, Any]) -> PurifierRun:
+        return PurifierRun(from_jd=one["from"], to_jd=one["to"], verdict=_purifier_verdict(one["verdict"]))
+
+    grid = raw["grid"]
+    return Purified(
+        intervals=tuple(run(one) for one in raw["intervals"]),
+        removed=tuple(run(one) for one in raw["removed"]),
+        edges=tuple(raw["edges"]),
+        grid=PurifierGrid(step_days=grid["stepDays"], cells=grid["cells"]),
+    )
+
+
+def _conception(raw: Mapping[str, Any]) -> Conception:
+    """The conception reports, from their JSON."""
+    house = raw["pranapadaHouse"]
+    nisheka = raw["nisheka"]
+    count = nisheka["count"]
+    points = count["points"]
+    span = count["span"]
+    written = span["written"]
+    moon = raw["moon"]
+    predicted = moon["predicted"]
+    return Conception(
+        birth=raw["birth"],
+        pranapada_house=PranapadaHouse(
+            pranapada_deg=house["pranapadaDeg"],
+            lagna_deg=house["lagnaDeg"],
+            house=house["house"],
+            auspicious=house["auspicious"],
+        ),
+        nisheka=Nisheka(
+            count=NishekaCount(
+                points=NishekaPoints(
+                    mandi_deg=points["mandiDeg"],
+                    saturn_deg=points["saturnDeg"],
+                    lagna_deg=points["lagnaDeg"],
+                    ninth_deg=points["ninthDeg"],
+                    lagna_lord_deg=points["lagnaLordDeg"],
+                    moon_deg=points["moonDeg"],
+                ),
+                span=NishekaSpan(
+                    saturn_to_mandi_deg=span["saturnToMandiDeg"],
+                    lagna_to_ninth_deg=span["lagnaToNinthDeg"],
+                    moon_added_deg=span["moonAddedDeg"],
+                    arc_deg=span["arcDeg"],
+                    written=MonthsBefore(
+                        months=written["months"],
+                        days=written["days"],
+                        ghatis=written["ghatis"],
+                        palas=written["palas"],
+                    ),
+                    days_before=span["daysBefore"],
+                ),
+                instant=count["instant"],
+                days_per_birth_minute=count["daysPerBirthMinute"],
+            ),
+            lagna_deg=nisheka["lagnaDeg"],
+            verdict=_purifier_verdict(nisheka["verdict"]),
+        ),
+        moon=ConceptionMoon(
+            predicted=MoonCount(
+                dvadashamsha=predicted["dvadashamsha"],
+                sign=_rashi(predicted["sign"]),
+                nakshatra=_nakshatra(predicted["nakshatra"]),
+            ),
+            moon_sign=_rashi(moon["moonSign"]),
+            moon_nakshatra=_nakshatra(moon["moonNakshatra"]),
+            sign_agrees=moon["signAgrees"],
+            nakshatra_agrees=moon["nakshatraAgrees"],
+            rising=_rashi(moon["rising"]),
+            predicted_part=moon["predictedPart"],
+            born_by_day=moon["bornByDay"],
+            part_agrees=moon["partAgrees"],
+            risen_fraction=moon["risenFraction"],
+            elapsed_fraction=moon["elapsedFraction"],
+        ),
+    )
+
+
+def _circumstance(raw: Mapping[str, Any]) -> Circumstance:
+    """*Brihat Jataka* ch. V's circumstances, from their JSON."""
+    sky = raw["sky"]
+    father = raw["father"]
+    presentation = raw["presentation"]
+    lamp = raw["lamp"]
+    attending = raw["attending"]
+    return Circumstance(
+        sky=BirthSky(
+            lagna_deg=sky["lagnaDeg"],
+            grahas_deg=tuple(sky["grahasDeg"]),
+            lord_retrograde=sky["lordRetrograde"],
+        ),
+        father=FatherReading(
+            moon_aspect=father["moonAspect"],
+            unseen=father["unseen"],
+            saturn_rising=father["saturnRising"],
+            mars_setting=father["marsSetting"],
+            moon_hemmed=father["moonHemmed"],
+            away=father["away"],
+            whereabouts=father["whereabouts"],
+            sun_house=father["sunHouse"],
+        ),
+        presentation=PresentationReading(
+            by=presentation["by"],
+            rising=presentation["rising"],
+            lord=_graha(presentation["lord"]),
+            lord_retrograde=presentation["lordRetrograde"],
+            foretold=presentation["foretold"],
+        ),
+        lamp=Lamp(
+            oil=lamp["oil"],
+            oil_level=lamp["oilLevel"],
+            wick=lamp["wick"],
+            wick_level=lamp["wickLevel"],
+        ),
+        attending=Attending(
+            between=tuple(_graha(key) for key in attending["between"]),
+            visible=tuple(_graha(key) for key in attending["visible"]),
+            inside=attending["inside"],
+            outside=attending["outside"],
+        ),
+        weights=tuple(
+            CircumstanceWeight(indication=w["indication"], agrees=w["agrees"]) for w in raw["weights"]
+        ),
+    )
+
+
+def _stage_note(raw: Mapping[str, Any]) -> StageNote:
+    """A baseline stage's note by its `kind`, or a refusal naming one this
+    build does not know."""
+    kind = raw["kind"]
+    if kind == "TATTVA_SEX":
+        return TattvaSexNote(
+            sex=raw["sex"], admitted_minutes=raw["admittedMinutes"], penalised=raw["penalised"], of=raw["of"]
+        )
+    if kind == "REPORTED_TIME":
+        return ReportedTimeNote(accuracy=raw["accuracy"], uncertainty_minutes=raw["uncertaintyMinutes"])
+    if kind == "EVENT_FIT":
+        return EventFitNote(
+            event=raw["event"],
+            id=raw.get("id"),
+            event_kind=raw["eventKind"],
+            lords=tuple(_graha(key) for key in raw["lords"]),
+            contribution=raw["contribution"],
+        )
+    raise TeistroError(Status.INTERNAL, f"the library drew a stage note this build does not know: {kind}")
+
+
+def _rectification_baseline(raw: Mapping[str, Any]) -> BaselineAnswer:
+    """The baseline engine's cascade, from its JSON."""
+    return BaselineAnswer(
+        window=_interval(raw["window"]),
+        sunrise=raw["sunrise"],
+        intervals=tuple(_interval(one) for one in raw["intervals"]),
+        interval_width_minutes=raw["intervalWidthMinutes"],
+        resolution_minutes=raw["resolutionMinutes"],
+        suggested=raw["suggested"],
+        concentration=raw["concentration"],
+        candidates=tuple(
+            RankedCandidate(
+                at=c["at"],
+                probability=c["probability"],
+                log_posterior=c["logPosterior"],
+                lagna=_rashi(c["lagna"]),
+                lagna_nakshatra=_member(Nakshatra, c["lagnaNakshatra"]),
+            )
+            for c in raw["candidates"]
+        ),
+        stages=tuple(
+            StageOutcome(
+                stage=s["stage"],
+                applied=s["applied"],
+                flat=s["flat"],
+                resolution_minutes=s["resolutionMinutes"],
+                notes=tuple(_stage_note(note) for note in s["notes"]),
+            )
+            for s in raw["stages"]
+        ),
+        events_used=raw["eventsUsed"],
+        events_held_out=raw["eventsHeldOut"],
+        hold_out=tuple(
+            HeldOutEvent(
+                event=h["event"],
+                kind=h["kind"],
+                score_at_fit=h["scoreAtFit"],
+                baseline=h["baseline"],
+                supported=h["supported"],
+            )
+            for h in raw["holdOut"]
+        ),
     )
 
 
@@ -10805,6 +13105,25 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def lalkitab(self) -> Optional[LalKitab]:
+        """The chart read as Lal Kitab reads it: the teva's reading, the
+        35-year cycle's periods and the year asked for. `None` unless
+        `lalkitab=` asked (`03-design/lalkitab.md`)."""
+        parsed = self.batch._lalkitabs
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def rectification(self) -> Optional[Rectification]:
+        """The chart read as a birth time to rectify, its instant the time on
+        record: what the purifier of BPHS ch. 2 vv. 67–78 leaves standing of
+        the window around it, the conception reports, *Brihat Jataka* ch. V's
+        circumstances and the baseline engine's unsourced cascade, each
+        `None` unless the request asked for it. `None` unless
+        `rectification=` asked for any (`03-design/rectification.md`)."""
+        parsed = self.batch._rectifications
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def dignities(self) -> Optional[Dignities]:
         """The seven planets' essential dignities and the chart's sect, with
         everything that made them; `None` unless `dignities=` asked for them
@@ -11457,6 +13776,20 @@ class ChartBatch:
         for."""
         text = self.decoded.remedies
         return [_remedies(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _lalkitabs(self) -> list[LalKitab]:
+        """Every chart's Lal Kitab, parsed once; empty when none was asked
+        for."""
+        text = self.decoded.lalkitab
+        return [_lalkitab(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _rectifications(self) -> list[Rectification]:
+        """Every chart's rectification, parsed once; empty when none was
+        asked for."""
+        text = self.decoded.rectification
+        return [_rectification(raw) for raw in json.loads(text)] if text else []
 
     @cached_property
     def _kps(self) -> list[KpReading]:

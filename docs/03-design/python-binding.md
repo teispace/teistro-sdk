@@ -1,6 +1,6 @@
 # The Python binding
 
-Status: `designed`, written 2026-09-08 from the falsification pass in
+Status: `built`, written 2026-09-08 from the falsification pass in
 [`binding-surface-measured.md`](binding-surface-measured.md). Derives
 from [`ffi-abi-and-api-description.md`](ffi-abi-and-api-description.md)
 (the ABI, the description and the result blob), ADR-0004 (one
@@ -58,8 +58,8 @@ with**. The C header asserts all 25 struct sizes at compile time
 | `teistro/_install.py`, the `teistro-install` command | the installer: where a prebuilt library comes from, the digest it must have, and where it is written | by hand |
 | `teistro/_prebuilt.py` | the release the installer fetches from and the digest of each platform's library; empty in a checkout, written when a release is staged | the release |
 | `tests/` | the surface end to end, the decoders against blobs the library produced, and the sizes against the library that was built | by hand |
-| `example/teistro_example.py` | the code the README shows, run by the gate so the two cannot drift | by hand |
-| `parity.py` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the other two | by hand |
+| `example/*.py` | the shared examples, one program per name every binding carries, run by `check-python` and compared line for line by `check-parity`; no gate runs the code the README shows | by hand |
+| `parity.py` | this binding's half of the parity report, which `cargo xtask check-parity` compares with every other runner's | by hand |
 | `typecheck/wrong.py` | the usages that must not type-check, each with the error it must raise | by hand |
 
 The generator lays the generated files out, so `check-ffi` can
@@ -271,9 +271,11 @@ all of them.
 `hashlib` is in the standard library, so unlike the Dart package this one
 needs no digest of its own.
 
-Per-platform wheels are the more idiomatic Python answer and are an open
-question (§14), not a different design: they fill the same `_lib/`
-directory the loader already searches.
+Per-platform wheels, the more idiomatic Python answer, shipped on
+2026-10-08 (`xtask/src/wheel.rs`): `package stage` writes a wheel per
+platform carrying its library in the same `_lib/` directory the loader
+already searches, pip picks the host's, and `teistro-install` is the
+fallback for a host no wheel fits.
 
 ## 13. Tests and the gate
 
@@ -313,15 +315,12 @@ both.
 
 ## 14. Open questions
 
-- **Per-platform wheels.** They would make `pip install teistro` enough
-  on its own. They need five wheels in the release matrix and a PyPI
-  account, both of which belong to the release rather than to the
-  binding, and they change nothing here but where `_lib/` is filled from.
+- ~~**Per-platform wheels.**~~ **Shipped** 2026-10-08 (§12): `pip install
+  teistro` is enough on its own on every platform the release builds.
 - **A `numpy` extra.** A decoded column is already a buffer numpy wraps
   without copying. An optional `teistro[numpy]` that returned arrays
   directly would save the caller one call and add a dependency; worth
   measuring against a real workload before it is decided.
 - **Async.** The core is synchronous and single-threaded per context.
   An `asyncio` wrapper that ran a context on a thread would be a
-  convenience over `ContextPool`, which the Node binding has and this one
-  does not yet.
+  convenience over a `ContextPool`, which no binding has yet.

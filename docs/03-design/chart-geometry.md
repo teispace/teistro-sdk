@@ -288,7 +288,7 @@ where that is won or lost.
   - D9 in South Indian matches the navamsha's own lagna and signs;
   - each graha's wheel house equals the foundation's own bhava.
 
-## 7e. The boundary and the four bindings
+## 7e. The boundary and the bindings
 
 - **A drawing crosses as one `u32`**: `layout << 16 | varga`, in
   `TsChartRequest.drawings` with its `drawing_count`. Two parallel arrays
@@ -312,10 +312,10 @@ where that is won or lost.
   SDK's refusal; it now checks the shape first, and a test in Node and in
   Python holds every refusal to its field. Dart's record type makes the
   wrong pair a compile error.
-- **Parity**: the four runners request the same three drawings (North
+- **Parity**: every runner requests the same three drawings (North
   Indian D1, South Indian D9, the wheel's D1) over two instants and print
   every cell's sign, house, lagna flag, ring, bodies, label, anchor and
-  outline, and every mark. The four bindings agree on every value.
+  outline, and every mark. The runners agree on every value.
 - **Not yet across the boundary**: a consumer's own layout. The C ABI has
   no registration call, so a binding draws the six shipped layouts. The
   Rust façade registers any layout.
@@ -405,7 +405,7 @@ bindings.
 4. **The registry and the catalogue kind** `chart_layout`, so a consumer
    registers a regional layout without forking anything.
 5. **The document section and the boundary**: `ChartRequest::with_drawings`,
-   the section in all four bindings, and parity (built: §7d, §7e).
+   the section in every binding, and parity (built: §7d, §7e).
 6. **`render-svg`**: the theme record and golden SVGs, gated byte for
    byte (built, [`render-svg.md`](render-svg.md)).
 

@@ -771,6 +771,7 @@ fn the_surface(report: &mut Report) {
         ("(root).settings_json", "present"),
         ("almanac.day", "present"),
         ("almanac.of", "present"),
+        ("almanac.pakshi", "present"),
         ("calendar.convert", "present"),
         ("calendar.date_of", "present"),
         ("calendar.fixed_of", "present"),
@@ -780,6 +781,8 @@ fn the_surface(report: &mut Report) {
         ("chart.layout", "present"),
         ("chart.found", "present"),
         ("chart.found_many", "present"),
+        ("chart.rashifal", "present"),
+        ("chart.rashifal_many", "present"),
         ("engine.call", "present"),
         ("engine.call_json", "present"),
         ("engine.manifest", "present"),
@@ -800,6 +803,10 @@ fn the_surface(report: &mut Report) {
         ("keys.name", "present"),
         ("matching.naam", "present"),
         ("numerology.profile", "present"),
+        ("research.compare", "present"),
+        ("research.counts", "present"),
+        ("research.expected", "present"),
+        ("research.timed", "present"),
         ("time.civil_of", "present"),
         ("time.convert", "present"),
         ("time.delta_t", "present"),
@@ -982,13 +989,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     the_plans(report, &geo, &read.value, &by_rule);
     for (index, document) in read.value.iter().enumerate() {
         one_document(report, &geo, index, document);
-        the_progressions(report, &geo, index, document, &bare);
-        the_western_aspects(report, &geo, index, document);
-        the_parallels(report, &geo, index, document);
-        the_antiscia(report, &geo, index, document);
-        the_western_houses(report, &geo, index, document);
-        the_harmonic(report, &geo, index, document);
-        the_midpoints(report, &geo, index, document);
+        one_document_beside(report, &geo, index, document, &bare, offset);
     }
     the_partners(report, &geo, &read.value, offset);
     // **One call, as the other three make one.** The foundations are the
@@ -1856,6 +1857,27 @@ fn the_gochar(report: &mut Report, sdk: &Context, index: usize, document: &teist
 
 /// Everything one chart of the batch prints, in the order the other three
 /// print it.
+/// What a chart answers beside its own sections: the Western readings,
+/// which a progression needs the bare foundation for, and the
+/// rectification, which reads the request's clock.
+fn one_document_beside(
+    report: &mut Report,
+    geo: &Context,
+    index: usize,
+    document: &teistro::Document,
+    bare: &ChartRequest,
+    offset: UtcOffset,
+) {
+    the_progressions(report, geo, index, document, bare);
+    the_western_aspects(report, geo, index, document);
+    the_parallels(report, geo, index, document);
+    the_antiscia(report, geo, index, document);
+    the_western_houses(report, geo, index, document);
+    the_harmonic(report, geo, index, document);
+    the_midpoints(report, geo, index, document);
+    the_rectification(report, geo, index, document, offset);
+}
+
 fn one_document(report: &mut Report, geo: &Context, index: usize, document: &teistro::Document) {
     the_drawings(report, geo, index, document);
     one_varga_chart(report, index, document);
@@ -1877,6 +1899,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_perfection(report, geo, index, document);
     the_prashna(report, geo, index, document);
     the_remedies(report, geo, index, document);
+    the_lalkitab(report, geo, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2005,6 +2028,355 @@ fn prashna_beside(
     }
 }
 
+/// The rectification every runner asks for: twenty minutes either side
+/// purified, the conception and the circumstances at the chart's
+/// instant, and the baseline's cascade over half an hour with a marriage
+/// in the fit and an accident held out, and the Svarodaya's runs over
+/// twenty minutes either side.
+const RECTIFICATION_JSON: &str = r#"{"purify":{"minutes":20},"conception":{},"circumstance":{"facts":{"fatherPresent":false}},"baseline":{"uncertaintyMinutes":30,"sex":"MALE","events":[{"kind":"MARRIAGE","on":2469000.5},{"kind":"ACCIDENT","on":2471000.5,"heldOut":true}]},"svarodaya":{"minutes":20}}"#;
+
+/// A chart read as a birth time to rectify, as the other three print it:
+/// the purifier's runs and the clauses each held, the conception's
+/// answers, the circumstances and their weights, and the baseline's
+/// interval, stages and best candidate.
+fn the_rectification(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+    offset: UtcOffset,
+) {
+    let asked =
+        teistro::RectificationRequest::from_json(RECTIFICATION_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .rectification(document, offset, &asked)
+        .expect("the test provider");
+    let key = |what: &str| format!("chart-{index}-rectification{what}");
+    let verdict = |verdict: &teistro::rectification::Verdict| {
+        format!(
+            "{} {}",
+            verdict.pure,
+            dashed(verdict.clauses.iter().map(|clause| format!(
+                "{}:{}:{}:{}:{}:{}:{}",
+                wire_key(&clause.purifier),
+                wire_key(&clause.reference),
+                clause.sign.full_key(),
+                clause.lagna.full_key(),
+                clause.house,
+                clause.held,
+                clause.counted
+            )))
+        )
+    };
+    let purified = read.purified.as_ref().expect("asked for");
+    put(
+        report,
+        &key("-purified"),
+        format!(
+            "{} {} {} {} {}",
+            purified.grid.cells,
+            number(purified.grid.step_days),
+            purified.intervals.len(),
+            purified.removed.len(),
+            dashed(purified.edges.iter().map(|edge| number(edge.get())))
+        ),
+    );
+    for (k, run) in purified
+        .intervals
+        .iter()
+        .chain(&purified.removed)
+        .enumerate()
+    {
+        put(
+            report,
+            &key(&format!("-purified-{k}")),
+            format!(
+                "{} {} {}",
+                number(run.from.get()),
+                number(run.to.get()),
+                verdict(&run.verdict)
+            ),
+        );
+    }
+    rectification_conception(
+        report,
+        &key,
+        &verdict,
+        read.conception.as_ref().expect("asked for"),
+    );
+    rectification_circumstance(report, &key, read.circumstance.as_ref().expect("asked for"));
+    rectification_baseline(report, &key, read.baseline.as_ref().expect("asked for"));
+    rectification_svarodaya(report, &key, read.svarodaya.as_ref().expect("asked for"));
+}
+
+/// The conception reports at a chart's instant, as the other three print
+/// them.
+fn rectification_conception(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    verdict: &dyn Fn(&teistro::rectification::Verdict) -> String,
+    conception: &teistro::rectification::Conception,
+) {
+    let pranapada = &conception.pranapada_house;
+    let nisheka = &conception.nisheka;
+    let written = &nisheka.count.span.written;
+    put(
+        report,
+        &key("-conception"),
+        format!(
+            "{} {} {} {} {}:{}:{}:{} {} {}",
+            number(conception.birth.get()),
+            pranapada.house,
+            pranapada.auspicious,
+            number(nisheka.count.instant.get()),
+            written.months,
+            written.days,
+            written.ghatis,
+            written.palas,
+            number(nisheka.lagna_deg),
+            verdict(&nisheka.verdict)
+        ),
+    );
+    let moon = &conception.moon;
+    let nakshatra = |nakshatra: Option<teistro::catalogue::Nakshatra>| {
+        nakshatra.map_or("-", |nakshatra| nakshatra.full_key())
+    };
+    put(
+        report,
+        &key("-conception-moon"),
+        format!(
+            "{} {} {} {} {} {} {} {} {} {} {} {} {} {}",
+            moon.predicted.dvadashamsha,
+            moon.predicted.sign.full_key(),
+            nakshatra(moon.predicted.nakshatra),
+            moon.moon_sign.full_key(),
+            nakshatra(moon.moon_nakshatra),
+            moon.sign_agrees,
+            moon.nakshatra_agrees
+                .map_or_else(|| String::from("-"), |agrees| agrees.to_string()),
+            moon.rising.full_key(),
+            wire_key(&moon.predicted_part),
+            moon.born_by_day,
+            moon.part_agrees,
+            number(moon.risen_fraction),
+            number(moon.elapsed_fraction),
+            number(conception.pranapada_house.pranapada_deg)
+        ),
+    );
+}
+
+/// The circumstances at a chart's instant, as the other three print them.
+fn rectification_circumstance(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::rectification::Circumstance,
+) {
+    let father = &read.father;
+    let presentation = &read.presentation;
+    let lamp = &read.lamp;
+    let attending = &read.attending;
+    put(
+        report,
+        &key("-circumstance"),
+        format!(
+            "{} {} {} {} {} {} {} {} {}",
+            wire_key(&father.moon_aspect),
+            father.unseen,
+            father.saturn_rising,
+            father.mars_setting,
+            father.moon_hemmed,
+            father.away,
+            father
+                .whereabouts
+                .map_or_else(|| String::from("-"), |whereabouts| wire_key(&whereabouts)),
+            father.sun_house,
+            read.sky.lord_retrograde
+        ),
+    );
+    put(
+        report,
+        &key("-circumstance-birth"),
+        format!(
+            "{} {} {} {} {} {}:{} {}:{} {} {} {} {}",
+            wire_key(&presentation.by),
+            wire_key(&presentation.rising),
+            presentation.lord.full_key(),
+            presentation.lord_retrograde,
+            wire_key(&presentation.foretold),
+            number(lamp.oil),
+            wire_key(&lamp.oil_level),
+            number(lamp.wick),
+            wire_key(&lamp.wick_level),
+            full_keys(&attending.between),
+            full_keys(&attending.visible),
+            attending.inside,
+            attending.outside
+        ),
+    );
+    put(
+        report,
+        &key("-circumstance-weights"),
+        dashed(
+            read.weights
+                .iter()
+                .map(|weight| format!("{}:{}", wire_key(&weight.indication), weight.agrees)),
+        ),
+    );
+}
+
+/// The baseline's cascade around a chart's instant, as the other three
+/// print it: the answer, each stage and what it says it did, the best
+/// candidate and each held-out event.
+fn rectification_baseline(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::rectification::baseline::BaselineAnswer,
+) {
+    put(
+        report,
+        &key("-baseline"),
+        format!(
+            "{} {} {} {} {} {} {} {} {} {} {}",
+            number(read.window.from.get()),
+            number(read.window.to.get()),
+            number(read.sunrise.get()),
+            dashed(read.intervals.iter().map(|interval| format!(
+                "{}:{}",
+                number(interval.from.get()),
+                number(interval.to.get())
+            ))),
+            number(read.interval_width_minutes),
+            number(read.resolution_minutes),
+            number(read.suggested.get()),
+            number(read.concentration),
+            read.candidates.len(),
+            read.events_used,
+            read.events_held_out
+        ),
+    );
+    for (k, stage) in read.stages.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-baseline-stage-{k}")),
+            format!(
+                "{} {} {} {} {}",
+                wire_key(&stage.stage),
+                stage.applied,
+                stage.flat,
+                number(stage.resolution_minutes),
+                dashed(stage.notes.iter().map(baseline_note))
+            ),
+        );
+    }
+    if let Some(best) = read.candidates.first() {
+        put(
+            report,
+            &key("-baseline-best"),
+            format!(
+                "{} {} {} {} {}",
+                number(best.at.get()),
+                number(best.probability),
+                number(best.log_posterior),
+                best.lagna.full_key(),
+                best.lagna_nakshatra.full_key()
+            ),
+        );
+    }
+    for (k, held) in read.hold_out.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-baseline-held-{k}")),
+            format!(
+                "{} {} {} {} {}",
+                held.event,
+                wire_key(&held.kind),
+                number(held.score_at_fit),
+                number(held.baseline),
+                held.supported
+            ),
+        );
+    }
+}
+
+/// The Shiva Svarodaya around a chart's instant, as the other three print
+/// it: the day and the reading at the instant, then every run.
+fn rectification_svarodaya(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::SvarodayaAround,
+) {
+    let run = |run: &teistro::rectification::SvarodayaRun| {
+        format!(
+            "{} {} {} {} {} {}",
+            number(run.from.get()),
+            number(run.to.get()),
+            wire_key(&run.nadi),
+            run.turn,
+            wire_key(&run.tattva),
+            wire_key(&run.sex)
+        )
+    };
+    let at = &read.at;
+    put(
+        report,
+        &key("-svarodaya"),
+        format!(
+            "{} {} {} {} {}:{} {}",
+            number(at.sunrise.get()),
+            number(at.next_sunrise.get()),
+            at.tithi.full_key(),
+            wire_key(&at.sunrise_nadi),
+            number(at.junctions[0].get()),
+            number(at.junctions[1].get()),
+            read.runs.len()
+        ),
+    );
+    put(report, &key("-svarodaya-at"), run(&at.run));
+    for (k, one) in read.runs.iter().enumerate() {
+        put(report, &key(&format!("-svarodaya-{k}")), run(one));
+    }
+}
+
+/// One stage note as every runner spells it: its kind, then its fields in
+/// declaration order, colon-joined.
+fn baseline_note(note: &teistro::rectification::baseline::Note) -> String {
+    use teistro::rectification::baseline::Note;
+    match note {
+        Note::TattvaSex {
+            sex,
+            admitted_minutes,
+            penalised,
+            of,
+        } => format!(
+            "TATTVA_SEX:{}:{}:{penalised}:{of}",
+            wire_key(sex),
+            number(*admitted_minutes)
+        ),
+        Note::ReportedTime {
+            accuracy,
+            uncertainty_minutes,
+        } => format!(
+            "REPORTED_TIME:{}:{}",
+            wire_key(accuracy),
+            number(*uncertainty_minutes)
+        ),
+        Note::EventFit {
+            event,
+            id,
+            event_kind,
+            lords,
+            contribution,
+        } => format!(
+            "EVENT_FIT:{event}:{}:{}:{}:{}",
+            id.as_deref().unwrap_or("-"),
+            wire_key(event_kind),
+            full_keys(lords),
+            number(*contribution)
+        ),
+    }
+}
+
 /// The remedies every runner asks for: the periods running at the start
 /// of 2025, and Yājñavalkya's ṛk for Rahu.
 const REMEDIES_JSON: &str = r#"{"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}"#;
@@ -2079,6 +2451,168 @@ fn the_remedies(report: &mut Report, sdk: &Context, index: usize, document: &tei
         );
     }
     remedies_rites(report, &key, &read);
+}
+
+/// The Lal Kitab every runner asks for: the cycle from Venus in the 17th
+/// year, the 43rd year read, and a varshphal list with the book's
+/// structure and none of its numbers, year `y` sending natal house `h` to
+/// `h + y − 1` round the twelve.
+fn lalkitab_request() -> teistro::LalKitabRequest {
+    let rows = (0..120_u8)
+        .map(|year| {
+            core::array::from_fn(|column| {
+                (u8::try_from(column).expect("twelve columns") + year) % 12 + 1
+            })
+        })
+        .collect();
+    teistro::LalKitabRequest {
+        cycle: teistro::lalkitab::CycleStart::new(Graha::Venus, 17).expect("a valid start"),
+        year: Some(43),
+        varshphal: Some(teistro::VarshphalRows { rows }),
+    }
+}
+
+/// Lal Kitab as every runner prints it: the cycle, the year and the flags
+/// in one row, then each planet, each house, the pairs and debts, the
+/// periods and the annual teva's houses.
+fn the_lalkitab(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let read = sdk
+        .chart()
+        .lalkitab(document, &lalkitab_request())
+        .expect("the test provider");
+    let key = |what: &str| format!("chart-{index}-lalkitab{what}");
+    let reading = &read.reading;
+    let flags = &reading.flags;
+    let year = read.year.as_ref().expect("a year was asked");
+    put(
+        report,
+        &key(""),
+        format!(
+            "{}:{} {}:{} {} {} {} {} {}",
+            read.cycle.planet.full_key(),
+            read.cycle.year,
+            year.year,
+            year.ruler.full_key(),
+            full_keys(&year.thirds),
+            flags.ratandha,
+            flags.nabalig,
+            full_keys(&flags.dharmi),
+            dashed(
+                flags
+                    .sathi
+                    .iter()
+                    .map(|[a, b]| format!("{}|{}", a.full_key(), b.full_key()))
+            )
+        ),
+    );
+    the_teva(report, &key, reading);
+    put(
+        report,
+        &key("-periods"),
+        dashed(
+            read.periods.iter().map(|period| {
+                format!("{}:{}-{}", period.planet.full_key(), period.from, period.to)
+            }),
+        ),
+    );
+    let annual = year.annual.as_ref().expect("a list was sent");
+    put(
+        report,
+        &key("-annual"),
+        dashed(
+            annual
+                .planets
+                .iter()
+                .map(|planet| format!("{}:{}", planet.graha.full_key(), planet.house)),
+        ),
+    );
+}
+
+/// The rows a Lal Kitab reading prints: each planet, each house and the
+/// debts, each under `key`.
+fn the_teva(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    reading: &teistro::lalkitab::Reading,
+) {
+    for planet in &reading.planets {
+        put(
+            report,
+            &key(&format!("-planet-{}", planet.graha.full_key())),
+            format!(
+                "{} {} {} {} {} {}",
+                planet.house,
+                dashed(planet.dignities.iter().map(wire_key)),
+                dashed(planet.owners.iter().map(|owner| format!(
+                    "{}:{}",
+                    owner.owner.full_key(),
+                    wire_key(&owner.regard)
+                ))),
+                planet.awake,
+                planet.kayam,
+                dashed(planet.casts.iter().map(|cast| format!(
+                    "{}:{}:{}",
+                    cast.to,
+                    wire_key(&cast.strength),
+                    pipe(&cast.onto)
+                )))
+            ),
+        );
+    }
+    for house in &reading.houses {
+        put(
+            report,
+            &key(&format!("-house-{}", house.house)),
+            format!(
+                "{} {} {} {}",
+                full_keys(&house.occupants),
+                dashed(house.looked_at_by.iter().map(|look| format!(
+                    "{}:{}",
+                    look.from,
+                    wire_key(&look.strength)
+                ))),
+                house.awake,
+                house.waker.full_key()
+            ),
+        );
+    }
+    put(
+        report,
+        &key("-debts"),
+        format!(
+            "{} {} {}",
+            dashed(reading.masnui.iter().map(|formed| format!(
+                "{}:{}:{}",
+                pipe(&formed.pair),
+                formed.house,
+                wire_key(&formed.counts_as)
+            ))),
+            dashed(reading.rinas.iter().map(|debt| format!(
+                "{}:{}:{}",
+                wire_key(&debt.rin),
+                debt.of.full_key(),
+                debt.seated
+                    .iter()
+                    .map(|seat| format!("{}@{}", seat.enemy.full_key(), seat.house))
+                    .collect::<Vec<_>>()
+                    .join("|")
+            ))),
+            dashed(reading.pitri.iter().map(|state| format!(
+                "{}:{}",
+                state.ninth.full_key(),
+                state.mercury
+            )))
+        ),
+    );
+}
+
+/// Grahas' full keys joined by `|`, empty for none.
+fn pipe(grahas: &[Graha]) -> String {
+    grahas
+        .iter()
+        .map(|graha| graha.full_key())
+        .collect::<Vec<_>>()
+        .join("|")
 }
 
 /// Each śānti and the ishṭa-devatā, as every runner prints them.
@@ -5693,11 +6227,16 @@ const RASHIFAL_JSON: &str = r#"{"periods":[{"calendar":"GREGORIAN","first":{"yea
 /// sign's Saturn, verdicts, events and baseline score.
 fn the_rashifal(report: &mut Report, geo: &Context) {
     let batch = teistro::RashifalBatch::from_json(RASHIFAL_JSON).expect("a rashifal batch");
-    let answers = geo
+    let sealed = geo
         .chart()
         .rashifal_answers(&batch)
-        .expect("the test provider")
-        .value;
+        .expect("the test provider");
+    put(
+        report,
+        "rashifal-hash",
+        sealed.provenance.input_hash.to_string(),
+    );
+    let answers = sealed.value;
     let day = |date: &teistro::CalendarDate| format!("{}-{}-{}", date.year, date.month, date.day);
     for (n, answer) in answers.iter().enumerate() {
         let period = &answer.period;
@@ -5736,6 +6275,211 @@ fn the_rashifal(report: &mut Report, geo: &Context) {
             );
         }
         rashifal_signs(report, &key, answer);
+    }
+}
+
+/// The Pancha Pakshi requests every runner sends, at Madras: a native by
+/// birth star in the dark half under Pulippani's lengths and relations over
+/// two days, and a bird named outright under the defaults for one.
+const PAKSHI_JSON: [&str; 2] = [
+    r#"{"calendar":"GREGORIAN","first":{"year":1984,"month":10,"day":30},"last":{"year":1984,"month":10,"day":31},"latitudeDeg":13.0827,"longitudeDeg":80.2707,"altitudeM":6,"utcOffsetSeconds":19800,"native":{"nakshatra":"nakshatra.UTTARA_ASHADHA","paksha":"paksha.KRISHNA","rule":"BY_PAKSHA"},"rules":{"subs":"PULIPPANI","relations":"PULIPPANI"}}"#,
+    r#"{"calendar":"GREGORIAN","first":{"year":1991,"month":5,"day":21},"latitudeDeg":13.0827,"longitudeDeg":80.2707,"altitudeM":6,"utcOffsetSeconds":19800,"native":{"bird":"OWL"}}"#,
+];
+
+/// The studies every runner sends (`03-design/research.md`): eight births
+/// at Kathmandu a few years apart, the shipped yogas as the predicates,
+/// compared by alternate labels, read against their own recombined
+/// population, and each delivered by the Vimshottari at an event of its
+/// life under the age shuffle. Sent as the record a binding writes.
+fn research_studies() -> [(&'static str, serde_json::Value); 4] {
+    let births: Vec<serde_json::Value> = (0..8_u32)
+        .map(|i| {
+            serde_json::json!({
+                "instant": 2_447_000.25 + 977.3 * f64::from(i),
+                "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20_700,
+            })
+        })
+        .collect();
+    let subjects: Vec<serde_json::Value> = births
+        .iter()
+        .zip(0_u32..)
+        .map(|(birth, i)| {
+            let at = birth["instant"].as_f64().unwrap_or_default();
+            serde_json::json!({"birth": birth, "event": at + 9000.5 + 211.0 * f64::from(i)})
+        })
+        .collect();
+    let groups: Vec<u32> = (0..8).map(|i| i % 2).collect();
+    let rules = serde_json::json!({"shipped": ["YOGAS"]});
+    [
+        (
+            "counts",
+            serde_json::json!({"study": "COUNTS", "rules": rules, "holds": "FORMED",
+            "births": births, "design": {"groups": groups}}),
+        ),
+        (
+            "compare",
+            serde_json::json!({"study": "COMPARE", "rules": rules, "births": births,
+            "design": {"groups": groups},
+            "test": {"seed": 5, "permutations": 199,
+                     "contrast": {"kind": "CASE_VS_REST", "case": 1}, "alpha": 0.05}}),
+        ),
+        (
+            "expected",
+            serde_json::json!({"study": "EXPECTED", "rules": rules, "births": births,
+            "control": {"seed": 4, "replicates": 3}}),
+        ),
+        (
+            "timed",
+            serde_json::json!({"study": "TIMED", "rules": rules, "subjects": subjects,
+            "dasha": "dasha_system.VIMSHOTTARI", "shuffle": "AGES_AT_EVENT",
+            "test": {"seed": 3, "permutations": 49}}),
+        ),
+    ]
+}
+
+/// Each study's answer as the other runners print it.
+fn the_research(report: &mut Report, geo: &Context) {
+    use teistro::ResearchAnswer;
+    let counted = |counts: &[teistro::research::GroupCount]| {
+        counts
+            .iter()
+            .map(|c| format!("{}:{}:{}:{}", c.present, c.absent, c.unreadable, c.unstable))
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    let optional = |value: Option<f64>| value.map_or_else(|| "none".to_owned(), number);
+    for (name, study) in research_studies() {
+        let asked = teistro::ResearchRequest::from_json(&study.to_string()).expect("a study");
+        match geo.research().request(&asked).expect("the test provider") {
+            ResearchAnswer::Counts(table) => {
+                put(
+                    report,
+                    &format!("research-{name}-hash"),
+                    table.provenance.input_hash.to_string(),
+                );
+                for (k, row) in table.value.rows.iter().enumerate() {
+                    put(
+                        report,
+                        &format!("research-{name}-row-{k}"),
+                        format!("{} {}", row.predicate, counted(&row.counts)),
+                    );
+                }
+            }
+            ResearchAnswer::Tested(tested) => {
+                put(
+                    report,
+                    &format!("research-{name}-hash"),
+                    tested.provenance.input_hash.to_string(),
+                );
+                let value = &tested.value;
+                put(
+                    report,
+                    &format!("research-{name}-test"),
+                    format!(
+                        "{} {} {}",
+                        value.permutations,
+                        number(value.resolution),
+                        value.shuffle.name()
+                    ),
+                );
+                for (k, r) in value.rows.iter().enumerate() {
+                    put(
+                        report,
+                        &format!("research-{name}-row-{k}"),
+                        format!(
+                            "{} {} {} {} {} {} {} {} {} {} {}",
+                            r.predicate,
+                            counted(&r.counts),
+                            optional(r.observed),
+                            r.p.exceed,
+                            number(r.p.value),
+                            number(r.adjusted.max_t),
+                            number(r.adjusted.holm),
+                            number(r.adjusted.bh),
+                            optional(r.exact),
+                            optional(r.effect.map(|e| e.risk_difference.estimate)),
+                            optional(r.expected.map(|e| e.expected)),
+                        ),
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// Each Pancha Pakshi day as the other runners print it: the day's bounds,
+/// weekday, paksha and birds, and each yama with its sub-periods.
+fn the_pakshi(report: &mut Report, geo: &Context) {
+    for (r, json) in PAKSHI_JSON.iter().enumerate() {
+        let asked = teistro::PakshiRequest::from_json(json).expect("a pakshi request");
+        let sealed = geo
+            .almanac()
+            .pakshi_request(&asked)
+            .expect("the test provider");
+        put(
+            report,
+            &format!("pakshi-{r}-hash"),
+            sealed.provenance.input_hash.to_string(),
+        );
+        for (n, one) in sealed.value.iter().enumerate() {
+            let key = format!("pakshi-{r}-{n}");
+            let civil = format!("{}-{}-{}", one.date.year, one.date.month, one.date.day);
+            let Some(read) = &one.reading else {
+                put(report, &key, format!("{civil} none"));
+                continue;
+            };
+            let day = &read.day;
+            put(
+                report,
+                &key,
+                format!(
+                    "{civil} {} {} {} {} {} {} {} {} {}",
+                    day.vara.full_key(),
+                    day.paksha.full_key(),
+                    number(day.sunrise),
+                    number(day.sunset),
+                    number(day.next_sunrise),
+                    wire_key(&read.bird),
+                    wire_key(&read.death_bird),
+                    read.dead_today,
+                    read.eaters
+                        .iter()
+                        .map(wire_key)
+                        .collect::<Vec<_>>()
+                        .join(",")
+                ),
+            );
+            for (k, yama) in read.yamas.iter().enumerate() {
+                let subs: Vec<String> = yama
+                    .subs
+                    .iter()
+                    .map(|sub| {
+                        format!(
+                            "{}:{}:{}:{}:{}",
+                            wire_key(&sub.sub.activity),
+                            wire_key(&sub.sub.owner),
+                            sub.sub.share,
+                            wire_key(&sub.owner_is),
+                            number(sub.span.to)
+                        )
+                    })
+                    .collect();
+                put(
+                    report,
+                    &format!("{key}-yama-{k}"),
+                    format!(
+                        "{} {} {} {} {} {} {}",
+                        wire_key(&yama.half),
+                        yama.yama,
+                        number(yama.span.from),
+                        number(yama.span.to),
+                        wire_key(&yama.activity),
+                        wire_key(&yama.quality),
+                        subs.join(",")
+                    ),
+                );
+            }
+        }
     }
 }
 
@@ -5877,6 +6621,8 @@ fn main() {
     an_almanac(&mut report, &geo, &place, offset);
     a_muhurta(&mut report, &geo, &place, offset);
     the_rashifal(&mut report, &geo);
+    the_pakshi(&mut report, &geo);
+    the_research(&mut report, &geo);
     festivals(&mut report, &geo, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);

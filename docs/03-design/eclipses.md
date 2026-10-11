@@ -1,8 +1,11 @@
 # Astronomy: eclipses
 
-Status: `draft`, written 2026-10-01 from two prototypes measured
-against NASA's Five Millennium Canon before any module existed. It
-derives from:
+Status: `built`, written 2026-10-01 from two prototypes measured
+against NASA's Five Millennium Canon before any module existed. Every
+part of it is built: the global search and the local circumstances
+(`astro::eclipse`), the almanac's `sdk.almanac().eclipses` and the
+section in every binding, measured in `eclipses-measured.md`. C188
+stays open (§10). It derives from:
 
 - `01-research/platform/13-astronomy-layer.md`, the eclipses row:
   global circumstances from the Sun and the Moon, lunar eclipses from
@@ -71,8 +74,8 @@ choices are the caller's, and each is reported on the answer:
 
 ## 3. The data model
 
-- `LunarKind`: `PENUMBRAL`, `PARTIAL` or `TOTAL`.
-- `SolarKind`: `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`. A hybrid is
+- `LunarEclipseKind`: `PENUMBRAL`, `PARTIAL` or `TOTAL`.
+- `SolarEclipseKind`: `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`. A hybrid is
   annular at the path's ends and total in its middle.
 - **`LunarEclipse`**:
   - `greatest`, a UT1 instant;
@@ -351,7 +354,8 @@ let seen = found.value.any_seen();
 
 Every binding asks for it beside the days, as it asks for the lunar
 years: `eclipses: true` in Node and Dart, `eclipses=True` in Python, the
-bit `TS_PANCHANGA_ECLIPSES` across the boundary, and the panchanga
+`eclipses` argument of Java's `AlmanacArea.of`, the bit
+`TS_PANCHANGA_ECLIPSES` across the boundary, and the panchanga
 blob's section 24 carrying the envelope as JSON. The JSON is camelCase,
 and every instant in it is a UT1 Julian day.
 
@@ -417,7 +421,7 @@ second is how a false positive, a full moon read as a penumbral
 eclipse, would be caught.
 
 **Unit tests** (`crates/ephemeris-builtin/tests/eclipses.rs`, and the
-geometry's own in `crates/astro/src/eclipse.rs`):
+geometry's own in `crates/astro/src/eclipse/`):
 
 - a known pair: the total lunar eclipse of 2025-09-07 and the total
   solar eclipse of 2024-04-08, each with its kind and its time to the
@@ -429,8 +433,8 @@ geometry's own in `crates/astro/src/eclipse.rs`):
 
 **Bindings:** each binding's suite reads September 2025 at Kathmandu: a
 total lunar eclipse seen whole, a partial solar one not seen, and the
-shadow knob moving the umbra. The parity runner prints every field of
-both eclipses in all five runners. The wasm runner carries the built-in
+shadow knob moving the umbra. The parity gate prints every field of
+both eclipses in every runner. The wasm runner carries the built-in
 sky's compact tier, so its eclipse lines are held to the same *shape*,
 every kind, count and absent contact, and their numbers are its tier's
 own. That exception fails both ways (`xtask/src/parity.rs`,
@@ -453,6 +457,7 @@ and those three stay unnamed until a source does.
 - **C188:** whether a classical profile's eclipse should be the text's
   own (Surya Siddhanta IV to VI). The Nepali print's eclipse times have
   not yet been compared.
-- **The sutak's hours:** nine for a lunar eclipse and twelve for a
-  solar one, and whether a penumbral eclipse has one. These are the
-  muhurta page's question, and depend on its source.
+- **The sutak's hours**, answered by the muhurta page (§4.1.1, C192):
+  `panchanga.eclipse_vedha` counts them *Dharmasindhu*'s way or Nepal's
+  committee's fixed hours, and a lunar eclipse is seen by its umbral
+  phase, so a penumbral one has none.

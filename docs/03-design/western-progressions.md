@@ -1,6 +1,6 @@
 # Progressions and directions (the `western` module, step 1)
 
-Status: `building`, 2026-10-03 — written from Leo's text before any code,
+Status: `built`, 2026-10-03 — written from Leo's text before any code,
 its worked figures recast with pyswisseph's Moshier series. Every step
 is built: the measures in `crates/western`, the charts and the contacts
 in the SDK's chart area, the boundary with every binding, and the
@@ -154,9 +154,12 @@ The calls:
 
 The arithmetic goes in its own functions, so a consumer can use one
 without the others:
-- `progressed_instant(birth, at, rate, measure)`;
-- `life_at(birth, instant, rate, measure)`, the inverse;
-- `arc_to_years` and `years_to_arc` for each arc measure.
+- `Progression::sky_at(&self, birth, life)`, the sky's instant for a
+  moment of the life, the rate and measure held on the `Progression`
+  (`crates/western/src/progression.rs`);
+- `Progression::life_at(&self, birth, sky)`, the inverse;
+- `ArcMeasure::years(self, degrees)` and `ArcMeasure::degrees(self, years)`
+  for each arc measure (`crates/western/src/arc.rs`).
 
 ### Across the boundary (step 5)
 

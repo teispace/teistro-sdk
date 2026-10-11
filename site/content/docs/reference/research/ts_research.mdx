@@ -1,0 +1,54 @@
+---
+title: ts_research
+description: "Runs a study over a batch of births and answers with `{value, provenance}` as canonical JSON."
+---
+
+Runs a study over a batch of births and answers with `{value, provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS` study, each row `{predicate, counts}` with every group's `{present, absent, unreadable, unstable}`; for any other study it is `{rows, permutations, resolution, shuffle}`, each row adding `observed`, `p` (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm, bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last four only where they apply. `provenance.input_hash` seals the study and is what a study publishes before its data are collected.
+
+`request_json` is `{"study", "rules", "holds", ...}`: `study` one of `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart request's rules are, and what the study reads: `births` and `design` (and a `test` for `COMPARE`); `births`, `control` and an optional `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and optionally `depth` and `strata` for `TIMED`. A birth is `{instant, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a number or a decimal string. A key it does not read, a field the study does not read or misses, or a value out of range is `INVALID_ARG`, named under `research`, as `research.test.seed`; what the study refuses once it runs is named as the façade names it. A context without an ephemeris is `CAPABILITY`, as is a build that leaves the `research` family out.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_research(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.research(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.research(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/research.rs`.

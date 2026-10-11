@@ -26,6 +26,7 @@ static NO_TABLES: Tables = Tables::EMPTY;
 /// The bodies a rule consulted, in the order they were first consulted, each
 /// once. A fixed array: evaluating a rule allocates nothing for it.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(into = "Vec<Body>")]
 pub struct Participants {
     bodies: [Option<Body>; 10],
@@ -106,6 +107,7 @@ impl From<Participants> for Vec<Body> {
 
 /// What a rule answers for a chart.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RuleResult {
     /// Whether it is present.
     pub present: bool,
@@ -130,6 +132,7 @@ pub struct RuleResult {
 
 /// A place a rule was found from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", content = "group", rename_all = "kebab-case")]
 pub enum Found {
     /// Its conditions all held.

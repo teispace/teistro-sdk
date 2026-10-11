@@ -143,8 +143,9 @@ impl KpRequest {
         ))
         .with_field("frame.ayanamsha")
         .with_hint(
-            "found the chart under the kp-default profile, or ask \
-             KpRequest::new().under_any_ayanamsha() to read it as it is",
+            "found the chart under the kp-default profile, or read it as it is: \
+             `\"anyAyanamsha\": true` in the `kp` record, \
+             `KpRequest::new().under_any_ayanamsha()` in Rust",
         ))
     }
 }
@@ -155,8 +156,9 @@ const KP: &str = "kp";
 /// [`KpRequest`] as the bindings write it, camel-cased as every request
 /// record is; every member optional.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct Asked {
+pub(crate) struct Asked {
     #[serde(default)]
     number: Option<u16>,
     #[serde(default)]

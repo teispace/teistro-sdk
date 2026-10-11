@@ -152,7 +152,54 @@ void putMatter(String at, TajikaMatter m) {
   put('$at-held', m.held.map(heldSaid).join(' '));
 }
 
-/// The items joined by commas, or `-`.
+/// A chart's Lal Kitab, each row under [at].
+void putLalKitab(String at, LalKitab lk) {
+  String keys(Iterable<Graha> grahas) => joined(grahas.map((g) => g.fullKey));
+  String piped(Iterable<Graha> grahas) =>
+      grahas.map((g) => g.fullKey).join('|');
+  final reading = lk.reading;
+  final flags = reading.flags;
+  final year = lk.year!;
+  put(
+    at,
+    '${lk.cycle.planet.fullKey}:${lk.cycle.year} '
+    '${year.year}:${year.ruler.fullKey} ${keys(year.thirds)} '
+    '${flags.ratandha} ${flags.nabalig} ${keys(flags.dharmi)} '
+    '${joined(flags.sathi.map(piped))}',
+  );
+  for (final p in reading.planets) {
+    put(
+      '$at-planet-${p.graha.fullKey}',
+      '${p.house} ${joined(p.dignities.map((d) => d.key))} '
+          '${joined(p.owners.map((o) => '${o.owner.fullKey}:${o.regard.key}'))} '
+          '${p.awake} ${p.kayam} '
+          '${joined(p.casts.map((c) => '${c.to}:${c.strength.key}:${piped(c.onto)}'))}',
+    );
+  }
+  for (final h in reading.houses) {
+    put(
+      '$at-house-${h.house}',
+      '${keys(h.occupants)} '
+          '${joined(h.lookedAtBy.map((l) => '${l.from}:${l.strength.key}'))} '
+          '${h.awake} ${h.waker.fullKey}',
+    );
+  }
+  put(
+    '$at-debts',
+    '${joined(reading.masnui.map((m) => '${piped(m.pair)}:${m.house}:${m.countsAs.key}'))} '
+        '${joined(reading.rinas.map((r) => '${r.rin.key}:${r.of.fullKey}:${r.seated.map((s) => '${s.enemy.fullKey}@${s.house}').join('|')}'))} '
+        '${joined(reading.pitri.map((p) => '${p.ninth.fullKey}:${p.mercury}'))}',
+  );
+  put(
+    '$at-periods',
+    joined(lk.periods.map((p) => '${p.planet.fullKey}:${p.from}-${p.to}')),
+  );
+  put(
+    '$at-annual',
+    joined(year.annual!.planets.map((p) => '${p.graha.fullKey}:${p.house}')),
+  );
+}
+
 /// A chart's remedies, each row under [at].
 void putRemedies(String at, Remedies rm) {
   String keys(Iterable<Graha> grahas) => joined(grahas.map((g) => g.fullKey));
@@ -223,6 +270,175 @@ void putRemedies(String at, Remedies rm) {
     );
   }
 }
+
+/// The rectification every runner asks of each chart.
+const rectificationAsked = RectificationRequest(
+  purify: PurifyRequest(minutes: 20),
+  conception: ConceptionRules(),
+  circumstance: CircumstanceRequest(facts: BirthFacts(fatherPresent: false)),
+  baseline: BaselineRectificationRequest(
+    uncertaintyMinutes: 30,
+    sex: Sex.male,
+    events: [
+      LifeEvent(kind: LifeEventKind.marriage, on: 2469000.5),
+      LifeEvent(kind: LifeEventKind.accident, on: 2471000.5, heldOut: true),
+    ],
+  ),
+  svarodaya: SvarodayaRequest(minutes: 20),
+);
+
+/// A purifier's verdict and each clause it judged, colon-joined.
+String verdictSaid(PurifierVerdict verdict) {
+  final clauses = joined(
+    verdict.clauses.map(
+      (c) =>
+          '${c.purifier.key}:${c.reference.key}:${c.sign.fullKey}:'
+          '${c.lagna.fullKey}:${c.house}:${c.held}:${c.counted}',
+    ),
+  );
+  return '${verdict.pure} $clauses';
+}
+
+/// One stage note as every runner spells it: its kind, then its fields in
+/// declaration order, colon-joined.
+String noteSaid(StageNote note) => [
+  note.kind,
+  ...switch (note) {
+    TattvaSexNote n => [
+      n.sex.key,
+      number(n.admittedMinutes),
+      '${n.penalised}',
+      '${n.of}',
+    ],
+    ReportedTimeNote n => [n.accuracy.key, number(n.uncertaintyMinutes)],
+    EventFitNote n => [
+      '${n.event}',
+      n.id ?? '-',
+      n.eventKind.key,
+      joined(n.lords.map((g) => g.fullKey)),
+      number(n.contribution),
+    ],
+  },
+].join(':');
+
+/// A chart read as a birth time to rectify, each row under [at]: the
+/// purifier's runs and the clauses each held, the conception's answers,
+/// the circumstances and their weights, and the baseline's interval,
+/// stages and best candidate.
+void putRectification(String at, Rectification rc) {
+  String keys(Iterable<Graha> grahas) => joined(grahas.map((g) => g.fullKey));
+  final pu = rc.purified!;
+  put(
+    '$at-purified',
+    '${pu.grid.cells} ${number(pu.grid.stepDays)} ${pu.intervals.length} '
+        '${pu.removed.length} ${joined(pu.edges.map(number))}',
+  );
+  for (final (k, run) in [...pu.intervals, ...pu.removed].indexed) {
+    put(
+      '$at-purified-$k',
+      '${number(run.from)} ${number(run.to)} ${verdictSaid(run.verdict)}',
+    );
+  }
+  final co = rc.conception!;
+  final pp = co.pranapadaHouse;
+  final ns = co.nisheka;
+  final wr = ns.count.span.written;
+  put(
+    '$at-conception',
+    '${number(co.birth)} ${pp.house} ${pp.auspicious} '
+        '${number(ns.count.instant)} '
+        '${wr.months}:${wr.days}:${wr.ghatis}:${wr.palas} '
+        '${number(ns.lagnaDeg)} ${verdictSaid(ns.verdict)}',
+  );
+  final mo = co.moon;
+  put(
+    '$at-conception-moon',
+    '${mo.predicted.dvadashamsha} ${mo.predicted.sign.fullKey} '
+        '${mo.predicted.nakshatra?.fullKey ?? '-'} ${mo.moonSign.fullKey} '
+        '${mo.moonNakshatra?.fullKey ?? '-'} ${mo.signAgrees} '
+        '${mo.nakshatraAgrees ?? '-'} ${mo.rising.fullKey} '
+        '${mo.predictedPart.key} ${mo.bornByDay} ${mo.partAgrees} '
+        '${number(mo.risenFraction)} ${number(mo.elapsedFraction)} '
+        '${number(pp.pranapadaDeg)}',
+  );
+  final ci = rc.circumstance!;
+  final fa = ci.father;
+  put(
+    '$at-circumstance',
+    '${fa.moonAspect.key} ${fa.unseen} ${fa.saturnRising} ${fa.marsSetting} '
+        '${fa.moonHemmed} ${fa.away} ${fa.whereabouts?.key ?? '-'} '
+        '${fa.sunHouse} ${ci.sky.lordRetrograde}',
+  );
+  final pr = ci.presentation;
+  final lp = ci.lamp;
+  final ad = ci.attending;
+  put(
+    '$at-circumstance-birth',
+    '${pr.by.key} ${pr.rising.key} ${pr.lord.fullKey} ${pr.lordRetrograde} '
+        '${pr.foretold.key} ${number(lp.oil)}:${lp.oilLevel.key} '
+        '${number(lp.wick)}:${lp.wickLevel.key} ${keys(ad.between)} '
+        '${keys(ad.visible)} ${ad.inside} ${ad.outside}',
+  );
+  put(
+    '$at-circumstance-weights',
+    joined(ci.weights.map((w) => '${w.indication.key}:${w.agrees}')),
+  );
+  final bl = rc.baseline!;
+  final spans = joined(
+    bl.intervals.map((iv) => '${number(iv.from)}:${number(iv.to)}'),
+  );
+  put(
+    '$at-baseline',
+    '${number(bl.window.from)} ${number(bl.window.to)} '
+        '${number(bl.sunrise)} '
+        '$spans '
+        '${number(bl.intervalWidthMinutes)} ${number(bl.resolutionMinutes)} '
+        '${number(bl.suggested)} ${number(bl.concentration)} '
+        '${bl.candidates.length} ${bl.eventsUsed} ${bl.eventsHeldOut}',
+  );
+  for (final (k, stage) in bl.stages.indexed) {
+    put(
+      '$at-baseline-stage-$k',
+      '${stage.stage.key} ${stage.applied} ${stage.flat} '
+          '${number(stage.resolutionMinutes)} '
+          '${joined(stage.notes.map(noteSaid))}',
+    );
+  }
+  if (bl.candidates.isNotEmpty) {
+    final best = bl.candidates.first;
+    put(
+      '$at-baseline-best',
+      '${number(best.at)} ${number(best.probability)} '
+          '${number(best.logPosterior)} ${best.lagna.fullKey} '
+          '${best.lagnaNakshatra.fullKey}',
+    );
+  }
+  for (final (k, held) in bl.holdOut.indexed) {
+    put(
+      '$at-baseline-held-$k',
+      '${held.event} ${held.kind.key} ${number(held.scoreAtFit)} '
+          '${number(held.baseline)} ${held.supported}',
+    );
+  }
+  final sv = rc.svarodaya!;
+  final sa = sv.at;
+  put(
+    '$at-svarodaya',
+    '${number(sa.sunrise)} ${number(sa.nextSunrise)} ${sa.tithi.fullKey} '
+        '${sa.sunriseNadi.key} '
+        '${number(sa.junctions.$1)}:${number(sa.junctions.$2)} '
+        '${sv.runs.length}',
+  );
+  put('$at-svarodaya-at', runSaid(sa.run));
+  for (final (k, one) in sv.runs.indexed) {
+    put('$at-svarodaya-$k', runSaid(one));
+  }
+}
+
+/// A Svarodaya run as every runner spells it.
+String runSaid(SvarodayaRun run) =>
+    '${number(run.from)} ${number(run.to)} ${run.nadi.key} ${run.turn} '
+    '${run.tattva.key} ${run.sex.key}';
 
 /// Devotions as `graha:deity|deity:verse:withKetu`, joined by commas.
 String devotionsSaid(List<Devotion> devotions) => joined(
@@ -894,6 +1110,17 @@ void main() {
       at: 2460676.5,
       rules: RemedyRules(shanti: ShantiRules(rik: RikSource.yajnavalkya)),
     ),
+    // A varshphal list with the book's structure and none of its numbers:
+    // year y sends natal house h to h + y − 1, round the twelve.
+    lalkitab: LalKitabRequest(
+      cycle: const LalKitabCycle(planet: Graha.venus, year: 17),
+      year: 43,
+      varshphal: [
+        for (var y = 0; y < 120; y++)
+          [for (var h = 0; h < 12; h++) (h + y) % 12 + 1],
+      ],
+    ),
+    rectification: rectificationAsked,
     westernAspects: const WesternAspectRequest(
       aspects: [
         WesternAspect.conjunction,
@@ -1657,6 +1884,8 @@ void main() {
           'C:${joined(links.states!.combust.map((g) => g.fullKey))}',
     );
     putRemedies('chart-$i-remedies', chart.remedies!);
+    putLalKitab('chart-$i-lalkitab', chart.lalkitab!);
+    putRectification('chart-$i-rectification', chart.rectification!);
     final pr = chart.progressions!;
     final pg = pr.progressed!;
     final dr = pr.directed!;
@@ -2396,7 +2625,8 @@ void main() {
       events: const [Graha.mars, Graha.saturn],
     ),
   ], baseline: BaselinePeriod.weekly);
-  for (final (n, answer) in rashifal.indexed) {
+  put('rashifal-hash', rashifal.provenance.inputHash);
+  for (final (n, answer) in rashifal.value.indexed) {
     final period = answer.period;
     put(
       'rashifal-$n-period',
@@ -2455,6 +2685,161 @@ void main() {
       }
     }
   }
+
+  // The Pancha Pakshi requests every runner sends, at Madras: a native by
+  // birth star in the dark half under Pulippani's lengths and relations
+  // over two days, and a bird named outright under the defaults for one.
+  final madras = Observer(
+    latitudeDeg: Latitude(13.0827),
+    longitudeDeg: Longitude(80.2707),
+    altitudeM: Altitude(6),
+  );
+  final pakshi = [
+    geo.almanac.pakshi(
+      from: Calendar.gregorian.date(1984, 10, 30),
+      to: Calendar.gregorian.date(1984, 10, 31),
+      place: madras,
+      utcOffsetSeconds: 19800,
+      native: const PakshiNative.star(
+        Nakshatra.uttaraAshadha,
+        Paksha.krishna,
+        rule: PakshiBirthRule.byPaksha,
+      ),
+      rules: const PakshiRules(
+        subs: PakshiSubLengths.pulippani,
+        relations: PakshiRelations.pulippani,
+      ),
+    ),
+    geo.almanac.pakshi(
+      from: Calendar.gregorian.date(1991, 5, 21),
+      place: madras,
+      utcOffsetSeconds: 19800,
+      native: const PakshiNative.bird(PakshiBird.owl),
+    ),
+  ];
+  for (final (r, days) in pakshi.indexed) {
+    put('pakshi-$r-hash', days.provenance.inputHash);
+    for (final (n, one) in days.value.indexed) {
+      final key = 'pakshi-$r-$n';
+      final read = one.reading;
+      if (read == null) {
+        put(key, '${ymd(one.date)} none');
+        continue;
+      }
+      final day = read.day;
+      put(
+        key,
+        '${ymd(one.date)} ${day.vara.fullKey} ${day.paksha.fullKey} '
+        '${number(day.sunrise)} ${number(day.sunset)} ${number(day.nextSunrise)} '
+        '${read.bird.key} ${read.deathBird.key} ${read.deadToday} '
+        '${read.eaters.map((b) => b.key).join(',')}',
+      );
+      for (final (k, yama) in read.yamas.indexed) {
+        final subs = yama.subs.map(
+          (s) =>
+              '${s.activity.key}:${s.owner.key}:${s.share}:${s.ownerIs.key}:'
+              '${number(s.span.to)}',
+        );
+        put(
+          '$key-yama-$k',
+          '${yama.half.key} ${yama.yama} ${number(yama.span.from)} '
+              '${number(yama.span.to)} ${yama.activity.key} ${yama.quality.key} '
+              '${subs.join(',')}',
+        );
+      }
+    }
+  }
+
+  // The studies every runner sends (`03-design/research.md`): eight births
+  // at Kathmandu a few years apart, the shipped yogas as the predicates,
+  // compared by alternate labels, read against their own recombined
+  // population, and each delivered by the Vimshottari at an event of its
+  // life under the age shuffle.
+  final kathmandu = Observer(
+    latitudeDeg: Latitude(27.7172),
+    longitudeDeg: Longitude(85.324),
+    altitudeM: Altitude(0),
+  );
+  final births = [
+    for (var i = 0; i < 8; i++)
+      ResearchBirth(
+        instant: 2447000.25 + 977.3 * i,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+      ),
+  ];
+  const yogas = RuleRequest(shipped: [ShippedRules.yogas]);
+  final groups = ResearchDesign(groups: [for (var i = 0; i < 8; i++) i % 2]);
+  String optional(double? value) => value == null ? 'none' : number(value);
+  String counted(List<ResearchGroupCount> counts) => counts
+      .map((c) => '${c.present}:${c.absent}:${c.unreadable}:${c.unstable}')
+      .join(',');
+  void putTested(String name, ResearchTested answer) {
+    put('research-$name-hash', answer.provenance.inputHash);
+    put(
+      'research-$name-test',
+      '${answer.permutations} ${number(answer.resolution)} ${answer.shuffle}',
+    );
+    for (final (k, r) in answer.rows.indexed) {
+      put(
+        'research-$name-row-$k',
+        '${r.predicate} ${counted(r.counts)} ${optional(r.observed)} '
+            '${r.p.exceed} ${number(r.p.value)} ${number(r.adjusted.maxT)} '
+            '${number(r.adjusted.holm)} ${number(r.adjusted.bh)} '
+            '${optional(r.exact)} ${optional(r.effect?.riskDifference.estimate)} '
+            '${optional(r.expected?.expected)}',
+      );
+    }
+  }
+
+  final table = geo.research.counts(
+    births: births,
+    rules: yogas,
+    holds: ResearchHolds.formed,
+    design: groups,
+  );
+  put('research-counts-hash', table.provenance.inputHash);
+  for (final (k, r) in table.rows.indexed) {
+    put('research-counts-row-$k', '${r.predicate} ${counted(r.counts)}');
+  }
+  putTested(
+    'compare',
+    geo.research.compare(
+      births: births,
+      rules: yogas,
+      design: groups,
+      test: ResearchGroupTest(
+        seed: BigInt.from(5),
+        permutations: 199,
+        contrast: const ResearchContrast.caseVsRest(1),
+        alpha: 0.05,
+      ),
+    ),
+  );
+  putTested(
+    'expected',
+    geo.research.expected(
+      births: births,
+      rules: yogas,
+      control: ResearchControl(seed: BigInt.from(4), replicates: 3),
+    ),
+  );
+  putTested(
+    'timed',
+    geo.research.timed(
+      subjects: [
+        for (final (i, birth) in births.indexed)
+          ResearchSubject(
+            birth: birth,
+            event: birth.instant + 9000.5 + 211 * i,
+          ),
+      ],
+      rules: yogas,
+      dasha: DashaSystem.vimshottari,
+      shuffle: ResearchEventShuffle.agesAtEvent,
+      test: ResearchEventTest(seed: BigInt.from(3), permutations: 49),
+    ),
+  );
   geo.dispose();
 
   // ── The eclipses ─────────────────────────────────────────────────────
@@ -2597,8 +2982,15 @@ void main() {
     ('chart.layout', ctx.chart.layout),
     ('chart.found', ctx.chart.found),
     ('chart.found_many', ctx.chart.foundMany),
+    ('chart.rashifal', ctx.chart.rashifal),
+    ('chart.rashifal_many', ctx.chart.rashifalMany),
     ('almanac.of', ctx.almanac.of),
     ('almanac.day', ctx.almanac.day),
+    ('almanac.pakshi', ctx.almanac.pakshi),
+    ('research.counts', ctx.research.counts),
+    ('research.compare', ctx.research.compare),
+    ('research.expected', ctx.research.expected),
+    ('research.timed', ctx.research.timed),
     ('engine.names', ctx.engine.names),
     ('engine.signature', ctx.engine.signature),
     ('engine.call', ctx.engine.call),

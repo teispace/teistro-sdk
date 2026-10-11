@@ -7,21 +7,13 @@
 
 use core::ffi::c_char;
 
-use teistro_core::error::{Error, Status};
+use teistro_core::error::Error;
 
 // The families read off a chart, which a build without the chart area
 // has no chart to read them off.
 #[cfg(not(feature = "chart"))]
 pub mod chart;
-#[cfg(feature = "chart")]
-pub(crate) mod kp;
 pub(crate) mod muhurta;
-#[cfg(feature = "chart")]
-pub(crate) mod prashna;
-#[cfg(feature = "chart")]
-pub(crate) mod remedies;
-#[cfg(feature = "chart")]
-pub(crate) mod svg;
 #[cfg(feature = "chart")]
 pub(crate) mod tajika;
 #[cfg(feature = "chart")]
@@ -38,30 +30,6 @@ pub(crate) mod western;
 )]
 pub enum Absent {}
 
-/// The refusal a call into `family` answers in a build without it.
-#[cold]
-#[must_use]
-#[allow(dead_code, reason = "a build with every family refuses none")]
-pub(crate) fn left_out(family: &str) -> Error {
-    Error::new(
-        Status::Capability,
-        format!("this build leaves out the `{family}` module family"),
-    )
-    .with_hint(format!(
-        "use a build with `{family}`: the default `full` build has every family, and the wasm module's is `@teistro/sdk-wasm` rather than a profile's subpath"
-    ))
-}
-
-/// The section a left-out family writes: nothing, since no request can
-/// hold its record.
-#[allow(dead_code, reason = "a build with every family has none left out")]
-pub(crate) const fn unasked(asked: Option<&Absent>) -> String {
-    match asked {
-        None => String::new(),
-        Some(never) => match *never {},
-    }
-}
-
 /// A left-out family's record read from a request: none when the field is
 /// null, and the family's refusal naming `record`, the field every binding
 /// writes, when it was sent.
@@ -74,28 +42,8 @@ pub(crate) fn refused_if_sent(
     if text.is_null() {
         Ok(None)
     } else {
-        Err(left_out(family).with_field(record))
+        Err(Error::left_out(family).with_field(record))
     }
-}
-
-/// Every chart's answer to a record, as the canonical JSON its section
-/// carries: an array with one answer a chart, or nothing at all when the
-/// record was not sent.
-#[cfg(feature = "chart")]
-#[allow(dead_code, reason = "a build with no chart-record family answers none")]
-pub(crate) fn each_json<A, T: serde::Serialize>(
-    documents: &[teistro_serial::Document],
-    asked: Option<&A>,
-    answer: impl Fn(&teistro_serial::Document, &A) -> Result<T, Error>,
-) -> Result<String, Error> {
-    let Some(asked) = asked else {
-        return Ok(String::new());
-    };
-    let answers = documents
-        .iter()
-        .map(|document| answer(document, asked))
-        .collect::<Result<Vec<_>, Error>>()?;
-    Ok(teistro_core::envelope::canonical_json(&answers))
 }
 
 /// `$body` in a build with the feature `$family`, and the family's
@@ -108,7 +56,7 @@ macro_rules! in_family {
         #[cfg(not(feature = $family))]
         let answer = {
             $(let _ = &$used;)*
-            Err($crate::family::left_out($family))
+            Err(teistro_core::error::Error::left_out($family))
         };
         answer
     }};
@@ -171,38 +119,5 @@ macro_rules! record {
 }
 
 #[cfg(feature = "chart")]
-/// A family a chart request asks for by one JSON record and the façade
-/// answers a chart at a time: the [`record!`] items, and `json` writing
-/// the section, with its twin.
-macro_rules! chart_record {
-    ($family:literal, $field:literal, $record:literal, $request:ty, $answer:ident) => {
-        $crate::family::record!($family, $field, $record, Request, request_of, $request);
-
-        #[doc = concat!("Every chart's answer to the `", $record, "` record, as the canonical JSON its section carries.")]
-        #[cfg(feature = $family)]
-        pub(crate) fn json(
-            sdk: &teistro::Context,
-            documents: &[teistro_serial::Document],
-            asked: Option<&Request>,
-        ) -> Result<String, teistro_core::error::Error> {
-            $crate::family::each_json(documents, asked, |document, asked| {
-                sdk.chart().$answer(document, asked)
-            })
-        }
-
-        #[doc = concat!("The `", $record, "` section of a build without `", $family, "`, which no request can ask for.")]
-        #[cfg(not(feature = $family))]
-        #[allow(clippy::unnecessary_wraps, reason = "the signature of the build with the family")]
-        pub(crate) fn json(
-            _sdk: &teistro::Context,
-            _documents: &[teistro_serial::Document],
-            asked: Option<&Request>,
-        ) -> Result<String, teistro_core::error::Error> {
-            Ok($crate::family::unasked(asked))
-        }
-    };
-}
-
-#[cfg(feature = "chart")]
-pub(crate) use {answer, chart_record};
+pub(crate) use answer;
 pub(crate) use {in_family, record};

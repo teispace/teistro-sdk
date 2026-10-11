@@ -4,8 +4,8 @@
 //!
 //! An answer is a period's nine places, each sign's gochar, Saturn's
 //! standing and events, nested records rather than columns, so it crosses
-//! as the JSON the façade's `RashifalAnswer` serialises to: every binding
-//! parses it into its own types.
+//! as the JSON the façade's envelope of `RashifalAnswer`s serialises to,
+//! provenance and all: every binding parses it into its own types.
 #![allow(
     unsafe_code,
     reason = "the C boundary: every block carries a SAFETY comment"
@@ -21,7 +21,8 @@ use crate::string::TsString;
 use crate::support::with_context;
 
 /// Reads periods of civil days at a place for each of the twelve signs and
-/// answers with an array of `{period, baseline}` as canonical JSON: the
+/// answers with `{value, provenance}` as canonical JSON, `value` an array
+/// of `{period, baseline}`, one per period: the
 /// sky at the reference day's sunrise (or a clock time), each sign's
 /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
 /// and station of the period counted from each sign; `baseline` the
@@ -55,8 +56,7 @@ pub unsafe extern "C" fn ts_rashifal(
                 crate::support::text(request_json, "request_json")
             }?)?;
             let answers = ctx.sdk().chart().rashifal_answers(&asked)?;
-            let json =
-                TsString::from_string(teistro_core::envelope::canonical_json(&answers.value));
+            let json = TsString::from_string(teistro_core::envelope::canonical_json(&answers));
             // SAFETY: the entry point's contract.
             unsafe { crate::support::write_plain(out_json, "out_json", json) }
         })

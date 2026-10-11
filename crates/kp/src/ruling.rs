@@ -18,6 +18,7 @@ use crate::chart::{KpChart, Planet, is_node};
 
 /// The settings a reading of the ruling planets takes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct RulingRules {
@@ -51,6 +52,7 @@ impl RulingRules {
 
 /// Why a planet is a ruler.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum Reason {
@@ -79,6 +81,7 @@ pub enum Reason {
 
 /// How a node stands for a ruler.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum Agency {
@@ -91,6 +94,7 @@ pub enum Agency {
 /// Why a ruler is rejected: it stands in the star, or the sub, of a
 /// retrograde planet.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct Rejection {
@@ -102,6 +106,7 @@ pub struct Rejection {
 
 /// One ruling planet, every reason it rules, and what rejects it.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct Ruler {
@@ -139,6 +144,7 @@ pub struct Ruler {
 /// );
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
 pub struct RulingPlanets {
     /// The rulers, each once, in the Reader's order: the lagna's star and

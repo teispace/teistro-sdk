@@ -1974,11 +1974,13 @@ public final class Native {
             ADDRESS.withName("harmonic_json"),
             ADDRESS.withName("matching_json"),
             ADDRESS.withName("prashna_json"),
-            ADDRESS.withName("remedies_json")
+            ADDRESS.withName("remedies_json"),
+            ADDRESS.withName("rectification_json"),
+            ADDRESS.withName("lalkitab_json")
         ).withName("ts_chart_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 304;
+        public static final long SIZE = 320;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -2668,6 +2670,48 @@ public final class Native {
 
         /** The handle that reads and writes `remedies_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle REMEDIES_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("remedies_json"));
+
+        /**
+         * The offset of `rectification_json`. Every chart read as a birth time to rectify, the chart's instant
+         * the time on record, as a JSON object, every member optional:
+         * `purify` (`minutes` either side of the chart's instant, more than
+         * none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+         * vv. 67–78), `conception` (the pranapada's house, the nisheka and
+         * the conception Moon, with its rules), `circumstance` (`facts` the
+         * family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+         * and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+         * (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+         * to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+         * Each chart's readings come back in the `rectification` section,
+         * one member for each reading asked. Null for none, which costs
+         * nothing (`03-design/rectification.md`). Refusals are named from
+         * the record every binding calls `rectification`, as
+         * `rectification.purify.minutes`.
+         * Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+         */
+        public static final long RECTIFICATION_JSON_OFFSET = 304;
+
+        /** The handle that reads and writes `rectification_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle RECTIFICATION_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("rectification_json"));
+
+        /**
+         * The offset of `lalkitab_json`. Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+         * object, every member optional: `cycle` (`{planet, year}`, where the
+         * 35-year cycle starts, the book's general table from Saturn in the
+         * first year when left out), `year` (a year of life from 1, the year
+         * from birth to the first birthday, to read its ruler, its thirds and
+         * its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+         * annual teva is read from, which the SDK does not ship and checks
+         * row by row). Each chart's reading comes back in the `lalkitab`
+         * section. Null for none, which costs nothing
+         * (`03-design/lalkitab.md`). Refusals are named from the record every
+         * binding calls `lalkitab`, as `lalkitab.cycle.year`.
+         * Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+         */
+        public static final long LALKITAB_JSON_OFFSET = 312;
+
+        /** The handle that reads and writes `lalkitab_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle LALKITAB_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lalkitab_json"));
 
     }
 
@@ -3725,7 +3769,9 @@ public final class Native {
         "ts_panchanga_days",
         "ts_naam_milan",
         "ts_numerology_profile",
+        "ts_pakshi",
         "ts_rashifal",
+        "ts_research",
         "ts_ephemeris_manifest",
         "ts_ephemeris_call",
         "ts_provider_load",
@@ -4091,8 +4137,31 @@ public final class Native {
     public final MethodHandle ts_numerology_profile;
 
     /**
+     * Reads a native's bird over each civil day of a range at a place and
+     * answers with `{value, provenance}` as canonical JSON, `value` an array
+     * of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+     * and next sunrise, each `{half, yama, span, activity, quality, subs}`
+     * with every sub-period's activity, owner, span and how the native
+     * regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+     * vara, paksha}`, the bird, its death bird and the first eaters; null on
+     * a day the Sun does not both rise and set.
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+     * the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+     * `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+     * place, the offset and `native` optional. A key it does not read, a
+     * place or offset out of range or a native that is neither is
+     * `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+     * without an ephemeris is `CAPABILITY`, as is a build that leaves the
+     * `pakshi` family out.
+     */
+    public final MethodHandle ts_pakshi;
+
+    /**
      * Reads periods of civil days at a place for each of the twelve signs and
-     * answers with an array of `{period, baseline}` as canonical JSON: the
+     * answers with `{value, provenance}` as canonical JSON, `value` an array
+     * of `{period, baseline}`, one per period: the
      * sky at the reference day's sunrise (or a clock time), each sign's
      * gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
      * and station of the period counted from each sign; `baseline` the
@@ -4110,6 +4179,34 @@ public final class Native {
      * a build that leaves the `rashifal` family out.
      */
     public final MethodHandle ts_rashifal;
+
+    /**
+     * Runs a study over a batch of births and answers with `{value,
+     * provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+     * study, each row `{predicate, counts}` with every group's `{present,
+     * absent, unreadable, unstable}`; for any other study it is `{rows,
+     * permutations, resolution, shuffle}`, each row adding `observed`, `p`
+     * (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+     * bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+     * four only where they apply. `provenance.input_hash` seals the study
+     * and is what a study publishes before its data are collected.
+     *
+     * `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+     * `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+     * request's rules are, and what the study reads: `births` and `design`
+     * (and a `test` for `COMPARE`); `births`, `control` and an optional
+     * `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
+     * optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
+     * latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+     * uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+     * number or a decimal string. A key it does not read, a field the study
+     * does not read or misses, or a value out of range is `INVALID_ARG`,
+     * named under `research`, as `research.test.seed`; what the study
+     * refuses once it runs is named as the façade names it. A context
+     * without an ephemeris is `CAPABILITY`, as is a build that leaves the
+     * `research` family out.
+     */
+    public final MethodHandle ts_research;
 
     /**
      * What the context's engine says it offers beyond this library's own
@@ -4231,7 +4328,9 @@ public final class Native {
         ts_panchanga_days = linker.downcallHandle(symbols.find("ts_panchanga_days").orElseThrow(() -> missing("ts_panchanga_days")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_numerology_profile = linker.downcallHandle(symbols.find("ts_numerology_profile").orElseThrow(() -> missing("ts_numerology_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_pakshi = linker.downcallHandle(symbols.find("ts_pakshi").orElseThrow(() -> missing("ts_pakshi")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_rashifal = linker.downcallHandle(symbols.find("ts_rashifal").orElseThrow(() -> missing("ts_rashifal")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_research = linker.downcallHandle(symbols.find("ts_research").orElseThrow(() -> missing("ts_research")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_ephemeris_manifest = linker.downcallHandle(symbols.find("ts_ephemeris_manifest").orElseThrow(() -> missing("ts_ephemeris_manifest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_ephemeris_call = linker.downcallHandle(symbols.find("ts_ephemeris_call").orElseThrow(() -> missing("ts_ephemeris_call")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_provider_load = linker.downcallHandle(symbols.find("ts_provider_load").orElseThrow(() -> missing("ts_provider_load")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));

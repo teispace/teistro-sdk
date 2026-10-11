@@ -97,6 +97,7 @@ impl FestivalPack {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct FestivalRequest {
     rules: Vec<FestivalRule>,
     ekadashis: Vec<EkadashiRule>,
@@ -372,7 +373,8 @@ fn pack(name: &str, field: &str) -> Result<FestivalPack, Error> {
 /// second step, because each item is a name or a rule and the refusal
 /// should say which item was wrong rather than that no shape matched.
 #[derive(Serialize, serde::Deserialize)]
-struct Asked {
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub(crate) struct Asked {
     rules: Value,
 }
 

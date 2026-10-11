@@ -62,7 +62,7 @@ It is the one command that has to know the list; nobody else does.
 | `build` | a runner a platform, each `cargo xtask package <platform>` then `cargo xtask check-package`, each uploading its own artefacts and manifest |
 | `wasm` | one runner, `cargo xtask package wasm` then `cargo xtask check-wasm` (the Node suite through the package's own loader, headless Chrome and Cloudflare's workerd each held to Node bit for bit, the package installed and run), uploading `@teistro/sdk-wasm` |
 | `stage` | downloads all six, `cargo xtask package stage` (which refuses a release missing the wasm package as it refuses one missing a platform), and publishes the checksum list into the run's summary |
-| `publish` | after `verify` and `stage`: the GitHub release with every archive and `checksums.txt`; then every platform package and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages; then the Dart package |
+| `publish` | after `verify` and `stage`: the GitHub release with every archive and `checksums.txt`; then every platform package and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages, then the agent server's platform packages and `@teistro/mcp`; then the Dart package; last, the agent server's MCP Registry entry, by the runner's OIDC token |
 
 Every job runs under `TEISTRO_STRICT`, so a gate that skips part of
 itself for a missing tool fails rather than passing on what it did not
@@ -122,7 +122,7 @@ hold.
 
 | registry | how the `publish` job authenticates | what the maintainer sets up once |
 |---|---|---|
-| npm | trusted publishing, through npm 11.5.1 or later, which the job installs | a package's first publish takes `NPM_TOKEN`, minted for it and revoked after, because a trusted publisher is configured on a package that exists. Then each of the seven packages names `release.yml` and the `release` environment as its trusted publisher, and the secret is deleted |
+| npm | trusted publishing, through npm 11.5.1 or later, which the job installs | a package's first publish takes `NPM_TOKEN`, minted for it and revoked after, because a trusted publisher is configured on a package that exists. Then each package, the SDK's and the agent server's, names `release.yml` and the `release` environment as its trusted publisher, and the secret is deleted |
 | PyPI | trusted publishing through `pypa/gh-action-pypi-publish`, which also attaches a PEP 740 attestation to each file | a pending publisher for `teistro` naming `release.yml` and the `release` environment, which PyPI allows before the project exists |
 | pub.dev | automated publishing by the OIDC token | automated publishing enabled for `teistro`, on tags `v{{version}}` |
 | Maven Central | a Portal user token, since Central has no trusted publishing (none found 2026-10-08); `cargo xtask publish maven` signs every file with PGP, bundles the layout and uploads it to the Portal's publisher API, the token and passphrase on `curl`'s and `gpg`'s standard input | the `com.teispace` namespace verified by its TXT record; a PGP key whose public half is on `keys.openpgp.org` and whose fingerprint is in `SECURITY.md`, imported from `MAVEN_GPG_PRIVATE_KEY`; `MAVEN_CENTRAL_USERNAME`/`MAVEN_CENTRAL_PASSWORD` minted for the release and revoked after. The first release uploads `USER_MANAGED`, validated by Central and published by hand in the Portal; later ones pass `--automatic` |

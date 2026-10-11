@@ -34,6 +34,8 @@ import type {
   NumerologyProfile,
   NumerologyRules,
   RashifalAnswer,
+  RashifalAnswers,
+  RashifalSealed,
   RashifalRequest,
   BaselineScore,
   NameSyllable,
@@ -116,6 +118,22 @@ import type {
   Devotion,
   Remedies,
   RemedyRequest,
+  LalKitab,
+  LalKitabRequest,
+  PakshiActivity,
+  PakshiBird,
+  PakshiDay,
+  PakshiDays,
+  PakshiRelation,
+  PakshiRequest,
+  PakshiSpan,
+  ResearchBirth,
+  ResearchCounts,
+  ResearchRow,
+  ResearchTested,
+  Rectification,
+  RectificationRequest,
+  BaselineNote,
   PlanetDignity,
   Reception,
   Term,
@@ -137,7 +155,7 @@ import type {
   Theme,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
-import type { Ayanamsha, Gana, Graha, Masa, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
+import type { Ayanamsha, Gana, Graha, Masa, Paksha, Saham, SahamStrong, SahamWeak, Vara } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { decodeProvenance, returnsRequest } from '../lib/index.js';
 
@@ -863,6 +881,188 @@ function thePrashna(ctx: Context): string {
 
 void thePrashna;
 
+// A rectification read all the way down, a note narrowed by its kind, and
+// a request in every field.
+function theRectification(ctx: Context): string {
+  const asked: RectificationRequest = {
+    purify: {
+      minutes: 30,
+      rules: {
+        native: 'HUMAN',
+        pranapada: true,
+        gulika: true,
+        moon: true,
+        gulikaExtension: 'ALWAYS',
+        purifyAs: 'WEIGHT',
+        pranapadaRule: 'VERSE',
+        gulikaAt: 'START',
+        seedMinutes: 1,
+      },
+    },
+    conception: {
+      pranapadaHouse: { count: 'SRIPATI_BHAVA', firstAuspicious: true },
+      nisheka: { month: 'SOLAR', mandiAt: 'END', ninth: 'EQUAL', saturn: 'BHAVA_MADHYA', invisibleHalf: 'BY_SIGN' },
+      moon: { count: 'FROM_ARIES', rising: 'NAVAMSHA', pisces: 'DAY' },
+    },
+    circumstance: {
+      facts: { fatherPresent: true, presentation: 'HEAD', oil: 'HALF', wick: 'SPENT', attendants: { total: 3 } },
+      rules: { moonSees: 'FULL', sunFallen: 'EITHER_SIDE', presentationBy: 'LAGNA_LORD_MOTION', betweenBy: 'SIGN', outside: 'INVISIBLE' },
+    },
+    baseline: {
+      uncertaintyMinutes: 60,
+      accuracy: 'EXACT',
+      events: [{ id: 'wedding', kind: 'MARRIAGE', on: 2460000.5, precision: 'MONTH', confidence: 'PROBABLE' }],
+      sex: 'FEMALE',
+      coverage: 0.9,
+      dasha: { yearLength: 'SAVANA_360', birthPeriod: 'ELAPSED' },
+    },
+    svarodaya: { minutes: 20 },
+  };
+  const read: Rectification | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    rectification: asked,
+  }).rectification;
+  if (read === null) return 'none';
+  const { purified, conception, circumstance, baseline } = read;
+  const runs =
+    purified === null
+      ? '-'
+      : purified.intervals
+          .map((run) => `${run.from} ${run.verdict.pure} ${run.verdict.clauses.map((c) => `${c.purifier} ${c.sign}`).join()}`)
+          .join();
+  const conceived =
+    conception === null
+      ? '-'
+      : `${conception.nisheka.count.instant} ${conception.nisheka.count.span.moonAddedDeg ?? '-'} ` +
+        `${conception.moon.predicted.nakshatra ?? '-'} ${conception.moon.nakshatraAgrees ?? '-'} ${conception.pranapadaHouse.house}`;
+  const born =
+    circumstance === null
+      ? '-'
+      : `${circumstance.father.moonAspect} ${circumstance.father.whereabouts ?? '-'} ${circumstance.presentation.lord} ` +
+        `${circumstance.attending.visible.join()} ${circumstance.weights.map((w) => w.indication).join()}`;
+  const said = (note: BaselineNote): string => {
+    switch (note.kind) {
+      case 'TATTVA_SEX':
+        return `${note.sex} ${note.admittedMinutes}`;
+      case 'REPORTED_TIME':
+        return `${note.accuracy} ${note.uncertaintyMinutes}`;
+      case 'EVENT_FIT':
+        return `${note.id ?? '-'} ${note.eventKind} ${note.lords.join()}`;
+    }
+  };
+  const cascade =
+    baseline === null
+      ? '-'
+      : `${baseline.suggested} ${baseline.candidates[0]?.lagnaNakshatra ?? '-'} ` +
+        `${baseline.stages.flatMap((stage) => stage.notes.map(said)).join()} ${baseline.holdOut.map((h) => h.kind).join()}`;
+  // @ts-expect-error the window is a number of minutes
+  const wrong: RectificationRequest = { purify: { minutes: '30' } };
+  const breath =
+    read.svarodaya === null
+      ? '-'
+      : `${read.svarodaya.at.tithi} ${read.svarodaya.at.run.nadi} ${read.svarodaya.runs.map((r) => `${r.tattva} ${r.sex}`).join()}`;
+  return [runs, conceived, born, cascade, breath, String(wrong)].join();
+}
+
+void theRectification;
+
+// Lal Kitab read all the way down, and a request in every field.
+// Pancha Pakshi read all the way down, from a native by star.
+function thePakshi(ctx: Context): string {
+  const asked: PakshiRequest = {
+    from: someDate,
+    place: { latitude: 13.0827, longitude: 80.2707 },
+    utcOffsetSeconds: 19800,
+    native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA', rule: 'SINGLE' },
+    rules: { clock: 'NAZHIGAI', subs: 'PULIPPANI', relations: 'AGASTYA' },
+  };
+  const sealed: PakshiDays = ctx.almanac.pakshi(asked);
+  const hash: string = sealed.provenance.inputHash;
+  const days: readonly PakshiDay[] = sealed.value;
+  const read = days[0]?.reading;
+  if (read === null || read === undefined) return 'none';
+  const vara: Vara = read.day.vara;
+  const paksha: Paksha = read.day.paksha;
+  const bird: PakshiBird = read.deathBird;
+  const sub = read.yamas[0]?.subs[0];
+  const activity: PakshiActivity | undefined = sub?.activity;
+  const relation: PakshiRelation | undefined = sub?.ownerIs;
+  const span: PakshiSpan | undefined = sub?.span;
+  return `${hash} ${vara} ${paksha} ${bird} ${activity} ${relation} ${span?.to} ${read.yamas[0]?.quality} ${read.yamas[0]?.half}`;
+}
+void thePakshi;
+
+function theResearch(ctx: Context): string {
+  const births: readonly ResearchBirth[] = [
+    { instant: 2447000.25, place: { latitude: 27.7, longitude: 85.3 }, utcOffsetSeconds: 20700, uncertaintyMinutes: 10 },
+    { instant: 2448000.25, place: { latitude: 27.7, longitude: 85.3, altitude: 1400 }, utcOffsetSeconds: 20700 },
+  ];
+  const rules = { shipped: ['YOGAS'] as const };
+  const counted: ResearchCounts = ctx.research.counts({ births, rules, holds: 'FORMED', design: { groups: [0, 1] } });
+  const tested: ResearchTested = ctx.research.compare({
+    births,
+    rules,
+    design: { groups: [0, 1], strata: [0, 0] },
+    test: { seed: 1n, permutations: 9, contrast: { kind: 'ANY_DIFFERENCE' }, alternative: 'GREATER', parallelism: { THREADS: 2 } },
+  });
+  const expected = ctx.research.expected({ births, rules, control: { seed: 2, replicates: 3 }, test: { alpha: 0.05 } });
+  const timed = ctx.research.timed({
+    subjects: births.map((birth) => ({ birth, event: birth.instant + 9000 })),
+    rules,
+    dasha: 'dasha_system.VIMSHOTTARI',
+    depth: 1,
+    shuffle: 'AGES_AT_EVENT',
+    strata: [0, 0],
+    test: { seed: 3, permutations: 9, afterBirth: 'RESTRICT_PAIRINGS' },
+  });
+  const row: ResearchRow | undefined = tested.rows[0];
+  const ratio = row?.effect?.riskRatio?.estimate ?? row?.expected?.ratio;
+  return `${counted.rows[0]?.counts[0]?.unstable} ${row?.p.exceed} ${row?.adjusted.by} ${ratio} ${row?.underAlpha?.raw} ${expected.shuffle} ${timed.provenance.inputHash}`;
+}
+void theResearch;
+
+function theLalKitab(ctx: Context): string {
+  const asked: LalKitabRequest = {
+    cycle: { planet: 'graha.VENUS', year: 17 },
+    year: 43,
+    varshphal: { rows: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] },
+  };
+  const read: LalKitab | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    lalkitab: asked,
+  }).lalkitab;
+  if (read === null) return 'none';
+  const teva = (r: LalKitab['reading']) => [
+    ...r.planets.map(
+      (p) =>
+        `${p.graha} ${p.house} ${p.dignities.join()} ${p.owners.map((o) => `${o.owner}:${o.regard}`).join()} ${p.awake} ${p.kayam} ${p.casts.map((c) => `${c.to}:${c.strength}:${c.onto.join('|')}`).join()}`,
+    ),
+    ...r.houses.map(
+      (h) => `${h.house} ${h.occupants.join()} ${h.lookedAtBy.map((l) => `${l.from}:${l.strength}`).join()} ${h.awake} ${h.waker}`,
+    ),
+    ...r.masnui.map((m) => `${m.pair.join()} ${m.house} ${m.countsAs}`),
+    ...r.rinas.map((d) => `${d.rin} ${d.of} ${d.seated.map((s) => `${s.enemy}@${s.house}`).join()}`),
+    ...r.pitri.map((s) => `${s.ninth} ${s.mercury}`),
+    `${r.flags.ratandha} ${r.flags.nabalig} ${r.flags.dharmi.join()} ${r.flags.sathi.map((pair) => pair.join('|')).join()}`,
+  ];
+  const year = read.year === null ? [] : [`${read.year.year} ${read.year.ruler} ${read.year.thirds.join()}`, ...(read.year.annual === null ? [] : teva(read.year.annual))];
+  // @ts-expect-error a cycle starts at a planet and a year
+  const wrong: LalKitabRequest = { cycle: { planet: 'graha.VENUS' } };
+  return [
+    ...teva(read.reading),
+    `${read.cycle.planet} ${read.cycle.year}`,
+    ...read.periods.map((p) => `${p.planet}:${p.from}-${p.to}`),
+    ...year,
+    String(wrong),
+  ].join();
+}
+
+void theLalKitab;
+
 // Remedies read all the way down, and a request in every field.
 function theRemedies(ctx: Context): string {
   const asked: RemedyRequest = {
@@ -1444,7 +1644,9 @@ function theRashifal(ctx: Context): string {
   };
   // @ts-expect-error a snapshot's clock needs its minute
   const misread: RashifalRequest = { ...week, snapshot: { at: 'CLOCK', hour: 6 } };
-  const read: RashifalAnswer = ctx.chart.rashifal(week, 'WEEKLY');
+  const read: RashifalSealed = ctx.chart.rashifal(week, 'WEEKLY');
+  const answer: RashifalAnswer = read;
+  const many: RashifalAnswers = ctx.chart.rashifalMany([week]);
   const leo = read.period.readings[4];
   const first = leo?.events[0];
   const event = first?.event.hit.event;
@@ -1459,7 +1661,10 @@ function theRashifal(ctx: Context): string {
     score?.areas[0]?.area ?? 'NONE',
     score?.keyInfluences[0]?.graha ?? 'NONE',
     score?.lucky.day ?? 'NONE',
-    ctx.chart.rashifalMany([week]).length,
+    many.value.length,
+    many.provenance.inputHash,
+    answer.baseline?.length ?? 0,
+    read.provenance.inputHash,
     String(misread),
   ].join();
 }

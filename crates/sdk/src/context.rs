@@ -6,7 +6,7 @@ use core::cell::{Ref, RefCell, RefMut};
 use serde::Serialize;
 use teistro_astro::DeltaTModel;
 use teistro_astro::completion::{Completed, Completion};
-use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
+use teistro_core::envelope::{Envelope, Hash, PackStamp, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
     DEFAULT_PROFILE, Diagnostic, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
@@ -25,6 +25,8 @@ use teistro_time::EmbeddedTzdb;
 use crate::BUNDLES;
 #[cfg(feature = "numerology")]
 use crate::area::NumerologyArea;
+#[cfg(feature = "research")]
+use crate::area::ResearchArea;
 use crate::area::{AlmanacArea, CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
 #[cfg(feature = "chart")]
 use crate::area::{ChartArea, InterpretArea, MatchingArea};
@@ -268,7 +270,32 @@ impl Context {
         provenance.time.delta_t_model = self.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance.time.tzdb_version = EmbeddedTzdb::bundled_version().to_string();
+        provenance.packs = self.pack_stamps(provenance.catalogue_version);
         provenance
+    }
+
+    /// Each pack loaded at run time, as an answer's provenance names it
+    /// (ADR-0020): what shaped the words an answer may say. The embedded
+    /// locales are named by the SDK's own version and are not listed. A
+    /// pack built for another catalogue is refused at load, so the
+    /// catalogue version the context reads under is the pack's.
+    pub(crate) fn pack_stamps(&self, catalogue_version: u32) -> Vec<PackStamp> {
+        let version = catalogue_version.to_string();
+        self.locale_engine()
+            .loaded()
+            .iter()
+            .filter_map(|loaded| {
+                // The loader writes the digest it computed as hex, so one
+                // that does not read back is a defect, not a pack.
+                let hash = Hash::from_hex(&loaded.sha256);
+                debug_assert!(hash.is_some(), "a pack digest that is not hex");
+                Some(PackStamp {
+                    id: format!("{}/{}", loaded.locale, loaded.namespaces.join(",")),
+                    version: version.clone(),
+                    hash: hash?,
+                })
+            })
+            .collect()
     }
 
     /// The locale engine: a message, an entity's forms,
@@ -313,6 +340,16 @@ impl Context {
     #[must_use]
     pub fn numerology(&self) -> NumerologyArea<'_> {
         NumerologyArea::of(self)
+    }
+
+    /// Counts and permutation tests over a batch of births: how often each
+    /// rule of a set holds in each group, whether groups differ, whether
+    /// rules are delivered at life events more than chance, and whether a
+    /// sample departs from its own recombined population.
+    #[cfg(feature = "research")]
+    #[must_use]
+    pub fn research(&self) -> ResearchArea<'_> {
+        ResearchArea::of(self)
     }
 
     /// The operations your **ephemeris** brings with it, beyond the ones
@@ -373,10 +410,14 @@ pub struct ContextBuilder {
     settings_json: Option<String>,
     locale: Option<String>,
     chain: Option<Vec<Ephemeris>>,
+    wrap: Option<Wrap>,
     layouts: Vec<Layout>,
     #[cfg(feature = "chart")]
     dashas: Vec<DashaDefinition>,
 }
+
+/// What [`ContextBuilder::wrapping`] lays over the opened provider.
+type Wrap = Box<dyn FnOnce(Box<dyn EphemerisProvider>) -> Box<dyn EphemerisProvider>>;
 
 impl core::fmt::Debug for ContextBuilder {
     fn fmt(&self, out: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -384,6 +425,7 @@ impl core::fmt::Debug for ContextBuilder {
             .field("profile", &self.profile)
             .field("locale", &self.locale)
             .field("ephemeris", &self.chain)
+            .field("wrapped", &self.wrap.is_some())
             .finish_non_exhaustive()
     }
 }
@@ -450,6 +492,41 @@ impl ContextBuilder {
         self
     }
 
+    /// A provider of the caller's own laid over the one the chain opens,
+    /// behind the context's cache: one that counts, logs or stops what an
+    /// engine is asked. Whichever entry opened, under whatever the
+    /// settings name, `wrap` receives it, so a wrapper never has to open
+    /// an engine itself; it must forward every method it does not change.
+    ///
+    /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// use std::sync::Arc;
+    /// use std::sync::atomic::{AtomicBool, Ordering};
+    /// use teistro::{Context, Ephemeris};
+    /// use teistro_port_ephemeris::{CountingProvider, EphemerisProvider};
+    ///
+    /// let wrapped = Arc::new(AtomicBool::new(false));
+    /// let seen = Arc::clone(&wrapped);
+    /// let context = Context::builder()
+    ///     .ephemeris([Ephemeris::Builtin])
+    ///     .wrapping(move |opened| -> Box<dyn EphemerisProvider> {
+    ///         seen.store(true, Ordering::Relaxed);
+    ///         Box::new(CountingProvider::new(opened))
+    ///     })
+    ///     .build()?;
+    /// assert!(wrapped.load(Ordering::Relaxed) && context.ephemeris().is_some());
+    /// # }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn wrapping(
+        mut self,
+        wrap: impl FnOnce(Box<dyn EphemerisProvider>) -> Box<dyn EphemerisProvider> + 'static,
+    ) -> ContextBuilder {
+        self.wrap = Some(Box::new(wrap));
+        self
+    }
+
     /// The context, or the refusal that says why there is none.
     ///
     /// # Errors
@@ -510,6 +587,10 @@ impl ContextBuilder {
         let opened = ephemeris::open(chain, settings.settings.frame.siddhanta, delta_t)?;
         let mut settings = settings;
         astronomy_coherence(&mut settings, opened.as_deref())?;
+        let opened = match (opened, self.wrap) {
+            (Some(opened), Some(wrap)) => Some(wrap(opened)),
+            (opened, _) => opened,
+        };
         let provider = remembering(opened, settings.settings.provider.cache_cells);
         let mut layouts = Layouts::new();
         for (index, layout) in self.layouts.into_iter().enumerate() {
@@ -615,6 +696,7 @@ fn remembering(
 /// changes the answer, named rather than numbered, so the hash is the
 /// same whichever binding asked.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct RequestRecord<'a> {
     scale: &'static str,
     frame: String,

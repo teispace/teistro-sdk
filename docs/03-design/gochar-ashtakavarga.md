@@ -1,8 +1,7 @@
 # Gochar by the Ashtakavarga: the bindus a transit stands on
 
-Status: `draft`, 2026-09-27; §6 steps 1 and 2 **built** the same day.
-Written from the text before any code; the building is expected to
-correct it.
+Status: `built`, 2026-09-27; every step of §6 built. Written from the
+text before any code; the building is expected to correct it.
 
 Derives from `gochar.md` §6 step 4 and the research page's P0 row
 "Ashtakavarga transit scoring with kakshya"
@@ -127,5 +126,5 @@ PyJHora follows a reading of its own on two.
    misreading it; `gochar` gains `ashtakavarga_good_from` beside the node
    readings. Building it merged the threshold into `GocharRules`, so one
    rules record mirrors the settings' `gochar` group and every reading
-   says all three of its readings, rather than a second record the
+   says which readings it took, rather than a second record the
    encoder could not see.

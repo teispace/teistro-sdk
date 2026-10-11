@@ -28,7 +28,7 @@ use std::path::{Path, PathBuf};
 /// and the two surfaces (`ffi`, the C boundary, and `sdk`, the Rust
 /// façade) are held to the compiler's lints alone — a surface composes
 /// what these compute and rounds nothing itself.
-const COMPUTATION: [&str; 8] = [
+const COMPUTATION: [&str; 9] = [
     "core",
     "calendar",
     "time",
@@ -37,6 +37,7 @@ const COMPUTATION: [&str; 8] = [
     "port-ephemeris",
     "port-timezone",
     "intl",
+    "research",
 ];
 
 /// The crates that may hold `unsafe` code, and so may downgrade the
@@ -46,10 +47,12 @@ const COMPUTATION: [&str; 8] = [
 /// published. Everything else inherits `forbid`, which the compiler
 /// then enforces; what this rule watches is a manifest quietly changing
 /// its mind.
-const UNSAFE_CRATES: [&str; 7] = [
+const UNSAFE_CRATES: [&str; 9] = [
     "crates/port-ephemeris",
     "crates/ffi",
+    "crates/mcp",
     "crates/test-allocator",
+    "crates/test-adapter",
     "bindings/node/native",
     "bindings/wasm/native",
     // The adapters call a C engine directly. They are outside the
@@ -1135,10 +1138,7 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
     };
     // The step itself, to the next heading: a log row naming a question
     // is a record of the past and not an orientation for a reader.
-    let resume = status
-        .split_once(RESUME)
-        .map(|(_, rest)| rest.split("\n## ").next().unwrap_or(rest))
-        .unwrap_or_default();
+    let resume = section_of(&status, RESUME);
     if resume.is_empty() {
         outcome.failures.push(Finding {
             file: tracker.to_owned(),
@@ -1150,10 +1150,7 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
     }
     // Both lists of what is left to do: a decided question belongs in
     // neither, and an open one must be named in the first.
-    let next = status
-        .split_once(NEXT)
-        .map(|(_, rest)| rest.split("\n## ").next().unwrap_or(rest))
-        .unwrap_or_default();
+    let next = section_of(&status, NEXT);
     for (at, line) in questions.lines().enumerate() {
         let Some(rest) = line.strip_prefix("## ") else {
             continue;
@@ -1168,7 +1165,7 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
         // decided it — the second put there by the very step that
         // requires an open one to be named, which is why both directions
         // belong in one rule.
-        if line.ends_with(": `open`") && !resume.contains(number) {
+        if line.ends_with(": `open`") && !names_question(resume, number) {
             outcome.failures.push(Finding {
                 file: register.to_owned(),
                 line: at + 1,
@@ -1179,7 +1176,7 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
             });
         }
         for (list, heading) in [(resume, RESUME), (next, NEXT)] {
-            if line.ends_with(": `decided`") && list.contains(number) {
+            if line.ends_with(": `decided`") && names_question(list, number) {
                 outcome.failures.push(Finding {
                     file: register.to_owned(),
                     line: at + 1,
@@ -1204,6 +1201,57 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
             });
         }
     }
+}
+
+/// The text under a heading: from the line after it to the next line that
+/// opens a `## ` heading, or the empty string when no line is the heading.
+///
+/// The heading is matched as a **line** and never as a substring. The
+/// resume step itself says a decided question "may not be named in this
+/// step or in `## Next`", so the first `## Next` in the tracker is a
+/// mention, and reading from there checked the tail of the step in place
+/// of the list it names. A heading may carry more words after a space.
+fn section_of<'a>(text: &'a str, heading: &str) -> &'a str {
+    let mut lines = text.split_inclusive('\n');
+    let mut start = 0;
+    let mut found = false;
+    for line in lines.by_ref() {
+        start += line.len();
+        found = line
+            .trim_end_matches(['\n', '\r'])
+            .strip_prefix(heading)
+            .is_some_and(|rest| rest.is_empty() || rest.starts_with(' '));
+        if found {
+            break;
+        }
+    }
+    if !found {
+        return "";
+    }
+    let mut end = start;
+    for line in lines {
+        if line.starts_with("## ") {
+            break;
+        }
+        end += line.len();
+    }
+    text.get(start..end).unwrap_or_default()
+}
+
+/// Whether a text names a question (`Q24`) as a whole token: not preceded
+/// by a letter or digit, and not followed by another digit.
+///
+/// A substring test reads `Q4` in `Q40`, so a decided `Q4` would be held
+/// against a list that names only `Q40`, and an open `Q4` would count as
+/// named by it.
+fn names_question(text: &str, id: &str) -> bool {
+    text.match_indices(id).any(|(at, _)| {
+        let before = text.get(..at).and_then(|head| head.chars().next_back());
+        let after = text
+            .get(at + id.len()..)
+            .and_then(|tail| tail.chars().next());
+        !before.is_some_and(char::is_alphanumeric) && !after.is_some_and(|c| c.is_ascii_digit())
+    })
 }
 
 /// The tracker's table of what is built, and where its rows come from.
@@ -2007,6 +2055,7 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
         let described = |name: &str| {
             files.iter().any(|(_, text)| {
                 text.contains(&format!("impl schemars::JsonSchema for {name} "))
+                    || text.contains(&format!("schemars::JsonSchema for {name}<"))
                     || text.contains(&format!("hand_schema!({name},"))
             })
         };
@@ -2061,6 +2110,9 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
                         rule: RULE,
                     });
                 }
+                if carries {
+                    written_through_states_its_schema(&lines, index, &shown, outcome);
+                }
             }
             for found in hand_impl.captures_iter(text) {
                 let name = &found[1];
@@ -2081,6 +2133,55 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
                 });
             }
         }
+    }
+}
+
+/// A field of a schema-deriving item that serde writes or reads through
+/// a function (`with`, `serialize_with`, `deserialize_with`) states what
+/// that function writes (`schemars(with = …)` or `schemars(schema_with =
+/// …)`) within the attributes beside it: schemars sees only the field's
+/// own type, so `charts` was described as an envelope where it is written
+/// as the list alone, and every rule reference as a rule where it is
+/// written as its key.
+fn written_through_states_its_schema(
+    lines: &[&str],
+    item: usize,
+    shown: &str,
+    outcome: &mut Outcome,
+) {
+    let Some(head) = lines.get(item) else {
+        return;
+    };
+    let indent = head.len() - head.trim_start().len();
+    let close = format!("{}}}", " ".repeat(indent));
+    let mut at = item + 1;
+    while let Some(line) = lines.get(at) {
+        if *line == close || line.trim_end() == format!("{close};") {
+            break;
+        }
+        let trimmed = line.trim_start();
+        let through = trimmed.starts_with("#[serde(")
+            && ["with = \"", "serialize_with = \"", "deserialize_with = \""]
+                .iter()
+                .any(|form| trimmed.contains(form));
+        if through {
+            let stated = (at.saturating_sub(3)..at + 4)
+                .filter_map(|near| lines.get(near))
+                .any(|near| {
+                    near.contains("schemars(with") || near.contains("schemars(schema_with")
+                });
+            if !stated {
+                outcome.failures.push(Finding {
+                    file: shown.to_owned(),
+                    line: at + 1,
+                    text: String::from(
+                        "writes a field through a function with no `schemars(with = …)` saying what it writes",
+                    ),
+                    rule: "serialised-type-describes-itself",
+                });
+            }
+        }
+        at += 1;
     }
 }
 
@@ -2540,8 +2641,149 @@ fn words_are_spelt_as_keys(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// The files an agent-server tool reads its request through: a tool's
+/// own record (`teistro::records`), the records a chart request or a
+/// range of days carries, and the server's own arguments.
+const READ_THROUGH: [&str; 6] = [
+    "crates/sdk/src/records.rs",
+    "crates/sdk/src/compose.rs",
+    "crates/sdk/src/found_request.rs",
+    "crates/sdk/src/days_request.rs",
+    "crates/mcp/src/lib.rs",
+    "crates/mcp/src/tools.rs",
+];
+
+/// The JSON readers no tool reads, each with why: what the third gate
+/// allows, so that a reader nobody reaches is a decision written down
+/// and not an omission.
+const NOT_A_TOOL: [(&str, &str); 2] = [
+    (
+        "Settings",
+        "a resolved settings record; a call names its settings as a patch over a profile (`mcp-server.md` D5)",
+    ),
+    (
+        "Tolerances",
+        "the ephemeris kit's corpus tolerances, a development tool's file and no request",
+    ),
+];
+
+/// The JSON readers a tool reaches inside another record rather than by
+/// their own call, each with the record that carries it; the carrier must
+/// itself be reached.
+const CARRIED: [(&str, &str); 2] = [
+    ("PerfectionRules", "PerfectionRequest"),
+    ("SynastryRequest", "PartnerSynastry"),
+];
+
+/// Every JSON record reader in the SDK's crates — an `impl T` holding
+/// `pub fn from_json` — is reached by an agent-server tool, called from
+/// one of [`READ_THROUGH`], carried inside a record that is
+/// ([`CARRIED`]), or is listed in [`NOT_A_TOOL`] with why; and a listed
+/// type is neither reached by its own call nor gone (`03-design/mcp-server.md`
+/// §5, the third gate). So a request record added to the SDK cannot
+/// silently be one the agent server does not take.
+fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "every-reader-reaches-a-tool";
+    let through: Vec<String> = READ_THROUGH
+        .iter()
+        .filter_map(|file| std::fs::read_to_string(root.join(file)).ok())
+        .collect();
+    // The reader itself, called or passed as a function, and never a
+    // longer name it begins (`from_json_in`), which would pass for it.
+    let reached = |name: &str| {
+        let call = format!("{name}::from_json");
+        through.iter().any(|text| {
+            text.match_indices(&call).any(|(at, _)| {
+                !text.get(at + call.len()..).is_some_and(|rest| {
+                    rest.starts_with(|next: char| next.is_ascii_alphanumeric() || next == '_')
+                })
+            })
+        })
+    };
+    let Ok(crates) = std::fs::read_dir(root.join("crates")) else {
+        return;
+    };
+    let mut crates: Vec<PathBuf> = crates.flatten().map(|entry| entry.path()).collect();
+    crates.sort();
+    let mut readers: Vec<String> = Vec::new();
+    for krate in crates {
+        // The boundary and the server read through the façade's readers
+        // and declare none of their own.
+        if krate.ends_with("ffi") || krate.ends_with("mcp") {
+            continue;
+        }
+        for path in sources(&krate.join("src")) {
+            let Ok(text) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            let shown = path
+                .strip_prefix(root)
+                .unwrap_or(&path)
+                .display()
+                .to_string();
+            let mut owner: Option<&str> = None;
+            for (index, line) in text.lines().enumerate() {
+                if let Some(rest) = line.strip_prefix("impl ") {
+                    owner = rest.split([' ', '<', '{']).next();
+                }
+                if !line.trim_start().starts_with("pub fn from_json(") {
+                    continue;
+                }
+                let Some(name) = owner else {
+                    continue;
+                };
+                readers.push(name.to_owned());
+                let carried = CARRIED
+                    .iter()
+                    .find(|(listed, _)| *listed == name)
+                    .map(|(_, carrier)| *carrier);
+                let listed =
+                    carried.is_some() || NOT_A_TOOL.iter().any(|(listed, _)| *listed == name);
+                if let Some(carrier) = carried.filter(|carrier| !reached(carrier)) {
+                    outcome.failures.push(Finding {
+                        file: shown.clone(),
+                        line: index + 1,
+                        text: format!("`{name}` is carried by `{carrier}`, which no tool reads"),
+                        rule: RULE,
+                    });
+                }
+                if !listed && !reached(name) {
+                    outcome.failures.push(Finding {
+                        file: shown.clone(),
+                        line: index + 1,
+                        text: format!(
+                            "`{name}::from_json` is a record no agent-server tool reads; reach it from a tool or list it in `NOT_A_TOOL` with why"
+                        ),
+                        rule: RULE,
+                    });
+                }
+                if listed && reached(name) {
+                    outcome.failures.push(Finding {
+                        file: shown.clone(),
+                        line: index + 1,
+                        text: format!(
+                            "`{name}` is listed as reached no other way and a tool reads it"
+                        ),
+                        rule: RULE,
+                    });
+                }
+            }
+        }
+    }
+    for listed in CARRIED.iter().chain(&NOT_A_TOOL).map(|(listed, _)| *listed) {
+        if !readers.iter().any(|name| name == listed) {
+            outcome.failures.push(Finding {
+                file: String::from("xtask/src/lints.rs"),
+                line: 1,
+                text: format!("`{listed}` is listed and has no `from_json` any more"),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 26] = [
+const RULES: [&str; 27] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -2560,6 +2802,7 @@ const RULES: [&str; 26] = [
     "a-tier-turns-on-its-base",
     "families-are-forwarded",
     "serialised-type-describes-itself",
+    "every-reader-reaches-a-tool",
     "a-word-is-spelt-as-a-key",
     "every-predicate-is-listed",
     "composer-reaches-every-binding",
@@ -2590,6 +2833,14 @@ pub(crate) fn check(root: &Path) -> i32 {
             "env::var",
             "env::args",
             "std::process::id",
+            // A study's p-value is part of its answer, so its randomness
+            // is the seeded generator `teistro-research` writes, never the
+            // process's (`03-design/research.md` §2.2).
+            "thread_rng",
+            "OsRng",
+            "getrandom",
+            "rand::random",
+            "RandomState",
         ],
         &mut outcome,
     );
@@ -2621,6 +2872,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     node_is_tested_at_its_floor(root, &mut outcome);
     targets_declare_their_features(root, &mut outcome);
     serialised_types_describe_themselves(root, &mut outcome);
+    every_reader_reaches_a_tool(root, &mut outcome);
     words_are_spelt_as_keys(root, &mut outcome);
     predicates_are_listed(root, &mut outcome);
     composers_reach_every_binding(root, &mut outcome);
@@ -2659,7 +2911,10 @@ pub(crate) fn check(root: &Path) -> i32 {
 
 #[cfg(test)]
 mod tests {
-    use super::{declaration_of, gate_declared_by, gate_run_by};
+    use super::{
+        NEXT, Outcome, REGISTER, RESUME, declaration_of, gate_declared_by, gate_run_by,
+        names_question, open_questions_are_named, section_of,
+    };
 
     /// The shape of a `group!` body, which is what the rule reads.
     const SOURCE: &str = "group!(
@@ -2757,6 +3012,84 @@ mod tests {
             None
         );
         assert_eq!(gate_declared_by("    let name = Some(\"check-x\");"), None);
+    }
+
+    /// A tracker whose resume step mentions the other heading in prose
+    /// before the heading itself, as the real one does.
+    const TRACKER: &str = "# Status\n\n## How to resume\n\n\
+        1. A decided question may not be named here or in `## Next`.\n\n\
+        ## Next\n\n1. The item.\n\n## Session log\n\n| Q4 |\n";
+
+    #[test]
+    fn a_section_starts_at_its_heading_line_and_not_at_a_mention() {
+        // A substring search reads from the mention and returns the tail
+        // of the resume step, which names no item at all.
+        assert_eq!(section_of(TRACKER, NEXT), "\n1. The item.\n\n");
+        assert_eq!(
+            section_of(TRACKER, RESUME),
+            "\n1. A decided question may not be named here or in `## Next`.\n\n"
+        );
+        // A heading may carry words after a space, and nothing else.
+        assert_eq!(section_of("## Next (dated)\nx\n", NEXT), "x\n");
+        assert_eq!(section_of("## Nextly\nx\n", NEXT), "");
+        assert_eq!(section_of("no heading\n", NEXT), "");
+    }
+
+    #[test]
+    fn a_question_is_named_as_a_whole_token() {
+        for named in ["Q4", "Q4.", "(Q4)", "`Q4`", "see Q4, then"] {
+            assert!(names_question(named, "Q4"), "{named}");
+        }
+        // `Q4` is a prefix of `Q40`: a substring test would call it named.
+        for not_named in ["Q40", "Q41 and Q400", "SQ4", "aQ4", ""] {
+            assert!(!names_question(not_named, "Q4"), "{not_named}");
+        }
+    }
+
+    /// A register and a tracker, written under a fresh directory, and the
+    /// rule run over them.
+    #[allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+    fn question_findings(tag: &str, questions: &str, status: &str) -> Vec<String> {
+        let root =
+            std::env::temp_dir().join(format!("teistro-questions-{}-{tag}", std::process::id()));
+        let (register, tracker) = REGISTER;
+        std::fs::create_dir_all(root.join("docs")).unwrap();
+        std::fs::write(root.join(register), questions).unwrap();
+        std::fs::write(root.join(tracker), status).unwrap();
+        let mut outcome = Outcome::default();
+        open_questions_are_named(&root, &mut outcome);
+        std::fs::remove_dir_all(&root).unwrap();
+        outcome.failures.into_iter().map(|f| f.text).collect()
+    }
+
+    #[test]
+    fn a_decided_question_is_not_read_inside_a_longer_id() {
+        // `Q4` is decided and `Q41` open; the lists name `Q41` and `Q40`
+        // and never `Q4`, which a substring test read in both.
+        let found = question_findings(
+            "token",
+            "## Q4. Settled: `decided`\n\n## Q41. Live: `open`\n",
+            "## How to resume\n\n1. Q41 is open, and Q40 is another matter.\n\n\
+             ## Next\n\n1. Q40.\n\n## Session log\n",
+        );
+        assert!(found.is_empty(), "{found:?}");
+    }
+
+    #[test]
+    fn a_decided_question_under_the_next_heading_is_found_past_a_mention() {
+        // The first `## Next` is in the resume step's prose; a reader that
+        // starts there checks the step's tail and misses the list.
+        let found = question_findings(
+            "next",
+            "## Q4. Settled: `decided`\n\n## Q7. Live: `open`\n",
+            "## How to resume\n\n1. Q7 is open; a decided one may not be in `## Next`.\n\n\
+             ## Next\n\n1. Still on (Q4).\n\n## Session log\n",
+        );
+        assert_eq!(
+            found,
+            ["`Q4` is decided and docs/STATUS.md's `## Next` still names it"],
+            "{found:?}"
+        );
     }
 }
 

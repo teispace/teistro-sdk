@@ -313,6 +313,19 @@ public final class ParityRunner {
         throw new IllegalStateException("expected a JSON list, found " + value);
     }
 
+    /** The rotation varshphal list: row {@code y} sends house {@code h} to {@code (h + y) % 12 + 1}. */
+    private static List<List<Integer>> varshphalRotation() {
+        List<List<Integer>> rows = new ArrayList<>();
+        for (int y = 0; y < 120; y++) {
+            List<Integer> row = new ArrayList<>();
+            for (int h = 0; h < 12; h++) {
+                row.add((h + y) % 12 + 1);
+            }
+            rows.add(row);
+        }
+        return rows;
+    }
+
     /** A request object, its fields in the order written. */
     private static Map<String, Object> map(Object... fields) {
         Map<String, Object> out = new LinkedHashMap<>();
@@ -454,6 +467,42 @@ public final class ParityRunner {
     private static String devotionsSaid(List<Devotion> devotions) {
         return orDash(join(",", devotions, d -> d.graha().fullKey() + ":" + String.join("|", d.deities()) + ":"
                 + d.verse() + ":" + lower(d.withKetu())));
+    }
+
+    /** Grahas by their full keys joined by {@code |}, empty for none. */
+    private static String piped(List<Graha> grahas) {
+        return join("|", grahas, Graha::fullKey);
+    }
+
+    /** A chart's Lal Kitab, each row under {@code at}. */
+    private static void putLalKitab(String at, LalKitab lk) {
+        LalKitab.Reading reading = lk.reading();
+        LalKitab.Flags flags = reading.flags();
+        LalKitab.Year year = lk.year();
+        put(at, lk.cycle().planet().fullKey() + ":" + lk.cycle().year() + " " + year.year() + ":"
+                + year.ruler().fullKey() + " " + grahaKeys(year.thirds()) + " " + lower(flags.ratandha()) + " "
+                + lower(flags.nabalig()) + " " + grahaKeys(flags.dharmi()) + " "
+                + orDash(join(",", flags.sathi(), ParityRunner::piped)));
+        for (LalKitab.Planet p : reading.planets()) {
+            put(at + "-planet-" + p.graha().fullKey(), p.house() + " " + orDash(String.join(",", p.dignities()))
+                    + " " + orDash(join(",", p.owners(), o -> o.owner().fullKey() + ":" + o.regard())) + " "
+                    + lower(p.awake()) + " " + lower(p.kayam()) + " "
+                    + orDash(join(",", p.casts(), c -> c.to() + ":" + c.strength() + ":" + piped(c.onto()))));
+        }
+        for (LalKitab.House h : reading.houses()) {
+            put(at + "-house-" + h.house(), grahaKeys(h.occupants()) + " "
+                    + orDash(join(",", h.lookedAtBy(), l -> l.from() + ":" + l.strength())) + " "
+                    + lower(h.awake()) + " " + h.waker().fullKey());
+        }
+        put(at + "-debts", orDash(join(",", reading.masnui(), m -> piped(m.pair()) + ":" + m.house() + ":"
+                + m.countsAs())) + " "
+                + orDash(join(",", reading.rinas(), r -> r.rin() + ":" + r.of().fullKey() + ":"
+                        + join("|", r.seated(), s -> s.enemy().fullKey() + "@" + s.house())))
+                + " " + orDash(join(",", reading.pitri(), p -> p.ninth().fullKey() + ":" + p.mercury())));
+        put(at + "-periods", orDash(join(",", lk.periods(), p -> p.planet().fullKey() + ":" + p.from() + "-"
+                + p.to())));
+        put(at + "-annual", orDash(join(",", year.annual().planets(), p -> p.graha().fullKey() + ":"
+                + p.house())));
     }
 
     /** A chart's remedies, each row under {@code at}. */
@@ -688,6 +737,108 @@ public final class ParityRunner {
     }
 
     /**
+     * The studies every runner sends ({@code 03-design/research.md}): eight births at Kathmandu a few
+     * years apart, the shipped yogas as the predicates, compared by alternate labels, read against their
+     * own recombined population, and each delivered by the Vimshottari at an event of its life under
+     * the age shuffle.
+     */
+    private static void putResearch(Context geo) {
+        Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(0));
+        List<ResearchBirth> births = new ArrayList<>();
+        List<Integer> groups = new ArrayList<>();
+        for (int i = 0; i < 8; i += 1) {
+            births.add(new ResearchBirth(2447000.25 + 977.3 * i, kathmandu, 20_700));
+            groups.add(i % 2);
+        }
+        Map<String, Object> yogas = map("shipped", List.of("YOGAS"));
+        Map<String, Object> design = map("groups", groups);
+        ResearchCounts table = geo.research().counts(births, yogas, design, map("holds", "FORMED"));
+        put("research-counts-hash", table.provenance().inputHash());
+        for (int k = 0; k < table.rows().size(); k += 1) {
+            ResearchCounts.Row row = table.rows().get(k);
+            put("research-counts-row-" + k, row.predicate() + " " + groupsOf(row.counts()));
+        }
+        putTested("compare", geo.research().compare(births, yogas, design,
+                map("seed", 5, "permutations", 199, "contrast", map("kind", "CASE_VS_REST", "case", 1),
+                        "alpha", 0.05),
+                null));
+        putTested("expected", geo.research().expected(births, yogas, map("seed", 4, "replicates", 3), null, null));
+        List<ResearchSubject> subjects = new ArrayList<>();
+        for (int i = 0; i < births.size(); i += 1) {
+            ResearchBirth birth = births.get(i);
+            subjects.add(new ResearchSubject(birth, birth.instant() + 9000.5 + 211 * i));
+        }
+        putTested("timed", geo.research().timed(subjects, yogas, DashaSystem.VIMSHOTTARI,
+                ResearchEventShuffle.AGES_AT_EVENT, map("seed", 3, "permutations", 49), null));
+    }
+
+    private static String groupsOf(List<ResearchCounts.Group> counts) {
+        List<String> out = new ArrayList<>();
+        for (ResearchCounts.Group c : counts) {
+            out.add(c.present() + ":" + c.absent() + ":" + c.unreadable() + ":" + c.unstable());
+        }
+        return String.join(",", out);
+    }
+
+    private static String optional(Double value) {
+        return value == null ? "none" : number(value.doubleValue());
+    }
+
+    private static void putTested(String name, ResearchTested answer) {
+        put("research-" + name + "-hash", answer.provenance().inputHash());
+        put("research-" + name + "-test",
+                answer.permutations() + " " + number(answer.resolution()) + " " + answer.shuffle());
+        for (int k = 0; k < answer.rows().size(); k += 1) {
+            ResearchTested.Row r = answer.rows().get(k);
+            put("research-" + name + "-row-" + k, r.predicate() + " " + groupsOf(r.counts()) + " "
+                    + optional(r.observed()) + " " + r.p().exceed() + " " + number(r.p().value()) + " "
+                    + number(r.adjusted().maxT()) + " " + number(r.adjusted().holm()) + " "
+                    + number(r.adjusted().bh()) + " " + optional(r.exact()) + " "
+                    + optional(r.effect() == null ? null : r.effect().riskDifference().estimate()) + " "
+                    + optional(r.expected() == null ? null : r.expected().expected()));
+        }
+    }
+
+    /**
+     * The Pancha Pakshi requests every runner sends, at Madras: a native by
+     * birth star in the dark half under Pulippani's lengths and relations
+     * over two days, and a bird named outright under the defaults for one.
+     */
+    private static void putPakshi(Context geo) {
+        Observer madras = new Observer(new Longitude(80.2707), new Latitude(13.0827), new Altitude(6));
+        List<PakshiDays> asked = List.of(
+                geo.almanac().pakshi(date(1984, 10, 30), date(1984, 10, 31), madras, 19_800,
+                        new PakshiNative.Star(Nakshatra.UTTARA_ASHADHA, Paksha.KRISHNA, "BY_PAKSHA"),
+                        map("subs", "PULIPPANI", "relations", "PULIPPANI")),
+                geo.almanac().pakshi(date(1991, 5, 21), null, madras, 19_800, PakshiNative.bird("OWL")));
+        for (int r = 0; r < asked.size(); r += 1) {
+            put("pakshi-" + r + "-hash", asked.get(r).provenance().inputHash());
+            List<PakshiDay> days = asked.get(r).value();
+            for (int n = 0; n < days.size(); n += 1) {
+                PakshiDay one = days.get(n);
+                String key = "pakshi-" + r + "-" + n;
+                PakshiDay.Reading read = one.reading();
+                if (read == null) {
+                    put(key, ymd(one.date()) + " none");
+                    continue;
+                }
+                PakshiDay.Bounds day = read.day();
+                put(key, ymd(one.date()) + " " + day.vara().fullKey() + " " + day.paksha().fullKey() + " "
+                        + number(day.sunrise()) + " " + number(day.sunset()) + " " + number(day.nextSunrise()) + " "
+                        + read.bird() + " " + read.deathBird() + " " + lower(read.deadToday()) + " "
+                        + String.join(",", read.eaters()));
+                for (int k = 0; k < read.yamas().size(); k += 1) {
+                    PakshiDay.Yama yama = read.yamas().get(k);
+                    put(key + "-yama-" + k, yama.half() + " " + yama.yama() + " " + number(yama.span().fromJd()) + " "
+                            + number(yama.span().toJd()) + " " + yama.activity() + " " + yama.quality() + " "
+                            + join(",", yama.subs(), s -> s.activity() + ":" + s.owner() + ":" + s.share() + ":"
+                                    + s.ownerIs() + ":" + number(s.span().toJd())));
+                }
+            }
+        }
+    }
+
+    /**
      * The rashifal batch every runner sends: a week read at sunrise with the
      * baseline's weekly scores, and a day read at 06:00 reporting only Mars's
      * and Saturn's events.
@@ -696,7 +847,9 @@ public final class ParityRunner {
         RashifalRequest week = new RashifalRequest(date(2024, 6, 17), date(2024, 6, 23), place, 20700, null, null, null);
         RashifalRequest oneDay = new RashifalRequest(date(2024, 6, 17), null, place, 20700,
                 map("at", "CLOCK", "hour", 6, "minute", 0), List.of(Graha.MARS, Graha.SATURN), null);
-        List<RashifalAnswer> answers = geo.chart().rashifalMany(List.of(week, oneDay), "WEEKLY");
+        RashifalAnswers sealed = geo.chart().rashifalMany(List.of(week, oneDay), "WEEKLY");
+        put("rashifal-hash", sealed.provenance().inputHash());
+        List<RashifalAnswer> answers = sealed.value();
         for (int n = 0; n < answers.size(); n += 1) {
             RashifalAnswer answer = answers.get(n);
             RashifalPeriod period = answer.period();
@@ -1119,6 +1272,8 @@ public final class ParityRunner {
                 charts(ctx, geo, place);
                 almanac(geo, place);
                 putRashifal(geo, place);
+                putPakshi(geo);
+                putResearch(geo);
             }
 
             // ── The eclipses ──────────────────────────────────────────────
@@ -1194,8 +1349,16 @@ public final class ParityRunner {
             surface("chart.layout", () -> ctx.chart().layout(""));
             surface("chart.found", () -> ctx.chart().found(0, place, 0, ChartOptions.none()));
             surface("chart.found_many", () -> ctx.chart().foundMany(new double[] {0}, place, 0, ChartOptions.none()));
+            surface("chart.rashifal", () -> ctx.chart().rashifal(null));
+            surface("chart.rashifal_many", () -> ctx.chart().rashifalMany(List.of(), null));
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
+            surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
+            surface("research.counts", () -> ctx.research().counts(List.of(), Map.of(), Map.of(), null));
+            surface("research.compare", () -> ctx.research().compare(List.of(), Map.of(), Map.of(), Map.of(), null));
+            surface("research.expected", () -> ctx.research().expected(List.of(), Map.of(), Map.of(), null, null));
+            surface("research.timed", () -> ctx.research().timed(List.of(), Map.of(), DashaSystem.VIMSHOTTARI,
+                    ResearchEventShuffle.AGES_AT_EVENT, Map.of(), null));
             surface("engine.names", () -> ctx.ephemeris().names());
             surface("engine.signature", () -> ctx.ephemeris().signature(""));
             surface("engine.call", () -> ctx.ephemeris().call("", Map.of()));
@@ -1267,6 +1430,16 @@ public final class ParityRunner {
                 .perfection(map("house", 7, "rules", map("horizonDays", 120)))
                 .prashna(map("question", map("house", 7, "number", 14), "rules", map("score", "BASELINE")))
                 .remedies(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA"))))
+                // A varshphal list with the book's structure and none of its numbers:
+                // year y sends natal house h to h + y - 1, round the twelve.
+                .lalkitab(map("cycle", map("planet", "graha.VENUS", "year", 17), "year", 43,
+                        "varshphal", map("rows", varshphalRotation())))
+                .rectification(map("purify", map("minutes", 20), "conception", map(),
+                        "circumstance", map("facts", map("fatherPresent", false)),
+                        "baseline", map("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
+                                map("kind", "MARRIAGE", "on", 2469000.5),
+                                map("kind", "ACCIDENT", "on", 2471000.5, "heldOut", true))),
+                        "svarodaya", map("minutes", 20)))
                 .westernAspects(map(
                         "aspects", List.of("CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"),
                         "orbs", map("model", "MOIETIES", "orbs", orbs)))
@@ -1783,6 +1956,8 @@ public final class ParityRunner {
         perfection(c, chart.perfection().orElseThrow());
         prashna(c, chart.prashna().orElseThrow());
         putRemedies(c + "-remedies", chart.remedies().orElseThrow());
+        putLalKitab(c + "-lalkitab", chart.lalkitab().orElseThrow());
+        rectification(c + "-rectification", chart.rectification().orElseThrow());
         progressions(c, chart.progressions().orElseThrow());
         List<WesternAspectRow> westernAspects = chart.westernAspects().orElseThrow();
         put(c + "-western-aspect-count", String.valueOf(westernAspects.size()));
@@ -1976,6 +2151,114 @@ public final class ParityRunner {
         putMatter(c + "-prashna-links", links.matter());
         AnnualStatesRead states = Objects.requireNonNull(links.states(), "the prashna's links have no states");
         put(c + "-prashna-links-states", "R:" + grahaKeys(states.retrograde()) + " C:" + grahaKeys(states.combust()));
+    }
+
+    /** The purifier's verdict as every runner spells it: whether pure, then each clause colon-joined. */
+    private static String verdictSaid(Purified.Verdict verdict) {
+        return lower(verdict.pure()) + " " + orDash(join(",", verdict.clauses(), clause -> clause.purifier() + ":"
+                + clause.reference() + ":" + clause.sign().fullKey() + ":" + clause.lagna().fullKey() + ":"
+                + clause.house() + ":" + lower(clause.held()) + ":" + lower(clause.counted())));
+    }
+
+    /** One stage note as every runner spells it: its kind, then its fields in declaration order, colon-joined. */
+    private static String noteSaid(BaselineNote note) {
+        return switch (note) {
+            case BaselineNote.TattvaSex sex -> "TATTVA_SEX:" + sex.sex() + ":" + number(sex.admittedMinutes()) + ":"
+                    + sex.penalised() + ":" + sex.of();
+            case BaselineNote.ReportedTime time -> "REPORTED_TIME:" + time.accuracy() + ":"
+                    + number(time.uncertaintyMinutes());
+            case BaselineNote.EventFit fit -> "EVENT_FIT:" + fit.event() + ":" + fit.id().orElse("-") + ":"
+                    + fit.eventKind() + ":" + grahaKeys(fit.lords()) + ":" + number(fit.contribution());
+        };
+    }
+
+    /** One Svarodaya run as every runner spells it. */
+    private static String svarodayaRunSaid(SvarodayaAround.Run run) {
+        return number(run.from()) + " " + number(run.to()) + " " + run.nadi() + " " + run.turn() + " " + run.tattva()
+                + " " + run.sex().key();
+    }
+
+    /**
+     * A chart read as a birth time to rectify: the purifier's runs and the
+     * clauses each held, the conception's answers, the circumstances and
+     * their weights, the baseline's interval, stages and best candidate, and
+     * the Svarodaya's reading and runs.
+     */
+    private static void rectification(String at, Rectification rc) {
+        Purified purified = rc.purified().orElseThrow();
+        put(at + "-purified", purified.grid().cells() + " " + number(purified.grid().stepDays()) + " "
+                + purified.intervals().size() + " " + purified.removed().size() + " "
+                + orDash(numbers(",", purified.edges())));
+        List<Purified.Run> runs = new ArrayList<>(purified.intervals());
+        runs.addAll(purified.removed());
+        for (int k = 0; k < runs.size(); k += 1) {
+            Purified.Run run = runs.get(k);
+            put(at + "-purified-" + k, number(run.from()) + " " + number(run.to()) + " " + verdictSaid(run.verdict()));
+        }
+        Conception conception = rc.conception().orElseThrow();
+        Conception.PranapadaHouse pranapada = conception.pranapadaHouse();
+        Conception.Nisheka nisheka = conception.nisheka();
+        Conception.MonthsBefore written = nisheka.count().span().written();
+        put(at + "-conception", number(conception.birth()) + " " + pranapada.house() + " "
+                + lower(pranapada.auspicious()) + " " + number(nisheka.count().instant()) + " " + written.months() + ":"
+                + written.days() + ":" + written.ghatis() + ":" + written.palas() + " " + number(nisheka.lagnaDeg())
+                + " " + verdictSaid(nisheka.verdict()));
+        Conception.Moon moon = conception.moon();
+        put(at + "-conception-moon", moon.predicted().dvadashamsha() + " " + moon.predicted().sign().fullKey() + " "
+                + moon.predicted().nakshatra().map(Nakshatra::fullKey).orElse("-") + " " + moon.moonSign().fullKey()
+                + " " + moon.moonNakshatra().map(Nakshatra::fullKey).orElse("-") + " " + lower(moon.signAgrees()) + " "
+                + moon.nakshatraAgrees().map(ParityRunner::lower).orElse("-") + " " + moon.rising().fullKey() + " "
+                + moon.predictedPart() + " " + lower(moon.bornByDay()) + " " + lower(moon.partAgrees()) + " "
+                + number(moon.risenFraction()) + " " + number(moon.elapsedFraction()) + " "
+                + number(pranapada.pranapadaDeg()));
+        Circumstance circumstance = rc.circumstance().orElseThrow();
+        Circumstance.Father father = circumstance.father();
+        Circumstance.Presentation presentation = circumstance.presentation();
+        Circumstance.Lamp lamp = circumstance.lamp();
+        Circumstance.Attending attending = circumstance.attending();
+        put(at + "-circumstance", father.moonAspect().key() + " " + lower(father.unseen()) + " "
+                + lower(father.saturnRising()) + " " + lower(father.marsSetting()) + " " + lower(father.moonHemmed())
+                + " " + lower(father.away()) + " " + father.whereabouts().orElse("-") + " " + father.sunHouse() + " "
+                + lower(circumstance.sky().lordRetrograde()));
+        put(at + "-circumstance-birth", presentation.by() + " " + presentation.rising().key() + " "
+                + presentation.lord().fullKey() + " " + lower(presentation.lordRetrograde()) + " "
+                + presentation.foretold() + " " + number(lamp.oil()) + ":" + lamp.oilLevel() + " " + number(lamp.wick())
+                + ":" + lamp.wickLevel() + " " + grahaKeys(attending.between()) + " " + grahaKeys(attending.visible())
+                + " " + attending.inside() + " " + attending.outside());
+        put(at + "-circumstance-weights", orDash(join(",", circumstance.weights(),
+                weight -> weight.indication() + ":" + lower(weight.agrees()))));
+        BaselineRectification baseline = rc.baseline().orElseThrow();
+        put(at + "-baseline", number(baseline.window().fromJd()) + " " + number(baseline.window().toJd()) + " "
+                + number(baseline.sunrise()) + " "
+                + orDash(join(",", baseline.intervals(), span -> number(span.fromJd()) + ":" + number(span.toJd())))
+                + " " + number(baseline.intervalWidthMinutes()) + " " + number(baseline.resolutionMinutes()) + " "
+                + number(baseline.suggested()) + " " + number(baseline.concentration()) + " "
+                + baseline.candidates().size() + " " + baseline.eventsUsed() + " " + baseline.eventsHeldOut());
+        for (int k = 0; k < baseline.stages().size(); k += 1) {
+            BaselineRectification.Stage stage = baseline.stages().get(k);
+            put(at + "-baseline-stage-" + k, stage.stage() + " " + lower(stage.applied()) + " " + lower(stage.flat())
+                    + " " + number(stage.resolutionMinutes()) + " "
+                    + orDash(join(",", stage.notes(), ParityRunner::noteSaid)));
+        }
+        if (!baseline.candidates().isEmpty()) {
+            BaselineRectification.Ranked best = baseline.candidates().get(0);
+            put(at + "-baseline-best", number(best.at()) + " " + number(best.probability()) + " "
+                    + number(best.logPosterior()) + " " + best.lagna().fullKey() + " " + best.lagnaNakshatra().fullKey());
+        }
+        for (int k = 0; k < baseline.holdOut().size(); k += 1) {
+            BaselineRectification.HoldOut held = baseline.holdOut().get(k);
+            put(at + "-baseline-held-" + k, held.event() + " " + held.kind() + " " + number(held.scoreAtFit()) + " "
+                    + number(held.baseline()) + " " + lower(held.supported()));
+        }
+        SvarodayaAround svarodaya = rc.svarodaya().orElseThrow();
+        SvarodayaAround.Reading reading = svarodaya.at();
+        put(at + "-svarodaya", number(reading.sunrise()) + " " + number(reading.nextSunrise()) + " "
+                + reading.tithi().fullKey() + " " + reading.sunriseNadi() + " " + number(reading.junctions().get(0))
+                + ":" + number(reading.junctions().get(1)) + " " + svarodaya.runs().size());
+        put(at + "-svarodaya-at", svarodayaRunSaid(reading.run()));
+        for (int k = 0; k < svarodaya.runs().size(); k += 1) {
+            put(at + "-svarodaya-" + k, svarodayaRunSaid(svarodaya.runs().get(k)));
+        }
     }
 
     /** A chart's progressions and directions. */

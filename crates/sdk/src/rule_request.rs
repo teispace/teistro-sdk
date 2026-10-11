@@ -18,6 +18,7 @@ use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, 
 
 /// A set of rules the kernel ships.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ShippedRules {
     /// The recording engine's doshas the kernel computes.
@@ -74,6 +75,7 @@ impl ShippedRules {
 
 /// The two named readings a request evaluates rules under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RuleReadings {
     /// The texts' readings wherever a text settles one.
@@ -110,6 +112,7 @@ impl RuleReadings {
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct RuleRequest {
     /// The shipped sets to evaluate.
@@ -291,8 +294,9 @@ impl RuleRequest {
     ///
     /// `INVALID_ARG` for JSON that is not a request, naming the field.
     pub fn from_json(text: &str) -> Result<RuleRequest, Error> {
-        let mut value: serde_json::Value = serde_json::from_str(text)
-            .map_err(|err| Error::invalid_arg(format!("the rule request is not JSON: {err}")))?;
+        // Parsed strictly, as every record is, so a key given twice is
+        // refused by its path rather than the last one silently kept.
+        let mut value = teistro_core::strict::parse(text, "")?;
         // Each rule is read on its own, so a refusal names which one.
         let rules = match value
             .as_object_mut()
@@ -469,9 +473,11 @@ impl RuleSet {
 
 /// A rule that held on a chart, and what it answered.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Present<'r> {
     /// Which rule.
     #[serde(serialize_with = "teistro_rules::key_of")]
+    #[cfg_attr(feature = "schema", schemars(with = "String"))]
     pub rule: &'r Rule,
     /// What it answered.
     pub result: RuleResult,
@@ -479,6 +485,7 @@ pub struct Present<'r> {
 
 /// The longevity readings of a chart (BPHS chs. 43 and 44).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Longevity {
     /// The three pairs, when the chart carried its hora lagna.
@@ -511,6 +518,7 @@ pub struct Longevity {
 
 /// What a chart answers by rule.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct RulesReading<'r> {
     /// Every rule of the set that held, in the set's order.

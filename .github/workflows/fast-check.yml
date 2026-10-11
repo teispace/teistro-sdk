@@ -75,6 +75,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Lint the façade with no family
         run: cargo clippy -p teistro --lib --no-default-features --features builtin-compact -- -D warnings
+      - name: Lint the façade with each family that shares the request parts alone
+        run: for f in pakshi rashifal research; do cargo clippy -p teistro --lib --no-default-features --features "builtin-compact,$f" -- -D warnings || exit 1; done
       - name: Lint the boundary and its tests with no family
         run: cargo clippy -p teistro-ffi --all-targets --no-default-features --features builtin-compact -- -D warnings
       - name: Lint the wasm module with no family, for wasm32
@@ -151,6 +153,8 @@ jobs:
         run: cargo xtask check-dasha-coverage
       - name: Muntha page (the birth lagna progressed a sign a year, held over every recorded birth against the recording's lagna, with its margin, its rival and its two degree readings)
         run: cargo xtask check-muntha
+      - name: Research page (each correction's error rate on null labellings, the Gauquelin artefact, and null event studies under each shuffle)
+        run: cargo xtask check-research
       - name: Terms page (the Egyptian, Chaldean and Ptolemaic terms of the Tetrabiblos and Lilly's table, each held to its printing, its stated totals and its rule)
         run: cargo xtask check-terms
       - name: Lots page (Valens's lots over the corpus, each reading of Fortune by night counted)
@@ -233,6 +237,8 @@ jobs:
         run: cargo xtask check-doshas
       - name: Rectification page (how much of a day the purifier keeps under each reading, and the verse's pranapada against the SDK's point, X2 and X8)
         run: cargo xtask check-rectification
+      - name: Sizes page (what every shipped artefact weighs, the record complete and the page rendered from it)
+        run: cargo xtask check-sizes
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read, every gate run and every composer reaching every binding)
         run: cargo xtask check-lints
 

@@ -233,6 +233,19 @@ impl Error {
         Error::new(Status::Unsupported, message)
     }
 
+    /// `CAPABILITY`: a module family this build leaves out (`kp`,
+    /// `western`, …), with the build that has it as the hint.
+    #[must_use]
+    pub fn left_out(family: &str) -> Error {
+        Error::new(
+            Status::Capability,
+            format!("this build leaves out the `{family}` module family"),
+        )
+        .with_hint(format!(
+            "use a build with `{family}`: the default `full` build has every family, and the wasm module's is `@teistro/sdk-wasm` rather than a profile's subpath"
+        ))
+    }
+
     /// `LIMIT`.
     #[must_use]
     pub fn limit(message: impl Into<String>) -> Error {

@@ -111,6 +111,8 @@ fn a_reading_without_rules_is_refused_and_so_is_a_composer_that_is_not_one() {
 
     // Nothing asked for is not an error; it is nothing to do.
     assert!(!PlanRequest::from_json("{}").unwrap().asks_for_something());
+    let twice = PlanRequest::from_json(r#"{"placements": true, "placements": false}"#).unwrap_err();
+    assert_eq!(twice.field(), Some("placements"), "{twice}");
 }
 
 /// The strengths are the third kind of composer: over a section rather than
@@ -951,4 +953,56 @@ fn a_phala_asked_for_alone_says_the_day_as_well() {
     assert!(unread.panchanga.is_none(), "the nabhasas read no limb");
     let refused = without.interpret().phala(&unread).unwrap_err();
     assert_eq!(refused.field(), Some("panchanga"));
+}
+
+/// **An answer names each pack that shaped it** (ADR-0020): a pack
+/// loaded at run time is stamped into every answer's provenance by its
+/// locale, namespaces and file digest, and a context that loaded none
+/// stamps none. `packs` was declared and never filled, so two consumers
+/// with different readings got the same provenance for different text.
+#[test]
+fn an_answer_names_each_pack_that_shaped_it() {
+    let read = |pack: Option<&[u8]>| {
+        let sdk = Context::builder()
+            .profile("nepali-default")
+            .ephemeris([Ephemeris::Builtin])
+            .build()
+            .expect("a context");
+        if let Some(bytes) = pack {
+            sdk.intl().load_pack(bytes).expect("the pack loads");
+        }
+        let request = ChartRequest::at(
+            Place::new(
+                Latitude::try_new(27.7172).unwrap(),
+                Longitude::try_new(85.324).unwrap(),
+                Altitude::try_new(1400.0).unwrap(),
+            ),
+            UtcOffset::try_from_seconds(20_700).unwrap(),
+        );
+        sdk.chart()
+            .interpreted(
+                &[JulianDay::<Utc>::literal(2_447_995.489_583_333_5)],
+                &request,
+                None,
+                PlanRequest::default().with_phala(),
+            )
+            .expect("a phala")
+            .provenance
+            .packs
+    };
+    let states = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/states");
+    let tree = teistro::Tree::load(&states).expect("the states corpus");
+    let english = tree.locales.get("en-Latn").expect("an English corpus");
+    let bytes = teistro::pack::build(english, "sdk.entity").expect("a pack");
+    assert_eq!(read(None), []);
+    let stamped = read(Some(&bytes));
+    assert_eq!(stamped.len(), 1, "{stamped:?}");
+    assert_eq!(stamped[0].id, "en-Latn/sdk.entity");
+    let loaded = Context::builder()
+        .build()
+        .expect("a context")
+        .intl()
+        .load_pack(&bytes)
+        .expect("the pack loads");
+    assert_eq!(stamped[0].hash.to_string(), loaded.sha256);
 }

@@ -1,10 +1,14 @@
 # `research`: statistics over chart batches
 
-Status: `draft`, 2026-10-08. Track B row 7 of the completion plan
+Status: `built`, 2026-10-10 (drafted 2026-10-08; every step of §4 built,
+step 4 for dasha delivery alone: transits wait for a consumer).
+Track B row 7 of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `research` row
 ("batch computation, statistics, rule search over sets") and
 `01-research/feature-universe/14-remedies-numerology-misc.md`, "Research and
-statistics". Nothing here is built. Every figure this page would otherwise
+statistics". The kernel, `crates/research`, the façade and the boundary are
+built, and every binding carries the four studies (steps 2 to 6 of the order
+of work, 2026-10-09). Every figure this page would otherwise
 state belongs on a generated `research-measured.md` (order of work, step 1).
 
 ## 1. What credible astrological statistics looks like
@@ -135,7 +139,7 @@ astrologically true.
 | optional stopping on subjects: add charts until significant | invisible to a single call. The request hash in the envelope is a **pre-registration**: publish the hash of the request (predicates, seed, permutations, shuffle, strata) before collecting the data |
 | seed shopping: rerun with seeds until one is significant | the seed is in the request hash; the measured page shows that the p-value's Monte Carlo interval is the honest spread |
 | uniform expectation for a clock-dependent predicate | refused (§2.6); the recombined control is the answer |
-| birth times rounded to the hour or misreported | a `time_uncertainty` knob re-evaluates each chart at the edges of its recorded uncertainty. A predicate that flips inside the uncertainty is counted as **unstable** and reported per predicate. It is not silently decided |
+| birth times rounded to the hour or misreported | a per-birth uncertainty (`uncertaintyMinutes`, `Birth::uncertain_by`) re-evaluates each chart at the edges of its recorded uncertainty. A predicate that flips inside the uncertainty is counted as **unstable** and reported per predicate. It is not silently decided |
 | a predicate that cannot be evaluated on some charts (a special lagna on a polar day) | counted as unreadable per predicate and excluded from that predicate's denominator, never counted as absent (`a-fall-through-is-an-answer`) |
 | mixed settings across the batch | refused: every chart must carry one settings hash |
 
@@ -203,9 +207,10 @@ Event studies precompute an `N × N` matrix (chart *i* at event *j*'s
 instant, or at `birth_i + age_j`), and a permutation sums along it in
 O(N). Under the event-date shuffle, a transit predicate asks the sky only
 at the N distinct event instants, in one batched request. Under the
-age shuffle there are N² instants. The request carries `max_pairs` and is
-refused above it, naming the field, so that cost is chosen rather than
-met.
+age shuffle there are N² instants. The request was to carry `max_pairs` and
+be refused above it, naming the field, so that cost is chosen rather than
+met. Designed, not built: transits are not built, and dasha delivery asks
+no sky per pair, so no request carries the cap yet.
 
 ### 2.4 API sketch
 
@@ -249,7 +254,8 @@ impl<'a> ResearchArea<'a> {
     pub fn timed(
         self,
         batch: &EventBatch,
-        predicates: &EventPredicates,
+        study: EventStudy<'_>,                // built name; `EventPredicates` was the sketch's
+        strata: Option<&[u32]>,
         test: &EventTest,
     ) -> Result<Envelope<Tested>, Error>;
 }
@@ -264,23 +270,22 @@ impl Batch {
 impl BatchBuilder {
     pub fn groups(self, groups: &[GroupId]) -> Self;           // one per chart
     pub fn strata(self, strata: &[StratumKey]) -> Self;        // optional
-    pub fn time_uncertainty(self, minutes: &[u32]) -> Self;    // optional, per chart
     pub fn build(self) -> Result<Batch, Error>;
 }
 
 /// One birth: where and when, under its local clock.
 pub struct Birth { pub instant: JulianDay<Utc>, pub place: Place, pub offset: UtcOffset }
+// built: `Birth::uncertain_by(minutes)` sets each birth's own uncertainty
 
 pub struct GroupTest {
     pub seed: u64,                         // required: no default seed
     pub permutations: u32,
-    pub contrast: Contrast,                // CaseVsRest(GroupId) | Pairwise | AnyDifference
-    pub statistic: Statistic,              // Count | RiskDifference | ChiSquare
+    pub contrast: Contrast,                // CaseVsRest { case } | AnyDifference
     pub alternative: Alternative,          // Greater | Less | TwoSided
-    pub corrections: Corrections,          // MaxT, Holm, Bh, By: all on by default
+    pub level: f64,                        // every interval's confidence, 0.95
     pub alpha: Option<f64>,                // only to list which fall under it
     pub parallelism: Parallelism,
-    pub shuffle_version: ShuffleVersion,   // research/shuffle/1
+    pub shuffle: ShuffleVersion,           // research/shuffle/1
 }
 
 pub struct Recombine {
@@ -296,8 +301,7 @@ pub struct EventTest {
     pub permutations: u32,
     pub shuffle: EventShuffle,             // EventDates | AgesAtEvent
     pub after_birth: AfterBirth,           // Refuse | RestrictPairings
-    pub max_pairs: u64,
-    pub corrections: Corrections,
+    // `max_pairs: u64`: designed, not built (§2.3)
     pub parallelism: Parallelism,
 }
 
@@ -323,9 +327,10 @@ pub struct PredicateRow {
 A predicate is a `Rule` (`teistro_rules::Condition` and its
 cancellations), so a study uses the shipped sets (`ShippedRules::Yogas`, …)
 or writes its own in the same language, and `RuleRequest::rule_set`
-validates it as it does for a reading. An `EventPredicates` is a rule set
-read through its `Timing` (delivery in the running periods of the systems
-the request names) or a gochar condition at the event's instant.
+validates it as it does for a reading. An event study (`EventStudy`,
+`crates/sdk/src/area/research.rs`) reads its rule set through its delivery
+in the running periods of the dasha the study names; a gochar condition at
+the event's instant is designed, not built.
 
 ### 2.5 The knobs
 
@@ -333,16 +338,39 @@ the request names) or a gochar condition at the event's instant.
 |---|---|---|
 | `seed` | none: required | a default seed hides that one was chosen |
 | `permutations` | none: required | it sets the resolution, and the resolution bounds the corrections |
-| `statistic` | `Count` | chi-square for more than two groups |
+| `contrast` | none: required | one group against the rest, or any difference among several |
 | `alternative` | `TwoSided` | a directional hypothesis must be declared, not chosen after |
-| `corrections` | all four | a reader of a published table should not have to ask |
+| `level` | 0.95 | the confidence of every interval; the p-value's and the effects' alike |
 | `strata` | none | exchangeability by decade, region or sex is the study's claim |
 | `EventShuffle` | none: required | §1.4: the two keep different margins |
 | `after_birth` | `Refuse` | `RestrictPairings` permutes only among people born before the event, which changes the reference set; the answer says so |
-| `time_uncertainty` | 0 | rounded hours are the field's commonest data error |
+| `uncertaintyMinutes` (per birth) | 0 | rounded hours are the field's commonest data error |
 | `Readings` | the rule set's own | the predicate's meaning is part of the request |
 | `parallelism` | `One` | the answer is the same either way |
-| `max_pairs` | a fixed cap | event studies' cost is chosen, not met |
+| `max_pairs` | a fixed cap | event studies' cost is chosen, not met; designed, not built (§2.3) |
+
+**Decided when the kernel was built (2026-10-09).** Three knobs of the
+sketch were dropped, and the reasons are kept here:
+
+- **No `statistic` knob.** A case-against-rest test ranks by the case count
+  standardised under the hypergeometric that holds the margins,
+  `(a − n₁P/R)/sd`. Given the cases read, a count and a risk difference are
+  monotone in each other, so they give the same test, and the standardised
+  form puts predicates of different prevalence on one scale. Max-T needs
+  that scale: on raw counts a common predicate would dominate the family's
+  maximum. `AnyDifference` is Pearson's chi-square, which is already
+  standardised and has no direction, so a direction asked of it is refused.
+  The counts and the risk difference are in every row's effect.
+- **No `corrections` knob.** Every row carries all five: max-T, Holm,
+  Bonferroni, BH and BY. They cost nothing beside the permutations, and a
+  reader of a published table should not have to ask for one.
+- **No `Pairwise` contrast yet.** Each pair of groups is its own reference
+  set, so it is a family of tests over sub-batches rather than one
+  permutation of the whole. It comes later as its own contrast.
+
+The exact p (§1.2) is the hypergeometric of the *same* statistic, so it is
+offered only where the case count is the whole story: two groups, no
+strata, and a predicate read on every chart.
 
 ### 2.6 What it refuses
 
@@ -366,12 +394,15 @@ a hint where one helps:
 - every stratum a singleton, so nothing can move (`strata`);
 - under `EventDates` with `Refuse`, a shuffled pairing that would put an
   event before a birth, and no permutation possible (`after_birth`);
-- `max_pairs` exceeded (`max_pairs`, with the pair count it would need);
-- a uniform expectation asked for a predicate that reads the clock time
-  (a house, a lagna, a sector), on `expected`: refused with the hint to
-  use `Recombine`. A predicate on signs alone may still use it, because
-  the Sun's sign is the date;
-- a shuffle version the build does not carry (`shuffle_version`).
+- `max_pairs` exceeded (`max_pairs`, with the pair count it would need):
+  designed, not built, with the cap;
+- a uniform expectation, which is not offered at all, so `expected`
+  takes only the recombined control (C365). The sketch allowed one for a
+  predicate on signs alone, but births are seasonal and the Sun's stay in
+  a sign is unequal, so no predicate on a chart has one;
+- a timed study that names no `shuffle` (`research.shuffle`): neither is a
+  default (C364);
+- a shuffle version the build does not carry (`shuffle`).
 
 ## 3. Tests
 
@@ -425,20 +456,63 @@ uses fixed seeds, so the counts are exact and also golden.
    (test 4) and the two event shuffles (test 5). It runs over a seeded
    synthetic batch of founded births, priced on CI before it is merged
    (`price-a-pass-on-ci`). The figures this page leaves out live there.
+   **Built** 2026-10-10, last rather than first, because it measures the
+   module through its public calls. Every correction holds the familywise
+   rate under the complete null, max-T nearest the level; the
+   permutation p's interval covers the exact p; the recombined control
+   finds nothing in an early-morning sample a uniform expectation reads
+   as beyond chance; and neither shuffle rejects a null event study more
+   often than its level. **Found** writing it: the rising Sun alone, the
+   sector the claim first named, did not reach the threshold at the
+   sample's size, and the culminating Sun, which the early hours empty,
+   did; the claim is now the family's, which is the look-elsewhere effect
+   §1.5 is about, met by the page that measures it.
 2. **`crates/research`**: generator, shuffle, bitset engine, p-values and
    intervals, max-T, Holm, BH, BY, effect sizes. Tests 3, 6 (thread
-   counts), 7. The lint changes (§2.2), proved red.
+   counts), 7. The lint changes (§2.2), proved red. **Built** 2026-10-09.
 3. **`sdk.research().counts` and `compare`** over documents and births,
-   with refusals and tests 1, 2, 8, 9. Add to `surface-areas.md`.
+   with refusals and tests 1, 2, 8, 9. Add to `surface-areas.md` with the
+   boundary (step 6), whose module the page's table names. **Built**
+   2026-10-09 over births (`crates/sdk/tests/research.rs`); a batch a
+   polar birth spoils is read again a chart at a time, and a batch that is
+   refused names the birth that refused it.
 4. **`timed`**: dasha delivery first (no sky per pair), then transits
-   under the event-date shuffle, then the age shuffle under `max_pairs`.
-   Test 5.
-5. **`expected`** with `Recombine`. Test 4.
+   under the event-date shuffle, then the age shuffle under `max_pairs`
+   (the cap not built).
+   Test 5. **Built** 2026-10-09 for dasha delivery under both shuffles;
+   transits wait for a consumer.
+5. **`expected`** with `Recombine`. Test 4. **Built** 2026-10-09.
 6. **The boundary** (`research_json`), the bindings, parity, and a page in
    the docs site's guides with an executed example of a two-group study.
+   **Built** 2026-10-09 as one entry point, `ts_research`, whose record
+   names the study (`COUNTS`, `COMPARE`, `EXPECTED` or `TIMED`) and is
+   read by `ResearchRequest::from_json`, refusing a field the study does
+   not read by name. The answer crosses as the envelope, so the input
+   hash reaches every binding, and a seed may be a decimal string because
+   a JavaScript number does not hold every 64-bit seed. Node, Python,
+   Dart and Java carry `research.counts`, `compare`, `expected` and
+   `timed`, every runner agrees value for value and on the input hash, and
+   `research` is a shared example, a two-group study over
+   labels that mean nothing; the site's guide is `research.mdx`.
+   **Found** building it: a recombined sample beyond replicates that all
+   agree published its ranking sentinel, `f64::MAX`, as the statistic,
+   so `observed` is now absent there; and the replicates' mean of equal
+   shares did not return the share to the bit, which read as a spread of
+   1e-17 and a statistic of 1e15, so equal shares are now taken as the
+   share with no spread.
 7. Cruxes for the conventions a reader could argue with: the p-value
    formula, max-T as the default family correction, the two event
-   shuffles, and the refusal of a uniform expectation.
+   shuffles, and the refusal of a uniform expectation. **Built**
+   2026-10-09 as C362 to C365. **Found** writing them against the code:
+   a timed study's shuffle defaulted to `EVENT_DATES`, against §2.5 and
+   the worst choice for a dasha, which reads the age a date shuffle
+   moves, so it is now required in the façade, the record and every
+   binding; and the hint on a refusal of too few permutations was
+   computed apart from the check it answered, so for some families it
+   named a count the check refused (alpha 0.3 over three rules) or one
+   more than the fewest it takes (0.01 over 73). The check and its hint
+   now read Bonferroni's own arithmetic, and a test walks the boundary
+   over a grid of alphas and family sizes.
 
 ## Sources
 

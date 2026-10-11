@@ -1,6 +1,6 @@
 //! Tajika at the boundary (`03-design/annual-chart.md`,
-//! `03-design/tajika-sahams.md`): a chart request's `varsha_json` record,
-//! the years it founds and the sections they fill.
+//! `03-design/tajika-sahams.md`): the years a chart request's
+//! `varsha_json` record founds and the sections they fill.
 #![allow(
     unsafe_code,
     reason = "the C boundary: every block carries a SAFETY comment"
@@ -10,16 +10,7 @@
 mod years;
 
 #[cfg(feature = "tajika")]
-pub(crate) use years::{PraveshaColumns, praveshas_of};
-
-super::record!(
-    "tajika",
-    "varsha_json",
-    "varsha",
-    Request,
-    request_of,
-    teistro::VarshaRequest
-);
+pub(crate) use years::PraveshaColumns;
 
 super::answer!("tajika", Varsha, teistro::Varsha);
 
@@ -75,23 +66,5 @@ impl PraveshaColumns {
         writer: &mut teistro_idl::blob::Writer<'_>,
     ) -> Result<(), teistro_idl::blob::BlobError> {
         SECTIONS.iter().try_for_each(|name| writer.empty(name))
-    }
-}
-
-/// No years in a build without Tajika, which holds no varsha record.
-#[cfg(not(feature = "tajika"))]
-#[allow(
-    clippy::unnecessary_wraps,
-    reason = "the signature of the build with Tajika"
-)]
-pub(crate) fn praveshas_of(
-    _sdk: &teistro::Context,
-    _documents: &[teistro_serial::Document],
-    _birth_clock: teistro::UtcOffset,
-    asked: Option<&Request>,
-) -> Result<Vec<Varsha>, teistro_core::error::Error> {
-    match asked {
-        None => Ok(Vec::new()),
-        Some(never) => match *never {},
     }
 }

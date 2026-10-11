@@ -36,9 +36,9 @@ use sha2::{Digest, Sha256};
 use crate::binding::{LIBRARY_STEM, cargo, step};
 use crate::hashes::hex;
 use crate::node_binding::ADDON_STEM;
-use crate::platform::{NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
+use crate::platform::{NPM_MCP, NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
 use crate::{read, rel};
-use crate::{release, sbom};
+use crate::{release, sbom, zip};
 
 /// The manifest's schema, versioned like every other file this repository
 /// writes for someone else to read.
@@ -52,6 +52,9 @@ const DIST: &str = "target/dist";
 /// `index.node`, because a package holding one file should say what the
 /// file is.
 const ADDON_FILE: &str = "teistro.node";
+
+/// The agent server's program, as Cargo names its binary target.
+const MCP_PROGRAM: &str = "teistro-mcp";
 
 /// The files every package carries whatever else is in it.
 const LEGAL: [&str; 2] = ["LICENSE", "NOTICE"];
@@ -113,8 +116,8 @@ fn shipped() -> String {
     format!("the SDK ships {}", names.join(", "))
 }
 
-/// Builds the library and the addon for a target, and returns the
-/// directory Cargo wrote them to.
+/// Builds the library, the addon and the agent server for a target, and
+/// returns the directory Cargo wrote them to.
 ///
 /// The target is always named, even when it is the host, so that the
 /// output directory is the same shape on every runner and a cross-built
@@ -145,8 +148,20 @@ fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
         |_| String::from("the pinned version"),
         |text| text.trim().to_string(),
     );
-    step(
-        Command::new(cargo())
+    // Two builds, never one: cargo unifies the features of every package
+    // one build names, so the agent server's (`schema`, the engine loader)
+    // would reach the library and the addon, and every binding would ship
+    // them. The size record caught a C bundle a fifth larger when it was
+    // one build.
+    for (packages, what) in [
+        (
+            &["teistro-ffi", "teistro-node"][..],
+            "the library and the addon",
+        ),
+        (&["teistro-mcp"][..], "the agent server"),
+    ] {
+        let mut command = Command::new(cargo());
+        command
             .args([
                 "auditable",
                 subcommand,
@@ -154,19 +169,21 @@ fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
                 "--quiet",
                 "--target",
                 &target,
-                "-p",
-                "teistro-ffi",
-                "-p",
-                "teistro-node",
             ])
-            .current_dir(root),
-        "",
-        &format!(
-            "the library and the addon did not build for {}{hint} (every row builds through \
-             cargo-auditable: `cargo install --locked cargo-auditable@{auditable}`)",
-            platform.triple
-        ),
-    )?;
+            .current_dir(root);
+        for package in packages {
+            command.args(["-p", package]);
+        }
+        step(
+            &mut command,
+            "",
+            &format!(
+                "{what} did not build for {}{hint} (every row builds through \
+                 cargo-auditable: `cargo install --locked cargo-auditable@{auditable}`)",
+                platform.triple
+            ),
+        )?;
+    }
     Ok(root.join("target").join(platform.triple).join("release"))
 }
 
@@ -185,14 +202,18 @@ fn stage_platform(
     fs::create_dir_all(dist)?;
     let shared = built.join(platform.shared(LIBRARY_STEM));
     let addon = built.join(platform.shared(ADDON_STEM));
-    crate::floor::check(platform, &[&shared, &addon]).map_err(io::Error::other)?;
-    sbom::embedded(&[&shared, &addon]).map_err(io::Error::other)?;
+    let server = built.join(platform.program(MCP_PROGRAM));
+    crate::floor::check(platform, &[&shared, &addon, &server]).map_err(io::Error::other)?;
+    sbom::embedded(&[&shared, &addon, &server]).map_err(io::Error::other)?;
     let library_bill = bill(root, dist, platform, version, "teistro-ffi", "library")?;
     let addon_bill = bill(root, dist, platform, version, ADDON_PACKAGE, "addon")?;
+    let server_bill = bill(root, dist, platform, version, MCP_PROGRAM, "mcp")?;
 
     let library = gzipped_library(dist, platform, version, &shared)?;
     let bundle = c_bundle(root, dist, platform, version, built, &library_bill)?;
     let package = npm_platform_package(root, dist, platform, version, &addon, &addon_bill)?;
+    let mcp = mcp_archive(root, dist, platform, version, &server, &server_bill)?;
+    let mcp_package = npm_mcp_package(root, dist, platform, version, &server, &server_bill)?;
 
     let manifest = json!({
         "schema": SCHEMA,
@@ -203,12 +224,14 @@ fn stage_platform(
         // Dart installer checks after it has unpacked the download.
         "library": entry(&shared, &platform.shared(LIBRARY_STEM))?,
         "addon": entry(&addon, ADDON_FILE)?,
-        "archives": [library, bundle],
+        "archives": [library, bundle, mcp],
         "npm": package,
+        "npmMcp": mcp_package,
         // What each file is made of, beside the files (`xtask/src/sbom.rs`).
         "sboms": [
             entry(&library_bill, &file_name(&library_bill))?,
             entry(&addon_bill, &file_name(&addon_bill))?,
+            entry(&server_bill, &file_name(&server_bill))?,
         ],
     });
     let path = dist.join(manifest_name(version, &platform.name()));
@@ -321,15 +344,69 @@ fn c_bundle(
     entry(&path, &name)
 }
 
+/// The agent server's archive (`03-design/mcp-server.md` §6 step 5): the
+/// program, its README, the terms and its bill, under one directory so it
+/// unpacks to a place of its own. A `.tar.gz` on every platform, as the C
+/// bundle is.
+fn mcp_archive(
+    root: &Path,
+    dist: &Path,
+    platform: &Platform,
+    version: &str,
+    server: &Path,
+    bill: &Path,
+) -> io::Result<Value> {
+    let name = mcp_archive_name(version, &platform.name());
+    let path = dist.join(&name);
+    let encoder = GzEncoder::new(File::create(&path)?, Compression::best());
+    let mut archive = tar::Builder::new(encoder);
+    append_mode(
+        &mut archive,
+        &format!("{MCP_PROGRAM}/{}", platform.program(MCP_PROGRAM)),
+        server,
+        0o755,
+    )?;
+    append(
+        &mut archive,
+        &format!("{MCP_PROGRAM}/README.md"),
+        &root.join("crates/mcp/README.md"),
+    )?;
+    for legal in LEGAL {
+        append(
+            &mut archive,
+            &format!("{MCP_PROGRAM}/{legal}"),
+            &root.join(legal),
+        )?;
+    }
+    append(&mut archive, &format!("{MCP_PROGRAM}/{}", sbom::FILE), bill)?;
+    archive.into_inner()?.finish()?;
+    entry(&path, &name)
+}
+
+/// The agent server's archive's file name, which `check-package` unpacks.
+pub(crate) fn mcp_archive_name(version: &str, platform: &str) -> String {
+    format!("{MCP_PROGRAM}-{version}-{platform}.tar.gz")
+}
+
 /// Appends one file under a name, with the header fields a build machine
 /// would otherwise vary: no owner, no modification time, one mode. Two
 /// runs of the same source produce the same archive.
 fn append<W: io::Write>(archive: &mut tar::Builder<W>, name: &str, from: &Path) -> io::Result<()> {
+    append_mode(archive, name, from, 0o644)
+}
+
+/// [`append`], with the mode a program needs to run once unpacked.
+fn append_mode<W: io::Write>(
+    archive: &mut tar::Builder<W>,
+    name: &str,
+    from: &Path,
+    mode: u32,
+) -> io::Result<()> {
     let data = fs::read(from)
         .map_err(|err| io::Error::other(format!("cannot read {}: {err}", from.display())))?;
     let mut header = tar::Header::new_gnu();
     header.set_size(data.len() as u64);
-    header.set_mode(0o644);
+    header.set_mode(mode);
     header.set_mtime(0);
     header.set_uid(0);
     header.set_gid(0);
@@ -348,22 +425,90 @@ fn npm_platform_package(
     addon: &Path,
     bill: &Path,
 ) -> io::Result<Value> {
-    let name = platform.npm_package();
-    let directory = dist.join("npm").join(&name);
+    let carried = Carried {
+        package: platform.npm_package(),
+        file: ADDON_FILE.to_string(),
+        from: addon,
+        what: "prebuilt Node addon",
+        instead: NPM_SCOPE,
+        source: "bindings/node",
+    };
+    let directory = platform_package(root, dist, platform, version, &carried, bill)?;
+    let addon = entry(&directory.join(ADDON_FILE), ADDON_FILE)?;
+    Ok(json!({
+        "package": carried.package,
+        "directory": rel(root, &directory),
+        "addon": addon,
+    }))
+}
+
+/// Stages the npm package that carries this platform's agent server, which
+/// `@teistro/mcp`'s launcher runs.
+fn npm_mcp_package(
+    root: &Path,
+    dist: &Path,
+    platform: &Platform,
+    version: &str,
+    server: &Path,
+    bill: &Path,
+) -> io::Result<Value> {
+    let carried = Carried {
+        package: platform.npm_mcp_package(),
+        file: platform.program(MCP_PROGRAM),
+        from: server,
+        what: "prebuilt agent server (`teistro-mcp`)",
+        instead: NPM_MCP,
+        source: "crates/mcp/npm",
+    };
+    let directory = platform_package(root, dist, platform, version, &carried, bill)?;
+    Ok(json!({
+        "package": carried.package,
+        "directory": rel(root, &directory),
+        "program": entry(&directory.join(&carried.file), &carried.file)?,
+    }))
+}
+
+/// One file a platform's npm package carries, and the package a consumer
+/// installs instead, which depends on it.
+struct Carried<'a> {
+    package: String,
+    file: String,
+    from: &'a Path,
+    what: &'static str,
+    instead: &'static str,
+    source: &'static str,
+}
+
+/// Writes a platform package: the file, the terms, the bill, a manifest
+/// npm can match against a host, and a readme that says what to install
+/// instead. Returns its directory.
+fn platform_package(
+    root: &Path,
+    dist: &Path,
+    platform: &Platform,
+    version: &str,
+    carried: &Carried<'_>,
+    bill: &Path,
+) -> io::Result<PathBuf> {
+    let name = &carried.package;
+    let directory = dist.join("npm").join(name);
     fs::create_dir_all(&directory)?;
-    fs::copy(addon, directory.join(ADDON_FILE))?;
+    // `fs::copy` keeps the mode, so a program stays runnable, and npm
+    // keeps it in the tarball.
+    fs::copy(carried.from, directory.join(&carried.file))?;
     for legal in LEGAL {
         fs::copy(root.join(legal), directory.join(legal))?;
     }
     fs::copy(bill, directory.join(sbom::FILE))?;
 
+    let (what, instead) = (carried.what, carried.instead);
     let mut manifest = Map::new();
     manifest.insert("name".to_string(), json!(name));
     manifest.insert("version".to_string(), json!(version));
     manifest.insert(
         "description".to_string(),
         json!(format!(
-            "The Teistro SDK's prebuilt Node addon for {}. Install {NPM_SCOPE}, which depends on this.",
+            "The Teistro SDK's {what} for {}. Install {instead}, which depends on this.",
             described(platform)
         )),
     );
@@ -373,7 +518,7 @@ fn npm_platform_package(
         json!({
             "type": "git",
             "url": "git+https://github.com/teispace/teistro-sdk.git",
-            "directory": "bindings/node",
+            "directory": carried.source,
         }),
     );
     manifest.insert("os".to_string(), json!([platform.os]));
@@ -381,8 +526,10 @@ fn npm_platform_package(
     if let Some(libc) = platform.libc {
         manifest.insert("libc".to_string(), json!([libc]));
     }
-    manifest.insert("engines".to_string(), json!({ "node": ">=20" }));
-    let mut files = vec![json!(ADDON_FILE), json!(sbom::FILE)];
+    // The SDK's own floor, so a platform package never promises an older
+    // Node than the one it is tested at.
+    manifest.insert("engines".to_string(), json!({ "node": node_floor(root)? }));
+    let mut files = vec![json!(carried.file), json!(sbom::FILE)];
     files.extend(LEGAL.map(|legal| json!(legal)));
     manifest.insert("files".to_string(), Value::Array(files));
     fs::write(
@@ -392,16 +539,11 @@ fn npm_platform_package(
     fs::write(
         directory.join("README.md"),
         format!(
-            "# {name}\n\nThe Teistro SDK's prebuilt Node addon for {}.\n\nThis package holds one file and no code. Install [`{NPM_SCOPE}`](https://www.npmjs.com/package/{NPM_SCOPE}) instead: it depends on this package for the host it is installed on, and loads the addon from it.\n\nApache-2.0. The sources are at <https://github.com/teispace/teistro-sdk>.\n",
+            "# {name}\n\nThe Teistro SDK's {what} for {}.\n\nThis package holds one file and no code. Install [`{instead}`](https://www.npmjs.com/package/{instead}) instead: it depends on this package for the host it is installed on, and loads the file from it.\n\nApache-2.0. The sources are at <https://github.com/teispace/teistro-sdk>.\n",
             described(platform)
         ),
     )?;
-    let addon = entry(&directory.join(ADDON_FILE), ADDON_FILE)?;
-    Ok(json!({
-        "package": name,
-        "directory": rel(root, &directory),
-        "addon": addon,
-    }))
+    Ok(directory)
 }
 
 /// A platform in words, for a description a person reads.
@@ -494,7 +636,7 @@ pub(crate) fn stage(root: &Path, partial: bool) -> i32 {
         "version": version,
         "platforms": platforms,
     });
-    match write_stage(root, &dist, &version, &merged) {
+    match write_stage(root, &dist, &version, &merged, partial) {
         Ok(paths) => {
             for path in &paths {
                 println!("wrote {path}");
@@ -520,12 +662,26 @@ pub(crate) fn stage(root: &Path, partial: bool) -> i32 {
 ///
 /// The Java package is staged first, since the merged manifest records
 /// it (`maven`) and the checksum list lists its files.
-fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::Result<Vec<String>> {
+fn write_stage(
+    root: &Path,
+    dist: &Path,
+    version: &str,
+    merged: &Value,
+    partial: bool,
+) -> io::Result<Vec<String>> {
     let mut written = Vec::new();
     let mut merged = merged.clone();
     if let Some((jars, record)) = crate::java_package::stage(root, dist, version, &merged)? {
         written.extend(jars);
         merged["maven"] = record;
+    }
+    if let Some(bundle) = mcp_bundle(root, dist, version, partial)? {
+        written.push(rel(root, &dist.join(MCP_REGISTRY_ENTRY)));
+        written.push(rel(
+            root,
+            &dist.join(bundle["file"].as_str().unwrap_or_default()),
+        ));
+        merged["mcpb"] = bundle;
     }
     let merged = &merged;
     let manifest = dist.join("manifest.json");
@@ -537,6 +693,7 @@ fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::R
     written.push(rel(root, &checksums));
 
     written.push(stage_node(root, dist)?);
+    written.push(stage_mcp_node(root, dist)?);
     written.push(stage_dart(root, dist, version, merged)?);
     written.push(stage_python(root, dist, version, merged)?);
     written.extend(python_wheels(root, dist, version, merged)?);
@@ -614,7 +771,13 @@ fn checksum_list(merged: &Value) -> String {
             }
         }
     }
-    for file in merged["maven"]["files"].as_array().into_iter().flatten() {
+    let bundle = merged.get("mcpb").into_iter();
+    for file in merged["maven"]["files"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .chain(bundle)
+    {
         lines.push(format!(
             "{}  {}",
             file["sha256"].as_str().unwrap_or_default(),
@@ -640,6 +803,188 @@ fn stage_node(root: &Path, dist: &Path) -> io::Result<String> {
     for file in ["package.json", "README.md"] {
         fs::copy(source.join(file), directory.join(file))?;
     }
+    for legal in LEGAL {
+        fs::copy(root.join(legal), directory.join(legal))?;
+    }
+    Ok(rel(root, &directory))
+}
+
+/// The platforms Claude Desktop runs on, whose programs the agent
+/// server's bundle carries: one a platform, since a bundle's
+/// configuration chooses by operating system and never by architecture,
+/// and the launcher in it chooses by both.
+const MCP_BUNDLED: [&str; 4] = ["darwin-arm64", "darwin-x64", "win32-x64", "win32-arm64"];
+
+/// The registry entry the release publishes: the repository's, with the
+/// bundle beside the npm launcher.
+const MCP_REGISTRY_ENTRY: &str = "server.json";
+
+/// The agent server's bundle for Claude Desktop, `teistro-mcp-{version}.mcpb`
+/// (MCPB manifest 0.3): the npm launcher run by the host's Node, beside a
+/// program a platform under `server/platforms/`. Written from the platform
+/// packages the matrix staged, with the registry entry that names it by
+/// its digest. A partial stage bundles the platforms present, so the
+/// host's install check can run it; `None` when none of them is.
+fn mcp_bundle(root: &Path, dist: &Path, version: &str, partial: bool) -> io::Result<Option<Value>> {
+    let mut programs = Vec::new();
+    for name in MCP_BUNDLED {
+        let platform = Platform::by_name(name)
+            .ok_or_else(|| io::Error::other(format!("{name} is not a platform the SDK ships")))?;
+        let program = platform.program(MCP_PROGRAM);
+        let path = dist
+            .join("npm")
+            .join(platform.npm_mcp_package())
+            .join(&program);
+        match fs::read(&path) {
+            Ok(bytes) => programs.push((format!("server/platforms/{name}/{program}"), bytes)),
+            Err(_) if partial => {}
+            Err(err) => {
+                return Err(io::Error::other(format!(
+                    "the bundle carries {name}'s program, and {} cannot be read: {err}",
+                    rel(root, &path)
+                )));
+            }
+        }
+    }
+    if programs.is_empty() {
+        return Ok(None);
+    }
+    let registered: Value = serde_json::from_str(&read(&root.join("crates/mcp/server.json")))
+        .map_err(io::Error::other)?;
+    let manifest = bundle_manifest(root, &registered, version)?;
+    let mut files: Vec<(String, Vec<u8>, u32)> = vec![
+        (
+            String::from("manifest.json"),
+            format!("{}\n", to_json(&manifest)).into_bytes(),
+            0o644,
+        ),
+        (
+            String::from("server/package.json"),
+            b"{ \"type\": \"module\" }\n".to_vec(),
+            0o644,
+        ),
+        (
+            String::from("server/bin/teistro-mcp.js"),
+            fs::read(root.join("crates/mcp/npm/bin/teistro-mcp.js"))?,
+            0o644,
+        ),
+        (
+            String::from("README.md"),
+            fs::read(root.join("crates/mcp/README.md"))?,
+            0o644,
+        ),
+    ];
+    for legal in LEGAL {
+        files.push((legal.to_string(), fs::read(root.join(legal))?, 0o644));
+    }
+    files.extend(
+        programs
+            .into_iter()
+            .map(|(name, bytes)| (name, bytes, 0o755)),
+    );
+    let entries: Vec<(String, zip::Entry, u32)> = files
+        .into_iter()
+        .map(|(name, bytes, mode)| (name, zip::Entry::Plain(bytes), mode))
+        .collect();
+    let name = format!("{MCP_PROGRAM}-{version}.mcpb");
+    let path = dist.join(&name);
+    fs::write(
+        &path,
+        zip::write_modes(
+            entries
+                .iter()
+                .map(|(name, entry, mode)| (name, entry, *mode)),
+        )?,
+    )?;
+    let bundle = entry(&path, &name)?;
+
+    let mut published = registered;
+    if let Some(packages) = published["packages"].as_array_mut() {
+        packages.push(json!({
+            "registryType": "mcpb",
+            "identifier": format!(
+                "https://github.com/teispace/teistro-sdk/releases/download/v{version}/{name}"
+            ),
+            "fileSha256": bundle["sha256"],
+            "transport": { "type": "stdio" },
+        }));
+    }
+    fs::write(
+        dist.join(MCP_REGISTRY_ENTRY),
+        format!("{}\n", to_json(&published)),
+    )?;
+    Ok(Some(bundle))
+}
+
+/// The bundle's manifest (MCPB 0.3), its words the registry entry's.
+fn bundle_manifest(root: &Path, registered: &Value, version: &str) -> io::Result<Value> {
+    Ok(json!({
+        "manifest_version": "0.3",
+        "name": "teistro",
+        "display_name": registered["title"],
+        "version": version,
+        "description": registered["description"],
+        "author": { "name": "Teispace", "email": "support@teispace.com", "url": "https://github.com/teispace" },
+        "repository": { "type": "git", "url": "https://github.com/teispace/teistro-sdk" },
+        "homepage": registered["websiteUrl"],
+        "support": "https://github.com/teispace/teistro-sdk/issues",
+        "license": "Apache-2.0",
+        "keywords": ["astrology", "jyotish", "panchanga", "horoscope", "ephemeris"],
+        "server": {
+            "type": "node",
+            "entry_point": "server/bin/teistro-mcp.js",
+            "mcp_config": {
+                "command": "node",
+                "args": ["${__dirname}/server/bin/teistro-mcp.js", "--ephemeris", "${user_config.ephemeris}"],
+                "env": {},
+            },
+        },
+        "user_config": {
+            "ephemeris": {
+                "type": "string",
+                "title": "Ephemeris",
+                "description": "The ephemeris every tool computes with: BUILTIN, SURYA_SIDDHANTA or NONE",
+                "default": "BUILTIN",
+                "required": false,
+            },
+        },
+        // The list depends on a plugin and on an embedder's own tools.
+        "tools_generated": true,
+        "compatibility": {
+            "platforms": ["darwin", "win32"],
+            "runtimes": { "node": node_floor(root)? },
+        },
+    }))
+}
+
+/// The Node the SDK is tested at, from its manifest, which
+/// `node-is-tested-at-its-floor` holds every package to.
+fn node_floor(root: &Path) -> io::Result<String> {
+    serde_json::from_str::<Value>(&read(&root.join("bindings/node/package.json")))
+        .ok()
+        .and_then(|node| node["engines"]["node"].as_str().map(str::to_owned))
+        .ok_or_else(|| io::Error::other("bindings/node/package.json states no `engines.node`"))
+}
+
+/// Stages the agent server's npm launcher: its manifest, which names the
+/// platform packages, the launcher, the server's README and the terms. No
+/// program: it comes from whichever platform package npm installed.
+fn stage_mcp_node(root: &Path, dist: &Path) -> io::Result<String> {
+    let directory = dist.join("npm").join(NPM_MCP);
+    if directory.exists() {
+        fs::remove_dir_all(&directory)?;
+    }
+    fs::create_dir_all(directory.join("bin"))?;
+    let source = root.join("crates/mcp/npm");
+    fs::copy(source.join("package.json"), directory.join("package.json"))?;
+    fs::copy(
+        source.join("bin/teistro-mcp.js"),
+        directory.join("bin/teistro-mcp.js"),
+    )?;
+    fs::copy(
+        root.join("crates/mcp/README.md"),
+        directory.join("README.md"),
+    )?;
     for legal in LEGAL {
         fs::copy(root.join(legal), directory.join(legal))?;
     }

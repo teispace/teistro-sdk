@@ -45,6 +45,21 @@ pub trait ConceptionSky: Sky {
     /// Whatever the implementation cannot answer, unchanged.
     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error>;
 
+    /// Several grahas' longitudes at one instant, in the order asked. By
+    /// default one [`ConceptionSky::graha_deg`] each; an implementation
+    /// whose ephemeris answers several bodies in one request answers them
+    /// so.
+    ///
+    /// # Errors
+    ///
+    /// Whatever [`ConceptionSky::graha_deg`] refuses.
+    fn grahas_deg(&self, grahas: &[Graha], at: JulianDay<Utc>) -> Result<Vec<f64>, Error> {
+        grahas
+            .iter()
+            .map(|graha| self.graha_deg(*graha, at))
+            .collect()
+    }
+
     /// A graha's daily motion at an instant, degrees a day, negative while
     /// it is retrograde. By default the difference of its longitude over
     /// [`SPEED_STEP_DAYS`] either side, across 0° the short way; an

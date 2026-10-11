@@ -964,6 +964,19 @@ export interface RashifalAnswer {
   readonly baseline: readonly BaselineScore[] | null;
 }
 
+/** One period's answer as `rashifal` hands it out, with what sealed it. */
+export interface RashifalSealed extends RashifalAnswer {
+  /** What computed it, and under what; `inputHash` seals the request. */
+  readonly provenance: Provenance;
+}
+
+/** Many periods' answers, in the requests' order, under one provenance. */
+export interface RashifalAnswers {
+  readonly value: readonly RashifalAnswer[];
+  /** What computed them, and under what; `inputHash` seals the request. */
+  readonly provenance: Provenance;
+}
+
 /**
  * The transit hit list to search against every chart of a request; every
  * field but the window is optional, and an absent one is the default.
@@ -2751,6 +2764,97 @@ export interface PrashnaScore {
   readonly applyingTo: Graha | null;
 }
 
+/** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */
+export interface LalKitabRequest {
+  /** Where the 35-year cycle starts; the book's general table (Saturn from the first year) when left out. */
+  readonly cycle?: { readonly planet: Graha; readonly year: number };
+  /** The year of life to read, from 1 (birth to the first birthday); none when left out. */
+  readonly year?: number;
+  /** The 120-year varshphal list the year's annual teva is read from, row `y − 1` for year `y`; the SDK does not ship the book's. */
+  readonly varshphal?: { readonly rows: readonly (readonly number[])[] };
+}
+
+/** How strongly one house looks at another. */
+export type LalKitabStrength = 'QUARTER' | 'HALF' | 'FULL';
+
+/** What a teva says (`03-design/lalkitab.md` §3). */
+export interface LalKitabReading {
+  readonly planets: readonly {
+    readonly graha: Graha;
+    /** Its house, 1 to 12, the whole-sign house from the lagna. */
+    readonly house: number;
+    readonly dignities: readonly ('PAKKA' | 'EXALTED' | 'DEBILITATED' | 'OWN')[];
+    /** The house's owners and how this planet regards each (1952 p. 31). */
+    readonly owners: readonly { readonly owner: Graha; readonly regard: 'FRIEND' | 'EQUAL' | 'ENEMY' }[];
+    readonly awake: boolean;
+    /** In a dignity, alone in its house and looked at from no occupied house. */
+    readonly kayam: boolean;
+    /** The aspects it casts, forward only. */
+    readonly casts: readonly { readonly to: number; readonly strength: LalKitabStrength; readonly onto: readonly Graha[] }[];
+  }[];
+  readonly houses: readonly {
+    readonly house: number;
+    readonly occupants: readonly Graha[];
+    /** The occupied houses that look at it. */
+    readonly lookedAtBy: readonly { readonly from: number; readonly strength: LalKitabStrength }[];
+    /** Occupied, or looked at from an occupied house. */
+    readonly awake: boolean;
+    /** The planet whose presence wakes it (1952 p. 98). */
+    readonly waker: Graha;
+  }[];
+  /** The artificial planets pairs in one house make (1952 p. 27). */
+  readonly masnui: readonly {
+    readonly pair: readonly Graha[];
+    readonly house: number;
+    readonly countsAs:
+      | 'JUPITER'
+      | 'SUN'
+      | 'MOON'
+      | 'VENUS'
+      | 'MARS_BENEFIC'
+      | 'MARS_MALEFIC'
+      | 'MERCURY'
+      | 'SATURN_LIKE_KETU'
+      | 'SATURN_LIKE_RAHU'
+      | 'RAHU_EXALTED'
+      | 'RAHU_DEBILITATED'
+      | 'KETU_EXALTED'
+      | 'KETU_DEBILITATED';
+  }[];
+  /** The debts the teva carries (1952 p. 125). */
+  readonly rinas: readonly {
+    readonly rin: 'PITRI' | 'SWA' | 'MATRI' | 'STRI' | 'RISHTEDARI' | 'BHAGINI' | 'ZALIMANA' | 'AJANMA' | 'DAIVI';
+    readonly of: Graha;
+    readonly seated: readonly { readonly enemy: Graha; readonly house: number }[];
+  }[];
+  /** The ancestors' debt's first state: a planet in 9 with Mercury in its root (1952 p. 128). */
+  readonly pitri: readonly { readonly ninth: Graha; readonly mercury: number }[];
+  readonly flags: {
+    readonly ratandha: boolean;
+    readonly nabalig: boolean;
+    readonly dharmi: readonly Graha[];
+    readonly sathi: readonly (readonly Graha[])[];
+  };
+}
+
+/** A chart read as Lal Kitab reads it (`03-design/lalkitab.md`). */
+export interface LalKitab {
+  readonly reading: LalKitabReading;
+  /** Where the cycle was started. */
+  readonly cycle: { readonly planet: Graha; readonly year: number };
+  /** The 35-year cycle's periods over years 1 to 120 of life, both ends included. */
+  readonly periods: readonly { readonly planet: Graha; readonly from: number; readonly to: number }[];
+  /** The year asked for; `null` unless the request named one. */
+  readonly year: {
+    readonly year: number;
+    readonly ruler: Graha;
+    /** The planets of months 1–4, 5–8 and 9–12 (1952 p. 34). */
+    readonly thirds: readonly Graha[];
+    /** The annual teva's reading; `null` without a `varshphal` list. */
+    readonly annual: LalKitabReading | null;
+  } | null;
+}
+
 /** Remedies to read in every chart, every member optional (`03-design/remedies.md`). */
 export interface RemedyRequest {
   /** The instant, a Julian day in UT, whose running Vimśottarī periods are read; none when left out. */
@@ -2836,6 +2940,451 @@ export interface Remedies {
       readonly inNavamsha: AmatyaDevata;
     };
   };
+}
+
+/**
+ * A chart read as a birth time to rectify, every member optional and one
+ * left out not read (`03-design/rectification.md`). Each reading is taken
+ * around the chart's instant, at its place, on the request's clock.
+ */
+export interface RectificationRequest {
+  /** BPHS ch. 2 vv. 67–78's purifier over the minutes either side of the chart's instant. */
+  readonly purify?: {
+    /** How far either side the window runs, minutes: more than none, at most 1080 (a day and a half in all). */
+    readonly minutes: number;
+    /** The purifier's readings; the texts' own when left out. */
+    readonly rules?: PurifierRules;
+  };
+  /** The pranapada's house, the nisheka and the conception Moon at the chart's instant; `{}` reads the texts' own rules. */
+  readonly conception?: ConceptionRules;
+  /** *Brihat Jataka* ch. V's circumstances at the chart's instant, set against what the family remembers. */
+  readonly circumstance?: {
+    /** The facts given; one left out is read and not weighed. */
+    readonly facts?: BirthFacts;
+    /** The readings; the texts' own when left out. */
+    readonly rules?: CircumstanceRules;
+  };
+  /** The baseline engine's cascade around the chart's instant. */
+  readonly baseline?: BaselineRectificationRequest;
+  /** The Shiva Svarodaya's nadis and tattvas over the minutes either side of the chart's instant, at most 1080: a report the text does not make at a birth. */
+  readonly svarodaya?: { readonly minutes: number };
+}
+
+/** One stretch of a day under one nadi and one tattva (Shiva Svarodaya, 1899 vv. 62–63, 71–72, 154, 197). */
+export interface SvarodayaRun extends Interval {
+  /** The Moon's (left, female) or the Sun's (right, male), v. 60. */
+  readonly nadi: 'MOON' | 'SUN';
+  /** Its turn of two and a half ghatis in the day, 0 the one rising at sunrise, to 23. */
+  readonly turn: number;
+  /** In each turn air, fire, earth and water, then ether at the junction. */
+  readonly tattva: 'PRITHVI' | 'JALA' | 'AGNI' | 'VAYU' | 'AKASHA';
+  /** The sex v. 60 gives the nadi. */
+  readonly sex: 'MALE' | 'FEMALE';
+}
+
+/** The purifier's readings, one knob per crux (`03-design/rectification.md`). */
+export interface PurifierRules {
+  /** The species vv. 77–78 name, which decides the houses that purify: a human's are the sign and its trines. */
+  readonly native?: 'HUMAN' | 'BEAST' | 'BIRD' | 'CREEPER';
+  /** Whether the pranapada may purify (v. 74). */
+  readonly pranapada?: boolean;
+  /** Whether Gulika may purify (v. 75). */
+  readonly gulika?: boolean;
+  /** Whether the Moon may purify (v. 75). */
+  readonly moon?: boolean;
+  /** When Gulika's 7th, its navamsha and that navamsha's 7th also purify (X6, X7). */
+  readonly gulikaExtension?: 'WHEN_TWO_FAIL' | 'ALWAYS' | 'NEVER';
+  /** Whether a lagna no purifier holds is removed or only weighed (X8). */
+  readonly purifyAs?: 'BAR' | 'WEIGHT';
+  /** How the pranapada is reckoned (X2, X3). */
+  readonly pranapadaRule?: 'VERSE' | 'PRINTED_EXAMPLE' | 'SDK_POINT';
+  /** Which end of Saturn's eighth is Gulika (X5). */
+  readonly gulikaAt?: 'END' | 'START';
+  /** The seed step, minutes, shorter than the briefest run a clause holds (X15). */
+  readonly seedMinutes?: number;
+}
+
+/** The conception reports' readings. */
+export interface ConceptionRules {
+  /** The purifier's rules the conception's lagna is purified under (v. 29: "as before"). */
+  readonly purifier?: PurifierRules;
+  /** The pranapada's house. */
+  readonly pranapadaHouse?: {
+    readonly pranapada?: 'VERSE' | 'PRINTED_EXAMPLE' | 'SDK_POINT';
+    /** How its house is counted from the lagna. */
+    readonly count?: 'SIGN' | 'SRIPATI_BHAVA';
+    /** Whether the 1st is auspicious; not by default. */
+    readonly firstAuspicious?: boolean;
+  };
+  /** The nisheka. */
+  readonly nisheka?: {
+    /** The month a sign is read as. */
+    readonly month?: 'THIRTY_DAYS' | 'SOLAR' | 'SYNODIC';
+    /** Which end of Saturn's eighth Mandi is. */
+    readonly mandiAt?: 'START' | 'END';
+    /** The 9th bhava's point. */
+    readonly ninth?: 'SRIPATI' | 'WHOLE_SIGN' | 'EQUAL';
+    /** Saturn's point. */
+    readonly saturn?: 'LONGITUDE' | 'BHAVA_MADHYA';
+    /** The invisible half. */
+    readonly invisibleHalf?: 'BY_LONGITUDE' | 'BY_SIGN';
+  };
+  /** BJ IV.21's conception Moon. */
+  readonly moon?: {
+    /** The count to the birth Moon's sign. */
+    readonly count?: 'NEXT_AFTER_DVADASHAMSHA' | 'FROM_MOON_SIGN' | 'FROM_ARIES';
+    /** What of the rising point is classed. */
+    readonly rising?: 'SIGN' | 'NAVAMSHA';
+    /** Pisces's class. */
+    readonly pisces?: 'EITHER' | 'DAY';
+  };
+}
+
+/** What the family remembers of the birth (*Brihat Jataka* ch. V). */
+export interface BirthFacts {
+  /** Whether the father was there at the birth (V.1–2). */
+  readonly fatherPresent?: boolean;
+  /** What came first (V.17). */
+  readonly presentation?: 'HEAD' | 'FEET' | 'HANDS';
+  /** How full the lamp's oil was (V.18). */
+  readonly oil?: 'FULL' | 'HALF' | 'SPENT';
+  /** How much of the lamp's wick was left (V.18). */
+  readonly wick?: 'FULL' | 'HALF' | 'SPENT';
+  /** The women who attended (V.22). */
+  readonly attendants?: { readonly total?: number; readonly inside?: number; readonly outside?: number };
+}
+
+/** The circumstances' readings, one knob per crux (X16–X19). */
+export interface CircumstanceRules {
+  /** What the Moon's not seeing the lagna asks (X16). */
+  readonly moonSees?: 'ANY_ASPECT' | 'FULL';
+  /** Which houses the Sun has fallen to (X17). */
+  readonly sunFallen?: 'NINTH_OR_EIGHTH' | 'EITHER_SIDE';
+  /** Which reading of the presentation (X18). */
+  readonly presentationBy?: 'RISING_SIGN' | 'LAGNA_LORD_MOTION';
+  /** How the grahas between the lagna and the Moon are counted (X19). */
+  readonly betweenBy?: 'DEGREE' | 'SIGN';
+  /** Which half of them is outside the room (V.22). */
+  readonly outside?: 'VISIBLE' | 'INVISIBLE';
+}
+
+/** What happened in a life, which the baseline's event fit reads. */
+export type LifeEventKind =
+  | 'MARRIAGE'
+  | 'ENGAGEMENT'
+  | 'CHILD_BIRTH'
+  | 'MISCARRIAGE'
+  | 'FIRST_JOB'
+  | 'JOB_CHANGE'
+  | 'JOB_LOSS'
+  | 'PROMOTION'
+  | 'BUSINESS_START'
+  | 'EDUCATION'
+  | 'RELOCATION'
+  | 'FOREIGN_TRAVEL'
+  | 'PROPERTY'
+  | 'VEHICLE'
+  | 'SURGERY'
+  | 'ACCIDENT'
+  | 'ILLNESS'
+  | 'DEATH_IN_FAMILY'
+  | 'LITIGATION'
+  | 'SPIRITUAL_INITIATION'
+  | 'OTHER';
+
+/** The baseline engine's cascade around the chart's instant (X20–X26). */
+export interface BaselineRectificationRequest {
+  /** The window's half-width, minutes, 1 to 720. */
+  readonly uncertaintyMinutes: number;
+  /** How far the reported time is trusted; `'APPROXIMATE'` when left out. */
+  readonly accuracy?: 'EXACT' | 'APPROXIMATE' | 'RECTIFIED' | 'UNKNOWN';
+  /** The dated events. */
+  readonly events?: readonly {
+    /** The caller's name for it, which its notes carry back. */
+    readonly id?: string;
+    readonly kind: LifeEventKind;
+    /** When it began, a Julian day (UTC). */
+    readonly on: number;
+    /** When it ended, where it ran over days. */
+    readonly until?: number;
+    /** How finely `on` is known, where `until` is not given. */
+    readonly precision?: 'DAY' | 'MONTH' | 'YEAR';
+    /** How sure the family is. */
+    readonly confidence?: 'CERTAIN' | 'PROBABLE' | 'UNCERTAIN';
+    /** Kept out of the fit and tested against it afterwards instead. */
+    readonly heldOut?: boolean;
+  }[];
+  /** The child's sex, for the tattva prior; none skips it. */
+  readonly sex?: 'MALE' | 'FEMALE';
+  /** The share of the posterior the intervals hold, 0.5 to 0.99; 0.8 when left out. */
+  readonly coverage?: number;
+  /** The dasha the event fit reads, each member the baseline engine's own where left out. */
+  readonly dasha?: {
+    readonly balance?: Balance;
+    readonly yearLength?: 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL' | 'LUNAR' | 'NAKSHATRA_324';
+    readonly birthPeriod?: 'COMPRESSED' | 'ELAPSED';
+    readonly afterCycle?: 'END' | 'REPEAT';
+    readonly seedOverflow?: 'WRAP_TO_START' | 'REJECT';
+    readonly ashtottariGrouping?: 'THREE_EACH' | 'FOUR_AND_THREE';
+  };
+}
+
+/** One test of the lagna against one point of one purifier. */
+export interface PurifierClause {
+  readonly purifier: 'PRANAPADA' | 'GULIKA' | 'MOON';
+  /** Which of its points. */
+  readonly reference: 'ITSELF' | 'SEVENTH' | 'NAVAMSHA' | 'NAVAMSHA_SEVENTH';
+  /** The sign that point stands in. */
+  readonly sign: Rashi;
+  /** The lagna's sign. */
+  readonly lagna: Rashi;
+  /** The lagna's house counted from that sign, one to twelve. */
+  readonly house: number;
+  /** Whether the house is one that purifies this native. */
+  readonly held: boolean;
+  /** Whether the clause counts toward the verdict: false only for v. 76's extension while the pranapada or the Moon holds. */
+  readonly counted: boolean;
+}
+
+/** What the purifier finds at an instant: every clause, and whether any counted one held (v. 75). */
+export interface PurifierVerdict {
+  /** Every clause judged, in the order pranapada, Gulika, Moon. */
+  readonly clauses: readonly PurifierClause[];
+  readonly pure: boolean;
+}
+
+/** One run of the window between two edges, with the verdict every instant of it shares. */
+export interface PurifiedRun extends Interval {
+  readonly verdict: PurifierVerdict;
+}
+
+/** What the baseline's stages say they did, by `kind`. */
+export type BaselineNote =
+  | {
+      readonly kind: 'TATTVA_SEX';
+      readonly sex: 'MALE' | 'FEMALE';
+      /** The minutes of every 90 that admit it. */
+      readonly admittedMinutes: number;
+      /** The candidates penalised, not excluded. */
+      readonly penalised: number;
+      /** The candidates. */
+      readonly of: number;
+    }
+  | {
+      readonly kind: 'REPORTED_TIME';
+      readonly accuracy: 'EXACT' | 'APPROXIMATE' | 'RECTIFIED' | 'UNKNOWN';
+      /** Its uncertainty, minutes. */
+      readonly uncertaintyMinutes: number;
+    }
+  | {
+      readonly kind: 'EVENT_FIT';
+      /** Its index in the request. */
+      readonly event: number;
+      /** The caller's name for it; `null` when it had none. */
+      readonly id: string | null;
+      readonly eventKind: LifeEventKind;
+      /** The period lords that fit it, mahadasha first, where any did. */
+      readonly lords: readonly Graha[];
+      /** Its best score over every candidate, weighted. */
+      readonly contribution: number;
+    };
+
+/** A chart read as a birth time to rectify: each member `null` unless asked (`03-design/rectification.md`). */
+export interface Rectification {
+  /** What the purifier leaves standing of the window. */
+  readonly purified: {
+    /** The maximal runs no bar removed, in order; every run under `purifyAs: 'WEIGHT'`. */
+    readonly intervals: readonly PurifiedRun[];
+    /** The runs a bar removed, in order, each verdict naming every clause that failed. */
+    readonly removed: readonly PurifiedRun[];
+    /** Every instant inside the window where a clause changes. */
+    readonly edges: readonly number[];
+    /** The seed grid, so a run reproduces. */
+    readonly grid: { readonly stepDays: number; readonly cells: number };
+  } | null;
+  /** The three reports the birth gives beside the purifier. */
+  readonly conception: {
+    /** The birth read, a Julian day (UTC). */
+    readonly birth: number;
+    /** The pranapada's house from the lagna, and the birth it judges (Jha's ch. 3 vv. 73–74). */
+    readonly pranapadaHouse: {
+      readonly pranapadaDeg: number;
+      readonly lagnaDeg: number;
+      readonly house: number;
+      readonly auspicious: boolean;
+    };
+    /** The conception BPHS counts back to, and its lagna judged. */
+    readonly nisheka: {
+      readonly count: {
+        /** The points v. 27 reads at the birth, degrees. */
+        readonly points: {
+          readonly mandiDeg: number;
+          readonly saturnDeg: number;
+          readonly lagnaDeg: number;
+          readonly ninthDeg: number;
+          readonly lagnaLordDeg: number;
+          readonly moonDeg: number;
+        };
+        /** v. 27's two arcs, their sum and the span before birth they give. */
+        readonly span: {
+          readonly saturnToMandiDeg: number;
+          readonly lagnaToNinthDeg: number;
+          /** The Moon's degrees in her sign, added when the lagna's lord is in the invisible half (v. 28). */
+          readonly moonAddedDeg: number | null;
+          readonly arcDeg: number;
+          /** The arc as v. 28 writes it. */
+          readonly written: { readonly months: number; readonly days: number; readonly ghatis: number; readonly palas: number };
+          readonly daysBefore: number;
+        };
+        /** The conception, a Julian day (UTC): the birth less the span. */
+        readonly instant: number;
+        /** How many days the conception moves when the birth moves a minute later. */
+        readonly daysPerBirthMinute: number;
+      };
+      /** The conception's lagna, degrees, in the conception chart's own zodiac. */
+      readonly lagnaDeg: number;
+      /** That lagna under the purifier, at the birth's place (v. 29). */
+      readonly verdict: PurifierVerdict;
+    };
+    /** BJ IV.21 read at the conception against the birth. */
+    readonly moon: {
+      readonly predicted: {
+        /** The dvadashamsha the Moon occupies in her sign, one to twelve. */
+        readonly dvadashamsha: number;
+        /** The sign the Moon holds at birth. */
+        readonly sign: Rashi;
+        /** Bhattotpala's nakshatra, under `count: 'NEXT_AFTER_DVADASHAMSHA'` only. */
+        readonly nakshatra: Nakshatra | null;
+      };
+      readonly moonSign: Rashi;
+      readonly moonNakshatra: Nakshatra | null;
+      readonly signAgrees: boolean;
+      /** `null` where no nakshatra is predicted. */
+      readonly nakshatraAgrees: boolean | null;
+      /** The conception's rising sign or navamsha. */
+      readonly rising: Rashi;
+      readonly predictedPart: 'DAY' | 'NIGHT' | 'EITHER';
+      readonly bornByDay: boolean;
+      readonly partAgrees: boolean;
+      readonly risenFraction: number;
+      readonly elapsedFraction: number;
+    };
+  } | null;
+  /** *Brihat Jataka* ch. V's circumstances. */
+  readonly circumstance: {
+    /** The sky the clauses read: the lagna, the seven grahas Sun to Saturn, degrees. */
+    readonly sky: { readonly lagnaDeg: number; readonly grahasDeg: readonly number[]; readonly lordRetrograde: boolean };
+    /** V.1–2: the father. */
+    readonly father: {
+      /** The Moon's aspect on the lagna's sign (BJ II.13). */
+      readonly moonAspect: Strength;
+      readonly unseen: boolean;
+      readonly saturnRising: boolean;
+      readonly marsSetting: boolean;
+      readonly moonHemmed: boolean;
+      /** Whether any of them holds: the father away. */
+      readonly away: boolean;
+      /** Where he is, where V.1 holds and the Sun has fallen from the 10th. */
+      readonly whereabouts: 'ABROAD' | 'OWN_COUNTRY' | 'RETURNING' | null;
+      readonly sunHouse: number;
+    };
+    /** V.17: the presentation. */
+    readonly presentation: {
+      readonly by: 'RISING_SIGN' | 'LAGNA_LORD_MOTION';
+      /** How the rising sign rises. */
+      readonly rising: 'SIRSHODAYA' | 'PRISHTODAYA' | 'UBHAYODAYA';
+      /** The lagna's lord. */
+      readonly lord: Graha;
+      readonly lordRetrograde: boolean;
+      readonly foretold: 'HEAD' | 'FEET' | 'HANDS';
+    };
+    /** V.18: the lamp, one at the start of the sign and none at its end. */
+    readonly lamp: {
+      readonly oil: number;
+      readonly oilLevel: 'FULL' | 'HALF' | 'SPENT';
+      readonly wick: number;
+      readonly wickLevel: 'FULL' | 'HALF' | 'SPENT';
+    };
+    /** V.22: the attendants. */
+    readonly attending: {
+      readonly between: readonly Graha[];
+      /** Those of them in the visible half. */
+      readonly visible: readonly Graha[];
+      readonly inside: number;
+      readonly outside: number;
+    };
+    /** One per fact given, set against the clause that reads it. */
+    readonly weights: readonly {
+      readonly indication:
+        | 'FATHER'
+        | 'PRESENTATION'
+        | 'OIL'
+        | 'WICK'
+        | 'ATTENDANTS_TOTAL'
+        | 'ATTENDANTS_INSIDE'
+        | 'ATTENDANTS_OUTSIDE';
+      readonly agrees: boolean;
+    }[];
+  } | null;
+  /** The baseline engine's cascade around the chart's instant. */
+  readonly baseline: {
+    readonly window: Interval;
+    /** The sunrise the tattva cycle counted from, a Julian day (UTC). */
+    readonly sunrise: number;
+    /** The intervals holding the asked coverage of the posterior. */
+    readonly intervals: readonly Interval[];
+    readonly intervalWidthMinutes: number;
+    /** The finest the stages that told candidates apart can tell, minutes. */
+    readonly resolutionMinutes: number;
+    /** The posterior's mode, a Julian day (UTC). */
+    readonly suggested: number;
+    /** How concentrated the posterior is, 0 (flat) to 1. */
+    readonly concentration: number;
+    /** The most probable candidates, best first. */
+    readonly candidates: readonly {
+      readonly at: number;
+      readonly probability: number;
+      readonly logPosterior: number;
+      readonly lagna: Rashi;
+      readonly lagnaNakshatra: Nakshatra;
+    }[];
+    readonly stages: readonly {
+      readonly stage: 'PRIOR' | 'DASHA_BOUNDARY';
+      readonly applied: boolean;
+      /** Whether it told no candidate from another. */
+      readonly flat: boolean;
+      readonly resolutionMinutes: number;
+      readonly notes: readonly BaselineNote[];
+    }[];
+    readonly eventsUsed: number;
+    readonly eventsHeldOut: number;
+    /** The held-out events, tested against the fit. */
+    readonly holdOut: readonly {
+      readonly event: number;
+      readonly kind: LifeEventKind;
+      readonly scoreAtFit: number;
+      /** Its mean score over candidates spread across the grid. */
+      readonly baseline: number;
+      readonly supported: boolean;
+    }[];
+  } | null;
+  /** The Shiva Svarodaya around the chart's instant: a report, never a bar. */
+  readonly svarodaya: {
+    /** The reading at the chart's instant. */
+    readonly at: {
+      /** The sunrise the turns are counted from, a Julian day (UTC). */
+      readonly sunrise: number;
+      readonly nextSunrise: number;
+      /** The tithi at that sunrise, which gives its nadi (v. 62). */
+      readonly tithi: Tithi;
+      readonly sunriseNadi: 'MOON' | 'SUN';
+      readonly run: SvarodayaRun;
+      /** The turn's start and end, where the sushumna flows for a moment. */
+      readonly junctions: readonly [number, number];
+    };
+    /** Every run inside the window, in order and clipped to it. */
+    readonly runs: readonly SvarodayaRun[];
+  } | null;
 }
 
 /** A graha's śānti: its image, ṛk, japa, fuel, food, fee, gem and place (BPHS ch. 84). */
@@ -4508,6 +5057,19 @@ export declare class Chart {
    */
   readonly remedies: Remedies | null;
   /**
+   * The chart read as Lal Kitab reads it: the teva's reading, the 35-year
+   * cycle and the year asked for; `null` unless `lalkitab` asked
+   * (`03-design/lalkitab.md`).
+   */
+  readonly lalkitab: LalKitab | null;
+  /**
+   * The chart read as a birth time to rectify: the purifier's runs, the
+   * conception, the circumstances and the baseline's cascade, each `null`
+   * unless asked; the whole `null` unless `rectification` asked
+   * (`03-design/rectification.md`).
+   */
+  readonly rectification: Rectification | null;
+  /**
    * The seven planets' essential dignities and the chart's sect; `null`
    * unless `dignities` asked (`03-design/essential-dignities.md`).
    */
@@ -5630,6 +6192,101 @@ export interface MuhurtaAnswer {
 }
 
 /** What `Context.almanacDay` needs: one day at one place. */
+/** The five birds of Pancha Pakshi, in their order. */
+export type PakshiBird = 'VULTURE' | 'OWL' | 'CROW' | 'COCK' | 'PEACOCK';
+
+/** What a bird does in a yama or a sub-period. */
+export type PakshiActivity = 'EATING' | 'WALKING' | 'RULING' | 'SLEEPING' | 'DYING';
+
+/** How a native regards a sub-period's owner; `OWN` for its own sub-period (P12). */
+export type PakshiRelation = 'FRIEND' | 'ENEMY' | 'NEUTRAL' | 'OWN';
+
+/** A span of time, Julian days (UTC). */
+export interface PakshiSpan {
+  readonly from: number;
+  readonly to: number;
+}
+
+/** Days of a native's bird at a place (`03-design/pakshi.md`). */
+export interface PakshiRequest {
+  /** The first day. */
+  readonly from: CalendarDate;
+  /** The last day, both ends included; `from` when left out. */
+  readonly to?: CalendarDate;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The bird itself, or the birth star and paksha that give it under `rule` (P1). */
+  readonly native:
+    | { readonly bird: PakshiBird }
+    | {
+        readonly nakshatra: Nakshatra;
+        readonly paksha: Paksha;
+        /** `BY_PAKSHA` (the dark half reverses the birds, the default) or `SINGLE` (one table). */
+        readonly rule?: 'BY_PAKSHA' | 'SINGLE';
+      };
+  /** What the days are read under, each the texts' default when left out. */
+  readonly rules?: {
+    /** How a half is cut into yamas (P3). */
+    readonly clock?: 'STRETCHED' | 'NAZHIGAI';
+    /** How long the sub-periods run (P4). */
+    readonly subs?: 'AGASTYA' | 'PULIPPANI';
+    /** Whose friends and enemies (P6). */
+    readonly relations?: 'AGASTYA' | 'PULIPPANI';
+  };
+}
+
+/** A native's bird over a range of days. */
+export interface PakshiDays {
+  /** The days, in order. */
+  readonly value: readonly PakshiDay[];
+  /** What computed them, and under what; `inputHash` seals the request. */
+  readonly provenance: Provenance;
+}
+
+/** One day of a native's bird. */
+export interface PakshiDay {
+  /** The civil day. */
+  readonly date: CalendarDate;
+  /** Its reading; `null` on a day the Sun does not both rise and set. */
+  readonly reading: {
+    readonly day: {
+      readonly sunrise: number;
+      readonly sunset: number;
+      readonly nextSunrise: number;
+      /** The weekday of its sunrise (P9). */
+      readonly vara: Vara;
+      /** The paksha at its sunrise (P2). */
+      readonly paksha: Paksha;
+    };
+    readonly bird: PakshiBird;
+    /** The bird dead the whole day and night, reported beside the yamas (P10). */
+    readonly deathBird: PakshiBird;
+    readonly deadToday: boolean;
+    /** The birds eating in the first yama of the day and of the night. */
+    readonly eaters: readonly PakshiBird[];
+    /** The ten yamas, the day's five and then the night's. */
+    readonly yamas: readonly {
+      readonly half: 'DAY' | 'NIGHT';
+      /** Which yama of the half, 1 to 5. */
+      readonly yama: number;
+      readonly span: PakshiSpan;
+      readonly activity: PakshiActivity;
+      readonly quality: 'GOOD' | 'MIDDLING' | 'BAD';
+      readonly subs: readonly {
+        readonly activity: PakshiActivity;
+        /** The bird whose main activity it is. */
+        readonly owner: PakshiBird;
+        /** Its share of the yama, in 144ths. */
+        readonly share: number;
+        readonly ownerIs: PakshiRelation;
+        readonly span: PakshiSpan;
+      }[];
+    }[];
+  } | null;
+}
+
 export interface AlmanacDayRequest extends Omit<AlmanacRequest, 'from' | 'to'> {
   /** The day. */
   readonly date: CalendarDate;
@@ -5721,6 +6378,18 @@ export interface ChartRequest {
    * rules with no periods running.
    */
   readonly remedies?: RemedyRequest;
+  /**
+   * Lal Kitab to read in every chart, read back as each chart's
+   * `lalkitab` (`03-design/lalkitab.md`). None by default; `{}` reads the
+   * teva and the general cycle with no year.
+   */
+  readonly lalkitab?: LalKitabRequest;
+  /**
+   * A birth time to rectify, read around every chart's instant and read
+   * back as each chart's `rectification` (`03-design/rectification.md`).
+   * None by default; each member asks for one reading.
+   */
+  readonly rectification?: RectificationRequest;
   /**
    * The seven planets' essential dignities to read in every chart, read
    * back as each chart's `dignities` (`03-design/essential-dignities.md`).
@@ -6231,10 +6900,11 @@ export declare class ChartArea {
    * @example
    * const week = ctx.chart.rashifal({ first, last, place, utcOffsetSeconds: 20700 }, 'WEEKLY');
    * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
+   * const sealed = week.provenance.inputHash;
    */
-  rashifal(request: RashifalRequest, baseline?: BaselinePeriod): RashifalAnswer;
+  rashifal(request: RashifalRequest, baseline?: BaselinePeriod): RashifalSealed;
   /** Many periods, each read as `rashifal` reads it alone, under one founder. */
-  rashifalMany(requests: readonly RashifalRequest[], baseline?: BaselinePeriod): RashifalAnswer[];
+  rashifalMany(requests: readonly RashifalRequest[], baseline?: BaselinePeriod): RashifalAnswers;
 }
 
 /**
@@ -6253,6 +6923,21 @@ export declare class AlmanacArea {
   of(request: AlmanacRequest): Almanac;
   /** The almanac of one day, which is the range of one unwrapped. */
   day(request: AlmanacDayRequest): AlmanacDay;
+  /**
+   * A native's bird read over every day of a range under Pancha Pakshi
+   * (`03-design/pakshi.md`). A day the Sun does not both rise and set has
+   * a `null` reading. The answer is the envelope: the days, and the
+   * provenance that sealed the request.
+   *
+   * @example
+   * const days = ctx.almanac.pakshi({
+   *   from: date('calendar.GREGORIAN', 1984, 10, 31),
+   *   place: { latitude: 13.0827, longitude: 80.2707, altitude: 6 },
+   *   utcOffsetSeconds: 19800,
+   *   native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
+   * });
+   */
+  pakshi(request: PakshiRequest): PakshiDays;
 }
 
 /**
@@ -6291,6 +6976,199 @@ export declare class NumerologyArea {
   profile(name: string, date: BirthDate, rules?: NumerologyRules): NumerologyProfile;
 }
 
+/** A birth of a study (`03-design/research.md`). */
+export interface ResearchBirth {
+  /** The instant, a Julian day in UTC. */
+  readonly instant: number;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /**
+   * How far either side the recorded time may be wrong, 0 to 720 minutes; a
+   * rule whose answer differs at either edge is counted unstable on the chart.
+   */
+  readonly uncertaintyMinutes?: number;
+}
+
+/** A study's seed: a number, or a `bigint` past `Number.MAX_SAFE_INTEGER`. */
+export type ResearchSeed = number | bigint;
+
+/** The direction a test looks in, declared before the data. */
+export type ResearchAlternative = 'GREATER' | 'LESS' | 'TWO_SIDED';
+
+/** How many threads count the permutations; the answer is the same bits for each. */
+export type ResearchParallelism = 'ONE' | { readonly THREADS: number };
+
+/** What a study's charts are read for, beside its births. */
+export interface ResearchStudy {
+  /** The predicates, one per rule, as a chart request's `rules` record. */
+  readonly rules: RuleRequest;
+  /** When a rule counts as holding: standing (the default) or merely formed. */
+  readonly holds?: 'STANDING' | 'FORMED';
+}
+
+/** Who is in which group, one label per birth, and the strata labels move within. */
+export interface ResearchDesign {
+  readonly groups: readonly number[];
+  readonly strata?: readonly number[];
+}
+
+/** A permutation test of a design's groups. */
+export interface ResearchGroupTest {
+  readonly seed: ResearchSeed;
+  /** 1 to 10 000 000, fixed in the request. */
+  readonly permutations: number;
+  readonly contrast:
+    | { readonly kind: 'CASE_VS_REST'; readonly case: number }
+    | { readonly kind: 'ANY_DIFFERENCE' };
+  readonly alternative?: ResearchAlternative;
+  /** Every interval's confidence, in (0, 1); 0.95 when left out. */
+  readonly level?: number;
+  /** When given, each row says which methods put it at or under this. */
+  readonly alpha?: number;
+  readonly parallelism?: ResearchParallelism;
+}
+
+/** A test of events against the shuffled-event null. */
+export interface ResearchEventTest {
+  readonly seed: ResearchSeed;
+  readonly permutations: number;
+  readonly alternative?: ResearchAlternative;
+  /** Refuse a pairing that puts an event before a birth, or permute only among those that do not. */
+  readonly afterBirth?: 'REFUSE' | 'RESTRICT_PAIRINGS';
+  readonly level?: number;
+  readonly alpha?: number;
+  readonly parallelism?: ResearchParallelism;
+}
+
+/** One subject of an event study: a birth and the event of its life. */
+export interface ResearchSubject {
+  readonly birth: ResearchBirth;
+  /** When the event happened, a Julian day in UTC. */
+  readonly event: number;
+}
+
+/** A predicate's charts in one group. */
+export interface ResearchGroupCount {
+  readonly present: number;
+  readonly absent: number;
+  /** Not read, and left out of the denominator. */
+  readonly unreadable: number;
+  /** Different answers inside the time uncertainty, and left out of the denominator. */
+  readonly unstable: number;
+}
+
+/** An estimate with its interval at the test's level. */
+export interface ResearchInterval {
+  readonly estimate: number;
+  readonly low: number;
+  readonly high: number;
+}
+
+/** One predicate's row of a study's counts. */
+export interface ResearchCountRow {
+  readonly predicate: string;
+  /** Its charts in each group, groups in index order. */
+  readonly counts: readonly ResearchGroupCount[];
+}
+
+/** One predicate's row of a test. */
+export interface ResearchRow extends ResearchCountRow {
+  /**
+   * The statistic under the observed labels; `null` when it is unbounded, a
+   * recombined sample beyond replicates that all agree.
+   */
+  readonly observed: number | null;
+  /** `(exceed + 1)/(m + 1)`, never zero, with its Clopper–Pearson interval. */
+  readonly p: { readonly exceed: number; readonly value: number; readonly low: number; readonly high: number };
+  /** The hypergeometric p of the same statistic, where it applies. */
+  readonly exact?: number;
+  readonly adjusted: {
+    readonly maxT: number;
+    readonly holm: number;
+    readonly bonferroni: number;
+    readonly bh: number;
+    readonly by: number;
+  };
+  /** The cases against the rest, for a case-against-rest test. */
+  readonly effect?: {
+    readonly riskCase: ResearchInterval;
+    readonly riskRest: ResearchInterval;
+    readonly riskDifference: ResearchInterval;
+    readonly riskRatio: ResearchInterval | null;
+    readonly oddsRatio: number | null;
+    readonly cohenH: number;
+  };
+  /** The share observed against the share the null expects, for a one-group study. */
+  readonly expected?: { readonly observed: number; readonly expected: number; readonly ratio?: number };
+  readonly underAlpha?: {
+    readonly raw: boolean;
+    readonly maxT: boolean;
+    readonly holm: boolean;
+    readonly bonferroni: boolean;
+    readonly bh: boolean;
+    readonly by: boolean;
+  };
+}
+
+/** A study's counts, with the provenance whose `inputHash` is its pre-registration. */
+export interface ResearchCounts {
+  readonly rows: readonly ResearchCountRow[];
+  readonly provenance: Provenance;
+}
+
+/** A test's rows, per predicate and never a single verdict. */
+export interface ResearchTested {
+  readonly rows: readonly ResearchRow[];
+  readonly permutations: number;
+  /** The smallest p-value the permutations can give, `1/(m + 1)`. */
+  readonly resolution: number;
+  /** The generator and shuffle, so a reader can rerun the study. */
+  readonly shuffle: string;
+  readonly provenance: Provenance;
+}
+
+/** `sdk.research` — counts and permutation tests over a batch of births. */
+export declare class ResearchArea {
+  /**
+   * How often each rule holds in each group.
+   *
+   * @example
+   * const table = ctx.research.counts({ births, rules: { shipped: ['YOGAS'] }, design: { groups } });
+   */
+  counts(request: ResearchStudy & { readonly births: readonly ResearchBirth[]; readonly design: ResearchDesign }): ResearchCounts;
+  /** Whether the design's groups differ on each rule, labels permuted. */
+  compare(
+    request: ResearchStudy & {
+      readonly births: readonly ResearchBirth[];
+      readonly design: ResearchDesign;
+      readonly test: ResearchGroupTest;
+    },
+  ): ResearchTested;
+  /** Whether each rule is commoner than in the sample's recombined population. */
+  expected(
+    request: ResearchStudy & {
+      readonly births: readonly ResearchBirth[];
+      readonly control: { readonly seed: ResearchSeed; readonly replicates: number; readonly strata?: readonly number[] };
+      readonly test?: { readonly alternative?: ResearchAlternative; readonly level?: number; readonly alpha?: number };
+    },
+  ): ResearchTested;
+  /** Whether each rule is delivered by a dasha at the subjects' own events more often than chance. */
+  timed(
+    request: ResearchStudy & {
+      readonly subjects: readonly ResearchSubject[];
+      readonly dasha: DashaSystem | DashaKey;
+      /** 1 (the mahadasha) to 6; 2 when left out. */
+      readonly depth?: number;
+      /** What the null keeps: the calendar of events, or each person's age at the event. No default. */
+      readonly shuffle: 'EVENT_DATES' | 'AGES_AT_EVENT';
+      readonly strata?: readonly number[];
+      readonly test: ResearchEventTest;
+    },
+  ): ResearchTested;
+}
+
 export declare class Context {
   constructor(options?: ContextInit);
   /**
@@ -6323,6 +7201,8 @@ export declare class Context {
   readonly matching: MatchingArea;
   /** What a name and a birth date say under numerology's two systems. */
   readonly numerology: NumerologyArea;
+  /** Counts and permutation tests over a batch of births. */
+  readonly research: ResearchArea;
   /** The id of the profile the settings came from. */
   readonly profile: string;
   /** The resolved settings, as their canonical document. */

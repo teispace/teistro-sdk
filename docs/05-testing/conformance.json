@@ -1,0 +1,82 @@
+{
+  "schema": "teistro-conformance-record/1",
+  "corpus": "0.12.0",
+  "tiers": {
+    "compact": [
+      {
+        "section": "baseline",
+        "reading": "positions over the built-in compact tier",
+        "compared": 2420,
+        "explained": [
+          {
+            "entry": "delta-t-beyond-the-table",
+            "count": 6
+          }
+        ],
+        "commit": "2636120dead264394759193df0a6221ae9be705e",
+        "run": "37891440602"
+      },
+      {
+        "section": "jpl",
+        "reading": "geometric positions over the built-in compact tier",
+        "compared": 2680,
+        "explained": [
+          {
+            "entry": "vsop87-radius-vectors",
+            "count": 21
+          },
+          {
+            "entry": "pluto-table-truncation",
+            "count": 126
+          }
+        ],
+        "commit": "2636120dead264394759193df0a6221ae9be705e",
+        "run": "37891440602"
+      }
+    ],
+    "full": [
+      {
+        "section": "baseline",
+        "reading": "positions over the built-in full tier",
+        "compared": 2420,
+        "explained": [
+          {
+            "entry": "delta-t-beyond-the-table",
+            "count": 46
+          },
+          {
+            "entry": "delta-t-before-the-table",
+            "count": 6
+          },
+          {
+            "entry": "moon-topocentric-speed",
+            "count": 49
+          },
+          {
+            "entry": "full-tier-truncation",
+            "count": 47
+          }
+        ],
+        "commit": "2636120dead264394759193df0a6221ae9be705e",
+        "run": "37891440602"
+      },
+      {
+        "section": "jpl",
+        "reading": "geometric positions over the built-in full tier",
+        "compared": 2680,
+        "explained": [
+          {
+            "entry": "vsop87-radius-vectors",
+            "count": 448
+          },
+          {
+            "entry": "full-tier-theory-drift",
+            "count": 83
+          }
+        ],
+        "commit": "2636120dead264394759193df0a6221ae9be705e",
+        "run": "37891440602"
+      }
+    ]
+  }
+}

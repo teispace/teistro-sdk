@@ -4448,6 +4448,213 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('an almanac reads a native\'s bird over its days', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final madras = Observer(
+      latitudeDeg: Latitude(13.0827),
+      longitudeDeg: Longitude(80.2707),
+      altitudeM: Altitude(6),
+    );
+    final days = ctx.almanac.pakshi(
+      from: gregorian(1984, 10, 30),
+      to: gregorian(1984, 10, 31),
+      place: madras,
+      utcOffsetSeconds: 19800,
+      native: const PakshiNative.star(Nakshatra.uttaraAshadha, Paksha.shukla),
+    );
+    expect(
+      days.provenance.inputHash,
+      isNotEmpty,
+      reason: 'the request is sealed',
+    );
+    expect(days.value, hasLength(2));
+    final tuesday = days.value[0].reading!;
+    final wednesday = days.value[1].reading!;
+    expect(tuesday.day.nextSunrise, wednesday.day.sunrise);
+    expect(
+      (wednesday.day.vara, wednesday.day.paksha),
+      (Vara.budhavara, Paksha.shukla),
+    );
+    expect(wednesday.bird, PakshiBird.cock);
+    // PUL p. vii: the cock sleeps in the day's second yama and dies from
+    // the third.
+    expect(
+      [for (final y in wednesday.yamas.sublist(1, 3)) y.activity],
+      [PakshiActivity.sleeping, PakshiActivity.dying],
+    );
+    expect(wednesday.yamas.first.subs.first.ownerIs, PakshiRelation.own);
+    expect(days.value[1].date.day, 31);
+
+    final polar = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      settings: {
+        'day': {'polar_day_policy': 'NEAREST_EVENT'},
+      },
+    );
+    final midsummer = polar.almanac.pakshi(
+      from: gregorian(2024, 6, 21),
+      place: Observer(
+        latitudeDeg: Latitude(69.6492),
+        longitudeDeg: Longitude(18.9553),
+        altitudeM: Altitude(0),
+      ),
+      utcOffsetSeconds: 7200,
+      native: const PakshiNative.bird(PakshiBird.owl),
+    );
+    expect(
+      midsummer.value.single.reading,
+      isNull,
+      reason: 'no sunset, no yamas',
+    );
+    polar.dispose();
+    ctx.dispose();
+  });
+
+  test('a study counts and tests its rules over a batch of births', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(0),
+    );
+    final births = [
+      for (var i = 0; i < 6; i++)
+        ResearchBirth(
+          instant: 2447000.25 + 977.3 * i,
+          place: kathmandu,
+          utcOffsetSeconds: 20700,
+        ),
+    ];
+    const yogas = RuleRequest(shipped: [ShippedRules.yogas]);
+    const design = ResearchDesign(groups: [0, 1, 0, 1, 0, 1]);
+    final table = ctx.research.counts(
+      births: births,
+      rules: yogas,
+      design: design,
+    );
+    expect(table.rows, isNotEmpty);
+    for (final row in table.rows) {
+      for (final group in row.counts) {
+        expect(
+          group.present + group.absent + group.unreadable + group.unstable,
+          3,
+          reason: row.predicate,
+        );
+      }
+    }
+    // A seed past what a signed 64-bit int holds is the same seed here.
+    final widest = (BigInt.one << 64) - BigInt.one;
+    final tested = ctx.research.compare(
+      births: births,
+      rules: yogas,
+      design: design,
+      test: ResearchGroupTest(
+        seed: widest,
+        permutations: 199,
+        contrast: const ResearchContrast.caseVsRest(1),
+        alpha: 0.05,
+      ),
+    );
+    expect(tested.permutations, 199);
+    expect(tested.resolution, 1 / 200);
+    for (final row in tested.rows) {
+      expect(row.p.value, greaterThanOrEqualTo(tested.resolution));
+      expect(row.adjusted.maxT, greaterThanOrEqualTo(row.p.value));
+      expect(row.underAlpha, isNotNull);
+    }
+    expect(tested.provenance.inputHash, isNot(table.provenance.inputHash));
+    expect(
+      () => ctx.research.timed(
+        subjects: const [],
+        rules: yogas,
+        dasha: DashaSystem.vimshottari,
+        shuffle: ResearchEventShuffle.agesAtEvent,
+        test: ResearchEventTest(seed: BigInt.one, permutations: 19),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'research.subjects',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
+  test('a chart carries its Lal Kitab', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const instant = 2447995.4895833335;
+    LalKitab? found(LalKitabRequest? asked) =>
+        ctx.chart
+            .found(
+              instant: instant,
+              place: place,
+              utcOffsetSeconds: 20700,
+              lalkitab: asked,
+            )
+            .lalkitab;
+    expect(found(null), isNull);
+
+    final plain = found(const LalKitabRequest())!;
+    expect(
+      plain.cycle,
+      const LalKitabCycle(planet: Graha.saturn, year: 1),
+      reason: 'the book\'s general table',
+    );
+    expect(plain.year, isNull);
+    expect(plain.reading.planets, hasLength(9));
+    expect(
+      plain.reading.planets.every(
+        (p) => p.graha != Graha.unknown && p.house >= 1 && p.house <= 12,
+      ),
+      isTrue,
+    );
+    expect((plain.periods.first.from, plain.periods.last.to), (1, 120));
+
+    final rows = [
+      for (var y = 0; y < 120; y++)
+        [for (var h = 0; h < 12; h++) (h + y) % 12 + 1],
+    ];
+    final read =
+        found(
+          LalKitabRequest(
+            cycle: const LalKitabCycle(planet: Graha.venus, year: 17),
+            year: 43,
+            varshphal: rows,
+          ),
+        )!;
+    final year = read.year!;
+    expect(year.ruler, Graha.jupiter);
+    expect(year.thirds, [Graha.ketu, Graha.jupiter, Graha.sun]);
+    final annual = year.annual!;
+    for (final (n, natal) in read.reading.planets.indexed) {
+      expect(annual.planets[n].house, (natal.house + 41) % 12 + 1);
+    }
+    expect(
+      () => found(const LalKitabRequest(year: 121)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'lalkitab.year',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its remedies', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
@@ -4512,6 +4719,133 @@ void _engineTests() {
       () => found(const RemedyRequest(at: double.nan)),
       throwsA(
         isA<ArgumentError>().having((e) => e.name, 'name', 'remedies.at'),
+      ),
+    );
+    ctx.dispose();
+  });
+
+  test('a chart carries its rectification', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const instant = 2447995.4895833335;
+    Rectification? found(RectificationRequest? asked) =>
+        ctx.chart
+            .found(
+              instant: instant,
+              place: place,
+              utcOffsetSeconds: 20700,
+              rectification: asked,
+            )
+            .rectification;
+    expect(found(null), isNull);
+
+    const purifyOnly = RectificationRequest(purify: PurifyRequest(minutes: 20));
+    final purified = found(purifyOnly)!;
+    expect(purified.conception, isNull, reason: 'only what was asked');
+    expect(purified.circumstance, isNull);
+    expect(purified.baseline, isNull);
+    expect(purified.svarodaya, isNull);
+    final standing = purified.purified!;
+    final runs = [...standing.intervals, ...standing.removed];
+    expect(runs, isNotEmpty);
+    expect(standing.grid.cells, greaterThan(0));
+    for (final clause in runs.expand((run) => run.verdict.clauses)) {
+      expect(clause.sign, isNot(Rashi.unknown));
+      expect(clause.lagna, isNot(Rashi.unknown));
+    }
+
+    const asked = RectificationRequest(
+      purify: PurifyRequest(minutes: 20),
+      conception: ConceptionRules(),
+      circumstance: CircumstanceRequest(
+        facts: BirthFacts(fatherPresent: false),
+      ),
+      baseline: BaselineRectificationRequest(
+        uncertaintyMinutes: 30,
+        sex: Sex.male,
+        events: [
+          LifeEvent(kind: LifeEventKind.marriage, on: instant + 25 * 365.25),
+          LifeEvent(
+            kind: LifeEventKind.accident,
+            on: instant + 30 * 365.25,
+            heldOut: true,
+          ),
+        ],
+      ),
+    );
+    final read = found(asked)!;
+    final moon = read.conception!.moon;
+    expect(moon.moonSign, isNot(Rashi.unknown));
+    expect(moon.rising, isNot(Rashi.unknown));
+    expect(moon.predicted.sign, isNot(Rashi.unknown));
+    expect(moon.moonNakshatra, isNot(Nakshatra.unknown));
+    expect(read.conception!.pranapadaHouse.house, inInclusiveRange(1, 12));
+    final circumstance = read.circumstance!;
+    expect(circumstance.sky.grahasDeg, hasLength(7), reason: 'Sun to Saturn');
+    expect(circumstance.presentation.lord, isNot(Graha.unknown));
+    expect(circumstance.presentation.rising, isNot(Rising.unknown));
+    expect(circumstance.attending.between, isNot(contains(Graha.unknown)));
+    final indications = [for (final w in circumstance.weights) w.indication];
+    expect(indications, [CircumstanceIndication.father]);
+    final baseline = read.baseline!;
+    expect(baseline.candidates, isNotEmpty);
+    expect(baseline.candidates.first.lagna, isNot(Rashi.unknown));
+    expect(baseline.candidates.first.lagnaNakshatra, isNot(Nakshatra.unknown));
+    expect(baseline.window.from, lessThan(baseline.window.to));
+    expect(baseline.eventsUsed, 1);
+    expect(baseline.eventsHeldOut, 1);
+    expect(baseline.holdOut, hasLength(1));
+    final notes = [for (final stage in baseline.stages) ...stage.notes];
+    final sexes = notes.whereType<TattvaSexNote>();
+    expect([for (final note in sexes) note.sex], [Sex.male]);
+    final reported = notes.whereType<ReportedTimeNote>();
+    expect([for (final note in reported) note.uncertaintyMinutes], [30]);
+    final fits = notes.whereType<EventFitNote>().toList();
+    expect(fits, hasLength(1), reason: 'the event held out is not fitted');
+    expect(fits.first.event, 0);
+    expect(fits.first.id, isNull);
+    expect(fits.first.eventKind, LifeEventKind.marriage);
+    expect(fits.first.lords, isNot(contains(Graha.unknown)));
+    const none = RectificationRequest(purify: PurifyRequest(minutes: 0));
+    expect(
+      () => found(none),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'rectification.purify.minutes',
+        ),
+      ),
+    );
+
+    const told = RectificationRequest(svarodaya: SvarodayaRequest(minutes: 20));
+    final sv = found(told)!.svarodaya!;
+    expect(sv.at.tithi, isNot(Tithi.unknown));
+    expect(sv.runs, isNotEmpty);
+    expect(sv.runs.first.from, closeTo(instant - 20 / 1440, 1e-6));
+    expect(sv.runs.last.to, closeTo(instant + 20 / 1440, 1e-6));
+    for (var k = 1; k < sv.runs.length; k++) {
+      expect(sv.runs[k].from, sv.runs[k - 1].to, reason: 'the runs tile');
+    }
+    expect(sv.at.run.from, lessThanOrEqualTo(instant));
+    expect(sv.at.run.to, greaterThan(instant));
+    final female = sv.at.run.nadi == SvarodayaNadi.moon;
+    expect(sv.at.run.sex, female ? Sex.female : Sex.male);
+    const idle = RectificationRequest(svarodaya: SvarodayaRequest(minutes: 0));
+    expect(
+      () => found(idle),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'rectification.svarodaya.minutes',
+        ),
       ),
     );
     ctx.dispose();
@@ -5989,6 +6323,11 @@ void _engineTests() {
     );
 
     final read = ctx.chart.rashifal(week, baseline: BaselinePeriod.weekly);
+    expect(
+      read.provenance.inputHash,
+      isNotEmpty,
+      reason: 'the request is sealed',
+    );
     final period = read.period;
     expect(
       [period.reference.calendar, period.reference.day],
@@ -6027,8 +6366,13 @@ void _engineTests() {
       for (final r in mars.period.readings)
         for (final e in r.events) e.hit.graha,
     ], everyElement(Graha.mars));
-    final [alone] = ctx.chart.rashifalMany([week]);
+    final many = ctx.chart.rashifalMany([week]);
+    final [alone] = many.value;
     expect(alone.period.instant, period.instant);
+    expect(
+      many.provenance.inputHash,
+      ctx.chart.rashifal(week).provenance.inputHash,
+    );
 
     for (final (request, field) in [
       (

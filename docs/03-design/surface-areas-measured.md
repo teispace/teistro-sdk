@@ -10,13 +10,13 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a boundary module a consumer reaches is reached from one area | **holds** | 0 of 11 disagree; so no operation can be looked for under two names |
-| every area holds an operation that reaches the boundary | **holds** | 0 of 10 disagree |
-| no operation's name repeats its own area's | **holds** | 0 of 37 disagree; which is what the namespace is for |
-| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 17 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
-| an entry point's name already carries its own module | falsified | 8 of 51 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_context_new_with_provider` |
-| every operation the layer declares is listed by every parity runner | falsified | 8 of 175 disagree; unlisted: `chart.rashifal by parity.mjs`, `chart.rashifal_many by parity.mjs`, `chart.rashifal by parity.dart`, `chart.rashifal_many by parity.dart`, `chart.rashifal by parity.py`, `chart.rashifal_many by parity.py`, `chart.rashifal by parity.rs`, `chart.rashifal_many by parity.rs` |
-| every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 10 disagree; site/content/docs/surface.mdx names all 10 and nothing else |
+| a boundary module a consumer reaches is reached from one area | **holds** | 0 of 13 disagree; so no operation can be looked for under two names |
+| every area holds an operation that reaches the boundary | **holds** | 0 of 11 disagree |
+| no operation's name repeats its own area's | **holds** | 0 of 42 disagree; which is what the namespace is for |
+| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 19 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
+| an entry point's name already carries its own module | falsified | 8 of 53 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_context_new_with_provider` |
+| every operation the layer declares is listed by every parity runner | **holds** | 0 of 195 disagree; so an operation added to one binding cannot go unheld in the other three; 1 allowed |
+| every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 11 disagree; site/content/docs/surface.mdx names all 11 and nothing else |
 
 **No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
 
@@ -32,7 +32,7 @@ The remaining 1 is not accounted for: `ts_error_free`.
 
 ## The areas the layer wires
 
-**10 areas over 37 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
+**11 areas over 42 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
 
 ### The root — `Context`
 
@@ -108,7 +108,8 @@ The remaining 1 is not accounted for: `ts_error_free`.
 | operation | reaches |
 |---|---|
 | `of` | `ts_panchanga_days` (panchanga) |
-| `day` | — |
+| `day` | `ts_pakshi` (pakshi) |
+| `pakshi` | `ts_pakshi` (pakshi) |
 
 ### `sdk.matching` — `MatchingArea`
 
@@ -121,6 +122,15 @@ The remaining 1 is not accounted for: `ts_error_free`.
 | operation | reaches |
 |---|---|
 | `profile` | `ts_numerology_profile` (numerology) |
+
+### `sdk.research` — `ResearchArea`
+
+| operation | reaches |
+|---|---|
+| `counts` | `ts_research` (research) |
+| `compare` | `ts_research` (research) |
+| `expected` | `ts_research` (research) |
+| `timed` | `ts_research` (research) |
 
 ### `sdk.engine` — `Engine`
 
@@ -148,10 +158,12 @@ The remaining 1 is not accounted for: `ts_error_free`.
 | `lib` | 6 | — |
 | `naam` | 1 | `matching` |
 | `numerology` | 1 | `numerology` |
+| `pakshi` | 1 | `almanac` |
 | `panchanga` | 1 | `almanac` |
 | `positions` | 1 | `(root)` |
 | `provider` | 3 | — |
 | `rashifal` | 1 | `chart` |
+| `research` | 1 | `research` |
 | `string` | 1 | — |
 | `time` | 4 | `time` |
 

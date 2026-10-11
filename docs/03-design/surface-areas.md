@@ -1,6 +1,6 @@
 # The surface areas
 
-Status: `designed`, written 2026-09-12 from the falsification pass in
+Status: `built`, written 2026-09-12 from the falsification pass in
 [`surface-areas-measured.md`](surface-areas-measured.md). Decides
 ADR-0030's first and fourth points — the surface becomes
 `sdk.<area>.<operation>`, and the engine's own functions sit under
@@ -66,7 +66,13 @@ same ground (C320 to C328).
 | `almanac` | `of`, `day` | `panchanga` |
 | `matching` | `naam` | `naam` |
 | `numerology` | `profile` | `numerology` |
+| `research` | `counts`, `compare`, `expected`, `timed` | `research` |
 | `engine` | `manifestJson`, `manifest`, `names`, `signature`, `call`, `callJson` | `ephemeris` |
+
+The measured page ([`surface-areas-measured.md`](surface-areas-measured.md))
+is the authority on the bindings' areas; this table is kept beside it. The
+Rust façade also has `Context::interpret()`, which the bindings reach as a
+member of the chart request (`interpret_json`) rather than as an area.
 
 Four names change, and each is a word the namespace now carries:
 `convertTime` → `time.convert`, `canonicalFrame` → `frame.canonical`,
@@ -144,7 +150,7 @@ ADR-0030: "Each is built once when the context is, holds the context, and
 is frozen. Nothing allocates per call, and a consumer may destructure one
 and keep it."
 
-That is a requirement on all four bindings and it is what makes the areas
+That is a requirement on every binding and it is what makes the areas
 worth having rather than merely tidy:
 
 ```js
@@ -246,7 +252,8 @@ as a single key that is not there.
    and a `cached_property` — and each green on its own gate. **Done.**
 4. ~~`check-parity` gains the grouping~~, which is what holds all three to
    one shape. **Done**, and proven red.
-5. Rust's own consumer surface, the READMEs and the site's prose.
+5. ~~Rust's own consumer surface, the READMEs and the site's prose.~~
+   **Done** ([`rust-consumer-surface.md`](rust-consumer-surface.md) §8).
 
 The measured page turned over as step 2 landed, which was expected: it
 measured a flat surface and the surface is not flat any more. It now
@@ -258,10 +265,10 @@ to make is kept here.
 
 The sixth was added after the other five and was **born red**, which is
 why it is there. Step 4 gave `check-parity` the grouping, and that gate
-compares what the three runners *print*; the list of canonical paths is
-written out once per runner, in three languages, so three runners that
+compares what the runners *print*; the list of canonical paths is
+written out once per runner, in each runner's language, so runners that
 all miss the same new operation agree perfectly and the gate is silent.
-The measured page reads all three lists against the layer's own
+The measured page reads every runner's list against the layer's own
 declarations instead — and found `(root).engine`, the accessor a
 consumer reads to reach the engine at all, listed by none of them.
 

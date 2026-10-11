@@ -1,0 +1,26 @@
+[package]
+name = "teistro-pakshi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's Pancha Pakshi: the five birds, their activities by yama and sub-period, death days and relations, after Agastya's verses and Ayyar's tables"
+readme = "README.md"
+# Publishes at the first release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[features]
+# Derives `schemars::JsonSchema` on the types an answer carries, so
+# `cargo xtask gen document-schema` can describe it
+# (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-core/schema"]
+
+[dependencies]
+teistro-core = { path = "../core" }
+serde = { version = "1", features = ["derive"] }
+schemars = { version = "1.2", optional = true }
+
+[lints]
+workspace = true

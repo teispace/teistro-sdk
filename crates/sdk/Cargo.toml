@@ -17,6 +17,7 @@ publish = false
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+schemars = { version = "1.2", optional = true }
 teistro-aspect = { path = "../aspect" }
 teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
@@ -25,7 +26,10 @@ teistro-core = { path = "../core" }
 teistro-dasha = { path = "../dasha", optional = true }
 teistro-hellenistic = { path = "../hellenistic", optional = true }
 teistro-matching = { path = "../matching", optional = true }
+teistro-lalkitab = { path = "../lalkitab", optional = true }
+teistro-pakshi = { path = "../pakshi", optional = true }
 teistro-numerology = { path = "../numerology", optional = true }
+teistro-research = { path = "../research", optional = true }
 teistro-prashna = { path = "../prashna", optional = true }
 teistro-remedies = { path = "../remedies", optional = true }
 teistro-rashifal = { path = "../rashifal", optional = true }
@@ -73,7 +77,7 @@ default = ["builtin-standard", "full"]
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["chart", "kp", "muhurta", "numerology", "prashna", "rashifal", "rectification", "remedies", "svg", "tajika", "western"]
+full = ["chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area: `ChartArea`, the interpretation area and the crates only
 # they reach. Every family read off a chart requires it.
 chart = [
@@ -87,15 +91,60 @@ chart = [
     "dep:teistro-strength",
 ]
 kp = ["chart", "dep:teistro-kp"]
+lalkitab = ["chart", "dep:teistro-lalkitab"]
 muhurta = ["dep:teistro-muhurta"]
 numerology = ["dep:teistro-numerology"]
+pakshi = ["chart", "dep:teistro-pakshi"]
 prashna = ["chart", "dep:teistro-prashna"]
 rectification = ["chart", "dep:teistro-rectification"]
 rashifal = ["chart", "dep:teistro-rashifal"]
 remedies = ["chart", "dep:teistro-remedies"]
+research = ["chart", "dep:teistro-research"]
 svg = ["chart", "dep:teistro-render-svg"]
 tajika = ["chart", "dep:teistro-tajika"]
 western = ["chart", "dep:teistro-western"]
+# Each record's request and answer as JSON Schema, derived by schemars
+# from the types serde reads and writes (`03-design/mcp-server.md` §7,
+# P1): what the agent server's tools state. A family left out of the
+# build contributes nothing (`?`).
+schema = [
+    "dep:schemars",
+    "teistro-aspect/schema",
+    "teistro-astro/schema",
+    "teistro-calendar/schema",
+    "teistro-chart/schema",
+    "teistro-core/schema",
+    "teistro-geometry/schema",
+    "teistro-houses/schema",
+    "teistro-panchanga/schema",
+    "teistro-points/schema",
+    "teistro-port-ephemeris/schema",
+    "teistro-siddhanta/schema",
+    "teistro-state/schema",
+    "teistro-time/schema",
+    "teistro-vargas/schema",
+    "teistro-dasha?/schema",
+    "teistro-gochar?/schema",
+    "teistro-hellenistic?/schema",
+    "teistro-interpret?/schema",
+    "teistro-kp?/schema",
+    "teistro-lalkitab?/schema",
+    "teistro-matching?/schema",
+    "teistro-muhurta?/schema",
+    "teistro-numerology?/schema",
+    "teistro-pakshi?/schema",
+    "teistro-prashna?/schema",
+    "teistro-rashifal?/schema",
+    "teistro-rectification?/schema",
+    "teistro-remedies?/schema",
+    "teistro-render-svg?/schema",
+    "teistro-research?/schema",
+    "teistro-rules?/schema",
+    "teistro-serial?/schema",
+    "teistro-strength?/schema",
+    "teistro-tajika?/schema",
+    "teistro-western?/schema",
+]
 builtin-ephemeris = ["dep:teistro-ephemeris-builtin"]
 builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
 builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
@@ -126,6 +175,10 @@ required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "muhurta"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "days_request"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
@@ -221,6 +274,18 @@ name = "ishta_devata"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "lalkitab"
+required-features = ["builtin-ephemeris", "lalkitab"]
+
+[[test]]
+name = "compose"
+required-features = ["builtin-ephemeris", "kp", "prashna", "tajika", "western"]
+
+[[test]]
+name = "pakshi"
+required-features = ["builtin-ephemeris", "pakshi"]
+
+[[test]]
 name = "remedies"
 required-features = ["builtin-ephemeris"]
 
@@ -313,6 +378,10 @@ name = "readings"
 required-features = ["builtin-ephemeris"]
 
 [[example]]
+name = "research"
+required-features = ["builtin-ephemeris", "research"]
+
+[[example]]
 name = "birth_chart"
 required-features = ["builtin-ephemeris"]
 
@@ -347,3 +416,7 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "rashifal"
 required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "research"
+required-features = ["builtin-ephemeris", "research"]

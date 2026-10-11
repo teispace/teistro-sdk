@@ -1365,6 +1365,7 @@ class AnEngine(WithLibrary):
         }
         with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
             read = ctx.chart.rashifal(week, "WEEKLY")
+            self.assertIsInstance(read.provenance.input_hash, str, "the request is sealed")
             period = read.period
             self.assertEqual((period.reference.calendar, period.reference.day), (Calendar.GREGORIAN, 7))
             self.assertEqual((len(period.transits), len(period.retrograde)), (9, 9))
@@ -1388,7 +1389,10 @@ class AnEngine(WithLibrary):
             # 06:00 at +05:45 is 00:15 UTC on the reference day.
             six = ctx.chart.rashifal({**week, "snapshot": {"at": "CLOCK", "hour": 6, "minute": 0}})
             self.assertAlmostEqual(six.period.instant, 2461320.5 + 15 / 1440, delta=1e-9)
-            self.assertEqual(ctx.chart.rashifal_many([week]), [ctx.chart.rashifal(week)])
+            many = ctx.chart.rashifal_many([week])
+            alone = ctx.chart.rashifal(week)
+            self.assertEqual((many.value[0].period, many.value[0].baseline), (alone.period, alone.baseline))
+            self.assertEqual(many.provenance, alone.provenance)
             only_mars = ctx.chart.rashifal({**week, "events": [Graha.MARS]})
             self.assertTrue(all(e.hit.graha is Graha.MARS for r in only_mars.period.readings for e in r.events))
 
@@ -1495,6 +1499,137 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, prashna={"question": {"house": 13}}, **at)
             self.assertEqual(refused.exception.field, "prashna.question.house")
 
+    def test_an_almanac_reads_a_natives_bird_over_its_days(self) -> None:
+        """Pancha Pakshi crosses as days, each its yamas over the almanac's
+        own sunrise, the weekday and paksha made members and the birds as
+        the library spells them; a polar day has none, and a native that is
+        both a bird and a star is refused by name (`03-design/pakshi.md`)."""
+        from teistro import Nakshatra, Paksha, TeistroError, Vara, date
+
+        madras = Observer(latitude_deg=Latitude(13.0827), longitude_deg=Longitude(80.2707), altitude_m=Altitude(6))
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            days = ctx.almanac.pakshi(
+                from_date=date(Calendar.GREGORIAN, 1984, 10, 30),
+                to_date=date(Calendar.GREGORIAN, 1984, 10, 31),
+                place=madras,
+                utc_offset_seconds=19800,
+                native={"nakshatra": Nakshatra.UTTARA_ASHADHA, "paksha": Paksha.SHUKLA},
+            )
+            self.assertIsInstance(days.provenance.input_hash, str, "the request is sealed")
+            self.assertEqual(len(days.value), 2)
+            tuesday, wednesday = (day.reading for day in days.value)
+            assert tuesday is not None and wednesday is not None
+            self.assertEqual(tuesday.day.next_sunrise, wednesday.day.sunrise)
+            self.assertEqual((wednesday.day.vara, wednesday.day.paksha), (Vara.BUDHAVARA, Paksha.SHUKLA))
+            self.assertEqual(wednesday.bird, "COCK")
+            # PUL p. vii: the cock sleeps in the day's second yama and dies from the third.
+            self.assertEqual([y.activity for y in wednesday.yamas[1:3]], ["SLEEPING", "DYING"])
+            self.assertEqual(wednesday.yamas[0].subs[0].owner_is, "OWN")
+            self.assertEqual(days.value[1].date.day, 31)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.almanac.pakshi(
+                    from_date=date(Calendar.GREGORIAN, 1984, 10, 31),
+                    place=madras,
+                    utc_offset_seconds=19800,
+                    native={"bird": "OWL", "nakshatra": "nakshatra.BHARANI", "paksha": "paksha.SHUKLA"},  # type: ignore[arg-type]
+                )
+            self.assertEqual(refused.exception.field, "pakshi.native.bird")
+        tromso = Observer(latitude_deg=Latitude(69.6492), longitude_deg=Longitude(18.9553), altitude_m=Altitude(0))
+        with self.teistro.context(
+            profile=PROFILE, ephemeris=Ephemeris.BUILTIN, settings={"day": {"polar_day_policy": "NEAREST_EVENT"}}
+        ) as polar:
+            (midsummer,) = polar.almanac.pakshi(
+                from_date=date(Calendar.GREGORIAN, 2024, 6, 21),
+                place=tromso,
+                utc_offset_seconds=7200,
+                native={"bird": "OWL"},
+            ).value
+            self.assertIsNone(midsummer.reading)
+
+    def test_a_study_counts_and_tests_its_rules_over_a_batch_of_births(self) -> None:
+        """A study crosses with its provenance, whose input hash is its
+        pre-registration; a seed past what a JavaScript number holds is the
+        same seed here, and a field the study does not read is refused by
+        name (`03-design/research.md`)."""
+        from teistro import DashaSystem, ResearchBirth, ResearchCountRow, ResearchDesign, ResearchRow, TeistroError
+
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0))
+        births = [ResearchBirth(instant=2447000.25 + 977.3 * i, place=kathmandu, utc_offset_seconds=20700) for i in range(6)]
+        design: ResearchDesign = {"groups": [0, 1, 0, 1, 0, 1]}
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            counted = ctx.research.counts(births=births, rules={"shipped": ["YOGAS"]}, design=design)
+            self.assertGreater(len(counted.rows), 0)
+            for row in counted.rows:
+                self.assertIsInstance(row, ResearchCountRow)
+                for group in row.counts:
+                    self.assertEqual(group.present + group.absent + group.unreadable + group.unstable, 3, row.predicate)
+            contrast = {"kind": "CASE_VS_REST", "case": 1}
+            tested = ctx.research.compare(
+                births=births,
+                rules={"shipped": ["YOGAS"]},
+                design=design,
+                test={"seed": 2**64 - 1, "permutations": 199, "contrast": contrast, "alpha": 0.05},
+            )
+            self.assertEqual(tested.permutations, 199)
+            self.assertEqual(tested.resolution, 1 / 200)
+            for one in tested.rows:
+                self.assertIsInstance(one, ResearchRow)
+                self.assertGreaterEqual(one.p.value, tested.resolution)
+                self.assertGreaterEqual(one.adjusted.max_t, one.p.value)
+                self.assertIsNotNone(one.under_alpha)
+            self.assertNotEqual(tested.provenance.input_hash, counted.provenance.input_hash)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.research.compare(
+                    births=births,
+                    rules={"shipped": ["YOGAS"]},
+                    design=design,
+                    test={"seed": 1, "permutations": 19},
+                )
+            self.assertEqual(refused.exception.field, "research.test")
+            with self.assertRaises(TeistroError) as refused:
+                ctx.research.timed(
+                    subjects=[],
+                    rules={"shipped": ["YOGAS"]},
+                    dasha=DashaSystem.VIMSHOTTARI,
+                    shuffle="AGES_AT_EVENT",
+                    test={"seed": 1, "permutations": 19},
+                )
+            self.assertEqual(refused.exception.field, "research.subjects")
+
+    def test_a_chart_carries_its_lalkitab(self) -> None:
+        """Lal Kitab crosses whole, its grahas made members, the cycle from
+        the book's general start unless asked, the year and its annual teva
+        only when asked, and a bad year refused by its record's name
+        (`03-design/lalkitab.md`)."""
+        from teistro import TeistroError
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).lalkitab)
+            plain = ctx.chart.found(instant=instant, lalkitab={}, **at).lalkitab
+            assert plain is not None
+            self.assertEqual((plain.cycle.planet, plain.cycle.year), (Graha.SATURN, 1))
+            self.assertIsNone(plain.year)
+            self.assertEqual(len(plain.reading.planets), 9)
+            self.assertTrue(all(isinstance(p.graha, Graha) and 1 <= p.house <= 12 for p in plain.reading.planets))
+            self.assertEqual((plain.periods[0].from_year, plain.periods[-1].to_year), (1, 120))
+            rows = [[(h + y) % 12 + 1 for h in range(12)] for y in range(120)]
+            read = ctx.chart.found(
+                instant=instant,
+                lalkitab={"cycle": {"planet": Graha.VENUS, "year": 17}, "year": 43, "varshphal": {"rows": rows}},
+                **at,
+            ).lalkitab
+            assert read is not None and read.year is not None and read.year.annual is not None
+            self.assertEqual(read.year.ruler, Graha.JUPITER)
+            self.assertEqual(read.year.thirds, (Graha.KETU, Graha.JUPITER, Graha.SUN))
+            for natal, moved in zip(read.reading.planets, read.year.annual.planets):
+                self.assertEqual(moved.house, (natal.house + 41) % 12 + 1)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, lalkitab={"year": 121}, **at)
+            self.assertEqual(refused.exception.field, "lalkitab.year")
+
     def test_a_chart_carries_its_remedies(self) -> None:
         """Remedies cross whole, their keys made members, the antardaśā's
         śānti only once `at` asks for the running periods (the request asks
@@ -1548,6 +1683,94 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as refused:
                 ctx.chart.found(instant=instant, remedies={"rules": {"devatas": {}}}, **at)  # type: ignore[arg-type]
             self.assertEqual(refused.exception.field, "remedies.rules.devatas")
+
+    def test_a_chart_carries_its_rectification(self) -> None:
+        """A rectification crosses whole, its catalogue keys made members, each
+        reading only when asked, every stage note narrowed by its class, and
+        a window of no minutes refused by its record's name
+        (`03-design/rectification.md`)."""
+        from teistro import EventFitNote, ReportedTimeNote, TattvaSexNote
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).rectification)
+            purified = ctx.chart.found(instant=instant, rectification={"purify": {"minutes": 20}}, **at).rectification
+            assert purified is not None and purified.purified is not None
+            self.assertIsNone(purified.conception)
+            self.assertIsNone(purified.circumstance)
+            self.assertIsNone(purified.baseline)
+            self.assertIsNone(purified.svarodaya)
+            runs = purified.purified.intervals + purified.purified.removed
+            self.assertTrue(runs)
+            self.assertGreater(purified.purified.grid.cells, 0)
+            clauses = [c for run in runs for c in run.verdict.clauses]
+            self.assertTrue(all(isinstance(c.sign, Rashi) and isinstance(c.lagna, Rashi) for c in clauses))
+            read = ctx.chart.found(
+                instant=instant,
+                rectification={
+                    "purify": {"minutes": 20},
+                    "conception": {},
+                    "circumstance": {"facts": {"fatherPresent": False}},
+                    "baseline": {
+                        "uncertaintyMinutes": 30,
+                        "sex": "MALE",
+                        "events": [
+                            {"kind": "MARRIAGE", "on": instant + 25 * 365.25},
+                            {"kind": "ACCIDENT", "on": instant + 30 * 365.25, "heldOut": True},
+                        ],
+                    },
+                },
+                **at,
+            ).rectification
+            assert read is not None and read.purified is not None and read.conception is not None
+            assert read.circumstance is not None and read.baseline is not None
+            moon = read.conception.moon
+            self.assertIsInstance(moon.moon_sign, Rashi)
+            self.assertIsInstance(moon.rising, Rashi)
+            self.assertIsInstance(moon.predicted.sign, Rashi)
+            self.assertTrue(moon.moon_nakshatra is None or isinstance(moon.moon_nakshatra, Nakshatra))
+            self.assertIn(read.conception.pranapada_house.house, range(1, 13))
+            circumstance = read.circumstance
+            self.assertEqual(len(circumstance.sky.grahas_deg), 7)
+            self.assertIsInstance(circumstance.presentation.lord, Graha)
+            self.assertIn(circumstance.presentation.rising, ("SIRSHODAYA", "PRISHTODAYA", "UBHAYODAYA"))
+            self.assertTrue(all(isinstance(g, Graha) for g in circumstance.attending.between))
+            self.assertEqual([w.indication for w in circumstance.weights], ["FATHER"])
+            baseline = read.baseline
+            self.assertTrue(baseline.candidates)
+            self.assertIsInstance(baseline.candidates[0].lagna, Rashi)
+            self.assertIsInstance(baseline.candidates[0].lagna_nakshatra, Nakshatra)
+            self.assertLess(baseline.window.from_jd, baseline.window.to_jd)
+            self.assertEqual((baseline.events_used, baseline.events_held_out, len(baseline.hold_out)), (1, 1, 1))
+            notes = [note for stage in baseline.stages for note in stage.notes]
+            sexed = [note for note in notes if isinstance(note, TattvaSexNote)]
+            self.assertEqual([(note.kind, note.sex) for note in sexed], [("TATTVA_SEX", "MALE")])
+            reported = [note for note in notes if isinstance(note, ReportedTimeNote)]
+            self.assertEqual([note.uncertainty_minutes for note in reported], [30])
+            fits = [note for note in notes if isinstance(note, EventFitNote)]
+            self.assertEqual([(note.event, note.id, note.event_kind) for note in fits], [(0, None, "MARRIAGE")])
+            self.assertTrue(all(isinstance(g, Graha) for g in fits[0].lords))
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, rectification={"purify": {"minutes": 0}}, **at)
+            self.assertEqual(refused.exception.field, "rectification.purify.minutes")
+            told = ctx.chart.found(instant=instant, rectification={"svarodaya": {"minutes": 20}}, **at).rectification
+            assert told is not None and told.svarodaya is not None
+            self.assertIsNone(told.purified)
+            sv = told.svarodaya
+            self.assertIsInstance(sv.at.tithi, Tithi)
+            self.assertTrue(sv.runs)
+            self.assertAlmostEqual(sv.runs[0].from_jd, instant - 20 / 1440, delta=1e-6)
+            self.assertAlmostEqual(sv.runs[-1].to_jd, instant + 20 / 1440, delta=1e-6)
+            for one, after in zip(sv.runs, sv.runs[1:]):
+                self.assertEqual(one.to_jd, after.from_jd, "the runs tile the window")
+            self.assertLessEqual(sv.at.run.from_jd, instant)
+            self.assertLess(instant, sv.at.run.to_jd)
+            self.assertEqual(sv.at.run.sex, "FEMALE" if sv.at.run.nadi == "MOON" else "MALE")
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, rectification={"svarodaya": {"minutes": 0}}, **at)
+            self.assertEqual(refused.exception.field, "rectification.svarodaya.minutes")
 
     def test_a_chart_carries_its_kp_reading(self) -> None:
         """KP crosses whole, its keys made members: the lords bracket each

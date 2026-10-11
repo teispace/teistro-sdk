@@ -12,6 +12,7 @@ const NUMEROLOGY: &str = "numerology";
 /// A name and a birth date, and the readings they are taken under.
 /// Numerology reads no sky, so this is the whole request.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct NumerologyRequest {
     /// The name, in the 26 Latin letters.

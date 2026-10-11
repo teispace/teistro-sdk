@@ -47,6 +47,7 @@ const RAYS: [(Graha, f64); 7] = [
 
 /// Which place doubles a graha's rays or takes a share of them (C306).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum RayPlace {
     /// The dwadasamsa, as the note reads it: its own, its exaltation or a
@@ -63,6 +64,7 @@ pub enum RayPlace {
 /// request reads it, and the defaults are the note's, whose figure the
 /// kernel reproduces.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct RasmiRules {
     /// Which place doubles or reduces them.
@@ -78,6 +80,7 @@ impl RasmiRules {
 
 /// Whether a graha is rising towards its exaltation or falling from it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Facing {
     /// Abhimukha: risen from its debilitation and going towards its
@@ -90,6 +93,7 @@ pub enum Facing {
 
 /// One graha's rays and years, step by step.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaRays {
     /// Which graha.
     pub graha: Graha,
@@ -117,6 +121,7 @@ pub struct GrahaRays {
 /// The seven grahas' rays, the class of life their sum gives, and the years
 /// they give.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Rasmi {
     /// The seven, the Sun to Saturn.
     pub grahas: [GrahaRays; 7],

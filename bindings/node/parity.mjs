@@ -371,6 +371,27 @@ const charts = geo.chart.foundMany({
   perfection: { house: 7, rules: { horizonDays: 120 } },
   prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE' } },
   remedies: { at: 2460676.5, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
+  // A varshphal list with the book's structure and none of its numbers:
+  // year y sends natal house h to h + y − 1, round the twelve.
+  lalkitab: {
+    cycle: { planet: 'graha.VENUS', year: 17 },
+    year: 43,
+    varshphal: { rows: Array.from({ length: 120 }, (_, y) => Array.from({ length: 12 }, (_, h) => ((h + y) % 12) + 1)) },
+  },
+  rectification: {
+    purify: { minutes: 20 },
+    conception: {},
+    circumstance: { facts: { fatherPresent: false } },
+    baseline: {
+      uncertaintyMinutes: 30,
+      sex: 'MALE',
+      events: [
+        { kind: 'MARRIAGE', on: 2469000.5 },
+        { kind: 'ACCIDENT', on: 2471000.5, heldOut: true },
+      ],
+    },
+    svarodaya: { minutes: 20 },
+  },
   westernAspects: {
     aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'QUINCUNX', 'OPPOSITION'],
     orbs: {
@@ -462,6 +483,87 @@ function matterSaid(at, m) {
   put(`${at}-pair`, m.between === null ? '-' : pairSaid(m.between));
   put(`${at}-unanswered`, m.unanswered.join(','));
   put(`${at}-held`, m.held.map(heldSaid).join(' '));
+}
+
+/**
+ * A chart read as a birth time to rectify, as every runner prints it under
+ * `prefix`: the purifier's runs, the conception, the circumstances and the
+ * baseline's cascade.
+ */
+function putRectification(prefix, read) {
+  const list = (values) => values.join(',') || '-';
+  const some = (value) => (value === null ? '-' : `${value}`);
+  const verdict = (one) =>
+    `${one.pure} ${list(one.clauses.map((c) => `${c.purifier}:${c.reference}:${c.sign}:${c.lagna}:${c.house}:${c.held}:${c.counted}`))}`;
+  const { purified, conception, circumstance, baseline } = read;
+  put(
+    `${prefix}-purified`,
+    `${purified.grid.cells} ${number(purified.grid.stepDays)} ${purified.intervals.length} ${purified.removed.length} ${list(purified.edges.map(number))}`,
+  );
+  [...purified.intervals, ...purified.removed].forEach((run, k) =>
+    put(`${prefix}-purified-${k}`, `${number(run.from)} ${number(run.to)} ${verdict(run.verdict)}`),
+  );
+  const { pranapadaHouse, nisheka, moon } = conception;
+  const { written } = nisheka.count.span;
+  put(
+    `${prefix}-conception`,
+    `${number(conception.birth)} ${pranapadaHouse.house} ${pranapadaHouse.auspicious} ${number(nisheka.count.instant)} ${written.months}:${written.days}:${written.ghatis}:${written.palas} ${number(nisheka.lagnaDeg)} ${verdict(nisheka.verdict)}`,
+  );
+  put(
+    `${prefix}-conception-moon`,
+    `${moon.predicted.dvadashamsha} ${moon.predicted.sign} ${some(moon.predicted.nakshatra)} ${moon.moonSign} ${some(moon.moonNakshatra)} ${moon.signAgrees} ${some(moon.nakshatraAgrees)} ${moon.rising} ${moon.predictedPart} ${moon.bornByDay} ${moon.partAgrees} ${number(moon.risenFraction)} ${number(moon.elapsedFraction)} ${number(pranapadaHouse.pranapadaDeg)}`,
+  );
+  const { father, presentation, lamp, attending } = circumstance;
+  put(
+    `${prefix}-circumstance`,
+    `${father.moonAspect} ${father.unseen} ${father.saturnRising} ${father.marsSetting} ${father.moonHemmed} ${father.away} ${some(father.whereabouts)} ${father.sunHouse} ${circumstance.sky.lordRetrograde}`,
+  );
+  put(
+    `${prefix}-circumstance-birth`,
+    `${presentation.by} ${presentation.rising} ${presentation.lord} ${presentation.lordRetrograde} ${presentation.foretold} ${number(lamp.oil)}:${lamp.oilLevel} ${number(lamp.wick)}:${lamp.wickLevel} ${list(attending.between)} ${list(attending.visible)} ${attending.inside} ${attending.outside}`,
+  );
+  put(`${prefix}-circumstance-weights`, list(circumstance.weights.map((w) => `${w.indication}:${w.agrees}`)));
+  put(
+    `${prefix}-baseline`,
+    `${number(baseline.window.from)} ${number(baseline.window.to)} ${number(baseline.sunrise)} ${list(baseline.intervals.map((at) => `${number(at.from)}:${number(at.to)}`))} ${number(baseline.intervalWidthMinutes)} ${number(baseline.resolutionMinutes)} ${number(baseline.suggested)} ${number(baseline.concentration)} ${baseline.candidates.length} ${baseline.eventsUsed} ${baseline.eventsHeldOut}`,
+  );
+  const note = (one) => {
+    switch (one.kind) {
+      case 'TATTVA_SEX':
+        return `TATTVA_SEX:${one.sex}:${number(one.admittedMinutes)}:${one.penalised}:${one.of}`;
+      case 'REPORTED_TIME':
+        return `REPORTED_TIME:${one.accuracy}:${number(one.uncertaintyMinutes)}`;
+      case 'EVENT_FIT':
+        return `EVENT_FIT:${one.event}:${some(one.id)}:${one.eventKind}:${list(one.lords)}:${number(one.contribution)}`;
+    }
+  };
+  baseline.stages.forEach((stage, k) =>
+    put(
+      `${prefix}-baseline-stage-${k}`,
+      `${stage.stage} ${stage.applied} ${stage.flat} ${number(stage.resolutionMinutes)} ${list(stage.notes.map(note))}`,
+    ),
+  );
+  const [best] = baseline.candidates;
+  if (best !== undefined) {
+    put(
+      `${prefix}-baseline-best`,
+      `${number(best.at)} ${number(best.probability)} ${number(best.logPosterior)} ${best.lagna} ${best.lagnaNakshatra}`,
+    );
+  }
+  baseline.holdOut.forEach((held, k) =>
+    put(
+      `${prefix}-baseline-held-${k}`,
+      `${held.event} ${held.kind} ${number(held.scoreAtFit)} ${number(held.baseline)} ${held.supported}`,
+    ),
+  );
+  const { at, runs } = read.svarodaya;
+  const runSaid = (one) => `${number(one.from)} ${number(one.to)} ${one.nadi} ${one.turn} ${one.tattva} ${one.sex}`;
+  put(
+    `${prefix}-svarodaya`,
+    `${number(at.sunrise)} ${number(at.nextSunrise)} ${at.tithi} ${at.sunriseNadi} ${number(at.junctions[0])}:${number(at.junctions[1])} ${runs.length}`,
+  );
+  put(`${prefix}-svarodaya-at`, runSaid(at.run));
+  runs.forEach((one, k) => put(`${prefix}-svarodaya-${k}`, runSaid(one)));
 }
 
 /** An Ashta Koota as every runner prints it, under `prefix`. */
@@ -980,6 +1082,30 @@ for (const chart of charts) {
       `${one.twelfth.sign} ${devotions(one.twelfth.devotions)} ${list(one.twelfth.minor)} ${one.sign} ${one.house} ${devotions(one.joined)}`,
     );
   }
+  const lk = chart.lalkitab;
+  const lkFlags = lk.reading.flags;
+  put(
+    `chart-${i}-lalkitab`,
+    `${lk.cycle.planet}:${lk.cycle.year} ${lk.year.year}:${lk.year.ruler} ${list(lk.year.thirds)} ${lkFlags.ratandha} ${lkFlags.nabalig} ${list(lkFlags.dharmi)} ${list(lkFlags.sathi.map((pair) => pair.join('|')))}`,
+  );
+  lk.reading.planets.forEach((p) =>
+    put(
+      `chart-${i}-lalkitab-planet-${p.graha}`,
+      `${p.house} ${list(p.dignities)} ${list(p.owners.map((o) => `${o.owner}:${o.regard}`))} ${p.awake} ${p.kayam} ${list(p.casts.map((c) => `${c.to}:${c.strength}:${c.onto.join('|')}`))}`,
+    ),
+  );
+  lk.reading.houses.forEach((h) =>
+    put(
+      `chart-${i}-lalkitab-house-${h.house}`,
+      `${list(h.occupants)} ${list(h.lookedAtBy.map((l) => `${l.from}:${l.strength}`))} ${h.awake} ${h.waker}`,
+    ),
+  );
+  put(
+    `chart-${i}-lalkitab-debts`,
+    `${list(lk.reading.masnui.map((m) => `${m.pair.join('|')}:${m.house}:${m.countsAs}`))} ${list(lk.reading.rinas.map((r) => `${r.rin}:${r.of}:${r.seated.map((s) => `${s.enemy}@${s.house}`).join('|')}`))} ${list(lk.reading.pitri.map((p) => `${p.ninth}:${p.mercury}`))}`,
+  );
+  put(`chart-${i}-lalkitab-periods`, list(lk.periods.map((p) => `${p.planet}:${p.from}-${p.to}`)));
+  put(`chart-${i}-lalkitab-annual`, list(lk.year.annual.planets.map((p) => `${p.graha}:${p.house}`)));
   const { progressed: pg, directed: dr, contacts } = chart.progressions;
   put(
     `chart-${i}-progressed`,
@@ -1065,6 +1191,7 @@ for (const chart of charts) {
       `${at.first} ${at.second} ${at.middle} ${at.far ? 1 : 0} ${number(at.distanceDeg)} ${number(at.fromAxisDeg)} ${number(at.orbDeg)}`,
     ),
   );
+  putRectification(`chart-${i}-rectification`, chart.rectification);
   putAshta(`chart-${i}`, chart.matching);
   putPorutham(`chart-${i}`, chart.porutham);
   const mars = chart.kuja;
@@ -1591,7 +1718,9 @@ for (const [name, rules] of [
   const day = { first: gregorian(2024, 6, 17), place, utcOffsetSeconds: 20700, snapshot: { at: 'CLOCK', hour: 6, minute: 0 }, events: ['MARS', 'SATURN'] };
   const ymd = (date) => `${date.year}-${date.month}-${date.day}`;
   const bare = (key) => key.slice(key.indexOf('.') + 1);
-  geo.chart.rashifalMany([week, day], 'WEEKLY').forEach(({ period, baseline }, n) => {
+  const sealed = geo.chart.rashifalMany([week, day], 'WEEKLY');
+  put('rashifal-hash', sealed.provenance.inputHash);
+  sealed.value.forEach(({ period, baseline }, n) => {
     const key = (what) => `rashifal-${n}${what}`;
     put(key('-period'), `${ymd(period.first)} ${ymd(period.last)} ${ymd(period.reference)} ${number(period.instant)}`);
     put(key('-panchanga'), `${period.panchanga.tithi} ${period.panchanga.yoga} ${period.panchanga.muhurtaYogas}`);
@@ -1616,6 +1745,98 @@ for (const [name, rules] of [
       }
     });
   });
+}
+
+// The Pancha Pakshi requests every runner sends, at Madras: a native by
+// birth star in the dark half under Pulippani's lengths and relations over
+// two days, and a bird named outright under the defaults for one.
+{
+  const madras = { latitude: 13.0827, longitude: 80.2707, altitude: 6 };
+  const ymd = (date) => `${date.year}-${date.month}-${date.day}`;
+  const asked = [
+    {
+      from: gregorian(1984, 10, 30),
+      to: gregorian(1984, 10, 31),
+      place: madras,
+      utcOffsetSeconds: 19800,
+      native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.KRISHNA', rule: 'BY_PAKSHA' },
+      rules: { subs: 'PULIPPANI', relations: 'PULIPPANI' },
+    },
+    { from: gregorian(1991, 5, 21), place: madras, utcOffsetSeconds: 19800, native: { bird: 'OWL' } },
+  ];
+  asked.forEach((request, r) => {
+    const sealed = geo.almanac.pakshi(request);
+    put(`pakshi-${r}-hash`, sealed.provenance.inputHash);
+    sealed.value.forEach(({ date: civil, reading }, n) => {
+      const key = `pakshi-${r}-${n}`;
+      if (reading === null) {
+        put(key, `${ymd(civil)} none`);
+        return;
+      }
+      const { day } = reading;
+      put(
+        key,
+        `${ymd(civil)} ${day.vara} ${day.paksha} ${number(day.sunrise)} ${number(day.sunset)} ${number(day.nextSunrise)} ${reading.bird} ${reading.deathBird} ${reading.deadToday} ${reading.eaters.join(',')}`,
+      );
+      reading.yamas.forEach((yama, k) => {
+        const subs = yama.subs.map((s) => `${s.activity}:${s.owner}:${s.share}:${s.ownerIs}:${number(s.span.to)}`);
+        put(
+          `${key}-yama-${k}`,
+          `${yama.half} ${yama.yama} ${number(yama.span.from)} ${number(yama.span.to)} ${yama.activity} ${yama.quality} ${subs.join(',')}`,
+        );
+      });
+    });
+  });
+}
+
+// The studies every runner sends (`03-design/research.md`): eight births
+// at Kathmandu a few years apart, the shipped yogas as the predicates,
+// compared by alternate labels, read against their own recombined
+// population, and each delivered by the Vimshottari at an event of its
+// life under the age shuffle.
+{
+  const kathmandu = { latitude: 27.7172, longitude: 85.324 };
+  const births = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => ({
+    instant: 2447000.25 + 977.3 * i,
+    place: kathmandu,
+    utcOffsetSeconds: 20700,
+  }));
+  const rules = { shipped: ['YOGAS'] };
+  const row = (r) => {
+    const counts = r.counts.map((c) => `${c.present}:${c.absent}:${c.unreadable}:${c.unstable}`).join(',');
+    if (r.p === undefined) return `${r.predicate} ${counts}`;
+    const optional = (value) => (value === undefined || value === null ? 'none' : number(value));
+    return `${r.predicate} ${counts} ${optional(r.observed)} ${r.p.exceed} ${number(r.p.value)} ${number(r.adjusted.maxT)} ${number(r.adjusted.holm)} ${number(r.adjusted.bh)} ${optional(r.exact)} ${optional(r.effect?.riskDifference.estimate)} ${optional(r.expected?.expected)}`;
+  };
+  const putStudy = (name, answer) => {
+    put(`research-${name}-hash`, answer.provenance.inputHash);
+    if (answer.permutations !== undefined) {
+      put(`research-${name}-test`, `${answer.permutations} ${number(answer.resolution)} ${answer.shuffle}`);
+    }
+    answer.rows.forEach((r, k) => put(`research-${name}-row-${k}`, row(r)));
+  };
+  const groups = births.map((_, i) => i % 2);
+  putStudy('counts', geo.research.counts({ births, rules, holds: 'FORMED', design: { groups } }));
+  putStudy(
+    'compare',
+    geo.research.compare({
+      births,
+      rules,
+      design: { groups },
+      test: { seed: 5, permutations: 199, contrast: { kind: 'CASE_VS_REST', case: 1 }, alpha: 0.05 },
+    }),
+  );
+  putStudy('expected', geo.research.expected({ births, rules, control: { seed: 4, replicates: 3 } }));
+  putStudy(
+    'timed',
+    geo.research.timed({
+      subjects: births.map((birth, i) => ({ birth, event: birth.instant + 9000.5 + 211 * i })),
+      rules,
+      dasha: 'dasha_system.VIMSHOTTARI',
+      shuffle: 'AGES_AT_EVENT',
+      test: { seed: 3, permutations: 49 },
+    }),
+  );
 }
 geo.dispose();
 
@@ -1707,8 +1928,15 @@ for (const [path, member] of [
   ['chart.layout', shape.chart.layout],
   ['chart.found', shape.chart.found],
   ['chart.found_many', shape.chart.foundMany],
+  ['chart.rashifal', shape.chart.rashifal],
+  ['chart.rashifal_many', shape.chart.rashifalMany],
   ['almanac.of', shape.almanac.of],
   ['almanac.day', shape.almanac.day],
+  ['almanac.pakshi', shape.almanac.pakshi],
+  ['research.counts', shape.research.counts],
+  ['research.compare', shape.research.compare],
+  ['research.expected', shape.research.expected],
+  ['research.timed', shape.research.timed],
   ['engine.names', shape.engine.names],
   ['engine.signature', shape.engine.signature],
   ['engine.call', shape.engine.call],

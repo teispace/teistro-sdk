@@ -1,0 +1,54 @@
+---
+title: ts_pakshi
+description: "Reads a native's bird over each civil day of a range at a place and answers with `{value, provenance}` as canonical JSON, `value` an array of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset and next sunrise, each `{half, yama, span, activity, quality, subs}` with every sub-period's activity, owner, span and how the native regards its owner, beside the day's `{sunrise, sunset, nextSunrise, vara, paksha}`, the bird, its death bird and the first eaters; null on a day the Sun does not both rise and set."
+---
+
+Reads a native's bird over each civil day of a range at a place and answers with `{value, provenance}` as canonical JSON, `value` an array of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset and next sunrise, each `{half, yama, span, activity, quality, subs}` with every sub-period's activity, owner, span and how the native regards its owner, beside the day's `{sunrise, sunset, nextSunrise, vara, paksha}`, the bird, its death bird and the first eaters; null on a day the Sun does not both rise and set.
+
+`request_json` is `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`: the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the place, the offset and `native` optional. A key it does not read, a place or offset out of range or a native that is neither is `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context without an ephemeris is `CAPABILITY`, as is a build that leaves the `pakshi` family out.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_pakshi(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.pakshi(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.pakshi(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/pakshi.rs`.

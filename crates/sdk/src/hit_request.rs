@@ -14,6 +14,7 @@ use teistro_serial::Document;
 
 /// A kind of event a hit list reports, spelled as the event's own `kind`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum HitKind {
@@ -341,8 +342,9 @@ const HITS: &str = "hits";
 /// record is; every field but the window is optional, and an absent one is
 /// the default.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct Asked {
+pub(crate) struct Asked {
     from: f64,
     to: f64,
     #[serde(default)]
@@ -361,6 +363,7 @@ struct Asked {
 /// (`{"point": "GRAHA", "graha": "graha.MOON"}`, `{"point": "LAGNA"}`), or
 /// bare, a graha's key or `"LAGNA"`.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub(crate) struct PointAsked(NatalPoint);
 

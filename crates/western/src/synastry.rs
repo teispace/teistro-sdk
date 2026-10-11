@@ -41,6 +41,7 @@ const ROOT: &str = "synastry";
 
 /// Which zodiac two charts are compared in (C241).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum SynastryZodiac {
@@ -57,6 +58,7 @@ pub enum SynastryZodiac {
 /// What a synastry is asked: the aspects and orbs a chart's own table
 /// reads, whether each chart's lagna joins its planets, and the zodiac.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", from = "Asked")]
 pub struct SynastryRequest {
     /// The aspects, and the orbs they are read under: Leo's nine under his
@@ -95,6 +97,7 @@ pub struct SynastryRequest {
 /// flat, without `flatten`, which buffers what it reads and so names a
 /// refusal inside by the record alone, not by the field that failed.
 #[derive(Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 struct Asked {
     aspects: Vec<WesternAspect>,
@@ -307,6 +310,7 @@ impl SynastryRequest {
 
 /// A point of one chart as a synastry reads it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct SynastryPoint {
     /// Which: a planet, or the lagna.
@@ -344,6 +348,7 @@ impl SynastryPoint {
 /// second. Two births do not move against each other, so it has no
 /// applying.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct SynastryRow {
     /// The point of the first chart.
@@ -404,6 +409,7 @@ pub fn synastry(
 /// A point of one chart as a synastry's parallels read it: its distance
 /// from the equator.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct DeclinedPoint {
     /// Which: a planet, or the lagna.
@@ -435,6 +441,7 @@ impl DeclinedPoint {
 /// A point of one chart and a point of the other the same distance from
 /// the equator, within the orb.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct SynastryParallelRow {
     /// The first chart's point.

@@ -1,13 +1,13 @@
 # The grahas' arudhas
 
-Status: `draft`, 2026-09-26; §6 steps 1 and 2 **built** the same day.
-Written from the text and a measurement before any code; the building is
-expected to correct it, and did once (§4).
+Status: `built`, 2026-09-26; every step of §6 built. Written from the
+text and a measurement before any code; the building is expected to
+correct it, and did once (§4).
 
 Derives from the roadmap's Phase 7 list of what is left of `jaimini` (the
 graha arudhas), and from `jaimini-significators.md`, whose reading this
 extends: the arudhas are one value a graha, so they cross as two more
-columns of the `jaimini_houses` section rather than a section of their own.
+columns of the `jaimini_grahas` section rather than a section of their own.
 
 ## 1. What the text says
 
@@ -89,13 +89,13 @@ and the dasha crate does not depend on it.
 - The nodes: `None` under `NONE`, Aquarius and Scorpio counted otherwise.
 - A planet in one of its two signs: the verse counts to "its own sign",
   and the ladder decides which; held by a named case.
-- Parity across the four languages through the existing parity lines.
+- Parity in every runner through the existing parity lines.
 
 ## 6. Order of work
 
 1. The function and the knob, with the tests above: **done**.
-2. The reading and the boundary columns: **done**, with parity across the
-   four languages.
+2. The reading and the boundary columns: **done**, with parity in every
+   runner.
 3. C135, the bhava padas' two-lorded signs: **done**, and not as a knob.
    Researching it found that v. 7's two-lorded sign exists only where a node
    co-lords Scorpio or Aquarius, so under the default co-lordship the
@@ -111,4 +111,4 @@ and the dasha crate does not depend on it.
    left the padas' own functions unreachable to a Rust consumer. The
    arudhas pass had its own copy of the count; it now calls the shipped
    `arudha_by`, every existing row unchanged, and measures v. 7's reading:
-   46 of 852 recorded padas move under `BOTH`.
+   `arudhas-measured.md` counts the recorded padas that move under `BOTH`.

@@ -22,6 +22,13 @@ import json
 
 from teistro import (
     AshtaKoota,
+    ResearchBirth,
+    ResearchCountRow,
+    ResearchCounts,
+    ResearchRow,
+    ResearchSubject,
+    ResearchTested,
+    RuleRequest,
     Context,
     NaamRules,
     NumerologyRules,
@@ -84,6 +91,13 @@ from teistro import (
     EssentialDignity,
     Perfection,
     PlanItem,
+    PurifierVerdict,
+    Rectification,
+    RectificationRequest,
+    ReportedTimeNote,
+    StageNote,
+    SvarodayaRun,
+    TattvaSexNote,
     Scale,
     Teistro,
     TeistroError,
@@ -222,6 +236,47 @@ def listed_or_dash(items: Iterable[str]) -> str:
     return ",".join(items) or "-"
 
 
+def put_lalkitab(at: str, lk: Any) -> None:
+    """A chart's Lal Kitab, each row under `at`."""
+
+    def keys(grahas: Iterable[Any]) -> str:
+        return listed_or_dash(g.full_key for g in grahas)
+
+    def piped(grahas: Iterable[Any]) -> str:
+        return "|".join(g.full_key for g in grahas)
+
+    flags = lk.reading.flags
+    year = lk.year
+    assert year is not None and year.annual is not None
+    put(
+        at,
+        f"{lk.cycle.planet.full_key}:{lk.cycle.year} {year.year}:{year.ruler.full_key} {keys(year.thirds)}"
+        f" {str(flags.ratandha).lower()} {str(flags.nabalig).lower()} {keys(flags.dharmi)}"
+        f" {listed_or_dash(piped(pair) for pair in flags.sathi)}",
+    )
+    for p in lk.reading.planets:
+        put(
+            f"{at}-planet-{p.graha.full_key}",
+            f"{p.house} {listed_or_dash(p.dignities)} {listed_or_dash(f'{o.owner.full_key}:{o.regard}' for o in p.owners)}"
+            f" {str(p.awake).lower()} {str(p.kayam).lower()}"
+            f" {listed_or_dash(f'{c.to}:{c.strength}:{piped(c.onto)}' for c in p.casts)}",
+        )
+    for h in lk.reading.houses:
+        put(
+            f"{at}-house-{h.house}",
+            f"{keys(h.occupants)} {listed_or_dash(f'{look.from_house}:{look.strength}' for look in h.looked_at_by)}"
+            f" {str(h.awake).lower()} {h.waker.full_key}",
+        )
+    masnui = listed_or_dash(f"{piped(m.pair)}:{m.house}:{m.counts_as}" for m in lk.reading.masnui)
+    rinas = listed_or_dash(
+        f"{d.rin}:{d.of.full_key}:{'|'.join(f'{e.enemy.full_key}@{e.house}' for e in d.seated)}" for d in lk.reading.rinas
+    )
+    pitri = listed_or_dash(f"{q.ninth.full_key}:{q.mercury}" for q in lk.reading.pitri)
+    put(f"{at}-debts", f"{masnui} {rinas} {pitri}")
+    put(f"{at}-periods", listed_or_dash(f"{p.planet.full_key}:{p.from_year}-{p.to_year}" for p in lk.periods))
+    put(f"{at}-annual", listed_or_dash(f"{p.graha.full_key}:{p.house}" for p in year.annual.planets))
+
+
 def put_remedies(at: str, rm: Any) -> None:
     """A chart's remedies, each row under `at`."""
 
@@ -272,6 +327,140 @@ def put_remedies(at: str, rm: Any) -> None:
             f" {keys(reading.twelfth.minor)} {reading.sign.full_key} {reading.house}"
             f" {devotions_said(reading.joined)}",
         )
+
+
+def lower(flag: bool) -> str:
+    """A flag as every runner writes it."""
+    return "true" if flag else "false"
+
+
+RECTIFICATION: RectificationRequest = {
+    "purify": {"minutes": 20},
+    "conception": {},
+    "circumstance": {"facts": {"fatherPresent": False}},
+    "baseline": {
+        "uncertaintyMinutes": 30,
+        "sex": "MALE",
+        "events": [{"kind": "MARRIAGE", "on": 2469000.5}, {"kind": "ACCIDENT", "on": 2471000.5, "heldOut": True}],
+    },
+    "svarodaya": {"minutes": 20},
+}
+"""The rectification every runner asks of each chart."""
+
+
+def verdict_said(verdict: PurifierVerdict) -> str:
+    """A purifier's verdict and each clause it judged, colon-joined."""
+    clauses = listed_or_dash(
+        f"{c.purifier}:{c.reference}:{c.sign.full_key}:{c.lagna.full_key}:{c.house}"
+        f":{lower(c.held)}:{lower(c.counted)}"
+        for c in verdict.clauses
+    )
+    return f"{lower(verdict.pure)} {clauses}"
+
+
+def note_said(note: StageNote) -> str:
+    """One stage note as every runner spells it: its kind, then its fields
+    in declaration order, colon-joined."""
+    if isinstance(note, TattvaSexNote):
+        return f"{note.kind}:{note.sex}:{number(note.admitted_minutes)}:{note.penalised}:{note.of}"
+    if isinstance(note, ReportedTimeNote):
+        return f"{note.kind}:{note.accuracy}:{number(note.uncertainty_minutes)}"
+    named = "-" if note.id is None else note.id
+    lords = listed_or_dash(g.full_key for g in note.lords)
+    return f"{note.kind}:{note.event}:{named}:{note.event_kind}:{lords}:{number(note.contribution)}"
+
+
+def put_rectification(at: str, rc: Rectification) -> None:
+    """A chart read as a birth time to rectify, each row under `at`: the
+    purifier's runs and the clauses each held, the conception's answers,
+    the circumstances and their weights, and the baseline's interval,
+    stages and best candidate."""
+
+    def keys(grahas: Iterable[Graha]) -> str:
+        return listed_or_dash(g.full_key for g in grahas)
+
+    pu, co, ci, bl = rc.purified, rc.conception, rc.circumstance, rc.baseline
+    assert pu is not None and co is not None and ci is not None and bl is not None
+    put(
+        f"{at}-purified",
+        f"{pu.grid.cells} {number(pu.grid.step_days)} {len(pu.intervals)} {len(pu.removed)}"
+        f" {listed_or_dash(number(edge) for edge in pu.edges)}",
+    )
+    for k, run in enumerate(pu.intervals + pu.removed):
+        put(f"{at}-purified-{k}", f"{number(run.from_jd)} {number(run.to_jd)} {verdict_said(run.verdict)}")
+    pp, ns = co.pranapada_house, co.nisheka
+    wr = ns.count.span.written
+    put(
+        f"{at}-conception",
+        f"{number(co.birth)} {pp.house} {lower(pp.auspicious)} {number(ns.count.instant)}"
+        f" {wr.months}:{wr.days}:{wr.ghatis}:{wr.palas} {number(ns.lagna_deg)} {verdict_said(ns.verdict)}",
+    )
+    mo = co.moon
+    agrees = "-" if mo.nakshatra_agrees is None else lower(mo.nakshatra_agrees)
+    put(
+        f"{at}-conception-moon",
+        f"{mo.predicted.dvadashamsha} {mo.predicted.sign.full_key}"
+        f" {mo.predicted.nakshatra.full_key if mo.predicted.nakshatra is not None else '-'}"
+        f" {mo.moon_sign.full_key} {mo.moon_nakshatra.full_key if mo.moon_nakshatra is not None else '-'}"
+        f" {lower(mo.sign_agrees)} {agrees} {mo.rising.full_key} {mo.predicted_part} {lower(mo.born_by_day)}"
+        f" {lower(mo.part_agrees)} {number(mo.risen_fraction)} {number(mo.elapsed_fraction)}"
+        f" {number(pp.pranapada_deg)}",
+    )
+    fa, pr, lp, ad = ci.father, ci.presentation, ci.lamp, ci.attending
+    put(
+        f"{at}-circumstance",
+        f"{fa.moon_aspect} {lower(fa.unseen)} {lower(fa.saturn_rising)} {lower(fa.mars_setting)}"
+        f" {lower(fa.moon_hemmed)} {lower(fa.away)} {fa.whereabouts or '-'} {fa.sun_house}"
+        f" {lower(ci.sky.lord_retrograde)}",
+    )
+    put(
+        f"{at}-circumstance-birth",
+        f"{pr.by} {pr.rising} {pr.lord.full_key} {lower(pr.lord_retrograde)} {pr.foretold}"
+        f" {number(lp.oil)}:{lp.oil_level} {number(lp.wick)}:{lp.wick_level}"
+        f" {keys(ad.between)} {keys(ad.visible)} {ad.inside} {ad.outside}",
+    )
+    put(f"{at}-circumstance-weights", listed_or_dash(f"{w.indication}:{lower(w.agrees)}" for w in ci.weights))
+    put(
+        f"{at}-baseline",
+        f"{number(bl.window.from_jd)} {number(bl.window.to_jd)} {number(bl.sunrise)}"
+        f" {listed_or_dash(f'{number(iv.from_jd)}:{number(iv.to_jd)}' for iv in bl.intervals)}"
+        f" {number(bl.interval_width_minutes)} {number(bl.resolution_minutes)} {number(bl.suggested)}"
+        f" {number(bl.concentration)} {len(bl.candidates)} {bl.events_used} {bl.events_held_out}",
+    )
+    for k, stage in enumerate(bl.stages):
+        put(
+            f"{at}-baseline-stage-{k}",
+            f"{stage.stage} {lower(stage.applied)} {lower(stage.flat)} {number(stage.resolution_minutes)}"
+            f" {listed_or_dash(note_said(note) for note in stage.notes)}",
+        )
+    if bl.candidates:
+        best = bl.candidates[0]
+        put(
+            f"{at}-baseline-best",
+            f"{number(best.at)} {number(best.probability)} {number(best.log_posterior)}"
+            f" {best.lagna.full_key} {best.lagna_nakshatra.full_key}",
+        )
+    for k, held in enumerate(bl.hold_out):
+        put(
+            f"{at}-baseline-held-{k}",
+            f"{held.event} {held.kind} {number(held.score_at_fit)} {number(held.baseline)} {lower(held.supported)}",
+        )
+    sv = rc.svarodaya
+    assert sv is not None
+    sa = sv.at
+    put(
+        f"{at}-svarodaya",
+        f"{number(sa.sunrise)} {number(sa.next_sunrise)} {sa.tithi.full_key} {sa.sunrise_nadi}"
+        f" {number(sa.junctions[0])}:{number(sa.junctions[1])} {len(sv.runs)}",
+    )
+    put(f"{at}-svarodaya-at", run_said(sa.run))
+    for k, one in enumerate(sv.runs):
+        put(f"{at}-svarodaya-{k}", run_said(one))
+
+
+def run_said(run: SvarodayaRun) -> str:
+    """A Svarodaya run as every runner spells it."""
+    return f"{number(run.from_jd)} {number(run.to_jd)} {run.nadi} {run.turn} {run.tattva} {run.sex}"
 
 
 def devotions_said(devotions: Any) -> str:
@@ -502,7 +691,9 @@ def put_rashifal(geo: Context, place: Observer) -> None:
     def ymd(day: CalendarDate) -> str:
         return f"{day.year}-{day.month}-{day.day}"
 
-    for n, answer in enumerate(geo.chart.rashifal_many([week, one_day], "WEEKLY")):
+    sealed = geo.chart.rashifal_many([week, one_day], "WEEKLY")
+    put("rashifal-hash", sealed.provenance.input_hash)
+    for n, answer in enumerate(sealed.value):
         period = answer.period
         put(
             f"rashifal-{n}-period",
@@ -533,6 +724,102 @@ def put_rashifal(geo: Context, place: Observer) -> None:
                     f"rashifal-{n}-{r}-baseline",
                     f"{score.overall} {','.join(str(value) for _, value in score.areas)} {named or 'none'} {lucky.colour} {lucky.number} {lucky.day.full_key} {lucky.direction.full_key}",
                 )
+
+
+def put_pakshi(geo: Context) -> None:
+    """The Pancha Pakshi requests every runner sends, at Madras: a native by
+    birth star in the dark half under Pulippani's lengths and relations
+    over two days, and a bird named outright under the defaults for one."""
+    madras = Observer(latitude_deg=Latitude(13.0827), longitude_deg=Longitude(80.2707), altitude_m=Altitude(6))
+    asked: list[dict[str, Any]] = [
+        {
+            "from_date": date(Calendar.GREGORIAN, 1984, 10, 30),
+            "to_date": date(Calendar.GREGORIAN, 1984, 10, 31),
+            "native": {"nakshatra": "nakshatra.UTTARA_ASHADHA", "paksha": "paksha.KRISHNA", "rule": "BY_PAKSHA"},
+            "rules": {"subs": "PULIPPANI", "relations": "PULIPPANI"},
+        },
+        {"from_date": date(Calendar.GREGORIAN, 1991, 5, 21), "native": {"bird": "OWL"}},
+    ]
+    for r, request in enumerate(asked):
+        days = geo.almanac.pakshi(place=madras, utc_offset_seconds=19800, **request)
+        put(f"pakshi-{r}-hash", days.provenance.input_hash)
+        for n, one in enumerate(days.value):
+            key = f"pakshi-{r}-{n}"
+            civil = f"{one.date.year}-{one.date.month}-{one.date.day}"
+            read = one.reading
+            if read is None:
+                put(key, f"{civil} none")
+                continue
+            day = read.day
+            put(
+                key,
+                f"{civil} {day.vara.full_key} {day.paksha.full_key} {number(day.sunrise)} {number(day.sunset)} "
+                f"{number(day.next_sunrise)} {read.bird} {read.death_bird} {str(read.dead_today).lower()} {','.join(read.eaters)}",
+            )
+            for k, yama in enumerate(read.yamas):
+                subs = ",".join(
+                    f"{s.activity}:{s.owner}:{s.share}:{s.owner_is}:{number(s.span.to)}" for s in yama.subs
+                )
+                put(
+                    f"{key}-yama-{k}",
+                    f"{yama.half} {yama.yama} {number(yama.span.from_)} {number(yama.span.to)} {yama.activity} {yama.quality} {subs}",
+                )
+
+
+def put_research(geo: Context) -> None:
+    """The studies every runner sends (`03-design/research.md`): eight
+    births at Kathmandu a few years apart, the shipped yogas as the
+    predicates, compared by alternate labels, read against their own
+    recombined population, and each delivered by the Vimshottari at an
+    event of its life under the age shuffle."""
+    kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0))
+    births = [ResearchBirth(instant=2447000.25 + 977.3 * i, place=kathmandu, utc_offset_seconds=20700) for i in range(8)]
+    rules: RuleRequest = {"shipped": ["YOGAS"]}
+    groups = [i % 2 for i in range(8)]
+
+    def optional(value: float | None) -> str:
+        return "none" if value is None else number(value)
+
+    def row(r: ResearchCountRow | ResearchRow) -> str:
+        counts = ",".join(f"{c.present}:{c.absent}:{c.unreadable}:{c.unstable}" for c in r.counts)
+        if isinstance(r, ResearchCountRow):
+            return f"{r.predicate} {counts}"
+        return (
+            f"{r.predicate} {counts} {optional(r.observed)} {r.p.exceed} {number(r.p.value)} {number(r.adjusted.max_t)} "
+            f"{number(r.adjusted.holm)} {number(r.adjusted.bh)} {optional(r.exact)} "
+            f"{optional(None if r.effect is None else r.effect.risk_difference.estimate)} "
+            f"{optional(None if r.expected is None else r.expected.expected)}"
+        )
+
+    def put_study(name: str, answer: ResearchCounts | ResearchTested) -> None:
+        put(f"research-{name}-hash", answer.provenance.input_hash)
+        if isinstance(answer, ResearchTested):
+            put(f"research-{name}-test", f"{answer.permutations} {number(answer.resolution)} {answer.shuffle}")
+        rows: Sequence[ResearchCountRow | ResearchRow] = answer.rows
+        for k, one in enumerate(rows):
+            put(f"research-{name}-row-{k}", row(one))
+
+    put_study("counts", geo.research.counts(births=births, rules=rules, holds="FORMED", design={"groups": groups}))
+    put_study(
+        "compare",
+        geo.research.compare(
+            births=births,
+            rules=rules,
+            design={"groups": groups},
+            test={"seed": 5, "permutations": 199, "contrast": {"kind": "CASE_VS_REST", "case": 1}, "alpha": 0.05},
+        ),
+    )
+    put_study("expected", geo.research.expected(births=births, rules=rules, control={"seed": 4, "replicates": 3}))
+    put_study(
+        "timed",
+        geo.research.timed(
+            subjects=[ResearchSubject(birth=b, event=b.instant + 9000.5 + 211 * i) for i, b in enumerate(births)],
+            rules=rules,
+            dasha="dasha_system.VIMSHOTTARI",
+            shuffle="AGES_AT_EVENT",
+            test={"seed": 3, "permutations": 49},
+        ),
+    )
 
 
 def put_naam(ctx: Context) -> None:
@@ -897,6 +1184,14 @@ def main() -> None:
             perfection={"house": 7, "rules": {"horizonDays": 120}},
             prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE"}},
             remedies={"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
+            # A varshphal list with the book's structure and none of its
+            # numbers: year y sends natal house h to h + y - 1, round the twelve.
+            lalkitab={
+                "cycle": {"planet": "graha.VENUS", "year": 17},
+                "year": 43,
+                "varshphal": {"rows": [[(h + y) % 12 + 1 for h in range(12)] for y in range(120)]},
+            },
+            rectification=RECTIFICATION,
             western_aspects={
                 "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"],
                 "orbs": {
@@ -1502,9 +1797,6 @@ def main() -> None:
             def joined(items: Iterable[str]) -> str:
                 return ",".join(items) or "-"
 
-            def lower(flag: bool) -> str:
-                return str(flag).lower()
-
             rq = pq.rules
             put(
                 f"chart-{i}-prashna",
@@ -1540,6 +1832,12 @@ def main() -> None:
             rm = chart.remedies
             assert rm is not None
             put_remedies(f"chart-{i}-remedies", rm)
+            lk = chart.lalkitab
+            assert lk is not None
+            put_lalkitab(f"chart-{i}-lalkitab", lk)
+            rc = chart.rectification
+            assert rc is not None
+            put_rectification(f"chart-{i}-rectification", rc)
             pr = chart.progressions
             assert pr is not None and pr.progressed is not None and pr.directed is not None
             assert pr.contacts is not None
@@ -2144,6 +2442,8 @@ def main() -> None:
         )
 
         put_rashifal(geo, place)
+        put_pakshi(geo)
+        put_research(geo)
 
     # ── The eclipses ──────────────────────────────────────────────────
     # September 2025 at Kathmandu over the built-in sky, which the test
@@ -2258,8 +2558,15 @@ def main() -> None:
         ("chart.layout", ctx.chart.layout),
         ("chart.found", ctx.chart.found),
         ("chart.found_many", ctx.chart.found_many),
+        ("chart.rashifal", ctx.chart.rashifal),
+        ("chart.rashifal_many", ctx.chart.rashifal_many),
         ("almanac.of", ctx.almanac.of),
         ("almanac.day", ctx.almanac.day),
+        ("almanac.pakshi", ctx.almanac.pakshi),
+        ("research.counts", ctx.research.counts),
+        ("research.compare", ctx.research.compare),
+        ("research.expected", ctx.research.expected),
+        ("research.timed", ctx.research.timed),
         ("engine.names", ctx.engine.names),
         ("engine.signature", ctx.engine.signature),
         ("engine.call", ctx.engine.call),

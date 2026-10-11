@@ -1308,6 +1308,38 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
   external ffi.Pointer<ffi.Char> remediesJson;
 
+  /// Every chart read as a birth time to rectify, the chart's instant
+  /// the time on record, as a JSON object, every member optional:
+  /// `purify` (`minutes` either side of the chart's instant, more than
+  /// none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+  /// vv. 67–78), `conception` (the pranapada's house, the nisheka and
+  /// the conception Moon, with its rules), `circumstance` (`facts` the
+  /// family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+  /// and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+  /// (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+  /// to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+  /// Each chart's readings come back in the `rectification` section,
+  /// one member for each reading asked. Null for none, which costs
+  /// nothing (`03-design/rectification.md`). Refusals are named from
+  /// the record every binding calls `rectification`, as
+  /// `rectification.purify.minutes`.
+  /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+  external ffi.Pointer<ffi.Char> rectificationJson;
+
+  /// Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+  /// object, every member optional: `cycle` (`{planet, year}`, where the
+  /// 35-year cycle starts, the book's general table from Saturn in the
+  /// first year when left out), `year` (a year of life from 1, the year
+  /// from birth to the first birthday, to read its ruler, its thirds and
+  /// its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+  /// annual teva is read from, which the SDK does not ship and checks
+  /// row by row). Each chart's reading comes back in the `lalkitab`
+  /// section. Null for none, which costs nothing
+  /// (`03-design/lalkitab.md`). Refusals are named from the record every
+  /// binding calls `lalkitab`, as `lalkitab.cycle.year`.
+  /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+  external ffi.Pointer<ffi.Char> lalkitabJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -1801,8 +1833,12 @@ typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsPakshiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsPakshiDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsRashifalNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsRashifalDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsResearchNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsResearchDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisManifestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisManifestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisCallNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -1864,7 +1900,9 @@ final class TeistroLibrary {
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
+        ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
         ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
+        ts_research = library.lookupFunction<TsResearchNative, TsResearchDart>('ts_research'),
         ts_ephemeris_manifest = library.lookupFunction<TsEphemerisManifestNative, TsEphemerisManifestDart>('ts_ephemeris_manifest'),
         ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call'),
         ts_provider_load = library.lookupFunction<TsProviderLoadNative, TsProviderLoadDart>('ts_provider_load'),
@@ -2141,8 +2179,29 @@ final class TeistroLibrary {
   /// named under `numerology`.
   final TsNumerologyProfileDart ts_numerology_profile;
 
+  /// Reads a native's bird over each civil day of a range at a place and
+  /// answers with `{value, provenance}` as canonical JSON, `value` an array
+  /// of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+  /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
+  /// with every sub-period's activity, owner, span and how the native
+  /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+  /// vara, paksha}`, the bird, its death bird and the first eaters; null on
+  /// a day the Sun does not both rise and set.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+  /// the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+  /// `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+  /// place, the offset and `native` optional. A key it does not read, a
+  /// place or offset out of range or a native that is neither is
+  /// `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+  /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+  /// `pakshi` family out.
+  final TsPakshiDart ts_pakshi;
+
   /// Reads periods of civil days at a place for each of the twelve signs and
-  /// answers with an array of `{period, baseline}` as canonical JSON: the
+  /// answers with `{value, provenance}` as canonical JSON, `value` an array
+  /// of `{period, baseline}`, one per period: the
   /// sky at the reference day's sunrise (or a clock time), each sign's
   /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
   /// and station of the period counted from each sign; `baseline` the
@@ -2159,6 +2218,32 @@ final class TeistroLibrary {
   /// under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
   /// a build that leaves the `rashifal` family out.
   final TsRashifalDart ts_rashifal;
+
+  /// Runs a study over a batch of births and answers with `{value,
+  /// provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+  /// study, each row `{predicate, counts}` with every group's `{present,
+  /// absent, unreadable, unstable}`; for any other study it is `{rows,
+  /// permutations, resolution, shuffle}`, each row adding `observed`, `p`
+  /// (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+  /// bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+  /// four only where they apply. `provenance.input_hash` seals the study
+  /// and is what a study publishes before its data are collected.
+  ///
+  /// `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+  /// `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+  /// request's rules are, and what the study reads: `births` and `design`
+  /// (and a `test` for `COMPARE`); `births`, `control` and an optional
+  /// `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
+  /// optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
+  /// latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+  /// uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+  /// number or a decimal string. A key it does not read, a field the study
+  /// does not read or misses, or a value out of range is `INVALID_ARG`,
+  /// named under `research`, as `research.test.seed`; what the study
+  /// refuses once it runs is named as the façade names it. A context
+  /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+  /// `research` family out.
+  final TsResearchDart ts_research;
 
   /// What the context's engine says it offers beyond this library's own
   /// operations: its manifest, as the engine wrote it.
@@ -3252,7 +3337,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3706,6 +3791,38 @@ final class ChartRequest {
   /// Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
   final String? remediesJson;
 
+  /// Every chart read as a birth time to rectify, the chart's instant
+  /// the time on record, as a JSON object, every member optional:
+  /// `purify` (`minutes` either side of the chart's instant, more than
+  /// none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+  /// vv. 67–78), `conception` (the pranapada's house, the nisheka and
+  /// the conception Moon, with its rules), `circumstance` (`facts` the
+  /// family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+  /// and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+  /// (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+  /// to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+  /// Each chart's readings come back in the `rectification` section,
+  /// one member for each reading asked. Null for none, which costs
+  /// nothing (`03-design/rectification.md`). Refusals are named from
+  /// the record every binding calls `rectification`, as
+  /// `rectification.purify.minutes`.
+  /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+  final String? rectificationJson;
+
+  /// Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+  /// object, every member optional: `cycle` (`{planet, year}`, where the
+  /// 35-year cycle starts, the book's general table from Saturn in the
+  /// first year when left out), `year` (a year of life from 1, the year
+  /// from birth to the first birthday, to read its ruler, its thirds and
+  /// its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+  /// annual teva is read from, which the SDK does not ship and checks
+  /// row by row). Each chart's reading comes back in the `lalkitab`
+  /// section. Null for none, which costs nothing
+  /// (`03-design/lalkitab.md`). Refusals are named from the record every
+  /// binding calls `lalkitab`, as `lalkitab.cycle.year`.
+  /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+  final String? lalkitabJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3817,6 +3934,12 @@ final class ChartRequest {
     raw.remediesJson = remediesJson == null
         ? ffi.nullptr
         : remediesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.rectificationJson = rectificationJson == null
+        ? ffi.nullptr
+        : rectificationJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.lalkitabJson = lalkitabJson == null
+        ? ffi.nullptr
+        : lalkitabJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3914,6 +4037,12 @@ final class ChartRequest {
         remediesJson: raw.remediesJson == ffi.nullptr
             ? null
             : raw.remediesJson.cast<pkg_ffi.Utf8>().toDartString(),
+        rectificationJson: raw.rectificationJson == ffi.nullptr
+            ? null
+            : raw.rectificationJson.cast<pkg_ffi.Utf8>().toDartString(),
+        lalkitabJson: raw.lalkitabJson == ffi.nullptr
+            ? null
+            : raw.lalkitabJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 
@@ -5050,8 +5179,38 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
+  /// Reads a native's bird over each civil day of a range at a place and
+  /// answers with `{value, provenance}` as canonical JSON, `value` an array
+  /// of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+  /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
+  /// with every sub-period's activity, owner, span and how the native
+  /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+  /// vara, paksha}`, the bird, its death bird and the first eaters; null on
+  /// a day the Sun does not both rise and set.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+  /// the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+  /// `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+  /// place, the offset and `native` optional. A key it does not read, a
+  /// place or offset out of range or a native that is neither is
+  /// `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+  /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+  /// `pakshi` family out.
+  String pakshi(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_pakshi(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
   /// Reads periods of civil days at a place for each of the twelve signs and
-  /// answers with an array of `{period, baseline}` as canonical JSON: the
+  /// answers with `{value, provenance}` as canonical JSON, `value` an array
+  /// of `{period, baseline}`, one per period: the
   /// sky at the reference day's sunrise (or a clock time), each sign's
   /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
   /// and station of the period counted from each sign; `baseline` the
@@ -5073,6 +5232,41 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_rashifal(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Runs a study over a batch of births and answers with `{value,
+  /// provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+  /// study, each row `{predicate, counts}` with every group's `{present,
+  /// absent, unreadable, unstable}`; for any other study it is `{rows,
+  /// permutations, resolution, shuffle}`, each row adding `observed`, `p`
+  /// (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+  /// bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+  /// four only where they apply. `provenance.input_hash` seals the study
+  /// and is what a study publishes before its data are collected.
+  ///
+  /// `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+  /// `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+  /// request's rules are, and what the study reads: `births` and `design`
+  /// (and a `test` for `COMPARE`); `births`, `control` and an optional
+  /// `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
+  /// optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
+  /// latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+  /// uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+  /// number or a decimal string. A key it does not read, a field the study
+  /// does not read or misses, or a value out of range is `INVALID_ARG`,
+  /// named under `research`, as `research.test.seed`; what the study
+  /// refuses once it runs is named as the façade names it. A context
+  /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+  /// `research` family out.
+  String research(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_research(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

@@ -296,6 +296,27 @@ public final class Chart {
     }
 
     /**
+     * The chart read as Lal Kitab reads it, when it was asked for: the teva's planets, houses,
+     * artificial planets, debts and conditions, the 35-year cycle's periods and, when a year was
+     * named, its ruler, thirds and annual teva ({@code 03-design/lalkitab.md}).
+     *
+     * @return the reading, empty when it was not asked for
+     */
+    public Optional<LalKitab> lalkitab() {
+        return LalKitabReads.lalkitab(this);
+    }
+
+    /**
+     * The rectification readings, when they were asked for: each member
+     * empty unless the request named it.
+     *
+     * @return the readings, empty when they were not asked for
+     */
+    public Optional<Rectification> rectification() {
+        return KpReads.rectification(this);
+    }
+
+    /**
      * The Ashta Koota against the partner, when one was named.
      *
      * @return the reading, empty when it was not asked for

@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+The conformance corpus moves to 0.12.0, which adds JPL's DE440 itself
+(CSPICE's geometric states, evidence rank 1), and every built-in tier is
+now scored against it (`kit::jpl`). No SDK number moved. The run measured
+what the corpus's charts could not: away from 2000 the full tier's
+theories drift from DE440, to about 3″ for the Moon and Mars and 7″ for
+Neptune by 2400, and VSOP87's distances for Uranus and Neptune are tens of
+thousands of kilometres off; each is a named, measured divergence.
+
 **Numbers:** the reference engine's own corrections moved what the SDK is
 measured against, not what it computes. All six findings the SDK filed
 against Teimeris were fixed upstream and the recorded tables were taken
@@ -2440,6 +2448,297 @@ the astronomical numbers do not move. Nothing else computes yet.
   print what the other bindings' print, the provider example among
   them: an `EphemerisProvider` written in Java answers the SDK through
   FFM upcalls, and what it throws reaches the caller as itself.
+- **The Java package, for Maven Central** (`03-design/java-binding.md`
+  steps 7 to 9). `cargo xtask package stage` writes Maven's repository
+  layout: a jar carrying every platform's library, a classifier jar per
+  platform, the sources and javadoc jars and the POM, each with its
+  checksums, the same bytes from two stagings of one commit. The loader
+  takes the jar's own library for the host, caches it where only its
+  owner may write and checks its hash on every load. `check-package`
+  installs it on the module path and through Maven, and refuses a
+  tampered cache and a wrong checksum. `cargo xtask publish maven` signs,
+  bundles and uploads. The Teimeris adapter has a Java package of its
+  own, with the engine's façade generated for Java.
+- **Rectification's reports beside the purifier** (`03-design/rectification.md`
+  steps 4 and 5, X10 to X19). `sdk.chart().conception` reads the
+  pranapada's house, the conception instant BPHS counts back to with its
+  lagna judged, and the birth Moon *Brihat Jataka* IV.21 foretells from
+  it, with Jha's two worked examples as tests. `sdk.chart().circumstance`
+  reads what *Brihat Jataka* ch. V says the birth moment shows (the
+  father away, the presentation, the lamp, the women attending), each
+  weighed against the facts a family gives. Both report and weigh; none
+  bars.
+- **The baseline engine's rectification, reproduced**
+  (`03-design/rectification.md` step 6, X20 to X26).
+  `sdk.chart().rectify_baseline` ranks the minutes around a reported time
+  by a prior on the report and the tattva of the child's sex, and by how
+  well each candidate's Vimshottari periods fit dated life events, on a
+  grid refined three times; it answers the intervals carrying a chosen
+  share of the posterior, the mode, the likeliest candidates and whether
+  each held-out event is supported. Rank 2 and unsourced, a call of its
+  own beside the verses' `rectify`. Run beside the baseline engine on
+  shared cases, it answers the same intervals to a second.
+- **Rectification in every binding** (`03-design/rectification.md`
+  step 8). A chart request's `rectification` record reads each chart as
+  a birth time to rectify, around its own instant and place on the
+  request's clock: `purify` (the purifier over minutes either side),
+  `conception`, `circumstance` (with the family's facts) and `baseline`
+  (the baseline engine's cascade, its `dasha` naming only what it
+  changes). Node, Python, Dart and Java answer `chart.rectification`,
+  catalogue keys in full and each member none unless asked; every runner
+  prints the same values. The baseline's stage notes now name their own
+  fields in camelCase (`admittedMinutes`, `uncertaintyMinutes`,
+  `eventKind`), as the rest of the answer does.
+- **The Shiva Svarodaya's nadi and tattva** (`03-design/rectification.md`
+  step 7, X12). `sdk.chart().svarodaya` reads them at an instant and
+  `svarodaya_runs` over a window: the nadi the tithi at sunrise starts,
+  its turn of two and a half ghatis, and the tattva flowing in it in the
+  order air, fire, earth, water, with ether at the junction, at the
+  verse's palas, read in the 1899 Sanskrit where Rama Prasad's English
+  mistranslates two verses. The rectification record's `svarodaya`
+  member asks for both around a chart, in every binding. A report, never
+  a bar: no verse reads either at a birth.
+- **The research kernel** (`03-design/research.md` step 2).
+  `teistro-research` permutes a study's labels over a chart-by-predicate
+  matrix, within strata when the design has them, and answers each
+  predicate's permutation p-value `(b + 1)/(m + 1)` with its
+  Clopper–Pearson interval, the exact hypergeometric p where it applies,
+  the family's max-T, Holm, Bonferroni, BH and BY, and the effect sizes
+  with their intervals. Unreadable and unstable charts leave a
+  predicate's denominator and are counted apart. The generator and the
+  shuffle are written in the crate and versioned (`research/shuffle/1`),
+  so a request gives the same bits at any thread count. `ambient-input`
+  now refuses the process's randomness. `teistro_core::math` gains
+  `ln_gamma` and `erfc`. Two more nulls read the same engine: `timed`
+  shuffles events among lives (each subject read at every subject's event,
+  pairings that would put an event before a birth refused or drawn around),
+  and `replicated` reads a sample against its own recombined replicates,
+  the share each predicate is expected at and its rank among them. Every
+  predicate is named, and the names answer with it. **Numbers:** none
+  move.
+- **`sdk.research()`** (`03-design/research.md` steps 3 to 5): the
+  studies over a batch of births. `counts` and `compare` read every rule
+  of a set on every chart, a place at a time, into the kernel's matrix;
+  a birth with a time uncertainty is read at both edges and a rule that
+  changes there is unstable, never decided. `timed` reads when a dasha's
+  periods deliver each rule at the subjects' events, against events
+  shuffled by date or by age, and `expected` reads a sample against its
+  own recombined population. Each answer's input hash is the study's
+  pre-registration, and the thread count is not in it.
+- **Research in every binding** (`03-design/research.md` step 6).
+  `ts_research` takes one record naming the study and answers the
+  envelope, so Node, Python, Dart and Java carry `research.counts`,
+  `compare`, `expected` and `timed` with the study's input hash, and
+  every runner agrees value for value. A seed may be sent as a decimal
+  string. A row's `observed` is absent where the statistic is unbounded,
+  a sample beyond replicates that all agree, rather than the largest
+  finite number. **Numbers:** a recombined study whose replicates share
+  one value reads them with no spread, where the last bit of their mean
+  had read as one.
+- **Research, measured** (`03-design/research-measured.md`, held by
+  `check-research`): each correction's error rate on null labellings,
+  the exact p against the permutation p's interval, a planted effect,
+  the Gauquelin artefact against the recombined control, and null event
+  studies under each shuffle.
+- **A timed study names its shuffle** (`03-design/research.md` step 7,
+  C362 to C365). `EventStudy::new` takes the `EventShuffle`, and the
+  record and every binding require it, where it had defaulted to the
+  date shuffle that moves the age a dasha reads. **Numbers:** a refusal
+  of too few permutations hints the fewest its own check accepts, where
+  for some alphas and families it had named a count the check refused.
+- **Every record refuses a key given twice.** The `rules` and
+  `interpret` records were read by plain serde, which keeps the last of
+  two duplicate keys and names no field; both are parsed strictly now,
+  as every other record is, and so is each MCP message: a key given
+  twice is `-32602` inside `params` and `-32600` in the envelope, naming
+  its path. `FoundRequest::DESCRIPTION` names `theme`,
+  and a test holds it to every section and record a chart request
+  carries. A modern MCP request missing its revision or its client's
+  capabilities is `-32602` naming the field, and every modern result
+  names the server. **Numbers:** none move.
+- **Packs and a program's own tools in the agent server.**
+  `teistro-mcp --pack PATH` and `Server::with_pack` load a pack into
+  every context, verified at start and listed by `settings.describe`;
+  `Server::with_tool` serves a program's own tools beside the records,
+  refusing a name the SDK holds or a namespace it lists under. Every
+  answer stamped through a context, and every interpreted chart, now
+  names the packs loaded in `provenance.packs`, which was declared and
+  never filled. **Numbers:** none move.
+- **The agent server in the release.** Every platform's release assets
+  carry `teistro-mcp-{version}-{platform}.tar.gz`, built through
+  cargo-auditable, held to the row's glibc floor, digested, attested and
+  checked by unpacking it and running a session under each revision.
+  `npx -y @teistro/mcp` runs it through npm: a launcher over one
+  `@teistro/mcp-<platform>` package a platform, published with the SDK's.
+  The release lists it in the MCP Registry as `io.github.teispace/teistro`
+  (`crates/mcp/server.json`), whose description is now the server's own,
+  and carries `teistro-mcp-{version}.mcpb`, which Claude Desktop installs
+  on macOS and Windows. The site's guide to it shows calls a test makes.
+- **Registered dasha systems and layouts by key, in a chart request.**
+  `FoundRequest` reads a key no catalogue has and
+  `FoundRequest::resolved` reads it through a context's registries, so
+  `ts_chart_found`, every binding's chart request and the agent server's
+  `chart.found` reach a consumer's own system or layout by its key, bare
+  or full, refused by its place when nobody registered it. The
+  registration readers moved into the façade
+  (`teistro::registrations`); the agent server registers through
+  `Server::with_layout`, `Server::with_dasha_system`, `--layouts` and
+  `--dashas`, and `settings.describe` lists them. **Numbers:** none move.
+- **The 2026-07-28 revision's remaining rules.** `server/discover`
+  names its revision like every request; a null id, or one that is
+  neither a string nor an integer, is `-32600`; `subscriptions/listen`
+  is acknowledged with an empty filter and closed gracefully; HTTP
+  decodes a Base64 `Mcp-Name` and holds each peer to `--http-rate`
+  messages a second (`429`); a plugin operation the tool-name rule
+  refuses is reached through `engine.call` only; `serverInfo` carries a
+  description and website, and the lists' cache lifetime is an hour
+  once a plugin is loaded. **Numbers:** none move.
+- **Streamable HTTP.** `teistro-mcp --http ADDRESS` serves the
+  2026-07-28 revision statelessly at `/mcp`: the revision, method and
+  name headers are checked against the body, a browser origin must be a
+  loopback one or named by `--allow-origin`, a call carrying a
+  `progressToken` answers as an event stream, and closing the
+  connection cancels its call. Each of `--http-workers` threads keeps a
+  server of its own; `teistro_mcp::http::serve` does the same for an
+  embedding program. **Numbers:** none move.
+- **Cancellation and progress.** `teistro-mcp` reads stdin on its own
+  thread, so `notifications/cancelled` stops a running call at its next
+  engine request and the call is not answered; a call carrying a
+  `progressToken` hears `notifications/progress`. `Server::interrupt`
+  and `Server::with_notify` do the same for an embedding program, and
+  `ContextBuilder::wrapping` lays a provider of the caller's own over
+  whichever one a context's chain opens. **Numbers:** none move.
+- **Limits.** `teistro-mcp` bounds a message's bytes, any array's
+  members and the days a record's ranges span, and refuses a request
+  past one as `LIMIT` naming the field, the bound and the option moving
+  it (`--max-message-bytes`, `--max-items`, `--max-days`, each taking
+  `none`); `Server::with_limits` sets them for a program embedding the
+  server, and `Server::handle_bytes` reads a message as a transport's
+  bytes. **Numbers:** none move.
+- **Resources, completions and prompts.** `teistro-mcp` serves the
+  catalogue a kind at a time, the shipped profiles, the settings and
+  document schemas and each tool's schemas as resources, completes a
+  template's or a prompt's argument from the table that holds it, and
+  offers `birth-chart`, `day-panchanga` and `match` as prompts that
+  write a checked call from a date, a time, a zone and a place.
+  `FoundRequest::sections` names a chart request's section flags.
+  **Numbers:** none move.
+- **Typed tool schemas.** Every `teistro-mcp` record tool states its
+  record's JSON Schema 2020-12 as `inputSchema` and its envelope as
+  `outputSchema`, derived from the reader's and answer's types through a
+  new `schema` feature on `teistro` (and on `teistro-western`,
+  `teistro-kp`, `teistro-rules` and `teistro-interpret`). The list is
+  lean by default, each record a request carries by name answered by a
+  new `schema.describe` tool; `--schemas full` lists everything inline.
+  `CivilTime`'s schema no longer requires `nanos`, which its reader
+  never did. **Numbers:** none move.
+- **The engine passthrough, and one adapter loader.** The port's
+  `load::Adapter` (feature `load`, native only) opens an adapter, and
+  every provider it binds keeps the library loaded
+  (`VtableProvider::keeping`); `ts_provider_load` now calls it.
+  `ProviderVtable::EMPTY` is the zeroed vtable a loader hands `open`.
+  `EngineCall` and `ManifestRequest` read the passthrough from JSON, and
+  `engine.call` and `engine.manifest` are records, sealed with the
+  engine named. `teistro-mcp --plugin PATH [--plugin-config JSON]`
+  loads an engine ahead of `--ephemeris` and lists each of its own
+  operations as a tool, `engine.<name>`. `crates/test-adapter` is the
+  analytic test provider as a loadable library, so every push loads a
+  real adapter. **Numbers:** none move.
+- **Time and calendar records, and their tools.** `ResolveRequest`,
+  `CivilRequest`, `ScaleRequest` and `CalendarRequest` read a civil time
+  in a zone, an instant on a zone's clock, an instant between scales and
+  a date for another calendar from JSON; the agent server answers them
+  as `time.resolve`, `time.civil`, `time.convert` and
+  `calendar.convert`. `Scale` and `Conversion` serialise. **Numbers:**
+  none move.
+- **A range of days read from JSON, and `almanac.days`.**
+  `DaysRequest::from_json` reads a range of days, the place and clock,
+  a `muhurta` search, a `festivals` reckoning and the section flags.
+  `AlmanacAnswer::sections` writes every section asked beside the days
+  as a binding holds it, sealed over what it writes; the C boundary and
+  the agent server's `almanac.days` share it. A strict reader at the
+  empty root now names a missing field by its key. **Numbers:** none
+  move.
+- **A chart request read from JSON, and `chart.found`**
+  (`03-design/mcp-server.md` step 2). `teistro::FoundRequest::from_json`
+  reads a whole chart request: the births, the place and clock, the
+  catalogue keys, a `true` flag for each section and each record by the
+  name every binding writes. `ChartRecords::read` is the one table of
+  those names and their readers, and the C boundary reads its fields
+  through it. The agent server's `chart.found` takes the record and
+  answers the chart documents as `charts` with a row a chart of each
+  table. `Composed` serialises, with the annual charts and the
+  progressions it carries. A KP refusal of a chart's ayanamsha now hints
+  the record's `anyAyanamsha` as well as the Rust call. **Numbers:**
+  none move.
+- **`sdk.chart().compose`** (`03-design/mcp-server.md` step 2). A chart
+  request with its records (`ChartRecords`) is composed in one call
+  answering every section the records ask for (`Composed`), where the C
+  boundary had composed the sections itself, the annual charts and the
+  Western tables included. The boundary now encodes what the façade
+  answers. **Numbers:** none move; the blob is byte for
+  byte the same.
+- **Pancha Pakshi and rashifal answer with their provenance.**
+  `ts_pakshi` and `ts_rashifal` now send `{value, provenance}` across
+  the boundary, as `ts_research` does. Before, they sent the value alone,
+  so a binding could not quote what had sealed its request. In every
+  binding, `almanac.pakshi` and `chart.rashifalMany` answer the envelope
+  (`value` and `provenance`, as an almanac's years do), and
+  `chart.rashifal` answers its period with the provenance beside it. Each
+  parity runner prints both input hashes, and they agree. **Numbers:**
+  none move; the answers' shape changes.
+- **`teistro-mcp`, the SDK as tools an agent calls**
+  (`03-design/mcp-server.md` step 1). This is a Model Context Protocol
+  server over stdio. It speaks the stateless 2026-07-28 revision and,
+  after `initialize`, the 2025-11-25 handshake. Its tools are research,
+  Pancha Pakshi, rashifal, numerology and naam milan, each the record its
+  binding already sends. Every answer is the provenance envelope, and
+  `settings.describe` answers the profiles and the settings patch's JSON
+  Schema. A refusal is a tool error naming the field to fix. The
+  ephemeris is chosen on the command line, never by an argument.
+  `teistro::records` lists the façade's record entry points once, for the
+  server and any other caller. **Numbers:** none move.
+- **Pancha Pakshi** (`03-design/pakshi.md` steps 1 and 2).
+  `teistro-pakshi` reads the five birds' activities by yama as one rule
+  held to every cell of the printed tables, with the sub-periods, the
+  death birds, the relations and the native's bird from the birth star.
+  `sdk.almanac().pakshi_days(first, last, place, offset, native, &rules)`
+  reads a range over the almanac's sunrise, sunset and tithi, a native
+  named by its bird or by birth star and paksha, and
+  `sdk.chart().pakshi_native(document, rule)` a chart's native. `ts_pakshi`
+  carries it to Node, Python, Dart and Java as `almanac.pakshi`, and
+  every runner agrees value for value. A bird's own sub-period is
+  reported as `OWN`, which no source calls a friend. **Numbers:** none
+  move.
+- **Lal Kitab in every binding** (`03-design/lalkitab.md` steps 2 and
+  3). `sdk.chart().lalkitab(document, &request)` reads a chart's teva,
+  its 35-year cycle and, for a named year, its ruler, thirds and annual
+  teva from a varshphal list the reader supplies. The `lalkitab` request
+  and section cross to Node, Python, Dart and Java, each with its own
+  types, and every runner agrees value for value. A cycle's planet takes
+  the full key or the bare one. **Numbers:** none move.
+- **The Lal Kitab kernel** (`03-design/lalkitab.md` step 1).
+  `teistro-lalkitab` reads the 1952 edition's computable parts, each table
+  cited to its page and written as the book's rule where it states one: a
+  teva as whole-sign houses from the lagna, each planet's dignities (the
+  exaltations read off the catalogue's signs, debilitation the seventh
+  from them), its owners and directed regard, sleep and waking, kayam,
+  the forward aspects and the yog drishti rule, masnui pairs, the nine
+  debts and the ancestors' first state, the teva's flags, and the
+  35-year cycle from the general start or a reader's. The annual list is
+  in copyright, so a reader supplies it and the crate checks it, each row
+  a permutation and each twelve-year block a Latin square. **Numbers:**
+  none move.
+- **Python request knobs are `Literal`s.** A rectification, prashna,
+  remedies or dasha-definition knob that took a `str` takes its members,
+  so mypy refuses a misspelt one before the boundary does.
+- **`SIZES.md`** (`03-design/generated-pages.md` §1). What every shipped
+  artefact weighs, raw and gzipped, recorded from the verify run that
+  built it: each platform's library, C bundle, Node addon, wheel and jar,
+  each wasm module and its glue, and every bundle. Verify fails when a
+  run moves any figure more than 2% from the record or leaves one out.
+  The wasm budgets moved into the record from `bindings/wasm/size.json`,
+  with a history row for each move in place of the prose log.
   **Numbers:** none move.
 - **JSON is parsed once** (`03-design/wasm-profiles.md` step 4).
   `teistro_core::strict` parses text into a value and reads every type

@@ -34,7 +34,9 @@ pub unsafe extern "C" fn ts_chart_found(
     _request: *const TsChartRequest,
     _out_blob: *mut TsBlob,
 ) -> Status {
-    with_context(context, |_| Err(super::left_out("chart")))
+    with_context(context, |_| {
+        Err(teistro_core::error::Error::left_out("chart"))
+    })
 }
 
 /// `ts_chart_layout_row`, refused: this build has no chart area.
@@ -48,7 +50,9 @@ pub unsafe extern "C" fn ts_chart_layout_row(
     _key: *const c_char,
     _out_json: *mut TsString,
 ) -> Status {
-    with_context(context, |_| Err(super::left_out("chart")))
+    with_context(context, |_| {
+        Err(teistro_core::error::Error::left_out("chart"))
+    })
 }
 
 /// `ts_naam_milan`, refused: naam milan is matching, which the chart area
@@ -63,5 +67,7 @@ pub unsafe extern "C" fn ts_naam_milan(
     _request_json: *const c_char,
     _out_blob: *mut TsBlob,
 ) -> Status {
-    with_context(context, |_| Err(super::left_out("chart")))
+    with_context(context, |_| {
+        Err(teistro_core::error::Error::left_out("chart"))
+    })
 }

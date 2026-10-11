@@ -1,0 +1,326 @@
+//! A chart request composed whole (`docs/03-design/mcp-server.md`, step
+//! 2): every section `compose` answers is the call it composes, chart by
+//! chart, and the records refuse what they cannot both answer.
+
+#![allow(
+    clippy::panic,
+    clippy::unwrap_used,
+    clippy::indexing_slicing,
+    reason = "tests fail by panicking and index what they found"
+)]
+
+use teistro::catalogue::{DashaSystem, Varga};
+use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro::{
+    AntisciaRequest, ChartRecords, ChartRequest, ConsiderationRules, Context, DignityRequest,
+    Ephemeris, FortitudeRequest, FortuneRule, FoundRequest, KpRequest, Lot, LotRequest,
+    PerfectionRequest, PrashnaRequest, UtcOffset, VarshaRequest, WesternRecords,
+};
+
+fn context() -> Context {
+    Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap()
+}
+
+fn kathmandu() -> ChartRequest {
+    let place = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    ChartRequest::at(place, UtcOffset::try_from_seconds(20_700).unwrap())
+}
+
+/// Two births a year apart, so a section read per chart is two rows.
+fn instants() -> [JulianDay<Utc>; 2] {
+    [
+        JulianDay::<Utc>::literal(2_447_000.25),
+        JulianDay::<Utc>::literal(2_447_365.75),
+    ]
+}
+
+#[test]
+fn every_section_is_the_call_it_composes() {
+    let sdk = context();
+    let request = kathmandu();
+    let records = ChartRecords {
+        fortitudes: Some(FortitudeRequest::default()),
+        lots: Some(LotRequest::default()),
+        considerations: Some(ConsiderationRules::default()),
+        perfection: Some(
+            PerfectionRequest::from_json(r#"{"querent": "VENUS", "quesited": "MARS"}"#).unwrap(),
+        ),
+        kp: Some(KpRequest::new().under_any_ayanamsha()),
+        prashna: Some(PrashnaRequest::from_json("{}").unwrap()),
+        ..ChartRecords::default()
+    }
+    .checked()
+    .unwrap();
+    let composed = sdk
+        .chart()
+        .compose(&instants(), &request, &records)
+        .unwrap();
+    let documents = &composed.founded.value;
+    assert_eq!(documents.len(), 2);
+    assert_eq!(composed.hashes.len(), 2);
+    for (at, document) in documents.iter().enumerate() {
+        let fortitudes = sdk
+            .chart()
+            .fortitudes(document, &FortitudeRequest::default())
+            .unwrap();
+        assert_eq!(composed.fortitudes[at], fortitudes);
+        assert_eq!(
+            composed.lots[at],
+            sdk.chart()
+                .lots_with_request(document, &Lot::ALL, LotRequest::default())
+                .unwrap()
+        );
+        assert_eq!(
+            composed.considerations[at],
+            sdk.chart()
+                .considerations(
+                    document,
+                    &FortitudeRequest::default(),
+                    ConsiderationRules::default()
+                )
+                .unwrap()
+        );
+        let quesited = records.perfection.as_ref().unwrap();
+        assert_eq!(
+            composed.perfections[at].0,
+            sdk.chart()
+                .perfection_in(document, &fortitudes, quesited)
+                .unwrap()
+        );
+        // A KP record naming no clock reads the request's own.
+        let kp = records.kp.unwrap().on_clock(request.offset());
+        assert_eq!(
+            composed.kp[at],
+            sdk.chart().kp_reading(document, &kp).unwrap()
+        );
+        assert_eq!(
+            composed.prashna[at],
+            sdk.chart()
+                .prashna(document, records.prashna.as_ref().unwrap())
+                .unwrap()
+        );
+        // A prashna weighs the seven by their Shadbala, so the charts carry it.
+        assert!(
+            document.shadbala.is_some(),
+            "chart {at} carries its Shadbala"
+        );
+    }
+    for section in [
+        composed.gochar.len(),
+        composed.hits.len(),
+        composed.dignities.len(),
+    ] {
+        assert_eq!(section, 0, "a record not sent is a section not read");
+    }
+    assert!(composed.readings.is_empty() && composed.plans.is_empty());
+}
+
+#[test]
+fn the_dignities_asked_twice_are_refused_by_the_record_that_repeats_them() {
+    let refused = ChartRecords {
+        dignities: Some(DignityRequest::default()),
+        fortitudes: Some(FortitudeRequest::default()),
+        ..ChartRecords::default()
+    }
+    .checked()
+    .unwrap_err();
+    assert_eq!(refused.field(), Some("dignities"));
+    assert!(refused.hint().unwrap().contains("fortitudes.dignities"));
+}
+
+#[test]
+fn the_records_widen_the_request_by_what_they_read_off_the_charts() {
+    let request = kathmandu();
+    assert_eq!(ChartRecords::default().widen(request.clone()), request);
+    let lots = LotRequest::default().with_fortune(FortuneRule::DayAndNight);
+    let widened = ChartRecords {
+        lots: Some(lots),
+        ..ChartRecords::default()
+    }
+    .widen(request.clone());
+    assert_eq!(
+        widened,
+        request.clone().with_lot_rules(lots),
+        "the time lords release from the lots asked for"
+    );
+    let weighed = ChartRecords {
+        prashna: Some(PrashnaRequest::from_json("{}").unwrap()),
+        ..ChartRecords::default()
+    }
+    .widen(request.clone());
+    assert_eq!(
+        weighed,
+        request.with_shadbala(),
+        "a prashna weighs the seven by their Shadbala"
+    );
+}
+
+#[test]
+fn the_annual_charts_and_the_western_tables_are_the_calls_they_compose() {
+    let sdk = context();
+    let request = kathmandu();
+    let records = ChartRecords {
+        varsha: Some(VarshaRequest::from_json(r#"{"through": 2}"#).unwrap()),
+        western: WesternRecords {
+            antiscia: Some(AntisciaRequest::default()),
+            ..WesternRecords::default()
+        },
+        ..ChartRecords::default()
+    };
+    let composed = sdk
+        .chart()
+        .compose(&instants(), &request, &records)
+        .unwrap();
+    for (at, document) in composed.founded.value.iter().enumerate() {
+        let direct = sdk
+            .chart()
+            .varsha(document, request.offset(), records.varsha.as_ref().unwrap())
+            .unwrap();
+        assert_eq!(
+            format!("{:?}", composed.varsha[at]),
+            format!("{direct:?}"),
+            "the annual charts are read on the request's own clock"
+        );
+        assert_eq!(
+            composed.western.antiscia[at],
+            sdk.chart()
+                .antiscia(document, &AntisciaRequest::default())
+                .unwrap()
+        );
+    }
+    assert!(composed.western.aspects.is_empty() && composed.western.davisons.is_empty());
+}
+
+#[test]
+fn every_record_name_reads_its_record() {
+    // A record each family reads from nothing at all, or the least it
+    // needs; a name the table drops is "no chart record is named".
+    let least = |name: &str| match name {
+        "gochar" => r#"{"instants": [2460676.5]}"#,
+        "hits" | "sadeSati" => r#"{"from": 2460676.5, "to": 2460680.5}"#,
+        "perfection" => r#"{"querent": "VENUS", "quesited": "MARS"}"#,
+        _ => "{}",
+    };
+    for name in ChartRecords::NAMES {
+        let mut records = ChartRecords::default();
+        if let Err(refused) = records.read(name, least(name)) {
+            assert!(
+                !refused.to_string().contains("no chart record is named"),
+                "{name} is in NAMES and not read: {refused}"
+            );
+        }
+    }
+    let refused = ChartRecords::default().read("lot", "{}").unwrap_err();
+    assert_eq!(refused.field(), Some("lot"));
+    assert!(refused.hint().unwrap().contains("lots"));
+}
+
+#[test]
+fn a_record_refusal_is_named_from_its_root() {
+    let refused = ChartRecords::default()
+        .read("gochar", r#"{"instants": []}"#)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("gochar.instants"));
+    let refused = ChartRecords::default()
+        .read("interpret", r#"{"readingz": true}"#)
+        .unwrap_err();
+    assert!(
+        refused.field().unwrap().starts_with("interpret"),
+        "{refused}"
+    );
+}
+
+#[test]
+fn a_json_chart_request_composes_as_the_request_it_spells() {
+    let sdk = context();
+    let found = FoundRequest::from_json(
+        r#"{"instants": [2447000.25, 2447365.75], "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700,
+            "vargas": ["varga.D9", "D10"], "dashas": ["VIMSHOTTARI"], "shadbala": true,
+            "jaimini": false, "fortitudes": {}, "lots": {}}"#,
+    )
+    .unwrap();
+    assert_eq!(found.instants, instants());
+    let request = kathmandu()
+        .with_vargas([Varga::D9, Varga::D10])
+        .with_dashas([DashaSystem::Vimshottari])
+        .with_shadbala();
+    assert_eq!(found.request, request);
+    let composed = sdk
+        .chart()
+        .compose(&found.instants, &found.request, &found.records)
+        .unwrap();
+    let records = ChartRecords {
+        fortitudes: Some(FortitudeRequest::default()),
+        lots: Some(LotRequest::default()),
+        ..ChartRecords::default()
+    };
+    let built = sdk
+        .chart()
+        .compose(&instants(), &request, &records)
+        .unwrap();
+    assert_eq!(
+        composed.founded.provenance.input_hash,
+        built.founded.provenance.input_hash
+    );
+    assert_eq!(composed.fortitudes, built.fortitudes);
+    assert_eq!(composed.lots, built.lots);
+}
+
+#[test]
+fn a_json_chart_request_refuses_by_the_field_written() {
+    let base = r#""latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700"#;
+    let refused = |extra: &str| {
+        FoundRequest::from_json(&format!("{{{base}{extra}}}"))
+            .unwrap_err()
+            .field()
+            .map(str::to_owned)
+    };
+    assert_eq!(refused(""), Some("instant".to_owned()));
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "instants": [2447000.25]"#),
+        Some("instants".to_owned())
+    );
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "shadbala": "yes""#),
+        Some("shadbala".to_owned())
+    );
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "vargaz": []"#),
+        Some("vargaz".to_owned())
+    );
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "kp": {"clok": 0}"#),
+        Some("kp.clok".to_owned())
+    );
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "dignities": {}, "fortitudes": {}"#),
+        Some("dignities".to_owned())
+    );
+    assert!(FoundRequest::from_json("[]").is_err());
+}
+
+/// The chart request's description names every section flag and every
+/// record a request carries, so the tool an agent reads it from offers
+/// none it leaves out.
+#[test]
+fn the_chart_requests_description_names_every_section_and_record() {
+    let description = teistro::FoundRequest::DESCRIPTION;
+    for name in teistro::FoundRequest::sections()
+        .into_iter()
+        .chain(teistro::ChartRecords::NAMES)
+    {
+        assert!(
+            description.contains(&format!("`{name}`")),
+            "the description leaves out `{name}`"
+        );
+    }
+}

@@ -1195,6 +1195,42 @@ export interface ChartRequest {
    * @nullable
    */
   readonly remediesJson?: string;
+  /**
+   * Every chart read as a birth time to rectify, the chart's instant
+   * the time on record, as a JSON object, every member optional:
+   * `purify` (`minutes` either side of the chart's instant, more than
+   * none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+   * vv. 67–78), `conception` (the pranapada's house, the nisheka and
+   * the conception Moon, with its rules), `circumstance` (`facts` the
+   * family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+   * and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+   * (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+   * to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+   * Each chart's readings come back in the `rectification` section,
+   * one member for each reading asked. Null for none, which costs
+   * nothing (`03-design/rectification.md`). Refusals are named from
+   * the record every binding calls `rectification`, as
+   * `rectification.purify.minutes`.
+   * @example {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}
+   * @nullable
+   */
+  readonly rectificationJson?: string;
+  /**
+   * Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+   * object, every member optional: `cycle` (`{planet, year}`, where the
+   * 35-year cycle starts, the book's general table from Saturn in the
+   * first year when left out), `year` (a year of life from 1, the year
+   * from birth to the first birthday, to read its ruler, its thirds and
+   * its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+   * annual teva is read from, which the SDK does not ship and checks
+   * row by row). Each chart's reading comes back in the `lalkitab`
+   * section. Null for none, which costs nothing
+   * (`03-design/lalkitab.md`). Refusals are named from the record every
+   * binding calls `lalkitab`, as `lalkitab.cycle.year`.
+   * @example {"cycle":{"planet":"VENUS","year":17},"year":30}
+   * @nullable
+   */
+  readonly lalkitabJson?: string;
 }
 
 /**

@@ -76,7 +76,8 @@ impl ProgressionRequest {
 
 /// A progressed chart: the instant of sky that measures an instant of
 /// life, the chart founded there, and its angles turned by the asked method.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Progressed {
     /// The instant of life asked for.
     pub life: JulianDay<Utc>,
@@ -90,7 +91,9 @@ pub struct Progressed {
     pub angles: ChartAngles,
     /// The progressed meridian's right ascension, degrees.
     pub armc_deg: f64,
-    /// What it was asked with.
+    /// What it was asked with: the request's own, which its JSON does not
+    /// repeat.
+    #[serde(skip)]
     pub asked: ProgressionRequest,
 }
 
@@ -124,7 +127,8 @@ impl Default for DirectionArc {
 }
 
 /// One planet of the birth moved by the arc.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DirectedPlanet {
     /// Which planet.
     pub graha: Graha,
@@ -134,7 +138,8 @@ pub struct DirectedPlanet {
 
 /// A birth's points directed: every planet and both angles moved forward
 /// along the ecliptic by one arc.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Directed {
     /// The instant of life asked for.
     pub life: JulianDay<Utc>,
@@ -146,7 +151,9 @@ pub struct Directed {
     pub ascendant_deg: f64,
     /// The directed midheaven, degrees.
     pub midheaven_deg: f64,
-    /// What it was asked with.
+    /// What it was asked with: the request's own, which its JSON does not
+    /// repeat.
+    #[serde(skip)]
     pub arc: DirectionArc,
 }
 
@@ -263,7 +270,8 @@ impl Default for ContactRequest {
 
 /// One contact: a progressed planet exactly in aspect to a radical point,
 /// and the instant of life it falls due.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ProgressedContact {
     /// The instant of life the contact measures to.
     pub life: JulianDay<Utc>,

@@ -1,6 +1,6 @@
 # The Rust consumer surface
 
-Status: `designed`, written 2026-09-12 from the falsification pass in
+Status: `built`, §8's steps all built; written 2026-09-12 from the falsification pass in
 [`rust-consumer-surface-measured.md`](rust-consumer-surface-measured.md).
 Settles ADR-0030 §9, which left Rust's own consumer surface to this page.
 Derives from ADR-0002 (an agnostic port), ADR-0023 (type safety in every
@@ -12,7 +12,7 @@ each binding its row.
 
 Node, Dart and Python read `sdk.<area>.<operation>` off a context. Rust —
 the language the whole SDK is written in — has no such thing: a consumer
-picks among the workspace's crates and assembles what the other three
+picks among the workspace's crates and assembles what the other bindings
 are handed. (The count is deliberately not written here. It was
 `twenty-two` when this page was drafted and the workspace has grown by a
 third since; a count beside a directory that grows is the one claim on a
@@ -21,7 +21,7 @@ one place that does carry the list.) This page decides what Rust gets instead.
 
 In scope: whether Rust has a context at all, what it is made of, how the
 areas are expressed, how an ephemeris is chosen, what the façade does
-**not** carry, and the gates that hold it to the other three. Out of
+**not** carry, and the gates that hold it to the other bindings. Out of
 scope: the crates' own public APIs, which stay what they are — this is a
 surface over them, not a rewrite of them.
 
@@ -62,7 +62,7 @@ context object, a builder, or free functions over a settings value.
 **Decided: the façade depends on the crates, not on `teistro-ffi`.**
 
 The alternative is real and worth naming, because it is the cheap one: a
-Rust façade could wrap `teistro-ffi` the way the other three bindings do,
+Rust façade could wrap `teistro-ffi` the way the other bindings do,
 and inherit the composition for free. It is refused on the measurement's
 third result. Eight of the forty-six entry points are marshalling with no
 computation in them, and the blob is the rest of it: a Rust consumer
@@ -134,7 +134,7 @@ let sky = sdk.positions(&[2_451_545.0], &[Body::Sun], &frame)?;
 ```
 
 Why a view rather than inherent methods: the same reason ADR-0030 gave
-for the other three. `calendar().convert` and `time().convert` are two
+for the other bindings. `calendar().convert` and `time().convert` are two
 operations with one good name each; flat, one of them is `convert_time`,
 and the measurement behind ADR-0030 found six members already spelling
 their own area inside their own name. Rust has no reason to be the
@@ -154,7 +154,7 @@ that every choice be a knob. A builder with typed setters gives both, and
 gives the one thing an options struct cannot — a `build()` that returns
 the settings it resolved, so *what was applied is reported*.
 
-**The root keeps what the other three keep**: `positions`, `profile`,
+**The root keeps what the other bindings keep**: `positions`, `profile`,
 `settings`, `settings_hash`. `positions` is a root operation because an
 operation whose name is its own area's name is one — the rule
 `surface-areas.md` states and the reason nobody writes
@@ -175,7 +175,7 @@ Rust are values, not paths:
 
 `Ephemeris::Builtin`, `Ephemeris::Test` and `Ephemeris::Provider(_)` are
 the three kinds, and an ordered chain is tried in order and **never
-silent** — the same rule the other three keep, and the same refusal
+silent** — the same rule the other bindings keep, and the same refusal
 naming every entry that failed. A chain of one is not a chain, so its
 refusal keeps its own status, field and hint.
 
@@ -238,7 +238,7 @@ type system is where a crate keeps the distinction.
 
 ### And where an area's member is a module, not a method
 
-`intl` has seven operations in the other three bindings, and one of them
+`intl` has seven operations in the other bindings, and one of them
 is not an operation: `messages` is the **typed accessor tree** — every
 message of the SDK's locale as a callable of its own parameters, which
 `cargo xtask gen intl` writes into each binding.
@@ -251,7 +251,7 @@ implementing `TypedMessage`, so `render_typed` takes
 
 So the façade's `messages` is `pub use teistro_intl::messages`: a module
 tree, because a module tree is what a namespace is in Rust. That is a
-**shape** difference from the other three rather than a missing
+**shape** difference from the other bindings rather than a missing
 operation, and it is the right one — the parity gate compares a
 canonical path per operation, and `intl.messages` resolves to something
 a consumer reaches in each language's own way. Worth writing down
@@ -274,10 +274,10 @@ principle:
 
 ## 7. What the gates gain
 
-- **A fourth parity runner**, and it cannot have the same key set as the
-  other three. That is not a gap in it; it is §6 arriving in the gate.
+- **A Rust parity runner**, and it cannot have the same key set as the
+  other bindings'. That is not a gap in it; it is §6 arriving in the gate.
 
-  The three runners print ~674 keys, and among them are `abi`,
+  The binding runners print their keys, and among them are `abi`,
   `build-sdk`, `build-commit`, `build-target` and the result blobs'
   sections and hashes. A Rust consumer has **none of those**: Cargo
   resolved the versions, `Drop` freed the memory, and the crates handed
@@ -323,7 +323,7 @@ principle:
   The eight are of two kinds. `abi` and the six `build-*` keys are the
   **boundary's own handshake**, and there is no boundary here and
   nothing to hand-shake — while `sdk`, `catalogue-version` and
-  `default-profile`, which the other three *ask* the library for, this
+  `default-profile`, which the other bindings *ask* the library for, this
   runner prints from constants, because Cargo resolved the graph and a
   resolved graph is what a `const` looks like. And
   `surface.(root).dispose` is the one operation this surface cannot
@@ -335,7 +335,7 @@ principle:
 
   Growing it found two real gaps, which is what a gate is for.
   `jd_of_fixed` and `fixed_of_jd` were operations the façade did not
-  have, and are free functions now, as in the other three, because a
+  have, and are free functions now, as in the other bindings, because a
   fixed day and a Julian day are two spellings of one integer and no
   profile or locale changes the arithmetic. And `canonical_json` and
   `content_hash` were not re-exported, so a consumer could hold an
@@ -405,17 +405,17 @@ principle:
 ## 8. Order of work
 
 1. **The façade crate, beside the boundary.** `Context`, the builder, the
-   eight area views, the ephemeris chain — composing the crates, with
+   area views, the ephemeris chain — composing the crates, with
    `teistro-ffi` untouched. Composition written twice, briefly and
    knowingly, and the locale bundles' build script with it.
 
-   Area by area rather than all eight at once, because each is
+   Area by area rather than all at once, because each is
    independently provable: the first one that compiles and reproduces a
    fact the C smoke test already asserts has proved the whole shape, and
    the rest are that shape again.
 
    **Done:** the context, the builder, the ephemeris chain, and five of
-   the eight areas — `calendar`, `time`, `intl`, `keys` and `frame`.
+   the areas — `calendar`, `time`, `intl`, `keys` and `frame`.
    `time` is where the dynamic-type section earned itself; `intl` is
    where the module-tree one did.
 
@@ -430,15 +430,13 @@ principle:
    ephemeris that describes no operations of its own, which is what the
    built-in is.
 
-   **A ninth area, `interpret`, arrived with the composers (2026-09-21).**
-   It is the first area that is **Rust only**: a narrative plan does not
-   cross the C boundary yet, so the other three bindings do not have it,
-   and `check-areas` — which measures the boundary's own areas — does not
-   see it. That is the honest state rather than a gap: the area exists
-   where its consumer is, and it joins the boundary when a plan has a
-   crossing of its own to ride on.
+   **A further area, `interpret`, arrived with the composers (2026-09-21).**
+   It began **Rust only**: a narrative plan did not cross the C boundary,
+   so the other bindings did not have it. It crossed the same day
+   ([`plans-at-the-boundary.md`](plans-at-the-boundary.md)): a plan crosses
+   as its own JSON, and every binding renders what it parsed.
 
-   **And `chart` and `almanac`, so all eight areas and the root are
+   **And `chart` and `almanac`, so every area and the root is
    built.** The runner came first, as the paragraph below asks, and it
    was the right order: with it in place the two compositions were
    checkable line by line, and both agreed on their first run. 125 keys,
@@ -466,11 +464,14 @@ principle:
    key the others have except a declared list, printed on every run.
 
    So the order is: write the runner, run it by hand against the other
-   three's report for the operations that exist, build `chart` and
+   bindings' report for the operations that exist, build `chart` and
    `almanac` against it, teach `check-parity` the declared absences, and
    wire it in.
-2. **The parity runner**, which is what proves step 1 equals the other
-   three rather than merely compiling. Red until it does.
+2. ~~**The parity runner**, which is what proves step 1 equals the other
+   bindings rather than merely compiling. Red until it does.~~ **Done.**
+   `crates/sdk/examples/parity.rs`, held by `check-parity` beside the
+   other bindings' runners, with the keys a Rust consumer has no reason to
+   print declared in `xtask/src/parity.rs`.
 3. ~~**Invert the dependency.**~~ **Done.** `teistro-ffi` depends on
    `teistro`, `TsContext` wraps `teistro::Context`, and
    `TsContext::build` — which used to resolve the profile, parse the
@@ -499,11 +500,11 @@ principle:
    `teistro-intl` as a dependency, because the boundary still *marshals*
    the engine's types even though it no longer composes it. The
    composition moved; the types are shared.
-4. ~~**Examples**, the same eight scenarios the other three bindings
-   run, held by a gate the same way.~~ **Done.** Eight files in
+4. ~~**Examples**, the same scenarios the other bindings
+   run, held by a gate the same way.~~ **Done.** The files in
    `crates/sdk/examples/`, run by `cargo xtask check-rust`, with the
    README's table saying what each one is really teaching — the same
-   eight scenarios, and each one written as a Rust consumer would rather
+   scenarios, and each one written as a Rust consumer would rather
    than transcribed.
 
    Where the surface differs, the example is what says so: a context is
@@ -515,20 +516,20 @@ principle:
    provider's `capabilities` instead; and `your_own_ephemeris.rs`
    implements the port rather than handing over an object literal, which
    makes coverage a **per-cell** outcome (`provider::validate` says why)
-   where the other three shims refuse the batch.
+   where the other bindings' shims refuse the batch.
 
    Three things the writing found, none of them in the examples:
 
    - Four signature types were not re-exported (§7), so §7's third
      property exists because of this step.
    - **An almanac's provenance named no provider.** The chart foundation
-     stamps it and the almanac did not, in all four bindings, because
+     stamps it and the almanac did not, in every binding then built, because
      nothing had ever printed the field. `flags_used` there is empty and
      **not** a guess: the chart passes the completion's steps, and this
      path reaches its positions through `FrameLongitudes`, which keeps
      no step list, so there is nothing to vouch for.
    - **A `--no-default-features` build of the façade failed**, and had
-     always failed, on the seven examples and `tests/surface.rs` that
+     always failed, on the examples and `tests/surface.rs` that
      name `Ephemeris::Builtin` — a variant that exists only under
      `builtin-ephemeris`. Nobody saw it because nothing had ever built
      this crate without its default: the tier matrix builds
@@ -551,7 +552,7 @@ principle:
      together, so only a crate that actually gates on the feature is held
      to it.
 
-   And one thing it deliberately did **not** do: the eight files repeat
+   And one thing it deliberately did **not** do: the example files repeat
    small helpers — a clock formatter, a sign lookup, an
    entity-name-or-key fallback. An example is a program a reader is
    invited to *copy*, and a shared `support` module would make every one
@@ -571,7 +572,7 @@ principle:
    and no ABI is crossed, so what a service logs at start-up is the
    *provider's* capabilities. And **an ephemeris of your own is a trait
    you implement**, which makes coverage a per-cell outcome where the
-   other three shims refuse the batch; that difference is on the page
+   other bindings' shims refuse the batch; that difference is on the page
    rather than left for a reader to discover, because a provider author
    moving between two of these bindings would otherwise meet it as a
    surprise.

@@ -600,6 +600,18 @@ impl ChartRequest {
             .with_jaimini()
     }
 
+    /// The same reading cast for another place under another clock: what
+    /// a batch of births at many places reads each place with.
+    #[cfg(feature = "research")]
+    #[must_use]
+    pub(crate) fn placed(&self, place: Place, offset: UtcOffset) -> ChartRequest {
+        ChartRequest {
+            place,
+            offset,
+            ..self.clone()
+        }
+    }
+
     /// The place the chart is cast for.
     #[must_use]
     pub const fn place(&self) -> &Place {

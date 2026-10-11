@@ -20,6 +20,7 @@ use crate::rule::Rule;
 
 /// Everything of a chart that bears on one house.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct HouseReading<'r> {
     /// Which house.
     pub house: House,
@@ -36,9 +37,11 @@ pub struct HouseReading<'r> {
 
 /// A rule that held, and what it answered.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Held<'r> {
     /// Which rule; written as its key, the rule being the set's.
     #[serde(serialize_with = "crate::rule::key_of")]
+    #[cfg_attr(feature = "schema", schemars(with = "String"))]
     pub rule: &'r Rule,
     /// What it answered.
     pub result: RuleResult,
@@ -51,6 +54,7 @@ pub struct Held<'r> {
 /// reading at all, that it declines. Each carries its verse, so a consumer can
 /// show the authority for combining as readily as for the readings combined.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Composition {
     /// Its key.
     pub key: &'static str,
@@ -98,6 +102,7 @@ impl Composition {
 
 /// What kind of instruction a composition is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Kind {
     /// Read the several as the pairs they contain.

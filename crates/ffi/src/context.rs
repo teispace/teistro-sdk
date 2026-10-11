@@ -189,16 +189,6 @@ c_struct!(TsContextOptions, TsError);
 pub struct TsContext {
     inner: teistro::Context,
     scratch: RefCell<Scratch>,
-    /// A reference that keeps a loaded adapter's library in memory for
-    /// as long as this context might call into it (ADR-0029).
-    ///
-    /// **Declared last on purpose**: fields drop in declaration order, so
-    /// `provider` — whose vtable is a table of function pointers into
-    /// that library — is gone before the library can be unloaded.
-    ///
-    /// Absent on wasm, which has no loader.
-    #[cfg(not(target_family = "wasm"))]
-    loaded: Option<crate::provider::Keepalive>,
 }
 
 impl core::fmt::Debug for TsContext {
@@ -417,13 +407,14 @@ impl TsContext {
             building = building.locale(tag);
         }
         if let Some(json) = texts.layouts_json {
-            for layout in layouts_of(json)? {
+            for layout in teistro::registrations::layouts_from_json(json, "options.layouts_json")? {
                 building = building.layout(layout);
             }
         }
         if let Some(json) = texts.dashas_json {
             #[cfg(feature = "chart")]
-            for definition in dashas_of(json)? {
+            for definition in teistro::registrations::dashas_from_json(json, "options.dashas_json")?
+            {
                 building = building.dasha_system(definition);
             }
             // A dasha system is the chart area's, so a build without it
@@ -431,7 +422,7 @@ impl TsContext {
             #[cfg(not(feature = "chart"))]
             {
                 let _ = json;
-                return Err(crate::family::left_out("chart").with_field("options.dashas_json"));
+                return Err(Error::left_out("chart").with_field("options.dashas_json"));
             }
         }
         // One entry, never a chain: a C caller names one ephemeris and
@@ -461,18 +452,7 @@ impl TsContext {
         Ok(TsContext {
             inner,
             scratch: RefCell::new(Scratch::default()),
-            #[cfg(not(target_family = "wasm"))]
-            loaded: None,
         })
-    }
-
-    /// The same context, keeping a loaded adapter's library alive for as
-    /// long as it lives (ADR-0029).
-    #[cfg(not(target_family = "wasm"))]
-    #[must_use]
-    pub(crate) fn keeping(mut self, loaded: crate::provider::Keepalive) -> TsContext {
-        self.loaded = Some(loaded);
-        self
     }
 
     /// The SDK's own context, for what a binding reaches through this
@@ -713,36 +693,6 @@ pub struct OptionTexts<'a> {
     pub layouts_json: Option<&'a str>,
     /// A JSON array of the consumer's own dasha system definitions.
     pub dashas_json: Option<&'a str>,
-}
-
-/// A consumer's layout rows, each read strictly and checked by the rules a
-/// shipped row passes, refused by its place in the array
-/// (`03-design/chart-geometry.md` §7f).
-fn layouts_of(json: &str) -> Result<Vec<teistro::Layout>, Error> {
-    const ROOT: &str = "options.layouts_json";
-    let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
-    rows.into_iter()
-        .enumerate()
-        .map(|(index, row)| {
-            let at = format!("{ROOT}[{index}]");
-            let layout: teistro::Layout = teistro_core::strict::read_value(&row, &at)?;
-            layout.validate().map_err(|error| error.under(&at))?;
-            Ok(layout)
-        })
-        .collect()
-}
-
-/// A consumer's dasha system definitions, each read strictly; the context's
-/// registry checks each by the rules a shipped row passes and names it by
-/// its place.
-#[cfg(feature = "chart")]
-fn dashas_of(json: &str) -> Result<Vec<teistro::dasha::DashaDefinition>, Error> {
-    const ROOT: &str = "options.dashas_json";
-    let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
-    rows.into_iter()
-        .enumerate()
-        .map(|(index, row)| teistro_core::strict::read_value(&row, &format!("{ROOT}[{index}]")))
-        .collect()
 }
 
 /// The strings an options record carries, checked and borrowed, for the

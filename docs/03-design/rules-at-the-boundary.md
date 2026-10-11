@@ -2,7 +2,7 @@
 
 Status: `built`, designed and built 2026-09-17. It settles the question
 [`surface-areas.md`](surface-areas.md) §9 left open — how a rule and a rule
-result cross the C ABI — so that Node, Dart and Python reach the kernel
+result cross the C ABI — so that every binding reaches the kernel
 [`rules-engine.md`](rules-engine.md) describes, which Rust reaches today
 through `teistro::rules`, `teistro::RuleInputs` and the longevity readings.
 

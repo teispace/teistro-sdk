@@ -8,10 +8,11 @@ import java.util.function.Function;
 import com.teispace.teistro.blob.Charts;
 
 /**
- * The chart readings the library writes as JSON sections, KP, the prashna and
- * the remedies, parsed once a batch into records with their keys made
- * catalogue members, as the Python façade's {@code Chart.kp},
- * {@code Chart.prashna} and {@code Chart.remedies} read them.
+ * The chart readings the library writes as JSON sections, KP, the prashna,
+ * the remedies and the rectification, parsed once a batch into records with
+ * their keys made catalogue members, as the Python façade's
+ * {@code Chart.kp}, {@code Chart.prashna}, {@code Chart.remedies} and
+ * {@code Chart.rectification} read them.
  */
 final class KpReads {
     private KpReads() {
@@ -397,5 +398,282 @@ final class KpReads {
                                 rashi(at(amatya, "amsha")),
                                 amatyaDevata(at(amatya, "inRasi")),
                                 amatyaDevata(at(amatya, "inNavamsha")))));
+    }
+
+    // ---- the rectification ----
+
+    /**
+     * The chart read as a birth time to rectify, the chart's instant the time
+     * on record: what the purifier of BPHS ch. 2 leaves standing of the
+     * window, the conception reports, <i>Brihat Jataka</i> ch. V's
+     * circumstances, the baseline engine's cascade and the Shiva Svarodaya's
+     * nadi and tattva, each only where the request asked for it. Empty unless {@code rectification} asked for it
+     * ({@code 03-design/rectification.md}). Ports {@code Chart.rectification}.
+     */
+    static Optional<Rectification> rectification(Chart chart) {
+        return VedicReads.at(
+                chart.batch().cached("rectifications",
+                        () -> parsed(decoded(chart).rectification(), KpReads::rectificationOf)),
+                chart.index());
+    }
+
+    /** The field {@code key} of an object, or null where it is absent or JSON null. */
+    private static Object absent(Object raw, String key) {
+        return JsonRead.object(raw).get(key);
+    }
+
+    private static Nakshatra nakshatra(Object key) {
+        return JsonRead.member(Nakshatra::byKey, "Nakshatra", key);
+    }
+
+    private static List<Double> decimals(Object raw) {
+        List<Double> found = new ArrayList<>();
+        for (Object one : JsonRead.list(raw)) {
+            found.add(JsonRead.decimal(one));
+        }
+        return List.copyOf(found);
+    }
+
+    /** The purifier's verdict at an instant, every clause it judged. */
+    private static Purified.Verdict verdict(Object raw) {
+        List<Purified.Clause> clauses = new ArrayList<>();
+        for (Object c : JsonRead.list(at(raw, "clauses"))) {
+            clauses.add(new Purified.Clause(
+                    JsonRead.text(at(c, "purifier")),
+                    JsonRead.text(at(c, "reference")),
+                    rashi(at(c, "sign")),
+                    rashi(at(c, "lagna")),
+                    JsonRead.integer(at(c, "house")),
+                    JsonRead.bool(at(c, "held")),
+                    JsonRead.bool(at(c, "counted"))));
+        }
+        return new Purified.Verdict(clauses, JsonRead.bool(at(raw, "pure")));
+    }
+
+    private static List<Purified.Run> runs(Object raw) {
+        List<Purified.Run> found = new ArrayList<>();
+        for (Object r : JsonRead.list(raw)) {
+            found.add(new Purified.Run(JsonRead.decimal(at(r, "from")), JsonRead.decimal(at(r, "to")),
+                    verdict(at(r, "verdict"))));
+        }
+        return List.copyOf(found);
+    }
+
+    private static Purified purified(Object raw) {
+        Object grid = at(raw, "grid");
+        return new Purified(runs(at(raw, "intervals")), runs(at(raw, "removed")), decimals(at(raw, "edges")),
+                new Purified.Grid(JsonRead.decimal(at(grid, "stepDays")), JsonRead.integer(at(grid, "cells"))));
+    }
+
+    private static Conception conception(Object raw) {
+        Object house = at(raw, "pranapadaHouse");
+        Object nisheka = at(raw, "nisheka");
+        Object count = at(nisheka, "count");
+        Object points = at(count, "points");
+        Object span = at(count, "span");
+        Object written = at(span, "written");
+        Object added = absent(span, "moonAddedDeg");
+        Object moon = at(raw, "moon");
+        Object predicted = at(moon, "predicted");
+        Object predictedNakshatra = absent(predicted, "nakshatra");
+        Object moonNakshatra = absent(moon, "moonNakshatra");
+        return new Conception(
+                JsonRead.decimal(at(raw, "birth")),
+                new Conception.PranapadaHouse(
+                        JsonRead.decimal(at(house, "pranapadaDeg")),
+                        JsonRead.decimal(at(house, "lagnaDeg")),
+                        JsonRead.integer(at(house, "house")),
+                        JsonRead.bool(at(house, "auspicious"))),
+                new Conception.Nisheka(
+                        new Conception.NishekaCount(
+                                new Conception.NishekaPoints(
+                                        JsonRead.decimal(at(points, "mandiDeg")),
+                                        JsonRead.decimal(at(points, "saturnDeg")),
+                                        JsonRead.decimal(at(points, "lagnaDeg")),
+                                        JsonRead.decimal(at(points, "ninthDeg")),
+                                        JsonRead.decimal(at(points, "lagnaLordDeg")),
+                                        JsonRead.decimal(at(points, "moonDeg"))),
+                                new Conception.NishekaSpan(
+                                        JsonRead.decimal(at(span, "saturnToMandiDeg")),
+                                        JsonRead.decimal(at(span, "lagnaToNinthDeg")),
+                                        Optional.ofNullable(added).map(JsonRead::decimal),
+                                        JsonRead.decimal(at(span, "arcDeg")),
+                                        new Conception.MonthsBefore(
+                                                JsonRead.integer(at(written, "months")),
+                                                JsonRead.integer(at(written, "days")),
+                                                JsonRead.integer(at(written, "ghatis")),
+                                                JsonRead.integer(at(written, "palas"))),
+                                        JsonRead.decimal(at(span, "daysBefore"))),
+                                JsonRead.decimal(at(count, "instant")),
+                                JsonRead.decimal(at(count, "daysPerBirthMinute"))),
+                        JsonRead.decimal(at(nisheka, "lagnaDeg")),
+                        verdict(at(nisheka, "verdict"))),
+                new Conception.Moon(
+                        new Conception.MoonCount(
+                                JsonRead.integer(at(predicted, "dvadashamsha")),
+                                rashi(at(predicted, "sign")),
+                                Optional.ofNullable(predictedNakshatra).map(KpReads::nakshatra)),
+                        rashi(at(moon, "moonSign")),
+                        Optional.ofNullable(moonNakshatra).map(KpReads::nakshatra),
+                        JsonRead.bool(at(moon, "signAgrees")),
+                        Optional.ofNullable(JsonRead.boolOrNull(absent(moon, "nakshatraAgrees"))),
+                        rashi(at(moon, "rising")),
+                        JsonRead.text(at(moon, "predictedPart")),
+                        JsonRead.bool(at(moon, "bornByDay")),
+                        JsonRead.bool(at(moon, "partAgrees")),
+                        JsonRead.decimal(at(moon, "risenFraction")),
+                        JsonRead.decimal(at(moon, "elapsedFraction"))));
+    }
+
+    private static Circumstance circumstance(Object raw) {
+        Object sky = at(raw, "sky");
+        Object father = at(raw, "father");
+        Object presentation = at(raw, "presentation");
+        Object lamp = at(raw, "lamp");
+        Object attending = at(raw, "attending");
+        List<Circumstance.Weight> weights = new ArrayList<>();
+        for (Object w : JsonRead.list(at(raw, "weights"))) {
+            weights.add(new Circumstance.Weight(JsonRead.text(at(w, "indication")), JsonRead.bool(at(w, "agrees"))));
+        }
+        return new Circumstance(
+                new Circumstance.Sky(JsonRead.decimal(at(sky, "lagnaDeg")), decimals(at(sky, "grahasDeg")),
+                        JsonRead.bool(at(sky, "lordRetrograde"))),
+                new Circumstance.Father(
+                        JsonRead.member(Strength::byKey, "Strength", at(father, "moonAspect")),
+                        JsonRead.bool(at(father, "unseen")),
+                        JsonRead.bool(at(father, "saturnRising")),
+                        JsonRead.bool(at(father, "marsSetting")),
+                        JsonRead.bool(at(father, "moonHemmed")),
+                        JsonRead.bool(at(father, "away")),
+                        Optional.ofNullable(JsonRead.textOrNull(absent(father, "whereabouts"))),
+                        JsonRead.integer(at(father, "sunHouse"))),
+                new Circumstance.Presentation(
+                        JsonRead.text(at(presentation, "by")),
+                        JsonRead.member(Rising::byKey, "Rising", at(presentation, "rising")),
+                        graha(at(presentation, "lord")),
+                        JsonRead.bool(at(presentation, "lordRetrograde")),
+                        JsonRead.text(at(presentation, "foretold"))),
+                new Circumstance.Lamp(
+                        JsonRead.decimal(at(lamp, "oil")),
+                        JsonRead.text(at(lamp, "oilLevel")),
+                        JsonRead.decimal(at(lamp, "wick")),
+                        JsonRead.text(at(lamp, "wickLevel"))),
+                new Circumstance.Attending(
+                        grahas(at(attending, "between")),
+                        grahas(at(attending, "visible")),
+                        JsonRead.integer(at(attending, "inside")),
+                        JsonRead.integer(at(attending, "outside"))),
+                weights);
+    }
+
+    private static Interval interval(Object raw) {
+        return new Interval(JsonRead.decimal(at(raw, "from")), JsonRead.decimal(at(raw, "to")));
+    }
+
+    /** One stage note from its tagged JSON. */
+    private static BaselineNote note(Object raw) {
+        String kind = JsonRead.text(at(raw, "kind"));
+        return switch (kind) {
+            case "TATTVA_SEX" -> new BaselineNote.TattvaSex(JsonRead.text(at(raw, "sex")),
+                    JsonRead.decimal(at(raw, "admittedMinutes")), JsonRead.integer(at(raw, "penalised")),
+                    JsonRead.integer(at(raw, "of")));
+            case "REPORTED_TIME" -> new BaselineNote.ReportedTime(JsonRead.text(at(raw, "accuracy")),
+                    JsonRead.decimal(at(raw, "uncertaintyMinutes")));
+            case "EVENT_FIT" -> new BaselineNote.EventFit(JsonRead.integer(at(raw, "event")),
+                    Optional.ofNullable(JsonRead.textOrNull(absent(raw, "id"))), JsonRead.text(at(raw, "eventKind")),
+                    grahas(at(raw, "lords")), JsonRead.decimal(at(raw, "contribution")));
+            default -> throw JsonRead.internal("the library wrote a stage note this build does not know: " + kind);
+        };
+    }
+
+    private static BaselineRectification baseline(Object raw) {
+        List<Interval> intervals = new ArrayList<>();
+        for (Object one : JsonRead.list(at(raw, "intervals"))) {
+            intervals.add(interval(one));
+        }
+        List<BaselineRectification.Ranked> candidates = new ArrayList<>();
+        for (Object c : JsonRead.list(at(raw, "candidates"))) {
+            candidates.add(new BaselineRectification.Ranked(
+                    JsonRead.decimal(at(c, "at")),
+                    JsonRead.decimal(at(c, "probability")),
+                    JsonRead.decimal(at(c, "logPosterior")),
+                    rashi(at(c, "lagna")),
+                    nakshatra(at(c, "lagnaNakshatra"))));
+        }
+        List<BaselineRectification.Stage> stages = new ArrayList<>();
+        for (Object s : JsonRead.list(at(raw, "stages"))) {
+            List<BaselineNote> notes = new ArrayList<>();
+            for (Object n : JsonRead.list(at(s, "notes"))) {
+                notes.add(note(n));
+            }
+            stages.add(new BaselineRectification.Stage(
+                    JsonRead.text(at(s, "stage")),
+                    JsonRead.bool(at(s, "applied")),
+                    JsonRead.bool(at(s, "flat")),
+                    JsonRead.decimal(at(s, "resolutionMinutes")),
+                    notes));
+        }
+        List<BaselineRectification.HoldOut> held = new ArrayList<>();
+        for (Object h : JsonRead.list(at(raw, "holdOut"))) {
+            held.add(new BaselineRectification.HoldOut(
+                    JsonRead.integer(at(h, "event")),
+                    JsonRead.text(at(h, "kind")),
+                    JsonRead.decimal(at(h, "scoreAtFit")),
+                    JsonRead.decimal(at(h, "baseline")),
+                    JsonRead.bool(at(h, "supported"))));
+        }
+        return new BaselineRectification(
+                interval(at(raw, "window")),
+                JsonRead.decimal(at(raw, "sunrise")),
+                intervals,
+                JsonRead.decimal(at(raw, "intervalWidthMinutes")),
+                JsonRead.decimal(at(raw, "resolutionMinutes")),
+                JsonRead.decimal(at(raw, "suggested")),
+                JsonRead.decimal(at(raw, "concentration")),
+                candidates,
+                stages,
+                JsonRead.integer(at(raw, "eventsUsed")),
+                JsonRead.integer(at(raw, "eventsHeldOut")),
+                held);
+    }
+
+    private static SvarodayaAround.Run svarodayaRun(Object raw) {
+        return new SvarodayaAround.Run(
+                JsonRead.decimal(at(raw, "from")),
+                JsonRead.decimal(at(raw, "to")),
+                JsonRead.text(at(raw, "nadi")),
+                JsonRead.integer(at(raw, "turn")),
+                JsonRead.text(at(raw, "tattva")),
+                JsonRead.member(Sex::byKey, "Sex", at(raw, "sex")));
+    }
+
+    private static SvarodayaAround svarodaya(Object raw) {
+        Object reading = at(raw, "at");
+        List<SvarodayaAround.Run> runs = new ArrayList<>();
+        for (Object one : JsonRead.list(at(raw, "runs"))) {
+            runs.add(svarodayaRun(one));
+        }
+        return new SvarodayaAround(
+                new SvarodayaAround.Reading(
+                        JsonRead.decimal(at(reading, "sunrise")),
+                        JsonRead.decimal(at(reading, "nextSunrise")),
+                        JsonRead.member(Tithi::byKey, "Tithi", at(reading, "tithi")),
+                        JsonRead.text(at(reading, "sunriseNadi")),
+                        svarodayaRun(at(reading, "run")),
+                        decimals(at(reading, "junctions"))),
+                runs);
+    }
+
+    /**
+     * A chart's rectification from the {@code rectification} section's JSON,
+     * its keys made members and each reading not asked for empty.
+     */
+    private static Rectification rectificationOf(Object raw) {
+        return new Rectification(
+                Optional.ofNullable(absent(raw, "purified")).map(KpReads::purified),
+                Optional.ofNullable(absent(raw, "conception")).map(KpReads::conception),
+                Optional.ofNullable(absent(raw, "circumstance")).map(KpReads::circumstance),
+                Optional.ofNullable(absent(raw, "baseline")).map(KpReads::baseline),
+                Optional.ofNullable(absent(raw, "svarodaya")).map(KpReads::svarodaya));
     }
 }

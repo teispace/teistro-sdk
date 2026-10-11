@@ -1,6 +1,6 @@
 # wasm profiles: one module per profile
 
-Status: `draft`, 2026-10-08. Track A item 5 of the completion plan
+Status: `built`, 2026-10-08 (every step of the order of work built). Track A item 5 of the completion plan
 (`07-roadmap/00-roadmap.md`), and ADR-0005's "wasm ships per-profile
 binaries". Measured before designed, because the profiles' worth rests on
 how much of the module each crate takes, and nothing had measured it.
@@ -99,7 +99,8 @@ one.
 4. **The gates.**
    - fast-check builds each profile for `wasm32-unknown-unknown`,
      because a configuration no gate builds is already broken.
-   - `size.json` gains a budget per profile, held both ways like the
+   - `docs/05-testing/sizes.json` (the wasm budget's home since
+     2026-10-09) gains a budget per profile, held both ways like the
      full one.
    - `check-wasm` runs a profile probe through the staged package. Each
      profile's calendar and almanac answers must equal the full

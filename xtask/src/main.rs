@@ -113,6 +113,11 @@
 //! - `terms` and `check-terms`: the terms of the signs — the Egyptian,
 //!   Chaldean and Ptolemaic systems of the *Tetrabiblos* and Lilly's table,
 //!   each held to its own printing, its stated totals and its rule.
+//! - `research` and `check-research`: whether a study's numbers mean what
+//!   they say — each correction's error rate on null labellings, what each
+//!   finds of a planted effect, the Gauquelin artefact a uniform expectation
+//!   makes of early-morning births, and null event studies under each
+//!   shuffle.
 //! - `sect` and `check-sect`: when a chart is diurnal — Valens's horizon
 //!   against the chart's apparent sunrise and sunset and the recorded day
 //!   birth, the minutes they part bisected at every birth's place.
@@ -315,6 +320,7 @@ mod reception;
 mod rectification;
 mod release;
 mod render;
+mod research;
 mod ritu;
 mod rule_doc;
 mod rules_corpus;
@@ -329,6 +335,7 @@ mod sect;
 mod serial;
 mod shadbala;
 mod site;
+mod sizes;
 mod skip;
 mod state;
 mod state_readings;
@@ -390,6 +397,7 @@ const PASSES: &[Pass] = &[
     ("hits", hits::generate, hits::check_generated),
     ("sade-sati", sade_sati::generate, sade_sati::check_generated),
     ("rashifal", rashifal::generate, rashifal::check_generated),
+    ("research", research::generate, research::check_generated),
     ("kp", kp::generate, kp::check_generated),
     ("muhurta", muhurta::generate, muhurta::check_generated),
     ("festival", festival::generate, festival::check_generated),
@@ -573,18 +581,33 @@ fn generated_page(command: &str) -> Option<i32> {
     })
 }
 
+/// A pass that does something else when given arguments: `rule-doc` then
+/// prints the passages rather than writing the page, and `conformance
+/// --from DIR` records verify's tier runs while `check-conformance --from
+/// DIR` holds a run to the record.
+fn pass_with_arguments(command: &str, args: &[String]) -> Option<i32> {
+    if args.len() < 2 {
+        return None;
+    }
+    match command {
+        "rule-doc" => Some(rule_doc::print(
+            &repo_root(),
+            args.get(1).map(String::as_str),
+        )),
+        "conformance" | "check-conformance" => {
+            Some(conformance::recorded(&repo_root(), command, args))
+        }
+        _ => None,
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     let Some(command) = args.first().map(String::as_str) else {
         std::process::exit(usage());
     };
-    // A pass that also answers a question: with an argument, `rule-doc`
-    // prints the passages rather than writing the page.
-    if command == "rule-doc" && args.len() > 1 {
-        std::process::exit(rule_doc::print(
-            &repo_root(),
-            args.get(1).map(String::as_str),
-        ));
+    if let Some(code) = pass_with_arguments(command, &args) {
+        std::process::exit(code);
     }
     if let Some(code) = generated_page(command) {
         std::process::exit(skip::verdict(code));
@@ -623,6 +646,7 @@ fn main() {
         Some("vsop") => vsop::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
+        Some(command @ ("sizes" | "check-sizes")) => sizes::command(&repo_root(), command, &args),
         Some("check-site") => site::check(&repo_root()),
         Some("check-tag") => match args.as_slice() {
             [_, tag] => release::check_tag(&repo_root(), tag),
@@ -702,7 +726,8 @@ fn usage() -> i32 {
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
          check-dart | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
-         check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \
+         conformance --from DIR | check-conformance --from DIR | \
+         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | check-site | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \

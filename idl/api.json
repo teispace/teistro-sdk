@@ -25,7 +25,9 @@
     "crates/ffi/src/panchanga.rs",
     "crates/ffi/src/naam.rs",
     "crates/ffi/src/numerology.rs",
+    "crates/ffi/src/pakshi.rs",
     "crates/ffi/src/rashifal.rs",
+    "crates/ffi/src/research.rs",
     "crates/ffi/src/ephemeris.rs",
     "crates/ffi/src/provider.rs"
   ],
@@ -12487,6 +12489,36 @@
             "example": "{\"at\":2460676.5,\"rules\":{\"shanti\":{\"rik\":\"YAJNAVALKYA\"}}}",
             "nullable": true
           }
+        },
+        {
+          "name": "rectification_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart read as a birth time to rectify, the chart's instant\nthe time on record, as a JSON object, every member optional:\n`purify` (`minutes` either side of the chart's instant, more than\nnone and at most 1080, and `rules`, the purifier of BPHS ch. 2\nvv. 67–78), `conception` (the pranapada's house, the nisheka and\nthe conception Moon, with its rules), `circumstance` (`facts` the\nfamily remembers, `fatherPresent`, `presentation`, `oil`, `wick`\nand `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`\n(the baseline engine's unsourced cascade: `uncertaintyMinutes` 1\nto 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).\nEach chart's readings come back in the `rectification` section,\none member for each reading asked. Null for none, which costs\nnothing (`03-design/rectification.md`). Refusals are named from\nthe record every binding calls `rectification`, as\n`rectification.purify.minutes`.",
+          "meta": {
+            "example": "{\"purify\":{\"minutes\":30},\"circumstance\":{\"facts\":{\"fatherPresent\":false}}}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "lalkitab_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON\nobject, every member optional: `cycle` (`{planet, year}`, where the\n35-year cycle starts, the book's general table from Saturn in the\nfirst year when left out), `year` (a year of life from 1, the year\nfrom birth to the first birthday, to read its ruler, its thirds and\nits annual teva) and `varshphal` (`{rows}`, the 120-year list the\nannual teva is read from, which the SDK does not ship and checks\nrow by row). Each chart's reading comes back in the `lalkitab`\nsection. Null for none, which costs nothing\n(`03-design/lalkitab.md`). Refusals are named from the record every\nbinding calls `lalkitab`, as `lalkitab.cycle.year`.",
+          "meta": {
+            "example": "{\"cycle\":{\"planet\":\"VENUS\",\"year\":17},\"year\":30}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart_request.rs"
@@ -15371,8 +15403,59 @@
       "source": "crates/ffi/src/numerology.rs"
     },
     {
+      "name": "ts_pakshi",
+      "doc": "Reads a native's bird over each civil day of a range at a place and\nanswers with `{value, provenance}` as canonical JSON, `value` an array\nof `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset\nand next sunrise, each `{half, yama, span, activity, quality, subs}`\nwith every sub-period's activity, owner, span and how the native\nregards its owner, beside the day's `{sunrise, sunset, nextSunrise,\nvara, paksha}`, the bird, its death bird and the first eaters; null on\na day the Sun does not both rise and set.\n\n`request_json` is `{\"calendar\", \"first\", \"last\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\", \"native\", \"rules\"}`:\nthe days as `{\"year\", \"month\", \"day\"}`, `native` either `{\"bird\"}` or\n`{\"nakshatra\", \"paksha\", \"rule\"}`, and everything but `first`, the\nplace, the offset and `native` optional. A key it does not read, a\nplace or offset out of range or a native that is neither is\n`INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context\nwithout an ephemeris is `CAPABILITY`, as is a build that leaves the\n`pakshi` family out.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/pakshi.rs"
+    },
+    {
       "name": "ts_rashifal",
-      "doc": "Reads periods of civil days at a place for each of the twelve signs and\nanswers with an array of `{period, baseline}` as canonical JSON: the\nsky at the reference day's sunrise (or a clock time), each sign's\ngochar from Phaladeepika ch. 26, Saturn's standing, and every ingress\nand station of the period counted from each sign; `baseline` the\nbaseline engine's score of each sign when the request names a period\nfor it, absent otherwise.\n\n`request_json` is `{\"periods\", \"baseline\"}`: each period `{\"calendar\",\n\"first\", \"last\", \"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"snapshot\", \"events\", \"spells\"}`, the days as\n`{\"year\", \"month\", \"day\"}` and everything but `first`, the place and\nthe offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`\nand `YEARLY`. A key it does not read, a last day before the first, a\nclock off the clock or a graha named twice is `INVALID_ARG`, named\nunder `rashifal`. A context without an ephemeris is `CAPABILITY`, as is\na build that leaves the `rashifal` family out.",
+      "doc": "Reads periods of civil days at a place for each of the twelve signs and\nanswers with `{value, provenance}` as canonical JSON, `value` an array\nof `{period, baseline}`, one per period: the\nsky at the reference day's sunrise (or a clock time), each sign's\ngochar from Phaladeepika ch. 26, Saturn's standing, and every ingress\nand station of the period counted from each sign; `baseline` the\nbaseline engine's score of each sign when the request names a period\nfor it, absent otherwise.\n\n`request_json` is `{\"periods\", \"baseline\"}`: each period `{\"calendar\",\n\"first\", \"last\", \"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"snapshot\", \"events\", \"spells\"}`, the days as\n`{\"year\", \"month\", \"day\"}` and everything but `first`, the place and\nthe offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`\nand `YEARLY`. A key it does not read, a last day before the first, a\nclock off the clock or a graha named twice is `INVALID_ARG`, named\nunder `rashifal`. A context without an ephemeris is `CAPABILITY`, as is\na build that leaves the `rashifal` family out.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -15420,6 +15503,57 @@
       },
       "meta": {},
       "source": "crates/ffi/src/rashifal.rs"
+    },
+    {
+      "name": "ts_research",
+      "doc": "Runs a study over a batch of births and answers with `{value,\nprovenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`\nstudy, each row `{predicate, counts}` with every group's `{present,\nabsent, unreadable, unstable}`; for any other study it is `{rows,\npermutations, resolution, shuffle}`, each row adding `observed`, `p`\n(`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,\nbonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last\nfour only where they apply. `provenance.input_hash` seals the study\nand is what a study publishes before its data are collected.\n\n`request_json` is `{\"study\", \"rules\", \"holds\", ...}`: `study` one of\n`COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart\nrequest's rules are, and what the study reads: `births` and `design`\n(and a `test` for `COMPARE`); `births`, `control` and an optional\n`test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and\noptionally `depth` and `strata` for `TIMED`. A birth is `{instant,\nlatitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,\nuncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a\nnumber or a decimal string. A key it does not read, a field the study\ndoes not read or misses, or a value out of range is `INVALID_ARG`,\nnamed under `research`, as `research.test.seed`; what the study\nrefuses once it runs is named as the façade names it. A context\nwithout an ephemeris is `CAPABILITY`, as is a build that leaves the\n`research` family out.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/research.rs"
     },
     {
       "name": "ts_ephemeris_manifest",
@@ -21311,6 +21445,20 @@
           "id": 121,
           "name": "remedies",
           "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, functional, subjects, shantis, ishtaDevata}` (`03-design/remedies.md`). `rules` is `{functional, shanti, devata}`, every member filled. `functional` is the lagna's natures under *Laghu Parashari*: `{lagna, scheme, rows, yogakarakas, marakas, badhaka}`, each of the seven's row `{graha, houses, clauses, nature}` with every clause `{kind, house}` that made it, and `badhaka` `{house, lord}`. `subjects` is `{subjects, antardasha}`: each graha with at least one reason, `{graha, reasons}`, ranked by nothing (C351), and `antardasha` the running Vimshottari antardasha's printed shanti `{shanti, holds}`, `shanti` being `{mahadasha, antardasha, chapter, verses, page, conditions, remedies}` and `holds` each condition true, false or null where the verse leaves it open, the whole null unless the record named `at`. `shantis` is each subject's graha-shanti, `{graha, image, rik, japaThousands, samidh, food, dakshina, gem, substance, direction, mandala}`. `ishtaDevata` is `{atmakaraka, karakamsha, inRasi, inNavamsha}`, each chart's `{rules, sign, devotions, minor}`: every graha in the 12th from the karakamsha as `{graha, deities, verse, withKetu}`, and Saturn or Venus there in a malefic's sign (C354 to C356). Empty when `remedies_json` asked for none.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 122,
+          "name": "rectification",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each with a member for every reading the record asked and none for one it did not. `purified` is what the purifier of BPHS ch. 2 vv. 67-78 leaves standing of the window around the chart's instant, `{intervals, removed, edges, grid}`: each interval `{from, to, verdict}` with the clauses that held, each removed run naming the clause that failed. `conception` is `{birth, pranapadaHouse, nisheka, moon}` at the chart's instant (BPHS ch. 3 vv. 25-29, *Brihat Jataka* IV.21). `circumstance` is `{sky, father, presentation, lamp, attending, weights}` (*Brihat Jataka* ch. V), each fact given one weight. `baseline` is the baseline engine's unsourced cascade around the chart's instant, `{window, sunrise, intervals, intervalWidthMinutes, resolutionMinutes, suggested, concentration, candidates, stages, eventsUsed, eventsHeldOut, holdOut}`. `svarodaya` is the Shiva Svarodaya's nadi and tattva, `{at, runs}`: `at` the reading at the chart's instant `{sunrise, nextSunrise, tithi, sunriseNadi, run, junctions}` and `runs` every run `{from, to, nadi, turn, tattva, sex}` of the window around it, a report the text does not make at a birth. Instants are Julian days UTC. Empty when `rectification_json` asked for none.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 123,
+          "name": "lalkitab",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each `{reading, cycle, periods, year}` (`03-design/lalkitab.md`). `reading` is the teva's: `planets`, each `{graha, house, dignities, owners, awake, kayam, casts}` with `dignities` among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`, `owners` each `{owner, regard}` (`FRIEND`, `EQUAL` or `ENEMY`) and `casts` each aspect `{to, strength, onto}` (`QUARTER`, `HALF` or `FULL`); `houses`, each `{house, occupants, lookedAtBy, awake, waker}` with `lookedAtBy` each `{from, strength}`; `masnui`, each pair in one house `{pair, house, countsAs}`; `rinas`, each debt `{rin, of, seated}` with `seated` each `{enemy, house}`; `pitri`, the ancestors' debt's first state `{ninth, mercury}`; and `flags` `{ratandha, nabalig, dharmi, sathi}`. `cycle` is the 35-year cycle's start `{planet, year}` and `periods` its periods `{planet, from, to}` over years 1 to 120 of life. `year` is `{year, ruler, thirds, annual}`, `annual` the annual teva's reading in the same shape when the record sent a `varshphal` list, otherwise null; `year` itself is null unless the record named one. Grahas are bare catalogue keys. Empty when `lalkitab_json` asked for none.",
           "kind": "bytes",
           "fields": []
         }

@@ -36,6 +36,7 @@ const REMEDIES: &str = "remedies";
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 pub struct RemedyRequest {
     /// The Julian day (UTC) whose running Vimśottarī mahādaśā and

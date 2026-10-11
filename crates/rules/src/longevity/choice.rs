@@ -31,6 +31,7 @@ const SAVANA_TO_SOLAR: f64 = 360.0 / 365.0;
 
 /// The eight spans of life *Jataka Parijata* ch. 5 v. 1 names.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Ayus {
     /// Pindaja, from each graha's distance from exaltation (vv. 2 to 16).
@@ -80,6 +81,7 @@ impl Ayus {
 
 /// One candidate of v. 33.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Candidate {
     /// The graha or the lagna.
     pub by: Body,
@@ -118,6 +120,7 @@ pub struct Computed<'a> {
 
 /// The span the strongest names, with every candidate weighed.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SpanChoice {
     /// The eight in the verse's order.
     pub candidates: [Candidate; 8],

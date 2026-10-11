@@ -20,7 +20,7 @@
               an adapter a checkout does not have"
 )]
 
-use core::ffi::CStr;
+use core::ffi::{CStr, c_char};
 use core::ptr;
 use std::ffi::CString;
 
@@ -323,6 +323,62 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
         return;
     };
     let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
+    let (manifest, said) = a_loaded_engine_answers(
+        &path,
+        279.0..=282.0,
+        "tm_delta_t",
+        r#"{"jd_ut1": 2451545.0}"#,
+    );
+    assert!(
+        !manifest.contains("tm_context_close"),
+        "the manifest lists not what the adapter owns"
+    );
+    assert!(
+        said.contains("out_seconds"),
+        "the engine's out-parameter comes back under its own name: {said}"
+    );
+}
+
+/// The same seam over the in-repo test adapter, so it runs on every push
+/// and not only where an engine was built: a real shared library opened
+/// by path, a context over it, and its own operation called by name.
+#[test]
+fn the_test_adapter_is_loaded_and_answers_by_name() {
+    let path = teistro_test_adapter::library().unwrap();
+    let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
+    // The analytic model's Sun, not the sky's: the adapter must give
+    // exactly what the provider gives in process.
+    let jds = [2_451_545.0];
+    let request = teistro_port_ephemeris::PositionRequest::new(
+        &jds,
+        TimeScale::Tt,
+        &[Body::Sun],
+        Frame::CANONICAL,
+    );
+    let sun = teistro_port_ephemeris::EphemerisProvider::positions(
+        &teistro_port_ephemeris::TestProvider::new(),
+        &request,
+    )
+    .unwrap()
+    .at(0, 0)
+    .unwrap()
+    .lon;
+    let (manifest, said) =
+        a_loaded_engine_answers(&path, sun..=sun, "tp_sum", r#"{"values": [1, 2]}"#);
+    assert!(manifest.contains("tp_echo"), "{manifest}");
+    assert!(said.contains("\"total\":3.0"), "{said}");
+}
+
+/// Loads the adapter at `path`, founds a context on it and frees the
+/// handle first, computes the Sun at J2000 through it, and calls the
+/// engine's own `function` by name: the whole seam at the boundary. The
+/// manifest and the answer come back for the caller's own assertions.
+fn a_loaded_engine_answers(
+    path: &CStr,
+    sun_at_j2000: core::ops::RangeInclusive<f64>,
+    function: &str,
+    arguments: &str,
+) -> (String, String) {
     let mut provider: *mut TsProvider = ptr::null_mut();
     let mut error = blank_error();
     // SAFETY: a live path and writable slots.
@@ -388,7 +444,7 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     let reader = Reader::parse(&bytes, &schema).unwrap();
     let sun = reader.column("cells", "lon").unwrap()[0].as_f64();
     assert!(
-        (279.0..282.0).contains(&sun),
+        sun_at_j2000.contains(&sun),
         "the engine put the Sun at {sun} degrees at J2000"
     );
     // **The whole chain**: a consumer's binding, this library, an adapter
@@ -408,16 +464,12 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     unsafe { ts_string_free(&raw mut json) };
     let manifest = String::from_utf8(manifest).expect("the manifest is text");
     assert!(
-        manifest.contains("tm_delta_t"),
+        manifest.contains(function),
         "the manifest lists what can be called"
     );
-    assert!(
-        !manifest.contains("tm_context_close"),
-        "and not what the adapter owns"
-    );
 
-    let name = CString::new("tm_delta_t").unwrap();
-    let arguments = CString::new(r#"{"jd_ut1": 2451545.0}"#).unwrap();
+    let name = CString::new(function).unwrap();
+    let arguments = CString::new(arguments).unwrap();
     let mut answer = TsString::empty();
     // SAFETY: a live context, live strings and a writable slot.
     assert_eq!(
@@ -430,13 +482,10 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     // SAFETY: a descriptor the library wrote.
     unsafe { ts_string_free(&raw mut answer) };
     let said = String::from_utf8(said).expect("the answer is text");
-    assert!(
-        said.contains("out_seconds"),
-        "the engine's out-parameter comes back under its own name: {said}"
-    );
 
     // SAFETY: a live context, freed once.
     unsafe { ts_context_free(context) };
+    (manifest, said)
 }
 
 /// **Phase 3's promise at the boundary a consumer actually crosses.**
@@ -1330,6 +1379,8 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1484,6 +1535,8 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1636,6 +1689,8 @@ fn a_chart_request_answers_the_transits() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1860,6 +1915,8 @@ fn a_chart_request_answers_the_hit_list() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2037,6 +2094,8 @@ fn a_chart_request_answers_sade_sati() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2302,6 +2361,8 @@ fn a_chart_request_answers_the_dignities() {
                 matching_json: ptr::null(),
                 prashna_json: ptr::null(),
                 remedies_json: ptr::null(),
+                rectification_json: ptr::null(),
+                lalkitab_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2584,6 +2645,8 @@ fn a_chart_request_answers_the_fortitudes() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3894,6 +3957,8 @@ fn a_chart_request_answers_kp() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4097,6 +4162,8 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4212,6 +4279,8 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4356,6 +4425,8 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4505,6 +4576,8 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5285,6 +5358,8 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5402,6 +5477,8 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5588,6 +5665,8 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5878,6 +5957,8 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 matching_json: ptr::null(),
                 prashna_json: ptr::null(),
                 remedies_json: ptr::null(),
+                rectification_json: ptr::null(),
+                lalkitab_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -9117,13 +9198,15 @@ fn two_names_cross_as_the_kernel_matches_them() {
     }
 }
 
-fn numerology_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+/// An entry point that reads a JSON request and answers JSON.
+type JsonEntry = unsafe extern "C" fn(*const TsContext, *const c_char, *mut TsString) -> Status;
+
+/// What a JSON entry point answers, or the status it refuses with.
+fn entry_json(entry: JsonEntry, ctx: &Ctx, request: &str) -> Result<String, Status> {
     let request = CString::new(request).unwrap();
     let mut json = TsString::empty();
     // SAFETY: a live context, a NUL-terminated request and a valid slot.
-    let status = unsafe {
-        teistro_ffi::numerology::ts_numerology_profile(ctx.handle, request.as_ptr(), &raw mut json)
-    };
+    let status = unsafe { entry(ctx.handle, request.as_ptr(), &raw mut json) };
     if status == Status::Ok {
         Ok(owned(json))
     } else {
@@ -9131,6 +9214,10 @@ fn numerology_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
         unsafe { ts_string_free(&raw mut json) };
         Err(status)
     }
+}
+
+fn numerology_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    entry_json(teistro_ffi::numerology::ts_numerology_profile, ctx, request)
 }
 
 /// A name and a date cross as the façade reads them, the profile as its
@@ -9455,19 +9542,110 @@ fn a_chart_request_answers_remedies() {
     );
 }
 
+/// A chart request's `lalkitab_json` reads every chart's Lal Kitab
+/// through the façade, the section carrying what the façade answers and
+/// spelled as its description says; a refusal names the field under
+/// `lalkitab` (`03-design/lalkitab.md`).
+#[test]
+fn a_chart_request_answers_lalkitab() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0];
+    let base = chart_request(&births, (27.7172, 85.324), 20_700);
+    let text = r#"{"cycle":{"planet":"graha.VENUS","year":17},"year":43}"#;
+    let json = CString::new(text).unwrap();
+    let section = |asked: &TsChartRequest| {
+        let bytes = chart_blob(&ctx, asked)
+            .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+        let schema = schemas::charts();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        String::from_utf8(reader.bytes("lalkitab").unwrap().to_vec()).unwrap()
+    };
+    let crossed: serde_json::Value = serde_json::from_str(&section(&TsChartRequest {
+        lalkitab_json: json.as_ptr(),
+        ..base
+    }))
+    .unwrap();
+
+    // The façade's own.
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(20_700).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(place, clock),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::LalKitabRequest::from_json(text).unwrap();
+    let expected: Vec<teistro::lalkitab::Life> = natal
+        .iter()
+        .map(|document| sdk.chart().lalkitab(document, &asked).unwrap())
+        .collect();
+    let canonical: serde_json::Value =
+        serde_json::from_str(&teistro_core::envelope::canonical_json(&expected)).unwrap();
+    assert_eq!(crossed, canonical);
+
+    // Spelled as the section says, member for member.
+    let keys = |value: &serde_json::Value| {
+        let mut keys: Vec<String> = value.as_object().unwrap().keys().cloned().collect();
+        keys.sort();
+        keys
+    };
+    let one = &crossed[0];
+    assert_eq!(keys(one), ["cycle", "periods", "reading", "year"]);
+    assert_eq!(
+        keys(&one["reading"]),
+        ["flags", "houses", "masnui", "pitri", "planets", "rinas"]
+    );
+    assert_eq!(
+        keys(&one["reading"]["planets"][0]),
+        [
+            "awake",
+            "casts",
+            "dignities",
+            "graha",
+            "house",
+            "kayam",
+            "owners"
+        ]
+    );
+    assert_eq!(
+        keys(&one["reading"]["houses"][0]),
+        ["awake", "house", "lookedAtBy", "occupants", "waker"]
+    );
+    assert_eq!(
+        keys(&one["reading"]["flags"]),
+        ["dharmi", "nabalig", "ratandha", "sathi"]
+    );
+    assert_eq!(keys(&one["cycle"]), ["planet", "year"]);
+    assert_eq!(keys(&one["periods"][0]), ["from", "planet", "to"]);
+    assert_eq!(keys(&one["year"]), ["annual", "ruler", "thirds", "year"]);
+    assert_eq!(one["year"]["ruler"], "JUPITER");
+    assert_eq!(one["year"]["annual"], serde_json::Value::Null);
+
+    // None asked is an empty section.
+    assert_eq!(section(&base), "");
+
+    // A refusal names the field under the record.
+    let bad = CString::new(r#"{"year":121}"#).unwrap();
+    let refused = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            lalkitab_json: bad.as_ptr(),
+            ..base
+        },
+    );
+    assert_eq!(refused, Err(Status::InvalidArg));
+    assert_eq!(ctx.last_error().2.as_deref(), Some("lalkitab.year"));
+}
+
 fn rashifal_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
-    let request = CString::new(request).unwrap();
-    let mut json = TsString::empty();
-    // SAFETY: a live context, a NUL-terminated request and a valid slot.
-    let status =
-        unsafe { teistro_ffi::rashifal::ts_rashifal(ctx.handle, request.as_ptr(), &raw mut json) };
-    if status == Status::Ok {
-        Ok(owned(json))
-    } else {
-        // SAFETY: the empty descriptor a refusal leaves.
-        unsafe { ts_string_free(&raw mut json) };
-        Err(status)
-    }
+    entry_json(teistro_ffi::rashifal::ts_rashifal, ctx, request)
 }
 
 /// A week at Kathmandu crosses as the façade reads it, each period as its
@@ -9494,11 +9672,12 @@ fn a_rashifal_crosses_as_the_facade_reads_it() {
         .chart()
         .rashifal_answers(&teistro::RashifalBatch::from_json(&request).unwrap())
         .unwrap();
-    assert_eq!(
-        crossed,
-        teistro_core::envelope::canonical_json(&kernel.value)
-    );
+    // The envelope, as research's crosses: the provenance seals the
+    // request, so a binding can quote what produced a reading.
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
     let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert!(read["provenance"]["input_hash"].is_string());
+    let read = &read["value"];
     let period = &read[0]["period"];
     assert_eq!(period["reference"]["day"], serde_json::json!(7));
     assert_eq!(period["readings"].as_array().map(Vec::len), Some(12));
@@ -9507,7 +9686,7 @@ fn a_rashifal_crosses_as_the_facade_reads_it() {
     // No baseline asked, none answered.
     let plain = rashifal_json(&ctx, &format!(r#"{{"periods": [{week}]}}"#)).unwrap();
     let read: serde_json::Value = serde_json::from_str(&plain).unwrap();
-    assert_eq!(read[0].get("baseline"), None);
+    assert_eq!(read["value"][0].get("baseline"), None);
 
     for (request, field) in [
         (r#"{"periods": []}"#, "rashifal.periods"),
@@ -9535,4 +9714,248 @@ fn a_rashifal_crosses_as_the_facade_reads_it() {
         );
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
     }
+}
+
+fn pakshi_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    entry_json(teistro_ffi::pakshi::ts_pakshi, ctx, request)
+}
+
+/// Days of a native's bird cross as the façade reads them, one entry per
+/// day, and a refusal is named under `pakshi` (`03-design/pakshi.md`).
+#[test]
+fn pakshi_days_cross_as_the_facade_reads_them() {
+    let days = r#"{"first": {"year": 1984, "month": 10, "day": 30},
+        "last": {"year": 1984, "month": 11, "day": 1},
+        "latitudeDeg": 13.0827, "longitudeDeg": 80.2707, "altitudeM": 6,
+        "utcOffsetSeconds": 19800,
+        "native": {"nakshatra": "nakshatra.UTTARA_ASHADHA", "paksha": "paksha.SHUKLA"}}"#;
+    assert_eq!(
+        pakshi_json(&Ctx::defaults(), days).unwrap_err(),
+        Status::Capability
+    );
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let crossed = pakshi_json(&ctx, days).unwrap();
+    let facade = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let kernel = facade
+        .almanac()
+        .pakshi_request(&teistro::PakshiRequest::from_json(days).unwrap())
+        .unwrap();
+    // The envelope, as research's crosses: the provenance seals the
+    // request, so a binding can quote what produced a reading.
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert!(read["provenance"]["input_hash"].is_string());
+    let read = &read["value"];
+    assert_eq!(read.as_array().map(Vec::len), Some(3));
+    let wednesday = &read[1]["reading"];
+    assert_eq!(wednesday["bird"], serde_json::json!("COCK"));
+    assert_eq!(wednesday["yamas"].as_array().map(Vec::len), Some(10));
+    assert_eq!(
+        wednesday["yamas"][1]["activity"],
+        serde_json::json!("SLEEPING")
+    );
+    for (request, field) in [
+        (
+            r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 13, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"bird": "OWL", "nakshatra": "BHARANI", "paksha": "SHUKLA"}}"#,
+            "pakshi.native.bird",
+        ),
+        (
+            r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 13, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"nakshatra": "BHARANI"}}"#,
+            "pakshi.native.paksha",
+        ),
+        (
+            r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 95, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"bird": "OWL"}}"#,
+            "pakshi.latitudeDeg",
+        ),
+        (
+            r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 13, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"bird": "OWL"}, "rules": {"clock": "SUNDIAL"}}"#,
+            "pakshi.rules.clock",
+        ),
+    ] {
+        assert_eq!(
+            pakshi_json(&ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
+/// A study crosses as the façade answers it, its envelope whole so the
+/// input hash a study publishes reaches the binding, and a refusal is
+/// named under `research` (`03-design/research.md`).
+#[test]
+fn a_study_crosses_as_the_facade_answers_it() {
+    let births: Vec<String> = (0..8)
+        .map(|i| {
+            format!(
+                r#"{{"instant": {}, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}}"#,
+                2_447_000.25 + 977.3 * f64::from(i)
+            )
+        })
+        .collect();
+    let study = format!(
+        r#"{{"study": "COMPARE", "rules": {{"shipped": ["YOGAS"]}}, "births": [{}],
+            "design": {{"groups": [0, 1, 0, 1, 0, 1, 0, 1]}},
+            "test": {{"seed": 5, "permutations": 99, "contrast": {{"kind": "CASE_VS_REST", "case": 1}}}}}}"#,
+        births.join(", ")
+    );
+    assert_eq!(
+        research_json(&Ctx::defaults(), &study).unwrap_err(),
+        Status::Capability
+    );
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let crossed = research_json(&ctx, &study).unwrap();
+    let facade = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let answer = facade
+        .research()
+        .request(&teistro::ResearchRequest::from_json(&study).unwrap())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&answer));
+    let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert_eq!(read["value"]["permutations"], serde_json::json!(99));
+    assert!(read["provenance"]["input_hash"].is_string());
+    for (request, field) in [
+        (
+            study.replace(r#""seed": 5"#, r#""seed": "five""#),
+            "research.test.seed",
+        ),
+        (
+            study.replace(r#""study": "COMPARE""#, r#""study": "COUNTS""#),
+            "research.test",
+        ),
+        (
+            study.replace("27.7172", "97.7"),
+            "research.births[0].latitudeDeg",
+        ),
+    ] {
+        assert_eq!(
+            research_json(&ctx, &request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
+fn research_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    entry_json(teistro_ffi::research::ts_research, ctx, request)
+}
+
+/// A chart request's `rectification` record answers the `rectification`
+/// section, the façade's own readings around each chart's instant on the
+/// request's clock, spelled as the section's description says; none
+/// asked is an empty section, and a refusal names the field under
+/// `rectification` (`03-design/rectification.md`, step 8).
+#[test]
+fn a_chart_request_answers_rectification() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let births = [2_451_779.135_417];
+    let base = chart_request(&births, (28.2096, 83.9856), 20_700);
+    let text = r#"{"purify":{"minutes":20},"conception":{},"circumstance":{"facts":{"fatherPresent":false}},"baseline":{"uncertaintyMinutes":30,"sex":"MALE"}}"#;
+    let json = CString::new(text).unwrap();
+    let blob = |asked: &TsChartRequest| chart_blob(&ctx, asked);
+    let section = |asked: &TsChartRequest| {
+        let bytes =
+            blob(asked).unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+        let schema = schemas::charts();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        String::from_utf8(reader.bytes("rectification").unwrap().to_vec()).unwrap()
+    };
+    let crossed: serde_json::Value = serde_json::from_str(&section(&TsChartRequest {
+        rectification_json: json.as_ptr(),
+        ..base
+    }))
+    .unwrap();
+
+    // The façade's own readings, over the same chart on the same clock.
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(28.2096, 83.9856, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(20_700).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(place, clock),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::RectificationRequest::from_json(text).unwrap();
+    let expected: Vec<teistro::Rectification> = natal
+        .iter()
+        .map(|document| sdk.chart().rectification(document, clock, &asked).unwrap())
+        .collect();
+    let canonical: serde_json::Value =
+        serde_json::from_str(&teistro_core::envelope::canonical_json(&expected)).unwrap();
+    assert_eq!(crossed, canonical);
+
+    // Spelled as the section says, member for member.
+    let keys = |value: &serde_json::Value| {
+        let mut keys: Vec<String> = value.as_object().unwrap().keys().cloned().collect();
+        keys.sort();
+        keys
+    };
+    let one = &crossed[0];
+    assert_eq!(
+        keys(one),
+        ["baseline", "circumstance", "conception", "purified"]
+    );
+    assert_eq!(
+        keys(&one["purified"]),
+        ["edges", "grid", "intervals", "removed"]
+    );
+    assert_eq!(
+        keys(&one["conception"]),
+        ["birth", "moon", "nisheka", "pranapadaHouse"]
+    );
+    assert_eq!(
+        keys(&one["circumstance"]),
+        [
+            "attending",
+            "father",
+            "lamp",
+            "presentation",
+            "sky",
+            "weights"
+        ]
+    );
+    assert_eq!(
+        keys(&one["baseline"]),
+        [
+            "candidates",
+            "concentration",
+            "eventsHeldOut",
+            "eventsUsed",
+            "holdOut",
+            "intervalWidthMinutes",
+            "intervals",
+            "resolutionMinutes",
+            "stages",
+            "suggested",
+            "sunrise",
+            "window"
+        ]
+    );
+
+    // None asked is an empty section, and a refusal names its field.
+    assert_eq!(section(&base), "");
+    let refused = CString::new(r#"{"purify":{"minutes":0}}"#).unwrap();
+    assert!(
+        blob(&TsChartRequest {
+            rectification_json: refused.as_ptr(),
+            ..base
+        })
+        .is_err()
+    );
+    let (_, _, field, _, _) = ctx.last_error();
+    assert_eq!(field.as_deref(), Some("rectification.purify.minutes"));
 }

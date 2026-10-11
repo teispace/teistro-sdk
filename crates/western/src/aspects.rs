@@ -33,6 +33,7 @@ use teistro_gochar::hits::NatalPoint;
 
 /// An aspect Leo lists, by the angle between the two bodies.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum WesternAspect {
@@ -110,6 +111,7 @@ impl WesternAspect {
 
 /// One body's orb, for the moieties.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct BodyOrb {
     /// Whose.
@@ -120,6 +122,7 @@ pub struct BodyOrb {
 
 /// One aspect's orb, for a caller's own table.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct AspectOrb {
     /// Which aspect.
@@ -130,6 +133,7 @@ pub struct AspectOrb {
 
 /// How wide an aspect may be before it no longer holds (C240).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "model", rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum OrbModel {
@@ -335,6 +339,7 @@ const ROOT: &str = "westernAspects";
 
 /// What an aspect table is asked: which aspects, under which orbs.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
 pub struct AspectRequest {
     /// The aspects looked for; Leo's nine unless a caller names fewer.
@@ -431,6 +436,7 @@ impl AspectRequest {
 /// A planet at a longitude, as the readings that need no motion take it:
 /// the antiscia (its tropical longitude) and the equal distances.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PlanetAt {
     /// Which planet.
@@ -452,6 +458,7 @@ impl PlanetAt {
 
 /// A body as the table reads it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Placed {
     /// Which.
@@ -476,6 +483,7 @@ impl Placed {
 
 /// One aspect a pair holds.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct WesternAspectRow {
     /// The first body, in the order the bodies were given.

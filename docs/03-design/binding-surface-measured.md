@@ -8,15 +8,15 @@ design written from it is [`python-binding.md`](python-binding.md).
 ## 1. What a binding must marshal
 
 The description carries 19 exported constants, 157 enums of 1341 members
-in all, 2 opaque handle types, 10 callback types, 27 structs, 51 entry
-points and 5 result-blob schemas, extracted from 24 source files. A
+in all, 2 opaque handle types, 10 callback types, 27 structs, 53 entry
+points and 5 result-blob schemas, extracted from 26 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
 point, which is why a third binding costs what it costs.
 
 | parameter role | how often |
 |---|---|
 | `value` | 19 |
-| `handle` | 35 |
+| `handle` | 37 |
 | `handle_out` | 3 |
 | `struct_in` | 12 |
 | `struct_out` | 15 |
@@ -24,8 +24,8 @@ point, which is why a third binding costs what it costs.
 | `user_data` | 1 |
 | `blob_out` | 5 |
 | `blob_free` | 1 |
-| `string_in` | 17 |
-| `string_out` | 6 |
+| `string_in` | 19 |
+| `string_out` | 8 |
 | `string_free` | 1 |
 | `str_out` | 5 |
 | `error_free` | 1 |
@@ -69,21 +69,21 @@ a call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1746 | 1 | 0 | 0 | 0 |
-| TypeScript | 405 | 0 | 0 | 1 | 0 |
-| Python | 1746 | 0 | 1 | 2 | 0 |
-| Java | 1746 | 0 | 1 | 0 | 0 |
+| Dart | 1756 | 1 | 0 | 0 | 0 |
+| TypeScript | 415 | 0 | 0 | 1 | 0 |
+| Python | 1756 | 0 | 1 | 2 | 0 |
+| Java | 1756 | 0 | 1 | 0 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1746 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 405 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1746 looked at |
-| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1746 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1746 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 405 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1746 disagree |
-| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1746 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1756 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 415 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1756 looked at |
+| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1756 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1756 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 415 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1756 disagree |
+| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1756 disagree |
 
 What Dart renames:
 
@@ -146,7 +146,7 @@ against them on the machine the library was actually built for.
 | `ts_error` | 56 | 8 | 36 | yes |
 | `ts_frame` | 16 | 4 | same | no |
 | `ts_calendar_date` | 24 | 4 | same | no |
-| `ts_chart_request` | 304 | 8 | 176 | yes |
+| `ts_chart_request` | 320 | 8 | 184 | yes |
 | `ts_civil_time` | 12 | 4 | same | no |
 | `ts_civil_date_time` | 44 | 4 | same | no |
 | `ts_zone_spec` | 32 | 8 | same | yes |
@@ -203,7 +203,7 @@ the class of mistake a generated binding exists to make impossible.
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 222 of 222 visible struct fields
+much of that there is to reach for: 224 of 224 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
@@ -211,18 +211,18 @@ carry a doc comment.
 | `bitset` | 1 |
 | `brand` | 4 |
 | `enum` | 25 |
-| `example` | 116 |
+| `example` | 118 |
 | `flag` | 15 |
 | `len` | 17 |
-| `nullable` | 39 |
+| `nullable` | 41 |
 | `present_if` | 1 |
 | `range` | 35 |
 | `unit` | 48 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 222 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 222 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 224 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 224 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

@@ -42,31 +42,41 @@
 //! that marshalling and nothing else.
 
 mod area;
+mod asked;
 #[cfg(feature = "western")]
 mod composites;
 mod context;
+mod days_request;
+mod engine_request;
 mod ephemeris;
 #[cfg(feature = "chart")]
 mod reading;
 #[cfg(feature = "svg")]
 mod render;
 mod scale;
+mod time_request;
 
 #[cfg(feature = "muhurta")]
 pub use area::MuhurtaDays;
 #[cfg(feature = "numerology")]
 pub use area::NumerologyArea;
+#[cfg(feature = "research")]
+pub use area::ResearchArea;
 pub use area::{
-    AlmanacAnswer, AlmanacArea, AlmanacRequest, CalendarArea, EngineArea, FestivalDays, FrameArea,
-    IntlArea, KeysArea, TimeArea,
+    AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, CalendarArea, EngineArea,
+    FestivalDays, FrameArea, IntlArea, KeysArea, TimeArea,
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};
 #[cfg(feature = "western")]
 mod antiscia;
+#[cfg(feature = "chart")]
+mod compose;
 #[cfg(feature = "western")]
 mod declinations;
 mod festival_request;
+#[cfg(feature = "chart")]
+mod found_request;
 #[cfg(feature = "chart")]
 mod gochar_request;
 #[cfg(feature = "western")]
@@ -77,6 +87,8 @@ mod hit_request;
 mod ishta_devata;
 #[cfg(feature = "kp")]
 mod kp_request;
+#[cfg(feature = "lalkitab")]
+mod lalkitab_request;
 #[cfg(feature = "chart")]
 mod matching_chart;
 #[cfg(feature = "western")]
@@ -87,6 +99,8 @@ mod muhurta_request;
 mod naam_request;
 #[cfg(feature = "numerology")]
 mod numerology_request;
+#[cfg(feature = "pakshi")]
+mod pakshi_request;
 #[cfg(feature = "chart")]
 mod partner;
 #[cfg(feature = "chart")]
@@ -102,9 +116,18 @@ mod rashifal_area;
 #[cfg(feature = "rashifal")]
 mod rashifal_request;
 #[cfg(feature = "rectification")]
+mod rectification_request;
+#[cfg(feature = "rectification")]
 mod rectify;
 #[cfg(feature = "remedies")]
 mod remedy_request;
+#[cfg(feature = "research")]
+mod research_request;
+// The record entry points: every area a binding reaches with one JSON
+// record, by name (`03-design/mcp-server.md` D3).
+pub mod records;
+// A consumer's own layouts and dasha systems, read from JSON.
+pub mod registrations;
 #[cfg(feature = "chart")]
 mod returns;
 #[cfg(feature = "chart")]
@@ -215,6 +238,14 @@ pub use teistro_render_svg as render_svg;
 // without building it (`03-design/dasha-kernels.md`).
 #[cfg(feature = "chart")]
 pub use crate::plan_request::{PlanInputs, PlanRequest};
+// A chart request composed whole, its records read beside it
+// (`03-design/mcp-server.md`, step 2).
+#[cfg(feature = "chart")]
+pub use crate::compose::{ChartRecords, Composed};
+#[cfg(feature = "western")]
+pub use crate::compose::{WesternRecords, WesternTables};
+#[cfg(feature = "chart")]
+pub use crate::found_request::FoundRequest;
 // The annual charts a birth is asked for, in one call
 // (`03-design/annual-chart.md`).
 #[cfg(feature = "chart")]
@@ -245,8 +276,17 @@ pub use crate::sade_sati_request::SadeSatiRequest;
 // Muhurta: an activity's windows over a range, judged clause by clause
 // (`03-design/muhurta.md`), and how asta is seen.
 pub use crate::festival_request::{FestivalPack, FestivalRequest};
+// A range of days and what is asked beside them, read whole from JSON
+// (`03-design/mcp-server.md`, step 2).
+pub use crate::days_request::DaysRequest;
+pub use crate::engine_request::{EngineCall, ManifestRequest};
+// A civil time, an instant, a scale and a date, each read whole from JSON
+// (`03-design/mcp-server.md`, step 3).
 #[cfg(feature = "muhurta")]
 pub use crate::muhurta_request::{Activity, MuhurtaRequest};
+pub use crate::time_request::{
+    CalendarReading, CalendarRequest, CivilReading, CivilRequest, ResolveRequest, ScaleRequest,
+};
 pub use teistro_astro::visibility::Criterion;
 // Eclipses: found over the sky, each with how a place sees it
 // (`03-design/eclipses.md`); `almanac().eclipses` answers in these.
@@ -273,8 +313,15 @@ pub use teistro_gochar::sade_sati;
 // KP: a chart as the KP Readers read it (`03-design/kp.md`).
 #[cfg(feature = "kp")]
 pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
+#[cfg(feature = "lalkitab")]
+pub use crate::lalkitab_request::{LalKitabRequest, VarshphalRows};
 #[cfg(feature = "prashna")]
 pub use crate::prashna_request::PrashnaRequest;
+#[cfg(feature = "rectification")]
+pub use crate::rectification_request::{
+    BaselineAsked, CircumstanceAsked, DashaAsked, Purify, Rectification, RectificationRequest,
+    SvarodayaAround, SvarodayaAsked,
+};
 #[cfg(feature = "remedies")]
 pub use crate::remedy_request::RemedyRequest;
 // The essential dignities of the Hellenistic and later Western tradition:
@@ -403,6 +450,16 @@ pub use teistro_matching::{
 // table, which reads no sky (`03-design/numerology.md`).
 #[cfg(feature = "numerology")]
 pub use teistro_numerology as numerology;
+/// Studies over a batch of births (`03-design/research.md`): the
+/// kernel's statistics, which read no sky, and the façade's studies,
+/// which found the charts they are read on.
+#[cfg(feature = "research")]
+pub mod research {
+    pub use crate::area::research::{
+        Birth, EventShuffle, EventStudy, Holds, MAX_UNCERTAINTY_MINUTES, Recombine, Study, Subject,
+    };
+    pub use teistro_research::*;
+}
 // Prashna: the query chart read as Shatpanchashika prints it
 // (`03-design/prashna.md`).
 #[cfg(feature = "prashna")]
@@ -411,6 +468,18 @@ pub use teistro_prashna as prashna;
 // birth time leave standing (`03-design/rectification.md`).
 #[cfg(feature = "rectification")]
 pub use teistro_rectification as rectification;
+// Lal Kitab: the 1952 edition's teva, its reading and the 35-year cycle
+// (`03-design/lalkitab.md`).
+#[cfg(feature = "lalkitab")]
+pub use teistro_lalkitab as lalkitab;
+// Pancha Pakshi: the five birds' activities by yama and sub-period, the
+// death birds and the relations (`03-design/pakshi.md`).
+#[cfg(feature = "pakshi")]
+pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
+#[cfg(feature = "research")]
+pub use crate::research_request::{ResearchAnswer, ResearchRequest, ResearchStudy};
+#[cfg(feature = "pakshi")]
+pub use teistro_pakshi as pakshi;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS
 // ch. 13 (`03-design/remedies.md`).
 #[cfg(feature = "remedies")]

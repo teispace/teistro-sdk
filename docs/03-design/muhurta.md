@@ -1,6 +1,7 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 to 7 **built** 2026-09-30, step 5 for marriage alone; the eclipse blackouts (§4.1.1) built 2026-10-01. Written from
+Status: `built`, 2026-09-30; §6 steps 1 to 7 built 2026-09-30, the eclipse
+blackouts (§4.1.1) and step 8, the rites beyond marriage (§4.6), 2026-10-01. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`
@@ -154,8 +155,12 @@ and the chart founder. Three layers, each usable alone.
 
 ### 4.1 The season
 
-`Season::over(range, place, &SeasonRules) -> Vec<Blackout>`: each
-blackout a kind and a window, computed once. The kinds are a catalogue
+The season is asked of the `Sources` trait (`crates/muhurta/src/search.rs`):
+`fn season(&self, range: Interval, kinds: &[BlackoutKind]) -> Result<Season,
+Error>`, where `Season` is `{ blackouts, unjudged }`, the blackouts in order
+of their start and the kinds asked for that the sources cannot judge. (The
+design's `Season::over(range, place, &SeasonRules)` was not built.) Each
+blackout is a kind and a window, computed once. The kinds are a catalogue
 kind, `blackout`, because a consumer names them in a gate: `CHATURMAS`,
 `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`,
 `GURU_ASTA`, `SHUKRA_ASTA`, `SANKRANTI` (Surya sankramana's sixteen
@@ -333,11 +338,14 @@ eight tithis.
 
 ### 4.2 The clauses
 
-A **clause** is one named condition from a source: `Clause { kind,
-holds, cancelled_by: Vec<Neutraliser>, source }`. The kinds are a
-catalogue kind, `muhurta_clause`, one per Mahadosha, shuddhi and named
-yoga, because the interpretation corpus's `muhurta-factor` category
-keys by them and a reader must name them. Each clause is a pure function
+A **clause** is one named condition from a source. As built
+(`crates/muhurta/src/clause.rs`) it is `Clause { kind: ClauseKind, at:
+Interval }`: what it says and when it held, clipped to the day; a
+neutralisation is a clause of its own, not a `cancelled_by` list. The
+design proposed a catalogue kind, `muhurta_clause`, one per Mahadosha,
+shuddhi and named yoga; it was not spent, because the interpretation
+corpus does not key by the clauses
+([`muhurta-at-the-boundary.md`](muhurta-at-the-boundary.md) §2.4). Each clause is a pure function
 of what it reads, and says which layer it belongs to:
 
 - **of a day**: the limbs at sunrise (and their spans across the day),
