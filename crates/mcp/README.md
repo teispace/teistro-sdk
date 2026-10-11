@@ -35,6 +35,10 @@ or the unpacked program itself:
 `TEISTRO_MCP` names a program for the npm launcher to run instead of the
 one npm installed.
 
+For Claude Desktop on macOS or Windows, each release carries
+`teistro-mcp-{version}.mcpb`: open it and Claude Desktop installs the
+server, asking which ephemeris to compute with.
+
 ```sh
 teistro-mcp                       # the built-in ephemeris
 teistro-mcp --ephemeris SURYA_SIDDHANTA

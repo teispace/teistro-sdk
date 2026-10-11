@@ -313,6 +313,7 @@ jobs:
         with:
           subject-path: |
             dist/*.gz
+            dist/*.mcpb
             dist/*.cdx.json
             dist/checksums.txt
             dist/manifest.json
@@ -327,7 +328,7 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --title "Teistro ${{ needs.gate.outputs.version }}" \
             --notes-file notes.md \
-            dist/*.gz dist/*.cdx.json dist/checksums.txt dist/manifest.json \
+            dist/*.gz dist/*.mcpb dist/*.cdx.json dist/checksums.txt dist/manifest.json \
             dist/maven/com/teispace/teistro/*/*.jar dist/maven/com/teispace/teistro/*/*.pom
 
       # npm 11.5.1 is the first to publish by the runner's OIDC token, which
@@ -395,9 +396,10 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           MAVEN_GPG_FINGERPRINT: ${{ vars.MAVEN_GPG_FINGERPRINT }}
 
-      # The agent server's entry in the MCP Registry, last because the
-      # registry checks that `@teistro/mcp` names it (`mcpName`), which
-      # npm now serves, and because a registry still in preview must not
+      # The agent server's entry in the MCP Registry, as `stage` wrote it
+      # with the bundle's digest beside the npm launcher; last because the
+      # registry checks that `@teistro/mcp` names it (`mcpName`) and that
+      # the release serves the bundle at that digest, and because a registry still in preview must not
       # hold up the packages above. The registry takes the runner's OIDC
       # token as `io.github.teispace`, so no credential is stored. The
       # publisher is pinned with its digest, as cargo-auditable is; a
@@ -414,4 +416,4 @@ jobs:
           echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum --check --strict -
           tar -xzf mcp-publisher.tar.gz mcp-publisher
           ./mcp-publisher login github-oidc
-          ./mcp-publisher publish crates/mcp/server.json
+          ./mcp-publisher publish dist/server.json
