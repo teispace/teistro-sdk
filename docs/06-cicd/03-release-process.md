@@ -171,6 +171,20 @@ OIDC token rather than a credential anyone holds. Both need
 `id-token: write`, which is why the publish job asks for it and no other
 job does.
 
+Both pub packages are validated by pub itself before the publish job
+runs: the `stage` job, which a rehearsal runs too, passes them through
+`cargo xtask check-pub`, a `dart pub publish --dry-run` that uploads
+nothing. pub publishes only what git would track, and `dist/` is ignored
+in the checkout, so the check and the publish step both work from a copy
+outside it; published in place, each package would be refused as "the
+pubspec is hidden". A dry-run fails on a warning as well as an error,
+and the publish passes `--force`, which overrides warnings, so the check
+fails on every error and on every warning it does not list with its
+reason. One is listed: `teistro_flutter` depends on exactly one version
+of `teistro`, because the digests its hook checks are that version's.
+Each package carries the release's changelog entry as its
+`CHANGELOG.md`, which pub.dev shows on the version's page.
+
 The manifest and `checksums.txt` are attached to the release, and the Dart
 package carries the digests of the libraries it will fetch, so a download
 is checked against a number recorded when the library was built rather
