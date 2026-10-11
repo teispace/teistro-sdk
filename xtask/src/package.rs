@@ -148,8 +148,20 @@ fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
         |_| String::from("the pinned version"),
         |text| text.trim().to_string(),
     );
-    step(
-        Command::new(cargo())
+    // Two builds, never one: cargo unifies the features of every package
+    // one build names, so the agent server's (`schema`, the engine loader)
+    // would reach the library and the addon, and every binding would ship
+    // them. The size record caught a C bundle a fifth larger when it was
+    // one build.
+    for (packages, what) in [
+        (
+            &["teistro-ffi", "teistro-node"][..],
+            "the library and the addon",
+        ),
+        (&["teistro-mcp"][..], "the agent server"),
+    ] {
+        let mut command = Command::new(cargo());
+        command
             .args([
                 "auditable",
                 subcommand,
@@ -157,21 +169,21 @@ fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
                 "--quiet",
                 "--target",
                 &target,
-                "-p",
-                "teistro-ffi",
-                "-p",
-                "teistro-node",
-                "-p",
-                "teistro-mcp",
             ])
-            .current_dir(root),
-        "",
-        &format!(
-            "the library, the addon and the agent server did not build for {}{hint} (every row builds through \
-             cargo-auditable: `cargo install --locked cargo-auditable@{auditable}`)",
-            platform.triple
-        ),
-    )?;
+            .current_dir(root);
+        for package in packages {
+            command.args(["-p", package]);
+        }
+        step(
+            &mut command,
+            "",
+            &format!(
+                "{what} did not build for {}{hint} (every row builds through \
+                 cargo-auditable: `cargo install --locked cargo-auditable@{auditable}`)",
+                platform.triple
+            ),
+        )?;
+    }
     Ok(root.join("target").join(platform.triple).join("release"))
 }
 
