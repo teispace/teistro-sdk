@@ -722,7 +722,7 @@ public final class BindingTest {
                         sky.chart().rashifalMany(List.of(RashifalRequest.of(first, kathmandu, 20_700)), null)
                                 .provenance().inputHash(),
                         "a batch of one seals as the one does");
-                same(Status.UNSUPPORTED, refusal(() -> sky.ephemeris().names()).status(),
+                same(Status.UNSUPPORTED, refusal(() -> sky.engine().names()).status(),
                         "the built-in engine describes no operations of its own");
             }
         });
@@ -867,8 +867,8 @@ public final class BindingTest {
                 check(Math.abs(sun - 280.37) < 0.5, "a real engine answered: " + sun);
                 // And its own functions came with it, which no SDK operation
                 // offers.
-                same("teimeris", ((Map<?, ?>) sky.ephemeris().manifest()).get("engine"), "the engine's manifest");
-                same("Sun", ((Map<?, ?>) sky.ephemeris().call("tm_body_name", Map.of("body", 0))).get("buf"),
+                same("teimeris", ((Map<?, ?>) sky.engine().manifest()).get("engine"), "the engine's manifest");
+                same("Sun", ((Map<?, ?>) sky.engine().call("tm_body_name", Map.of("body", 0))).get("buf"),
                         "the engine's own function");
             }
         });

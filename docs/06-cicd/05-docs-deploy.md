@@ -26,7 +26,7 @@ ergonomic layers are written by hand, so `gen ffi` reads them
 (`xtask/src/areas.rs`, `reach`): which members of the Node layer call the
 entry point, as canonical `area.operation` paths, and how each binding's
 parity runner spells each path, which is the spelling that compiles and
-runs (Java's `engine.call` is `ctx.ephemeris().call`). Rust's runner
+runs (Java's `(root).dispose` is `ctx.close`). Rust's runner
 lists paths without members, so Rust's tab is the façade's rule,
 `sdk.<area>().<operation>`, refused unless the façade defines that
 operation. An entry point no operation calls by name says so: a

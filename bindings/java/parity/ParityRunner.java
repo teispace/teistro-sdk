@@ -1362,13 +1362,13 @@ public final class ParityRunner {
             surface("research.expected", () -> ctx.research().expected(List.of(), null, new ResearchControl(0, 1), null, null));
             surface("research.timed", () -> ctx.research().timed(List.of(), null, DashaSystem.VIMSHOTTARI,
                     ResearchEventShuffle.AGES_AT_EVENT, ResearchEventTest.builder(0, 1).build(), null));
-            surface("engine.names", () -> ctx.ephemeris().names());
-            surface("engine.signature", () -> ctx.ephemeris().signature(""));
-            surface("engine.call", () -> ctx.ephemeris().call("", Map.of()));
-            surface("engine.call_json", () -> ctx.ephemeris().callJson("", "{}"));
-            surface("engine.manifest", () -> ctx.ephemeris().manifest());
-            surface("engine.manifest_json", () -> ctx.ephemeris().manifestJson());
-            surface("(root).engine", () -> ctx.ephemeris());
+            surface("engine.names", () -> ctx.engine().names());
+            surface("engine.signature", () -> ctx.engine().signature(""));
+            surface("engine.call", () -> ctx.engine().call("", Map.of()));
+            surface("engine.call_json", () -> ctx.engine().callJson("", "{}"));
+            surface("engine.manifest", () -> ctx.engine().manifest());
+            surface("engine.manifest_json", () -> ctx.engine().manifestJson());
+            surface("(root).engine", () -> ctx.engine());
             surface("(root).positions", () -> ctx.positions(new double[] {0}, List.of(Body.SUN)));
             surface("(root).profile", () -> ctx.profile());
             surface("(root).settings", () -> ctx.settings());

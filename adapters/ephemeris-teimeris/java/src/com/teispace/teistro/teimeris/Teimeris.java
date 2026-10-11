@@ -22,7 +22,7 @@ import com.teispace.teistro.Plugin;
  * try (Context sky = sdk.context(ContextOptions.builder()
  *         .ephemeris(Teimeris.builder().dataDir("./ephe").build())
  *         .build())) {
- *     Teimeris.engine(sky.ephemeris()).tmBodyName(0);  // "Sun"
+ *     Teimeris.engine(sky.engine()).tmBodyName(0);  // "Sun"
  * }
  * }</pre>
  */
@@ -42,7 +42,7 @@ public final class Teimeris {
     /**
      * The typed façade over an engine.
      *
-     * @param engine {@code sky.ephemeris()}
+     * @param engine {@code sky.engine()}
      * @return the engine's own operations, typed
      */
     public static TeimerisEngine engine(Engine engine) {

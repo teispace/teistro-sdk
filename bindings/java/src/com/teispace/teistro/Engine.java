@@ -21,7 +21,7 @@ import java.util.function.Supplier;
  * manifest says and what its documentation calls it:
  *
  * <pre>{@code
- * Engine engine = sky.ephemeris();
+ * Engine engine = sky.engine();
  * Object answer = engine.call("tp_echo", Map.of("value", 6.0));
  * List<String> offered = engine.names();
  * }</pre>

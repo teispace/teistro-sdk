@@ -250,6 +250,12 @@ binding sends. `typecheck/Wrong.java` holds that a map no longer
 compiles in their place, and the eight research entries have left the
 lint's list of untyped parameters.
 
+**Java's engine is `engine()`.** Every other binding names the plugged-in
+engine's own functions `engine`, and so did the Java design page; the
+context called it `ephemeris()`. The reference also gains Java's
+`dispose`, which the runner spells as a method reference, `ctx::close`,
+and the reader now follows.
+
 **Every binding ships six worked examples** (`bindings/*/example/`), the
 same six scenarios in JavaScript, Dart and Python, each a program
 `cargo xtask check-{node,dart,python}` runs — every file in the

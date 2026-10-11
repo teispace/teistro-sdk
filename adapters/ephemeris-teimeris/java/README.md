@@ -16,7 +16,7 @@ try (Context sky = sdk.context(ContextOptions.builder()
         .ephemeris(Teimeris.builder().dataDir("./ephe").build(),
                    EphemerisChoice.of(Ephemeris.BUILTIN))
         .build())) {
-    Teimeris.engine(sky.ephemeris()).tmBodyName(0);  // "Sun"
+    Teimeris.engine(sky.engine()).tmBodyName(0);  // "Sun"
 }
 ```
 
@@ -49,7 +49,7 @@ does, read with `fromJson` and written with `toJson`. A whole number is a
 `int64_t`.
 
 Every operation is also reachable untyped, through the SDK alone, as
-`sky.ephemeris().call(name, arguments)`. The façade gives the names back;
+`sky.engine().call(name, arguments)`. The façade gives the names back;
 it does not gate the route.
 
 `cargo xtask check-java` compiles the module and
