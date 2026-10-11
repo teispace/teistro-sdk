@@ -1,6 +1,6 @@
 ---
 title: Installing
-description: The Node, Dart, Python and Java packages and the C bundle, and where each one finds the library.
+description: The Node, Dart, Flutter, Python and Java packages and the C bundle, and where each one finds the library.
 ---
 
 Teistro is one library with several ways in. Each binding installs a
@@ -80,6 +80,32 @@ dart run teistro:install --from libteistro_ffi-0.1.0-linux-x64.so.gz
 ```
 
 `$TEISTRO_LIBRARY` names a library outright.
+
+## Flutter
+
+```sh
+flutter pub add teistro_flutter
+```
+
+A Flutter app on Android or iOS does not run `install`. `teistro_flutter`
+is a build hook: when the app is built, it adds the library for every
+Android ABI and iOS SDK the build targets, fetched from the release the
+package was cut from and checked against the digest the package carries.
+It re-exports `package:teistro/teistro.dart`, so the code is the Dart
+binding's:
+
+```dart
+import 'package:teistro_flutter/teistro_flutter.dart';
+
+final teistro = Teistro.open(); // the library the hook bundled
+```
+
+The floors are Android API 24 and iOS 13; a build below either is refused
+with the setting to raise. Set `prebuilt_dir` under
+`hooks: user_defines: teistro_flutter:` in the app's `pubspec.yaml` to
+build offline from archives you already have, or `library` to bundle one
+you built yourself. A desktop Flutter app finds the library as a Dart
+program does.
 
 ## Python
 

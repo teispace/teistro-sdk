@@ -47,6 +47,26 @@ Each library is linked against the system libraries alone (no
 `libc++_shared.so`). It is unsigned; Flutter signs it with the app's
 identity.
 
+What a library adds to an app, measured in this repository's own builds:
+13.2 MB on arm64-v8a, 9.2 MB on armeabi-v7a and 14.5 MB on x86_64 as
+Gradle stores them in the APK (a Play bundle delivers one ABI to each
+device), and 12.8 MB in the iOS device app's framework. Every release
+archive is about 5.6 MB gzipped.
+
+## How it is tested
+
+Every slice is built as the release builds it, and the example app in
+`example/` is built on them: the APK must hold each ABI's library stored
+and 16 KB-aligned where Play requires it, and the iOS app's framework must
+hold the device slice alone, each still passing the floor check the slice
+was built to. The app's integration test then runs on an Android emulator
+at API 24 and on an iPhone simulator, asserting the same four facts the
+published Dart package's consumer asserts: an optimised build of this
+version, 14 April 2015 as 2072-1-1 BS, a Nepali message rendered, and the
+Sun's place at J2000. The emulator and simulator also compute the SDK's
+whole scenario, which must match Linux x86-64's value for value, as every
+other platform's does.
+
 ## Offline builds and your own library
 
 Set these under `hooks: user_defines: teistro_flutter:` in the app's (or
