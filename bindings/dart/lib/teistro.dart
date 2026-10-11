@@ -71,9 +71,11 @@ final class Teistro {
   /// declarations were generated from.
   ///
   /// `path` names the library outright. Without one, the SDK looks at
-  /// `$TEISTRO_LIBRARY`, then beside this package, then in the workspace's
-  /// `target/release` and `target/debug`, and finally asks the platform's
-  /// loader for the bare name, which finds an installed library.
+  /// `$TEISTRO_LIBRARY`; then, in an Android or iOS app, at the library
+  /// the `teistro_flutter` package bundled; elsewhere beside this package,
+  /// then in the workspace's `target/release` and `target/debug`, and
+  /// finally asks the platform's loader for the bare name, which finds an
+  /// installed library.
   ///
   /// Throws a [TeistroException] with `Status.unsupported` when the
   /// library is not that build ([refuseBuild] says why), and a
@@ -129,6 +131,21 @@ final class Teistro {
   }
 
   static ffi.DynamicLibrary _search() {
+    // In an app, the library is where the Flutter package's build hook had
+    // the app bundle it; nothing on a file system path means anything in
+    // an app's sandbox. The environment's name still wins.
+    final bundled = bundledLibraryName(Platform.operatingSystem);
+    if (bundled != null && _named == null) {
+      try {
+        return ffi.DynamicLibrary.open(bundled);
+      } on ArgumentError {
+        throw StateError(
+          'no Teistro library is bundled in this app ($bundled). Add '
+          '`teistro_flutter` to the app\'s dependencies, whose build hook '
+          'bundles the library for every Android ABI and iOS SDK it builds.',
+        );
+      }
+    }
     final looked = searchPath;
     for (final candidate in looked) {
       if (File(candidate).existsSync()) {

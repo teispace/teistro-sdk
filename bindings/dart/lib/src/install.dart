@@ -22,11 +22,49 @@ import 'prebuilt.dart';
 import 'sha256.dart';
 
 /// The file name this platform gives the SDK's shared library.
-String get libraryFileName {
-  if (Platform.isMacOS) return 'libteistro_ffi.dylib';
-  if (Platform.isWindows) return 'teistro_ffi.dll';
-  return 'libteistro_ffi.so';
+String get libraryFileName => libraryFileNameOf(hostPlatform);
+
+/// The file a release platform's library is, by the platform's name: an
+/// Android slice is a `.so` and an iOS one a `.dylib`, which is what
+/// Flutter bundles, whatever the host building the app is.
+///
+/// `stem` is the library's name without its prefix and suffix, which is
+/// the SDK's own unless another package's hook (an engine adapter's)
+/// names its library.
+String libraryFileNameOf(String platform, {String stem = 'teistro_ffi'}) {
+  if (platform.startsWith('win32-')) return '$stem.dll';
+  if (platform.startsWith('ios-') || platform.startsWith('darwin-')) {
+    return 'lib$stem.dylib';
+  }
+  return 'lib$stem.so';
 }
+
+/// Where a release publishes a platform's library: `<file>` gzipped, with
+/// the version and the platform between its name and its suffix
+/// (`libteistro_ffi-1.2.0-android-arm64.so.gz`), as `cargo xtask package`
+/// names it.
+Uri archiveUri({
+  required String base,
+  required String version,
+  required String file,
+  required String platform,
+}) {
+  final dot = file.lastIndexOf('.');
+  final stem = dot < 0 ? file : file.substring(0, dot);
+  final extension = dot < 0 ? 'so' : file.substring(dot + 1);
+  return Uri.parse('$base/v$version/$stem-$version-$platform.$extension.gz');
+}
+
+/// The name an app bundles the library under, which the platform's loader
+/// opens from inside the app: Android's `jniLibs` on the linker's path,
+/// and the framework Flutter wraps an iOS library in, on the app's
+/// `@rpath`. Null on every other operating system, where the library is a
+/// file the search path finds.
+String? bundledLibraryName(String operatingSystem) => switch (operatingSystem) {
+  'android' => 'libteistro_ffi.so',
+  'ios' => 'teistro_ffi.framework/teistro_ffi',
+  _ => null,
+};
 
 /// This host as the release names it: `<os>-<cpu>`, in the words Node's
 /// `process.platform` and `process.arch` use, so that one release page
@@ -73,17 +111,18 @@ Directory installDirectory([Directory? project]) => Directory(
 String installedLibrary([Directory? project]) =>
     '${installDirectory(project).path}${Platform.pathSeparator}$libraryFileName';
 
-/// The archive this platform's library is published as, on the release
-/// this package's version was cut from.
+/// The archive a platform's library is published as, on the release this
+/// package's version was cut from: this host's by default, or any
+/// release platform's by its name (`android-arm64`), which is how a build
+/// hook fetches the slice of the app it is building.
 Uri? prebuiltUri([String? platform]) {
   final name = platform ?? hostPlatform;
   if (!prebuiltDigests.containsKey(name)) return null;
-  final file = libraryFileName;
-  final dot = file.lastIndexOf('.');
-  final stem = dot < 0 ? file : file.substring(0, dot);
-  final extension = dot < 0 ? 'so' : file.substring(dot + 1);
-  return Uri.parse(
-    '$prebuiltBase/v$prebuiltVersion/$stem-$prebuiltVersion-$name.$extension.gz',
+  return archiveUri(
+    base: prebuiltBase,
+    version: prebuiltVersion,
+    file: libraryFileNameOf(name),
+    platform: name,
   );
 }
 
@@ -208,7 +247,7 @@ Future<Installed> install({String? from, Directory? project}) async {
       verified(const <int>[], packed: false);
       throw StateError('unreachable: no library and no refusal');
     }
-    bytes = await _download(uri);
+    bytes = await download(uri);
     packed = true;
   }
   final library = verified(bytes, packed: packed);
@@ -219,9 +258,19 @@ Future<Installed> install({String? from, Directory? project}) async {
   );
 }
 
-/// Downloads a file, following the redirect a release asset always has.
-Future<List<int>> _download(Uri uri) async {
-  final client = HttpClient();
+/// Downloads a file, following the redirect a release asset always has,
+/// through the proxy the environment names (`HTTPS_PROXY`, `NO_PROXY`).
+///
+/// `offline` is what to do when the release cannot be reached at all,
+/// which depends on who is asking: the installer takes a file, a build
+/// hook a directory.
+Future<List<int>> download(
+  Uri uri, {
+  String offline =
+      'install from a file you already have with '
+          '`dart run teistro:install --from <archive>`',
+}) async {
+  final client = HttpClient()..findProxy = HttpClient.findProxyFromEnvironment;
   try {
     final request = await client.getUrl(uri);
     final response = await request.close();
@@ -235,17 +284,15 @@ Future<List<int>> _download(Uri uri) async {
                 : 'try again in a moment',
       );
     }
-    final bytes = <int>[];
+    final bytes = BytesBuilder(copy: false);
     await for (final chunk in response) {
-      bytes.addAll(chunk);
+      bytes.add(chunk);
     }
-    return bytes;
+    return bytes.takeBytes();
   } on SocketException catch (error) {
     throw InstallException(
       'cannot reach the release: ${error.message}',
-      hint:
-          'install from a file you already have with '
-          '`dart run teistro:install --from <archive>`',
+      hint: offline,
     );
   } finally {
     client.close();

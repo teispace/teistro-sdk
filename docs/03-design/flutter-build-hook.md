@@ -217,8 +217,14 @@ need.
 | android-arm | armv7-linux-androideabi | armeabi-v7a | ubuntu-latest | API 24 |
 | android-x64 | x86_64-linux-android | x86_64 | ubuntu-latest | API 24, 16 KB pages |
 | ios-arm64 | aarch64-apple-ios | iphoneos | macos-latest | iOS 13.0 |
-| ios-sim-arm64 | aarch64-apple-ios-sim | iphonesimulator | macos-latest | iOS 13.0 |
+| ios-sim-arm64 | aarch64-apple-ios-sim | iphonesimulator | macos-latest | iOS 14.0 (\*) |
 | ios-sim-x64 | x86_64-apple-ios | iphonesimulator | macos-latest | iOS 13.0 |
+
+(\*) *As built:* Rust's `aarch64-apple-ios-sim` raises any lower deployment
+target to 14.0, because there is no arm64 simulator runtime before iOS 14,
+and the first build of the row was refused by its own floor check for
+saying 14.0. The row is held to 14.0 (`Mobile::minos`); no app is narrowed,
+since an Apple silicon Mac runs no simulator older than 14.
 
 - **No cargo-ndk.** The crate graph has no C, so `xtask package` sets
   `CARGO_TARGET_<TRIPLE>_LINKER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/
@@ -234,17 +240,27 @@ need.
   Flutter app accepts it) and `-C link-arg=-Wl,-headerpad_max_install_names`,
   so Flutter's `install_name_tool` rewrite always fits. The library is
   unsigned, because Flutter signs it with the app's identity.
-- **The table.** These rows join `PLATFORMS` in `platform.rs`, which stays
-  one table, with a new field `ships: Ships::{Host, Mobile}`. The Mobile
-  rows have no npm/wheel/jar/C bundle/agent server, and `os`/`cpu` give the
-  release name. Every consumer of `PLATFORMS` (npm staging, wheels, jar,
-  `check-package`, `runner-matches-the-platform-table`) filters by `ships`,
-  so "adding a platform is adding a row" still holds. `package <mobile>`
+- **The table.** *As built, a deviation:* the rows are a table of their
+  own, `MOBILE` in `xtask/src/mobile.rs`, not rows of `PLATFORMS` with a
+  `ships` field. A field every host consumer must remember to filter on is
+  a filter one of them forgets, and a forgotten one fails late: a wheel
+  staged for `android-arm64` would fail at `Platform::by_name` in the
+  release's `stage` job, after every build. With two tables no host
+  consumer can reach a mobile row at all. The few readers that want both
+  name both: `package <name>` dispatches by either table, `package stage`
+  merges the mobile manifests into a `mobile` object beside `platforms`
+  (refusing a release missing one), the checksum list and the Dart digest
+  table read both keys while the Python table and the wheels read
+  `platforms` alone, and `runner-matches-the-platform-table` looks a row up
+  in `PLATFORMS` and then `MOBILE`. A unit test holds the two tables apart
+  by name and triple. `package <mobile>`
   cross-compiles: it is the first set of rows that is not native, and that
   is unavoidable. It emits only the gzipped library, its SBOM and the
   manifest, and then runs the **mobile floor check** in place of `floor.rs`:
-  - Android: `NEEDED` must be a subset of {libc.so, libm.so, libdl.so}, so
-    there is no `libc++_shared.so` and no `android_libcpp_shared`. Every
+  - Android: `NEEDED` must be a subset of {libc.so, libm.so, libdl.so,
+    liblog.so}, so there is no `libc++_shared.so` and no
+    `android_libcpp_shared`. `liblog.so` is a system library on every API
+    level, and the standard library may link it for its panic message. Every
     `PT_LOAD` `p_align` must be at least 0x4000 on the 64-bit rows.
   - iOS: `LC_BUILD_VERSION` must have platform IOS or IOSSIMULATOR and
     `minos` 13.0, and the arch must be the row's.
@@ -315,13 +331,13 @@ New:
 - `xtask/src/flutter_package.rs`: `check-flutter-hook`, `check-flutter`,
   `check-flutter-android` and `check-flutter-ios`, skipping with a note
   where the toolchain is missing (ADR-0014).
-- `xtask/src/mobile_floor.rs`: the Android/iOS read-backs from D4.
-- `xtask/ndk.version`.
+- `xtask/src/mobile.rs` (built): the `MOBILE` table, the cross build and
+  the Android/iOS read-backs from D4.
+- `xtask/ndk.version` (built).
 
 Changed:
-- `xtask/src/platform.rs`: six rows, the `ships` field and the names.
-- `xtask/src/package.rs`: cross-compiling `compile` for the Mobile rows and
-  the reduced `stage_platform`. `stage` adds the mobile digests to
+- `xtask/src/package.rs` (built): `package <mobile>` dispatches to
+  `mobile::build`; `stage` merges the `mobile` manifests. `stage` adds the mobile digests to
   `prebuilt.dart` and stages `dist/pub/teistro_flutter` with the exact pin.
   Refuse to stage a release missing any Mobile manifest, as it refuses
   missing npm platforms.
@@ -329,8 +345,11 @@ Changed:
   version and pin, and `publish_to` both ways.
 - `xtask/src/lints.rs`: `runner-matches-the-platform-table` covers the new
   rows in `release.yml`/`hash-matrix.yml`.
-- `bindings/dart/lib/teistro.dart`: the bundled step and the mobile refusal.
-  `lib/src/install.dart`: the `hostPlatform` names.
+- `bindings/dart/lib/teistro.dart` (built): the bundled step and the
+  mobile refusal. `lib/src/install.dart`: `libraryFileNameOf(platform)`, so
+  a slice's archive is named by its platform and not the host building the
+  app, and `bundledLibraryName(os)`; `hostPlatform` already names
+  `android-*`/`ios-*`, since it reads `Platform.operatingSystem`.
 - `.github/workflows/release.yml`: build rows for the six, each running
   `cargo xtask package <name>` but not `check-package`. Publish
   `dist/pub/teistro_flutter` after `dist/pub/teistro`. The `*.gz` upload
