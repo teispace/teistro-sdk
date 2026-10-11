@@ -1046,14 +1046,23 @@ fn stage_dart(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::Re
     for file in ["pubspec.yaml", "README.md", "analysis_options.yaml"] {
         fs::copy(source.join(file), directory.join(file))?;
     }
-    for legal in LEGAL {
-        fs::copy(root.join(legal), directory.join(legal))?;
-    }
+    pub_files(root, &directory, version)?;
     fs::write(
         directory.join("lib/src/prebuilt.dart"),
         prebuilt_table(root, version, merged),
     )?;
     Ok(rel(root, &directory))
+}
+
+/// What pub.dev reads beside a package's code: the licence and notice,
+/// and the release's changelog entry, which pub shows on the version's
+/// page and scores the package by.
+fn pub_files(root: &Path, directory: &Path, version: &str) -> io::Result<()> {
+    for legal in LEGAL {
+        fs::copy(root.join(legal), directory.join(legal))?;
+    }
+    let changelog = crate::release::package_changelog(root, version).map_err(io::Error::other)?;
+    fs::write(directory.join("CHANGELOG.md"), changelog)
 }
 
 /// Stages the Flutter build-hook package beside the Dart one, its
@@ -1073,9 +1082,7 @@ fn stage_flutter(root: &Path, dist: &Path, version: &str) -> io::Result<String> 
     for file in ["README.md", "analysis_options.yaml"] {
         fs::copy(source.join(file), directory.join(file))?;
     }
-    for legal in LEGAL {
-        fs::copy(root.join(legal), directory.join(legal))?;
-    }
+    pub_files(root, &directory, version)?;
     let pubspec = pinned(&read(&source.join("pubspec.yaml")), version)?;
     fs::write(directory.join("pubspec.yaml"), pubspec)?;
     Ok(rel(root, &directory))
@@ -1265,6 +1272,26 @@ mod tests {
         assert!(staged.contains("\n  teistro: 1.2.3\n"), "{staged}");
         assert!(!staged.contains("path:"), "{staged}");
         assert!(super::pinned("name: x\n", "1.2.3").is_err());
+    }
+
+    #[test]
+    fn a_pub_package_carries_its_licence_and_its_changelog() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let dist = std::env::temp_dir().join(format!("teistro-pub-stage-{}", std::process::id()));
+        let merged = json!({ "platforms": {} });
+        super::stage_dart(&root, &dist, crate::release::UNRELEASED, &merged).unwrap();
+        super::stage_flutter(&root, &dist, crate::release::UNRELEASED).unwrap();
+        for package in ["teistro", "teistro_flutter"] {
+            let staged = dist.join("pub").join(package);
+            for file in ["LICENSE", "NOTICE", "README.md", "pubspec.yaml"] {
+                assert!(staged.join(file).is_file(), "{package} lacks {file}");
+            }
+            let changelog = std::fs::read_to_string(staged.join("CHANGELOG.md")).unwrap();
+            // pub reads the version's entry by its heading.
+            assert!(changelog.contains("\n## 0.0.0\n"), "{changelog:.200}");
+            assert!(!changelog.contains("## Unreleased"));
+        }
+        std::fs::remove_dir_all(&dist).unwrap();
     }
 
     #[test]

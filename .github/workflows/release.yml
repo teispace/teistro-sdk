@@ -307,6 +307,11 @@ jobs:
           java-version: "25"
       - name: Every platform, merged and staged
         run: cargo xtask package stage
+      # pub's own validation of both packages, nothing uploaded, so a
+      # rehearsal finds what the publish job would be refused for.
+      - uses: dart-lang/setup-dart@v1
+      - name: The pub packages, validated by pub
+        run: cargo xtask check-pub
       - name: What is being published
         run: |
           {
@@ -409,16 +414,21 @@ jobs:
           done
           npm publish --provenance --access public dist/npm/@teistro/mcp
 
+      # pub publishes only what git would track, and `dist/` is ignored
+      # in this checkout, so the packages go out from a copy outside it
+      # (`check-pub` validates them the same way).
+      - name: The pub packages, out of the checkout
+        run: cp -R dist/pub "${RUNNER_TEMP}/pub"
       - name: The Dart package
         run: dart pub publish --force
-        working-directory: dist/pub/teistro
+        working-directory: ${{ runner.temp }}/pub/teistro
 
       # After `teistro`, which it depends on at exactly this version. Its
       # first upload is the maintainer's, by hand: pub.dev configures
       # automated publishing only on a package that exists.
       - name: The Flutter build-hook package
         run: dart pub publish --force
-        working-directory: dist/pub/teistro_flutter
+        working-directory: ${{ runner.temp }}/pub/teistro_flutter
 
       - name: The Python package, built
         run: |

@@ -323,18 +323,45 @@ fn parse_manifest(root: &Path, path: &str) -> Result<Value, String> {
 /// notes. Printed rather than written, so that a caller decides where it
 /// goes and a person can read it before a release exists.
 pub(crate) fn changelog_entry(root: &Path, wanted: &str) -> i32 {
-    let text = read(&root.join(CHANGELOG));
-    let heading = Regex::new(&format!(r"^## {}\b", regex::escape(wanted))).expect("valid regex");
-    let mut lines = text.lines().skip_while(|line| !heading.is_match(line));
-    let Some(first) = lines.next() else {
+    let Some(entry) = entry_of(&read(&root.join(CHANGELOG)), wanted) else {
         eprintln!("{CHANGELOG} has no `## {wanted}` entry");
         return 1;
     };
-    println!("{first}");
-    for line in lines.take_while(|line| !line.starts_with("## ")) {
-        println!("{line}");
-    }
+    print!("{entry}");
     0
+}
+
+/// A changelog's entry under `## {heading}`, its heading line included, up
+/// to the next entry; none when it has no such entry.
+pub(crate) fn entry_of(text: &str, heading: &str) -> Option<String> {
+    let pattern = Regex::new(&format!(r"^## {}\b", regex::escape(heading))).expect("valid regex");
+    let mut lines = text.lines().skip_while(|line| !pattern.is_match(line));
+    let first = lines.next()?;
+    let mut entry = format!("{first}\n");
+    for line in lines.take_while(|line| !line.starts_with("## ")) {
+        entry.push_str(line);
+        entry.push('\n');
+    }
+    Some(entry)
+}
+
+/// The changelog a package carries: the release's own entry, or, for the
+/// unreleased version a rehearsal stages, the `Unreleased` entry under
+/// that version's heading, and where the whole history is.
+pub(crate) fn package_changelog(root: &Path, version: &str) -> Result<String, String> {
+    let text = read(&root.join(CHANGELOG));
+    let entry = if version == UNRELEASED {
+        entry_of(&text, "Unreleased")
+            .map(|entry| entry.replacen("## Unreleased", &format!("## {version}"), 1))
+    } else {
+        entry_of(&text, version)
+    }
+    .ok_or_else(|| format!("{CHANGELOG} has no entry for {version}"))?;
+    Ok(format!(
+        "# Changelog\n\n{}\n\nEvery earlier release: \
+         https://github.com/teispace/teistro-sdk/blob/main/CHANGELOG.md\n",
+        entry.trim_end()
+    ))
 }
 
 /// The tag a release is cut from names the version the repository
