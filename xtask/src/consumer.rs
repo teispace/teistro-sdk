@@ -225,7 +225,7 @@ fn mcp_consumer(
     )?;
     let launcher = into.join("node_modules/@teistro/mcp/bin/teistro-mcp.js");
     answers(&|| node(&launcher), version, "the agent server through npm")?;
-    mcp_bundle_consumer(dist, check, version)
+    mcp_bundle_consumer(dist, check, platform, version)
 }
 
 /// The Node a host runs the launcher with, told nothing of a program.
@@ -235,15 +235,26 @@ fn node(launcher: &Path) -> Command {
     node
 }
 
-/// Unpacks Claude Desktop's bundle, where the stage wrote one for this
-/// host, and runs it as the host does: the launcher under Node, finding
-/// the program the bundle carries for this platform.
-fn mcp_bundle_consumer(dist: &Path, check: &Path, version: &str) -> Result<(), ()> {
-    let path = dist.join(format!("teistro-mcp-{version}.mcpb"));
-    let Ok(bytes) = fs::read(&path) else {
-        crate::skip::skip("the agent server's bundle: none for this platform");
+/// Unpacks Claude Desktop's bundle and runs it as the host does: the
+/// launcher under Node, finding the program the bundle carries for this
+/// platform. A platform the bundle does not carry has nothing to check,
+/// which is not a skip: Claude Desktop runs on no other.
+fn mcp_bundle_consumer(
+    dist: &Path,
+    check: &Path,
+    platform: &Platform,
+    version: &str,
+) -> Result<(), ()> {
+    if !crate::package::MCP_BUNDLED.contains(&platform.name().as_str()) {
         return Ok(());
-    };
+    }
+    let path = dist.join(format!("teistro-mcp-{version}.mcpb"));
+    let bytes = fs::read(&path).map_err(|err| {
+        println!(
+            "FAIL  the agent server's bundle carries {}, and the stage wrote none: {err}",
+            platform.name()
+        );
+    })?;
     let into = check.join("mcpb");
     let names = crate::zip::names(&bytes)
         .map_err(|err| println!("FAIL  the agent server's bundle is not a zip: {err}"))?;

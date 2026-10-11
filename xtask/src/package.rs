@@ -813,7 +813,8 @@ fn stage_node(root: &Path, dist: &Path) -> io::Result<String> {
 /// server's bundle carries: one a platform, since a bundle's
 /// configuration chooses by operating system and never by architecture,
 /// and the launcher in it chooses by both.
-const MCP_BUNDLED: [&str; 4] = ["darwin-arm64", "darwin-x64", "win32-x64", "win32-arm64"];
+pub(crate) const MCP_BUNDLED: [&str; 4] =
+    ["darwin-arm64", "darwin-x64", "win32-x64", "win32-arm64"];
 
 /// The registry entry the release publishes: the repository's, with the
 /// bundle beside the npm launcher.
