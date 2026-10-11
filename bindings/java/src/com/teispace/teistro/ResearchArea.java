@@ -1,5 +1,6 @@
 package com.teispace.teistro;
 
+import com.teispace.teistro.request.Design;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,18 +11,16 @@ import java.util.Map;
  * and the predicates are one family for the corrections. A study's provenance seals it: its
  * {@code inputHash} is the pre-registration a study publishes before its data are collected.
  *
- * <p>The records cross as {@link Json#write} writes them: {@code rules} as a chart request's rules,
- * {@code design} as {@code {groups, strata}}, and each test and control as the design page names
- * them, a seed a {@code Long} or, past {@code Long.MAX_VALUE}, a {@code BigInteger}. {@code options}
- * adds {@code holds} ({@code "STANDING"} or {@code "FORMED"}); for a study of births,
- * {@code uncertaintyStepMinutes}, how far apart an uncertain birth's window is read (2 when left out);
- * and, for an event study, {@code depth} and {@code strata}. It may be null.
+ * <p>The design is the generated {@link Design}, and the options {@link ResearchOptions}; {@code rules}
+ * crosses as a chart request's rules, and each test and control as the design page names them, a seed
+ * a {@code Long} or, past {@code Long.MAX_VALUE}, a {@code BigInteger}: the schema reads those as
+ * JSON, each by the reader its study gives it.
  *
  * <pre>{@code
  * ResearchTested tested = sky.research().compare(births, Map.of("shipped", List.of("YOGAS")),
- *         Map.of("groups", groups),
+ *         new Design(groups, null),
  *         Map.of("seed", 7, "permutations", 9999, "contrast", Map.of("kind", "CASE_VS_REST", "case", 1)),
- *         null);
+ *         ResearchOptions.builder().holds(Holds.FORMED).build());
  * }</pre>
  */
 public final class ResearchArea {
@@ -50,13 +49,13 @@ public final class ResearchArea {
      *
      * @param births the births, in the order the design labels them
      * @param rules the rules, as a chart request's rules record
-     * @param design {@code {groups, strata}}, one group per birth
+     * @param design one group per birth, and the strata the labels move within
      * @param options {@code holds} and {@code uncertaintyStepMinutes}; may be null
      * @return the counts
      * @throws TeistroException naming the field, as {@code research.design}
      */
-    public ResearchCounts counts(List<ResearchBirth> births, Map<String, ?> rules, Map<String, ?> design,
-            Map<String, ?> options) {
+    public ResearchCounts counts(List<ResearchBirth> births, Map<String, ?> rules, Design design,
+            ResearchOptions options) {
         return ResearchReads.counts(ResearchReads.run(context, "COUNTS", rules,
                 fields("births", ResearchReads.births(births), "design", design), options));
     }
@@ -67,14 +66,14 @@ public final class ResearchArea {
      *
      * @param births the births, in the order the design labels them
      * @param rules the rules, as a chart request's rules record
-     * @param design {@code {groups, strata}}, one group per birth
+     * @param design one group per birth, and the strata the labels move within
      * @param test {@code {seed, permutations, contrast, alternative, level, alpha, parallelism}}
      * @param options {@code holds} and {@code uncertaintyStepMinutes}; may be null
      * @return the rows
      * @throws TeistroException naming the field, as {@code research.test.seed}
      */
-    public ResearchTested compare(List<ResearchBirth> births, Map<String, ?> rules, Map<String, ?> design,
-            Map<String, ?> test, Map<String, ?> options) {
+    public ResearchTested compare(List<ResearchBirth> births, Map<String, ?> rules, Design design,
+            Map<String, ?> test, ResearchOptions options) {
         return ResearchReads.tested(ResearchReads.run(context, "COMPARE", rules,
                 fields("births", ResearchReads.births(births), "design", design, "test", test), options));
     }
@@ -92,7 +91,7 @@ public final class ResearchArea {
      * @throws TeistroException naming the field, as {@code research.control}
      */
     public ResearchTested expected(List<ResearchBirth> births, Map<String, ?> rules, Map<String, ?> control,
-            Map<String, ?> test, Map<String, ?> options) {
+            Map<String, ?> test, ResearchOptions options) {
         return ResearchReads.tested(ResearchReads.run(context, "EXPECTED", rules,
                 fields("births", ResearchReads.births(births), "control", control, "test", test), options));
     }
@@ -111,7 +110,7 @@ public final class ResearchArea {
      * @throws TeistroException naming the field, as {@code research.subjects}
      */
     public ResearchTested timed(List<ResearchSubject> subjects, Map<String, ?> rules, DashaSystem dasha,
-            ResearchEventShuffle shuffle, Map<String, ?> test, Map<String, ?> options) {
+            ResearchEventShuffle shuffle, Map<String, ?> test, ResearchOptions options) {
         if (dasha == null) {
             throw Reads.invalid("dasha is a DashaSystem, such as DashaSystem.VIMSHOTTARI", "dasha");
         }
