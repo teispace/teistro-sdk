@@ -12,7 +12,9 @@
 //! own recombined population (test 4); and event studies with no effect
 //! under each shuffle (test 5); and births uncertain by an hour's rounding
 //! and by a quarter of a day, read across their windows and at their
-//! edges alone.
+//! edges alone. A second synthetic batch, in two strata whose case shares
+//! differ, measures a stratified test's error rates beside the same study
+//! read without its strata (C369).
 //!
 //! `cargo xtask research` writes the page; `check-research` regenerates it
 //! in memory and fails on any difference.
@@ -74,6 +76,22 @@ const EVENT_AGES: (u64, u64) = (25, 32);
 /// to the hour, and one known only to a quarter of the day.
 const UNCERTAIN_BIRTHS: usize = 60;
 const WINDOWS: [f64; 2] = [30.0, 180.0];
+
+/// The stratified batch: two strata of charts, interleaved, whose case
+/// shares differ as a confounder's would, and six predicates, three that
+/// hold equally often in both strata and three that do not, each with its
+/// prevalence in the first stratum and in the second.
+const STRATUM_CHARTS: usize = 200;
+const STRATUM_CASES: [f64; 2] = [0.15, 0.45];
+const STRATIFIED: [(&str, f64, f64); 6] = [
+    ("E10", 0.1, 0.1),
+    ("E30", 0.3, 0.3),
+    ("E50", 0.5, 0.5),
+    ("U10_40", 0.1, 0.4),
+    ("U40_10", 0.4, 0.1),
+    ("U05_60", 0.05, 0.6),
+];
+const STRATIFIED_NULLS: u64 = 400;
 
 /// 1950 January 1, 0h UTC, and the forty years after it in days.
 const FROM_JD: f64 = 2_433_282.5;
@@ -166,15 +184,15 @@ fn synthetic(seed: u64) -> Result<Batch, String> {
     Ok(Batch { matrix, holds })
 }
 
-/// A labelling: each chart a case with `share_of(chart)`, and at least
-/// one chart in each group.
-fn labels(seed: u64, share_of: impl Fn(usize) -> f64) -> Design {
+/// A labelling of `charts` charts: each a case with `share_of(chart)`,
+/// and at least one chart in each group.
+fn labels(seed: u64, charts: usize, share_of: impl Fn(usize) -> f64) -> Design {
     let mut rng = SplitMix64::new(seed);
-    let mut groups: Vec<u16> = (0..CHARTS)
+    let mut groups: Vec<u16> = (0..charts)
         .map(|chart| u16::from(unit(&mut rng) < share_of(chart)))
         .collect();
     let cases = groups.iter().filter(|&&g| g == 1).count();
-    if cases == 0 || cases == CHARTS {
+    if cases == 0 || cases == charts {
         if let Some(first) = groups.first_mut() {
             *first = 1 - *first;
         }
@@ -251,7 +269,7 @@ impl Rejections {
 fn nulls(batch: &Batch) -> Result<Rejections, String> {
     let mut seen = Rejections::default();
     for k in 0..NULLS {
-        let design = labels(1_000 + k, |_| CASE_SHARE);
+        let design = labels(1_000 + k, CHARTS, |_| CASE_SHARE);
         let tested =
             compare(&batch.matrix, &design, &case_test(k)).map_err(|why| why.to_string())?;
         seen.add(&tested);
@@ -263,7 +281,7 @@ fn nulls(batch: &Batch) -> Result<Rejections, String> {
 fn planted(batch: &Batch) -> Result<Rejections, String> {
     let mut seen = Rejections::default();
     for k in 0..PLANTED {
-        let design = labels(5_000 + k, |chart| {
+        let design = labels(5_000 + k, CHARTS, |chart| {
             let holds = batch
                 .holds
                 .get(chart)
@@ -281,6 +299,48 @@ fn planted(batch: &Batch) -> Result<Rejections, String> {
         seen.add(&tested);
     }
     Ok(seen)
+}
+
+/// The stratified batch's matrix and each chart's stratum: chart `i` in
+/// stratum `i mod 2`, so that neither stratum arrives contiguous.
+fn stratified_batch(seed: u64) -> Result<(Matrix, Vec<u32>), String> {
+    let charts = 2 * STRATUM_CHARTS;
+    let strata: Vec<u32> = (0..charts).map(|chart| u32::from(chart % 2 == 1)).collect();
+    let mut rng = SplitMix64::new(seed);
+    let mut matrix = Matrix::new(charts);
+    for (name, first, second) in STRATIFIED {
+        let column: Vec<Cell> = strata
+            .iter()
+            .map(|&stratum| {
+                let prevalence = if stratum == 0 { first } else { second };
+                if unit(&mut rng) < prevalence {
+                    Cell::Present
+                } else {
+                    Cell::Absent
+                }
+            })
+            .collect();
+        matrix.push(name, &column).map_err(|why| why.to_string())?;
+    }
+    Ok((matrix, strata))
+}
+
+/// Null labellings of the stratified batch, each chart a case with its
+/// stratum's share, each tested with its strata and without them.
+fn stratified_nulls() -> Result<(Rejections, Rejections), String> {
+    let (matrix, strata) = stratified_batch(2_027)?;
+    let (mut with, mut without) = (Rejections::default(), Rejections::default());
+    for k in 0..STRATIFIED_NULLS {
+        let design = labels(9_000 + k, strata.len(), |chart| {
+            let stratum = strata.get(chart).copied().unwrap_or(0) as usize;
+            STRATUM_CASES.get(stratum).copied().unwrap_or(0.0)
+        });
+        let stratified = design.clone().with_strata(strata.clone());
+        let test = case_test(k);
+        with.add(&compare(&matrix, &stratified, &test).map_err(|why| why.to_string())?);
+        without.add(&compare(&matrix, &design, &test).map_err(|why| why.to_string())?);
+    }
+    Ok((with, without))
 }
 
 fn place(latitude: f64, longitude: f64) -> Result<Place, String> {
@@ -532,6 +592,7 @@ fn page() -> Result<String, String> {
         .iter()
         .map(|&minutes| window(&sdk, minutes))
         .collect::<Result<Vec<_>, _>>()?;
+    let (with, without) = stratified_nulls()?;
     let mut out = String::new();
     header(&mut out);
     calibration(&mut out, &null);
@@ -539,6 +600,7 @@ fn page() -> Result<String, String> {
     gauquelin(&mut out, &sectors);
     shuffles(&mut out, &ages, &dates);
     uncertainty(&mut out, &windows);
+    strata(&mut out, &with, &without);
     Ok(out)
 }
 
@@ -793,5 +855,91 @@ fn uncertainty(out: &mut String, windows: &[Window]) {
          cell is one rule on one chart; it is unstable when its answer \
          differs anywhere it is read from the answer at the birth.\n\n{}",
         table(&claims)
+    );
+}
+
+fn strata(out: &mut String, with: &Rejections, without: &Rejections) {
+    let n = with.studies;
+    let bound = ceiling(ALPHA, n);
+    let uneven = |(_, first, second): &(&str, f64, f64)| (first - second).abs() > f64::EPSILON;
+    let over: Vec<&str> = STRATIFIED
+        .iter()
+        .enumerate()
+        .filter(|&(j, _)| share(with.raw_of(j), n) > bound)
+        .map(|(_, (name, _, _))| *name)
+        .collect();
+    let family_over = METHODS
+        .iter()
+        .zip(with.any)
+        .filter(|&(_, hits)| share(hits, n) > bound)
+        .count();
+    let unseen = STRATIFIED
+        .iter()
+        .enumerate()
+        .filter(|&(j, predicate)| uneven(predicate) && share(without.raw_of(j), n) <= bound)
+        .count();
+    let claims = [
+        Claim::counted(
+            "with its strata, a raw p is under 0.05 no more often than 5%",
+            over.len(),
+            STRATIFIED.len(),
+        ),
+        Claim::counted(
+            "with its strata, every correction holds the familywise rate at 0.05",
+            family_over,
+            METHODS.len(),
+        ),
+        Claim::stated(
+            "with its strata, the exact p lies inside the permutation p's 95% interval \
+             at least 95% of the time",
+            verdict_of(share(with.outside, with.exact_rows) <= ceiling(0.05, with.exact_rows)),
+            format!("{} of {} rows outside", with.outside, with.exact_rows),
+        ),
+        Claim::counted(
+            "without its strata, every predicate whose prevalence differs between them \
+             reads as an effect more often than 5%",
+            unseen,
+            STRATIFIED
+                .iter()
+                .filter(|predicate| uneven(predicate))
+                .count(),
+        ),
+    ];
+    let _ = writeln!(
+        out,
+        "## 6. Strata (C369)\n\n\
+         {} charts in two strata of {STRATUM_CHARTS}, interleaved, whose case \
+         shares differ ({} and {}) as a confounder's would. Three predicates \
+         hold equally often in both strata and three do not. \
+         {STRATIFIED_NULLS} labellings draw each chart a case with its \
+         stratum's share, independently of every predicate, and each is \
+         tested twice over {PERMUTATIONS} permutations: with its strata, \
+         which shuffles inside them and ranks by the Cochran–Mantel–Haenszel \
+         statistic, and without them. A rate is judged against {bound:.4}.\n\n{}",
+        2 * STRATUM_CHARTS,
+        STRATUM_CASES[0],
+        STRATUM_CASES[1],
+        table(&claims)
+    );
+    let _ = writeln!(
+        out,
+        "| predicate | prevalence by stratum | raw p under 0.05, with strata | without |\n\
+         |---|--:|--:|--:|"
+    );
+    for (j, (name, first, second)) in STRATIFIED.iter().enumerate() {
+        let _ = writeln!(
+            out,
+            "| `{name}` | {first} / {second} | {:.3} | {:.3} |",
+            share(with.raw_of(j), n),
+            share(without.raw_of(j), n)
+        );
+    }
+    let _ = writeln!(
+        out,
+        "\nThe cases crowd into the second stratum, so a predicate commoner \
+         there is commoner among the cases, and one rarer there rarer, with \
+         no effect at all: read without its strata, the study finds both. \
+         Given its strata, it compares each case only with the charts of \
+         its own stratum, and finds neither.\n"
     );
 }
