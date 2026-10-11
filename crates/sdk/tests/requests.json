@@ -1,0 +1,233 @@
+[
+  {
+    "record": "chart.found",
+    "request": {
+      "instants": [
+        2447000.25,
+        2447365.75
+      ],
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "vargas": [
+        "D9"
+      ],
+      "shadbala": true,
+      "fortitudes": {},
+      "lots": {},
+      "kp": {
+        "anyAyanamsha": true
+      },
+      "antiscia": {},
+      "varsha": {
+        "through": 1
+      }
+    }
+  },
+  {
+    "record": "almanac.days",
+    "request": {
+      "first": {
+        "year": 2026,
+        "month": 10,
+        "day": 10
+      },
+      "last": {
+        "year": 2026,
+        "month": 10,
+        "day": 12
+      },
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "muhurta": {
+        "rules": "RAMAN_MARRIAGE"
+      },
+      "festivals": {
+        "rules": "DHARMASINDHU"
+      },
+      "years": true,
+      "eclipses": true,
+      "nepalSambat": true
+    }
+  },
+  {
+    "record": "matching.naam",
+    "request": {
+      "bride": "सीता",
+      "groom": "राम"
+    }
+  },
+  {
+    "record": "time.resolve",
+    "request": {
+      "date": {
+        "year": 1990,
+        "month": 4,
+        "day": 5
+      },
+      "time": {
+        "hour": 4,
+        "minute": 30,
+        "second": 0
+      },
+      "zone": {
+        "kind": "IANA",
+        "zone": "Asia/Kathmandu"
+      }
+    }
+  },
+  {
+    "record": "time.civil",
+    "request": {
+      "instant": 2447986.4583333335,
+      "zone": {
+        "kind": "FIXED",
+        "offset": 20700
+      },
+      "calendar": "BIKRAM_SAMBAT"
+    }
+  },
+  {
+    "record": "time.convert",
+    "request": {
+      "jd": 2451545.0,
+      "from": "UTC",
+      "to": "TT"
+    }
+  },
+  {
+    "record": "calendar.convert",
+    "request": {
+      "date": {
+        "year": 2026,
+        "month": 10,
+        "day": 10
+      },
+      "into": "calendar.BIKRAM_SAMBAT"
+    }
+  },
+  {
+    "record": "engine.call",
+    "request": {
+      "name": "tp_sum",
+      "arguments": {
+        "values": [
+          1,
+          2.5
+        ]
+      }
+    }
+  },
+  {
+    "record": "engine.manifest",
+    "request": {}
+  },
+  {
+    "record": "numerology.profile",
+    "request": {
+      "name": "Henry Elder",
+      "date": {
+        "year": 1872,
+        "month": 1,
+        "day": 17
+      },
+      "rules": {
+        "masters": "NONE"
+      }
+    }
+  },
+  {
+    "record": "almanac.pakshi",
+    "request": {
+      "first": {
+        "year": 1984,
+        "month": 10,
+        "day": 30
+      },
+      "last": {
+        "year": 1984,
+        "month": 11,
+        "day": 1
+      },
+      "latitudeDeg": 13.0827,
+      "longitudeDeg": 80.2707,
+      "altitudeM": 6,
+      "utcOffsetSeconds": 19800,
+      "native": {
+        "bird": "COCK"
+      }
+    }
+  },
+  {
+    "record": "chart.rashifal",
+    "request": {
+      "periods": [
+        {
+          "first": {
+            "year": 2026,
+            "month": 10,
+            "day": 4
+          },
+          "last": {
+            "year": 2026,
+            "month": 10,
+            "day": 10
+          },
+          "latitudeDeg": 27.7172,
+          "longitudeDeg": 85.324,
+          "altitudeM": 1400,
+          "utcOffsetSeconds": 20700
+        }
+      ],
+      "baseline": "WEEKLY"
+    }
+  },
+  {
+    "record": "research.study",
+    "request": {
+      "study": "COUNTS",
+      "rules": {
+        "shipped": [
+          "YOGAS"
+        ]
+      },
+      "holds": "FORMED",
+      "births": [
+        {
+          "instant": 2446000.25,
+          "latitudeDeg": 27.7172,
+          "longitudeDeg": 85.324,
+          "altitudeM": 1400,
+          "utcOffsetSeconds": 20700,
+          "uncertaintyMinutes": 0
+        },
+        {
+          "instant": 2447100.5,
+          "latitudeDeg": 27.7172,
+          "longitudeDeg": 85.324,
+          "altitudeM": 1400,
+          "utcOffsetSeconds": 20700,
+          "uncertaintyMinutes": 0
+        },
+        {
+          "instant": 2448300.75,
+          "latitudeDeg": 27.7172,
+          "longitudeDeg": 85.324,
+          "altitudeM": 1400,
+          "utcOffsetSeconds": 20700,
+          "uncertaintyMinutes": 0
+        }
+      ],
+      "design": {
+        "groups": [
+          0,
+          1,
+          1
+        ]
+      }
+    }
+  }
+]

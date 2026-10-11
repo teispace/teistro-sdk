@@ -120,12 +120,13 @@ module of the same name.
 | `TeistroException` | unchecked, carrying the `Status`, the message, and the field, hint, range, key, detail and provider code of `ts_error` | the generator |
 | blob decoders | one decoder per schema in `crates/ffi/src/schemas.rs`, reading `TSRB` (`crates/idl/src/blob.rs`) into typed views (§7) | the generator |
 | records | the JSON records of `api.records` (`crates/idl/src/emit/records.rs`) as Java records, read by the binding's own JSON reader | the generator |
+| `com.teispace.teistro.request` | every record entry point's request, read from the façade's own schema of it (§4.1) | the generator |
 | `Messages` | the typed message and entity accessors, from `cargo xtask gen intl` (`crates/intl/src/generate.rs` gains a Java target, `xtask/src/intl.rs` its output path) | the generator |
 | `Teistro`, `Context`, the areas | the layer a consumer uses (§6) | by hand |
 | `Teistro.open()` | the loader and the build handshake (§8), in `Teistro.java` | by hand |
 | `Json` | a small JSON reader and writer: the JDK through 25 ships none, and a dependency for it would be the binding's first | by hand |
 | `EphemerisProvider`, `HostProvider` | the port adapter over upcall stubs (§10) | by hand |
-| `module-info.java` | exports `com.teispace.teistro` and `com.teispace.teistro.ffi` | by hand |
+| `module-info.java` | exports `com.teispace.teistro`, its `blob`, `record`, `request`, `ffi` and `messages` packages | by hand |
 | `test/` | the surface, the decoders against `target/tsrb`, the layouts against the library, the loader's refusals, the provider | by hand |
 | `example/*.java` | the shared examples (§11) | by hand |
 | `parity/ParityRunner.java` | this binding's report for `check-parity` (not `Parity`, which the catalogue spells as an enum) | by hand |
@@ -152,6 +153,61 @@ because both are camel-case targets: a colliding name gains `Value`, so
 `native` becomes `nativeValue`. Enum members are upper snake case, as
 Java names constants. `cargo xtask surface` counts what the list catches,
 as it does for the other three lists.
+
+### 4.1 The requests
+
+A record entry point (`chart.found`, `almanac.days`) takes its request as
+JSON. Writing it as a `Map` let a misspelt field or a swapped member reach
+the library, which refused it at run time, and only by the wire's name. So
+the request is typed from the one description of it there is: the
+façade's own JSON Schema, as schemars writes it from the types serde reads
+(`Record::request_schema`). `xtask/src/ffi.rs` `requests()` reads every
+entry point's schema under one generator, so a type is one name across
+them all, and `teistro_idl::records::read` turns a closed subset of JSON
+Schema into `api.requests`. The description keeps it out of `api.json`,
+because no other binding reads it yet and every package would carry it.
+
+`crates/idl/src/emit/java/requests.rs` writes them into
+`com.teispace.teistro.request`:
+
+- an **object** is a `record`, its required numbers unboxed and its
+  optional fields boxed, with a builder where any field is optional; the
+  compact constructor names a missing required field, copies a list or a
+  map, and checks a whole number against the width the schema states;
+- a **closed set of keys** is an `enum`, unless it is a boundary enum's
+  keys exactly, when the boundary's enum is used (`REUSED_ENUMS`, checked
+  both ways);
+- a **union tagged by a field** is a sealed interface of records;
+- serde's **external tagging** (`"SAME_DEGREE"` or `{"WITHIN": {...}}`) is
+  a sealed interface of an enum of the bare keys and a record per data
+  variant, which writes itself under its key;
+- **a few names or one value** (`"birth"` or a place) is a sealed
+  interface of an enum of the names and the value;
+- a **catalogue member** is the catalogue's enum, written in full; a member
+  **or a registered key** is `Keyed<M>`; a part only a second reader reads
+  (a rule set, a theme's content) stays a JSON value (`RAW_REQUEST_PARTS`).
+
+Each writes itself as the tree `Json.write` writes (`toJson`, a null field
+left out so the SDK's default stands), and `Json.write` takes a request
+record directly; `of` reads one back, naming the field where the JSON
+stops being the request. `Requests.read(record, json)` reads any entry
+point's request by the entry point's name.
+
+Names are held at the source and by lists, never by the emitter: a schema
+definition names its own type (`crates/mcp/tests/facade.rs`), a request
+type sharing a name with a type of the main package is listed
+(`SHARED_NAMES`, the request form of the same concept) or renamed at its
+source (`GrahaClass`, `YearsRectification`, `SahamFriendship`,
+`RateSpan`), a name the generated code uses unqualified (`String`, `List`,
+`Read`) is refused (`TAKEN_NAMES`), and every catalogue kind a request
+names is a catalogue enum. `BindingTest` reads every example request of
+`crates/sdk/tests/requests.json`, the fixture the agent server's tests send
+too, into its type and back, and holds the refusals.
+
+Still to come, in order: the hand-written areas taking these types
+(`ChartOptions` and the rest), the examples and the parity runner moved
+over, `typecheck/Wrong.java` with a lint that no area takes a request as a
+`Map`, and then the answers' keys as enums.
 
 **Javadoc from the description.** Each item's documentation is the
 description's, with unit, range and example appended by

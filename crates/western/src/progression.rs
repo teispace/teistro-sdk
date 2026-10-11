@@ -26,6 +26,7 @@ pub const SIDEREAL_MONTH_DAYS: f64 = 27.321_661_5;
 /// `{"DAYS": 2.5}` in a request.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RateSpan"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Span {
     /// A day.

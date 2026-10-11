@@ -2448,6 +2448,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   print what the other bindings' print, the provider example among
   them: an `EphemerisProvider` written in Java answers the SDK through
   FFM upcalls, and what it throws reaches the caller as itself.
+- **Typed requests in Java** (`03-design/java-binding.md` §4.1).
+  `com.teispace.teistro.request` holds every record entry point's
+  request, generated from the façade's own JSON Schema of it: an object
+  is a record with a builder where a field is optional, a closed set of
+  keys an enum (the boundary's own where the keys are the same), and
+  serde's unions sealed interfaces. Each checks a required field, a
+  whole number's width and a member's key as it is made or read, naming
+  the field, and writes itself as the JSON the SDK reads, a null field
+  left out; `Json.write` takes one directly and `Requests.read` reads any
+  entry point's request by its name. The agent server's example requests
+  moved into `crates/sdk/tests/requests.json`, which the Java tests read
+  into their types and back. Four request types took names of their own
+  (`GrahaClass`, `YearsRectification`, `SahamFriendship`, `RateSpan`)
+  so none reads like an unrelated type. **Numbers:** none move.
 - **The Java package, for Maven Central** (`03-design/java-binding.md`
   steps 7 to 9). `cargo xtask package stage` writes Maven's repository
   layout: a jar carrying every platform's library, a classifier jar per

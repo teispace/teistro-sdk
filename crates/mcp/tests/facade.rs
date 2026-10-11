@@ -67,81 +67,21 @@ fn answers_as_the_facade(name: &str, result: &Value, context: &Context, request:
     }
 }
 
-/// One record of each tool's, the examples its area's own documentation
-/// and tests send.
+/// One request of each record's, from the fixture every binding's own
+/// tests also read (`crates/sdk/tests/requests.json`), so the requests an
+/// agent is shown and the ones a binding types are the same.
 fn examples() -> Vec<(&'static str, Value)> {
-    let birth = |instant: f64| {
-        json!({"instant": instant, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
-            "altitudeM": 1400, "utcOffsetSeconds": 20700, "uncertaintyMinutes": 0})
-    };
-    vec![
-        (
-            "chart.found",
-            json!({"instants": [2_447_000.25, 2_447_365.75], "latitudeDeg": 27.7172,
-                "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700,
-                "vargas": ["D9"], "shadbala": true, "fortitudes": {}, "lots": {},
-                "kp": {"anyAyanamsha": true}, "antiscia": {}, "varsha": {"through": 1}}),
-        ),
-        (
-            "almanac.days",
-            json!({"first": {"year": 2026, "month": 10, "day": 10},
-                "last": {"year": 2026, "month": 10, "day": 12},
-                "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
-                "utcOffsetSeconds": 20700, "muhurta": {"rules": "RAMAN_MARRIAGE"},
-                "festivals": {"rules": "DHARMASINDHU"}, "years": true, "eclipses": true,
-                "nepalSambat": true}),
-        ),
-        ("matching.naam", json!({"bride": "सीता", "groom": "राम"})),
-        (
-            "time.resolve",
-            json!({"date": {"year": 1990, "month": 4, "day": 5},
-                "time": {"hour": 4, "minute": 30, "second": 0},
-                "zone": {"kind": "IANA", "zone": "Asia/Kathmandu"}}),
-        ),
-        (
-            "time.civil",
-            json!({"instant": 2_447_986.458_333_333_5, "zone": {"kind": "FIXED", "offset": 20700},
-                "calendar": "BIKRAM_SAMBAT"}),
-        ),
-        (
-            "time.convert",
-            json!({"jd": 2_451_545.0, "from": "UTC", "to": "TT"}),
-        ),
-        (
-            "calendar.convert",
-            json!({"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}),
-        ),
-        (
-            "engine.call",
-            json!({"name": "tp_sum", "arguments": {"values": [1, 2.5]}}),
-        ),
-        ("engine.manifest", json!({})),
-        (
-            "numerology.profile",
-            json!({"name": "Henry Elder", "date": {"year": 1872, "month": 1, "day": 17},
-                "rules": {"masters": "NONE"}}),
-        ),
-        (
-            "almanac.pakshi",
-            json!({"first": {"year": 1984, "month": 10, "day": 30},
-                "last": {"year": 1984, "month": 11, "day": 1},
-                "latitudeDeg": 13.0827, "longitudeDeg": 80.2707, "altitudeM": 6,
-                "utcOffsetSeconds": 19800, "native": {"bird": "COCK"}}),
-        ),
-        (
-            "chart.rashifal",
-            json!({"periods": [{"first": {"year": 2026, "month": 10, "day": 4},
-                "last": {"year": 2026, "month": 10, "day": 10},
-                "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
-                "utcOffsetSeconds": 20700}], "baseline": "WEEKLY"}),
-        ),
-        (
-            "research.study",
-            json!({"study": "COUNTS", "rules": {"shipped": ["YOGAS"]}, "holds": "FORMED",
-                "births": [birth(2_446_000.25), birth(2_447_100.5), birth(2_448_300.75)],
-                "design": {"groups": [0, 1, 1]}}),
-        ),
-    ]
+    let fixture: Vec<Value> =
+        serde_json::from_str(include_str!("../../sdk/tests/requests.json")).unwrap();
+    fixture
+        .into_iter()
+        .map(|example| {
+            let name = example["record"].as_str().unwrap();
+            let record = teistro::records::record(name)
+                .unwrap_or_else(|| panic!("the fixture names {name}, which is no record"));
+            (record.name, example["request"].clone())
+        })
+        .collect()
 }
 
 fn call(server: &mut Server, name: &str, arguments: &Value) -> Value {

@@ -78,6 +78,7 @@ fn nature(graha: Graha) -> Option<Nature> {
 /// Whose friendship the "friend" and "inimical planet" clauses read.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "SahamFriendship"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Friendship {
     /// Tajika's positional friendship, the only one the source defines
