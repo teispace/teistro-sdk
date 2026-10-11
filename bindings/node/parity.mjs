@@ -1838,6 +1838,17 @@ for (const [name, rules] of [
     }),
   );
   putStudy(
+    'matched',
+    geo.research.timed({
+      subjects: births.map((birth, i) => ({ birth, event: birth.instant + 9000.5 + 211 * i })),
+      rules,
+      dasha: 'dasha_system.VIMSHOTTARI',
+      shuffle: 'SELF_MATCHED',
+      referents: { windowDays: 365.25, stepDays: 30 },
+      test: { seed: 7, permutations: 99 },
+    }),
+  );
+  putStudy(
     'strata',
     geo.research.compare({
       births,

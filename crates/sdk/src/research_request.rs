@@ -13,8 +13,8 @@ use teistro_research::{Counts, Design, EventTest, GroupTest, ReplicateTest, Test
 
 use crate::area::ResearchArea;
 use crate::area::research::{
-    Birth, DEFAULT_UNCERTAINTY_STEP_MINUTES, EventShuffle, EventStudy, Holds, Recombine, Study,
-    Subject,
+    Birth, DEFAULT_UNCERTAINTY_STEP_MINUTES, EventShuffle, EventStudy, Holds, Recombine, Referents,
+    Study, Subject,
 };
 use crate::asked::{offset_of, place_of};
 use crate::reading::ChartRequest;
@@ -64,6 +64,9 @@ pub enum ResearchStudy {
         depth: Depth,
         /// What the null keeps.
         shuffle: EventShuffle,
+        /// Where each subject is read besides its event, for a
+        /// self-matched study.
+        referents: Option<Referents>,
         /// Each subject's stratum, when events move only inside one.
         strata: Option<Vec<u32>>,
         /// The permutation test.
@@ -176,6 +179,8 @@ pub(crate) struct RequestAsked {
     #[serde(default)]
     shuffle: Option<EventShuffle>,
     #[serde(default)]
+    referents: Option<Referents>,
+    #[serde(default)]
     strata: Option<Vec<u32>>,
 }
 
@@ -254,7 +259,9 @@ impl ResearchRequest {
     /// and what the study reads. `COUNTS` and `COMPARE` read `births` and
     /// `design`, `COMPARE` a `test` as well; `EXPECTED` reads `births`,
     /// `control` and an optional `test`; `TIMED` reads `subjects`, `dasha`,
-    /// `shuffle`, a `test` and optionally `depth` and `strata`. A birth is
+    /// `shuffle`, a `test` and optionally `depth` and `strata`, and under
+    /// the `SELF_MATCHED` shuffle `referents`, `{windowDays, stepDays}`,
+    /// in place of strata. A birth is
     /// `{instant, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
     /// uncertaintyMinutes}`, the instant a Julian day in UTC and the last
     /// and the altitude optional, and a subject `{birth, event}`. A study
@@ -308,7 +315,15 @@ impl RequestAsked {
             StudyKind::Counts => &["births", "uncertaintyStepMinutes", "design"],
             StudyKind::Compare => &["births", "uncertaintyStepMinutes", "design", "test"],
             StudyKind::Expected => &["births", "uncertaintyStepMinutes", "control", "test"],
-            StudyKind::Timed => &["subjects", "dasha", "depth", "shuffle", "strata", "test"],
+            StudyKind::Timed => &[
+                "subjects",
+                "dasha",
+                "depth",
+                "shuffle",
+                "referents",
+                "strata",
+                "test",
+            ],
         };
         let given = [
             ("births", self.births.is_some()),
@@ -323,6 +338,7 @@ impl RequestAsked {
             ("dasha", self.dasha.is_some()),
             ("depth", self.depth.is_some()),
             ("shuffle", self.shuffle.is_some()),
+            ("referents", self.referents.is_some()),
             ("strata", self.strata.is_some()),
         ];
         match given
@@ -407,6 +423,7 @@ impl RequestAsked {
                 depth: Depth::try_new(self.depth.unwrap_or(2))
                     .map_err(|why| Error::from(why).with_field("depth"))?,
                 shuffle: needed(self.shuffle, "shuffle", self.name())?,
+                referents: self.referents,
                 strata: self.strata.clone(),
                 test: self.test()?,
             },
@@ -484,13 +501,16 @@ impl ResearchArea<'_> {
                 dasha,
                 depth,
                 shuffle,
+                referents,
                 strata,
                 test,
             } => {
                 let request = template(subjects.first().map(|s| &s.birth), "subjects")?;
-                let events = EventStudy::new(subjects, &request, &asked.rules, *dasha, *shuffle)
-                    .to_depth(*depth)
-                    .holding(asked.holds);
+                let mut events =
+                    EventStudy::new(subjects, &request, &asked.rules, *dasha, *shuffle)
+                        .to_depth(*depth)
+                        .holding(asked.holds);
+                events.referents = *referents;
                 self.timed(events, strata.as_deref(), test)
                     .map(ResearchAnswer::Tested)
             }

@@ -18,8 +18,9 @@ use teistro_core::quantity::{Depth, JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{DashaCursor, Timeline};
 use teistro_research::{
-    Cell, Counts, Design, EventTest, GroupTest, MAX_REPLICATES, Matrix, PairMatrix, Parallelism,
-    ReplicateTest, SplitMix64, Tested, compare, counts, replicated, timed,
+    Cell, Counts, Design, EventTest, GroupTest, MAX_INSTANTS, MAX_REPLICATES, MatchedMatrix,
+    Matrix, PairMatrix, Parallelism, ReplicateTest, SplitMix64, Tested, compare, counts, matched,
+    replicated, timed,
 };
 use teistro_rules::{Evaluator, NetStatus, Rule, RuleResult};
 use teistro_serial::Document;
@@ -612,6 +613,92 @@ pub enum EventShuffle {
     /// Ages at the event move among people: person `i` is read at its
     /// birth plus person `j`'s age. The ages are kept; the calendar is not.
     AgesAtEvent,
+    /// Each person is their own control (the case-crossover design,
+    /// C367): the event is as likely at any of the person's referent
+    /// instants ([`Referents`]), so nothing fixed about the person, the
+    /// chart included, can make a rule look delivered. Nobody's event
+    /// moves to anybody else.
+    SelfMatched,
+}
+
+/// Where a self-matched study reads each person besides their event
+/// (`research.md` §1.4, C367): time-stratified referents (Janes,
+/// Sheppard and Lumley, *Epidemiology* 16, 2005). The life is cut into
+/// windows of `window_days` from birth; the event's window is read at
+/// the event and every `step_days` either side of it inside the window.
+/// The windows are fixed before the event is known, which is what keeps
+/// the referents from biasing the estimate, and none starts before birth.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Referents {
+    /// Each window's length in days; a person's instants are those of
+    /// their event's window.
+    pub window_days: f64,
+    /// The days between a person's instants.
+    pub step_days: f64,
+}
+
+impl Referents {
+    /// Referents every `step_days` inside windows of `window_days`.
+    #[must_use]
+    pub const fn new(window_days: f64, step_days: f64) -> Referents {
+        Referents {
+            window_days,
+            step_days,
+        }
+    }
+
+    /// `INVALID_ARG` naming the field when a length is not a positive
+    /// number of days, or a window holds more than [`MAX_INSTANTS`]
+    /// instants.
+    fn check(self) -> Result<(), Error> {
+        for (value, field) in [
+            (self.window_days, "referents.windowDays"),
+            (self.step_days, "referents.stepDays"),
+        ] {
+            if !(value.is_finite() && value > 0.0) {
+                return Err(Error::invalid_arg(format!(
+                    "{value} is not a positive number of days"
+                ))
+                .with_field(field));
+            }
+        }
+        if self.window_days / self.step_days > f64::from(MAX_INSTANTS) {
+            return Err(Error::invalid_arg(format!(
+                "a window of {} days read every {} days holds more than {MAX_INSTANTS} instants; lengthen the step or shorten the window",
+                self.window_days, self.step_days
+            ))
+            .with_field("referents.stepDays"));
+        }
+        Ok(())
+    }
+
+    /// A subject's instants: its event first, then the others of its
+    /// event's window, earliest first.
+    fn of(self, subject: &Subject) -> Vec<JulianDay<Utc>> {
+        let (born, event) = (subject.birth.instant, subject.event);
+        let age = event.get() - born.get();
+        let start = (age / self.window_days).floor() * self.window_days;
+        let end = start + self.window_days;
+        let before = ((age - start) / self.step_days).floor();
+        let mut instants = vec![event];
+        let mut k = -before;
+        loop {
+            let at = age + k * self.step_days;
+            if at >= end {
+                break;
+            }
+            if k != 0.0
+                && at >= start
+                && let Ok(instant) = born.plus_days(at)
+            {
+                instants.push(instant);
+            }
+            k += 1.0;
+        }
+        instants
+    }
 }
 
 /// An event study: its subjects, how each chart is read, the rules whose
@@ -636,6 +723,9 @@ pub struct EventStudy<'s> {
     pub shuffle: EventShuffle,
     /// When a rule counts as formed.
     pub holds: Holds,
+    /// Where each person is read besides their event, which
+    /// [`EventShuffle::SelfMatched`] requires and the others refuse.
+    pub referents: Option<Referents>,
 }
 
 impl<'s> EventStudy<'s> {
@@ -659,7 +749,17 @@ impl<'s> EventStudy<'s> {
             depth: Depth::try_new(2).unwrap_or(Depth::MIN),
             shuffle,
             holds: Holds::Standing,
+            referents: None,
         }
+    }
+
+    /// The same study self-matched: each person read at their event and
+    /// at `referents`, the null drawing which of them is the event.
+    #[must_use]
+    pub const fn self_matched(mut self, referents: Referents) -> EventStudy<'s> {
+        self.shuffle = EventShuffle::SelfMatched;
+        self.referents = Some(referents);
+        self
     }
 
     /// The same study, periods read to `depth`.
@@ -694,6 +794,8 @@ struct EventInput<'a> {
     dasha: KeyId,
     depth: u8,
     shuffle: EventShuffle,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    referents: Option<Referents>,
     holds: Holds,
     strata: Option<&'a [u32]>,
     test: &'a EventTest,
@@ -744,26 +846,48 @@ impl ResearchArea<'_> {
             }
         }
         check(Study::new(&births, study.request, study.rules))?;
-        let mut pairs = pairings(study)?;
+        let plan = Plan::of(study, strata)?;
         let (charts, read, provenance) = self.lives(study, &births)?;
         let readings = study.rules.readings().readings();
         let evaluators: Vec<Option<(Evaluator<'_>, &Lived)>> = charts
             .iter()
             .map(|lived| lived.as_ref().map(|l| (l.inputs.evaluator(readings), l)))
             .collect();
-        for (r, rule) in study.rules.rules().iter().enumerate() {
-            pairs.push(rule.key.clone(), |i, j| match evaluators.get(i) {
-                Some(Some((evaluator, lived))) => delivered(
-                    study,
-                    (r, rule),
-                    evaluator,
-                    lived,
-                    event_instant(study, i, j),
-                ),
+        let cell =
+            |r: usize, rule: &Rule, i: usize, at: Option<JulianDay<Utc>>| match evaluators.get(i) {
+                Some(Some((evaluator, lived))) => delivered(study, (r, rule), evaluator, lived, at),
                 _ => Cell::Unreadable,
-            })?;
-        }
-        let value = timed(&pairs, strata, test)?;
+            };
+        let value = match plan {
+            Plan::Paired(mut pairs) => {
+                for (r, rule) in study.rules.rules().iter().enumerate() {
+                    pairs.push(rule.key.clone(), |i, j| {
+                        cell(r, rule, i, event_instant(study, i, j))
+                    })?;
+                }
+                timed(&pairs, strata, test)?
+            }
+            Plan::Matched(referents) => {
+                let instants: Vec<Vec<JulianDay<Utc>>> =
+                    study.subjects.iter().map(|s| referents.of(s)).collect();
+                let counts: Vec<u16> = instants
+                    .iter()
+                    .map(|own| u16::try_from(own.len()).unwrap_or(u16::MAX))
+                    .collect();
+                let mut matrix = MatchedMatrix::new(&counts)?;
+                for (r, rule) in study.rules.rules().iter().enumerate() {
+                    matrix.push(rule.key.clone(), |i, k| {
+                        cell(
+                            r,
+                            rule,
+                            i,
+                            instants.get(i).and_then(|own| own.get(k)).copied(),
+                        )
+                    })?;
+                }
+                matched(&matrix, test)?
+            }
+        };
         let mut provenance = provenance.ok_or_else(|| {
             Error::invalid_arg("an event study needs subjects, and this one has none")
                 .with_field("subjects")
@@ -780,6 +904,7 @@ impl ResearchArea<'_> {
             dasha: KeyId::from(study.dasha),
             depth: study.depth.get(),
             shuffle: study.shuffle,
+            referents: study.referents,
             holds: study.holds,
             strata,
             test: &registered,
@@ -918,6 +1043,39 @@ impl ResearchArea<'_> {
     }
 }
 
+/// How an event study draws its null: events shuffled among the
+/// subjects, or each subject's event among its own referents.
+enum Plan {
+    Paired(PairMatrix),
+    Matched(Referents),
+}
+
+impl Plan {
+    /// The study's null, its referents and strata checked against its
+    /// shuffle.
+    fn of(study: EventStudy<'_>, strata: Option<&[u32]>) -> Result<Plan, Error> {
+        match (study.shuffle, study.referents) {
+            (EventShuffle::SelfMatched, None) => Err(Error::invalid_arg(
+                "a self-matched study reads each person at referent instants; give `referents`",
+            )
+            .with_field("referents")),
+            (EventShuffle::SelfMatched, Some(_)) if strata.is_some() => Err(Error::invalid_arg(
+                "a self-matched study already matches each person to themselves; strata have nothing left to hold",
+            )
+            .with_field("strata")),
+            (EventShuffle::SelfMatched, Some(referents)) => {
+                referents.check()?;
+                Ok(Plan::Matched(referents))
+            }
+            (_, Some(_)) => Err(Error::invalid_arg(
+                "referents are read only by a SELF_MATCHED study",
+            )
+            .with_field("referents")),
+            (_, None) => Ok(Plan::Paired(pairings(study)?)),
+        }
+    }
+}
+
 /// One subject's chart as an event study reads it.
 struct Lived {
     inputs: RuleInputs,
@@ -943,6 +1101,7 @@ fn event_instant(study: EventStudy<'_>, i: usize, j: usize) -> Option<JulianDay<
             .instant
             .plus_days(other.event.get() - other.birth.instant.get())
             .ok(),
+        EventShuffle::SelfMatched => (i == j).then_some(own.event),
     }
 }
 
@@ -1037,4 +1196,65 @@ fn recombined(births: &[Birth], control: &Recombine, r: u32) -> Vec<Birth> {
             }
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::*;
+
+    fn subject(age: f64) -> Subject {
+        let born = 2_440_000.5;
+        Subject {
+            birth: Birth::new(
+                JulianDay::<Utc>::literal(born),
+                Place::try_from_degrees(28.6, 77.2, 0.0).unwrap(),
+                UtcOffset::literal(5, 30, 0),
+            ),
+            event: JulianDay::<Utc>::literal(born + age),
+        }
+    }
+
+    /// Each instant's age in days.
+    fn ages(referents: Referents, age: f64) -> Vec<f64> {
+        let subject = subject(age);
+        referents
+            .of(&subject)
+            .iter()
+            .map(|at| at.get() - subject.birth.instant.get())
+            .collect()
+    }
+
+    #[test]
+    fn referents_are_the_events_window_read_every_step_the_event_first() {
+        let month = Referents::new(28.0, 7.0);
+        // Day 30 of a life is day 2 of its second window, 28 to 56.
+        assert_eq!(ages(month, 30.0), [30.0, 37.0, 44.0, 51.0]);
+        assert_eq!(ages(month, 50.0), [50.0, 29.0, 36.0, 43.0]);
+        // A window's first and last instants stay inside it.
+        assert_eq!(ages(month, 28.0), [28.0, 35.0, 42.0, 49.0]);
+        assert_eq!(ages(month, 55.5), [55.5, 34.5, 41.5, 48.5]);
+        // The first window starts at birth, so nothing is read before it.
+        assert_eq!(ages(month, 3.0), [3.0, 10.0, 17.0, 24.0]);
+        // A window that does not divide by the step reads what fits.
+        assert_eq!(ages(Referents::new(10.0, 4.0), 1.0), [1.0, 5.0, 9.0]);
+        assert_eq!(ages(Referents::new(10.0, 4.0), 3.0), [3.0, 7.0]);
+        // A step longer than the window leaves the event alone.
+        assert_eq!(ages(Referents::new(5.0, 7.0), 12.0), [12.0]);
+    }
+
+    #[test]
+    fn referents_refuse_lengths_that_are_not_days() {
+        for (referents, field) in [
+            (Referents::new(0.0, 7.0), "referents.windowDays"),
+            (Referents::new(f64::NAN, 7.0), "referents.windowDays"),
+            (Referents::new(28.0, -1.0), "referents.stepDays"),
+            (Referents::new(28.0, f64::INFINITY), "referents.stepDays"),
+            (Referents::new(1_001.0, 1.0), "referents.stepDays"),
+        ] {
+            assert_eq!(referents.check().unwrap_err().field(), Some(field));
+        }
+        assert!(Referents::new(1_000.0, 1.0).check().is_ok());
+    }
 }

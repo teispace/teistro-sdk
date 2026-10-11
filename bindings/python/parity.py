@@ -826,6 +826,17 @@ def put_research(geo: Context) -> None:
         ),
     )
     put_study(
+        "matched",
+        geo.research.timed(
+            subjects=[ResearchSubject(birth=b, event=b.instant + 9000.5 + 211 * i) for i, b in enumerate(births)],
+            rules=rules,
+            dasha="dasha_system.VIMSHOTTARI",
+            shuffle="SELF_MATCHED",
+            referents={"windowDays": 365.25, "stepDays": 30},
+            test={"seed": 7, "permutations": 99},
+        ),
+    )
+    put_study(
         "strata",
         geo.research.compare(
             births=births,

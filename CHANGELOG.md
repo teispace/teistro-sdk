@@ -283,6 +283,22 @@ yet taken. That makes every allowed pairing equally likely and never
 refuses a study that has one (C368). `/1` stays selectable through the
 test's `shuffle`.
 
+**An event study can match each person to themselves.** **Numbers:**
+none; a study that does not ask for it answers as before. A dasha is read
+by age and a transit by the calendar, so shuffling events among people
+breaks one or the other. The `SELF_MATCHED` shuffle is the
+case-crossover design: each person is read at their event and at
+`referents`, `{windowDays, stepDays}`, the instants every `stepDays` in
+the event's window, with windows counted from birth. The null draws each
+person's event among their own instants, so nothing fixed about the
+person, the chart included, can look delivered. The rows rank by the
+Cochran–Mantel–Haenszel statistic with every person a stratum; the exact
+p is the Poisson-binomial, and the effect's `pooled` odds ratio is the
+matched one, each held against statsmodels (C367). Strata and
+`RESTRICT_PAIRINGS` are refused beside it. Node types it as a union that
+needs the referents, Python and Dart take a `referents` argument, and
+Java a `timed` that takes `ResearchReferents` in place of the shuffle.
+
 **Every binding ships six worked examples** (`bindings/*/example/`), the
 same six scenarios in JavaScript, Dart and Python, each a program
 `cargo xtask check-{node,dart,python}` runs — every file in the

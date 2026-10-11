@@ -76,14 +76,15 @@ On the effect's own scale, the share of cases the planted predicate holds on aga
 
 The rising Sun, the sector the early hours fill, reads z 2.8 alone: the 12th and 1st hold the Sun for about four hours around sunrise, and at Paris sunrise moves through the year by more than the early peak is wide. The culminating Sun, which the same hours empty, departs further (z -3.6), and a study reading one sector would have reported whichever it looked at.
 
-## 4. The two event shuffles (test 5)
+## 4. The event nulls (test 5)
 
-20 studies under each shuffle, each of 60 subjects born at Kathmandu at any hour over 1950 to 1990 with one event between the ages of 25 and 32, placed with no regard to the chart; the shipped yogas are each tested as delivered by the Vimshottari to the antardasha, over 199 permutations, a pairing before a birth never drawn. A row counts where the rule is delivered on some pairings and not all. The ages are narrow and the births forty years wide, so a date shuffle reads each person at ages far from any event's (C364).
+20 studies under each shuffle, each of 60 subjects born at Kathmandu at any hour over 1950 to 1990 with one event between the ages of 25 and 32, placed with no regard to the chart; the shipped yogas are each tested as delivered by the Vimshottari to the antardasha, over 199 permutations, a pairing before a birth never drawn. A row counts where the rule is delivered on some pairings and not all. The ages are narrow and the births forty years wide, so a date shuffle reads each person at ages far from any event's (C364). Self-matched, each person is read at their event and every 30 days of the 365.25-day window from birth that holds it, and nobody's event moves (C367).
 
 | proposed rule | verdict | measured |
 |---|---|---|
 | under `AGES_AT_EVENT`, a null event study's raw p is under 0.05 no more often than 5% | **holds** | 6 of 154 rows, 0.039 |
 | under `EVENT_DATES`, a null event study's raw p is under 0.05 no more often than 5% | **holds** | 6 of 158 rows, 0.038 |
+| under `SELF_MATCHED`, a null event study's raw p is under 0.05 no more often than 5% | **holds** | 2 of 136 rows, 0.015 |
 
 ## 5. An uncertain birth's window
 

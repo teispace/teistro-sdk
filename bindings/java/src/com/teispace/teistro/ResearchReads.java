@@ -107,6 +107,17 @@ final class ResearchReads {
         return out;
     }
 
+    static Map<String, Object> referents(ResearchReferents referents) {
+        if (referents == null) {
+            throw Reads.invalid("referents is a ResearchReferents, such as new ResearchReferents(365.25, 30)",
+                    "referents");
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("windowDays", referents.windowDays());
+        out.put("stepDays", referents.stepDays());
+        return out;
+    }
+
     static Map<String, Object> control(ResearchControl control) {
         if (control == null) {
             throw Reads.invalid("control is a ResearchControl, such as new ResearchControl(7, 1000)", "control");

@@ -771,6 +771,8 @@ public final class ParityRunner {
         }
         putTested("timed", geo.research().timed(subjects, yogas, DashaSystem.VIMSHOTTARI,
                 ResearchEventShuffle.AGES_AT_EVENT, ResearchEventTest.builder(3, 49).build(), null));
+        putTested("matched", geo.research().timed(subjects, yogas, DashaSystem.VIMSHOTTARI,
+                new ResearchReferents(365.25, 30), ResearchEventTest.builder(7, 99).build(), null));
         List<Long> strata = new ArrayList<>();
         for (int i = 0; i < births.size(); i += 1) {
             strata.add((long) (i / 4));

@@ -127,4 +127,36 @@ public final class ResearchArea {
                         shuffle.key(), "test", ResearchReads.test(test)),
                 options));
     }
+
+    /**
+     * Whether each rule is delivered by a dasha's running periods at the subjects' own events more (or
+     * less) often than at their own {@code referents}: each person their own control, the event drawn
+     * among the person's instants ({@link ResearchEventShuffle#SELF_MATCHED}).
+     *
+     * <pre>{@code
+     * ResearchTested matched = ctx.research().timed(subjects, rules, DashaSystem.VIMSHOTTARI,
+     *         new ResearchReferents(365.25, 30), ResearchEventTest.builder(7, 999).build(), null);
+     * }</pre>
+     *
+     * @param subjects the subjects
+     * @param rules the rules, as a chart request's rules
+     * @param dasha the dasha whose periods deliver
+     * @param referents where each person is read besides their event
+     * @param test the seed and the permutations
+     * @param options {@code holds} and {@code depth} (2 when left out); {@code strata} is refused, a person
+     *     already matched to themselves; may be null
+     * @return the rows
+     * @throws TeistroException naming the field, as {@code referents.stepDays}
+     */
+    public ResearchTested timed(List<ResearchSubject> subjects, RuleRequest rules, DashaSystem dasha,
+            ResearchReferents referents, ResearchEventTest test, ResearchOptions options) {
+        if (dasha == null) {
+            throw Reads.invalid("dasha is a DashaSystem, such as DashaSystem.VIMSHOTTARI", "dasha");
+        }
+        return ResearchReads.tested(ResearchReads.run(context, "TIMED", rules,
+                fields("subjects", ResearchReads.subjects(subjects), "dasha", dasha.fullKey(), "shuffle",
+                        ResearchEventShuffle.SELF_MATCHED.key(), "referents", ResearchReads.referents(referents),
+                        "test", ResearchReads.test(test)),
+                options));
+    }
 }

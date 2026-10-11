@@ -93,6 +93,30 @@ study must choose:
 Neither is right in general. The answer names the shuffle it used, and the
 measured page shows both on a planted effect and on a null (§3, test 5).
 
+A third null moves nobody's event to anybody else (C367, built
+2026-10-12):
+
+- **self-matched** (`SELF_MATCHED`, the case-crossover design, Maclure,
+  *Am. J. Epidemiol.* 133, 1991). Each person is read at their event and
+  at referent instants of their own life, and under the null the event is
+  as likely at any of them, so a permutation draws, for each person alone,
+  which instant is the event. Everything fixed about the person, the chart
+  included, is matched away, and age and calendar are both held to within
+  a window. The referents are time-stratified (Janes, Sheppard and
+  Lumley, *Epidemiology* 16, 2005): the life is cut into windows of
+  `windowDays` from birth, and the event's window is read every
+  `stepDays` either side of the event. The windows are fixed before the
+  event is known, which keeps the referent choice from biasing the
+  estimate (the "overlap bias" of a window centred on the event), and the
+  first starts at birth, so no instant precedes it. The statistic is the
+  count of people the predicate holds on at their event, standardised
+  against each person's own share of instants, which is the
+  Cochran–Mantel–Haenszel statistic with every person a stratum. The
+  exact p is the Poisson-binomial over the people whose exposure varies,
+  and the effect's `pooled` odds ratio is the conditional (matched) one,
+  without Breslow–Day's p, whose large-strata approximation one person
+  per stratum breaks.
+
 ### 1.5 Many predicates
 
 A study that tries many predicates will find some "significant" by
@@ -313,7 +337,8 @@ pub struct Recombine {
 pub struct EventTest {
     pub seed: u64,
     pub permutations: u32,
-    pub shuffle: EventShuffle,             // EventDates | AgesAtEvent
+    pub shuffle: EventShuffle,             // EventDates | AgesAtEvent | SelfMatched
+    pub referents: Option<Referents>,      // { window_days, step_days }: SelfMatched's only
     pub after_birth: AfterBirth,           // Refuse | RestrictPairings
     // `max_pairs: u64`: designed, not built (§2.3)
     pub parallelism: Parallelism,
@@ -356,7 +381,8 @@ the event's instant is designed, not built.
 | `alternative` | `TwoSided` | a directional hypothesis must be declared, not chosen after |
 | `level` | 0.95 | the confidence of every interval; the p-value's and the effects' alike |
 | `strata` | none | exchangeability by decade, region or sex is the study's claim |
-| `EventShuffle` | none: required | §1.4: the two keep different margins |
+| `EventShuffle` | none: required | §1.4: each keeps different margins |
+| `referents` | none: required under `SelfMatched`, refused otherwise | the window and step are the design, as a case-crossover paper states them |
 | `after_birth` | `Refuse` | `RestrictPairings` permutes only among people born before the event, which changes the reference set; the answer says so. Drawn exactly under `research/shuffle/2`, and refused only when no pairing exists, naming the event |
 | `uncertaintyMinutes` (per birth) | 0 | rounded hours are the field's commonest data error |
 | `Readings` | the rule set's own | the predicate's meaning is part of the request |
@@ -427,8 +453,14 @@ a hint where one helps:
   takes only the recombined control (C365). The sketch allowed one for a
   predicate on signs alone, but births are seasonal and the Sun's stay in
   a sign is unequal, so no predicate on a chart has one;
-- a timed study that names no `shuffle` (`research.shuffle`): neither is a
+- a timed study that names no `shuffle` (`research.shuffle`): none is a
   default (C364);
+- under `SELF_MATCHED`, no `referents`, `strata` beside them, or
+  `RESTRICT_PAIRINGS`, which has no pairing to restrict (`referents`,
+  `strata`, `afterBirth`); `referents` under another shuffle
+  (`referents`); a length that is not a positive number of days, or a
+  window holding more than 1 000 instants (`referents.windowDays`,
+  `referents.stepDays`);
 - a shuffle version the build does not carry (`shuffle`).
 
 ## 3. Tests
@@ -484,7 +516,7 @@ uses fixed seeds, so the counts are exact and also golden.
 1. **The measured page first.** `cargo xtask research` writes
    `docs/03-design/research-measured.md`, held by `check-research`: the
    calibration (test 1), the power (test 2), the artefact demonstration
-   (test 4) and the two event shuffles (test 5). It runs over a seeded
+   (test 4) and the event nulls (test 5). It runs over a seeded
    synthetic batch of founded births, priced on CI before it is merged
    (`price-a-pass-on-ci`). The figures this page leaves out live there.
    **Built** 2026-10-10, last rather than first, because it measures the
@@ -564,7 +596,11 @@ uses fixed seeds, so the counts are exact and also golden.
    allowed pairing drawn alike (within its binomial over 80 000 draws, as
    rejection's are), and every other draw is `/1`'s bit for bit. Still to
    come: complete enumeration when the reference set is smaller than the
-   permutations asked, and the self-matched null (C367).
+   permutations asked. The self-matched null (C367) followed:
+   `SELF_MATCHED` with time-stratified `referents`, every binding
+   reaching it, its statistic and exact p held against statsmodels'
+   stratified table and a full enumeration, and the measured page holding
+   it at its level (`research-measured.md` §4).
 
 ## Sources
 

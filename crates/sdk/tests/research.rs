@@ -17,7 +17,7 @@ use teistro::catalogue::DashaSystem;
 use teistro::quantity::{Altitude, Depth, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::research::{
     AfterBirth, Birth, Contrast, Design, EventShuffle, EventStudy, EventTest, GroupTest, Holds,
-    Parallelism, Recombine, ReplicateTest, SplitMix64, Study, Subject,
+    Parallelism, Recombine, Referents, ReplicateTest, SplitMix64, Study, Subject,
 };
 use teistro::{
     ChartRequest, Context, Ephemeris, ResearchAnswer, ResearchRequest, RuleRequest, ShippedRules,
@@ -519,6 +519,73 @@ fn an_event_study_shuffles_ages_or_dates_and_refuses_a_pairing_before_a_birth() 
 }
 
 #[test]
+fn a_self_matched_study_reads_each_person_against_their_own_life() {
+    let sdk = sdk();
+    let set = yogas();
+    let request = template();
+    // Births thirty years apart: a date shuffle would cross them, and a
+    // self-matched study moves nobody's event to anybody else.
+    let subjects = subjects(12, 7, 30, 5, 15);
+    let year = Referents::new(365.25, 30.0);
+    let study = EventStudy::new(
+        &subjects,
+        &request,
+        &set,
+        DashaSystem::Vimshottari,
+        EventShuffle::EventDates,
+    )
+    .self_matched(year);
+    assert_eq!(study.shuffle, EventShuffle::SelfMatched);
+    let mut test = EventTest::new(3, 199);
+    let one = sdk.research().timed(study, None, &test).unwrap();
+    assert_eq!(one.value.rows.len(), set.rules().len());
+    for row in &one.value.rows {
+        assert_eq!(row.counts.len(), 1);
+        let read = row.counts[0].present + row.counts[0].absent;
+        assert_eq!(read + row.counts[0].unreadable, 12, "{}", row.predicate);
+        let expected = row.expected.unwrap();
+        assert!(
+            (0.0..=1.0).contains(&expected.expected),
+            "{}",
+            row.predicate
+        );
+    }
+    test.parallelism = Parallelism::Threads(NonZeroU16::new(3).unwrap());
+    let three = sdk.research().timed(study, None, &test).unwrap();
+    assert_eq!(one.value, three.value);
+    assert_eq!(one.provenance.input_hash, three.provenance.input_hash);
+    // Other referents are another registration.
+    let weekly = study.self_matched(Referents::new(365.25, 7.0));
+    let other = sdk.research().timed(weekly, None, &test).unwrap();
+    assert_ne!(other.provenance.input_hash, one.provenance.input_hash);
+    // Without referents, with strata, or referents under another shuffle:
+    // each refused by its field.
+    let bare = EventStudy {
+        referents: None,
+        ..study
+    };
+    let refused = |study: EventStudy<'_>, strata: Option<&[u32]>| {
+        sdk.research()
+            .timed(study, strata, &test)
+            .unwrap_err()
+            .field()
+            .map(str::to_owned)
+    };
+    assert_eq!(refused(bare, None).as_deref(), Some("referents"));
+    assert_eq!(refused(study, Some(&[0; 12])).as_deref(), Some("strata"));
+    let aged = study.shuffled(EventShuffle::AgesAtEvent);
+    assert_eq!(refused(aged, None).as_deref(), Some("referents"));
+    let tight = study.self_matched(Referents::new(365.25, 0.25));
+    assert_eq!(refused(tight, None).as_deref(), Some("referents.stepDays"));
+    let restricted = EventTest {
+        after_birth: AfterBirth::RestrictPairings,
+        ..EventTest::new(3, 199)
+    };
+    let error = sdk.research().timed(study, None, &restricted).unwrap_err();
+    assert_eq!(error.field(), Some("afterBirth"));
+}
+
+#[test]
 fn a_sample_is_read_against_its_own_recombined_population() {
     let sdk = sdk();
     let set = yogas();
@@ -663,7 +730,14 @@ fn a_study_sent_as_a_record_answers_as_the_call_does() {
         .expected(study, &control, &ReplicateTest::default())
         .unwrap();
     assert_eq!(expected, ResearchAnswer::Tested(direct));
+}
 
+#[test]
+fn an_event_study_sent_as_a_record_answers_as_the_call_does() {
+    let sdk = sdk();
+    let set = yogas();
+    let request = template();
+    let rules = serde_json::json!({"shipped": ["YOGAS"]});
     let lives = subjects(10, 7, 10, 20, 30);
     let events: Vec<serde_json::Value> = lives
         .iter()
@@ -689,6 +763,27 @@ fn a_study_sent_as_a_record_answers_as_the_call_does() {
         .timed(study, None, &EventTest::new(3, 99))
         .unwrap();
     assert_eq!(timed, ResearchAnswer::Tested(direct));
+    let matched = sent(
+        &sdk,
+        &serde_json::json!({"study": "TIMED", "rules": rules, "subjects": events,
+            "dasha": "dasha_system.VIMSHOTTARI", "shuffle": "SELF_MATCHED",
+            "referents": {"windowDays": 365.25, "stepDays": 30},
+            "test": {"seed": 3, "permutations": 99}}),
+    )
+    .unwrap();
+    let study = EventStudy::new(
+        &lives,
+        &request,
+        &set,
+        DashaSystem::Vimshottari,
+        EventShuffle::SelfMatched,
+    )
+    .self_matched(Referents::new(365.25, 30.0));
+    let direct = sdk
+        .research()
+        .timed(study, None, &EventTest::new(3, 99))
+        .unwrap();
+    assert_eq!(matched, ResearchAnswer::Tested(direct));
 }
 
 #[test]
@@ -721,6 +816,13 @@ fn a_record_is_refused_where_it_stands() {
         ),
         (with("holds", serde_json::json!("ALWAYS")), "research.holds"),
         (with("unasked", serde_json::json!(1)), "research.unasked"),
+        (
+            with(
+                "referents",
+                serde_json::json!({"windowDays": 28, "stepDays": 7}),
+            ),
+            "research.referents",
+        ),
     ] {
         assert_eq!(refused(request).field(), Some(field), "{field}");
     }
@@ -772,4 +874,34 @@ fn a_record_is_refused_where_it_stands() {
         refused(stepped).field(),
         Some("research.uncertaintyStepMinutes")
     );
+}
+
+#[test]
+fn a_self_matched_record_names_its_referents_where_they_are_wrong() {
+    let sdk = sdk();
+    let birth = birth_json(&births(1, 2)[0]);
+    let matched = serde_json::json!({"study": "TIMED", "rules": {"shipped": ["YOGAS"]},
+        "subjects": [{"birth": birth, "event": 2_460_000.5}],
+        "dasha": "VIMSHOTTARI", "shuffle": "SELF_MATCHED",
+        "test": {"seed": 1, "permutations": 9}});
+    // Referents are a record of two lengths, each named where it is wrong.
+    for (referents, field) in [
+        (serde_json::json!({"windowDays": 28}), "research.referents"),
+        (
+            serde_json::json!({"windowDays": 28, "stepDays": 7, "anchor": 0}),
+            "research.referents.anchor",
+        ),
+        (
+            serde_json::json!({"windowDays": "month", "stepDays": 7}),
+            "research.referents.windowDays",
+        ),
+    ] {
+        let mut request = matched.clone();
+        request["referents"] = referents;
+        assert_eq!(
+            sent(&sdk, &request).unwrap_err().field(),
+            Some(field),
+            "{field}"
+        );
+    }
 }

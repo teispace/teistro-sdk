@@ -4611,6 +4611,33 @@ void _engineTests() {
         ),
       ),
     );
+    // Self-matched, each person is read against their own year.
+    final lives = [
+      for (final birth in births)
+        ResearchSubject(birth: birth, event: birth.instant + 9000.5),
+    ];
+    const year = ResearchReferents(windowDays: 365.25, stepDays: 30);
+    final matched = ctx.research.timed(
+      subjects: lives,
+      rules: yogas,
+      dasha: DashaSystem.vimshottari,
+      shuffle: ResearchEventShuffle.selfMatched,
+      referents: year,
+      test: ResearchEventTest(seed: BigInt.one, permutations: 19),
+    );
+    expect(matched.rows, hasLength(tested.rows.length));
+    expect(
+      () => ctx.research.timed(
+        subjects: lives,
+        rules: yogas,
+        dasha: DashaSystem.vimshottari,
+        shuffle: ResearchEventShuffle.selfMatched,
+        test: ResearchEventTest(seed: BigInt.one, permutations: 19),
+      ),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'referents'),
+      ),
+    );
     // An uncertain birth's window is read every step, and the step is
     // part of the study it pre-registers.
     final uncertain = [

@@ -1023,9 +1023,24 @@ function theResearch(ctx: Context): string {
     strata: [0, 0],
     test: { seed: 3, permutations: 9, afterBirth: 'RESTRICT_PAIRINGS' },
   });
+  const subjects = births.map((birth) => ({ birth, event: birth.instant + 9000 }));
+  const matched = ctx.research.timed({
+    subjects,
+    rules,
+    dasha: 'dasha_system.VIMSHOTTARI',
+    shuffle: 'SELF_MATCHED',
+    referents: { windowDays: 365.25, stepDays: 30 },
+    test: { seed: 4, permutations: 9 },
+  });
+  // @ts-expect-error a self-matched study reads referents
+  ctx.research.timed({ subjects, rules, dasha: 'dasha_system.VIMSHOTTARI', shuffle: 'SELF_MATCHED', test: { seed: 4, permutations: 9 } });
+  // @ts-expect-error a person matched to themselves has no strata
+  ctx.research.timed({ subjects, rules, dasha: 'dasha_system.VIMSHOTTARI', shuffle: 'SELF_MATCHED', referents: { windowDays: 365.25, stepDays: 30 }, strata: [0, 0], test: { seed: 4, permutations: 9 } });
+  // @ts-expect-error referents are read only under SELF_MATCHED
+  ctx.research.timed({ subjects, rules, dasha: 'dasha_system.VIMSHOTTARI', shuffle: 'EVENT_DATES', referents: { windowDays: 28, stepDays: 7 }, test: { seed: 4, permutations: 9 } });
   const row: ResearchRow | undefined = tested.rows[0];
   const ratio = row?.effect?.riskRatio?.estimate ?? row?.expected?.ratio;
-  return `${counted.rows[0]?.counts[0]?.unstable} ${row?.p.exceed} ${row?.adjusted.by} ${ratio} ${row?.underAlpha?.raw} ${expected.shuffle} ${timed.provenance.inputHash}`;
+  return `${counted.rows[0]?.counts[0]?.unstable} ${row?.p.exceed} ${row?.adjusted.by} ${ratio} ${row?.underAlpha?.raw} ${expected.shuffle} ${timed.provenance.inputHash} ${matched.rows[0]?.effect?.pooled?.oddsRatio?.estimate}`;
 }
 void theResearch;
 

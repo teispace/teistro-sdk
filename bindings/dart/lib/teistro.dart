@@ -1277,7 +1277,9 @@ final class ResearchArea extends _Area {
   /// Whether each rule is delivered by [dasha]'s running periods, read to
   /// [depth] (1 to 6), at the subjects' own events more (or less) often
   /// than at events shuffled among them under [shuffle], which has no
-  /// default because the two keep different margins.
+  /// default because each keeps different margins. Under
+  /// [ResearchEventShuffle.selfMatched] each person is read at their own
+  /// [referents] instead, which it requires, and [strata] are refused.
   ResearchTested timed({
     required List<ResearchSubject> subjects,
     required RuleRequest rules,
@@ -1286,6 +1288,7 @@ final class ResearchArea extends _Area {
     required ResearchEventTest test,
     int depth = 2,
     List<int>? strata,
+    ResearchReferents? referents,
     ResearchHolds holds = ResearchHolds.standing,
   }) => _researchTested(
     _run('TIMED', rules, holds, <String, Object?>{
@@ -1300,6 +1303,7 @@ final class ResearchArea extends _Area {
       'depth': depth,
       'shuffle': shuffle.key,
       if (strata case final strata?) 'strata': strata,
+      if (referents case final referents?) 'referents': referents._record,
       'test': test._record,
     }),
   );
@@ -18721,10 +18725,12 @@ enum ResearchAlternative {
 }
 
 /// What the shuffled-event null keeps: the calendar of events, or each
-/// person's age at the event.
+/// person's age at the event; or, [selfMatched], each person their own
+/// control, read at [ResearchReferents].
 enum ResearchEventShuffle {
   eventDates('EVENT_DATES'),
-  agesAtEvent('AGES_AT_EVENT');
+  agesAtEvent('AGES_AT_EVENT'),
+  selfMatched('SELF_MATCHED');
 
   const ResearchEventShuffle(this.key);
 
@@ -18777,6 +18783,24 @@ final class ResearchSubject extends _Value {
 
   @override
   List<Object?> get _fields => [birth, event];
+}
+
+/// Where a self-matched study reads each person besides their event: the
+/// life cut into windows of [windowDays] from birth, the event's window
+/// read every [stepDays] (time-stratified referents).
+final class ResearchReferents extends _Value {
+  const ResearchReferents({required this.windowDays, required this.stepDays});
+
+  final double windowDays;
+  final double stepDays;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'windowDays': windowDays,
+    'stepDays': stepDays,
+  };
+
+  @override
+  List<Object?> get _fields => [windowDays, stepDays];
 }
 
 /// Who is in which group, one label per birth, and the strata the labels
