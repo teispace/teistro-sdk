@@ -13,8 +13,9 @@ import java.util.Map;
  * <p>The records cross as {@link Json#write} writes them: {@code rules} as a chart request's rules,
  * {@code design} as {@code {groups, strata}}, and each test and control as the design page names
  * them, a seed a {@code Long} or, past {@code Long.MAX_VALUE}, a {@code BigInteger}. {@code options}
- * adds {@code holds} ({@code "STANDING"} or {@code "FORMED"}) and, for an event study, {@code depth}
- * and {@code strata}; it may be null.
+ * adds {@code holds} ({@code "STANDING"} or {@code "FORMED"}); for a study of births,
+ * {@code uncertaintyStepMinutes}, how far apart an uncertain birth's window is read (2 when left out);
+ * and, for an event study, {@code depth} and {@code strata}. It may be null.
  *
  * <pre>{@code
  * ResearchTested tested = sky.research().compare(births, Map.of("shipped", List.of("YOGAS")),
@@ -50,7 +51,7 @@ public final class ResearchArea {
      * @param births the births, in the order the design labels them
      * @param rules the rules, as a chart request's rules record
      * @param design {@code {groups, strata}}, one group per birth
-     * @param options {@code holds}; may be null
+     * @param options {@code holds} and {@code uncertaintyStepMinutes}; may be null
      * @return the counts
      * @throws TeistroException naming the field, as {@code research.design}
      */
@@ -68,7 +69,7 @@ public final class ResearchArea {
      * @param rules the rules, as a chart request's rules record
      * @param design {@code {groups, strata}}, one group per birth
      * @param test {@code {seed, permutations, contrast, alternative, level, alpha, parallelism}}
-     * @param options {@code holds}; may be null
+     * @param options {@code holds} and {@code uncertaintyStepMinutes}; may be null
      * @return the rows
      * @throws TeistroException naming the field, as {@code research.test.seed}
      */
@@ -86,7 +87,7 @@ public final class ResearchArea {
      * @param rules the rules, as a chart request's rules record
      * @param control {@code {seed, replicates, strata}}
      * @param test {@code {alternative, level, alpha}}; may be null
-     * @param options {@code holds}; may be null
+     * @param options {@code holds} and {@code uncertaintyStepMinutes}; may be null
      * @return the rows
      * @throws TeistroException naming the field, as {@code research.control}
      */

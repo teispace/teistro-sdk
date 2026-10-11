@@ -4583,6 +4583,37 @@ void _engineTests() {
         ),
       ),
     );
+    // An uncertain birth's window is read every step, and the step is
+    // part of the study it pre-registers.
+    final uncertain = [
+      for (final birth in births)
+        ResearchBirth(
+          instant: birth.instant,
+          place: birth.place,
+          utcOffsetSeconds: birth.utcOffsetSeconds,
+          uncertaintyMinutes: 30,
+        ),
+    ];
+    ResearchCounts stepped(double? step) => ctx.research.counts(
+      births: uncertain,
+      rules: yogas,
+      design: design,
+      uncertaintyStepMinutes: step,
+    );
+    expect(
+      stepped(10).provenance.inputHash,
+      isNot(stepped(null).provenance.inputHash),
+    );
+    expect(
+      () => stepped(0),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'uncertaintyStepMinutes',
+        ),
+      ),
+    );
     ctx.dispose();
   });
 

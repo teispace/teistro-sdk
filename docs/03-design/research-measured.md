@@ -80,3 +80,12 @@ The rising Sun, the sector the early hours fill, reads z 2.8 alone: the 12th and
 | under `AGES_AT_EVENT`, a null event study's raw p is under 0.05 no more often than 5% | **holds** | 6 of 154 rows, 0.039 |
 | under `EVENT_DATES`, a null event study's raw p is under 0.05 no more often than 5% | **holds** | 5 of 158 rows, 0.032 |
 
+## 5. An uncertain birth's window
+
+60 births at Kathmandu at any hour over 1950 to 1990, each uncertain by the minutes either side named, and the shipped yogas counted on them: read across the window every 2 minutes (the default step), and read at its two edges alone, as every window was before. A cell is one rule on one chart; it is unstable when its answer differs anywhere it is read from the answer at the birth.
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| within 30 minutes either side, the edges alone find every unstable cell | **holds** | 13 of 480 cells unstable across the window, 13 at its edges |
+| within 180 minutes either side, the edges alone find every unstable cell | falsified | 40 of 480 cells unstable across the window, 30 at its edges |
+

@@ -6170,6 +6170,7 @@ export class ResearchArea extends Area {
    * @param {object[]} request.births the births, in the order the design labels them
    * @param {object} request.rules the rules, as a chart request's `rules` record
    * @param {string} [request.holds] `'STANDING'` (the default) or `'FORMED'`
+   * @param {number} [request.uncertaintyStepMinutes] how far apart an uncertain birth's window is read, 2 when left out
    * @param {object} request.design `{ groups, strata }`, one group per birth, `strata` optional
    * @returns {object}
    */

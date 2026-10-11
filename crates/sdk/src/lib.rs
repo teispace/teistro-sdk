@@ -456,7 +456,8 @@ pub use teistro_numerology as numerology;
 #[cfg(feature = "research")]
 pub mod research {
     pub use crate::area::research::{
-        Birth, EventShuffle, EventStudy, Holds, MAX_UNCERTAINTY_MINUTES, Recombine, Study, Subject,
+        Birth, DEFAULT_UNCERTAINTY_STEP_MINUTES, EventShuffle, EventStudy, Holds,
+        MAX_UNCERTAINTY_MINUTES, Recombine, Study, Subject,
     };
     pub use teistro_research::*;
 }

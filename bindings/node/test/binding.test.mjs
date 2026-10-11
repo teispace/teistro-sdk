@@ -4172,6 +4172,15 @@ test('a study counts and tests its rules over a batch of births', () => {
     () => ctx.research.compare({ births, rules, design }),
     (error) => error.field === 'research.test',
   );
+  // An uncertain birth's window is read every step, and the step is part
+  // of the study it pre-registers.
+  const uncertain = births.map((birth) => ({ ...birth, uncertaintyMinutes: 30 }));
+  const stepped = (step) => ctx.research.counts({ births: uncertain, rules, design, uncertaintyStepMinutes: step });
+  assert.notEqual(stepped(10).provenance.inputHash, stepped(undefined).provenance.inputHash);
+  assert.throws(
+    () => stepped(0),
+    (error) => error.field === 'uncertaintyStepMinutes',
+  );
 });
 
 test('a chart carries its Lal Kitab', () => {

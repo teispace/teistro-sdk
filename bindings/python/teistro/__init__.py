@@ -2318,7 +2318,8 @@ class ResearchBirth:
     """One birth of a study (`03-design/research.md`): its instant, a Julian
     day in UTC, where, under which clock, and how far either side its
     recorded time may be wrong, 0 to 720 minutes. A rule whose answer
-    differs at either edge is counted unstable on the chart."""
+    differs anywhere in that window, read every step of the study, is
+    counted unstable on the chart."""
 
     instant: float
     place: Observer
@@ -2532,14 +2533,27 @@ class ResearchArea(_Area):
         rules: RuleRequest,
         design: ResearchDesign,
         holds: Optional[Literal["STANDING", "FORMED"]] = None,
+        uncertainty_step_minutes: Optional[float] = None,
     ) -> ResearchCounts:
         """How often each rule holds in each group, the charts it cannot be
         read on and those it is unstable on counted apart.
 
+        A birth uncertain by some minutes is read across its window every
+        `uncertainty_step_minutes` (2 when left out), and a rule that
+        changes anywhere in it is unstable there; `compare` and `expected`
+        read it the same way.
+
         >>> # table = ctx.research.counts(births=births, rules={"shipped": ["YOGAS"]},
         >>> #     design={"groups": [i % 2 for i in range(len(births))]})
         """
-        answer = self._run("COUNTS", rules, holds, births=births, design=design)
+        answer = self._run(
+            "COUNTS",
+            rules,
+            holds,
+            births=births,
+            uncertaintyStepMinutes=uncertainty_step_minutes,
+            design=design,
+        )
         return ResearchCounts(
             rows=tuple(
                 ResearchCountRow(predicate=row["predicate"], counts=_research_counts(row["counts"]))
@@ -2556,11 +2570,22 @@ class ResearchArea(_Area):
         design: ResearchDesign,
         test: ResearchGroupTest,
         holds: Optional[Literal["STANDING", "FORMED"]] = None,
+        uncertainty_step_minutes: Optional[float] = None,
     ) -> ResearchTested:
         """Whether the design's groups differ on each rule, the labels
         permuted (within strata when the design has them), with the
         family's corrections and the effect sizes."""
-        return _research_tested(self._run("COMPARE", rules, holds, births=births, design=design, test=test))
+        return _research_tested(
+            self._run(
+                "COMPARE",
+                rules,
+                holds,
+                births=births,
+                uncertaintyStepMinutes=uncertainty_step_minutes,
+                design=design,
+                test=test,
+            )
+        )
 
     def expected(
         self,
@@ -2570,11 +2595,22 @@ class ResearchArea(_Area):
         control: ResearchControl,
         test: Optional[ResearchReplicateTest] = None,
         holds: Optional[Literal["STANDING", "FORMED"]] = None,
+        uncertainty_step_minutes: Optional[float] = None,
     ) -> ResearchTested:
         """Whether each rule is commoner (or rarer) in this sample than in
         its own recombined population: the sample refounded with clock
         times shuffled among its births, date and place kept."""
-        return _research_tested(self._run("EXPECTED", rules, holds, births=births, control=control, test=test))
+        return _research_tested(
+            self._run(
+                "EXPECTED",
+                rules,
+                holds,
+                births=births,
+                uncertaintyStepMinutes=uncertainty_step_minutes,
+                control=control,
+                test=test,
+            )
+        )
 
     def timed(
         self,

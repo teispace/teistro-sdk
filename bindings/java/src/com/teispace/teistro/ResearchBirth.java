@@ -9,7 +9,8 @@ import java.util.Objects;
  * @param place where
  * @param utcOffsetSeconds the local clock's offset from UTC in seconds, east positive
  * @param uncertaintyMinutes how far either side the recorded time may be wrong, 0 to 720 minutes; a
- *     rule whose answer differs at either edge is counted unstable on the chart
+ *     rule whose answer differs anywhere in that window, read every step of the study, is counted
+ *     unstable on the chart
  */
 public record ResearchBirth(double instant, Observer place, int utcOffsetSeconds, double uncertaintyMinutes) {
     /** The value, its place required. */

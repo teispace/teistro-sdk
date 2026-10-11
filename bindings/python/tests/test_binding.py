@@ -8,6 +8,7 @@ back out of the one it filled.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import os
 import unittest
@@ -1595,6 +1596,19 @@ class AnEngine(WithLibrary):
                     test={"seed": 1, "permutations": 19},
                 )
             self.assertEqual(refused.exception.field, "research.subjects")
+            # An uncertain birth's window is read every step, and the step
+            # is part of the study it pre-registers.
+            uncertain = [dataclasses.replace(one, uncertainty_minutes=30.0) for one in births]
+
+            def stepped(step: Optional[float]) -> str:
+                return ctx.research.counts(
+                    births=uncertain, rules={"shipped": ["YOGAS"]}, design=design, uncertainty_step_minutes=step
+                ).provenance.input_hash
+
+            self.assertNotEqual(stepped(10.0), stepped(None))
+            with self.assertRaises(TeistroError) as refused:
+                stepped(0.0)
+            self.assertEqual(refused.exception.field, "uncertaintyStepMinutes")
 
     def test_a_chart_carries_its_lalkitab(self) -> None:
         """Lal Kitab crosses whole, its grahas made members, the cycle from

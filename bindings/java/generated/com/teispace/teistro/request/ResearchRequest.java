@@ -23,8 +23,9 @@ import java.util.Objects;
  * @param study The four studies, as a request names them.
  * @param subjects A subject as a binding writes it. Null leaves the SDK's default.
  * @param test The {@code test} field. Null leaves the SDK's default.
+ * @param uncertaintyStepMinutes The {@code uncertaintyStepMinutes} field. Null leaves the SDK's default.
  */
-public record ResearchRequest(List<BirthAsked> births, Object control, String dasha, Integer depth, Design design, Holds holds, Object rules, EventShuffle shuffle, List<Long> strata, StudyKind study, List<SubjectAsked> subjects, Object test) implements RequestJson {
+public record ResearchRequest(List<BirthAsked> births, Object control, String dasha, Integer depth, Design design, Holds holds, Object rules, EventShuffle shuffle, List<Long> strata, StudyKind study, List<SubjectAsked> subjects, Object test, Double uncertaintyStepMinutes) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -67,6 +68,7 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
         private StudyKind study;
         private List<SubjectAsked> subjects;
         private Object test;
+        private Double uncertaintyStepMinutes;
 
         private Builder() {}
 
@@ -203,13 +205,24 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
         }
 
         /**
+         * Sets {@code uncertaintyStepMinutes}.
+         *
+         * @param uncertaintyStepMinutes The {@code uncertaintyStepMinutes} field. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder uncertaintyStepMinutes(double uncertaintyStepMinutes) {
+            this.uncertaintyStepMinutes = uncertaintyStepMinutes;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public ResearchRequest build() {
-            return new ResearchRequest(births, control, dasha, depth, design, holds, rules, shuffle, strata, study, subjects, test);
+            return new ResearchRequest(births, control, dasha, depth, design, holds, rules, shuffle, strata, study, subjects, test, uncertaintyStepMinutes);
         }
     }
 
@@ -234,7 +247,8 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
             Read.orNull(json.get("strata"), present -> Read.list(present, "ResearchRequest.strata", item0 -> Read.integer(item0, "ResearchRequest.strata"))),
             Read.member(Read.required(json.get("study"), "ResearchRequest.study"), "ResearchRequest.study", StudyKind::byKey),
             Read.orNull(json.get("subjects"), present -> Read.list(present, "ResearchRequest.subjects", item0 -> SubjectAsked.of(item0))),
-            Read.orNull(json.get("test"), present -> present));
+            Read.orNull(json.get("test"), present -> present),
+            Read.orNull(json.get("uncertaintyStepMinutes"), present -> Read.number(present, "ResearchRequest.uncertaintyStepMinutes")));
     }
 
     @Override
@@ -271,6 +285,9 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
         }
         if (test != null) {
             json.put("test", test);
+        }
+        if (uncertaintyStepMinutes != null) {
+            json.put("uncertaintyStepMinutes", uncertaintyStepMinutes);
         }
         return json;
     }
