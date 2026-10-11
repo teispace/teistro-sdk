@@ -20,9 +20,10 @@
 //!   hand and in the nightly matrix).
 //! - `check-dart`: the Dart binding's layer and decoders against the real
 //!   library, the package analysed and formatted.
-//! - `check-flutter`: a Flutter app built on the Android slices in
-//!   `target/dist`, and its APK held to them (needs Flutter and Android's
-//!   SDK; run by hand and in the nightly matrix).
+//! - `check-flutter [android|ios]`: a Flutter app built on the mobile
+//!   slices in `target/dist`, and what it bundled held to them: the APK,
+//!   and on macOS the iOS device app (needs Flutter, and Android's SDK or
+//!   Xcode; run by hand and in the nightly matrix).
 //! - `check-pub [--dist DIR]`: the staged pub packages through pub's own
 //!   validation from a copy outside the repository, nothing uploaded; every
 //!   error and every unlisted warning fails (the release's `stage` job).
@@ -638,7 +639,7 @@ fn main() {
         Some("check-node") => node_binding::check(&repo_root()),
         Some("check-wasm") => wasm_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
-        Some("check-flutter") => flutter_package::check(&repo_root()),
+        Some("check-flutter") => flutter_package::check(&repo_root(), &args[1..]),
         Some("check-pub") => pub_check::check(&repo_root(), &args[1..]),
         Some("check-python") => python_binding::check(&repo_root()),
         Some("check-java") => java_binding::check(&repo_root()),
@@ -735,7 +736,7 @@ fn usage() -> i32 {
          vsop [DIR] | moon | wasm-crates [MODULE] | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
-         check-dart | check-flutter | check-pub [--dist DIR] | check-python | check-java | check-rust | check-parity | check-lints | \
+         check-dart | check-flutter [android|ios] | check-pub [--dist DIR] | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
          conformance --from DIR | check-conformance --from DIR | \
          check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | check-site | check-tag TAG | version [X] | changelog-entry X | \
