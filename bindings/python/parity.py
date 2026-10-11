@@ -770,8 +770,9 @@ def put_research(geo: Context) -> None:
     """The studies every runner sends (`03-design/research.md`): eight
     births at Kathmandu a few years apart, the shipped yogas as the
     predicates, compared by alternate labels, read against their own
-    recombined population, and each delivered by the Vimshottari at an
-    event of its life under the age shuffle."""
+    recombined population, each delivered by the Vimshottari at an event
+    of its life under the age shuffle, and compared again inside two strata
+    of four."""
     kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0))
     births = [ResearchBirth(instant=2447000.25 + 977.3 * i, place=kathmandu, utc_offset_seconds=20700) for i in range(8)]
     rules: RuleRequest = {"shipped": ["YOGAS"]}
@@ -784,11 +785,15 @@ def put_research(geo: Context) -> None:
         counts = ",".join(f"{c.present}:{c.absent}:{c.unreadable}:{c.unstable}" for c in r.counts)
         if isinstance(r, ResearchCountRow):
             return f"{r.predicate} {counts}"
+        pooled = None if r.effect is None else r.effect.pooled
         return (
             f"{r.predicate} {counts} {optional(r.observed)} {r.p.exceed} {number(r.p.value)} {number(r.adjusted.max_t)} "
             f"{number(r.adjusted.holm)} {number(r.adjusted.bh)} {optional(r.exact)} "
             f"{optional(None if r.effect is None else r.effect.risk_difference.estimate)} "
-            f"{optional(None if r.expected is None else r.expected.expected)}"
+            f"{optional(None if r.expected is None else r.expected.expected)} "
+            f"{optional(None if pooled is None or pooled.risk_ratio is None else pooled.risk_ratio.estimate)} "
+            f"{optional(None if pooled is None or pooled.odds_ratio is None else pooled.odds_ratio.estimate)} "
+            f"{optional(None if pooled is None else pooled.homogeneity_p)}"
         )
 
     def put_study(name: str, answer: ResearchCounts | ResearchTested) -> None:
@@ -818,6 +823,15 @@ def put_research(geo: Context) -> None:
             dasha="dasha_system.VIMSHOTTARI",
             shuffle="AGES_AT_EVENT",
             test={"seed": 3, "permutations": 49},
+        ),
+    )
+    put_study(
+        "strata",
+        geo.research.compare(
+            births=births,
+            rules=rules,
+            design={"groups": groups, "strata": [i // 4 for i in range(8)]},
+            test={"seed": 6, "permutations": 199, "contrast": {"kind": "CASE_VS_REST", "case": 1}},
         ),
     )
 

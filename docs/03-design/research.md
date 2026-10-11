@@ -121,6 +121,13 @@ A p-value says nothing about size. Each predicate's answer carries:
   (Newcombe's hybrid score interval for the difference, Katz's log
   interval for the ratio), and the odds ratio;
 - Cohen's *h* for comparing studies;
+- under strata, the ratios pooled over them beside the crude ones:
+  Mantel and Haenszel's risk ratio with Greenland and Robins's interval,
+  their odds ratio with Robins, Breslow and Greenland's, and Breslow and
+  Day's test, with Tarone's correction, that the strata share one odds
+  ratio. The difference between crude and pooled is the confounding the
+  strata removed, and a small homogeneity p says the pooled ratio averages
+  effects that differ (C369);
 - for the one-group design, observed over expected. This is the ratio
   Gauquelin's literature quotes.
 
@@ -317,9 +324,9 @@ pub struct PredicateRow {
     pub counts: GroupCounts,               // present, absent, unreadable, unstable per group
     pub observed: f64,
     pub p: PValue,                         // (b+1)/(m+1) with its Clopper–Pearson interval
-    pub exact: Option<f64>,                // the hypergeometric p, two groups and yes/no only
+    pub exact: Option<f64>,                // the hypergeometric p (convolved over strata), every chart read
     pub adjusted: Adjusted,                // max_t, holm, bh, by
-    pub effect: Effect,                    // risk difference, risk ratio, odds ratio, h, observed/expected
+    pub effect: Effect,                    // risk difference, risk ratio, odds ratio, h, pooled under strata
     pub under_alpha: Option<UnderAlpha>,   // per method, only when alpha was given
 }
 ```
@@ -368,9 +375,22 @@ sketch were dropped, and the reasons are kept here:
   set, so it is a family of tests over sub-batches rather than one
   permutation of the whole. It comes later as its own contrast.
 
-The exact p (§1.2) is the hypergeometric of the *same* statistic, so it is
-offered only where the case count is the whole story: two groups, no
-strata, and a predicate read on every chart.
+The exact p (§1.2) is the distribution of the *same* statistic, so it is
+offered only where the case counts are the whole story: a case-against-rest
+test on a predicate read on every chart. Without strata it is the
+hypergeometric of the case count; under strata, the convolution of each
+stratum's (the exact conditional test, Zelen 1971).
+
+**Strata change the statistic as well as the shuffle (C369, 2026-10-12).**
+A shuffle inside strata draws from the stratified null, so the statistic is
+standardised against it too: under strata a case-against-rest test ranks
+by the Cochran–Mantel–Haenszel form, each stratum's case count less its own
+hypergeometric mean, summed, over the root of the summed variances. With
+one stratum it is the plain standardised count to the bit, which a test
+holds. The crude statistic under a stratified shuffle mixes the strata's
+prevalences back in, which is what the strata were given to remove: on a
+Simpson's table (every stratum's ratio 1, the crude 0.59) it reads an
+effect, and the CMH form reads zero.
 
 ### 2.6 What it refuses
 
@@ -423,7 +443,11 @@ uses fixed seeds, so the counts are exact and also golden.
    in the family are not raised above the null rate.
 3. **Permutation meets exact.** Two groups and a yes/no predicate: the
    permutation p lies inside its own Monte Carlo interval around the
-   hypergeometric p.
+   hypergeometric p. Under strata, the convolution meets a brute-force
+   enumeration of every arrangement over two strata of six, and the
+   pooled ratios, the homogeneity p and the CMH chi-square meet
+   statsmodels' `StratifiedTable` on three strata whose odds ratios
+   differ.
 4. **The Gauquelin artefact.** A null sample with an early-morning birth
    peak and a seasonal one, and a predicate on a house or sector. The
    uniform expectation would reject; the request is refused. The
@@ -513,6 +537,18 @@ uses fixed seeds, so the counts are exact and also golden.
    more than the fewest it takes (0.01 over 73). The check and its hint
    now read Bonferroni's own arithmetic, and a test walks the boundary
    over a grid of alphas and family sizes.
+8. **Strata in the statistic and the effect** (C369). **Built**
+   2026-10-12: the CMH statistic, the stratified exact p, and the pooled
+   ratios with Breslow–Day, in the kernel, the boundary and every binding
+   (Node, Python, Dart and Java read `effect.pooled`; the parity runners
+   send a stratified study and agree on it). A stratified test lays each
+   stratum's charts out contiguously first, in the order the stratified
+   shuffle already walks, so a stratum's counts cost its own words and
+   every permutation gives every chart the label it gave before, which a
+   test holds. Still to come from the same draft: the measured page's
+   row for the CMH statistic's calibration under strata of unequal
+   prevalence, the self-matched null (C367) and the exact restricted
+   pairing (C368).
 
 ## Sources
 

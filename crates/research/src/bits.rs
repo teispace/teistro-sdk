@@ -6,6 +6,8 @@
 //! so every predicate's statistic for one permutation comes together,
 //! which is what max-T needs.
 
+use std::ops::Range;
+
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
@@ -67,6 +69,46 @@ impl Bits {
             .map(|(a, b)| (a & b).count_ones())
             .sum()
     }
+
+    /// How many members this set shares with `other` at indices inside
+    /// `range`: a stratum laid out contiguously costs its own words, not
+    /// the whole batch's.
+    pub(crate) fn common_in(&self, other: &Bits, range: &Range<usize>) -> u32 {
+        if range.is_empty() {
+            return 0;
+        }
+        let (first, last) = (range.start / 64, (range.end - 1) / 64);
+        let mut total = 0;
+        for at in first..=last {
+            let (Some(a), Some(b)) = (self.words.get(at), other.words.get(at)) else {
+                break;
+            };
+            let mut word = a & b;
+            if at == first {
+                word &= u64::MAX << (range.start % 64);
+            }
+            if at == last {
+                let kept = range.end - last * 64;
+                if kept < 64 {
+                    word &= (1 << kept) - 1;
+                }
+            }
+            total += word.count_ones();
+        }
+        total
+    }
+
+    /// The set with its indices renumbered: index `i` of the answer is
+    /// index `order[i]` of this one.
+    fn reordered(&self, order: &[usize]) -> Bits {
+        let mut out = Bits::empty(order.len());
+        for (to, &from) in order.iter().enumerate() {
+            if self.contains(from) {
+                out.insert(to);
+            }
+        }
+        out
+    }
 }
 
 /// What one predicate said of one chart.
@@ -120,6 +162,27 @@ pub struct Matrix {
 }
 
 impl Matrix {
+    /// The same matrix with its charts renumbered: chart `i` of the answer
+    /// is chart `order[i]` of this one. Counts are unchanged; a stratified
+    /// test lays each stratum out contiguously this way.
+    pub(crate) fn reordered(&self, order: &[usize]) -> Matrix {
+        Matrix {
+            charts: order.len(),
+            columns: self
+                .columns
+                .iter()
+                .map(|column| Column {
+                    name: column.name.clone(),
+                    present: column.present.reordered(order),
+                    readable: column.readable.reordered(order),
+                    unstable: column.unstable.reordered(order),
+                    present_total: column.present_total,
+                    readable_total: column.readable_total,
+                })
+                .collect(),
+        }
+    }
+
     /// A matrix over `charts` charts with no predicate yet.
     #[must_use]
     pub fn new(charts: usize) -> Matrix {

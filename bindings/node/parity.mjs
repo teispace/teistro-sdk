@@ -1792,8 +1792,8 @@ for (const [name, rules] of [
 // The studies every runner sends (`03-design/research.md`): eight births
 // at Kathmandu a few years apart, the shipped yogas as the predicates,
 // compared by alternate labels, read against their own recombined
-// population, and each delivered by the Vimshottari at an event of its
-// life under the age shuffle.
+// population, each delivered by the Vimshottari at an event of its life
+// under the age shuffle, and compared again inside two strata of four.
 {
   const kathmandu = { latitude: 27.7172, longitude: 85.324 };
   const births = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => ({
@@ -1806,7 +1806,7 @@ for (const [name, rules] of [
     const counts = r.counts.map((c) => `${c.present}:${c.absent}:${c.unreadable}:${c.unstable}`).join(',');
     if (r.p === undefined) return `${r.predicate} ${counts}`;
     const optional = (value) => (value === undefined || value === null ? 'none' : number(value));
-    return `${r.predicate} ${counts} ${optional(r.observed)} ${r.p.exceed} ${number(r.p.value)} ${number(r.adjusted.maxT)} ${number(r.adjusted.holm)} ${number(r.adjusted.bh)} ${optional(r.exact)} ${optional(r.effect?.riskDifference.estimate)} ${optional(r.expected?.expected)}`;
+    return `${r.predicate} ${counts} ${optional(r.observed)} ${r.p.exceed} ${number(r.p.value)} ${number(r.adjusted.maxT)} ${number(r.adjusted.holm)} ${number(r.adjusted.bh)} ${optional(r.exact)} ${optional(r.effect?.riskDifference.estimate)} ${optional(r.expected?.expected)} ${optional(r.effect?.pooled?.riskRatio?.estimate)} ${optional(r.effect?.pooled?.oddsRatio?.estimate)} ${optional(r.effect?.pooled?.homogeneityP)}`;
   };
   const putStudy = (name, answer) => {
     put(`research-${name}-hash`, answer.provenance.inputHash);
@@ -1835,6 +1835,15 @@ for (const [name, rules] of [
       dasha: 'dasha_system.VIMSHOTTARI',
       shuffle: 'AGES_AT_EVENT',
       test: { seed: 3, permutations: 49 },
+    }),
+  );
+  putStudy(
+    'strata',
+    geo.research.compare({
+      births,
+      rules,
+      design: { groups, strata: births.map((_, i) => Math.floor(i / 4)) },
+      test: { seed: 6, permutations: 199, contrast: { kind: 'CASE_VS_REST', case: 1 } },
     }),
   );
 }

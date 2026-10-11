@@ -4,6 +4,8 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::math;
 
+use crate::special;
+
 /// An estimate with its interval at the test's confidence level.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -45,6 +47,146 @@ pub struct Effect {
     /// comparing studies (*Statistical Power Analysis*, 2nd ed., 1988,
     /// ch. 6).
     pub cohen_h: f64,
+    /// The ratios pooled over the design's strata, for a design that has
+    /// them. Beside the crude ratios above, the difference is the
+    /// confounding the strata removed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pooled: Option<Pooled>,
+}
+
+/// The cases against the rest within strata, pooled (`research.md` §1.6).
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Pooled {
+    /// Mantel and Haenszel's pooled risk ratio, with Greenland and
+    /// Robins's log interval (*Biometrics* 41, 1985). Absent when no
+    /// stratum has a chart the predicate holds on in one of the groups.
+    pub risk_ratio: Option<Interval>,
+    /// Mantel and Haenszel's pooled odds ratio, with Robins, Breslow and
+    /// Greenland's log interval (*Biometrics* 42, 1986). Absent when every
+    /// stratum's cross product on one side is zero.
+    pub odds_ratio: Option<Interval>,
+    /// Whether the strata share one odds ratio: Breslow and Day's
+    /// statistic with Tarone's correction (*Biometrika* 72, 1985), its p
+    /// on K − 1 degrees of freedom over the K strata in which both groups
+    /// were read and the predicate both holds and does not. A small p says
+    /// the pooled ratio averages effects that differ. Absent under two
+    /// such strata, or without a pooled odds ratio.
+    pub homogeneity_p: Option<f64>,
+}
+
+/// One stratum's two-by-two table: the predicate among the cases and
+/// among the rest, over the charts it was read on.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct Table {
+    pub(crate) case_present: u32,
+    pub(crate) case_read: u32,
+    pub(crate) rest_present: u32,
+    pub(crate) rest_read: u32,
+}
+
+impl Table {
+    /// The charts read, and those the predicate holds on.
+    pub(crate) fn margins(self) -> (u32, u32) {
+        (
+            self.case_read + self.rest_read,
+            self.case_present + self.rest_present,
+        )
+    }
+}
+
+/// An estimate and its interval from a log-scale variance.
+fn log_interval(estimate: f64, variance: f64, z: f64) -> Interval {
+    let spread = z * variance.max(0.0).sqrt();
+    let ln_estimate = math::ln(estimate);
+    Interval {
+        estimate,
+        low: math::exp(ln_estimate - spread),
+        high: math::exp(ln_estimate + spread),
+    }
+}
+
+impl Pooled {
+    /// The pooled ratios over `tables`, one per stratum, at the normal
+    /// quantile `z`.
+    #[allow(
+        clippy::many_single_char_names,
+        reason = "the names are the two-by-two table's own, as the papers print them"
+    )]
+    pub(crate) fn of(tables: &[Table], z: f64) -> Pooled {
+        let (mut rr_top, mut rr_bottom, mut rr_spread) = (0.0, 0.0, 0.0);
+        let (mut r_sum, mut s_sum, mut pr, mut ps_qr, mut qs) = (0.0, 0.0, 0.0, 0.0, 0.0);
+        for table in tables {
+            let (read, present) = table.margins();
+            if read == 0 {
+                continue;
+            }
+            let n = f64::from(read);
+            let (a, n1) = (f64::from(table.case_present), f64::from(table.case_read));
+            let (b, n0) = (f64::from(table.rest_present), f64::from(table.rest_read));
+            let (c, d) = (n1 - a, n0 - b);
+            rr_top += a * n0 / n;
+            rr_bottom += b * n1 / n;
+            rr_spread += (f64::from(present) * n1 * n0 - a * b * n) / (n * n);
+            let (p, q) = ((a + d) / n, (b + c) / n);
+            let (r, s) = (a * d / n, b * c / n);
+            r_sum += r;
+            s_sum += s;
+            pr += p * r;
+            ps_qr += p * s + q * r;
+            qs += q * s;
+        }
+        let risk_ratio = (rr_top > 0.0 && rr_bottom > 0.0)
+            .then(|| log_interval(rr_top / rr_bottom, rr_spread / (rr_top * rr_bottom), z));
+        let odds_ratio = (r_sum > 0.0 && s_sum > 0.0).then(|| {
+            let variance = pr / (2.0 * r_sum * r_sum)
+                + ps_qr / (2.0 * r_sum * s_sum)
+                + qs / (2.0 * s_sum * s_sum);
+            log_interval(r_sum / s_sum, variance, z)
+        });
+        Pooled {
+            risk_ratio,
+            odds_ratio,
+            homogeneity_p: odds_ratio.and_then(|ratio| breslow_day(tables, ratio.estimate)),
+        }
+    }
+}
+
+/// Breslow and Day's homogeneity test with Tarone's correction, under the
+/// common odds ratio `psi`: each informative stratum's case count against
+/// the one its margins give at `psi`, found by bisection to the last bit.
+fn breslow_day(tables: &[Table], psi: f64) -> Option<f64> {
+    let (mut statistic, mut observed, mut fitted, mut variance) = (0.0, 0.0, 0.0, 0.0);
+    let mut informative = 0_u32;
+    for table in tables {
+        let (read, present) = table.margins();
+        if table.case_read == 0 || table.rest_read == 0 || present == 0 || present == read {
+            continue;
+        }
+        informative += 1;
+        let (n1, n0, m1) = (
+            f64::from(table.case_read),
+            f64::from(table.rest_read),
+            f64::from(present),
+        );
+        // The case count `x` whose table has odds ratio `psi`; the ratio
+        // rises from 0 to infinity across the count's support.
+        let odds = |x: f64| x * (n0 - m1 + x) / ((n1 - x) * (m1 - x));
+        let fit = special::bisect((m1 - n0).max(0.0), n1.min(m1), psi, odds);
+        let spread =
+            1.0 / (1.0 / fit + 1.0 / (n1 - fit) + 1.0 / (m1 - fit) + 1.0 / (n0 - m1 + fit));
+        let a = f64::from(table.case_present);
+        statistic += (a - fit) * (a - fit) / spread;
+        observed += a;
+        fitted += fit;
+        variance += spread;
+    }
+    if informative < 2 || variance <= 0.0 {
+        return None;
+    }
+    let tarone = statistic - (observed - fitted) * (observed - fitted) / variance;
+    Some(special::chi_square_upper(tarone, informative - 1))
 }
 
 /// Wilson's score interval on `present` of `read`, at the normal
@@ -93,14 +235,11 @@ impl Effect {
             f64::from(rest_read),
         );
         let risk_ratio = (case_present > 0 && rest_present > 0).then(|| {
-            let ratio = case.estimate / rest.estimate;
-            let spread = z * (1.0 / a - 1.0 / n1 + 1.0 / b - 1.0 / n0).sqrt();
-            let ln_ratio = math::ln(ratio);
-            Interval {
-                estimate: ratio,
-                low: math::exp(ln_ratio - spread),
-                high: math::exp(ln_ratio + spread),
-            }
+            log_interval(
+                case.estimate / rest.estimate,
+                1.0 / a - 1.0 / n1 + 1.0 / b - 1.0 / n0,
+                z,
+            )
         });
         let odds_ratio = (case_present > 0
             && rest_present > 0
@@ -116,6 +255,7 @@ impl Effect {
             risk_ratio,
             odds_ratio,
             cohen_h,
+            pooled: None,
         })
     }
 }

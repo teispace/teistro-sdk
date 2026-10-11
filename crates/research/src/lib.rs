@@ -51,11 +51,12 @@ mod special;
 mod tests;
 
 pub use bits::{Cell, Matrix};
-pub use effect::{Effect, Interval};
+pub use effect::{Effect, Interval, Pooled};
 pub use events::{AfterBirth, EventTest, MAX_ATTEMPTS, MAX_SUBJECTS, PairMatrix, timed};
 pub use recombined::{MAX_REPLICATES, ReplicateTest, replicated};
 pub use rng::{ShuffleVersion, SplitMix64, stream_seed};
 
+use effect::Table;
 use engine::Layout;
 
 /// The most permutations one test may draw. It bounds a request's cost
@@ -313,9 +314,11 @@ pub struct PredicateRow {
     pub observed: Option<f64>,
     /// The permutation p-value.
     pub p: PValue,
-    /// The exact p of the same statistic, from the hypergeometric: given
-    /// for a case-against-rest test without strata on a predicate read on
-    /// every chart, as the permutation p's cross-check.
+    /// The exact p of the same statistic, given for a case-against-rest
+    /// test on a predicate read on every chart, as the permutation p's
+    /// cross-check: the hypergeometric of the case count, or under strata
+    /// the convolution of each stratum's (the exact conditional test,
+    /// Zelen, *Biometrika* 58, 1971).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub exact: Option<f64>,
     /// The family's adjusted p-values.
@@ -509,28 +512,31 @@ fn movable(groups: &[u16], strata: &[u32]) -> bool {
         .any(|(&group, &stratum)| *first.entry(stratum).or_insert(group) != group)
 }
 
-/// The exact p of the case-against-rest statistic from the hypergeometric
-/// of the case count, when every chart was read and nothing is stratified.
-fn exact(
-    column: &bits::Column,
-    case_size: u32,
-    statistic: &engine::Statistic,
-    observed: f64,
-) -> f64 {
-    let total = column.readable_total;
-    let marked = column.present_total;
-    let mean = f64::from(case_size) * f64::from(marked) / f64::from(total);
-    let variance = f64::from(case_size)
-        * (f64::from(marked) / f64::from(total))
-        * (1.0 - f64::from(marked) / f64::from(total))
-        * f64::from(total - case_size)
-        / (f64::from(total) - 1.0);
+/// The exact p of the case-against-rest statistic when every chart was
+/// read: the distribution of the case count summed over the strata, each
+/// stratum's hypergeometric convolved in, and the statistic of each total
+/// against the observed one. With one stratum it is that stratum's
+/// hypergeometric.
+fn exact(tables: &[Table], statistic: &engine::Statistic, observed: f64) -> f64 {
+    let (mut mean, mut variance) = (0.0, 0.0);
+    let mut distribution = vec![1.0];
+    for table in tables {
+        let (read, present) = table.margins();
+        if let Some((m, v)) = engine::moments(table.case_read, present, read) {
+            mean += m;
+            variance += v;
+        }
+        distribution = convolve(
+            &distribution,
+            &special::hypergeometric(read, present, table.case_read),
+        );
+    }
     let sd = if variance > 0.0 { variance.sqrt() } else { 0.0 };
-    special::hypergeometric(total, marked, case_size)
-        .into_iter()
-        .filter(|&(k, _)| {
+    (0_u32..)
+        .zip(&distribution)
+        .filter(|&(total, _)| {
             let z = if sd > 0.0 {
-                (f64::from(k) - mean) / sd
+                (f64::from(total) - mean) / sd
             } else {
                 0.0
             };
@@ -541,9 +547,77 @@ fn exact(
             };
             engine::reaches(stat, observed)
         })
-        .map(|(_, p)| p)
+        .map(|(_, &p)| p)
         .sum::<f64>()
         .min(1.0)
+}
+
+/// The distribution of a sum: `left` over the totals so far, `right` one
+/// stratum's counts with their probabilities.
+fn convolve(left: &[f64], right: &[(u32, f64)]) -> Vec<f64> {
+    let width = right.last().map_or(0, |&(k, _)| k as usize);
+    let mut out = vec![0.0; left.len() + width];
+    for (at, &p) in left.iter().enumerate() {
+        for &(k, q) in right {
+            if let Some(slot) = out.get_mut(at + k as usize) {
+                *slot += p * q;
+            }
+        }
+    }
+    out
+}
+
+/// A predicate's two-by-two table in each stratum, strata in key order;
+/// the whole batch's alone without strata.
+fn tables(column: &bits::Column, groups: &[u16], strata: Option<&[u32]>, case: u16) -> Vec<Table> {
+    let mut by_key: BTreeMap<u32, Table> = BTreeMap::new();
+    for (index, &group) in groups.iter().enumerate() {
+        let key = strata
+            .and_then(|keys| keys.get(index))
+            .copied()
+            .unwrap_or(0);
+        let table = by_key.entry(key).or_default();
+        if !column.readable.contains(index) {
+            continue;
+        }
+        let present = u32::from(column.present.contains(index));
+        if group == case {
+            table.case_read += 1;
+            table.case_present += present;
+        } else {
+            table.rest_read += 1;
+            table.rest_present += present;
+        }
+    }
+    by_key.into_values().collect()
+}
+
+/// The batch with each stratum's charts contiguous: strata in key order,
+/// charts in their own order within each, which is the order a stratified
+/// shuffle already walks, so every permutation gives each chart the label
+/// it gave before. A stratum's counts then cost its own words.
+struct Contiguous {
+    matrix: Matrix,
+    groups: Vec<u16>,
+    keys: Vec<u32>,
+}
+
+impl Contiguous {
+    fn new(matrix: &Matrix, groups: &[u16], keys: &[u32]) -> Contiguous {
+        let mut order: Vec<usize> = (0..keys.len()).collect();
+        order.sort_by_key(|&at| keys.get(at).copied());
+        Contiguous {
+            matrix: matrix.reordered(&order),
+            groups: order
+                .iter()
+                .filter_map(|&at| groups.get(at).copied())
+                .collect(),
+            keys: order
+                .iter()
+                .filter_map(|&at| keys.get(at).copied())
+                .collect(),
+        }
+    }
 }
 
 /// Tests whether the design's groups differ on each predicate, by
@@ -562,16 +636,32 @@ fn exact(
 pub fn compare(matrix: &Matrix, design: &Design, test: &GroupTest) -> Result<Tested, Error> {
     let group_count = check_design(matrix, design)?;
     check_test(matrix, test, group_count)?;
-    let layout = Layout::new(&design.groups, group_count, design.strata.as_deref());
+    let contiguous = design
+        .strata
+        .as_deref()
+        .map(|keys| Contiguous::new(matrix, &design.groups, keys));
+    let (laid, groups, keys) = match &contiguous {
+        Some(laid) => (
+            &laid.matrix,
+            laid.groups.as_slice(),
+            Some(laid.keys.as_slice()),
+        ),
+        None => (matrix, design.groups.as_slice(), None),
+    };
+    let layout = Layout::new(groups, group_count, keys);
     let statistic = engine::Statistic {
         contrast: test.contrast,
         alternative: test.alternative,
+        strata: match test.contrast {
+            Contrast::CaseVsRest { .. } => engine::Strata::of(&layout, laid),
+            Contrast::AnyDifference => None,
+        },
     };
-    let observed = engine::observed(&layout, matrix, &statistic);
+    let observed = engine::observed(&layout, laid, &statistic);
     let order = engine::step_down_order(&observed);
     let labelled = engine::Labelled {
         layout: &layout,
-        matrix,
+        matrix: laid,
         statistic: &statistic,
         seed: test.seed,
     };
@@ -737,15 +827,24 @@ impl RowContext<'_> {
                 let case_present = case_count.present;
                 let case_read = case_count.present + case_count.absent;
                 let every_read = column.readable_total as usize == self.charts;
-                let exact = (self.design.strata.is_none() && every_read)
-                    .then(|| exact(column, case_read, self.statistic, observed));
+                let tables = tables(
+                    column,
+                    &self.design.groups,
+                    self.design.strata.as_deref(),
+                    case,
+                );
+                let exact = every_read.then(|| exact(&tables, self.statistic, observed));
                 let effect = Effect::of(
                     case_present,
                     case_read,
                     column.present_total - case_present,
                     column.readable_total - case_read,
                     self.z,
-                );
+                )
+                .map(|effect| Effect {
+                    pooled: (tables.len() > 1).then(|| Pooled::of(&tables, self.z)),
+                    ..effect
+                });
                 (exact, effect)
             }
             Contrast::AnyDifference => (None, None),

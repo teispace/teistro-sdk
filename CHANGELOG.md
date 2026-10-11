@@ -256,6 +256,21 @@ context called it `ephemeris()`. The reference also gains Java's
 `dispose`, which the runner spells as a method reference, `ctx::close`,
 and the reader now follows.
 
+**Strata reach research's statistic and its effect.** **Numbers:** a
+`compare` whose design has strata ranks by another statistic, so its
+`observed`, its p-values and its corrections move. A study without strata,
+or with every chart in one stratum, answers exactly as before, which a
+test holds. The shuffle was already inside the strata; the statistic was
+not, so it mixed the strata's prevalences back in. On a Simpson's table,
+where every stratum's ratio is 1 and the crude ratio 0.59, it read an
+effect. A case-against-rest test under strata now ranks by the
+Cochran–Mantel–Haenszel statistic. The exact p is given under strata
+too, as the convolution of the strata's hypergeometrics. The effect
+gains `pooled`: Mantel–Haenszel's risk and odds ratios with their
+Greenland–Robins and Robins–Breslow–Greenland intervals, and Breslow–Day's
+p, with Tarone's correction, that one odds ratio fits every stratum. Each
+is held against statsmodels on three strata whose ratios differ (C369).
+
 **Every binding ships six worked examples** (`bindings/*/example/`), the
 same six scenarios in JavaScript, Dart and Python, each a program
 `cargo xtask check-{node,dart,python}` runs — every file in the

@@ -785,6 +785,7 @@ __all__ = [
     "ResearchGroupTest",
     "ResearchInterval",
     "ResearchPValue",
+    "ResearchPooled",
     "ResearchReplicateTest",
     "ResearchRow",
     "ResearchSubject",
@@ -2436,10 +2437,25 @@ class ResearchAdjusted:
 
 
 @dataclass(frozen=True)
+class ResearchPooled:
+    """The cases against the rest within strata, pooled: Mantel–Haenszel's
+    risk ratio (Greenland and Robins's interval) and odds ratio (Robins,
+    Breslow and Greenland's), each `None` where every stratum leaves it
+    undefined, and Breslow–Day's p with Tarone's correction that the strata
+    share one odds ratio, `None` under two informative strata."""
+
+    risk_ratio: Optional[ResearchInterval]
+    odds_ratio: Optional[ResearchInterval]
+    homogeneity_p: Optional[float]
+
+
+@dataclass(frozen=True)
 class ResearchEffect:
     """The cases against the rest: each group's share, their difference and
     ratio with intervals, the odds ratio and Cohen's *h*. The ratio and the
-    odds are `None` where a cell is empty."""
+    odds are `None` where a cell is empty. A design with strata adds the
+    ratios pooled over them, which beside the crude ones show the
+    confounding the strata removed."""
 
     risk_case: ResearchInterval
     risk_rest: ResearchInterval
@@ -2447,6 +2463,7 @@ class ResearchEffect:
     risk_ratio: Optional[ResearchInterval]
     odds_ratio: Optional[float]
     cohen_h: float
+    pooled: Optional[ResearchPooled]
 
 
 @dataclass(frozen=True)
@@ -11047,17 +11064,29 @@ def _research_tested(answer: Mapping[str, Any]) -> ResearchTested:
     def interval(raw: Mapping[str, Any]) -> ResearchInterval:
         return ResearchInterval(estimate=raw["estimate"], low=raw["low"], high=raw["high"])
 
+    def maybe(raw: Optional[Mapping[str, Any]]) -> Optional[ResearchInterval]:
+        return None if raw is None else interval(raw)
+
+    def pooled(raw: Optional[Mapping[str, Any]]) -> Optional[ResearchPooled]:
+        if raw is None:
+            return None
+        return ResearchPooled(
+            risk_ratio=maybe(raw["riskRatio"]),
+            odds_ratio=maybe(raw["oddsRatio"]),
+            homogeneity_p=raw["homogeneityP"],
+        )
+
     def effect(raw: Optional[Mapping[str, Any]]) -> Optional[ResearchEffect]:
         if raw is None:
             return None
-        ratio = raw["riskRatio"]
         return ResearchEffect(
             risk_case=interval(raw["riskCase"]),
             risk_rest=interval(raw["riskRest"]),
             risk_difference=interval(raw["riskDifference"]),
-            risk_ratio=None if ratio is None else interval(ratio),
+            risk_ratio=maybe(raw["riskRatio"]),
             odds_ratio=raw["oddsRatio"],
             cohen_h=raw["cohenH"],
+            pooled=pooled(raw.get("pooled")),
         )
 
     def row(raw: Mapping[str, Any]) -> ResearchRow:

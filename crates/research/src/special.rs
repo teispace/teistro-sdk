@@ -1,6 +1,6 @@
 //! The distributions the intervals and the exact test read: the normal
-//! quantile, the regularised incomplete beta and its quantile, and the
-//! hypergeometric. Every transcendental is `teistro_core::math`'s, and
+//! quantile, the regularised incomplete beta and its quantile, the
+//! chi-square's upper tail, and the hypergeometric. Every transcendental is `teistro_core::math`'s, and
 //! every quantile is found by bisection to the last bit, so the answer
 //! is the same on every platform.
 
@@ -14,7 +14,7 @@ fn ln_choose(n: u32, k: u32) -> f64 {
 
 /// The `x` in `[low, high]` at which the increasing `f` reaches `target`,
 /// halving until the interval cannot shrink further.
-fn bisect(mut low: f64, mut high: f64, target: f64, f: impl Fn(f64) -> f64) -> f64 {
+pub(crate) fn bisect(mut low: f64, mut high: f64, target: f64, f: impl Fn(f64) -> f64) -> f64 {
     loop {
         let middle = low + (high - low) / 2.0;
         if middle <= low || middle >= high {
@@ -130,6 +130,42 @@ pub(crate) fn clopper_pearson(successes: u64, trials: u64, level: f64) -> (f64, 
         beta_quantile(1.0 - tail, k + 1.0, n - k)
     };
     (low, high)
+}
+
+/// The chi-square distribution's upper tail on `df` degrees of freedom,
+/// `P(X ≥ x)`, from its closed forms for a whole `df` (Abramowitz and
+/// Stegun, *Handbook of Mathematical Functions*, 26.4.4 and 26.4.5), each
+/// term formed in log space so a large `df` neither overflows nor
+/// underflows. One at `x ≤ 0`.
+pub(crate) fn chi_square_upper(x: f64, df: u32) -> f64 {
+    if x.is_nan() || x <= 0.0 || df == 0 {
+        return 1.0;
+    }
+    let half = x / 2.0;
+    let terms = df / 2;
+    let tail = if df % 2 == 0 {
+        let ln_half = math::ln(half);
+        (0..terms)
+            .map(|i| {
+                let i = f64::from(i);
+                math::exp(i * ln_half - math::ln_gamma(i + 1.0) - half)
+            })
+            .sum::<f64>()
+    } else {
+        let ln_x = math::ln(x);
+        let series: f64 = (1..=terms)
+            .map(|r| {
+                let r = f64::from(r);
+                // 1·3·…·(2r − 1) = (2r)! / (2ʳ·r!)
+                let ln_odd = math::ln_gamma(2.0 * r + 1.0)
+                    - r * core::f64::consts::LN_2
+                    - math::ln_gamma(r + 1.0);
+                math::exp((r - 0.5) * ln_x - half - ln_odd)
+            })
+            .sum();
+        math::erfc(half.sqrt()) + series * (2.0 / core::f64::consts::PI).sqrt()
+    };
+    tail.clamp(0.0, 1.0)
 }
 
 /// The hypergeometric distribution of how many of `drawn` charts carry a

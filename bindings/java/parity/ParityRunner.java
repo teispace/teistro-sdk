@@ -741,8 +741,8 @@ public final class ParityRunner {
     /**
      * The studies every runner sends ({@code 03-design/research.md}): eight births at Kathmandu a few
      * years apart, the shipped yogas as the predicates, compared by alternate labels, read against their
-     * own recombined population, and each delivered by the Vimshottari at an event of its life under
-     * the age shuffle.
+     * own recombined population, each delivered by the Vimshottari at an event of its life under the
+     * age shuffle, and compared again inside two strata of four.
      */
     private static void putResearch(Context geo) {
         Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(0));
@@ -771,6 +771,12 @@ public final class ParityRunner {
         }
         putTested("timed", geo.research().timed(subjects, yogas, DashaSystem.VIMSHOTTARI,
                 ResearchEventShuffle.AGES_AT_EVENT, ResearchEventTest.builder(3, 49).build(), null));
+        List<Long> strata = new ArrayList<>();
+        for (int i = 0; i < births.size(); i += 1) {
+            strata.add((long) (i / 4));
+        }
+        putTested("strata", geo.research().compare(births, yogas, new Design(groups, strata),
+                ResearchGroupTest.builder(6, 199, ResearchContrast.caseVsRest(1)).build(), null));
     }
 
     private static String groupsOf(List<ResearchCounts.Group> counts) {
@@ -791,12 +797,17 @@ public final class ParityRunner {
                 answer.permutations() + " " + number(answer.resolution()) + " " + answer.shuffle());
         for (int k = 0; k < answer.rows().size(); k += 1) {
             ResearchTested.Row r = answer.rows().get(k);
+            ResearchTested.Pooled pooled = r.effect() == null ? null : r.effect().pooled();
             put("research-" + name + "-row-" + k, r.predicate() + " " + groupsOf(r.counts()) + " "
                     + optional(r.observed()) + " " + r.p().exceed() + " " + number(r.p().value()) + " "
                     + number(r.adjusted().maxT()) + " " + number(r.adjusted().holm()) + " "
                     + number(r.adjusted().bh()) + " " + optional(r.exact()) + " "
                     + optional(r.effect() == null ? null : r.effect().riskDifference().estimate()) + " "
-                    + optional(r.expected() == null ? null : r.expected().expected()));
+                    + optional(r.expected() == null ? null : r.expected().expected()) + " "
+                    + optional(pooled == null || pooled.riskRatio() == null ? null : pooled.riskRatio().estimate())
+                    + " "
+                    + optional(pooled == null || pooled.oddsRatio() == null ? null : pooled.oddsRatio().estimate())
+                    + " " + optional(pooled == null ? null : pooled.homogeneityP()));
         }
     }
 

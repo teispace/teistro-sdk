@@ -42,7 +42,9 @@ live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-10-11 (**the MCP server, built to §7's P8**:
+**Last updated:** 2026-10-12 (**strata reach research's statistic and
+effect** (C369), and **the guides show every binding's call**, which found
+and closed the bindings' DX gaps; before them, **the MCP server, built to §7's P8**:
 every tool states its record and its answer, resources, completions and
 prompts, limits, cancellation and progress, and Streamable HTTP
 (`03-design/mcp-server.md`); the session log holds every session since
@@ -1087,12 +1089,20 @@ provider's DUT1).
       the reading and rectification), calendars, an almanac,
       interpretation (plans and the reading packs), the annual chart,
       positions and your own ephemeris, and research: 33 programs and
-      24 output blocks. What is left is tabs per binding, which the gate
-      already holds (a block's title names the binding's own file).
+      24 output blocks. The central calls are tabbed per binding (the
+      birth chart, the almanac's week, research's compare, a year of
+      positions), each tab cut from that binding's own example, and the
+      generated reference names the call each binding makes for every
+      entry point it reaches. Writing the tabs found the bindings' DX
+      gaps, now closed: Dart's `copyWith` and Java's withers, Java's
+      typed research tests and its `engine()`.
    4. **Track B and C modules** (the roadmap's tables): research's
       transits and the age shuffle's `max_pairs` cap (`research.md` §4
-      step 4; steps 5 to 7 are built; an uncertain birth's window is read
-      across its span, `research-measured.md` §5), prashna's remaining
+      step 4; steps 5 to 8 are built; an uncertain birth's window is read
+      across its span, `research-measured.md` §5; strata now reach the
+      statistic and the effect, C369), then the self-matched null (C367),
+      the exact restricted pairing (C368) and the measured page's missing
+      rows (the strata calibration, coverage, FDR, uniformity), prashna's remaining
       Tajika links, Saravali's readings, and
       the pakshi and Lal Kitab pipelines with their content handed to
       readers who can vet it. Pick the next item from
@@ -4205,3 +4215,5 @@ kept here: the session log records them.
 | 2026-10-11 | **The built-in ephemeris in `ACCURACY.md`, stable schema names, and a rehearsal.** The tier's DE440 test records its worst geometric direction and distance by group of bodies, each group naming the bodies whose every value is inside the band, so a printed bound is one each value meets; the tiers a default build leaves out are measured by hand and dated. Every schema definition the agent server states now names its own type: schemars had numbered a second type of one name in visit order (`Asked2`, `Outcome3`), so adding a record could rename another, and a test refuses a numbered or generic name; this is the Java typed records' step 1. The release rehearsal failed only on the Linux rows' skipped bundle check (the bundle carries macOS and Windows only, so there is nothing to check) and on sizes about 2% smaller, which `866d00a3` alone brought; both settled. **Next:** a green rehearsal, then the Java typed records' generator (`java-binding.md`). |
 | 2026-10-11 | **Java's typed requests** (`java-binding.md` §4.1). `xtask` reads every record entry point's request schema under one generator into `api.requests`, kept out of `api.json`, and `emit/java/requests.rs` writes `com.teispace.teistro.request`: records with builders, enums, sealed unions for serde's tagged, externally tagged and names-or-value shapes, `Keyed<M>` for a member or a registered key, and `Requests.read` by entry point. A request key set equal to a boundary enum is that enum (listed and checked both ways), a name shared with the main package is listed or renamed at its source (four were), a name the generated code uses unqualified is refused, and a catalogue kind a request names must be a catalogue enum. The agent server's examples became `crates/sdk/tests/requests.json`; `BindingTest` reads each into its type and back, and holds the refusals. **Found building it:** an empty field doc borrowed nothing, so most of `ChartFoundRequest`'s fields read "the value"; a field now borrows its type's doc, and many of the chart request's own fields still carry none at their source. **Next:** the hand-written areas take the request types. |
 | 2026-10-11 | **`ChartOptions` takes the request types, and the rehearsal is green.** Each reading's setter takes the type `ChartFoundRequest` gives its field, held by a reflection test proved red; `reading(field, request)` stays the open door. The examples build requests with the builders, and the tests and the parity runner read their maps through each type's `of`, so all six runners still agree value for value through the decoders. **Found building it:** the synastry record's hand-stated schema was inlined, so Java named it after its field (`ChartFoundRequestSynastry`); `records::defined` now names it `PartnerSynastry`. A varsha's annual dashas were typed as text because the wire is a string; `Askable::item_schema` states the member. A request type read only what `Json.read` answers, so a map built in Java with `Graha.VENUS` or the literal `17` was refused; it now reads a member by its key and any integral type. A natal point's schema states the tagged form only, though the reader also takes `"LAGNA"` bare; the schema keeps the form an answer writes back, and the parity runner writes it. Release rehearsal 38140578186 passed every job. Research drafts for the Flutter package, research's remaining step and prashna's Tajika links, and the docs-site guides were written by read-only agents. **Next:** the other areas' request parameters, then `Wrong.java`. |
+| 2026-10-12 | **The bindings' calls side by side, and what that found.** Every guide's program is cut from a file a gate runs (`check-guides`), six new guides walk through the shared examples, and the central calls are tabbed per binding. Writing the tabs found the DX gaps: Dart and Java spelt a sidereal frame field by field, so every value a consumer writes gains `copyWith` and withers; Java took research's rules, tests and control as maps, now `RuleRequest`, `ResearchGroupTest` (a sealed `ResearchContrast`), `ResearchEventTest`, `ResearchControl` and `ResearchReplicateTest`, with `Wrong.java` holding that a map no longer compiles; and Java named the engine `ephemeris()` against every other binding and its own design page, now `engine()`. The generated reference names the call each binding makes, read from the parity runners; reading a method reference gave Java's `dispose` its tab. |
+| 2026-10-12 | **Strata reach the statistic and the effect** (C369, `research.md` §4 step 8). A stratified test ranked by the crude count, which mixes the strata's prevalences back in; it now ranks by the Cochran–Mantel–Haenszel statistic, which is the plain count with one stratum, to the bit. The exact p is the convolution of the strata's hypergeometrics, and the effect adds Mantel–Haenszel's pooled risk and odds ratios with Breslow–Day's homogeneity p. Held against statsmodels 0.15 on three strata, against an enumeration over two strata of six, and on a Simpson's table, where the pooled ratio is 1 and the crude 0.59; a mutation that drops the strata fails all three. Every binding reads `effect.pooled` and the runners agree on a stratified study (18 004 values). A stratified test lays each stratum out contiguously first, in the order the shuffle already walks, so a stratum's counts cost its own words, and a test holds that every chart keeps the label each permutation gave it. C366 to C368 are registered beside it. **Next:** the measured page's row for the CMH statistic's calibration under strata of unequal prevalence. |

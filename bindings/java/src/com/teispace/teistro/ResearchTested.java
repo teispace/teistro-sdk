@@ -58,9 +58,24 @@ public record ResearchTested(List<Row> rows, int permutations, double resolution
      * @param riskRatio their ratio, with Katz's interval; null when either share is empty
      * @param oddsRatio the odds ratio; null when a cell is empty
      * @param cohenH Cohen's h
+     * @param pooled the ratios pooled over the design's strata, beside which the crude ones show the
+     *     confounding the strata removed; null for a design without strata
      */
     public record Effect(Estimate riskCase, Estimate riskRest, Estimate riskDifference, Estimate riskRatio,
-            Double oddsRatio, double cohenH) {
+            Double oddsRatio, double cohenH, Pooled pooled) {
+    }
+
+    /**
+     * The cases against the rest within strata, pooled.
+     *
+     * @param riskRatio Mantel–Haenszel's risk ratio, with Greenland and Robins's interval; null where
+     *     every stratum leaves it undefined
+     * @param oddsRatio Mantel–Haenszel's odds ratio, with Robins, Breslow and Greenland's interval; null
+     *     where every stratum leaves it undefined
+     * @param homogeneityP Breslow–Day's p, with Tarone's correction, that the strata share one odds
+     *     ratio; null under two informative strata
+     */
+    public record Pooled(Estimate riskRatio, Estimate oddsRatio, Double homogeneityP) {
     }
 
     /**

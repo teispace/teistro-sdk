@@ -8,6 +8,7 @@
 //! same bits at every thread count.
 
 use std::collections::BTreeMap;
+use std::ops::Range;
 
 use teistro_core::error::Error;
 
@@ -105,24 +106,105 @@ impl Share {
     }
 }
 
+/// The mean and variance of how many of `drawn` charts carry a predicate
+/// that `marked` of `total` carry: the hypergeometric that holds the
+/// margins. None under two charts, where nothing can move. The plain
+/// statistic, the stratified one and the exact p all read it, so the
+/// three round alike.
+pub(crate) fn moments(drawn: u32, marked: u32, total: u32) -> Option<(f64, f64)> {
+    let total = f64::from(total);
+    if total < 2.0 {
+        return None;
+    }
+    let drawn = f64::from(drawn);
+    let share = f64::from(marked) / total;
+    let mean = drawn * share;
+    let variance = drawn * share * (1.0 - share) * (total - drawn) / (total - 1.0);
+    Some((mean, variance))
+}
+
 /// The standardised case count: the count's departure from its mean
 /// under the hypergeometric that holds the margins, in its standard
 /// deviations. Zero where the predicate cannot vary (it holds on every
 /// read chart or none, or one group has every read chart).
 fn standardised(case: Share, column: &Column) -> f64 {
-    let total = f64::from(column.readable_total);
-    let marked = f64::from(column.present_total);
-    let drawn = f64::from(case.read);
-    if total < 2.0 {
-        return 0.0;
+    match moments(case.read, column.present_total, column.readable_total) {
+        Some((mean, variance)) if variance > 0.0 => {
+            (f64::from(case.present) - mean) / variance.sqrt()
+        }
+        _ => 0.0,
     }
-    let share = marked / total;
-    let mean = drawn * share;
-    let variance = drawn * share * (1.0 - share) * (total - drawn) / (total - 1.0);
-    if variance <= 0.0 {
-        return 0.0;
+}
+
+/// One stratum's margins on one predicate: its charts the predicate was
+/// read on, and those it holds on. No permutation moves them.
+#[derive(Clone, Copy)]
+struct Margin {
+    read: u32,
+    present: u32,
+}
+
+/// The strata a case-against-rest statistic sums over, each a contiguous
+/// range of the batch as [`Matrix::reordered`] lays it out, with every
+/// predicate's margins in each.
+pub(crate) struct Strata {
+    bounds: Vec<Range<usize>>,
+    /// Per predicate, per stratum.
+    margins: Vec<Vec<Margin>>,
+}
+
+impl Strata {
+    /// The strata of `layout` over `matrix`, whose strata are contiguous;
+    /// none for a single stratum, whose statistic is the plain one.
+    pub(crate) fn of(layout: &Layout<'_>, matrix: &Matrix) -> Option<Strata> {
+        if layout.strata.len() < 2 {
+            return None;
+        }
+        let bounds: Vec<Range<usize>> = layout
+            .strata
+            .iter()
+            .map(|positions| {
+                let start = positions.first().copied().unwrap_or(0);
+                let end = positions.last().map_or(start, |last| last + 1);
+                debug_assert_eq!(end - start, positions.len(), "a stratum is contiguous");
+                start..end
+            })
+            .collect();
+        let margins = matrix
+            .columns
+            .iter()
+            .map(|column| {
+                bounds
+                    .iter()
+                    .map(|range| Margin {
+                        read: column.readable.common_in(&column.readable, range),
+                        present: column.present.common_in(&column.present, range),
+                    })
+                    .collect()
+            })
+            .collect();
+        Some(Strata { bounds, margins })
     }
-    (f64::from(case.present) - mean) / variance.sqrt()
+}
+
+/// The Cochran–Mantel–Haenszel statistic (Mantel and Haenszel, *J. Natl.
+/// Cancer Inst.* 22, 1959): each stratum's case count less its mean under
+/// its own hypergeometric, summed, over the root of the summed variances.
+/// With one stratum it is [`standardised`].
+fn stratified(case: &Bits, column: &Column, margins: &[Margin], bounds: &[Range<usize>]) -> f64 {
+    let (mut departure, mut variance) = (0.0, 0.0);
+    for (range, margin) in bounds.iter().zip(margins) {
+        let drawn = case.common_in(&column.readable, range);
+        if let Some((mean, spread)) = moments(drawn, margin.present, margin.read) {
+            departure += f64::from(case.common_in(&column.present, range)) - mean;
+            variance += spread;
+        }
+    }
+    if variance > 0.0 {
+        departure / variance.sqrt()
+    } else {
+        0.0
+    }
 }
 
 /// Pearson's chi-square on the groups-by-(present, absent) table, over
@@ -152,18 +234,26 @@ fn chi_square(shares: &[Share], column: &Column) -> f64 {
 pub(crate) struct Statistic {
     pub(crate) contrast: Contrast,
     pub(crate) alternative: Alternative,
+    /// The strata a case-against-rest statistic sums over; none when the
+    /// design has one stratum, or for a chi-square.
+    pub(crate) strata: Option<Strata>,
 }
 
 impl Statistic {
     /// Every predicate's statistic under the labels whose group masks are
     /// `masks`.
     fn read(&self, masks: &[Bits], matrix: &Matrix, out: &mut [f64], shares: &mut Vec<Share>) {
-        for (column, slot) in matrix.columns.iter().zip(out.iter_mut()) {
+        for (j, (column, slot)) in matrix.columns.iter().zip(out.iter_mut()).enumerate() {
             *slot = match self.contrast {
                 Contrast::CaseVsRest { case } => {
                     let z = masks
                         .get(usize::from(case))
-                        .map_or(0.0, |mask| standardised(Share::of(mask, column), column));
+                        .map_or(0.0, |mask| match &self.strata {
+                            Some(strata) => strata.margins.get(j).map_or(0.0, |margins| {
+                                stratified(mask, column, margins, &strata.bounds)
+                            }),
+                            None => standardised(Share::of(mask, column), column),
+                        });
                     match self.alternative {
                         Alternative::Greater => z,
                         Alternative::Less => -z,
