@@ -47,7 +47,9 @@ public final class Json {
      * Writes a value as JSON: a {@code Map} with string keys as an object in
      * its own order, a {@code List} or an array of objects as an array, a
      * {@code String}, a finite {@code Number}, a {@code Boolean}, a
-     * {@link Member} as its full key, and {@code null}.
+     * {@link Member} as its full key, a request record
+     * ({@link com.teispace.teistro.request.RequestJson}) as the tree it
+     * writes, and {@code null}.
      *
      * @param value the value
      * @return its JSON text
@@ -70,6 +72,7 @@ public final class Json {
                     throw new IllegalArgumentException("`" + path + "` is " + number + ", which JSON cannot say");
             case Number number -> out.append(number);
             case Member member -> quote(out, member instanceof Catalogued catalogued ? catalogued.fullKey() : member.key());
+            case com.teispace.teistro.request.RequestJson request -> write(out, request.toJson(), path);
             case Map<?, ?> map -> {
                 out.append('{');
                 boolean first = true;

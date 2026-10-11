@@ -11,6 +11,9 @@ import com.teispace.teistro.blob.Positions;
 import com.teispace.teistro.ffi.Native;
 import com.teispace.teistro.record.Provenance;
 import com.teispace.teistro.record.Step;
+import com.teispace.teistro.request.RequestJson;
+import com.teispace.teistro.request.Requests;
+import com.teispace.teistro.request.VarshaRequest;
 
 /**
  * The binding's tests, with no test framework: each is a method, a failure
@@ -830,6 +833,47 @@ public final class BindingTest {
                 } catch (IllegalArgumentException expected) {
                     // refused, as it should be
                 }
+            }
+        });
+
+        tests.put("every record's example request reads into its type and writes back as itself", () -> {
+            // The fixture the agent server's tests send too: one request a
+            // record, so a request type that reads it wrong fails here.
+            List<?> examples = (List<?>) Json.read(java.nio.file.Files.readString(
+                    java.nio.file.Path.of("crates/sdk/tests/requests.json")));
+            java.util.Set<String> untyped = java.util.Set.of("engine.call", "engine.manifest");
+            java.util.Set<String> read = new java.util.TreeSet<>();
+            for (Object example : examples) {
+                Map<?, ?> one = (Map<?, ?>) example;
+                String record = (String) one.get("record");
+                if (untyped.contains(record)) {
+                    continue;
+                }
+                read.add(record);
+                RequestJson request = Requests.read(record, one.get("request"));
+                same(request, Requests.read(record, Json.read(Json.write(request))), record + " written and read again");
+            }
+            same(new java.util.TreeSet<>(Requests.records()), read, "the records with a typed request");
+        });
+
+        tests.put("a request type refuses what the SDK would, naming the field", () -> {
+            try {
+                Requests.read("time.convert", Json.read("{\"jd\": 2451545.0, \"from\": \"UTX\", \"to\": \"TT\"}"));
+                throw new AssertionError("a scale the SDK does not read was read");
+            } catch (IllegalArgumentException e) {
+                check(e.getMessage().contains("ScaleRequest.from"), e.getMessage());
+            }
+            try {
+                VarshaRequest.builder().through(70_000).build();
+                throw new AssertionError("a year past a u16 was taken");
+            } catch (IllegalArgumentException e) {
+                check(e.getMessage().contains("VarshaRequest.through"), e.getMessage());
+            }
+            try {
+                VarshaRequest.builder().build();
+                throw new AssertionError("a request without its required year was built");
+            } catch (NullPointerException e) {
+                check(e.getMessage().contains("VarshaRequest.through"), e.getMessage());
             }
         });
 

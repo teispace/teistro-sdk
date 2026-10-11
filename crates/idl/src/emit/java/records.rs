@@ -257,7 +257,7 @@ const PAIR: &str = r"/**
 public record Pair<A, B>(A first, B second) {}
 ";
 
-const READ: &str = r#"import java.util.ArrayList;
+pub(super) const READ: &str = r#"import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

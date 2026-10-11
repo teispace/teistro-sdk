@@ -163,7 +163,246 @@ fn requests() -> teistro_idl::records::Requests {
         },
     )
     .unwrap_or_else(|e| panic!("the requests do not describe: {e}"));
-    teistro_idl::records::Requests { roots, records }
+    teistro_idl::records::Requests {
+        roots,
+        records,
+        enums: std::collections::BTreeMap::new(),
+    }
+}
+
+/// The request records that are a boundary enum, keys and all: a binding
+/// writes the enum it already has (`Sex`) rather than a second of the same
+/// name. Each is checked to have the enum's keys, and a request key set
+/// named like a boundary enum and not listed is refused, so the two never
+/// drift apart unseen.
+const REUSED_ENUMS: [&str; 13] = [
+    "Balance",
+    "FortuneRule",
+    "GocharFrom",
+    "HitKind",
+    "MatchRole",
+    "PlaceReading",
+    "Reckoning",
+    "Saham",
+    "Scale",
+    "SectRule",
+    "Sex",
+    "Triplicities",
+    "WesternAspect",
+];
+
+/// The request records named like a type of the binding's main package on
+/// purpose: the request form of a concept the answers also carry (an
+/// almuten's rules as asked, a natal point as named). Java keeps them
+/// apart by package; any other shared name is refused, so a request type
+/// never silently reads like an unrelated answer type.
+const SHARED_NAMES: [&str; 11] = [
+    "AccidentalRules",
+    "AccidentalScores",
+    "AlmutenRules",
+    "CivilTime",
+    "ConsiderationRules",
+    "NatalPoint",
+    "Partile",
+    "PerfectionRules",
+    "Siege",
+    "Terms",
+    "ZoneSpec",
+];
+
+/// The names a request record may not take: the request package's own
+/// types, and what its generated code names unqualified from `java.lang`
+/// and `java.util`.
+const TAKEN_NAMES: [&str; 25] = [
+    "Boolean",
+    "Class",
+    "Double",
+    "Enum",
+    "Function",
+    "Integer",
+    "Keyed",
+    "LinkedHashMap",
+    "List",
+    "Long",
+    "Map",
+    "Math",
+    "Number",
+    "Object",
+    "Objects",
+    "Optional",
+    "Override",
+    "Read",
+    "Record",
+    "RequestJson",
+    "Requests",
+    "Set",
+    "String",
+    "System",
+    "Void",
+];
+
+/// [`REUSED_ENUMS`], checked: each a request key set with exactly the keys
+/// of the boundary enum of its name. By the record's name, the enum's
+/// Rust name.
+fn reused_enums(api: &teistro_idl::model::Api) -> std::collections::BTreeMap<String, String> {
+    use teistro_idl::records::RecordShape;
+    let boundary = |name: &str| {
+        api.enums
+            .iter()
+            .find(|e| teistro_idl::names::binding_type_name(&e.name) == name)
+    };
+    let mut reused = std::collections::BTreeMap::new();
+    for record in &api.requests.records {
+        let RecordShape::Keys { values } = &record.shape else {
+            continue;
+        };
+        let listed = REUSED_ENUMS.contains(&record.name.as_str());
+        let Some(enumeration) = boundary(&record.name) else {
+            assert!(
+                !listed,
+                "{} is listed as a reused enum and no boundary enum has its name",
+                record.name
+            );
+            continue;
+        };
+        assert!(
+            listed,
+            "the request keys {} are named like a boundary enum; list them in REUSED_ENUMS \
+             if they are its keys, or rename one",
+            record.name
+        );
+        let mut asked: Vec<&str> = values.iter().map(|v| v.key.as_str()).collect();
+        let mut known: Vec<&str> = enumeration.values.iter().map(|v| v.key.as_str()).collect();
+        asked.sort_unstable();
+        known.sort_unstable();
+        assert_eq!(
+            asked, known,
+            "the request keys {} differ from the boundary enum's",
+            record.name
+        );
+        reused.insert(record.name.clone(), enumeration.name.clone());
+    }
+    for name in REUSED_ENUMS {
+        assert!(
+            reused.contains_key(name),
+            "{name} is listed as a reused enum and is no request key set"
+        );
+    }
+    reused
+}
+
+/// Every catalogue kind a request names, as a member or a registered key,
+/// checked to be one of the boundary's catalogue enums, which a binding
+/// types the member with.
+fn check_request_catalogues(api: &teistro_idl::model::Api) {
+    use teistro_idl::records::{RecordShape, RecordType};
+    fn named<'a>(ty: &'a RecordType, found: &mut Vec<&'a str>) {
+        match ty {
+            RecordType::Member { catalogue } | RecordType::Keyed { catalogue } => {
+                found.push(catalogue);
+            }
+            RecordType::List { of } | RecordType::Map { of } => named(of, found),
+            RecordType::Pair { first, second } => {
+                named(first, found);
+                named(second, found);
+            }
+            _ => {}
+        }
+    }
+    let mut found = Vec::new();
+    for record in &api.requests.records {
+        match &record.shape {
+            RecordShape::Object { fields } => fields.iter().for_each(|f| named(&f.ty, &mut found)),
+            RecordShape::Tagged { variants, .. } => variants
+                .iter()
+                .flat_map(|v| &v.fields)
+                .for_each(|f| named(&f.ty, &mut found)),
+            RecordShape::External { variants } => variants
+                .iter()
+                .filter_map(|v| v.payload.as_ref())
+                .for_each(|ty| named(ty, &mut found)),
+            RecordShape::OrNamed { of, .. } => named(of, &mut found),
+            RecordShape::Keys { .. } => {}
+        }
+    }
+    let unknown: Vec<&str> = found
+        .into_iter()
+        .filter(|kind| !api.enums.iter().any(|e| e.kind.as_deref() == Some(*kind)))
+        .collect();
+    assert!(
+        unknown.is_empty(),
+        "these catalogue kinds are named by a request and are no catalogue enum: {unknown:?}"
+    );
+}
+
+/// [`SHARED_NAMES`] and [`TAKEN_NAMES`], checked against the main
+/// package: its generated enums and structs and the hand-written classes
+/// under `bindings/java/src`.
+fn check_request_names(root: &Path, api: &teistro_idl::model::Api) {
+    let mut main: std::collections::BTreeSet<String> = api
+        .enums
+        .iter()
+        .map(|e| teistro_idl::names::binding_type_name(&e.name))
+        .chain(
+            api.structs
+                .iter()
+                .map(|s| teistro_idl::names::binding_type_name(&s.name)),
+        )
+        .collect();
+    let written = root.join("bindings/java/src/com/teispace/teistro");
+    for entry in std::fs::read_dir(&written)
+        .unwrap_or_else(|e| panic!("{}: {e}", written.display()))
+        .flatten()
+    {
+        if let Some(name) = entry
+            .file_name()
+            .to_str()
+            .and_then(|n| n.strip_suffix(".java"))
+        {
+            main.insert(name.to_owned());
+        }
+    }
+    let typed: Vec<&str> = api
+        .requests
+        .records
+        .iter()
+        .map(|record| record.name.as_str())
+        .filter(|name| !api.requests.enums.contains_key(*name))
+        .collect();
+    let taken: Vec<&str> = typed
+        .iter()
+        .copied()
+        .filter(|name| TAKEN_NAMES.contains(name))
+        .collect();
+    assert!(
+        taken.is_empty(),
+        "these request records take a name the generated Java names unqualified; rename them at \
+         their source: {taken:?}"
+    );
+    let shared: Vec<&str> = typed
+        .iter()
+        .copied()
+        .filter(|name| main.contains(*name))
+        .collect();
+    let unlisted: Vec<&str> = shared
+        .iter()
+        .copied()
+        .filter(|name| !SHARED_NAMES.contains(name))
+        .collect();
+    assert!(
+        unlisted.is_empty(),
+        "these request records are named like a type of the main package; rename them at their \
+         source, or list them in SHARED_NAMES if they are its request form: {unlisted:?}"
+    );
+    let stale: Vec<&str> = SHARED_NAMES
+        .iter()
+        .copied()
+        .filter(|name| !shared.contains(name))
+        .collect();
+    assert!(
+        stale.is_empty(),
+        "these are listed in SHARED_NAMES and share no name now; take them off: {stale:?}"
+    );
 }
 
 /// The boundary's description with the JSON records it carries: what every
@@ -178,6 +417,9 @@ pub(crate) fn api(root: &Path) -> teistro_idl::model::Api {
     api.records = teistro_idl::records::from_schema(&records_schema(), &RECORDS)
         .unwrap_or_else(|e| panic!("the records do not describe: {e}"));
     api.requests = requests();
+    api.requests.enums = reused_enums(&api);
+    check_request_names(root, &api);
+    check_request_catalogues(&api);
     // The answer records' emitters render the subset the answers use; the
     // request side's constructs reach Java alone, through its own
     // emitter, so an answer carrying one is refused here rather than at

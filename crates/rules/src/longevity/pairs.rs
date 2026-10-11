@@ -123,6 +123,7 @@ pub fn rectify(
 /// Which way a contributor's degrees rectify the years (v. 45).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "YearsRectification"))]
 #[serde(rename_all = "kebab-case")]
 pub enum Rectification {
     /// As the verse says it: a contributor at the start of a sign gives the

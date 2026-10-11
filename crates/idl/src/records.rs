@@ -212,6 +212,10 @@ pub struct Requests {
     pub roots: Vec<RequestRoot>,
     /// Every record the roots reach, roots first.
     pub records: Vec<RecordDef>,
+    /// The request records that are a boundary enum (`Sex`): the same
+    /// keys, so a binding uses the enum it already has. By the record's
+    /// name, the enum's (Rust) name.
+    pub enums: BTreeMap<String, String>,
 }
 
 /// A record entry point and the record its request is.
