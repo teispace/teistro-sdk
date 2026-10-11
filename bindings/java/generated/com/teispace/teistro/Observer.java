@@ -31,6 +31,36 @@ public record Observer(
         Objects.requireNonNull(altitudeM, "altitudeM");
     }
 
+    /**
+     * This value with another longitudeDeg.
+     *
+     * @param value the longitudeDeg
+     * @return a copy with {@code longitudeDeg} replaced
+     */
+    public Observer withLongitudeDeg(Longitude value) {
+        return new Observer(value, latitudeDeg, altitudeM);
+    }
+
+    /**
+     * This value with another latitudeDeg.
+     *
+     * @param value the latitudeDeg
+     * @return a copy with {@code latitudeDeg} replaced
+     */
+    public Observer withLatitudeDeg(Latitude value) {
+        return new Observer(longitudeDeg, value, altitudeM);
+    }
+
+    /**
+     * This value with another altitudeM.
+     *
+     * @param value the altitudeM
+     * @return a copy with {@code altitudeM} replaced
+     */
+    public Observer withAltitudeM(Altitude value) {
+        return new Observer(longitudeDeg, latitudeDeg, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.ObserverC.LONGITUDE_DEG.set(raw, 0L, longitudeDeg.value());

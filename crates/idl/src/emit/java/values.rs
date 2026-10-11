@@ -15,7 +15,7 @@ use super::{File, PACKAGE, identifier, javadoc, literal, preamble, unplaced};
 use crate::emit::{DocStyle, field_doc};
 use crate::model::{Api, FieldDef, Scalar, StructDef, StructRole, TypeRef};
 use crate::names::{binding_type_name, pascal, screaming};
-use crate::rules::{FieldRole, field_roles, has_handshake};
+use crate::rules::{FieldRole, field_roles, has_handshake, is_written_by_host};
 
 /// The structs the hand-written layer owns: the context's options, whose
 /// flags it spells as booleans, and the error record, which is the
@@ -471,6 +471,9 @@ fn render_record(api: &Api, s: &StructDef) -> String {
         components.join(",\n        ")
     );
     render_compact(&mut out, api, &name, &shown);
+    if is_written_by_host(api, s) {
+        render_withers(&mut out, api, &name, &shown);
+    }
     render_into(&mut out, api, s, &roles);
     render_of(&mut out, api, s, &roles, &name);
     out.push_str("}\n");
@@ -514,6 +517,34 @@ fn render_compact(out: &mut String, api: &Api, name: &str, shown: &[(&FieldDef, 
                 f.name, f.name
             );
         }
+    }
+}
+
+/// A copy with one component replaced, for each component of a record a
+/// consumer writes: `canonical.withSidereal(true).withAyanamsha(LAHIRI)`
+/// rather than the record's every component spelt out again.
+fn render_withers(out: &mut String, api: &Api, name: &str, shown: &[(&FieldDef, &FieldRole)]) {
+    let fields: Vec<String> = shown.iter().map(|(f, _)| identifier(&f.name)).collect();
+    for (index, (f, role)) in shown.iter().enumerate() {
+        let field = &fields[index];
+        let ty = java_type(api, f, role);
+        let arguments: Vec<&str> = fields
+            .iter()
+            .enumerate()
+            .map(|(other, name)| {
+                if other == index {
+                    "value"
+                } else {
+                    name.as_str()
+                }
+            })
+            .collect();
+        let _ = writeln!(
+            out,
+            "    /**\n     * This value with another {field}.\n     *\n     * @param value the {field}\n     * @return a copy with {{@code {field}}} replaced\n     */\n    public {name} with{}({ty} value) {{\n        return new {name}({});\n    }}\n",
+            pascal(&f.name),
+            arguments.join(", ")
+        );
     }
 }
 

@@ -25,8 +25,8 @@ use crate::model::{
 use crate::names::{binding_type_name, camel, method_name, pascal, snake};
 use crate::rules::{
     FieldRole, Handed, constant_key, constants, constructor, destructor, field_roles,
-    has_handshake, methods, pointee_opaque, pointee_struct, results, returned_scalar,
-    returns_status, status_enum,
+    has_handshake, is_written_by_host, methods, pointee_opaque, pointee_struct, results,
+    returned_scalar, returns_status, status_enum,
 };
 
 /// A Dart identifier for a member or a field. A name that is one of
@@ -531,9 +531,38 @@ fn render_value_class(out: &mut String, api: &Api, s: &StructDef) {
             identifier(&f.name)
         );
     }
+    if is_written_by_host(api, s) {
+        render_copy_with(out, api, &name, &shown_fields);
+    }
     render_write(out, s, &roles);
     render_read(out, api, s, &roles, &name);
     let _ = writeln!(out, "}}\n");
+}
+
+/// `copyWith` for a value a consumer writes: the frame a request is in is
+/// the canonical one with its zodiac changed, not nine fields spelt out
+/// again. A field that may be absent cannot be cleared by it, which is
+/// Dart's usual `copyWith`: build the value whole for that.
+fn render_copy_with(out: &mut String, api: &Api, name: &str, shown: &[(&FieldDef, &FieldRole)]) {
+    let mut params = Vec::new();
+    let mut fields = Vec::new();
+    for (f, role) in shown {
+        let field = identifier(&f.name);
+        let ty = value_type(api, f, role);
+        let optional = if ty.ends_with('?') {
+            ty
+        } else {
+            format!("{ty}?")
+        };
+        params.push(format!("{optional} {field}"));
+        fields.push(format!("{field}: {field} ?? this.{field}"));
+    }
+    let _ = writeln!(
+        out,
+        "  /// This value with the fields given replaced, and the rest kept.\n  {name} copyWith({{{}}}) => {name}(\n    {},\n  );\n",
+        params.join(", "),
+        fields.join(",\n    ")
+    );
 }
 
 fn render_write(out: &mut String, s: &StructDef, roles: &[FieldRole]) {

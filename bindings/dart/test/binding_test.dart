@@ -320,6 +320,34 @@ void main() {
     expect(again.centre, frame.centre);
     expect(again.equinox, frame.equinox);
     expect(again.sidereal, frame.sidereal);
+    // A copy changes what it names and keeps the rest.
+    final lahiri = frame.copyWith(sidereal: true, ayanamsha: Ayanamsha.lahiri);
+    expect((lahiri.sidereal, lahiri.ayanamsha), (true, Ayanamsha.lahiri));
+    expect(
+      lahiri.copyWith(ayanamsha: null).ayanamsha,
+      Ayanamsha.lahiri,
+      reason: 'copyWith keeps what it is given null for; it never clears',
+    );
+    expect(
+      (
+        lahiri.centre,
+        lahiri.equinox,
+        lahiri.coordinates,
+        lahiri.lightTime,
+        lahiri.aberration,
+        lahiri.deflection,
+        lahiri.nutation,
+      ),
+      (
+        frame.centre,
+        frame.equinox,
+        frame.coordinates,
+        frame.lightTime,
+        frame.aberration,
+        frame.deflection,
+        frame.nutation,
+      ),
+    );
 
     final positions = ctx.positions(
       instants: [2451545.0, 2451546.0],

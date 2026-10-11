@@ -2401,6 +2401,13 @@ final class Observer {
   /// Unit: m. Range: [-500,12000]. Example: 1400.
   final Altitude altitudeM;
 
+  /// This value with the fields given replaced, and the rest kept.
+  Observer copyWith({Longitude? longitudeDeg, Latitude? latitudeDeg, Altitude? altitudeM}) => Observer(
+    longitudeDeg: longitudeDeg ?? this.longitudeDeg,
+    latitudeDeg: latitudeDeg ?? this.latitudeDeg,
+    altitudeM: altitudeM ?? this.altitudeM,
+  );
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2453,6 +2460,16 @@ final class PositionRequest {
   /// The bodies.
   /// Enum: Body.
   final List<Body> bodies;
+
+  /// This value with the fields given replaced, and the rest kept.
+  PositionRequest copyWith({TimeScale? scale, int? frameBits, bool? speeds, Observer? observer, List<double>? jds, List<Body>? bodies}) => PositionRequest(
+    scale: scale ?? this.scale,
+    frameBits: frameBits ?? this.frameBits,
+    speeds: speeds ?? this.speeds,
+    observer: observer ?? this.observer,
+    jds: jds ?? this.jds,
+    bodies: bodies ?? this.bodies,
+  );
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -2536,6 +2553,19 @@ final class PositionColumns {
 
   /// Per-cell sources (`Source::to_bits`).
   final List<int> source;
+
+  /// This value with the fields given replaced, and the rest kept.
+  PositionColumns copyWith({int? frameBits, List<double>? lon, List<double>? lat, List<double>? dist, List<double>? lonSpeed, List<double>? latSpeed, List<double>? distSpeed, List<int>? status, List<int>? source}) => PositionColumns(
+    frameBits: frameBits ?? this.frameBits,
+    lon: lon ?? this.lon,
+    lat: lat ?? this.lat,
+    dist: dist ?? this.dist,
+    lonSpeed: lonSpeed ?? this.lonSpeed,
+    latSpeed: latSpeed ?? this.latSpeed,
+    distSpeed: distSpeed ?? this.distSpeed,
+    status: status ?? this.status,
+    source: source ?? this.source,
+  );
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -2643,6 +2673,14 @@ final class Obliquity {
   /// Nutation in obliquity, degrees.
   /// Unit: deg. Range: [-0.003,0.003]. Example: -0.0026876.
   final double nutationOblDeg;
+
+  /// This value with the fields given replaced, and the rest kept.
+  Obliquity copyWith({double? meanDeg, double? trueDeg, double? nutationLonDeg, double? nutationOblDeg}) => Obliquity(
+    meanDeg: meanDeg ?? this.meanDeg,
+    trueDeg: trueDeg ?? this.trueDeg,
+    nutationLonDeg: nutationLonDeg ?? this.nutationLonDeg,
+    nutationOblDeg: nutationOblDeg ?? this.nutationOblDeg,
+  );
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -2864,6 +2902,13 @@ final class CrossingEvent {
   /// `Direction::id`.
   final int direction;
 
+  /// This value with the fields given replaced, and the rest kept.
+  CrossingEvent copyWith({double? jdUt1, double? boundaryDeg, int? direction}) => CrossingEvent(
+    jdUt1: jdUt1 ?? this.jdUt1,
+    boundaryDeg: boundaryDeg ?? this.boundaryDeg,
+    direction: direction ?? this.direction,
+  );
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3026,6 +3071,17 @@ final class ContextOptions {
   /// is given; ignored when one is (ADR-0028).
   /// Enum: TsEphemeris. Example: 0.
   final Ephemeris ephemeris;
+
+  /// This value with the fields given replaced, and the rest kept.
+  ContextOptions copyWith({int? flags, String? profile, String? settingsJson, String? locale, String? layoutsJson, String? dashasJson, Ephemeris? ephemeris}) => ContextOptions(
+    flags: flags ?? this.flags,
+    profile: profile ?? this.profile,
+    settingsJson: settingsJson ?? this.settingsJson,
+    locale: locale ?? this.locale,
+    layoutsJson: layoutsJson ?? this.layoutsJson,
+    dashasJson: dashasJson ?? this.dashasJson,
+    ephemeris: ephemeris ?? this.ephemeris,
+  );
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -3211,6 +3267,19 @@ final class Frame {
   /// Example: 1.
   final bool nutation;
 
+  /// This value with the fields given replaced, and the rest kept.
+  Frame copyWith({Ayanamsha? ayanamsha, Centre? centre, Equinox? equinox, Coordinates? coordinates, bool? sidereal, bool? lightTime, bool? aberration, bool? deflection, bool? nutation}) => Frame(
+    ayanamsha: ayanamsha ?? this.ayanamsha,
+    centre: centre ?? this.centre,
+    equinox: equinox ?? this.equinox,
+    coordinates: coordinates ?? this.coordinates,
+    sidereal: sidereal ?? this.sidereal,
+    lightTime: lightTime ?? this.lightTime,
+    aberration: aberration ?? this.aberration,
+    deflection: deflection ?? this.deflection,
+    nutation: nutation ?? this.nutation,
+  );
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3288,6 +3357,19 @@ final class CalendarDate {
 
   /// The engine's day when the resolution is divergent, else zero.
   final int computedDay;
+
+  /// This value with the fields given replaced, and the rest kept.
+  CalendarDate copyWith({Calendar? calendar, Era? era, int? year, int? eraYear, int? month, int? day, Resolution? resolution, int? computedMonth, int? computedDay}) => CalendarDate(
+    calendar: calendar ?? this.calendar,
+    era: era ?? this.era,
+    year: year ?? this.year,
+    eraYear: eraYear ?? this.eraYear,
+    month: month ?? this.month,
+    day: day ?? this.day,
+    resolution: resolution ?? this.resolution,
+    computedMonth: computedMonth ?? this.computedMonth,
+    computedDay: computedDay ?? this.computedDay,
+  );
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -3823,6 +3905,46 @@ final class ChartRequest {
   /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
   final String? lalkitabJson;
 
+  /// This value with the fields given replaced, and the rest kept.
+  ChartRequest copyWith({ChartKind? kind, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson}) => ChartRequest(
+    kind: kind ?? this.kind,
+    instants: instants ?? this.instants,
+    latitudeDeg: latitudeDeg ?? this.latitudeDeg,
+    longitudeDeg: longitudeDeg ?? this.longitudeDeg,
+    altitudeM: altitudeM ?? this.altitudeM,
+    utcOffsetSeconds: utcOffsetSeconds ?? this.utcOffsetSeconds,
+    sections: sections ?? this.sections,
+    vargas: vargas ?? this.vargas,
+    drawings: drawings ?? this.drawings,
+    dashas: dashas ?? this.dashas,
+    themeJson: themeJson ?? this.themeJson,
+    rulesJson: rulesJson ?? this.rulesJson,
+    interpretJson: interpretJson ?? this.interpretJson,
+    varshaJson: varshaJson ?? this.varshaJson,
+    gocharJson: gocharJson ?? this.gocharJson,
+    hitsJson: hitsJson ?? this.hitsJson,
+    sadeSatiJson: sadeSatiJson ?? this.sadeSatiJson,
+    kpJson: kpJson ?? this.kpJson,
+    dignitiesJson: dignitiesJson ?? this.dignitiesJson,
+    fortitudesJson: fortitudesJson ?? this.fortitudesJson,
+    lotsJson: lotsJson ?? this.lotsJson,
+    considerationsJson: considerationsJson ?? this.considerationsJson,
+    perfectionJson: perfectionJson ?? this.perfectionJson,
+    progressionsJson: progressionsJson ?? this.progressionsJson,
+    westernAspectsJson: westernAspectsJson ?? this.westernAspectsJson,
+    synastryJson: synastryJson ?? this.synastryJson,
+    parallelsJson: parallelsJson ?? this.parallelsJson,
+    antisciaJson: antisciaJson ?? this.antisciaJson,
+    midpointsJson: midpointsJson ?? this.midpointsJson,
+    westernHousesJson: westernHousesJson ?? this.westernHousesJson,
+    harmonicJson: harmonicJson ?? this.harmonicJson,
+    matchingJson: matchingJson ?? this.matchingJson,
+    prashnaJson: prashnaJson ?? this.prashnaJson,
+    remediesJson: remediesJson ?? this.remediesJson,
+    rectificationJson: rectificationJson ?? this.rectificationJson,
+    lalkitabJson: lalkitabJson ?? this.lalkitabJson,
+  );
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -4072,6 +4194,15 @@ final class CivilTime {
   /// Range: [0,999999999]. Example: 0.
   final int nanos;
 
+  /// This value with the fields given replaced, and the rest kept.
+  CivilTime copyWith({int? hour, int? minute, int? second, bool? hasTime, int? nanos}) => CivilTime(
+    hour: hour ?? this.hour,
+    minute: minute ?? this.minute,
+    second: second ?? this.second,
+    hasTime: hasTime ?? this.hasTime,
+    nanos: nanos ?? this.nanos,
+  );
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -4111,6 +4242,12 @@ final class CivilDateTime {
 
   /// The time of day.
   final CivilTime time;
+
+  /// This value with the fields given replaced, and the rest kept.
+  CivilDateTime copyWith({CalendarDate? date, CivilTime? time}) => CivilDateTime(
+    date: date ?? this.date,
+    time: time ?? this.time,
+  );
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -4155,6 +4292,14 @@ final class ZoneSpec {
   /// The IANA name, for a database zone.
   /// Example: Asia/Kathmandu. May be null.
   final String? zone;
+
+  /// This value with the fields given replaced, and the rest kept.
+  ZoneSpec copyWith({ZoneKind? kind, int? offsetSeconds, Longitude? longitudeDeg, String? zone}) => ZoneSpec(
+    kind: kind ?? this.kind,
+    offsetSeconds: offsetSeconds ?? this.offsetSeconds,
+    longitudeDeg: longitudeDeg ?? this.longitudeDeg,
+    zone: zone ?? this.zone,
+  );
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -4592,6 +4737,24 @@ final class PanchangaRequest {
   /// `festivals`, down to a rule's own field under `festivals.rules`.
   /// Example: {"rules":"DHARMASINDHU"}. May be null.
   final String? festivalsJson;
+
+  /// This value with the fields given replaced, and the rest kept.
+  PanchangaRequest copyWith({Calendar? calendar, int? fromYear, int? fromMonth, int? fromDay, int? toMonth, int? toDay, int? toYear, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, String? muhurtaJson, String? festivalsJson}) => PanchangaRequest(
+    calendar: calendar ?? this.calendar,
+    fromYear: fromYear ?? this.fromYear,
+    fromMonth: fromMonth ?? this.fromMonth,
+    fromDay: fromDay ?? this.fromDay,
+    toMonth: toMonth ?? this.toMonth,
+    toDay: toDay ?? this.toDay,
+    toYear: toYear ?? this.toYear,
+    latitudeDeg: latitudeDeg ?? this.latitudeDeg,
+    longitudeDeg: longitudeDeg ?? this.longitudeDeg,
+    altitudeM: altitudeM ?? this.altitudeM,
+    utcOffsetSeconds: utcOffsetSeconds ?? this.utcOffsetSeconds,
+    sections: sections ?? this.sections,
+    muhurtaJson: muhurtaJson ?? this.muhurtaJson,
+    festivalsJson: festivalsJson ?? this.festivalsJson,
+  );
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it

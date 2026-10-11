@@ -29,6 +29,46 @@ public record Obliquity(
     public Obliquity {
     }
 
+    /**
+     * This value with another meanDeg.
+     *
+     * @param value the meanDeg
+     * @return a copy with {@code meanDeg} replaced
+     */
+    public Obliquity withMeanDeg(double value) {
+        return new Obliquity(value, trueDeg, nutationLonDeg, nutationOblDeg);
+    }
+
+    /**
+     * This value with another trueDeg.
+     *
+     * @param value the trueDeg
+     * @return a copy with {@code trueDeg} replaced
+     */
+    public Obliquity withTrueDeg(double value) {
+        return new Obliquity(meanDeg, value, nutationLonDeg, nutationOblDeg);
+    }
+
+    /**
+     * This value with another nutationLonDeg.
+     *
+     * @param value the nutationLonDeg
+     * @return a copy with {@code nutationLonDeg} replaced
+     */
+    public Obliquity withNutationLonDeg(double value) {
+        return new Obliquity(meanDeg, trueDeg, value, nutationOblDeg);
+    }
+
+    /**
+     * This value with another nutationOblDeg.
+     *
+     * @param value the nutationOblDeg
+     * @return a copy with {@code nutationOblDeg} replaced
+     */
+    public Obliquity withNutationOblDeg(double value) {
+        return new Obliquity(meanDeg, trueDeg, nutationLonDeg, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.ObliquityC.MEAN_DEG.set(raw, 0L, meanDeg);

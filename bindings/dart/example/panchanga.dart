@@ -92,17 +92,9 @@ Panchanga panchangaAt(
   double instant,
   int weekday,
 ) {
-  final canonical = teistro.canonicalFrame;
-  final frame = Frame(
-    ayanamsha: Ayanamsha.lahiri,
-    centre: canonical.centre,
-    equinox: canonical.equinox,
-    coordinates: canonical.coordinates,
+  final frame = teistro.canonicalFrame.copyWith(
     sidereal: true,
-    lightTime: canonical.lightTime,
-    aberration: canonical.aberration,
-    deflection: canonical.deflection,
-    nutation: canonical.nutation,
+    ayanamsha: Ayanamsha.lahiri,
   );
   final sky = ctx.positions(
     instants: [instant],

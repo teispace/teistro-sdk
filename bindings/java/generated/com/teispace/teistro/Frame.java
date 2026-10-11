@@ -43,6 +43,96 @@ public record Frame(
         Objects.requireNonNull(coordinates, "coordinates");
     }
 
+    /**
+     * This value with another ayanamsha.
+     *
+     * @param value the ayanamsha
+     * @return a copy with {@code ayanamsha} replaced
+     */
+    public Frame withAyanamsha(Ayanamsha value) {
+        return new Frame(value, centre, equinox, coordinates, sidereal, lightTime, aberration, deflection, nutation);
+    }
+
+    /**
+     * This value with another centre.
+     *
+     * @param value the centre
+     * @return a copy with {@code centre} replaced
+     */
+    public Frame withCentre(Centre value) {
+        return new Frame(ayanamsha, value, equinox, coordinates, sidereal, lightTime, aberration, deflection, nutation);
+    }
+
+    /**
+     * This value with another equinox.
+     *
+     * @param value the equinox
+     * @return a copy with {@code equinox} replaced
+     */
+    public Frame withEquinox(Equinox value) {
+        return new Frame(ayanamsha, centre, value, coordinates, sidereal, lightTime, aberration, deflection, nutation);
+    }
+
+    /**
+     * This value with another coordinates.
+     *
+     * @param value the coordinates
+     * @return a copy with {@code coordinates} replaced
+     */
+    public Frame withCoordinates(Coordinates value) {
+        return new Frame(ayanamsha, centre, equinox, value, sidereal, lightTime, aberration, deflection, nutation);
+    }
+
+    /**
+     * This value with another sidereal.
+     *
+     * @param value the sidereal
+     * @return a copy with {@code sidereal} replaced
+     */
+    public Frame withSidereal(boolean value) {
+        return new Frame(ayanamsha, centre, equinox, coordinates, value, lightTime, aberration, deflection, nutation);
+    }
+
+    /**
+     * This value with another lightTime.
+     *
+     * @param value the lightTime
+     * @return a copy with {@code lightTime} replaced
+     */
+    public Frame withLightTime(boolean value) {
+        return new Frame(ayanamsha, centre, equinox, coordinates, sidereal, value, aberration, deflection, nutation);
+    }
+
+    /**
+     * This value with another aberration.
+     *
+     * @param value the aberration
+     * @return a copy with {@code aberration} replaced
+     */
+    public Frame withAberration(boolean value) {
+        return new Frame(ayanamsha, centre, equinox, coordinates, sidereal, lightTime, value, deflection, nutation);
+    }
+
+    /**
+     * This value with another deflection.
+     *
+     * @param value the deflection
+     * @return a copy with {@code deflection} replaced
+     */
+    public Frame withDeflection(boolean value) {
+        return new Frame(ayanamsha, centre, equinox, coordinates, sidereal, lightTime, aberration, value, nutation);
+    }
+
+    /**
+     * This value with another nutation.
+     *
+     * @param value the nutation
+     * @return a copy with {@code nutation} replaced
+     */
+    public Frame withNutation(boolean value) {
+        return new Frame(ayanamsha, centre, equinox, coordinates, sidereal, lightTime, aberration, deflection, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.TsFrame.STRUCT_SIZE.set(raw, 0L, (int) Native.TsFrame.SIZE);

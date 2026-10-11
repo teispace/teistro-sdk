@@ -215,6 +215,20 @@ through shared examples with what they print: a birth chart, calendars,
 an almanac, interpretation, the annual chart, and positions with an
 ephemeris of your own.
 
+**A value a consumer writes can be copied with one field changed.**
+Showing the guides' calls in every binding side by side found the
+sidereal frame spelt out field by field in Dart and Java, all nine of
+them, where Node spreads the canonical frame, Python calls
+`dataclasses.replace` and Rust calls `with_zodiac`. Every generated
+value a consumer passes in now has Dart's `copyWith` and a Java
+`with<Field>` per component, so the frame is
+`canonicalFrame.copyWith(sidereal: true, ayanamsha: Ayanamsha.lahiri)`
+and `canonicalFrame().withSidereal(true).withAyanamsha(Ayanamsha.LAHIRI)`.
+Java's context gains `positions(instants, bodies, frame)`, so a frame
+no longer needs a whole `PositionRequest` with a bare `true, null` in
+it. A grid's instant count is `jdCount` (`jd_count`) in every binding:
+Python and Java had called it `instant_count` and `instantCount`.
+
 **Every binding ships six worked examples** (`bindings/*/example/`), the
 same six scenarios in JavaScript, Dart and Python, each a program
 `cargo xtask check-{node,dart,python}` runs — every file in the

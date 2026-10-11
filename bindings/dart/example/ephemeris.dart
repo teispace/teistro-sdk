@@ -97,17 +97,9 @@ void main() {
   // What computed an answer is stamped on the answer, and is printed last.
 
   // ── One call for the whole year ────────────────────────────────────
-  final canonical = teistro.canonicalFrame;
-  final frame = Frame(
-    ayanamsha: Ayanamsha.lahiri,
-    centre: canonical.centre,
-    equinox: canonical.equinox,
-    coordinates: canonical.coordinates,
+  final frame = teistro.canonicalFrame.copyWith(
     sidereal: true,
-    lightTime: canonical.lightTime,
-    aberration: canonical.aberration,
-    deflection: canonical.deflection,
-    nutation: canonical.nutation,
+    ayanamsha: Ayanamsha.lahiri,
   );
   final sky = ctx.positions(
     instants: [for (var day = 0; day < days; day++) startJd + day],

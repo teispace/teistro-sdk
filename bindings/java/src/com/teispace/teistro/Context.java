@@ -423,14 +423,30 @@ public final class Context implements AutoCloseable {
      * @return the grid, read cell by cell with {@link PositionGrid#at}
      */
     public PositionGrid positions(double[] instants, java.util.List<Body> bodies) {
+        return positions(instants, bodies, Calls.frameCanonical(lib));
+    }
+
+    /**
+     * The positions of bodies at instants on UT1, in {@code frame}, with
+     * speeds, seen from the Earth's centre: the canonical frame with its
+     * zodiac changed is {@code teistro.canonicalFrame().withSidereal(true)
+     * .withAyanamsha(Ayanamsha.LAHIRI)}.
+     *
+     * @param instants the instants as Julian days, at least one
+     * @param bodies the bodies, at least one
+     * @param frame the frame the positions are in
+     * @return the grid, read cell by cell with {@link PositionGrid#at}
+     */
+    public PositionGrid positions(double[] instants, java.util.List<Body> bodies, Frame frame) {
         if (instants.length == 0) {
             throw new IllegalArgumentException("a request needs at least one instant");
         }
         if (bodies.isEmpty()) {
             throw new IllegalArgumentException("a request needs at least one body");
         }
-        long frame = Calls.framePack(lib, Calls.frameCanonical(lib));
-        return positions(new PositionRequest(TimeScale.UT1, frame, true, null, instants, bodies));
+        java.util.Objects.requireNonNull(frame, "frame");
+        long bits = Calls.framePack(lib, frame);
+        return positions(new PositionRequest(TimeScale.UT1, bits, true, null, instants, bodies));
     }
 
     /**

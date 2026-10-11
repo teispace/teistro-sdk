@@ -42,6 +42,96 @@ public record CalendarDate(
         Objects.requireNonNull(resolution, "resolution");
     }
 
+    /**
+     * This value with another calendar.
+     *
+     * @param value the calendar
+     * @return a copy with {@code calendar} replaced
+     */
+    public CalendarDate withCalendar(Calendar value) {
+        return new CalendarDate(value, era, year, eraYear, month, day, resolution, computedMonth, computedDay);
+    }
+
+    /**
+     * This value with another era.
+     *
+     * @param value the era
+     * @return a copy with {@code era} replaced
+     */
+    public CalendarDate withEra(Era value) {
+        return new CalendarDate(calendar, value, year, eraYear, month, day, resolution, computedMonth, computedDay);
+    }
+
+    /**
+     * This value with another year.
+     *
+     * @param value the year
+     * @return a copy with {@code year} replaced
+     */
+    public CalendarDate withYear(int value) {
+        return new CalendarDate(calendar, era, value, eraYear, month, day, resolution, computedMonth, computedDay);
+    }
+
+    /**
+     * This value with another eraYear.
+     *
+     * @param value the eraYear
+     * @return a copy with {@code eraYear} replaced
+     */
+    public CalendarDate withEraYear(int value) {
+        return new CalendarDate(calendar, era, year, value, month, day, resolution, computedMonth, computedDay);
+    }
+
+    /**
+     * This value with another month.
+     *
+     * @param value the month
+     * @return a copy with {@code month} replaced
+     */
+    public CalendarDate withMonth(int value) {
+        return new CalendarDate(calendar, era, year, eraYear, value, day, resolution, computedMonth, computedDay);
+    }
+
+    /**
+     * This value with another day.
+     *
+     * @param value the day
+     * @return a copy with {@code day} replaced
+     */
+    public CalendarDate withDay(int value) {
+        return new CalendarDate(calendar, era, year, eraYear, month, value, resolution, computedMonth, computedDay);
+    }
+
+    /**
+     * This value with another resolution.
+     *
+     * @param value the resolution
+     * @return a copy with {@code resolution} replaced
+     */
+    public CalendarDate withResolution(Resolution value) {
+        return new CalendarDate(calendar, era, year, eraYear, month, day, value, computedMonth, computedDay);
+    }
+
+    /**
+     * This value with another computedMonth.
+     *
+     * @param value the computedMonth
+     * @return a copy with {@code computedMonth} replaced
+     */
+    public CalendarDate withComputedMonth(int value) {
+        return new CalendarDate(calendar, era, year, eraYear, month, day, resolution, value, computedDay);
+    }
+
+    /**
+     * This value with another computedDay.
+     *
+     * @param value the computedDay
+     * @return a copy with {@code computedDay} replaced
+     */
+    public CalendarDate withComputedDay(int value) {
+        return new CalendarDate(calendar, era, year, eraYear, month, day, resolution, computedMonth, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.TsCalendarDate.STRUCT_SIZE.set(raw, 0L, (int) Native.TsCalendarDate.SIZE);

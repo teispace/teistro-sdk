@@ -45,7 +45,7 @@ public final class PositionGrid {
      *
      * @return the count
      */
-    public int instantCount() {
+    public int jdCount() {
         return Math.toIntExact(decoded.jdCount());
     }
 
@@ -133,9 +133,9 @@ public final class PositionGrid {
      * @throws IndexOutOfBoundsException for a cell outside the grid
      */
     public Cell at(int instant, int body) {
-        if (instant < 0 || instant >= instantCount() || body < 0 || body >= bodyCount()) {
+        if (instant < 0 || instant >= jdCount() || body < 0 || body >= bodyCount()) {
             throw new IndexOutOfBoundsException(
-                    "(" + instant + ", " + body + ") is outside a " + instantCount() + "x" + bodyCount() + " grid");
+                    "(" + instant + ", " + body + ") is outside a " + jdCount() + "x" + bodyCount() + " grid");
         }
         int index = instant * bodyCount() + body;
         Positions.Cells cells = decoded.cells();

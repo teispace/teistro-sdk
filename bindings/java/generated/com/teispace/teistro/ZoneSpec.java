@@ -31,6 +31,46 @@ public record ZoneSpec(
         Objects.requireNonNull(longitudeDeg, "longitudeDeg");
     }
 
+    /**
+     * This value with another kind.
+     *
+     * @param value the kind
+     * @return a copy with {@code kind} replaced
+     */
+    public ZoneSpec withKind(ZoneKind value) {
+        return new ZoneSpec(value, offsetSeconds, longitudeDeg, zone);
+    }
+
+    /**
+     * This value with another offsetSeconds.
+     *
+     * @param value the offsetSeconds
+     * @return a copy with {@code offsetSeconds} replaced
+     */
+    public ZoneSpec withOffsetSeconds(int value) {
+        return new ZoneSpec(kind, value, longitudeDeg, zone);
+    }
+
+    /**
+     * This value with another longitudeDeg.
+     *
+     * @param value the longitudeDeg
+     * @return a copy with {@code longitudeDeg} replaced
+     */
+    public ZoneSpec withLongitudeDeg(Longitude value) {
+        return new ZoneSpec(kind, offsetSeconds, value, zone);
+    }
+
+    /**
+     * This value with another zone.
+     *
+     * @param value the zone
+     * @return a copy with {@code zone} replaced
+     */
+    public ZoneSpec withZone(String value) {
+        return new ZoneSpec(kind, offsetSeconds, longitudeDeg, value);
+    }
+
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
     void into(MemorySegment raw, Arena arena) {
         Native.TsZoneSpec.STRUCT_SIZE.set(raw, 0L, (int) Native.TsZoneSpec.SIZE);
