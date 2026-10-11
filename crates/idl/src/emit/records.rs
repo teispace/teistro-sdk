@@ -46,7 +46,15 @@ fn variant_name(union: &str, variant: &RecordVariant) -> String {
 /// decoder refuses a key the SDK does not write in every language alike.
 fn decodes_to_itself(ty: &RecordType) -> bool {
     match ty {
-        RecordType::Bool | RecordType::Integer | RecordType::Number | RecordType::Text => true,
+        RecordType::Member { .. }
+        | RecordType::Keyed { .. }
+        | RecordType::Map { .. }
+        | RecordType::Json => {
+            unreachable!("the answer records carry none; requests are rendered for Java only")
+        }
+        RecordType::Bool | RecordType::Integer { .. } | RecordType::Number | RecordType::Text => {
+            true
+        }
         RecordType::Record { .. } => false,
         RecordType::List { of } => decodes_to_itself(of),
         RecordType::Pair { first, second } => decodes_to_itself(first) && decodes_to_itself(second),
@@ -69,8 +77,14 @@ fn ts_field(name: &str) -> String {
 
 fn ts_type(ty: &RecordType) -> String {
     match ty {
+        RecordType::Member { .. }
+        | RecordType::Keyed { .. }
+        | RecordType::Map { .. }
+        | RecordType::Json => {
+            unreachable!("the answer records carry none; requests are rendered for Java only")
+        }
         RecordType::Bool => "boolean".into(),
-        RecordType::Integer | RecordType::Number => "number".into(),
+        RecordType::Integer { .. } | RecordType::Number => "number".into(),
         RecordType::Text => "string".into(),
         RecordType::Record { name } => name.clone(),
         RecordType::List { of } => match of.as_ref() {
@@ -109,6 +123,9 @@ pub fn typescript_declarations(api: &Api) -> String {
     for record in &api.records {
         out.push('\n');
         match &record.shape {
+            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+                unreachable!("the answer records carry none; requests are rendered for Java only")
+            }
             RecordShape::Object { fields } => {
                 out.push_str(&block_comment(&record.doc, ""));
                 let _ = writeln!(out, "export interface {} {{", record.name);
@@ -199,6 +216,9 @@ pub fn javascript_decoders(api: &Api) -> String {
     for record in &api.records {
         let name = &record.name;
         match &record.shape {
+            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+                unreachable!("the answer records carry none; requests are rendered for Java only")
+            }
             RecordShape::Object { fields } => {
                 let _ = writeln!(out, "\n/** A `{name}` from its JSON. */");
                 let _ = writeln!(out, "export function decode{name}(json) {{");
@@ -259,8 +279,14 @@ fn py_field(name: &str) -> String {
 
 fn py_type(ty: &RecordType) -> String {
     match ty {
+        RecordType::Member { .. }
+        | RecordType::Keyed { .. }
+        | RecordType::Map { .. }
+        | RecordType::Json => {
+            unreachable!("the answer records carry none; requests are rendered for Java only")
+        }
         RecordType::Bool => "bool".into(),
-        RecordType::Integer => "int".into(),
+        RecordType::Integer { .. } => "int".into(),
         RecordType::Number => "float".into(),
         RecordType::Text => "str".into(),
         RecordType::Record { name } => name.clone(),
@@ -274,8 +300,14 @@ fn py_type(ty: &RecordType) -> String {
 /// The expression that decodes `expr`, of type `ty`, in Python.
 fn py_decode(ty: &RecordType, expr: &str) -> String {
     match ty {
+        RecordType::Member { .. }
+        | RecordType::Keyed { .. }
+        | RecordType::Map { .. }
+        | RecordType::Json => {
+            unreachable!("the answer records carry none; requests are rendered for Java only")
+        }
         RecordType::Number => format!("float({expr})"),
-        RecordType::Bool | RecordType::Integer | RecordType::Text => expr.to_owned(),
+        RecordType::Bool | RecordType::Integer { .. } | RecordType::Text => expr.to_owned(),
         RecordType::Record { name } => format!("decode_{}({expr})", snake(name)),
         RecordType::List { of } => {
             format!("tuple({} for item in {expr})", py_decode(of, "item"))
@@ -364,6 +396,9 @@ pub fn python_records(api: &Api) -> String {
         let name = &record.name;
         let decoder = format!("decode_{}", snake(name));
         match &record.shape {
+            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+                unreachable!("the answer records carry none; requests are rendered for Java only")
+            }
             RecordShape::Object { fields } => {
                 py_class(&mut out, name, &record.doc, fields, None);
                 let _ = writeln!(
@@ -436,8 +471,14 @@ fn dart_field(name: &str) -> String {
 
 fn dart_type(ty: &RecordType) -> String {
     match ty {
+        RecordType::Member { .. }
+        | RecordType::Keyed { .. }
+        | RecordType::Map { .. }
+        | RecordType::Json => {
+            unreachable!("the answer records carry none; requests are rendered for Java only")
+        }
         RecordType::Bool => "bool".into(),
-        RecordType::Integer => "int".into(),
+        RecordType::Integer { .. } => "int".into(),
         RecordType::Number => "double".into(),
         RecordType::Text => "String".into(),
         RecordType::Record { name } => name.clone(),
@@ -451,8 +492,14 @@ fn dart_type(ty: &RecordType) -> String {
 /// The expression that decodes `expr`, an `Object?` of type `ty`, in Dart.
 fn dart_decode(api: &Api, ty: &RecordType, expr: &str) -> String {
     match ty {
+        RecordType::Member { .. }
+        | RecordType::Keyed { .. }
+        | RecordType::Map { .. }
+        | RecordType::Json => {
+            unreachable!("the answer records carry none; requests are rendered for Java only")
+        }
         RecordType::Bool => format!("{expr}! as bool"),
-        RecordType::Integer => format!("({expr}! as num).toInt()"),
+        RecordType::Integer { .. } => format!("({expr}! as num).toInt()"),
         RecordType::Number => format!("({expr}! as num).toDouble()"),
         RecordType::Text => format!("{expr}! as String"),
         RecordType::Record { name } => {
@@ -556,6 +603,9 @@ pub fn dart_records(api: &Api) -> String {
     for record in &api.records {
         let name = &record.name;
         match &record.shape {
+            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+                unreachable!("the answer records carry none; requests are rendered for Java only")
+            }
             RecordShape::Object { fields } => {
                 dart_class(&mut out, api, name, &record.doc, fields, None);
             }
