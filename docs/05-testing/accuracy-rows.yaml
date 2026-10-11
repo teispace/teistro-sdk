@@ -5,7 +5,8 @@
 # owns it, the evidence a reader can rerun, and the measurements that need
 # the engine present and are run by hand (with their date). The measured
 # columns that CI can produce come from the tests themselves
-# (`crates/astro/tests/common/mod.rs`), keyed by `id`.
+# (`crates/astro/tests/common/mod.rs`, which the built-in ephemeris's
+# conformance test shares), keyed by `id`.
 rows:
   - id: time_scales
     area: time scales
@@ -42,6 +43,12 @@ rows:
     target: bit-identical
     page: 03-design/astro-star-table.md
     evidence: "`bp06`'s bias matrix and `bi00` against ERFA; the star table's places over the engine's own astrometry bit for bit on the mean equator of date (the CI row below)"
+  - id: ephemeris
+    area: the built-in ephemeris
+    target: "each tier's band against DE440 (`fixtures/tolerances.json`, `jpl.geometric`): the truncation ADR-0027 fixed, a minute at the compact tier and an arcsecond at the standard"
+    page: 03-design/builtin-ephemeris-measured.md
+    evidence: "`crates/ephemeris-builtin/tests/conformance.rs` over `fixtures/jpl/cspice/states.json`: CSPICE's geometric states over NAIF's DE440 (evidence rank 1), geocentric on the J2000 ecliptic, so no light time, aberration or Delta T stands between the two; every value outside a band is a divergence `ephemeris-kit`'s `jpl::KNOWN` measures and explains, both ways, and `CONFORMANCE.md` counts them: VSOP87's own radius vectors at the outer planets, the truncated Pluto tables, and the published theories' drift from DE440 away from 2000. The measured column names the bodies whose every value is inside the band. The Horizons recording (DE441) waits on JPL's permission"
+    by_hand: "the tiers a default build does not compile, grouped as the measured column groups them, by `cargo test -p teistro-ephemeris-builtin --no-default-features --features <tier> --test conformance`: compact, directions 9.9″ for the Sun, the Moon and Mercury to Mars (band 36″) and 27.2″ for Jupiter to Pluto (band 108″), distances 14940 km for every body but Uranus and Pluto (band 15000 km); full, directions 0.2″ for the Sun, Mercury and Venus (band 1.08″) and 0.87″ for Jupiter, Saturn and Pluto (band 3.6″), distances 119 km for the Sun, the Moon, Mercury, Venus and Pluto (band 150 km), the rest outside their bands by the theories' drift and VSOP87's radius vectors (2026-10-11)"
   - id: completion
     area: position completion
     target: "1e-6″ when fed identical geometric vectors"
