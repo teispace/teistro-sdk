@@ -61,7 +61,7 @@ import java.util.Objects;
  * @param westernAspects What an aspect table is asked: which aspects, under which orbs. Null leaves the SDK's default.
  * @param westernHouses What a chart's Western houses are asked with. Null leaves the SDK's default.
  */
-public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, PartnerMatching matching, MidpointRequest midpoints, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, Boolean shadbala, Boolean state, ChartFoundRequestSynastry synastry, ThemePatch theme, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, HouseRequest westernHouses) implements RequestJson {
+public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, PartnerMatching matching, MidpointRequest midpoints, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, HouseRequest westernHouses) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -128,7 +128,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         private SadeSatiRequest sadeSati;
         private Boolean shadbala;
         private Boolean state;
-        private ChartFoundRequestSynastry synastry;
+        private PartnerSynastry synastry;
         private ThemePatch theme;
         private Integer utcOffsetSeconds;
         private Boolean vaiseshikamsa;
@@ -586,7 +586,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          * @param synastry What a synastry is asked: the aspects and orbs a chart's own table reads, whether each chart's lagna joins its planets, and the zodiac. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder synastry(ChartFoundRequestSynastry synastry) {
+        public Builder synastry(PartnerSynastry synastry) {
             this.synastry = synastry;
             return this;
         }
@@ -740,7 +740,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.orNull(json.get("sadeSati"), present -> SadeSatiRequest.of(present)),
             Read.orNull(json.get("shadbala"), present -> Read.bool(present, "ChartFoundRequest.shadbala")),
             Read.orNull(json.get("state"), present -> Read.bool(present, "ChartFoundRequest.state")),
-            Read.orNull(json.get("synastry"), present -> ChartFoundRequestSynastry.of(present)),
+            Read.orNull(json.get("synastry"), present -> PartnerSynastry.of(present)),
             Read.orNull(json.get("theme"), present -> ThemePatch.of(present)),
             Read.int32(Read.required(json.get("utcOffsetSeconds"), "ChartFoundRequest.utcOffsetSeconds"), "ChartFoundRequest.utcOffsetSeconds"),
             Read.orNull(json.get("vaiseshikamsa"), present -> Read.bool(present, "ChartFoundRequest.vaiseshikamsa")),

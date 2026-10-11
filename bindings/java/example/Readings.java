@@ -19,6 +19,9 @@ import com.teispace.teistro.Latitude;
 import com.teispace.teistro.Longitude;
 import com.teispace.teistro.Observer;
 import com.teispace.teistro.Teistro;
+import com.teispace.teistro.request.PlanRequest;
+import com.teispace.teistro.request.RuleRequest;
+import com.teispace.teistro.request.ShippedRules;
 import com.teispace.teistro.blob.IntlRender;
 
 /**
@@ -98,8 +101,8 @@ public final class Readings {
             // which is the gap `interpret-measured.md` counts.
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             Chart chart = ctx.chart().found(2447995.4895833335, kathmandu, 20700, ChartOptions.builder()
-                    .rules(Map.of("shipped", List.of("YOGAS", "DOSHAS")))
-                    .interpret(Map.of("readings", true))
+                    .rules(RuleRequest.builder().shipped(List.of(ShippedRules.YOGAS, ShippedRules.DOSHAS)).build())
+                    .interpret(PlanRequest.builder().readings(true).build())
                     .build());
             if (!(chart.plans().orElseThrow().get("readings") instanceof List<?> plan)) {
                 throw new IllegalStateException("no `readings` plan");

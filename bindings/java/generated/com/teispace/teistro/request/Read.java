@@ -46,8 +46,8 @@ final class Read {
     }
 
     static long integer(Object raw, String at) {
-        if (raw instanceof Long number) {
-            return number;
+        if (raw instanceof Long || raw instanceof Integer || raw instanceof Short || raw instanceof Byte) {
+            return ((Number) raw).longValue();
         }
         throw refused(at, "an integer", raw);
     }
@@ -97,7 +97,9 @@ final class Read {
     }
 
     static <M> M member(Object raw, String at, Function<String, Optional<M>> byKey) {
-        String key = text(raw, at);
+        // A member itself, as a map built in Java holds it and as
+        // `Json.write` takes it, is read by its key.
+        String key = raw instanceof com.teispace.teistro.Member member ? member.key() : text(raw, at);
         return byKey.apply(key).orElseThrow(() -> refused(at, "a key the SDK reads", raw));
     }
 

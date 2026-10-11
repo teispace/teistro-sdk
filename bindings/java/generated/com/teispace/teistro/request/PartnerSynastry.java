@@ -22,7 +22,7 @@ import java.util.Objects;
  * @param partner A second birth, which every chart of a batch is read against. Null leaves the SDK's default.
  * @param zodiac Which zodiac two charts are compared in (C241). Null leaves the SDK's default.
  */
-public record ChartFoundRequestSynastry(AntisciaRequest antiscia, List<com.teispace.teistro.WesternAspect> aspects, Boolean composite, Boolean davison, Boolean lagna, MidpointRequest midpoints, OrbModel orbs, ParallelRequest parallels, Partner partner, SynastryZodiac zodiac) implements RequestJson {
+public record PartnerSynastry(AntisciaRequest antiscia, List<com.teispace.teistro.WesternAspect> aspects, Boolean composite, Boolean davison, Boolean lagna, MidpointRequest midpoints, OrbModel orbs, ParallelRequest parallels, Partner partner, SynastryZodiac zodiac) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -30,7 +30,7 @@ public record ChartFoundRequestSynastry(AntisciaRequest antiscia, List<com.teisp
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public ChartFoundRequestSynastry {
+    public PartnerSynastry {
         aspects = aspects == null ? null : List.copyOf(aspects);
     }
 
@@ -44,7 +44,7 @@ public record ChartFoundRequestSynastry(AntisciaRequest antiscia, List<com.teisp
         return new Builder();
     }
 
-    /** Builds a {@link ChartFoundRequestSynastry} a field at a time. */
+    /** Builds a {@link PartnerSynastry} a field at a time. */
     public static final class Builder {
         private AntisciaRequest antiscia;
         private List<com.teispace.teistro.WesternAspect> aspects;
@@ -175,26 +175,26 @@ public record ChartFoundRequestSynastry(AntisciaRequest antiscia, List<com.teisp
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public ChartFoundRequestSynastry build() {
-            return new ChartFoundRequestSynastry(antiscia, aspects, composite, davison, lagna, midpoints, orbs, parallels, partner, zodiac);
+        public PartnerSynastry build() {
+            return new PartnerSynastry(antiscia, aspects, composite, davison, lagna, midpoints, orbs, parallels, partner, zodiac);
         }
     }
 
     /**
-     * A {@code ChartFoundRequestSynastry} from its JSON, as {@code Json.read} answers it.
+     * A {@code PartnerSynastry} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static ChartFoundRequestSynastry of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "ChartFoundRequestSynastry");
-        return new ChartFoundRequestSynastry(
+    public static PartnerSynastry of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "PartnerSynastry");
+        return new PartnerSynastry(
             Read.orNull(json.get("antiscia"), present -> AntisciaRequest.of(present)),
-            Read.orNull(json.get("aspects"), present -> Read.list(present, "ChartFoundRequestSynastry.aspects", item0 -> Read.member(item0, "ChartFoundRequestSynastry.aspects", com.teispace.teistro.WesternAspect::byKey))),
-            Read.orNull(json.get("composite"), present -> Read.bool(present, "ChartFoundRequestSynastry.composite")),
-            Read.orNull(json.get("davison"), present -> Read.bool(present, "ChartFoundRequestSynastry.davison")),
-            Read.orNull(json.get("lagna"), present -> Read.bool(present, "ChartFoundRequestSynastry.lagna")),
+            Read.orNull(json.get("aspects"), present -> Read.list(present, "PartnerSynastry.aspects", item0 -> Read.member(item0, "PartnerSynastry.aspects", com.teispace.teistro.WesternAspect::byKey))),
+            Read.orNull(json.get("composite"), present -> Read.bool(present, "PartnerSynastry.composite")),
+            Read.orNull(json.get("davison"), present -> Read.bool(present, "PartnerSynastry.davison")),
+            Read.orNull(json.get("lagna"), present -> Read.bool(present, "PartnerSynastry.lagna")),
             Read.orNull(json.get("midpoints"), present -> MidpointRequest.of(present)),
             Read.orNull(json.get("orbs"), present -> OrbModel.of(present)),
             Read.orNull(json.get("parallels"), present -> ParallelRequest.of(present)),

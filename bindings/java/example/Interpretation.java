@@ -24,6 +24,9 @@ import com.teispace.teistro.Observer;
 import com.teispace.teistro.Teistro;
 import com.teispace.teistro.TeistroException;
 import com.teispace.teistro.ZoneResolution;
+import com.teispace.teistro.request.PlanRequest;
+import com.teispace.teistro.request.RuleRequest;
+import com.teispace.teistro.request.ShippedRules;
 import com.teispace.teistro.blob.IntlRender;
 
 /**
@@ -86,16 +89,19 @@ public final class Interpretation {
                     // The rules whose answers the readings composer will say.
                     // The sections they read are computed whether or not they
                     // are asked for here.
-                    .rules(Map.of("shipped", List.of("NABHASAS", "ARISHTAS")))
-                    .interpret(Map.of(
-                            "placements", true,
-                            "readings", true,
-                            "strength", true,
-                            "houses", true,
-                            "positions", true,
-                            "aspects", true,
-                            "conditions", true,
-                            "karakas", true))
+                    .rules(RuleRequest.builder()
+                            .shipped(List.of(ShippedRules.NABHASAS, ShippedRules.ARISHTAS))
+                            .build())
+                    .interpret(PlanRequest.builder()
+                            .placements(true)
+                            .readings(true)
+                            .strength(true)
+                            .houses(true)
+                            .positions(true)
+                            .aspects(true)
+                            .conditions(true)
+                            .karakas(true)
+                            .build())
                     .build());
             Map<String, Object> plans = chart.plans().orElseThrow();
             List<Map<?, ?>> placements = items(plans, "placements");
@@ -157,7 +163,7 @@ public final class Interpretation {
 
             try {
                 ctx.chart().found(when.instantJdUtc(), place, when.offsetSeconds(), ChartOptions.builder()
-                        .interpret(Map.of("readings", true))
+                        .interpret(PlanRequest.builder().readings(true).build())
                         .build());
             } catch (TeistroException error) {
                 System.out.println("refused  " + error.field() + ": " + error.getMessage());

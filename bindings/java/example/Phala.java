@@ -20,6 +20,8 @@ import com.teispace.teistro.Longitude;
 import com.teispace.teistro.Observer;
 import com.teispace.teistro.SadeSatiReport;
 import com.teispace.teistro.Teistro;
+import com.teispace.teistro.request.PlanRequest;
+import com.teispace.teistro.request.SadeSatiRequest;
 import com.teispace.teistro.blob.IntlRender;
 
 /**
@@ -112,7 +114,7 @@ public final class Phala {
             // composer reads, its states and the panchanga's limbs among
             // them, in the same call.
             Chart chart = ctx.chart().found(2447995.4895833335, KATHMANDU, 20700, ChartOptions.builder()
-                    .interpret(Map.of("phala", true))
+                    .interpret(PlanRequest.builder().phala(true).build())
                     .build());
             List<?> plan = plan(chart, "phala");
             System.out.println("\n" + plan.size() + " items");
@@ -133,8 +135,8 @@ public final class Phala {
             // whole Sade Sati and both smaller spells, and each house is
             // said once, in the order Saturn first reaches it.
             chart = ctx.chart().found(2447995.4895833335, KATHMANDU, 20700, ChartOptions.builder()
-                    .sadeSati(Map.of("from", 2451545.0, "to", 2462502.5))
-                    .interpret(Map.of("sadeSati", true))
+                    .sadeSati(SadeSatiRequest.builder().from(2451545.0).to(2462502.5).build())
+                    .interpret(PlanRequest.builder().sadeSati(true).build())
                     .build());
             SadeSatiReport report = chart.sadeSati().orElseThrow();
             int periods = report.sadeSati().size() + report.spells().size();

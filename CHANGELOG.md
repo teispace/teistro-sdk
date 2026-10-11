@@ -2461,7 +2461,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   moved into `crates/sdk/tests/requests.json`, which the Java tests read
   into their types and back. Four request types took names of their own
   (`GrahaClass`, `YearsRectification`, `SahamFriendship`, `RateSpan`)
-  so none reads like an unrelated type. **Numbers:** none move.
+  so none reads like an unrelated type. `ChartOptions` takes them: each
+  reading's setter takes its request type (`kp(KpRequest)`), and
+  `reading(field, request)` still takes any reading as a map or JSON.
+  The synastry request is named `PartnerSynastry`, and a varsha's annual
+  dashas are typed as `DashaSystem` members in every schema. **Numbers:**
+  none move.
 - **The Java package, for Maven Central** (`03-design/java-binding.md`
   steps 7 to 9). `cargo xtask package stage` writes Maven's repository
   layout: a jar carrying every platform's library, a classifier jar per
