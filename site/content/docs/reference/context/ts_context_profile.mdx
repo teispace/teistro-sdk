@@ -5,7 +5,42 @@ description: "The id of the profile the context's settings came from, lent until
 
 The id of the profile the context's settings came from, lent until the next call on the context.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.profile
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.profile
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.profile
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.profile
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.profile
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_context_profile(const ts_context * context, ts_str * out_profile);
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.profile(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.profile(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `(root).profile` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

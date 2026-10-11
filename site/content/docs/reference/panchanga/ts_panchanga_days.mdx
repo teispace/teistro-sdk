@@ -11,7 +11,42 @@ Everything but the request is the context's settings, so two calls under one con
 
 A context without an ephemeris is `CAPABILITY`; a provider failure is `PROVIDER` with the provider's own code in the last error. A polar day under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the policies that would synthesise one.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.of
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.of
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.of
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().of
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().of
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -19,25 +54,9 @@ ts_status ts_panchanga_days(const ts_context * context, const ts_panchanga_reque
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.panchanga_days(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.panchangaDays(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `almanac.of` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

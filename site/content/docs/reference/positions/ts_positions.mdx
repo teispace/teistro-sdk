@@ -5,7 +5,42 @@ description: "Positions over a grid of instants and bodies in the requested fram
 
 Positions over a grid of instants and bodies in the requested frame: the provider answers in the frame it can, the SDK completes the rest under the profile's override policy, and every step is stamped. A context without an ephemeris is `CAPABILITY`; a provider failure is `PROVIDER` with the provider's own code in the last error.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.positions
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.positions
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.positions
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.positions
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.positions
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_positions(const ts_context * context, const ts_position_request * r
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.positions(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.positions(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `(root).positions` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

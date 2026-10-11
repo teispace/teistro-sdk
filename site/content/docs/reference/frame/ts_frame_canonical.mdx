@@ -5,7 +5,42 @@ description: "Writes the SDK's canonical frame: apparent geocentric ecliptic of 
 
 Writes the SDK's canonical frame: apparent geocentric ecliptic of date, tropical, which both licensed engines return by default and every chart module consumes. Set `struct_size` before the call.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.frame.canonical
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.frame.canonical
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.frame.canonical
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.frame().canonical
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.frame().canonical
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_frame_canonical(ts_frame * out_frame);
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-frame_canonical(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.frameCanonical(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `frame.canonical` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

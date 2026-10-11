@@ -5,7 +5,42 @@ description: "The full key of a packed id (`graha.SUN`), lent until the next cal
 
 The full key of a packed id (`graha.SUN`), lent until the next call on the context. An id no catalogued member has is `UNSUPPORTED`.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.keys.name
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.keys.name
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.keys.name
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.keys().name
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.keys().name
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_key_name(const ts_context * context, uint32_t id, ts_str * out_key)
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.key_name(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.keyName(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `keys.name` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

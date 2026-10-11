@@ -5,33 +5,11 @@ description: "The outcome of the last call on the context: its status, the provi
 
 The outcome of the last call on the context: its status, the provider's code, and the message, field, hint and key as strings lent until the next call other than this one. After a successful call the record is `OK` with a null message.
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 ts_status ts_context_last_error(const ts_context * context, ts_error * out_error);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-context.last_error(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.lastError(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 ## Parameters
 

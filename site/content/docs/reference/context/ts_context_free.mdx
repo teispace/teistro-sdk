@@ -5,7 +5,28 @@ description: "Frees a context; null is ignored."
 
 Frees a context; null is ignored.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.dispose
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.close
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.dispose
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +34,9 @@ void ts_context_free(ts_context * context);
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context_free(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.contextFree(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `(root).dispose` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

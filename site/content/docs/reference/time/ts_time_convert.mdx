@@ -5,7 +5,42 @@ description: "Converts an instant between UT1, TT and UTC under the context's De
 
 Converts an instant between UT1, TT and UTC under the context's Delta T model, reporting what was applied. A model that cannot answer for the instant is `OUT_OF_RANGE`.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.time.convert
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.time.convert
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.time.convert
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.time().convert
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.time().convert
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_time_convert(const ts_context * context, double jd, uint32_t from, 
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.time_convert(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.timeConvert(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `time.convert` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

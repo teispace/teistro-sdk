@@ -5,7 +5,42 @@ description: "Whether a year is a leap year in a calendar: `1` or `0`."
 
 Whether a year is a leap year in a calendar: `1` or `0`.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.calendar.isLeap
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.calendar.is_leap
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.calendar.isLeap
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.calendar().isLeap
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.calendar().is_leap
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_calendar_is_leap(const ts_context * context, uint16_t calendar, int
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.calendar_is_leap(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.calendarIsLeap(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `calendar.is_leap` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

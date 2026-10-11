@@ -102,6 +102,10 @@ pub(crate) struct Surface {
     pub(crate) members: Vec<Member>,
 }
 
+/// The native context's methods the generator names apart from their
+/// entry point, each listed: freeing a context is what `dispose` means.
+const NAMED_APART: [(&str, &str); 1] = [("#inner.dispose(", "ts_context_free")];
+
 /// The name the context is read under, which is not an area.
 pub(crate) const ROOT: &str = "(root)";
 
@@ -113,9 +117,26 @@ pub(crate) const ROOT: &str = "(root)";
 /// expects: a parse that silently found nothing would report a surface
 /// of no members and call every rule proven.
 pub(crate) fn surfaces_of(source: &str, entry_points: &[String]) -> Result<Vec<Surface>, String> {
+    // A free function is reached by its whole name; a method of the
+    // context is also reached by its name on the native context, which
+    // drops the handle's prefix (`#inner.settingsHash()` is
+    // `ts_context_settings_hash`).
     let reached: Vec<(String, String)> = entry_points
         .iter()
-        .map(|name| (format!(".{}(", camel(name)), name.clone()))
+        .flat_map(|name| {
+            let method = name.strip_prefix("ts_context_").map(|rest| {
+                (
+                    format!("#inner.{}(", camel(&format!("ts_{rest}"))),
+                    name.clone(),
+                )
+            });
+            std::iter::once((format!(".{}(", camel(name)), name.clone())).chain(method)
+        })
+        .chain(
+            NAMED_APART
+                .iter()
+                .map(|(spelling, entry)| ((*spelling).to_owned(), (*entry).to_owned())),
+        )
         .collect();
 
     // The wiring is the mapping: the constructor says which class each
@@ -679,7 +700,7 @@ fn claims_section(
         .with_note("which is what the namespace is for"),
         Claim::counted(
             "every boundary module is reached, or is the caller's memory or the context's life",
-            unreached.len().saturating_sub(PLUMBING.len()),
+            unreached.len() - plumbing(&unreached),
             per_module.len(),
         )
         .with_note(format!("unreached: {}", named(&unreached))),
@@ -718,9 +739,10 @@ fn claims_section(
     if !unreached.is_empty() {
         let _ = writeln!(
             out,
-            "The unreached modules are `{}`. {} of them are the plumbing the rule allows for — the C caller's memory, the context's own life, and the library itself — and a rule that made an area of each would put them on the surface with nothing ever to be found under them.\n",
+            "The unreached modules are `{}`. {} of them are the plumbing the rule allows for (`{}`: the C caller's memory, the context's own life, and the library itself), and a rule that made an area of each would put them on the surface with nothing ever to be found under them.\n",
             unreached.join("`, `"),
-            PLUMBING.len()
+            plumbing(&unreached),
+            PLUMBING.join("`, `")
         );
     }
     out
@@ -741,6 +763,15 @@ fn carries_its_module(function: &Function) -> bool {
 /// a count: a module nothing happens to reach this week is not the same
 /// as one nothing should ever reach.
 const PLUMBING: [&str; 5] = ["blob", "context", "lib", "provider", "string"];
+
+/// How many of the unreached modules are [`PLUMBING`]: counted from the
+/// list rather than taken as its length, which once said 5 of 4.
+fn plumbing(unreached: &[&str]) -> usize {
+    unreached
+        .iter()
+        .filter(|module| PLUMBING.contains(module))
+        .count()
+}
 
 /// The operations whose names still spell their own area.
 fn repeating(surfaces: &[Surface]) -> Vec<String> {
@@ -939,4 +970,270 @@ fn named<T: AsRef<str>>(names: &[T]) -> String {
         .map(|name| format!("`{}`", name.as_ref()))
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+// ── What the reference says reaches each entry point ──────────────────────
+
+/// A binding whose parity runner spells the surface: every canonical
+/// path beside the member it means, in that binding's own syntax.
+struct Speller {
+    binding: &'static str,
+    language: &'static str,
+    runner: &'static str,
+    /// What the runner calls its context, which the reference writes `ctx`.
+    receiver: &'static str,
+}
+
+/// Read rather than derived by a naming rule: a rule would say Java's
+/// `engine.call` is `ctx.engine().call`, and the Java runner, which
+/// compiles, says it is `ctx.ephemeris().call`.
+const SPELLERS: [Speller; 4] = [
+    Speller {
+        binding: "Node",
+        language: "js",
+        runner: "bindings/node/parity.mjs",
+        receiver: "shape.",
+    },
+    Speller {
+        binding: "Python",
+        language: "python",
+        runner: "bindings/python/parity.py",
+        receiver: "ctx.",
+    },
+    Speller {
+        binding: "Dart",
+        language: "dart",
+        runner: "bindings/dart/bin/parity.dart",
+        receiver: "ctx.",
+    },
+    Speller {
+        binding: "Java",
+        language: "java",
+        runner: "bindings/java/parity/ParityRunner.java",
+        receiver: "ctx.",
+    },
+];
+
+/// The Rust runner lists its paths without the members (`"present"`), so
+/// Rust's spelling is the façade's rule, `sdk.<area>().<operation>`, held
+/// to the façade's source: an operation it does not define is an error.
+const RUST_RUNNER: &str = "crates/sdk/examples/parity.rs";
+const RUST_FACADE: &str = "crates/sdk/src";
+
+/// The paths the façade reaches by something other than an operation,
+/// each with what the façade declares for it: `intl.messages` is a tree
+/// of typed messages, which Rust spells as a module
+/// (`crates/sdk/src/area/intl.rs` says why).
+const RUST_ELSEWHERE: [(&str, &str, &str); 1] = [(
+    "intl.messages",
+    "teistro::messages",
+    "pub use teistro_intl::messages;",
+)];
+
+/// The members a runner lists, by canonical path: a row's path and the
+/// expression beside it, from `['p', shape.a.b]`, `("p", ctx.a.b)` or
+/// Java's `surface("p", () -> ctx.a().b(…))`, the receiver written `ctx.`.
+fn spelt(source: &str, receiver: &str) -> BTreeMap<String, String> {
+    let mut out = BTreeMap::new();
+    for line in source.lines() {
+        let row = line.trim_start();
+        let row = row
+            .strip_prefix("surface(")
+            .or_else(|| row.strip_prefix('['))
+            .or_else(|| row.strip_prefix('('));
+        let Some(row) = row else {
+            continue;
+        };
+        let Some(quote) = row.chars().next().filter(|c| *c == '\'' || *c == '"') else {
+            continue;
+        };
+        let Some((path, rest)) = row[1..].split_once(quote) else {
+            continue;
+        };
+        if !path.contains('.') {
+            continue;
+        }
+        let rest = rest.trim_start_matches([',', ' ']);
+        let rest = rest.strip_prefix("() -> ").unwrap_or(rest);
+        let Some(member) = rest.strip_prefix(receiver) else {
+            continue;
+        };
+        out.insert(path.to_owned(), format!("ctx.{}", member_of(member)));
+    }
+    out
+}
+
+/// A member expression up to where it is called or the row ends: `a.b`
+/// from `a.b]`, and Java's `a().b` from `a().b(x, y));`.
+fn member_of(expression: &str) -> String {
+    let mut out = String::new();
+    let mut rest = expression;
+    loop {
+        let end = rest
+            .find(|c: char| !(c.is_ascii_alphanumeric() || c == '_'))
+            .unwrap_or(rest.len());
+        out.push_str(&rest[..end]);
+        rest = &rest[end..];
+        if let Some(after) = rest.strip_prefix("().") {
+            out.push_str("().");
+            rest = after;
+        } else if let Some(after) = rest.strip_prefix('.') {
+            out.push('.');
+            rest = after;
+        } else {
+            return out;
+        }
+    }
+}
+
+/// Rust's spelling of a canonical path.
+fn rust_member(path: &str) -> String {
+    match path.split_once('.') {
+        Some((ROOT, operation)) => format!("sdk.{operation}"),
+        Some((area, operation)) => format!("sdk.{area}().{operation}"),
+        None => format!("sdk.{path}"),
+    }
+}
+
+/// Every `.rs` file's text under a directory, joined.
+fn sources_under(dir: &Path) -> String {
+    let mut out = String::new();
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return out;
+    };
+    for path in entries.flatten().map(|entry| entry.path()) {
+        if path.is_dir() {
+            out.push_str(&sources_under(&path));
+        } else if path.extension().is_some_and(|ext| ext == "rs") {
+            out.push_str(&std::fs::read_to_string(&path).unwrap_or_default());
+        }
+    }
+    out
+}
+
+/// What reaches each entry point, for the reference: the Node layer's
+/// members that call it, as canonical paths, each spelled by every runner
+/// that lists it.
+///
+/// Refuses rather than leaves a binding out when a runner spells no
+/// paths or the Rust façade lacks an operation its runner lists, because
+/// a reference that quietly dropped a tab would read as complete.
+pub(crate) fn reach(root: &Path) -> Result<teistro_idl::emit::mdx::Reach, String> {
+    use teistro_idl::emit::mdx::{Reached, Spelling};
+    let read = |path: &str| {
+        std::fs::read_to_string(root.join(path)).map_err(|error| format!("{path}: {error}"))
+    };
+    let api: Api = serde_json::from_str(&read(API)?).map_err(|error| format!("{API}: {error}"))?;
+    let entry_points: Vec<String> = api.functions.iter().map(|f| f.name.clone()).collect();
+    let surfaces = surfaces_of(&read(NODE)?, &entry_points)?;
+    let mut spellings = Vec::with_capacity(SPELLERS.len());
+    for speller in &SPELLERS {
+        let members = spelt(&read(speller.runner)?, speller.receiver);
+        if members.is_empty() {
+            return Err(format!("{} spells no surface paths", speller.runner));
+        }
+        spellings.push((speller, members));
+    }
+    let rust_listed = listed(&read(RUST_RUNNER)?);
+    let facade = sources_under(&root.join(RUST_FACADE));
+    let mut out = teistro_idl::emit::mdx::Reach::new();
+    for surface in &surfaces {
+        for member in &surface.members {
+            let path = canonical(&surface.name, &member.name);
+            let mut spelt: Vec<Spelling> = spellings
+                .iter()
+                .filter_map(|(speller, members)| {
+                    members.get(&path).map(|member| Spelling {
+                        binding: speller.binding.to_owned(),
+                        language: speller.language.to_owned(),
+                        member: member.clone(),
+                    })
+                })
+                .collect();
+            if rust_listed.contains(&path) {
+                let operation = path.rsplit('.').next().unwrap_or(&path);
+                let (member, declared) = RUST_ELSEWHERE
+                    .iter()
+                    .find(|(listed, ..)| *listed == path)
+                    .map_or_else(
+                        || (rust_member(&path), format!("pub fn {operation}(")),
+                        |(_, member, declared)| ((*member).to_owned(), (*declared).to_owned()),
+                    );
+                if !facade.contains(&declared) {
+                    return Err(format!(
+                        "{RUST_RUNNER} lists {path}, and {RUST_FACADE} declares no `{declared}`"
+                    ));
+                }
+                spelt.push(Spelling {
+                    binding: "Rust".to_owned(),
+                    language: "rust".to_owned(),
+                    member,
+                });
+            }
+            for entry_point in &member.reaches {
+                let reached = out.entry(entry_point.clone()).or_default();
+                if !reached.iter().any(|one: &Reached| one.path == path) {
+                    reached.push(Reached {
+                        path: path.clone(),
+                        spellings: spelt.clone(),
+                    });
+                }
+            }
+        }
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_runner_row_is_read_as_its_member() {
+        let node = "  ['calendar.month_length', shape.calendar.monthLength],\n  ['(root).dispose', shape.dispose],";
+        let read = spelt(node, "shape.");
+        assert_eq!(read["calendar.month_length"], "ctx.calendar.monthLength");
+        assert_eq!(read["(root).dispose"], "ctx.dispose");
+        let java =
+            r#"            surface("engine.call", () -> ctx.ephemeris().call("", Map.of()));"#;
+        assert_eq!(spelt(java, "ctx.")["engine.call"], "ctx.ephemeris().call");
+        let python = r#"        ("calendar.is_leap", ctx.calendar.is_leap),"#;
+        assert_eq!(
+            spelt(python, "ctx.")["calendar.is_leap"],
+            "ctx.calendar.is_leap"
+        );
+        // A row that is not a path is not read.
+        assert!(spelt("  ['a b', shape.x],\n  (\"plain\", ctx.y),", "ctx.").is_empty());
+    }
+
+    #[test]
+    fn rust_spells_an_area_as_a_call() {
+        assert_eq!(
+            rust_member("calendar.month_length"),
+            "sdk.calendar().month_length"
+        );
+        assert_eq!(rust_member("(root).positions"), "sdk.positions");
+    }
+
+    #[test]
+    fn every_runner_spells_the_surface() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let reach = reach(&root).expect("the reach reads");
+        let convert = &reach["ts_calendar_convert"];
+        let spelt: Vec<(&str, &str)> = convert[0]
+            .spellings
+            .iter()
+            .map(|one| (one.binding.as_str(), one.member.as_str()))
+            .collect();
+        assert_eq!(
+            spelt,
+            [
+                ("Node", "ctx.calendar.convert"),
+                ("Python", "ctx.calendar.convert"),
+                ("Dart", "ctx.calendar.convert"),
+                ("Java", "ctx.calendar().convert"),
+                ("Rust", "sdk.calendar().convert"),
+            ]
+        );
+    }
 }

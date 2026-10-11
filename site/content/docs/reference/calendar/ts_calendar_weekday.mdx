@@ -5,7 +5,42 @@ description: "The weekday of a date as its ISO number: Monday is `1`, Sunday `7`
 
 The weekday of a date as its ISO number: Monday is `1`, Sunday `7`.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.calendar.weekdayOf
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.calendar.weekday_of
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.calendar.weekdayOf
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.calendar().weekdayOf
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.calendar().weekday_of
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_calendar_weekday(const ts_context * context, const ts_calendar_date
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.calendar_weekday(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.calendarWeekday(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `calendar.weekday_of` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

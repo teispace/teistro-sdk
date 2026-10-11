@@ -7,7 +7,42 @@ Reads a name and a birth date under numerology's two systems and answers with th
 
 `request_json` is `{"name", "date", "rules"}`: the name in the 26 Latin letters, the date as `{"year", "month", "day"}` in the Gregorian calendar, and the `NumerologyRules` with every field optional. A character outside A to Z while `rules.nonLatin` refuses, a name with no letter, or a date the calendar does not have is `INVALID_ARG`, named under `numerology`.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.numerology.profile
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.numerology.profile
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.numerology.profile
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.numerology().profile
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.numerology().profile
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -15,25 +50,9 @@ ts_status ts_numerology_profile(const ts_context * context, const char * request
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.numerology_profile(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.numerologyProfile(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `numerology.profile` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

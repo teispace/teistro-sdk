@@ -5,7 +5,42 @@ description: "Resolves a full key (`graha.SUN`, an alias, a former key, or a mem
 
 Resolves a full key (`graha.SUN`, an alias, a former key, or a member the context registered, `chart_layout.ACME_KERALA`) to its packed id. An unknown key is `UNSUPPORTED` with the nearest known key as the hint in the context's last error.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.keys.id
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.keys.id
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.keys.id
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.keys().id
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.keys().id
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_key_parse(const ts_context * context, const char * key, uint32_t * 
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.key_parse(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.keyParse(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `keys.id` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

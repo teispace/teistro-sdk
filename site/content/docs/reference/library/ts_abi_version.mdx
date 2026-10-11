@@ -5,33 +5,11 @@ description: "The ABI version this library implements."
 
 The ABI version this library implements.
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 uint32_t ts_abi_version(void);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-abi_version(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.abiVersion(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 The call takes no arguments.
 

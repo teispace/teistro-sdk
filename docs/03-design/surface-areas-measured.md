@@ -13,14 +13,14 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 | a boundary module a consumer reaches is reached from one area | **holds** | 0 of 13 disagree; so no operation can be looked for under two names |
 | every area holds an operation that reaches the boundary | **holds** | 0 of 11 disagree |
 | no operation's name repeats its own area's | **holds** | 0 of 42 disagree; which is what the namespace is for |
-| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 19 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
+| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 19 disagree; unreached: `blob`, `lib`, `provider`, `string` |
 | an entry point's name already carries its own module | falsified | 8 of 53 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_context_new_with_provider` |
 | every operation the layer declares is listed by every parity runner | **holds** | 0 of 195 disagree; so an operation added to one binding cannot go unheld in the other three; 1 allowed |
 | every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 11 disagree; site/content/docs/surface.mdx names all 11 and nothing else |
 
 **No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
 
-The unreached modules are `blob`, `context`, `lib`, `provider`, `string`. 5 of them are the plumbing the rule allows for — the C caller's memory, the context's own life, and the library itself — and a rule that made an area of each would put them on the surface with nothing ever to be found under them.
+The unreached modules are `blob`, `lib`, `provider`, `string`. 4 of them are the plumbing the rule allows for (`blob`, `context`, `lib`, `provider`, `string`: the C caller's memory, the context's own life, and the library itself), and a rule that made an area of each would put them on the surface with nothing ever to be found under them.
 
 ### The names that do not carry their module
 
@@ -39,12 +39,12 @@ The remaining 1 is not accounted for: `ts_error_free`.
 | operation | reaches |
 |---|---|
 | `engine` | — |
-| `profile` | — |
+| `profile` | `ts_context_profile` (context) |
 | `settings` | — |
-| `settingsJson` | — |
-| `settingsHash` | — |
+| `settingsJson` | `ts_context_settings_json` (context) |
+| `settingsHash` | `ts_context_settings_hash` (context) |
 | `positions` | `ts_frame_pack` (frame), `ts_positions` (positions) |
-| `dispose` | — |
+| `dispose` | `ts_context_free` (context) |
 
 ### `sdk.calendar` — `CalendarArea`
 
@@ -150,7 +150,7 @@ The remaining 1 is not accounted for: `ts_error_free`.
 | `blob` | 1 | — |
 | `calendar` | 8 | `calendar` |
 | `chart` | 2 | `chart` |
-| `context` | 7 | — |
+| `context` | 7 | `(root)` |
 | `ephemeris` | 2 | `engine` |
 | `frame` | 3 | `(root)`, `frame` |
 | `intl` | 7 | `intl` |

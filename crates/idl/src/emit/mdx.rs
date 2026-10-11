@@ -4,9 +4,12 @@
 //! The site's reference documents the **C ABI**, because that is the one
 //! surface that exists in every binding: each binding's layer is
 //! generated from it, so a page that describes an entry point describes
-//! what every language is really calling. Each page names what the Node
-//! addon and the Dart library call that entry point, so a reader arrives
-//! from either language and leaves with the right name.
+//! what every language is really calling. Each page names the operation
+//! of the surface that reaches the entry point, spelled as each binding
+//! spells it, so a reader arrives from any language and leaves with the
+//! call they write. Those spellings live in hand-written layers this crate
+//! cannot read, so the caller passes them in ([`Reached`]); an entry point
+//! no operation calls by name says so rather than inventing one.
 //!
 //! Pages are grouped by the source file the entry point comes from, which
 //! is how the boundary is already divided — contexts, keys, calendars,
@@ -19,11 +22,12 @@
 //! expression or a tag to MDX, and a reference that fails to build is a
 //! reference nobody reads.
 
+use std::collections::BTreeMap;
 use std::fmt::Write;
 
 use crate::emit::c::{c_signature, c_type};
 use crate::model::{Api, EnumDef, FunctionDef};
-use crate::names::{binding_type_name, c_enum_member, c_type_name, camel, snake};
+use crate::names::{c_enum_member, c_type_name};
 use crate::rules;
 
 /// One generated file: where it goes under the reference directory, and
@@ -37,9 +41,34 @@ pub struct Page {
     pub text: String,
 }
 
+/// An operation of the surface that reaches an entry point: its
+/// canonical path and how each binding spells it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Reached {
+    /// The canonical `area.operation` path, `calendar.convert`.
+    pub path: String,
+    /// Each binding's spelling of the member, in tab order.
+    pub spellings: Vec<Spelling>,
+}
+
+/// One binding's spelling of an operation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Spelling {
+    /// The tab a reader picks: `Node`, `Python`.
+    pub binding: String,
+    /// The fence's language: `js`, `python`.
+    pub language: String,
+    /// The member as a consumer writes it: `ctx.calendar.convert`.
+    pub member: String,
+}
+
+/// What reaches each entry point, by its name; an entry point absent here
+/// is one no operation of the surface calls.
+pub type Reach = BTreeMap<String, Vec<Reached>>;
+
 /// Every page of the generated reference, in the order they are written.
 #[must_use]
-pub fn render(api: &Api) -> Vec<Page> {
+pub fn render(api: &Api, reach: &Reach) -> Vec<Page> {
     let groups = groups(api);
     let mut pages = vec![
         Page {
@@ -59,7 +88,7 @@ pub fn render(api: &Api) -> Vec<Page> {
         for f in &group.functions {
             pages.push(Page {
                 path: format!("{}/{}.mdx", group.slug, f.name),
-                text: function_page(api, f),
+                text: function_page(api, f, reach.get(&f.name).map_or(&[], Vec::as_slice)),
             });
         }
     }
@@ -235,7 +264,7 @@ fn index(api: &Api, groups: &[Group<'_>]) -> String {
 
 /// A page for one entry point: what it does, what every binding calls it,
 /// its declaration, its parameters and what it hands back.
-fn function_page(api: &Api, f: &FunctionDef) -> String {
+fn function_page(api: &Api, f: &FunctionDef, reached: &[Reached]) -> String {
     let mut out = String::new();
     let _ = write!(
         out,
@@ -251,17 +280,7 @@ fn function_page(api: &Api, f: &FunctionDef) -> String {
              (ADR-0029), and this function is not in it.</Callout>\n\n",
         );
     }
-    let _ = write!(
-        out,
-        "<Tabs items={{['C', 'Node', 'Dart']}}>\n<Tab value=\"C\">\n\n```c\n{}\n```\n\n</Tab>\n",
-        c_signature(api, f)
-    );
-    let (node, dart) = binding_names(api, f);
-    let _ = write!(
-        out,
-        "<Tab value=\"Node\">\n\n```js\n{node}\n```\n\nThe addon's generated layer; `@teistro/sdk` wraps it.\n\n</Tab>\n\
-         <Tab value=\"Dart\">\n\n```dart\n{dart}\n```\n\nThe generated `TeistroLibrary`; `package:teistro` wraps it.\n\n</Tab>\n</Tabs>\n\n"
-    );
+    out.push_str(&calls(api, f, reached));
     out.push_str(&parameters(api, f));
     out.push_str(&handed_back(api, f));
     if let Some(blob) = &f.meta.blob {
@@ -279,28 +298,61 @@ fn function_page(api: &Api, f: &FunctionDef) -> String {
     out
 }
 
-/// What the Node addon and the Dart library call this entry point.
-///
-/// A function whose first parameter is a handle is a method on that
-/// handle's class in both bindings; anything else is a free function.
-fn binding_names(api: &Api, f: &FunctionDef) -> (String, String) {
-    for opaque in &api.opaques {
-        if rules::methods(api, opaque).iter().any(|m| m.name == f.name) {
-            let method = rules::method_name(api, opaque, f);
-            // The binding's own name for the handle's class, lower-cased
-            // as a reader would name a variable of it.
-            let receiver = snake(&binding_type_name(&opaque.name));
-            return (
-                format!("{receiver}.{}(…)", snake(&method)),
-                format!("{receiver}.{}(…)", camel(&method)),
-            );
+/// How a consumer reaches the entry point: a tab per binding with the
+/// members that call it, and the C declaration beside them.
+fn calls(api: &Api, f: &FunctionDef, reached: &[Reached]) -> String {
+    let c = format!("```c\n{}\n```\n", c_signature(api, f));
+    if reached.is_empty() {
+        return format!(
+            "{c}\nNo operation of a context calls this by name. A binding calls it itself, \
+             opening the library, freeing what the library handed back or reading an error, \
+             or offers it outside a context, as the library's version and the fixed-day \
+             arithmetic are.\n\n"
+        );
+    }
+    // The bindings in the order the first operation lists them, each with
+    // every operation that reaches the entry point.
+    let mut tabs: Vec<(&str, &str, Vec<&str>)> = Vec::new();
+    for one in reached {
+        for spelling in &one.spellings {
+            match tabs
+                .iter_mut()
+                .find(|(binding, ..)| *binding == spelling.binding)
+            {
+                Some((.., members)) => members.push(&spelling.member),
+                None => tabs.push((
+                    &spelling.binding,
+                    &spelling.language,
+                    vec![&spelling.member],
+                )),
+            }
         }
     }
-    let bare = f.name.strip_prefix(&api.prefix).unwrap_or(&f.name);
-    (
-        format!("{}(…)", snake(bare)),
-        format!("library.{}(…)", camel(bare)),
-    )
+    let mut labels: Vec<String> = tabs
+        .iter()
+        .map(|(binding, ..)| format!("'{binding}'"))
+        .collect();
+    labels.push(String::from("'C'"));
+    let mut out = format!("<Tabs items={{[{}]}}>\n", labels.join(", "));
+    for (binding, language, members) in &tabs {
+        let _ = write!(
+            out,
+            "<Tab value=\"{binding}\">\n\n```{language}\n{}\n```\n\n</Tab>\n",
+            members.join("\n")
+        );
+    }
+    let _ = write!(out, "<Tab value=\"C\">\n\n{c}\n</Tab>\n</Tabs>\n\n");
+    let paths: Vec<String> = reached
+        .iter()
+        .map(|one| format!("`{}`", one.path))
+        .collect();
+    let _ = write!(
+        out,
+        "Reached from {} on the surface; [the surface](/docs/surface) says how each binding \
+         spells a path.\n\n",
+        list(&paths)
+    );
+    out
 }
 
 /// The parameters table, with everything the description knows about

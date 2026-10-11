@@ -11,33 +11,11 @@ The context takes its own reference to the adapter, so this handle may be freed 
 
 <Callout type="info">Native builds only: a wasm module cannot open a shared library, so the wasm build has the built-in ephemeris and a host provider instead (ADR-0029), and this function is not in it.</Callout>
 
-<Tabs items={['C', 'Node', 'Dart']}>
-<Tab value="C">
-
 ```c
 ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_error * out_error);
 ```
 
-</Tab>
-<Tab value="Node">
-
-```js
-context_new_with_provider(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-library.contextNewWithProvider(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
-</Tabs>
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
 
 ## Parameters
 

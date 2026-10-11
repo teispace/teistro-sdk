@@ -215,6 +215,17 @@ through shared examples with what they print: a birth chart, calendars,
 an almanac, interpretation, the annual chart, and positions with an
 ephemeris of your own.
 
+**The reference names the call each binding makes.** An entry point's
+page shows the operation that reaches it in Node, Python, Dart, Java and
+Rust, read from the parity runners that compile and run those spellings,
+beside the C declaration. Its tabs had named only the Node addon's and
+the Dart library's mechanical methods, derived by a naming rule that
+spelled napi's `calendarConvert` as `calendar_convert`. Reading the
+context's own methods also found that the surface reaches the
+`context` module, which the measured areas page had called unreached,
+and its sentence on the unreached modules counted five where it listed
+four.
+
 **A value a consumer writes can be copied with one field changed.**
 Showing the guides' calls in every binding side by side found the
 sidereal frame spelt out field by field in Dart and Java, all nine of

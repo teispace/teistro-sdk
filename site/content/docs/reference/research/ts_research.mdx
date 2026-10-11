@@ -7,7 +7,57 @@ Runs a study over a batch of births and answers with `{value, provenance}` as ca
 
 `request_json` is `{"study", "rules", "holds", ...}`: `study` one of `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart request's rules are, and what the study reads: `births` and `design` (and a `test` for `COMPARE`); `births`, `control` and an optional `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and optionally `depth` and `strata` for `TIMED`. A birth is `{instant, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a number or a decimal string. A key it does not read, a field the study does not read or misses, or a value out of range is `INVALID_ARG`, named under `research`, as `research.test.seed`; what the study refuses once it runs is named as the façade names it. A context without an ephemeris is `CAPABILITY`, as is a build that leaves the `research` family out.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.research.counts
+ctx.research.compare
+ctx.research.expected
+ctx.research.timed
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.research.counts
+ctx.research.compare
+ctx.research.expected
+ctx.research.timed
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.research.counts
+ctx.research.compare
+ctx.research.expected
+ctx.research.timed
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.research().counts
+ctx.research().compare
+ctx.research().expected
+ctx.research().timed
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.research().counts
+sdk.research().compare
+sdk.research().expected
+sdk.research().timed
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -15,25 +65,9 @@ ts_status ts_research(const ts_context * context, const char * request_json, ts_
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.research(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.research(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `research.counts`, `research.compare`, `research.expected` and `research.timed` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

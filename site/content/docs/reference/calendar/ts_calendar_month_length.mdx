@@ -5,7 +5,42 @@ description: "The length of a month in a calendar."
 
 The length of a month in a calendar.
 
-<Tabs items={['C', 'Node', 'Dart']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.calendar.monthLength
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.calendar.month_length
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.calendar.monthLength
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.calendar().monthLength
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.calendar().month_length
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
@@ -13,25 +48,9 @@ ts_status ts_calendar_month_length(const ts_context * context, uint16_t calendar
 ```
 
 </Tab>
-<Tab value="Node">
-
-```js
-context.calendar_month_length(…)
-```
-
-The addon's generated layer; `@teistro/sdk` wraps it.
-
-</Tab>
-<Tab value="Dart">
-
-```dart
-context.calendarMonthLength(…)
-```
-
-The generated `TeistroLibrary`; `package:teistro` wraps it.
-
-</Tab>
 </Tabs>
+
+Reached from `calendar.month_length` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 
