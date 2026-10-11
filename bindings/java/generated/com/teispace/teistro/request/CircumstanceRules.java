@@ -114,11 +114,11 @@ public record CircumstanceRules(BetweenBy betweenBy, MoonSees moonSees, OutsideH
     public static CircumstanceRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "CircumstanceRules");
         return new CircumstanceRules(
-            Read.orNull(json.get("betweenBy"), present -> BetweenBy.of(present)),
-            Read.orNull(json.get("moonSees"), present -> MoonSees.of(present)),
-            Read.orNull(json.get("outside"), present -> OutsideHalf.of(present)),
-            Read.orNull(json.get("presentationBy"), present -> PresentationBy.of(present)),
-            Read.orNull(json.get("sunFallen"), present -> SunFallen.of(present)));
+            Read.orNull(json.get("betweenBy"), present -> Read.member(present, "CircumstanceRules.betweenBy", BetweenBy::byKey)),
+            Read.orNull(json.get("moonSees"), present -> Read.member(present, "CircumstanceRules.moonSees", MoonSees::byKey)),
+            Read.orNull(json.get("outside"), present -> Read.member(present, "CircumstanceRules.outside", OutsideHalf::byKey)),
+            Read.orNull(json.get("presentationBy"), present -> Read.member(present, "CircumstanceRules.presentationBy", PresentationBy::byKey)),
+            Read.orNull(json.get("sunFallen"), present -> Read.member(present, "CircumstanceRules.sunFallen", SunFallen::byKey)));
     }
 
     @Override

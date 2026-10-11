@@ -88,9 +88,9 @@ public record ConceptionMoonRules(ConceptionCount count, PiscesIs pisces, Concep
     public static ConceptionMoonRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ConceptionMoonRules");
         return new ConceptionMoonRules(
-            Read.orNull(json.get("count"), present -> ConceptionCount.of(present)),
-            Read.orNull(json.get("pisces"), present -> PiscesIs.of(present)),
-            Read.orNull(json.get("rising"), present -> ConceptionRising.of(present)));
+            Read.orNull(json.get("count"), present -> Read.member(present, "ConceptionMoonRules.count", ConceptionCount::byKey)),
+            Read.orNull(json.get("pisces"), present -> Read.member(present, "ConceptionMoonRules.pisces", PiscesIs::byKey)),
+            Read.orNull(json.get("rising"), present -> Read.member(present, "ConceptionMoonRules.rising", ConceptionRising::byKey)));
     }
 
     @Override

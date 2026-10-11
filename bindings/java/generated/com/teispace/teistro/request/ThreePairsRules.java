@@ -88,9 +88,9 @@ public record ThreePairsRules(Basis basis, YearsRectification rectification, Sat
     public static ThreePairsRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ThreePairsRules");
         return new ThreePairsRules(
-            Read.orNull(json.get("basis"), present -> Basis.of(present)),
-            Read.orNull(json.get("rectification"), present -> YearsRectification.of(present)),
-            Read.orNull(json.get("saturn"), present -> SaturnAmongThem.of(present)));
+            Read.orNull(json.get("basis"), present -> Read.member(present, "ThreePairsRules.basis", Basis::byKey)),
+            Read.orNull(json.get("rectification"), present -> Read.member(present, "ThreePairsRules.rectification", YearsRectification::byKey)),
+            Read.orNull(json.get("saturn"), present -> Read.member(present, "ThreePairsRules.saturn", SaturnAmongThem::byKey)));
     }
 
     @Override

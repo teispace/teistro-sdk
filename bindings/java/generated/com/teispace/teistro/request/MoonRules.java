@@ -62,7 +62,7 @@ public record MoonRules(KshinaRule kshina) implements RequestJson {
     public static MoonRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "MoonRules");
         return new MoonRules(
-            Read.orNull(json.get("kshina"), present -> KshinaRule.of(present)));
+            Read.orNull(json.get("kshina"), present -> Read.member(present, "MoonRules.kshina", KshinaRule::byKey)));
     }
 
     @Override

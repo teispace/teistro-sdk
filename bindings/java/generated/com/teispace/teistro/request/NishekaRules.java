@@ -114,11 +114,11 @@ public record NishekaRules(InvisibleHalf invisibleHalf, NishekaMandi mandiAt, Ni
     public static NishekaRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "NishekaRules");
         return new NishekaRules(
-            Read.orNull(json.get("invisibleHalf"), present -> InvisibleHalf.of(present)),
-            Read.orNull(json.get("mandiAt"), present -> NishekaMandi.of(present)),
-            Read.orNull(json.get("month"), present -> NishekaMonth.of(present)),
-            Read.orNull(json.get("ninth"), present -> NinthBhava.of(present)),
-            Read.orNull(json.get("saturn"), present -> SaturnTerm.of(present)));
+            Read.orNull(json.get("invisibleHalf"), present -> Read.member(present, "NishekaRules.invisibleHalf", InvisibleHalf::byKey)),
+            Read.orNull(json.get("mandiAt"), present -> Read.member(present, "NishekaRules.mandiAt", NishekaMandi::byKey)),
+            Read.orNull(json.get("month"), present -> Read.member(present, "NishekaRules.month", NishekaMonth::byKey)),
+            Read.orNull(json.get("ninth"), present -> Read.member(present, "NishekaRules.ninth", NinthBhava::byKey)),
+            Read.orNull(json.get("saturn"), present -> Read.member(present, "NishekaRules.saturn", SaturnTerm::byKey)));
     }
 
     @Override

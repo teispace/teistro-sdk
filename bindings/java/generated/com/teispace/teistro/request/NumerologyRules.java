@@ -114,11 +114,11 @@ public record NumerologyRules(BirthReduction birthReduction, ChaldeanCompound ch
     public static NumerologyRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "NumerologyRules");
         return new NumerologyRules(
-            Read.orNull(json.get("birthReduction"), present -> BirthReduction.of(present)),
-            Read.orNull(json.get("chaldeanCompound"), present -> ChaldeanCompound.of(present)),
-            Read.orNull(json.get("masters"), present -> Masters.of(present)),
-            Read.orNull(json.get("nameReduction"), present -> NameReduction.of(present)),
-            Read.orNull(json.get("nonLatin"), present -> NonLatin.of(present)));
+            Read.orNull(json.get("birthReduction"), present -> Read.member(present, "NumerologyRules.birthReduction", BirthReduction::byKey)),
+            Read.orNull(json.get("chaldeanCompound"), present -> Read.member(present, "NumerologyRules.chaldeanCompound", ChaldeanCompound::byKey)),
+            Read.orNull(json.get("masters"), present -> Read.member(present, "NumerologyRules.masters", Masters::byKey)),
+            Read.orNull(json.get("nameReduction"), present -> Read.member(present, "NumerologyRules.nameReduction", NameReduction::byKey)),
+            Read.orNull(json.get("nonLatin"), present -> Read.member(present, "NumerologyRules.nonLatin", NonLatin::byKey)));
     }
 
     @Override

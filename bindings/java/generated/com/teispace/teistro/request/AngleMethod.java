@@ -44,19 +44,29 @@ public enum AngleMethod implements RequestJson {
     }
 
     /**
-     * The member a key names.
+     * The member a key names, if any does.
      *
-     * @param raw the JSON value
+     * @param key the key
+     * @return the member
+     */
+    public static java.util.Optional<AngleMethod> byKey(String key) {
+        for (AngleMethod member : values()) {
+            if (member.key.equals(key)) {
+                return java.util.Optional.of(member);
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * The member a key names, or the member itself.
+     *
+     * @param raw the JSON value, or a member
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
     public static AngleMethod of(Object raw) {
-        for (AngleMethod member : values()) {
-            if (member.key.equals(raw)) {
-                return member;
-            }
-        }
-        throw new IllegalArgumentException("not a AngleMethod: " + raw);
+        return Read.member(raw, "AngleMethod", AngleMethod::byKey);
     }
 
     @Override

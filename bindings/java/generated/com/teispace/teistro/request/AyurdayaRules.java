@@ -128,11 +128,11 @@ public record AyurdayaRules(Boolean amsayuMultiplied, Combine combine, EnemyExem
         Map<String, Object> json = Read.object(raw, "AyurdayaRules");
         return new AyurdayaRules(
             Read.orNull(json.get("amsayu_multiplied"), present -> Read.bool(present, "AyurdayaRules.amsayu_multiplied")),
-            Read.orNull(json.get("combine"), present -> Combine.of(present)),
-            Read.orNull(json.get("enemy_exempt"), present -> EnemyExempt.of(present)),
-            Read.orNull(json.get("enmity"), present -> Enmity.of(present)),
-            Read.orNull(json.get("nisarga"), present -> Nisarga.of(present)),
-            Read.orNull(json.get("rising"), present -> RisingTakes.of(present)));
+            Read.orNull(json.get("combine"), present -> Read.member(present, "AyurdayaRules.combine", Combine::byKey)),
+            Read.orNull(json.get("enemy_exempt"), present -> Read.member(present, "AyurdayaRules.enemy_exempt", EnemyExempt::byKey)),
+            Read.orNull(json.get("enmity"), present -> Read.member(present, "AyurdayaRules.enmity", Enmity::byKey)),
+            Read.orNull(json.get("nisarga"), present -> Read.member(present, "AyurdayaRules.nisarga", Nisarga::byKey)),
+            Read.orNull(json.get("rising"), present -> Read.member(present, "AyurdayaRules.rising", RisingTakes::byKey)));
     }
 
     @Override

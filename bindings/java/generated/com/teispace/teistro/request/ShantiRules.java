@@ -62,7 +62,7 @@ public record ShantiRules(RikSource rik) implements RequestJson {
     public static ShantiRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ShantiRules");
         return new ShantiRules(
-            Read.orNull(json.get("rik"), present -> RikSource.of(present)));
+            Read.orNull(json.get("rik"), present -> Read.member(present, "ShantiRules.rik", RikSource::byKey)));
     }
 
     @Override

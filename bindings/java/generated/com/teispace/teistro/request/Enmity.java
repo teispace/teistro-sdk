@@ -32,19 +32,29 @@ public enum Enmity implements RequestJson {
     }
 
     /**
-     * The member a key names.
+     * The member a key names, if any does.
      *
-     * @param raw the JSON value
+     * @param key the key
+     * @return the member
+     */
+    public static java.util.Optional<Enmity> byKey(String key) {
+        for (Enmity member : values()) {
+            if (member.key.equals(key)) {
+                return java.util.Optional.of(member);
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * The member a key names, or the member itself.
+     *
+     * @param raw the JSON value, or a member
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
     public static Enmity of(Object raw) {
-        for (Enmity member : values()) {
-            if (member.key.equals(raw)) {
-                return member;
-            }
-        }
-        throw new IllegalArgumentException("not a Enmity: " + raw);
+        return Read.member(raw, "Enmity", Enmity::byKey);
     }
 
     @Override

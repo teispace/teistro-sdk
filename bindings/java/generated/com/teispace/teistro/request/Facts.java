@@ -116,9 +116,9 @@ public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil,
         return new Facts(
             Read.orNull(json.get("attendants"), present -> Attendants.of(present)),
             Read.orNull(json.get("fatherPresent"), present -> Read.bool(present, "Facts.fatherPresent")),
-            Read.orNull(json.get("oil"), present -> LampLevel.of(present)),
-            Read.orNull(json.get("presentation"), present -> Presentation.of(present)),
-            Read.orNull(json.get("wick"), present -> LampLevel.of(present)));
+            Read.orNull(json.get("oil"), present -> Read.member(present, "Facts.oil", LampLevel::byKey)),
+            Read.orNull(json.get("presentation"), present -> Read.member(present, "Facts.presentation", Presentation::byKey)),
+            Read.orNull(json.get("wick"), present -> Read.member(present, "Facts.wick", LampLevel::byKey)));
     }
 
     @Override

@@ -88,9 +88,9 @@ public record PoruthamRules(DeerghaBeyond deerghaBeyond, LordsFriendship lordsFr
     public static PoruthamRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PoruthamRules");
         return new PoruthamRules(
-            Read.orNull(json.get("deerghaBeyond"), present -> DeerghaBeyond.of(present)),
-            Read.orNull(json.get("lordsFriendship"), present -> LordsFriendship.of(present)),
-            Read.orNull(json.get("twoSignStar"), present -> TwoSignStar.of(present)));
+            Read.orNull(json.get("deerghaBeyond"), present -> Read.member(present, "PoruthamRules.deerghaBeyond", DeerghaBeyond::byKey)),
+            Read.orNull(json.get("lordsFriendship"), present -> Read.member(present, "PoruthamRules.lordsFriendship", LordsFriendship::byKey)),
+            Read.orNull(json.get("twoSignStar"), present -> Read.member(present, "PoruthamRules.twoSignStar", TwoSignStar::byKey)));
     }
 
     @Override

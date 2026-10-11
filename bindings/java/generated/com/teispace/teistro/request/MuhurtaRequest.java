@@ -142,7 +142,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long
             Read.orNull(json.get("daysWithWindows"), present -> Read.integer(present, "MuhurtaRequest.daysWithWindows")),
             Read.orNull(json.get("most"), present -> Read.integer(present, "MuhurtaRequest.most")),
             Read.orNull(json.get("native"), present -> MuhurtaNative.of(present)),
-            Read.orNull(json.get("ranking"), present -> Ranking.of(present)),
+            Read.orNull(json.get("ranking"), present -> Read.member(present, "MuhurtaRequest.ranking", Ranking::byKey)),
             Read.required(json.get("rules"), "MuhurtaRequest.rules"));
     }
 

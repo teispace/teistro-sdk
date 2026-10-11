@@ -40,7 +40,7 @@ public record RuleOutcomeLifeSpan(double count, Unit unit) implements RequestJso
         Map<String, Object> json = Read.object(raw, "RuleOutcomeLifeSpan");
         return new RuleOutcomeLifeSpan(
             Read.number(Read.required(json.get("count"), "RuleOutcomeLifeSpan.count"), "RuleOutcomeLifeSpan.count"),
-            Unit.of(Read.required(json.get("unit"), "RuleOutcomeLifeSpan.unit")));
+            Read.member(Read.required(json.get("unit"), "RuleOutcomeLifeSpan.unit"), "RuleOutcomeLifeSpan.unit", Unit::byKey));
     }
 
     @Override

@@ -228,11 +228,11 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
             Read.orNull(json.get("dasha"), present -> Read.text(present, "ResearchRequest.dasha")),
             Read.orNull(json.get("depth"), present -> Read.int32(present, "ResearchRequest.depth")),
             Read.orNull(json.get("design"), present -> Design.of(present)),
-            Read.orNull(json.get("holds"), present -> Holds.of(present)),
+            Read.orNull(json.get("holds"), present -> Read.member(present, "ResearchRequest.holds", Holds::byKey)),
             Read.required(json.get("rules"), "ResearchRequest.rules"),
-            Read.orNull(json.get("shuffle"), present -> EventShuffle.of(present)),
+            Read.orNull(json.get("shuffle"), present -> Read.member(present, "ResearchRequest.shuffle", EventShuffle::byKey)),
             Read.orNull(json.get("strata"), present -> Read.list(present, "ResearchRequest.strata", item0 -> Read.integer(item0, "ResearchRequest.strata"))),
-            StudyKind.of(Read.required(json.get("study"), "ResearchRequest.study")),
+            Read.member(Read.required(json.get("study"), "ResearchRequest.study"), "ResearchRequest.study", StudyKind::byKey),
             Read.orNull(json.get("subjects"), present -> Read.list(present, "ResearchRequest.subjects", item0 -> SubjectAsked.of(item0))),
             Read.orNull(json.get("test"), present -> present));
     }

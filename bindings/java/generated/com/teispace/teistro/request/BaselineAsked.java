@@ -138,7 +138,7 @@ public record BaselineAsked(Accuracy accuracy, Double coverage, DashaAsked dasha
     public static BaselineAsked of(Object raw) {
         Map<String, Object> json = Read.object(raw, "BaselineAsked");
         return new BaselineAsked(
-            Read.orNull(json.get("accuracy"), present -> Accuracy.of(present)),
+            Read.orNull(json.get("accuracy"), present -> Read.member(present, "BaselineAsked.accuracy", Accuracy::byKey)),
             Read.orNull(json.get("coverage"), present -> Read.number(present, "BaselineAsked.coverage")),
             Read.orNull(json.get("dasha"), present -> DashaAsked.of(present)),
             Read.orNull(json.get("events"), present -> Read.list(present, "BaselineAsked.events", item0 -> LifeEvent.of(item0))),

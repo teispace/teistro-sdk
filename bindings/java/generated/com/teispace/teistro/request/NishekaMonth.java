@@ -36,19 +36,29 @@ public enum NishekaMonth implements RequestJson {
     }
 
     /**
-     * The member a key names.
+     * The member a key names, if any does.
      *
-     * @param raw the JSON value
+     * @param key the key
+     * @return the member
+     */
+    public static java.util.Optional<NishekaMonth> byKey(String key) {
+        for (NishekaMonth member : values()) {
+            if (member.key.equals(key)) {
+                return java.util.Optional.of(member);
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * The member a key names, or the member itself.
+     *
+     * @param raw the JSON value, or a member
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
     public static NishekaMonth of(Object raw) {
-        for (NishekaMonth member : values()) {
-            if (member.key.equals(raw)) {
-                return member;
-            }
-        }
-        throw new IllegalArgumentException("not a NishekaMonth: " + raw);
+        return Read.member(raw, "NishekaMonth", NishekaMonth::byKey);
     }
 
     @Override

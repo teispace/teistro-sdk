@@ -108,7 +108,7 @@ public record ConditionCharaKarakaInHouse(List<Integer> houses, Karaka karaka, I
         Map<String, Object> json = Read.object(raw, "ConditionCharaKarakaInHouse");
         return new ConditionCharaKarakaInHouse(
             Read.list(Read.required(json.get("houses"), "ConditionCharaKarakaInHouse.houses"), "ConditionCharaKarakaInHouse.houses", item0 -> Read.int32(item0, "ConditionCharaKarakaInHouse.houses")),
-            Karaka.of(Read.required(json.get("karaka"), "ConditionCharaKarakaInHouse.karaka")),
+            Read.member(Read.required(json.get("karaka"), "ConditionCharaKarakaInHouse.karaka"), "ConditionCharaKarakaInHouse.karaka", Karaka::byKey),
             Read.orNull(json.get("karakaScheme"), present -> Read.int32(present, "ConditionCharaKarakaInHouse.karakaScheme")));
     }
 

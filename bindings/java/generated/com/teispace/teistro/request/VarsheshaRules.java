@@ -115,10 +115,10 @@ public record VarsheshaRules(DrishtiRules drishti, MoonMayRule moon, MoonPartner
         Map<String, Object> json = Read.object(raw, "VarsheshaRules");
         return new VarsheshaRules(
             Read.orNull(json.get("drishti"), present -> DrishtiRules.of(present)),
-            Read.orNull(json.get("moon"), present -> MoonMayRule.of(present)),
-            Read.orNull(json.get("moonPartner"), present -> MoonPartner.of(present)),
-            Read.orNull(json.get("noneAspects"), present -> NoneAspects.of(present)),
-            Read.orNull(json.get("tied"), present -> Tied.of(present)));
+            Read.orNull(json.get("moon"), present -> Read.member(present, "VarsheshaRules.moon", MoonMayRule::byKey)),
+            Read.orNull(json.get("moonPartner"), present -> Read.member(present, "VarsheshaRules.moonPartner", MoonPartner::byKey)),
+            Read.orNull(json.get("noneAspects"), present -> Read.member(present, "VarsheshaRules.noneAspects", NoneAspects::byKey)),
+            Read.orNull(json.get("tied"), present -> Read.member(present, "VarsheshaRules.tied", Tied::byKey)));
     }
 
     @Override

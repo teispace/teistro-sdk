@@ -151,12 +151,12 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, Event
     public static LifeEvent of(Object raw) {
         Map<String, Object> json = Read.object(raw, "LifeEvent");
         return new LifeEvent(
-            Read.orNull(json.get("confidence"), present -> Confidence.of(present)),
+            Read.orNull(json.get("confidence"), present -> Read.member(present, "LifeEvent.confidence", Confidence::byKey)),
             Read.orNull(json.get("heldOut"), present -> Read.bool(present, "LifeEvent.heldOut")),
             Read.orNull(json.get("id"), present -> Read.text(present, "LifeEvent.id")),
-            EventKind.of(Read.required(json.get("kind"), "LifeEvent.kind")),
+            Read.member(Read.required(json.get("kind"), "LifeEvent.kind"), "LifeEvent.kind", EventKind::byKey),
             Read.number(Read.required(json.get("on"), "LifeEvent.on"), "LifeEvent.on"),
-            Read.orNull(json.get("precision"), present -> DatePrecision.of(present)),
+            Read.orNull(json.get("precision"), present -> Read.member(present, "LifeEvent.precision", DatePrecision::byKey)),
             Read.orNull(json.get("until"), present -> Read.number(present, "LifeEvent.until")));
     }
 

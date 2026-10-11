@@ -127,8 +127,8 @@ public record AnnualDashaRules(MuddaBalance balance, BirthPeriod birthPeriod, Ye
     public static AnnualDashaRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "AnnualDashaRules");
         return new AnnualDashaRules(
-            Read.orNull(json.get("balance"), present -> MuddaBalance.of(present)),
-            Read.orNull(json.get("birthPeriod"), present -> BirthPeriod.of(present)),
+            Read.orNull(json.get("balance"), present -> Read.member(present, "AnnualDashaRules.balance", MuddaBalance::byKey)),
+            Read.orNull(json.get("birthPeriod"), present -> Read.member(present, "AnnualDashaRules.birthPeriod", BirthPeriod::byKey)),
             Read.orNull(json.get("clock"), present -> YearClock.of(present)),
             Read.orNull(json.get("depth"), present -> Read.int32(present, "AnnualDashaRules.depth")),
             Read.orNull(json.get("measure"), present -> Read.member(present, "AnnualDashaRules.measure", com.teispace.teistro.Balance::byKey)));

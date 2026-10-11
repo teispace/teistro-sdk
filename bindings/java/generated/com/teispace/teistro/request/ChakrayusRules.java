@@ -62,7 +62,7 @@ public record ChakrayusRules(ChakraPortion portion) implements RequestJson {
     public static ChakrayusRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ChakrayusRules");
         return new ChakrayusRules(
-            Read.orNull(json.get("portion"), present -> ChakraPortion.of(present)));
+            Read.orNull(json.get("portion"), present -> Read.member(present, "ChakrayusRules.portion", ChakraPortion::byKey)));
     }
 
     @Override

@@ -114,11 +114,11 @@ public record PrashnaRules(MookRule mook, MoonRules moon, PiscesRising pisces, S
     public static PrashnaRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PrashnaRules");
         return new PrashnaRules(
-            Read.orNull(json.get("mook"), present -> MookRule.of(present)),
+            Read.orNull(json.get("mook"), present -> Read.member(present, "PrashnaRules.mook", MookRule::byKey)),
             Read.orNull(json.get("moon"), present -> MoonRules.of(present)),
-            Read.orNull(json.get("pisces"), present -> PiscesRising.of(present)),
-            Read.orNull(json.get("score"), present -> ScoreRule.of(present)),
-            Read.orNull(json.get("timing"), present -> TimingRule.of(present)));
+            Read.orNull(json.get("pisces"), present -> Read.member(present, "PrashnaRules.pisces", PiscesRising::byKey)),
+            Read.orNull(json.get("score"), present -> Read.member(present, "PrashnaRules.score", ScoreRule::byKey)),
+            Read.orNull(json.get("timing"), present -> Read.member(present, "PrashnaRules.timing", TimingRule::byKey)));
     }
 
     @Override

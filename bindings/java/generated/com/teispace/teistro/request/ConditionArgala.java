@@ -41,7 +41,7 @@ public record ConditionArgala(Object on, ArgalaPlace place) implements RequestJs
         Map<String, Object> json = Read.object(raw, "ConditionArgala");
         return new ConditionArgala(
             Read.required(json.get("on"), "ConditionArgala.on"),
-            ArgalaPlace.of(Read.required(json.get("place"), "ConditionArgala.place")));
+            Read.member(Read.required(json.get("place"), "ConditionArgala.place"), "ConditionArgala.place", ArgalaPlace::byKey));
     }
 
     @Override

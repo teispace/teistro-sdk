@@ -101,10 +101,10 @@ public record KootaRules(BhakootLift bhakootLift, DevaBride devaBride, EqualVarn
     public static KootaRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "KootaRules");
         return new KootaRules(
-            Read.orNull(json.get("bhakootLift"), present -> BhakootLift.of(present)),
-            Read.orNull(json.get("devaBride"), present -> DevaBride.of(present)),
-            Read.orNull(json.get("equalVarna"), present -> EqualVarna.of(present)),
-            Read.orNull(json.get("nadiDosha"), present -> NadiDosha.of(present)));
+            Read.orNull(json.get("bhakootLift"), present -> Read.member(present, "KootaRules.bhakootLift", BhakootLift::byKey)),
+            Read.orNull(json.get("devaBride"), present -> Read.member(present, "KootaRules.devaBride", DevaBride::byKey)),
+            Read.orNull(json.get("equalVarna"), present -> Read.member(present, "KootaRules.equalVarna", EqualVarna::byKey)),
+            Read.orNull(json.get("nadiDosha"), present -> Read.member(present, "KootaRules.nadiDosha", NadiDosha::byKey)));
     }
 
     @Override

@@ -88,9 +88,9 @@ public record PakshiRules(Clock clock, Relations relations, SubLengths subs) imp
     public static PakshiRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PakshiRules");
         return new PakshiRules(
-            Read.orNull(json.get("clock"), present -> Clock.of(present)),
-            Read.orNull(json.get("relations"), present -> Relations.of(present)),
-            Read.orNull(json.get("subs"), present -> SubLengths.of(present)));
+            Read.orNull(json.get("clock"), present -> Read.member(present, "PakshiRules.clock", Clock::byKey)),
+            Read.orNull(json.get("relations"), present -> Read.member(present, "PakshiRules.relations", Relations::byKey)),
+            Read.orNull(json.get("subs"), present -> Read.member(present, "PakshiRules.subs", SubLengths::byKey)));
     }
 
     @Override
