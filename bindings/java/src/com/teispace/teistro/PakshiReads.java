@@ -36,7 +36,7 @@ final class PakshiReads {
     }
 
     static PakshiDays pakshi(Context context, CalendarDate from, CalendarDate to, Observer place,
-            int utcOffsetSeconds, PakshiNative whose, Map<String, ?> rules) {
+            int utcOffsetSeconds, PakshiNative whose, com.teispace.teistro.request.PakshiRules rules) {
         if (from == null) {
             throw Reads.invalid("from is a CalendarDate", "from");
         }

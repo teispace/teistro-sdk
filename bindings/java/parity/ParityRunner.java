@@ -811,7 +811,7 @@ public final class ParityRunner {
         List<PakshiDays> asked = List.of(
                 geo.almanac().pakshi(date(1984, 10, 30), date(1984, 10, 31), madras, 19_800,
                         new PakshiNative.Star(Nakshatra.UTTARA_ASHADHA, Paksha.KRISHNA, "BY_PAKSHA"),
-                        map("subs", "PULIPPANI", "relations", "PULIPPANI")),
+                        PakshiRules.of(map("subs", "PULIPPANI", "relations", "PULIPPANI"))),
                 geo.almanac().pakshi(date(1991, 5, 21), null, madras, 19_800, PakshiNative.bird("OWL")));
         for (int r = 0; r < asked.size(); r += 1) {
             put("pakshi-" + r + "-hash", asked.get(r).provenance().inputHash());

@@ -2207,6 +2207,131 @@ fn written_through_states_its_schema(
 /// runners to compare two architectures and two operating systems, in
 /// Rust's own arch vocabulary (`linux-x86_64`), and which runners those
 /// are is that workflow's decision and not the shipping table's.
+/// Each hand-written Java source's public parameters, as `Class.member(name)`
+/// with the parameter's type and the line it is on, comments ignored.
+fn java_public_parameters(text: &str) -> Vec<(String, String, usize)> {
+    let code = regex::Regex::new(r"(?s)/\*.*?\*/|//[^\n]*")
+        .expect("valid regex")
+        .replace_all(text, |c: &regex::Captures<'_>| {
+            // Comments become blanks of the same lines, so line numbers hold.
+            c[0].chars()
+                .map(|ch| if ch == '\n' { '\n' } else { ' ' })
+                .collect::<String>()
+        });
+    let signature = regex::Regex::new(
+        r"public\s+(?:static\s+)?(?:final\s+)?(?:<[^>]+>\s+)?(?:record\s+(\w+)|[\w.<>?,\[\] ]+?\s+(\w+))\s*\(([^)]*)\)",
+    )
+    .expect("valid regex");
+    let mut found = Vec::new();
+    for captures in signature.captures_iter(&code) {
+        let name = captures
+            .get(1)
+            .or_else(|| captures.get(2))
+            .map_or("", |m| m.as_str());
+        let parameters = &captures[3];
+        let line = code[..captures.get(0).map_or(0, |m| m.start())]
+            .matches('\n')
+            .count()
+            + 1;
+        let mut depth = 0_i32;
+        let mut start = 0;
+        let mut parts = Vec::new();
+        for (at, ch) in parameters.char_indices() {
+            match ch {
+                '<' => depth += 1,
+                '>' => depth -= 1,
+                ',' if depth == 0 => {
+                    parts.push(&parameters[start..at]);
+                    start = at + 1;
+                }
+                _ => {}
+            }
+        }
+        parts.push(&parameters[start..]);
+        for part in parts {
+            let part = part
+                .split_whitespace()
+                .filter(|word| !word.starts_with('@'))
+                .collect::<Vec<_>>()
+                .join(" ");
+            if let Some((ty, parameter)) = part.rsplit_once(' ') {
+                found.push((format!("{name}({parameter})"), ty.to_owned(), line));
+            }
+        }
+    }
+    found
+}
+
+/// No public Java parameter is a map or an `Object` but those
+/// [`JAVA_UNTYPED`] lists, each with why.
+fn java_requests_are_typed(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "java-request-is-typed";
+    const DIR: &str = "bindings/java/src/com/teispace/teistro";
+    let Ok(entries) = std::fs::read_dir(root.join(DIR)) else {
+        return;
+    };
+    let mut files: Vec<PathBuf> = entries
+        .flatten()
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "java"))
+        .collect();
+    files.sort();
+    let mut seen = std::collections::BTreeSet::new();
+    for path in files {
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        let class = path
+            .file_stem()
+            .map_or(String::new(), |s| s.to_string_lossy().into_owned());
+        let file = format!("{DIR}/{class}.java");
+        for (member, ty, line) in java_public_parameters(&text) {
+            let untyped = ty.starts_with("Map<")
+                || ty == "Object"
+                || ty == "Object..."
+                || ty.starts_with("List<?");
+            if !untyped {
+                continue;
+            }
+            let at = format!("{class}.{member}");
+            let reason = JAVA_UNTYPED
+                .iter()
+                .find(|(listed, _)| *listed == at)
+                .map(|(_, why)| *why);
+            seen.insert(at.clone());
+            let finding = Finding {
+                file: file.clone(),
+                line,
+                text: match reason {
+                    Some(why) => format!("{at}: {ty}, {why}"),
+                    None => format!(
+                        "{at} takes {ty}; take the request type the SDK reads (`com.teispace.teistro.request`), \
+                         or list it in JAVA_UNTYPED with why"
+                    ),
+                },
+                rule: RULE,
+            };
+            if reason.is_some() {
+                outcome.allowed.push(finding);
+            } else {
+                outcome.failures.push(finding);
+            }
+        }
+    }
+    for (listed, _) in JAVA_UNTYPED {
+        if !seen.contains(listed) {
+            outcome.failures.push(Finding {
+                file: "xtask/src/lints.rs".to_owned(),
+                line: 0,
+                text: format!(
+                    "JAVA_UNTYPED lists {listed}, which takes no map or Object any more; remove it"
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 fn platform_runners(root: &Path, outcome: &mut Outcome) {
     const RULE: &str = "runner-matches-the-platform-table";
     for path in workflows(root) {
@@ -2791,8 +2916,69 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// The hand-written Java layer's public parameters that are a `Map`, a
+/// `List<?>` or an `Object`, each with why it is not a request type.
+///
+/// Everything else a public method or record takes is typed:
+/// `typecheck/Wrong.java` proves a map passed where a request type is
+/// taken does not compile, and this list keeps a new area method from
+/// taking a map in the first place. An entry that no longer matches is
+/// refused too, so the list cannot outlive the parameter it excuses.
+const JAVA_UNTYPED: [(&str, &str); 32] = [
+    ("ChartArea.layout(layout)", MEMBER_OR_KEY),
+    ("ChartOptions.ChartOptions(readings)", WRITTEN),
+    ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
+    ("ChartOptions.dashas(systems)", MEMBER_OR_KEY),
+    ("ChartOptions.drawing(layout)", MEMBER_OR_KEY),
+    ("ChartOptions.reading(request)", OPEN),
+    ("Dasha.Dasha(system)", MEMBER_OR_KEY),
+    ("Drawing.Drawing(layout)", MEMBER_OR_KEY),
+    ("Engine.call(arguments)", OPEN),
+    ("IntlArea.render(params)", OPEN),
+    ("IshtaDevata.IshtaDevata(rules)", ANSWERED),
+    (
+        "Json.write(value)",
+        "the writer itself, which takes any value a request holds",
+    ),
+    ("MoonWeakness.MoonWeakness(rules)", ANSWERED),
+    ("Plugin.Plugin(config)", OPEN),
+    ("Prashna.Prashna(rules)", ANSWERED),
+    ("RashifalRequest.RashifalRequest(events)", MEMBER_OR_KEY),
+    ("RashifalRequest.withEvents(grahas)", MEMBER_OR_KEY),
+    ("Remedies.Remedies(rules)", ANSWERED),
+    ("ResearchArea.compare(design)", RESEARCH),
+    ("ResearchArea.compare(options)", RESEARCH),
+    ("ResearchArea.compare(rules)", RULES_JSON),
+    ("ResearchArea.compare(test)", RULES_JSON),
+    ("ResearchArea.counts(design)", RESEARCH),
+    ("ResearchArea.counts(options)", RESEARCH),
+    ("ResearchArea.counts(rules)", RULES_JSON),
+    ("ResearchArea.expected(control)", RULES_JSON),
+    ("ResearchArea.expected(options)", RESEARCH),
+    ("ResearchArea.expected(rules)", RULES_JSON),
+    ("ResearchArea.expected(test)", RULES_JSON),
+    ("ResearchArea.timed(options)", RESEARCH),
+    ("ResearchArea.timed(rules)", RULES_JSON),
+    ("ResearchArea.timed(test)", RULES_JSON),
+];
+
+/// A catalogue member or a key registered at run time, as the caller has it.
+const MEMBER_OR_KEY: &str =
+    "a catalogue member or a key registered at run time, as the caller has it";
+/// An open door: the engine's own call, a plugin's own configuration, an
+/// MF2 message's arguments, a reading by its field's name.
+const OPEN: &str = "an open door by design, whose shape is the callee's (SDK openness mandate)";
+/// What an answer echoes back, read from JSON the SDK wrote.
+const ANSWERED: &str = "an answer's echo of the rules it was read under, as the SDK wrote them";
+/// The schema reads it as JSON.
+const RULES_JSON: &str = "the schema reads it as JSON: a rule set or a test the consumer writes";
+/// Research's own pass.
+const RESEARCH: &str = "typed by the research area's pass; every parameter there is a map today";
+/// The readings already written.
+const WRITTEN: &str = "the readings as written, one JSON text a field";
+
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 27] = [
+const RULES: [&str; 28] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -2805,6 +2991,7 @@ const RULES: [&str; 27] = [
     "python-runs-in-utf8-mode",
     "java-runs-in-utf8",
     "java-host-names-every-platform",
+    "java-request-is-typed",
     "runner-matches-the-platform-table",
     "node-is-tested-at-its-floor",
     "target-declares-the-feature-it-needs",
@@ -2877,6 +3064,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     python_in_utf8(root, &mut outcome);
     java_in_utf8(root, &mut outcome);
     java_host_names_every_platform(root, &mut outcome);
+    java_requests_are_typed(root, &mut outcome);
     platform_runners(root, &mut outcome);
     node_is_tested_at_its_floor(root, &mut outcome);
     targets_declare_their_features(root, &mut outcome);
