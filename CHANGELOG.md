@@ -271,6 +271,18 @@ Greenland–Robins and Robins–Breslow–Greenland intervals, and Breslow–Day
 p, with Tarone's correction, that one odds ratio fits every stratum. Each
 is held against statsmodels on three strata whose ratios differ (C369).
 
+**An event study's restricted pairing is drawn exactly.** **Numbers:** the
+default shuffle is now `research/shuffle/2`. Every study's answer names it,
+and its input hash moves with it. A timed study under `RESTRICT_PAIRINGS`
+draws other pairings, so its p-values move; every other draw is `/1`'s,
+bit for bit. `/1` drew whole permutations and rejected any that put an
+event before a birth. It refused after 10 000 draws, which a cohort
+spread over decades reaches for want of luck. Each event now takes,
+earliest first, a subject uniformly from those born before it and not
+yet taken. That makes every allowed pairing equally likely and never
+refuses a study that has one (C368). `/1` stays selectable through the
+test's `shuffle`.
+
 **Every binding ships six worked examples** (`bindings/*/example/`), the
 same six scenarios in JavaScript, Dart and Python, each a program
 `cargo xtask check-{node,dart,python}` runs — every file in the

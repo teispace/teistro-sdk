@@ -261,6 +261,6 @@ pub fn replicated(
         rows,
         permutations: count_of,
         resolution: p_value(0, u64::from(count_of)),
-        shuffle: ShuffleVersion::V1,
+        shuffle: ShuffleVersion::default(),
     })
 }
