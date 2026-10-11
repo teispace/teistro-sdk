@@ -306,6 +306,16 @@ since an Apple silicon Mac runs no simulator older than 14.
    into a function that both runners call, so it stays one suite: optimised,
    no sanitizer, version equal to `prebuiltVersion`, and 14 April 2015 =
    2072-1-1 BS, and so on.
+   *As built:* the facts are `bindings/dart/packaging/facts.dart`'s
+   `consumerFacts`, which `consumer.dart` and the example's
+   `integration_test/facts_test.dart` both call. `check-flutter
+   android-emulator` runs the test on the emulator already running (the
+   `flutter (android)` row starts one at API 24, x86_64), and `check-flutter
+   ios-simulator` on the newest iOS runtime's first iPhone, which it boots
+   and shuts down. Run here on an iPhone 18 Pro simulator: every fact held
+   (`aarch64-apple-ios-sim`, release; 2072-1-1 BS; the Nepali message; the
+   Sun at 278.5768°), and an expected 2072-1-2 failed the run naming the
+   fact.
 4. `check-flutter-ios` (verify.yml, macos-latest): `flutter build ios
    --release --no-codesign` must produce
    `Runner.app/Frameworks/teistro_ffi.framework/teistro_ffi` with arm64 and
@@ -414,6 +424,8 @@ Changed:
    on the branch). Built, and the iOS device app beside it
    (`check-flutter ios` on macOS).
 7. **Device runs.** Gates: `check-flutter-android` and `check-flutter-ios`.
+   Built as `check-flutter android-emulator` and `ios-simulator`, in the
+   two flutter verify rows.
 8. **Release wiring.** Gate: a release rehearsal (dispatch, nothing
    published) whose `stage` carries nine-plus-six digests and stages both
    pub packages. `dart pub publish --dry-run` must pass on both, with sizes

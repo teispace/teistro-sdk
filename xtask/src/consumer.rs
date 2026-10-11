@@ -634,11 +634,13 @@ fn dart_consumer(
             staged.display()
         ),
     )?;
-    fs::copy(
-        root.join("bindings/dart/packaging/consumer.dart"),
-        into.join("consumer.dart"),
-    )
-    .map_err(|err| println!("FAIL  the Dart consumer did not copy: {err}"))?;
+    for file in ["consumer.dart", "facts.dart"] {
+        fs::copy(
+            root.join("bindings/dart/packaging").join(file),
+            into.join(file),
+        )
+        .map_err(|err| println!("FAIL  the Dart consumer's {file} did not copy: {err}"))?;
+    }
 
     step(
         Command::new("dart").args(["pub", "get"]).current_dir(&into),

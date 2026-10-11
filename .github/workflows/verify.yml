@@ -233,10 +233,25 @@ jobs:
           channel: stable
       - name: An app built on them, and its APK read back
         run: cargo xtask check-flutter android
+      # The app's integration test (the four facts the published Dart
+      # package's consumer asserts) on an emulator at the slices' API floor.
+      - name: KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: The four facts inside the app, on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 24
+          arch: x86_64
+          script: cargo xtask check-flutter android-emulator
 
   # The same app for an iOS device, unsigned, on the release's own
   # ios-arm64 slice: Xcode leaves the library as a framework whose binary
   # is a universal file, which must hold that slice alone, at its floor.
+  # Then the integration test on an iPhone simulator the run boots.
   flutter-ios:
     name: flutter (ios)
     runs-on: macos-latest
@@ -246,7 +261,7 @@ jobs:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-ios
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
       - uses: Swatinem/rust-cache@v2
       - id: auditable
         name: The pinned cargo-auditable
@@ -255,13 +270,17 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-auditable@${{ steps.auditable.outputs.version }}
-      - name: The device slice, as the release builds it
-        run: cargo xtask package ios-arm64
+      - name: The device and simulator slices, as the release builds them
+        run: |
+          cargo xtask package ios-arm64
+          cargo xtask package ios-sim-arm64
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
       - name: An app built on it, and its framework read back
         run: cargo xtask check-flutter ios
+      - name: The four facts inside the app, on a simulator
+        run: cargo xtask check-flutter ios-simulator
 
   # Every artefact the run built, held to `docs/05-testing/sizes.json`
   # within 2% and complete: every platform, profile and bundle

@@ -12,3 +12,9 @@ dependencies:
     sdk: flutter
   teistro_flutter:
     path: ..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter

@@ -12,6 +12,12 @@
 //! whatever Gradle did to the file on the way in (it strips it), it is
 //! still the slice for that ABI, needing nothing beyond bionic.
 //!
+//! `ios-simulator` and `android-emulator` run the example's integration
+//! test instead (`integration_test/facts_test.dart`): the four facts the
+//! published Dart package's consumer asserts (`packaging/facts.dart`),
+//! inside the app, from the library the hook bundled, on an iPhone
+//! simulator the run boots or on the emulator already running.
+//!
 //! On macOS with Xcode the app is given its iOS project too, and
 //! `flutter build ios --release --no-codesign` runs the hook for the
 //! device: the app's frameworks must hold one binary named for the
@@ -46,51 +52,86 @@ const IOS_FRAMEWORKS: &str = "build/ios/iphoneos/Runner.app/Frameworks";
 /// The page size an aligned row's library must start on in the APK.
 const PAGE: usize = 16 * 1024;
 
-/// Which apps a run builds: both on a Mac with Xcode unless one is named,
-/// Android alone elsewhere.
+/// What a run does: build the release apps (both on a Mac with Xcode
+/// unless one is named, Android alone elsewhere), or run the app's
+/// integration test on a simulator or an emulator.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct Targets {
-    android: bool,
-    ios: bool,
+enum Targets {
+    /// The release apps, read back.
+    Apps { android: bool, ios: bool },
+    /// The integration test on an iOS simulator this run boots.
+    Simulator,
+    /// The integration test on the Android emulator already running.
+    Emulator,
 }
 
 impl Targets {
     fn of(args: &[String], xcode: bool) -> Result<Targets, String> {
         match args {
-            [] => Ok(Targets {
+            [] => Ok(Targets::Apps {
                 android: true,
                 ios: xcode,
             }),
-            [one] if one == "android" => Ok(Targets {
-                android: true,
-                ios: false,
-            }),
-            [one] if one == "ios" => Ok(Targets {
-                android: false,
-                ios: true,
-            }),
-            _ => Err(format!(
-                "`check-flutter` takes `android` or `ios`, or nothing for every app this host builds, not `{}`",
-                args.join(" ")
-            )),
+            [one] => match one.as_str() {
+                "android" => Ok(Targets::Apps {
+                    android: true,
+                    ios: false,
+                }),
+                "ios" => Ok(Targets::Apps {
+                    android: false,
+                    ios: true,
+                }),
+                "ios-simulator" => Ok(Targets::Simulator),
+                "android-emulator" => Ok(Targets::Emulator),
+                _ => Err(Targets::usage(args)),
+            },
+            _ => Err(Targets::usage(args)),
         }
+    }
+
+    fn usage(args: &[String]) -> String {
+        format!(
+            "`check-flutter` takes `android`, `ios`, `ios-simulator` or `android-emulator`, \
+             or nothing for every app this host builds, not `{}`",
+            args.join(" ")
+        )
+    }
+
+    /// Whether the run needs Xcode.
+    const fn ios(self) -> bool {
+        matches!(self, Targets::Apps { ios: true, .. } | Targets::Simulator)
     }
 
     /// `flutter create`'s `--platforms`.
     fn platforms(self) -> String {
-        let named: Vec<&str> = [(self.android, "android"), (self.ios, "ios")]
+        let (android, ios) = match self {
+            Targets::Apps { android, ios } => (android, ios),
+            Targets::Simulator => (false, true),
+            Targets::Emulator => (true, false),
+        };
+        let named: Vec<&str> = [(android, "android"), (ios, "ios")]
             .into_iter()
             .filter_map(|(wanted, name)| wanted.then_some(name))
             .collect();
         format!("--platforms={}", named.join(","))
     }
 
-    /// The rows whose slices the apps bundle.
+    /// The rows whose slices the apps bundle: a simulator's is the host's
+    /// architecture.
     fn rows(self) -> Vec<Mobile> {
+        let simulator = if cfg!(target_arch = "x86_64") {
+            "ios-sim-x64"
+        } else {
+            "ios-sim-arm64"
+        };
         MOBILE
             .into_iter()
-            .filter(|row| {
-                (self.android && row.os == Os::Android) || (self.ios && row.name == IOS_DEVICE)
+            .filter(|row| match self {
+                Targets::Apps { android, ios } => {
+                    (android && row.os == Os::Android) || (ios && row.name == IOS_DEVICE)
+                }
+                Targets::Simulator => row.name == simulator,
+                Targets::Emulator => row.os == Os::Android,
             })
             .collect()
     }
@@ -109,7 +150,7 @@ pub(crate) fn check(root: &Path, args: &[String]) -> i32 {
         crate::skip::skip("no `flutter` on this machine; check-flutter builds an app with it");
         return 0;
     }
-    if targets.ios && !xcode {
+    if targets.ios() && !xcode {
         crate::skip::skip("the iOS app is built on macOS with Xcode, and this host has neither");
         return 0;
     }
@@ -177,19 +218,117 @@ pub(crate) fn check(root: &Path, args: &[String]) -> i32 {
     if created.is_err() {
         return 1;
     }
-    let mut failed = false;
-    if targets.android {
-        let android: Vec<Mobile> = rows
-            .iter()
-            .copied()
-            .filter(|row| row.os == Os::Android)
-            .collect();
-        failed |= android_app(&app, &android).is_err();
-    }
-    if targets.ios {
-        failed |= ios_app(&app, &rows).is_err();
-    }
+    let failed = match targets {
+        Targets::Apps { android, ios } => {
+            let mut failed = false;
+            if android {
+                let android: Vec<Mobile> = rows
+                    .iter()
+                    .copied()
+                    .filter(|row| row.os == Os::Android)
+                    .collect();
+                failed |= android_app(&app, &android).is_err();
+            }
+            if ios {
+                failed |= ios_app(&app, &rows).is_err();
+            }
+            failed
+        }
+        Targets::Simulator => on_simulator(&app).is_err(),
+        Targets::Emulator => on_emulator(&app).is_err(),
+    };
     i32::from(failed)
+}
+
+/// The app's integration test (`facts.dart`'s four facts) on `device`.
+fn integration_test(app: &Path, device: &str, on: &str) -> Result<(), ()> {
+    step(
+        Command::new("flutter")
+            .args(["test", "integration_test", "-d", device])
+            .current_dir(app),
+        &format!("the bundled library answers the four facts on {on}"),
+        &format!("the integration test failed on {on}"),
+    )
+}
+
+/// An available iPhone simulator, booted for the run and shut down after
+/// it if this run booted it, with the integration test run on it.
+fn on_simulator(app: &Path) -> Result<(), ()> {
+    let listed = Command::new("xcrun")
+        .args(["simctl", "list", "devices", "available", "--json"])
+        .output()
+        .map_err(|err| println!("FAIL  `xcrun simctl list` did not start: {err}"))?;
+    let devices: Value = serde_json::from_slice(&listed.stdout)
+        .map_err(|err| println!("FAIL  `xcrun simctl list` answered no JSON: {err}"))?;
+    let Some((udid, name, booted)) = iphone(&devices) else {
+        println!("FAIL  no iPhone simulator is available; add one in Xcode's Devices window");
+        return Err(());
+    };
+    if !booted {
+        step(
+            Command::new("xcrun").args(["simctl", "boot", &udid]),
+            "",
+            &format!("the simulator {name} did not boot"),
+        )?;
+    }
+    let outcome = integration_test(app, &udid, &format!("the {name} simulator"));
+    if !booted {
+        let _ = Command::new("xcrun")
+            .args(["simctl", "shutdown", &udid])
+            .status();
+    }
+    outcome
+}
+
+/// The newest iOS runtime's first iPhone in `simctl`'s listing: its
+/// identifier, its name, and whether it is booted already.
+fn iphone(listing: &Value) -> Option<(String, String, bool)> {
+    let runtimes = listing.get("devices")?.as_object()?;
+    let mut ios: Vec<(&String, &Value)> = runtimes
+        .iter()
+        .filter(|(runtime, _)| runtime.contains("SimRuntime.iOS"))
+        .collect();
+    ios.sort_by(|a, b| b.0.cmp(a.0));
+    ios.into_iter().find_map(|(_, devices)| {
+        devices.as_array()?.iter().find_map(|device| {
+            let name = device.get("name")?.as_str()?;
+            if !name.starts_with("iPhone") {
+                return None;
+            }
+            Some((
+                device.get("udid")?.as_str()?.to_owned(),
+                name.to_owned(),
+                device.get("state")?.as_str()? == "Booted",
+            ))
+        })
+    })
+}
+
+/// The running Android emulator, as `flutter devices` lists it, with the
+/// integration test run on it.
+fn on_emulator(app: &Path) -> Result<(), ()> {
+    let listed = Command::new("flutter")
+        .args(["devices", "--machine"])
+        .output()
+        .map_err(|err| println!("FAIL  `flutter devices` did not start: {err}"))?;
+    let text = String::from_utf8_lossy(&listed.stdout);
+    // `--machine` may print a line of its own before the JSON.
+    let devices: Value = text
+        .find('[')
+        .and_then(|at| serde_json::from_str(&text[at..]).ok())
+        .ok_or_else(|| println!("FAIL  `flutter devices --machine` answered no JSON:\n{text}"))?;
+    let Some(id) = devices.as_array().and_then(|all| {
+        all.iter().find_map(|device| {
+            let platform = device.get("targetPlatform")?.as_str()?;
+            let emulator = device.get("emulator")?.as_bool()?;
+            (platform.starts_with("android") && emulator)
+                .then(|| device.get("id")?.as_str().map(str::to_owned))?
+        })
+    }) else {
+        println!("FAIL  no Android emulator is running; start one before this run");
+        return Err(());
+    };
+    integration_test(app, &id, &format!("the Android emulator {id}"))
 }
 
 /// The Android app built for release, and the APK held to its rows.
@@ -338,7 +477,12 @@ fn stage(root: &Path, version: &str, dist: &Path, merged: &Value) -> io::Result<
         (
             root.join("bindings/dart"),
             &dart,
-            &["lib", "pubspec.yaml", "analysis_options.yaml"][..],
+            &[
+                "lib",
+                "packaging/facts.dart",
+                "pubspec.yaml",
+                "analysis_options.yaml",
+            ][..],
         ),
         (
             root.join("bindings/flutter"),
@@ -355,10 +499,14 @@ fn stage(root: &Path, version: &str, dist: &Path, merged: &Value) -> io::Result<
         fs::create_dir_all(to)?;
         for part in parts {
             let source = from.join(part);
+            let target = to.join(part);
             if source.is_dir() {
-                copy_tree(&source, &to.join(part))?;
+                copy_tree(&source, &target)?;
             } else {
-                fs::copy(&source, to.join(part))?;
+                if let Some(parent) = target.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+                fs::copy(&source, &target)?;
             }
         }
     }
@@ -461,6 +609,15 @@ mod targets {
         assert_eq!(ios.rows().len(), 1);
         assert_eq!(of(&["android"], true).unwrap().rows().len(), 3);
         assert!(of(&["web"], true).unwrap_err().contains("`web`"));
+        let simulator = of(&["ios-simulator"], false).unwrap();
+        assert!(simulator.ios());
+        assert_eq!(simulator.platforms(), "--platforms=ios");
+        let sims: Vec<&str> = simulator.rows().iter().map(|row| row.name).collect();
+        assert_eq!(sims.len(), 1);
+        assert!(sims[0].starts_with("ios-sim-"), "{sims:?}");
+        let emulator = of(&["android-emulator"], false).unwrap();
+        assert!(!emulator.ios());
+        assert_eq!(emulator.rows().len(), 3);
     }
 
     /// A universal file of the given slices, each `body` at its offset.
@@ -479,6 +636,24 @@ mod targets {
             out.extend(body);
         }
         out
+    }
+
+    #[test]
+    fn the_newest_runtime_s_first_iphone_is_the_simulator() {
+        let listing = serde_json::json!({"devices": {
+            "com.apple.CoreSimulator.SimRuntime.watchOS-11-0": [
+                {"name": "Apple Watch", "udid": "W", "state": "Shutdown"}],
+            "com.apple.CoreSimulator.SimRuntime.iOS-18-0": [
+                {"name": "iPhone 15", "udid": "OLD", "state": "Shutdown"}],
+            "com.apple.CoreSimulator.SimRuntime.iOS-27-0": [
+                {"name": "iPad Air", "udid": "PAD", "state": "Shutdown"},
+                {"name": "iPhone 17", "udid": "NEW", "state": "Booted"}],
+        }});
+        assert_eq!(
+            iphone(&listing),
+            Some(("NEW".into(), "iPhone 17".into(), true))
+        );
+        assert_eq!(iphone(&serde_json::json!({"devices": {}})), None);
     }
 
     #[test]
