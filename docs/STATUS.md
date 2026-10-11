@@ -1057,10 +1057,10 @@ provider's DUT1).
    "The plan to the release candidate"; Track A's release blockers first,
    the modules the reviewers read beside them):
    1. **The Java binding's typed records** (`03-design/java-binding.md`
-      §4.1). The request types are generated and tested and
-      `ChartOptions` takes them; next the other areas' request
-      parameters, then `typecheck/Wrong.java` with its lint, then the
-      answers' keys as enums. (The release rehearsal is done: run
+      §4.1). The request types are generated and tested, and
+      `ChartOptions` and the areas take them; next
+      `typecheck/Wrong.java` with its lint, then the answers' keys as
+      enums. (The release rehearsal is done: run
       38140578186 passed every job with nothing published. The JPL rows
       of `ACCURACY.md` are in; its Horizons half waits on JPL's
       permission, which is the maintainer's to ask.)

@@ -1,7 +1,6 @@
 package com.teispace.teistro;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * One period of civil days to read for each of the twelve signs
@@ -23,11 +22,11 @@ import java.util.Map;
  * @param spells Saturn's smaller spells (the 4th and 8th by default, C149); may be null
  */
 public record RashifalRequest(
-        CalendarDate first, CalendarDate last, Observer place, int utcOffsetSeconds, Map<String, ?> snapshot,
+        CalendarDate first, CalendarDate last, Observer place, int utcOffsetSeconds,
+        com.teispace.teistro.request.Snapshot snapshot,
         List<?> events, List<Integer> spells) {
     /** Keeps the collections unmodifiable. */
     public RashifalRequest {
-        snapshot = snapshot == null ? null : Map.copyOf(snapshot);
         events = events == null ? null : List.copyOf(events);
         spells = spells == null ? null : List.copyOf(spells);
     }
@@ -57,10 +56,11 @@ public record RashifalRequest(
     /**
      * The same request read at another moment of the reference day.
      *
-     * @param at such as {@code Map.of("at", "CLOCK", "hour", 6, "minute", 0)}
+     * @param at such as {@code new SnapshotClock(6, 0)}, or
+     *     {@code Snapshot.of(map)} from a map
      * @return the request
      */
-    public RashifalRequest withSnapshot(Map<String, ?> at) {
+    public RashifalRequest withSnapshot(com.teispace.teistro.request.Snapshot at) {
         return new RashifalRequest(first, last, place, utcOffsetSeconds, at, events, spells);
     }
 

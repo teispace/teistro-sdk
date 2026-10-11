@@ -33,7 +33,7 @@ public final class MatchingArea {
      * @param bride the bride's name
      * @param groom the groom's name
      * @return the match
-     * @see #naam(String, String, Map)
+     * @see #naam(String, String, com.teispace.teistro.request.NaamRules)
      */
     public NaamMilan naam(String bride, String groom) {
         return naam(bride, groom, null);
@@ -53,17 +53,17 @@ public final class MatchingArea {
      *
      * @param bride the bride's name
      * @param groom the groom's name
-     * @param rules the readings, such as {@code Map.of("name", Map.of("latin", "IAST"))},
-     *     as {@link Json#write} writes them; may be null for the sources' own
+     * @param rules the readings, such as
+     *     {@code NaamRules.builder().name(NameRules.builder().latin(LatinName.IAST).build()).build()},
+     *     or {@code NaamRules.of(map)} from a map; may be null for the sources' own
      * @return the match
      */
-    public NaamMilan naam(String bride, String groom, Map<String, ?> rules) {
+    public NaamMilan naam(String bride, String groom, com.teispace.teistro.request.NaamRules rules) {
         Map<String, Object> request = new LinkedHashMap<>();
         request.put("bride", bride);
         request.put("groom", groom);
-        String written = Reads.recordJson(rules, "rules", "Map.of(\"name\", Map.of(\"latin\", \"IAST\"))");
-        if (written != null) {
-            request.put("rules", Json.read(written));
+        if (rules != null) {
+            request.put("rules", rules);
         }
         String json = Json.write(request);
         Naam d = Naam.decode(context.locked((lib, raw) -> Calls.naamMilan(lib, raw, json)));

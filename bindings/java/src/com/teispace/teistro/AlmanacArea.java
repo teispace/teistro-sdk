@@ -58,18 +58,20 @@ public final class AlmanacArea {
      * fall in them, answered as {@link Almanac#festivals()}; the days are
      * founded once for both.
      *
-     * <p>A request is a {@code Map} as {@link Json#write} writes it (a
-     * member written as its full key, a clause or a bar an answer gave
-     * handed back as it stands), or its JSON text.
+     * <p>A request is its typed record, built or read from a map with
+     * {@code of} (a member written as its full key, a clause or a bar an
+     * answer gave handed back as it stands), or from JSON text with
+     * {@code MuhurtaRequest.of(Json.object(text))}. A rule set the
+     * consumer writes is a map in {@code rules}, as the SDK reads it.
      *
      * @param fromDate the first day; its calendar is the range's
      * @param toDate the last day
      * @param place where
      * @param utcOffsetSeconds the local clock's offset from UTC, east positive
      * @param muhurta the muhurta search to run, such as
-     *     {@code Map.of("rules", "RAMAN_MARRIAGE")}; may be null for none
+     *     {@code MuhurtaRequest.builder().rules("RAMAN_MARRIAGE").build()}; may be null for none
      * @param festivals the festival rules to reckon, such as
-     *     {@code Map.of("rules", "DHARMASINDHU")}; may be null for none
+     *     {@code new FestivalRequest("DHARMASINDHU")}; may be null for none
      * @param years whether to answer the lunar years the days fall in, as {@link Almanac#years()}
      * @param eclipses whether to answer the eclipses whose greatest moment
      *     falls in the days, with how the place sees each, as {@link Almanac#eclipses()}
@@ -78,7 +80,9 @@ public final class AlmanacArea {
      * @return the almanac
      */
     public Almanac of(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
-            Object muhurta, Object festivals, boolean years, boolean eclipses, boolean nepalSambat) {
+            com.teispace.teistro.request.MuhurtaRequest muhurta,
+            com.teispace.teistro.request.FestivalRequest festivals,
+            boolean years, boolean eclipses, boolean nepalSambat) {
         long sections = (years ? Native.TS_PANCHANGA_YEARS : 0)
                 | (eclipses ? Native.TS_PANCHANGA_ECLIPSES : 0)
                 | (nepalSambat ? Native.TS_PANCHANGA_NEPAL_SAMBAT : 0);
@@ -95,8 +99,8 @@ public final class AlmanacArea {
                 place.altitudeM().value(),
                 utcOffsetSeconds,
                 sections,
-                Reads.recordJson(muhurta, "muhurta", "Map.of(\"rules\", \"RAMAN_MARRIAGE\")"),
-                Reads.recordJson(festivals, "festivals", "Map.of(\"rules\", \"DHARMASINDHU\")"));
+                muhurta == null ? null : Json.write(muhurta),
+                festivals == null ? null : Json.write(festivals));
         return new Almanac(Panchanga.decode(context.locked((lib, raw) -> Calls.panchangaDays(lib, raw, request))));
     }
 

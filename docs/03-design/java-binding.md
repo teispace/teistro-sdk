@@ -217,10 +217,20 @@ on passes through the decoder. A natal point is written in the tagged form
 an answer writes (`{"point": "LAGNA"}`): the reader also takes the bare
 key, and the schema states only the form a binding writes back.
 
-Still to come, in order: the other areas' request parameters
-(`MatchingArea`, `NumerologyArea`, `RashifalRequest` and the almanac's),
-`typecheck/Wrong.java` with a lint that no area takes a request as a
-`Map`, and then the answers' keys as enums.
+The areas take them too: `naam(bride, groom, NaamRules)`,
+`profile(name, date, NumerologyRules)`, `RashifalRequest.withSnapshot(Snapshot)`
+and the almanac's `of(..., MuhurtaRequest, FestivalRequest, ...)`. A test
+holds that each typed rule reaches the SDK by turning a refusal into an
+answer: a mixed-script name under `nonLatin(SKIP)`, a Latin name under
+`latin(IAST)`. A rule set the consumer writes, and a muhurta's or
+festival's own rules, stay a map in `rules`, because the schema reads
+them as JSON. So do the research area's `rules`, `control` and `test`, whose
+`design` waits for the research area's own pass, since every parameter
+there is a map today.
+
+Still to come, in order: `typecheck/Wrong.java` with a lint that no area
+takes a schema-typed request as a `Map`, and then the answers' keys as
+enums.
 
 **Javadoc from the description.** Each item's documentation is the
 description's, with unit, range and example appended by

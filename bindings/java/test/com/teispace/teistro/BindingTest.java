@@ -658,6 +658,17 @@ public final class BindingTest {
                 NumerologyProfile profile = sky.numerology().profile("Ram Bahadur", java.time.LocalDate.of(1990, 4, 14));
                 check(profile != null, "a numerology profile");
                 check(sky.matching().naam("सीता", "राम") != null, "a naam milan");
+                // The typed rules reach the SDK: each turns a refusal into an answer.
+                same("numerology.name", refusal(() -> sky.numerology().profile("Ram राम",
+                        java.time.LocalDate.of(1990, 4, 14), null)).field(), "a non-Latin letter is refused");
+                check(sky.numerology().profile("Ram राम", java.time.LocalDate.of(1990, 4, 14),
+                        NumerologyRules.builder().nonLatin(NonLatin.SKIP).build()) != null,
+                        "NumerologyRules.nonLatin reaches the SDK");
+                check(refusal(() -> sky.matching().naam("Sita", "Rama", null)).field().startsWith("naam."),
+                        "a Latin name is refused by default");
+                check(sky.matching().naam("Sita", "Rama", NaamRules.builder()
+                        .name(NameRules.builder().latin(LatinName.IAST).build()).build()) != null,
+                        "NaamRules.name.latin reaches the SDK");
                 CalendarDate first = sky.chart().found(2_460_000.0, kathmandu, 20_700, ChartOptions.builder().build())
                         .day().date();
                 Almanac week = sky.almanac().of(first,
@@ -666,6 +677,8 @@ public final class BindingTest {
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
+                check(sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)
+                        .withSnapshot(new SnapshotClock(6, 0))).period() != null, "a rashifal at six");
                 check(!read.provenance().inputHash().isEmpty(), "the request is sealed");
                 same(read.provenance().inputHash(),
                         sky.chart().rashifalMany(List.of(RashifalRequest.of(first, kathmandu, 20_700)), null)
