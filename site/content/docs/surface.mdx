@@ -8,10 +8,15 @@ is computed under, the locale it is described in, and the ephemeris it is
 computed with. A context is built once and read many times, and its
 operations are grouped into **areas**.
 
-```js
+```js title="bindings/node/example/quickstart.mjs"
 const bs = ctx.calendar.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
-const noon = ctx.time.resolve(at(day, { hour: 12 }), ianaZone('Asia/Kathmandu'));
-const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] });
+// …
+const resolved = ctx.time.resolve(
+  at(date(Calendar.Gregorian, 1986, 1, 1), { hour: 0, minute: 20 }),
+  ianaZone('Asia/Kathmandu'),
+);
+// …
+const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Moon] });
 ```
 
 `ctx.calendar.convert` and `ctx.time.convert` are two different
@@ -51,23 +56,23 @@ canonical `<area>.<operation>` path, and `cargo xtask check-parity`
 compares the reports value for value — the same numbers **and** the same
 shape. What differs is only how each language spells a name.
 
-```js
+```js fragment
 ctx.calendar.monthLength(...)   // Node: lower camel case
 ```
 
-```dart
+```dart fragment
 ctx.calendar.monthLength(...)   // Dart: lower camel case
 ```
 
-```python
+```python fragment
 ctx.calendar.month_length(...)  # Python: snake case
 ```
 
-```rust
+```rust fragment
 sdk.calendar().month_length(..) // Rust: snake case, and an area is a call
 ```
 
-```c
+```c fragment
 ts_calendar_month_length(...)   /* C: the ABI beneath all four */
 ```
 
@@ -128,11 +133,11 @@ the manifest, an operation's signature — and calls one by name.
 The adapter's own package carries a **typed façade** over them, which is
 a value you take rather than a method the SDK promises:
 
-```js
-import teimeris from '@teistro/ephemeris-teimeris';
+```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
+const typed = engine(sdk.engine);
 
-const engine = teimeris(ctx.engine);
-engine.tmBodyName({ body: 0 });   // 'Sun'
+// One value comes back as itself, typed.
+const name: string = typed.tmBodyName({ body: 0 });
 ```
 
 That way nothing type-checks that the SDK has not installed, and the port

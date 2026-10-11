@@ -25,16 +25,25 @@ on — and `@teistro/sdk` depends on all of them as optional dependencies,
 so npm installs exactly the one that matches the host and skips the rest.
 Nothing is compiled at install time and there is no install script.
 
-```js
-import { Context } from '@teistro/sdk';
-import { Body } from '@teistro/sdk/catalogue';
-
+```js title="bindings/node/example/quickstart.mjs"
+import {
+  Body,
+  Calendar,
+  Context,
+  at,
+  date,
+  ianaZone,
+  sdkVersion,
+} from '@teistro/sdk';
+// …
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });
-const sun = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] }).at(0, 0);
+// …
+const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Moon] });
+console.log(`the Sun at ${sky.at(0, 0).longitude.toFixed(4)} degrees`);
 ```
 
 `ephemeris` is not optional and there is no default: a context with none
@@ -61,16 +70,23 @@ against a digest recorded when it was built, and writes it to
 `.dart_tool/teistro/<version>/`, which is where `Teistro.open()` looks
 first.
 
-```dart
+```dart title="bindings/dart/example/quickstart.dart"
 import 'package:teistro/teistro.dart';
 
-final teistro = Teistro.open();
-final ctx = teistro.context(
-  profile: 'nepali-default',
-  locale: 'ne-Deva-NP',
-  ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
-);
-final sun = ctx.positions(instants: [2451545.0], bodies: [Body.sun]).at(0, 0);
+void main() {
+  final teistro = Teistro.open();
+  // …
+  final ctx = teistro.context(
+    profile: 'nepali-default',
+    locale: 'ne-Deva-NP',
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+  );
+  // …
+  final sky = ctx.positions(
+    instants: [2451545.0],
+    bodies: [Body.sun, Body.moon],
+  );
+  print('the Sun at ${sky.at(0, 0).longitude.toStringAsFixed(4)} degrees');
 ```
 
 On a machine with no network, install from a file you already have:
@@ -94,10 +110,11 @@ package was cut from and checked against the digest the package carries.
 It re-exports `package:teistro/teistro.dart`, so the code is the Dart
 binding's:
 
-```dart
+```dart title="bindings/flutter/example/lib/main.dart"
 import 'package:teistro_flutter/teistro_flutter.dart';
-
-final teistro = Teistro.open(); // the library the hook bundled
+// …
+    final teistro = Teistro.open();
+    final calendar = teistro.context(profile: 'nepali-default').calendar;
 ```
 
 The floors are Android API 24 and iOS 13; a build below either is refused
@@ -122,14 +139,19 @@ it to `.teistro/<version>/`, which is one of the first places
 interpreter version — the package loads the library through `ctypes`,
 which is in the standard library.
 
-```python
-from teistro import Body, Ephemeris, Teistro
+```python title="bindings/python/example/quickstart.py"
+from teistro import Body, Calendar, Ephemeris, Teistro, at, date, iana_zone, intl
 
-teistro = Teistro.open()
-with teistro.context(
-    profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
-) as ctx:
-    sun = ctx.positions(instants=[2451545.0], bodies=[Body.SUN]).at(0, 0)
+
+def main() -> None:
+    teistro = Teistro.open()
+    # …
+    with teistro.context(
+        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
+    ) as ctx:
+        # …
+        sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN, Body.MOON])
+        print(f"the Sun at {sky.at(0, 0).longitude:.4f} degrees")
 ```
 
 `teistro-install --from <file>` installs from a file you already have,
@@ -161,14 +183,18 @@ the library for this machine is written to `java.io.tmpdir`, checked
 against a digest compiled into the jar, and checked again every time it
 is reused. There is no install step.
 
-```java
-import com.teispace.teistro.*;
-
+```java title="bindings/java/example/Quickstart.java"
 Teistro teistro = Teistro.open();
-try (Context ctx = teistro.context(ContextOptions.builder()
-        .profile("nepali-default").locale("ne-Deva-NP").ephemeris(Ephemeris.BUILTIN).build())) {
-    double sun = ctx.positions(new double[] {2451545.0}, List.of(Body.SUN)).at(0, 0).longitude();
-}
+// …
+ContextOptions options = ContextOptions.builder()
+        .profile("nepali-default")
+        .locale("ne-Deva-NP")
+        .ephemeris(Ephemeris.BUILTIN)
+        .build();
+try (Context ctx = teistro.context(options)) {
+    // …
+    PositionGrid sky = ctx.positions(new double[] {2451545.0}, List.of(Body.SUN, Body.MOON));
+    System.out.printf(Locale.ROOT, "the Sun at %.4f degrees%n", sky.at(0, 0).longitude());
 ```
 
 Run with native access granted: `--enable-native-access=com.teispace.teistro`
@@ -223,34 +249,58 @@ carries (`BUILTIN`, `TEST`, `NONE`), a **descriptor** exported by an
 adapter's own package, or a **provider you write yourself** — a
 JavaScript, Dart, Python or Java object the SDK calls into.
 
-```js
+```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
 import { Context } from '@teistro/sdk';
-import teimeris from '@teistro/ephemeris-teimeris';
+import teimeris, { engine, binary, platformPackage, type TmDatetime, type TmPosition, type TmStar } from '@teistro/ephemeris-teimeris';
 
-// A real engine, and the SDK's own only if it is not there.
-const ctx = new Context({ ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'] });
+// The descriptor is what an `ephemeris` chain takes.
+const sdk = new Context({
+  profile: 'parashari-classical',
+  ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
+});
 ```
 
-```dart
+```dart title="adapters/ephemeris-teimeris/dart/example/consumer.dart"
+import 'package:teistro/teistro.dart';
 import 'package:teistro_ephemeris_teimeris/teistro_ephemeris_teimeris.dart';
 
-final ctx = teistro.context(
-  ephemeris: [teimeris(dataDir: './ephe'), NamedEphemeris(Ephemeris.builtin)],
-);
+void main() {
+  final teistro = Teistro.open();
+
+  // A real engine, and the SDK's own only if it is not there.
+  final ctx = teistro.context(
+    profile: 'parashari-classical',
+    ephemeris: [
+      teimeris(dataDir: './ephe'),
+      const NamedEphemeris(Ephemeris.builtin),
+    ],
+  );
 ```
 
-```python
-from teistro_ephemeris_teimeris import teimeris
+```python title="adapters/ephemeris-teimeris/python/typecheck/consumer.py"
+import teistro
+from teistro import Body, Ephemeris
 
-ctx = sdk.context(ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN])
+from teistro_ephemeris_teimeris import engine, teimeris
+# …
+    sdk = teistro.Teistro.open()
+
+    # A real engine, and the SDK's own only if it is not there.
+    with sdk.context(
+        profile="parashari-classical",
+        ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN],
+    ) as ctx:
 ```
 
-```java
+```java title="adapters/ephemeris-teimeris/java/typecheck/Consumer.java"
 import com.teispace.teistro.teimeris.Teimeris;
-
-Context ctx = sdk.context(ContextOptions.builder()
+// …
+Teistro sdk = Teistro.open();
+// A real engine, and the SDK's own only if it is not there.
+ContextOptions options = ContextOptions.builder()
+        .profile("parashari-classical")
         .ephemeris(Teimeris.builder().dataDir("./ephe").build(), EphemerisChoice.of(Ephemeris.BUILTIN))
-        .build());
+        .build();
 ```
 
 **A real engine is the intended path.** In most cases a consumer belongs

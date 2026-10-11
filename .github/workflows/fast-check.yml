@@ -54,6 +54,8 @@ jobs:
         run: cargo test --workspace
       - name: Documentation gates
         run: cargo xtask check-docs
+      - name: Guides (every program a guide shows is cut from a file a gate runs)
+        run: cargo xtask check-guides
 
   # The build with no module family, which is the wasm module's `panchanga`
   # profile (docs/03-design/wasm-profiles.md): the boundary and the wasm

@@ -1078,8 +1078,14 @@ provider's DUT1).
       on an emulator and a simulator), and the docs: the package README
       (sizes, how it is tested) and the site's install page. What is left
       is the first publish, which waits on the maintainer.
-   3. **The docs site's guides with executed examples**, beside the
-      roadmap's install check after publishing.
+   3. **The docs site's guides with executed examples.** The gate is
+      built: every program a guide shows is cut from a file a gate runs,
+      named in its title (`check-guides`), and its output blocks are held
+      to what the example printed (`check-parity`); the install check
+      after publishing is `check-published`, the release's last job.
+      What is left is a guide per shared example the site does not yet
+      walk through (birth chart, panchanga, calendars, almanac, readings,
+      rectification, your own ephemeris), each cut from the example.
    4. **Track B and C modules** (the roadmap's tables): research's
       transits and the age shuffle's `max_pairs` cap (`research.md` §4
       step 4; steps 5 to 7 are built; an uncertain birth's window is read

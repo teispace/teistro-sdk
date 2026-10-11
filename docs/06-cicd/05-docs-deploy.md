@@ -53,6 +53,29 @@ The publish job needs Pages enabled for the repository with GitHub
 Actions as its source; nothing else is configured, and no credential is
 held anywhere — the deploy takes the runner's OIDC token.
 
+## Executed examples
+
+A guide holds no code of its own (`01-research/platform/10-docs-site.md`,
+requirement 2). A program block names the file it was cut from in its
+title, ```` ```js title="bindings/node/example/quickstart.mjs" ````,
+which the site prints above the block, and `cargo xtask check-guides`
+(fast-check) holds the block to that file: each run of its lines between
+elisions (`// …`, `# …`) must appear there in order and unbroken, but for
+the file's comments and blank lines. The file must be a shared example,
+which `check-parity` runs in every binding, or one `xtask/src/guides.rs`
+lists with the gate that type-checks or builds it: the adapter's
+consumers, which need the engine's data to run, and the Flutter app,
+which needs a device. The one rewrite allowed is an example's import of
+its package's source (`'../lib/index.js'`), shown as a consumer writes it
+(`'@teistro/sdk'`), and the list of those is in the same file.
+
+A block that is not a program on purpose, such as a call's spelling set
+beside its other spellings, says `fragment`, and the gate lists each by
+page and line. An output block, ```` ```text output="research" ````, is
+lines the shared example prints, and `check-parity`, which runs the
+examples, holds it to what the example printed. Shell commands, JSON and
+POM fragments are not programs and are not checked.
+
 ## What is not built yet
 
 - **Versioned docs.** One release is published at a time. Versioning is
@@ -61,9 +84,5 @@ held anywhere — the deploy takes the runner's OIDC token.
   Nepali-first; the guides are English until there are enough of them to
   be worth translating, and the reference is generated from doc comments
   that are English in the source.
-- **Executed examples.** The guides' examples are the ones the packaging
-  gate already runs, copied by hand. A gate that extracts and runs them
-  from the pages themselves is the next step
-  (`01-research/platform/10-docs-site.md`, requirement 2).
 - **Interactive examples.** A wasm build of the SDK running in the page
   waits on the wasm binding.
