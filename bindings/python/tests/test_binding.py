@@ -1596,6 +1596,28 @@ class AnEngine(WithLibrary):
                     test={"seed": 1, "permutations": 19},
                 )
             self.assertEqual(refused.exception.field, "research.subjects")
+            # Self-matched, each person is read against their own year.
+            from teistro import ResearchSubject
+
+            lives = [ResearchSubject(birth=one, event=one.instant + 9000.5) for one in births]
+            matched = ctx.research.timed(
+                subjects=lives,
+                rules={"shipped": ["YOGAS"]},
+                dasha=DashaSystem.VIMSHOTTARI,
+                shuffle="SELF_MATCHED",
+                referents={"windowDays": 365.25, "stepDays": 30},
+                test={"seed": 1, "permutations": 19},
+            )
+            self.assertEqual(len(matched.rows), len(counted.rows))
+            with self.assertRaises(TeistroError) as refused:
+                ctx.research.timed(
+                    subjects=lives,
+                    rules={"shipped": ["YOGAS"]},
+                    dasha=DashaSystem.VIMSHOTTARI,
+                    shuffle="SELF_MATCHED",
+                    test={"seed": 1, "permutations": 19},
+                )
+            self.assertEqual(refused.exception.field, "referents")
             # An uncertain birth's window is read every step, and the step
             # is part of the study it pre-registers.
             uncertain = [dataclasses.replace(one, uncertainty_minutes=30.0) for one in births]

@@ -44,6 +44,7 @@ mod correct;
 mod effect;
 mod engine;
 mod events;
+mod matched;
 mod recombined;
 mod rng;
 mod special;
@@ -53,6 +54,7 @@ mod tests;
 pub use bits::{Cell, Matrix};
 pub use effect::{Effect, Interval, Pooled};
 pub use events::{AfterBirth, EventTest, MAX_ATTEMPTS, MAX_SUBJECTS, PairMatrix, timed};
+pub use matched::{MAX_INSTANTS, MatchedMatrix, matched};
 pub use recombined::{MAX_REPLICATES, ReplicateTest, replicated};
 pub use rng::{ShuffleVersion, SplitMix64, stream_seed};
 

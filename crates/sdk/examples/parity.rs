@@ -6292,7 +6292,7 @@ const PAKSHI_JSON: [&str; 2] = [
 /// population, each delivered by the Vimshottari at an event of its life
 /// under the age shuffle, and compared again inside two strata of four.
 /// Sent as the record a binding writes.
-fn research_studies() -> [(&'static str, serde_json::Value); 5] {
+fn research_studies() -> [(&'static str, serde_json::Value); 6] {
     let births: Vec<serde_json::Value> = (0..8_u32)
         .map(|i| {
             serde_json::json!({
@@ -6335,6 +6335,13 @@ fn research_studies() -> [(&'static str, serde_json::Value); 5] {
             serde_json::json!({"study": "TIMED", "rules": rules, "subjects": subjects,
             "dasha": "dasha_system.VIMSHOTTARI", "shuffle": "AGES_AT_EVENT",
             "test": {"seed": 3, "permutations": 49}}),
+        ),
+        (
+            "matched",
+            serde_json::json!({"study": "TIMED", "rules": rules, "subjects": subjects,
+            "dasha": "dasha_system.VIMSHOTTARI", "shuffle": "SELF_MATCHED",
+            "referents": {"windowDays": 365.25, "stepDays": 30},
+            "test": {"seed": 7, "permutations": 99}}),
         ),
         (
             "strata",

@@ -493,6 +493,21 @@ public final class BindingTest {
                         DashaSystem.VIMSHOTTARI, ResearchEventShuffle.AGES_AT_EVENT,
                         ResearchEventTest.builder(1, 19).build(), null));
                 same("research.subjects", refused.field(), "named by its record");
+                // Self-matched, each person is read against their own year.
+                List<ResearchSubject> lives = new java.util.ArrayList<>();
+                for (ResearchBirth birth : births) {
+                    lives.add(new ResearchSubject(birth, birth.instant() + 9000.5));
+                }
+                ResearchTested matched = sky.research().timed(lives, yogas, DashaSystem.VIMSHOTTARI,
+                        new ResearchReferents(365.25, 30), ResearchEventTest.builder(1, 19).build(), null);
+                same(tested.rows().size(), matched.rows().size(), "a row per rule");
+                TeistroException unreferred = refusal(() -> sky.research().timed(lives, yogas,
+                        DashaSystem.VIMSHOTTARI, ResearchEventShuffle.SELF_MATCHED,
+                        ResearchEventTest.builder(1, 19).build(), null));
+                same("referents", unreferred.field(), "a self-matched study needs its referents");
+                TeistroException tight = refusal(() -> sky.research().timed(lives, yogas, DashaSystem.VIMSHOTTARI,
+                        new ResearchReferents(365.25, 0.25), ResearchEventTest.builder(1, 19).build(), null));
+                same("referents.stepDays", tight.field(), "a window holds at most a thousand instants");
                 // A test the call needs is refused by name before anything crosses.
                 TeistroException untested = refusal(() -> sky.research().compare(births, yogas, design, null, null));
                 same("test", untested.field(), "no test, no study");

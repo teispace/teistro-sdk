@@ -7062,6 +7062,16 @@ export interface ResearchSubject {
   readonly event: number;
 }
 
+/**
+ * Where a self-matched study reads each person besides their event: the
+ * life cut into windows of `windowDays` from birth, the event's window
+ * read every `stepDays` (time-stratified referents).
+ */
+export interface ResearchReferents {
+  readonly windowDays: number;
+  readonly stepDays: number;
+}
+
 /** A predicate's charts in one group. */
 export interface ResearchGroupCount {
   readonly present: number;
@@ -7187,11 +7197,21 @@ export declare class ResearchArea {
       readonly dasha: DashaSystem | DashaKey;
       /** 1 (the mahadasha) to 6; 2 when left out. */
       readonly depth?: number;
-      /** What the null keeps: the calendar of events, or each person's age at the event. No default. */
-      readonly shuffle: 'EVENT_DATES' | 'AGES_AT_EVENT';
-      readonly strata?: readonly number[];
       readonly test: ResearchEventTest;
-    },
+    } & (
+        | {
+          /** What the null keeps: the calendar of events, or each person's age at the event. No default. */
+          readonly shuffle: 'EVENT_DATES' | 'AGES_AT_EVENT';
+          readonly strata?: readonly number[];
+          readonly referents?: never;
+        }
+        | {
+          /** Each person their own control: the event drawn among the person's referent instants. */
+          readonly shuffle: 'SELF_MATCHED';
+          readonly referents: ResearchReferents;
+          readonly strata?: never;
+        }
+      ),
   ): ResearchTested;
 }
 

@@ -14,7 +14,11 @@ public enum EventShuffle implements RequestJson {
     /**
      * Ages at the event move among people: person `i` is read at its birth plus person `j`'s age. The ages are kept; the calendar is not.
      */
-    AGES_AT_EVENT("AGES_AT_EVENT");
+    AGES_AT_EVENT("AGES_AT_EVENT"),
+    /**
+     * Each person is their own control (the case-crossover design, C367): the event is as likely at any of the person's referent instants (`Referents`), so nothing fixed about the person, the chart included, can make a rule look delivered. Nobody's event moves to anybody else.
+     */
+    SELF_MATCHED("SELF_MATCHED");
 
     private final String key;
 

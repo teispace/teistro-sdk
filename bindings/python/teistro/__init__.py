@@ -780,6 +780,7 @@ __all__ = [
     "ResearchDesign",
     "ResearchEffect",
     "ResearchEventTest",
+    "ResearchReferents",
     "ResearchExpectation",
     "ResearchGroupCount",
     "ResearchGroupTest",
@@ -2374,6 +2375,15 @@ class ResearchEventTest(TypedDict, total=False):
     parallelism: Union[Literal["ONE"], Mapping[str, int]]
 
 
+class ResearchReferents(TypedDict):
+    """Where a self-matched study reads each person besides their event:
+    the life cut into windows of `windowDays` from birth, the event's
+    window read every `stepDays` (time-stratified referents)."""
+
+    windowDays: float
+    stepDays: float
+
+
 class ResearchControl(TypedDict, total=False):
     """Gauquelin's control: the sample refounded `replicates` times (1 to
     100 000) from `seed`, clock times moving only inside `strata` when
@@ -2635,18 +2645,21 @@ class ResearchArea(_Area):
         subjects: Sequence[ResearchSubject],
         rules: RuleRequest,
         dasha: Union[DashaSystem, str],
-        shuffle: Literal["EVENT_DATES", "AGES_AT_EVENT"],
+        shuffle: Literal["EVENT_DATES", "AGES_AT_EVENT", "SELF_MATCHED"],
         test: ResearchEventTest,
         depth: Optional[int] = None,
         strata: Optional[Sequence[int]] = None,
+        referents: Optional[ResearchReferents] = None,
         holds: Optional[Literal["STANDING", "FORMED"]] = None,
     ) -> ResearchTested:
         """Whether each rule is delivered by `dasha`'s running periods, to
         `depth` (2 when left out), at the subjects' own events more (or
         less) often than at events shuffled among them: by date
         (`EVENT_DATES`, the calendar of events kept) or by age
-        (`AGES_AT_EVENT`, each person's age at the event kept). The shuffle
-        has no default."""
+        (`AGES_AT_EVENT`, each person's age at the event kept); or, under
+        `SELF_MATCHED`, than at each person's own `referents`, every
+        person their own control and no strata. The shuffle has no
+        default."""
         return _research_tested(
             self._run(
                 "TIMED",
@@ -2658,6 +2671,7 @@ class ResearchArea(_Area):
                 depth=depth,
                 shuffle=shuffle,
                 strata=None if strata is None else list(strata),
+                referents=None if referents is None else dict(referents),
             )
         )
 

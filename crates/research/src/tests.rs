@@ -904,3 +904,138 @@ fn the_stratified_exact_p_meets_an_enumeration() {
         );
     }
 }
+
+/// A self-matched study of one predicate: each subject `(instants,
+/// present, at_event)` read at its event and `instants − 1` referents,
+/// the predicate holding at `present` of them, the event among them when
+/// `at_event`.
+fn matched_of(people: &[(u16, u16, bool)]) -> MatchedMatrix {
+    let counts: Vec<u16> = people.iter().map(|&(instants, _, _)| instants).collect();
+    let mut matrix = MatchedMatrix::new(&counts).unwrap();
+    matrix
+        .push("p", |i, k| {
+            let (_, present, at_event) = people[i];
+            let referents = usize::from(present) - usize::from(at_event);
+            let holds = if k == 0 { at_event } else { k <= referents };
+            if holds { Cell::Present } else { Cell::Absent }
+        })
+        .unwrap();
+    matrix
+}
+
+#[test]
+fn a_self_matched_null_meets_its_enumeration() {
+    // Three subjects, one referent each, exposed (at event, at referent)
+    // (1,0), (1,0), (0,1): the 8 labellings are equally likely and a sum
+    // of 2 or more is reached by 4, so the exact one-sided p is 0.5.
+    let matrix = matched_of(&[(2, 1, true), (2, 1, true), (2, 1, false)]);
+    let mut test = EventTest::new(31, 20_000);
+    test.alternative = Alternative::Greater;
+    test.level = 0.999;
+    let row = matched(&matrix, &test).unwrap().rows.remove(0);
+    assert!((row.exact.unwrap() - 0.5).abs() < 1e-12, "{:?}", row.exact);
+    assert!(row.p.low <= 0.5 && 0.5 <= row.p.high, "{:?}", row.p);
+    assert_eq!(row.counts[0].present, 2);
+}
+
+#[test]
+fn a_self_matched_study_meets_a_reference_implementation() {
+    // Eight subjects as strata of one event and its referents; statsmodels
+    // 0.15's `StratifiedTable` over the same tables gives the CMH
+    // chi-square, which is this statistic squared, and the pooled odds
+    // ratio with its Robins–Breslow–Greenland interval, the
+    // case-crossover's conditional odds ratio.
+    let matrix = matched_of(&[
+        (4, 1, true),
+        (4, 2, true),
+        (5, 1, false),
+        (3, 2, true),
+        (5, 3, true),
+        (4, 1, true),
+        (6, 2, false),
+        (3, 1, true),
+    ]);
+    let row = matched(&matrix, &EventTest::new(2, 999))
+        .unwrap()
+        .rows
+        .remove(0);
+    let observed = row.observed.unwrap();
+    assert!(
+        (observed * observed - 4.857_799_671_592_775).abs() < 1e-12,
+        "{observed}"
+    );
+    let pooled = row.effect.unwrap().pooled.unwrap();
+    let odds = pooled.odds_ratio.unwrap();
+    assert!((odds.estimate - 6.375).abs() < 1e-12);
+    assert!(
+        (odds.low - 1.165_308_723_912_862_6).abs() < 1e-9,
+        "{odds:?}"
+    );
+    assert!((odds.high - 34.875_414_700_009_53).abs() < 1e-7, "{odds:?}");
+    assert!((pooled.risk_ratio.unwrap().estimate - 2.890_109_890_109_89).abs() < 1e-12);
+    assert_eq!(pooled.homogeneity_p, None);
+}
+
+#[test]
+fn a_self_matched_null_holds_its_level() {
+    // 300 null studies of 80 subjects, each read at its event and 11
+    // referents, a predicate holding at each instant with a chance of
+    // the subject's own: the event is just another instant, so the raw p
+    // is under 0.05 within its binomial of 5%.
+    let mut under = 0_u64;
+    let studies = 300;
+    for study in 0..studies {
+        let mut rng = SplitMix64::new(4_000 + study);
+        let people: Vec<(u16, Vec<bool>)> = (0..80)
+            .map(|_| {
+                let share = (rng.next_u64() >> 11) as f64 / (1_u64 << 53) as f64;
+                let cells = (0..12)
+                    .map(|_| ((rng.next_u64() >> 11) as f64 / (1_u64 << 53) as f64) < share)
+                    .collect();
+                (12, cells)
+            })
+            .collect();
+        let counts: Vec<u16> = people.iter().map(|(c, _)| *c).collect();
+        let mut matrix = MatchedMatrix::new(&counts).unwrap();
+        matrix
+            .push("p", |i, k| {
+                if people[i].1[k] {
+                    Cell::Present
+                } else {
+                    Cell::Absent
+                }
+            })
+            .unwrap();
+        let row = matched(&matrix, &EventTest::new(study, 199))
+            .unwrap()
+            .rows
+            .remove(0);
+        under += u64::from(row.p.value <= 0.05);
+    }
+    // Valid means no more often than the level: under 5% plus three of
+    // its binomial standard deviations.
+    let ceiling = 0.05 * studies as f64 + 3.0 * (0.05 * 0.95 * studies as f64).sqrt();
+    assert!((under as f64) <= ceiling, "{under} of {studies}");
+}
+
+#[test]
+fn a_self_matched_study_is_the_same_at_every_thread_count() {
+    let matrix = matched_of(&[(4, 1, true), (4, 2, true), (5, 1, false), (3, 2, true)]);
+    let mut test = EventTest::new(8, 1_001);
+    let one = matched(&matrix, &test).unwrap();
+    test.parallelism = Parallelism::Threads(NonZeroU16::new(3).unwrap());
+    assert_eq!(one, matched(&matrix, &test).unwrap());
+    test.after_birth = AfterBirth::RestrictPairings;
+    assert_eq!(
+        matched(&matrix, &test).unwrap_err().field(),
+        Some("afterBirth")
+    );
+    assert_eq!(
+        MatchedMatrix::new(&[3]).unwrap_err().field(),
+        Some("subjects")
+    );
+    assert_eq!(
+        MatchedMatrix::new(&[3, 0]).unwrap_err().field(),
+        Some("subjects[1]")
+    );
+}

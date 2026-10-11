@@ -29,8 +29,8 @@ use teistro::catalogue::DashaSystem;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::research::{
     AfterBirth, Birth, Cell, Contrast, DEFAULT_UNCERTAINTY_STEP_MINUTES, Design, EventShuffle,
-    EventStudy, EventTest, GroupTest, Matrix, Recombine, ReplicateTest, SplitMix64, Study, Subject,
-    Tested, compare,
+    EventStudy, EventTest, GroupTest, Matrix, Recombine, Referents, ReplicateTest, SplitMix64,
+    Study, Subject, Tested, compare,
 };
 use teistro::rules::Rule;
 use teistro::{ChartRequest, Context, Ephemeris, RuleRequest, RuleSet, ShippedRules, UtcOffset};
@@ -697,6 +697,12 @@ struct EventNull {
     rows: usize,
 }
 
+/// The self-matched null's referents on the measured page: a year from
+/// birth, read monthly.
+const REFERENTS: Referents = Referents::new(365.25, 30.0);
+
+/// Null event studies under `shuffle`, self-matched to [`REFERENTS`]
+/// under `SelfMatched`, which has no pairing to restrict.
 fn event_nulls(sdk: &Context, shuffle: EventShuffle) -> Result<EventNull, String> {
     let set = RuleRequest::shipped([ShippedRules::Yogas])
         .rule_set()
@@ -706,8 +712,12 @@ fn event_nulls(sdk: &Context, shuffle: EventShuffle) -> Result<EventNull, String
     for k in 0..EVENT_STUDIES {
         let lives = subjects(9_000 + k)?;
         let study = EventStudy::new(&lives, &request, &set, DashaSystem::Vimshottari, shuffle);
+        let (study, after_birth) = match shuffle {
+            EventShuffle::SelfMatched => (study.self_matched(REFERENTS), AfterBirth::Refuse),
+            _ => (study, AfterBirth::RestrictPairings),
+        };
         let test = EventTest {
-            after_birth: AfterBirth::RestrictPairings,
+            after_birth,
             ..EventTest::new(k, EVENT_PERMUTATIONS)
         };
         let tested = sdk
@@ -740,6 +750,7 @@ fn page() -> Result<String, String> {
     let sectors = artefact(&sdk)?;
     let ages = event_nulls(&sdk, EventShuffle::AgesAtEvent)?;
     let dates = event_nulls(&sdk, EventShuffle::EventDates)?;
+    let matched = event_nulls(&sdk, EventShuffle::SelfMatched)?;
     let windows = WINDOWS
         .iter()
         .map(|&minutes| window(&sdk, minutes))
@@ -750,7 +761,7 @@ fn page() -> Result<String, String> {
     calibration(&mut out, &null);
     power(&mut out, &found, &covered);
     gauquelin(&mut out, &sectors);
-    shuffles(&mut out, &ages, &dates);
+    shuffles(&mut out, &ages, &dates, &matched);
     uncertainty(&mut out, &windows);
     strata(&mut out, &with, &without);
     discoveries(&mut out, &partial_null);
@@ -999,7 +1010,7 @@ fn gauquelin(out: &mut String, sectors: &[Sector]) {
     );
 }
 
-fn shuffles(out: &mut String, ages: &EventNull, dates: &EventNull) {
+fn shuffles(out: &mut String, ages: &EventNull, dates: &EventNull, matched: &EventNull) {
     let judged = |seen: &EventNull, name: &str| {
         Claim::stated(
             format!("under {name}, a null event study's raw p is under 0.05 no more often than 5%"),
@@ -1015,10 +1026,11 @@ fn shuffles(out: &mut String, ages: &EventNull, dates: &EventNull) {
     let claims = [
         judged(ages, "`AGES_AT_EVENT`"),
         judged(dates, "`EVENT_DATES`"),
+        judged(matched, "`SELF_MATCHED`"),
     ];
     let _ = writeln!(
         out,
-        "## 4. The two event shuffles (test 5)\n\n\
+        "## 4. The event nulls (test 5)\n\n\
          {EVENT_STUDIES} studies under each shuffle, each of {SUBJECTS} \
          subjects born at Kathmandu at any hour over 1950 to 1990 with one \
          event between the ages of {} and {}, placed with no regard to the \
@@ -1027,9 +1039,14 @@ fn shuffles(out: &mut String, ages: &EventNull, dates: &EventNull) {
          permutations, a pairing before a birth never drawn. A row counts \
          where the rule is delivered on some pairings and not all. The ages \
          are narrow and the births forty years wide, so a date shuffle reads \
-         each person at ages far from any event's (C364).\n\n{}",
+         each person at ages far from any event's (C364). Self-matched, \
+         each person is read at their event and every {} days of the \
+         {}-day window from birth that holds it, and nobody's event moves \
+         (C367).\n\n{}",
         EVENT_AGES.0,
         EVENT_AGES.1,
+        REFERENTS.step_days,
+        REFERENTS.window_days,
         table(&claims)
     );
 }

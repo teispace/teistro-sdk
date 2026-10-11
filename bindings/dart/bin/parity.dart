@@ -2844,6 +2844,23 @@ void main() {
     ),
   );
   putTested(
+    'matched',
+    geo.research.timed(
+      subjects: [
+        for (final (i, birth) in births.indexed)
+          ResearchSubject(
+            birth: birth,
+            event: birth.instant + 9000.5 + 211 * i,
+          ),
+      ],
+      rules: yogas,
+      dasha: DashaSystem.vimshottari,
+      shuffle: ResearchEventShuffle.selfMatched,
+      referents: const ResearchReferents(windowDays: 365.25, stepDays: 30),
+      test: ResearchEventTest(seed: BigInt.from(7), permutations: 99),
+    ),
+  );
+  putTested(
     'strata',
     geo.research.compare(
       births: births,
