@@ -641,6 +641,7 @@ impl Provenance {
 /// A value with its provenance.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "{T}Envelope"))]
 pub struct Envelope<T> {
     /// The value.
     pub value: T,

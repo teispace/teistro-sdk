@@ -242,6 +242,7 @@ pub struct Contribution {
 /// One span.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AyurdayaSpan"))]
 pub struct Span {
     /// Which method.
     pub method: Method,

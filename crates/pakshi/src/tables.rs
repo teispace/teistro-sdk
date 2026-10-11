@@ -324,6 +324,7 @@ pub fn subs(
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "BirdRelation"))]
 pub enum Relation {
     /// A friend.
     Friend,

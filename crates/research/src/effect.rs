@@ -7,6 +7,7 @@ use teistro_core::math;
 /// An estimate with its interval at the test's confidence level.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "EffectEstimate"))]
 pub struct Interval {
     /// The point estimate.
     pub estimate: f64,

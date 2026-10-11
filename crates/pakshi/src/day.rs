@@ -113,6 +113,7 @@ impl Day {
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PakshiSpan"))]
 pub struct Span {
     /// Its start.
     pub from: f64,

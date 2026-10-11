@@ -142,6 +142,7 @@ impl fmt::Display for Bala {
 /// the Parashari answer and is what the source's worked chart does.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "TajikaRelation"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Relation {
     /// The planet is the lord of the division: the whole of it.
