@@ -25,10 +25,11 @@ const OUT: &str = "site/out";
 /// Pages the build must have produced whatever else it did: the home
 /// page and both guide pages, so a build that silently rendered nothing
 /// fails.
-const BUILT: [&str; 3] = [
+const BUILT: [&str; 4] = [
     "site/out/index.html",
     "site/out/docs/install.html",
     "site/out/docs/surface.html",
+    "site/out/docs/mcp.html",
 ];
 
 pub(crate) fn check(root: &Path) -> i32 {

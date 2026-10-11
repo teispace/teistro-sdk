@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
 Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
-P8 to P10 built, P7 open, §6 step 5 (packaging) building: everything but the site's guide built. Closes Q35 (`QUESTIONS.md`), which the
+P8 to P10 built, P7 open, §6 step 5 (packaging) built. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -222,7 +222,10 @@ dasha system of one's own are context configuration, reached through
    guides.
 
    *Built: the archives.* Each platform row of the release builds
-   `teistro-mcp` through cargo-auditable beside the library, holds it to
+   `teistro-mcp` through cargo-auditable in a cargo build of its own,
+   since one build naming the library too would unify the server's
+   features into it (the size record measured the C bundle a fifth
+   larger when it was one build), holds it to
    the row's glibc floor, and writes
    `teistro-mcp-{version}-{platform}.tar.gz` (the program, its README,
    the terms and its bill), recorded in the platform's manifest, so
@@ -271,7 +274,14 @@ dasha system of one's own are context configuration, reached through
    `check-package` unpacks a host's bundle and holds it to the same
    checks as the program. The words are the registry entry's, its
    ephemeris a choice in the host's settings, and it declares its tools
-   generated, since a plugin changes them. Not built: the guide.
+   generated, since a plugin changes them.
+
+   *Built: the guide.* `site/content/docs/mcp.mdx` installs the server
+   each way the release offers, lists its options and shows a call and a
+   refusal with their structured content. `tests/guide.rs` reads the
+   page: each call it shows is made and must answer what the page shows
+   beside it, and each option it names must be one `--help` lists, so
+   the page cannot describe a server that is not the one built.
 
 ## 7. The rest of the protocol
 

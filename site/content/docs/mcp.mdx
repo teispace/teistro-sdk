@@ -1,0 +1,149 @@
+---
+title: The agent server
+description: teistro-mcp — the SDK as Model Context Protocol tools, so a model computes an answer, with its provenance, instead of recalling one.
+---
+
+A model asked for a tithi or a dasha answers from memory, with no
+ayanamsha named and no way to check it. `teistro-mcp` gives it the SDK
+as tools: each answer is computed, and carries the settings and the
+inputs it was computed under. It speaks the Model Context Protocol over
+stdio or Streamable HTTP, under the 2026-07-28 revision and the
+2025-11-25 one.
+
+## Install
+
+<Tabs groupId="mcp-install" persist items={['npm', 'Claude Desktop', 'Archive', 'Source']}>
+<Tab value="npm">
+
+A host that starts servers through npm runs the launcher, which npm
+pairs with the prebuilt program for the machine it runs on:
+
+```json
+{ "mcpServers": { "teistro": { "command": "npx", "args": ["-y", "@teistro/mcp"] } } }
+```
+
+</Tab>
+<Tab value="Claude Desktop">
+
+Each release carries `teistro-mcp-<version>.mcpb` for macOS and Windows.
+Open it and Claude Desktop installs the server, asking which ephemeris
+to compute with.
+
+</Tab>
+<Tab value="Archive">
+
+Each release carries `teistro-mcp-<version>-<platform>.tar.gz` for every
+platform the SDK ships, with its digest in `checksums.txt` and its build
+attestation (`gh attestation verify <file> --repo teispace/teistro-sdk`).
+Unpack it and name the program:
+
+```json
+{ "mcpServers": { "teistro": { "command": "/opt/teistro-mcp/teistro-mcp" } } }
+```
+
+</Tab>
+<Tab value="Source">
+
+```sh
+cargo install --git https://github.com/teispace/teistro-sdk --tag v<version> teistro-mcp
+```
+
+</Tab>
+</Tabs>
+
+## Options
+
+The command line chooses what every tool computes with and what every
+context carries; `teistro-mcp --help` lists them all.
+
+- `--ephemeris BUILTIN`, `SURYA_SIDDHANTA` or `NONE`; `--plugin PATH`
+  loads a real engine's adapter ahead of it, whose own functions become
+  `engine.*` tools.
+- `--pack PATH` loads an interpretation or locale pack into every
+  context; every answer's provenance names it.
+- `--layouts PATH` and `--dashas PATH` register chart layouts and dasha
+  systems of your own, which a chart request then names by key.
+- `--max-items`, `--max-days` and `--max-message-bytes` bound a request;
+  past a bound it is refused naming its field.
+- `--http 127.0.0.1:8080` serves Streamable HTTP at `/mcp` instead of
+  stdio, stateless, with `--http-workers`, `--http-rate` and
+  `--allow-origin`. It checks no credentials: bind it to loopback, or put
+  whatever authorises callers in front of it.
+
+## A call
+
+Every record tool takes its record as `request`, and optionally the
+`profile`, the `settings` patch and the `locale` it is read under. This
+converts a Gregorian date into Bikram Sambat:
+
+```json title="tools/call"
+{
+  "name": "calendar.convert",
+  "arguments": {
+    "request": { "date": { "year": 2026, "month": 10, "day": 10 }, "into": "calendar.BIKRAM_SAMBAT" }
+  }
+}
+```
+
+The answer is the tool's structured content, and its text content is the
+same JSON for a host that reads only text:
+
+```json title="structuredContent"
+{
+  "value": {
+    "date": {
+      "calendar": "BIKRAM_SAMBAT",
+      "year": 2083,
+      "month": 6,
+      "day": 24,
+      "era": { "era": "VIKRAMA", "year": 2083 },
+      "resolution": {
+        "kind": "TABULAR",
+        "authority": "Panchanga Nirnayak Samiti, Government of Nepal (the calendar-determining committee)",
+        "edition": "official-1970-2095/1"
+      }
+    },
+    "weekday": "SATURDAY"
+  }
+}
+```
+
+An answer computed from the sky carries `provenance` beside `value`: the
+settings hash, the input hash, the engine and every convention applied,
+so the same question asked again can be shown to be the same question.
+
+## A refusal
+
+A request the SDK cannot answer is the tool's result with `isError`,
+naming the field to correct, so a model fixes its own call:
+
+```json title="tools/call"
+{
+  "name": "time.convert",
+  "arguments": { "request": { "jd": 2451545.0, "from": "UTC", "to": "TDB" } }
+}
+```
+
+```json title="structuredContent"
+{
+  "status": "INVALID_ARG",
+  "detail": null,
+  "message": "`to` is not one: unknown variant `TDB`, expected one of `UT1`, `TT`, `UTC`",
+  "field": "to",
+  "hint": null,
+  "key": null
+}
+```
+
+## What else it serves
+
+- `settings.describe` answers the shipped profiles, the settings patch's
+  schema, the packs loaded and the members you registered; a call then
+  names a profile or a patch knowing what each means.
+- `schema.describe` answers any part of a record's schema in full, which
+  the tool list leaves out so a model reads a short list.
+- Resources serve the catalogue a kind at a time
+  (`teistro://catalogue/{kind}`), and the `birth-chart`, `day-panchanga`
+  and `match` prompts start a conversation from a few plain arguments.
+- A call that carries a `progressToken` reports its progress, and one a
+  host cancels stops at its next request of the engine.
