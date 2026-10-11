@@ -180,6 +180,7 @@ const SADE_SATI: &str = "sadeSati";
 /// request record is; every field but `from` is optional.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "SadeSatiRequest"))]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Asked {
     from: f64,

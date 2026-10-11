@@ -50,6 +50,7 @@ pub const ORDER: [(Tattva, f64); 5] = [
 /// One of the two nadis that alternate through the day.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "SvarodayaNadi"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Nadi {
     /// The Moon's, the left (ida): female (v. 60).

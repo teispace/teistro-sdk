@@ -242,6 +242,7 @@ impl Window {
 /// crux, and the step that seeds the edge search.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RectificationRules"))]
 #[serde(rename_all = "camelCase", default)]
 pub struct Rules {
     /// The species v. 77 and v. 78 name, which decides the houses that
@@ -318,6 +319,7 @@ pub struct Grid {
 /// What a rectification answers.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RectificationAnswer"))]
 #[serde(rename_all = "camelCase")]
 pub struct Answer {
     /// The maximal runs no bar removed, in order. Under

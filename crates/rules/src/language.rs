@@ -1284,6 +1284,7 @@ impl From<EvidenceRank> for u8 {
 /// Where a rule or a table comes from.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RuleSource"))]
 #[serde(deny_unknown_fields)]
 pub struct Source {
     /// The text.

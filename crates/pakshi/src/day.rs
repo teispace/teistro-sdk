@@ -33,6 +33,7 @@ pub enum Clock {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PakshiRules"))]
 pub struct Rules {
     /// How the halves are cut into yamas.
     pub clock: Clock,

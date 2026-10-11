@@ -27,6 +27,7 @@ const SIGN_DEGREES: u8 = 30;
 /// One term: its lord, and the degree within the sign it ends at.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "TermEntry"))]
 pub struct Term {
     /// The planet the term belongs to.
     pub lord: Graha,

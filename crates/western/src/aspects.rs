@@ -459,6 +459,7 @@ impl PlanetAt {
 /// A body as the table reads it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "WesternAspectBody"))]
 #[serde(rename_all = "camelCase")]
 pub struct Placed {
     /// Which.

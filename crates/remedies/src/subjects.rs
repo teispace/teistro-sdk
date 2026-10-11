@@ -115,6 +115,7 @@ fn index(graha: Graha) -> Option<usize> {
 /// Why a graha is a subject of a remedy.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RemedyReason"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reason {
     /// It is the running mahādaśā's lord.

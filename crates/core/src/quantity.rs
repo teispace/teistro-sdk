@@ -252,6 +252,7 @@ impl HouseNumber {
 /// A place on Earth.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "GeoPlace"))]
 pub struct Place {
     /// North positive.
     pub latitude: Latitude,

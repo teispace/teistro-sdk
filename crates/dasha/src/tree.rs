@@ -63,6 +63,7 @@ impl Birth {
 /// group holds.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "DashaRules"))]
 pub struct Rules {
     /// How the balance is measured.
     pub balance: Balance,

@@ -12,6 +12,7 @@ use serde::Serialize;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "LalKitabAspectStrength"))]
 pub enum Strength {
     /// A quarter: 2 to 6, 6 to 12, 8 back to 2.
     Quarter,

@@ -19,6 +19,7 @@ use crate::teva::Teva;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "LalKitabDignity"))]
 pub enum Dignity {
     /// Its permanent house (*pakka ghar*, p. 29).
     Pakka,
@@ -102,6 +103,7 @@ pub struct Seated {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "LalKitabHouse"))]
 pub struct HouseReading {
     /// The house, 1 to 12.
     pub house: u8,
@@ -177,6 +179,7 @@ pub struct Flags {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "LalKitabReading"))]
 pub struct Reading {
     /// The nine planets, in Lal Kitab's order.
     pub planets: Vec<PlanetReading>,

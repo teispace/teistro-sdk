@@ -906,6 +906,7 @@ fn favoured(strength: Strength, lagna: Rashi, sky: &AnnualSky, moon: MoonBenefic
 /// One of the sixteen, found holding, with what made it hold.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "TajikaYogaHeld"))]
 #[serde(rename_all = "camelCase")]
 pub struct Held {
     /// Which of the sixteen.
