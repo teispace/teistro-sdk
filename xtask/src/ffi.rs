@@ -97,6 +97,20 @@ pub(crate) fn api(root: &Path) -> teistro_idl::model::Api {
     .unwrap_or_else(|e| panic!("the boundary does not describe: {e}"));
     api.records = teistro_idl::records::from_schema(&records_schema(), &RECORDS)
         .unwrap_or_else(|e| panic!("the records do not describe: {e}"));
+    // The answer records' emitters render the subset the answers use; the
+    // request side's constructs reach Java alone, through its own
+    // emitter, so an answer carrying one is refused here rather than at
+    // an emitter's `unreachable!`.
+    let request_only: Vec<&str> = api
+        .records
+        .iter()
+        .filter(|record| record_is_request_only(record))
+        .map(|record| record.name.as_str())
+        .collect();
+    assert!(
+        request_only.is_empty(),
+        "these answer records use a construct only the request emitter renders: {request_only:?}"
+    );
     let shadowing: Vec<&str> = api
         .records
         .iter()
@@ -109,6 +123,35 @@ pub(crate) fn api(root: &Path) -> teistro_idl::model::Api {
          #[cfg_attr(feature = \"schema\", schemars(rename = \"...\"))]"
     );
     api
+}
+
+/// Whether a record uses a construct the answer emitters do not render.
+fn record_is_request_only(record: &teistro_idl::records::RecordDef) -> bool {
+    use teistro_idl::records::{RecordShape, RecordType};
+    fn request_only(ty: &RecordType) -> bool {
+        match ty {
+            RecordType::Member { .. }
+            | RecordType::Keyed { .. }
+            | RecordType::Map { .. }
+            | RecordType::Json => true,
+            RecordType::List { of } => request_only(of),
+            RecordType::Pair { first, second } => request_only(first) || request_only(second),
+            RecordType::Bool
+            | RecordType::Integer { .. }
+            | RecordType::Number
+            | RecordType::Text
+            | RecordType::Record { .. } => false,
+        }
+    }
+    match &record.shape {
+        RecordShape::External { .. } | RecordShape::OrNamed { .. } => true,
+        RecordShape::Keys { .. } => false,
+        RecordShape::Object { fields } => fields.iter().any(|field| request_only(&field.ty)),
+        RecordShape::Tagged { variants, .. } => variants
+            .iter()
+            .flat_map(|variant| &variant.fields)
+            .any(|field| request_only(&field.ty)),
+    }
 }
 
 fn outputs(root: &Path) -> Vec<Output> {

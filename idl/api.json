@@ -22872,7 +22872,11 @@
             "name": "calculation_version",
             "doc": "The calculation version (ADR-0020).",
             "ty": {
-              "kind": "INTEGER"
+              "kind": "INTEGER",
+              "width": {
+                "signed": false,
+                "bits": 32
+              }
             },
             "nullable": false
           },
@@ -22889,7 +22893,11 @@
             "name": "catalogue_version",
             "doc": "The catalogue version.",
             "ty": {
-              "kind": "INTEGER"
+              "kind": "INTEGER",
+              "width": {
+                "signed": false,
+                "bits": 32
+              }
             },
             "nullable": false
           },
@@ -23246,7 +23254,11 @@
             "name": "major",
             "doc": "Major.",
             "ty": {
-              "kind": "INTEGER"
+              "kind": "INTEGER",
+              "width": {
+                "signed": false,
+                "bits": 16
+              }
             },
             "nullable": false
           },
@@ -23254,7 +23266,11 @@
             "name": "minor",
             "doc": "Minor.",
             "ty": {
-              "kind": "INTEGER"
+              "kind": "INTEGER",
+              "width": {
+                "signed": false,
+                "bits": 16
+              }
             },
             "nullable": false
           },
@@ -23262,7 +23278,11 @@
             "name": "patch",
             "doc": "Patch.",
             "ty": {
-              "kind": "INTEGER"
+              "kind": "INTEGER",
+              "width": {
+                "signed": false,
+                "bits": 16
+              }
             },
             "nullable": false
           }
@@ -23509,7 +23529,11 @@
             "name": "day",
             "doc": "The day, 1-based.",
             "ty": {
-              "kind": "INTEGER"
+              "kind": "INTEGER",
+              "width": {
+                "signed": false,
+                "bits": 8
+              }
             },
             "nullable": false
           },
@@ -23517,7 +23541,11 @@
             "name": "month",
             "doc": "The month, 1-based.",
             "ty": {
-              "kind": "INTEGER"
+              "kind": "INTEGER",
+              "width": {
+                "signed": false,
+                "bits": 8
+              }
             },
             "nullable": false
           }

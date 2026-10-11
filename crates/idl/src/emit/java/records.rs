@@ -29,6 +29,9 @@ pub(super) fn files(api: &Api) -> Vec<File> {
     ];
     for record in &api.records {
         let text = match &record.shape {
+            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+                unreachable!("the answer records carry none; requests are rendered for Java only")
+            }
             RecordShape::Object { fields } => {
                 render_object(api, &record.name, &record.doc, fields, None)
             }
@@ -66,8 +69,14 @@ fn variant_name(union: &str, variant: &RecordVariant) -> String {
 /// sits in a list.
 fn java_type(ty: &RecordType, boxed: bool) -> String {
     match ty {
+        RecordType::Member { .. }
+        | RecordType::Keyed { .. }
+        | RecordType::Map { .. }
+        | RecordType::Json => {
+            unreachable!("the answer records carry none; requests are rendered for Java only")
+        }
         RecordType::Bool => String::from(if boxed { "Boolean" } else { "boolean" }),
-        RecordType::Integer => String::from(if boxed { "Long" } else { "long" }),
+        RecordType::Integer { .. } => String::from(if boxed { "Long" } else { "long" }),
         RecordType::Number => String::from(if boxed { "Double" } else { "double" }),
         RecordType::Text => String::from("String"),
         RecordType::Record { name } => name.clone(),
@@ -85,8 +94,14 @@ fn java_type(ty: &RecordType, boxed: bool) -> String {
 /// What decodes `expr`, an `Object` of type `ty`, naming `at` in a refusal.
 fn decode(ty: &RecordType, expr: &str, at: &str) -> String {
     match ty {
+        RecordType::Member { .. }
+        | RecordType::Keyed { .. }
+        | RecordType::Map { .. }
+        | RecordType::Json => {
+            unreachable!("the answer records carry none; requests are rendered for Java only")
+        }
         RecordType::Bool => format!("Read.bool({expr}, {at})"),
-        RecordType::Integer => format!("Read.integer({expr}, {at})"),
+        RecordType::Integer { .. } => format!("Read.integer({expr}, {at})"),
         RecordType::Number => format!("Read.number({expr}, {at})"),
         RecordType::Text => format!("Read.text({expr}, {at})"),
         RecordType::Record { name } => format!("{name}.of({expr})"),

@@ -334,7 +334,23 @@ pub(crate) struct Asked {
     #[serde(default = "most")]
     most: usize,
     #[serde(default)]
+    #[cfg_attr(feature = "schema", schemars(schema_with = "asta_schema"))]
     asta: Option<Value>,
+}
+
+/// How asta may be asked: by a criterion [`ASTA`] names, or spelt out, as
+/// the reader below takes it.
+#[cfg(feature = "schema")]
+fn asta_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    let names: Vec<&str> = ASTA.iter().map(|(name, _)| *name).collect();
+    schemars::json_schema!({
+        "description": "How asta is seen: a criterion the SDK names, or one spelt out.",
+        "anyOf": [
+            { "type": "string", "enum": names },
+            generator.subschema_for::<Criterion>(),
+            { "type": "null" },
+        ],
+    })
 }
 
 const fn days_with_windows() -> usize {
