@@ -43,6 +43,7 @@ bindings/**/node_modules/
 # (`cargo xtask check-dart` runs `dart pub get`).
 bindings/dart/pubspec.lock
 bindings/flutter/pubspec.lock
+bindings/flutter/example/pubspec.lock
 # The adapter's lock file, for the same reason: the package is not
 # published and its dependency on the SDK is a path, so a lock is one
 # machine's resolution and not a fact about the package.
