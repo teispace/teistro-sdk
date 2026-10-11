@@ -65,9 +65,10 @@ final tested = ctx.research.compare(
 <Tab value="Java">
 
 ```java title="bindings/java/example/Research.java"
-ResearchTested tested = ctx.research().compare(births, rules, design, Map.of("seed", 2026,
-        "permutations", 999, "contrast", Map.of("kind", "CASE_VS_REST", "case", 1), "alpha", 0.05),
-        null);
+ResearchGroupTest test = ResearchGroupTest.builder(2026, 999, ResearchContrast.caseVsRest(1))
+        .alpha(0.05)
+        .build();
+ResearchTested tested = ctx.research().compare(births, rules, design, test, null);
 // The registration: the births, the rules, the labels and the test.
 System.out.println("registered as " + tested.provenance().inputHash());
 ```

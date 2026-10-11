@@ -1,10 +1,12 @@
 package com.teispace.teistro;
 
+import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.teispace.teistro.record.Provenance;
+import com.teispace.teistro.request.RuleRequest;
 
 /** A study, the request written as {@code ts_research} reads it and the answer read into records. */
 final class ResearchReads {
@@ -40,16 +42,93 @@ final class ResearchReads {
         }).toList();
     }
 
+    /** A seed as the boundary reads it: a decimal string, which carries every 64-bit seed exactly. */
+    private static String seed(BigInteger seed) {
+        return seed.toString();
+    }
+
+    private static Map<String, Object> contrast(ResearchContrast contrast) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        switch (contrast) {
+            case ResearchContrast.CaseVsRest cases -> {
+                out.put("kind", "CASE_VS_REST");
+                out.put("case", cases.cases());
+            }
+            case ResearchContrast.AnyDifference any -> out.put("kind", "ANY_DIFFERENCE");
+        }
+        return out;
+    }
+
+    /** The fields every test reads: its direction, its level, and alpha and threads when given. */
+    private static void reading(Map<String, Object> out, ResearchAlternative alternative, double level,
+            Double alpha, Integer threads) {
+        out.put("alternative", alternative.key());
+        out.put("level", level);
+        if (alpha != null) {
+            out.put("alpha", alpha);
+        }
+        if (threads != null) {
+            out.put("parallelism", Map.of("THREADS", threads));
+        }
+    }
+
+    static Map<String, Object> test(ResearchGroupTest test) {
+        if (test == null) {
+            throw Reads.invalid("test is a ResearchGroupTest, such as ResearchGroupTest.builder(7, 999, "
+                    + "ResearchContrast.caseVsRest(1)).build()", "test");
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("seed", seed(test.seed()));
+        out.put("permutations", test.permutations());
+        out.put("contrast", contrast(test.contrast()));
+        reading(out, test.alternative(), test.level(), test.alpha(), test.threads());
+        return out;
+    }
+
+    static Map<String, Object> test(ResearchEventTest test) {
+        if (test == null) {
+            throw Reads.invalid("test is a ResearchEventTest, such as ResearchEventTest.builder(7, 999).build()",
+                    "test");
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("seed", seed(test.seed()));
+        out.put("permutations", test.permutations());
+        out.put("afterBirth", test.restrictPairings() ? "RESTRICT_PAIRINGS" : "REFUSE");
+        reading(out, test.alternative(), test.level(), test.alpha(), test.threads());
+        return out;
+    }
+
+    static Map<String, Object> test(ResearchReplicateTest test) {
+        if (test == null) {
+            return null;
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        reading(out, test.alternative(), test.level(), test.alpha(), null);
+        return out;
+    }
+
+    static Map<String, Object> control(ResearchControl control) {
+        if (control == null) {
+            throw Reads.invalid("control is a ResearchControl, such as new ResearchControl(7, 1000)", "control");
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("seed", seed(control.seed()));
+        out.put("replicates", control.replicates());
+        if (control.strata() != null) {
+            out.put("strata", control.strata());
+        }
+        return out;
+    }
+
     /**
      * The study's answer: every field given crosses, and one the study does not read is refused by
      * name there rather than dropped here; {@code options}, when given, adds its fields.
      */
-    static Map<?, ?> run(Context context, String study, Map<String, ?> rules, Map<String, Object> fields,
+    static Map<?, ?> run(Context context, String study, RuleRequest rules, Map<String, Object> fields,
             ResearchOptions options) {
         Map<String, Object> asked = new LinkedHashMap<>();
         asked.put("study", study);
-        String written = Reads.recordJson(rules, "rules", "Map.of(\"shipped\", List.of(\"YOGAS\"))");
-        asked.put("rules", written == null ? Map.of() : Json.read(written));
+        asked.put("rules", rules == null ? Map.of() : rules);
         for (Map.Entry<String, Object> field : fields.entrySet()) {
             if (field.getValue() != null) {
                 asked.put(field.getKey(), Reads.written(field.getValue()));

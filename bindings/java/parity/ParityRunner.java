@@ -752,7 +752,7 @@ public final class ParityRunner {
             births.add(new ResearchBirth(2447000.25 + 977.3 * i, kathmandu, 20_700));
             groups.add(i % 2);
         }
-        Map<String, Object> yogas = map("shipped", List.of("YOGAS"));
+        RuleRequest yogas = RuleRequest.builder().shipped(List.of(ShippedRules.YOGAS)).build();
         Design design = Design.of(map("groups", groups));
         ResearchCounts table = geo.research().counts(births, yogas, design,
                 ResearchOptions.builder().holds(Holds.FORMED).build());
@@ -762,17 +762,15 @@ public final class ParityRunner {
             put("research-counts-row-" + k, row.predicate() + " " + groupsOf(row.counts()));
         }
         putTested("compare", geo.research().compare(births, yogas, design,
-                map("seed", 5, "permutations", 199, "contrast", map("kind", "CASE_VS_REST", "case", 1),
-                        "alpha", 0.05),
-                null));
-        putTested("expected", geo.research().expected(births, yogas, map("seed", 4, "replicates", 3), null, null));
+                ResearchGroupTest.builder(5, 199, ResearchContrast.caseVsRest(1)).alpha(0.05).build(), null));
+        putTested("expected", geo.research().expected(births, yogas, new ResearchControl(4, 3), null, null));
         List<ResearchSubject> subjects = new ArrayList<>();
         for (int i = 0; i < births.size(); i += 1) {
             ResearchBirth birth = births.get(i);
             subjects.add(new ResearchSubject(birth, birth.instant() + 9000.5 + 211 * i));
         }
         putTested("timed", geo.research().timed(subjects, yogas, DashaSystem.VIMSHOTTARI,
-                ResearchEventShuffle.AGES_AT_EVENT, map("seed", 3, "permutations", 49), null));
+                ResearchEventShuffle.AGES_AT_EVENT, ResearchEventTest.builder(3, 49).build(), null));
     }
 
     private static String groupsOf(List<ResearchCounts.Group> counts) {
@@ -1358,11 +1356,12 @@ public final class ParityRunner {
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
-            surface("research.counts", () -> ctx.research().counts(List.of(), Map.of(), new Design(List.of(), null), null));
-            surface("research.compare", () -> ctx.research().compare(List.of(), Map.of(), new Design(List.of(), null), Map.of(), null));
-            surface("research.expected", () -> ctx.research().expected(List.of(), Map.of(), Map.of(), null, null));
-            surface("research.timed", () -> ctx.research().timed(List.of(), Map.of(), DashaSystem.VIMSHOTTARI,
-                    ResearchEventShuffle.AGES_AT_EVENT, Map.of(), null));
+            surface("research.counts", () -> ctx.research().counts(List.of(), null, new Design(List.of(), null), null));
+            surface("research.compare", () -> ctx.research().compare(List.of(), null, new Design(List.of(), null),
+                    ResearchGroupTest.builder(0, 1, ResearchContrast.ANY_DIFFERENCE).build(), null));
+            surface("research.expected", () -> ctx.research().expected(List.of(), null, new ResearchControl(0, 1), null, null));
+            surface("research.timed", () -> ctx.research().timed(List.of(), null, DashaSystem.VIMSHOTTARI,
+                    ResearchEventShuffle.AGES_AT_EVENT, ResearchEventTest.builder(0, 1).build(), null));
             surface("engine.names", () -> ctx.ephemeris().names());
             surface("engine.signature", () -> ctx.ephemeris().signature(""));
             surface("engine.call", () -> ctx.ephemeris().call("", Map.of()));
