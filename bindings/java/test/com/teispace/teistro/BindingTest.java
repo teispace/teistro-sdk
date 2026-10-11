@@ -464,7 +464,8 @@ public final class BindingTest {
                 for (int i = 0; i < 6; i += 1) {
                     births.add(new ResearchBirth(2447000.25 + 977.3 * i, kathmandu, 20_700));
                 }
-                Map<String, Object> yogas = Map.of("shipped", List.of("YOGAS"));
+                com.teispace.teistro.request.RuleRequest yogas = com.teispace.teistro.request.RuleRequest.builder()
+                        .shipped(List.of(com.teispace.teistro.request.ShippedRules.YOGAS)).build();
                 com.teispace.teistro.request.Design design = com.teispace.teistro.request.Design.of(
                         Map.of("groups", List.of(0, 1, 0, 1, 0, 1)));
                 ResearchCounts table = sky.research().counts(births, yogas, design, null);
@@ -477,8 +478,8 @@ public final class BindingTest {
                 }
                 // A seed past Long.MAX_VALUE is a BigInteger, and the same seed in every binding.
                 java.math.BigInteger widest = java.math.BigInteger.TWO.pow(64).subtract(java.math.BigInteger.ONE);
-                ResearchTested tested = sky.research().compare(births, yogas, design, Map.of("seed", widest,
-                        "permutations", 199, "contrast", Map.of("kind", "CASE_VS_REST", "case", 1), "alpha", 0.05),
+                ResearchTested tested = sky.research().compare(births, yogas, design,
+                        ResearchGroupTest.builder(widest, 199, ResearchContrast.caseVsRest(1)).alpha(0.05).build(),
                         null);
                 same(199, tested.permutations(), "the permutations asked");
                 same(1.0 / 200, tested.resolution(), "the resolution they give");
@@ -490,8 +491,11 @@ public final class BindingTest {
                 check(!tested.provenance().inputHash().equals(table.provenance().inputHash()), "another study");
                 TeistroException refused = refusal(() -> sky.research().timed(List.of(), yogas,
                         DashaSystem.VIMSHOTTARI, ResearchEventShuffle.AGES_AT_EVENT,
-                        Map.of("seed", 1, "permutations", 19), null));
+                        ResearchEventTest.builder(1, 19).build(), null));
                 same("research.subjects", refused.field(), "named by its record");
+                // A test the call needs is refused by name before anything crosses.
+                TeistroException untested = refusal(() -> sky.research().compare(births, yogas, design, null, null));
+                same("test", untested.field(), "no test, no study");
                 // An uncertain birth's window is read every step, and the step is part of the study.
                 List<ResearchBirth> uncertain = new java.util.ArrayList<>();
                 for (ResearchBirth birth : births) {

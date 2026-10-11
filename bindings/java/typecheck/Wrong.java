@@ -44,7 +44,11 @@ final class Wrong {
         // expect: conforms to NumerologyRules
         sky.numerology().profile("Ram", java.time.LocalDate.of(1990, 4, 14), Map.of("masters", "NONE"));
         // expect: conforms to Design
-        sky.research().counts(List.of(), Map.of(), Map.of("groups", List.of(0, 1)), null);
+        sky.research().counts(List.of(), null, Map.of("groups", List.of(0, 1)), null);
+        // expect: conforms to RuleRequest
+        sky.research().counts(List.of(), Map.of("shipped", List.of("YOGAS")), null, null);
+        // expect: conforms to ResearchGroupTest
+        sky.research().compare(List.of(), null, null, Map.of("seed", 7, "permutations", 999), null);
         // A member of one kind does not stand in for another's.
         // expect: SubLengths cannot be converted to Clock
         com.teispace.teistro.request.PakshiRules.builder().clock(com.teispace.teistro.request.SubLengths.AGASTYA);

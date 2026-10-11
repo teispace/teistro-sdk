@@ -224,8 +224,12 @@ holds that each typed rule reaches the SDK by turning a refusal into an
 answer: a mixed-script name under `nonLatin(SKIP)`, a Latin name under
 `latin(IAST)`. A rule set the consumer writes, and a muhurta's or
 festival's own rules, stay a map in `rules`, because the schema reads
-them as JSON. So do the research area's `rules`, `control` and `test`; its
-`design` is the generated `Design`, and its options a hand-written
+them as JSON. The research area is typed as Dart's is: its `rules` are the
+generated `RuleRequest` and its `design` the generated `Design`; its tests
+are hand-written records with builders, `ResearchGroupTest` (with a sealed
+`ResearchContrast`), `ResearchEventTest`, `ResearchControl` and
+`ResearchReplicateTest`, each seed a `long` or a `BigInteger` written as the
+decimal string every binding sends; and its options a hand-written
 `ResearchOptions` (holds, the uncertainty step, an event study's depth and
 strata), whose fields a study does not read are refused by name.
 

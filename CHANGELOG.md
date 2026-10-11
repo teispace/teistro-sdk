@@ -240,6 +240,16 @@ no longer needs a whole `PositionRequest` with a bare `true, null` in
 it. A grid's instant count is `jdCount` (`jd_count`) in every binding:
 Python and Java had called it `instant_count` and `instantCount`.
 
+**Java's research area is typed.** Its rules, tests and control were
+maps, where Dart had typed them all along. A study now takes the
+generated `RuleRequest`, a `ResearchGroupTest` built with
+`ResearchGroupTest.builder(seed, permutations, ResearchContrast.caseVsRest(1))`,
+a `ResearchEventTest`, a `ResearchControl` and a `ResearchReplicateTest`.
+A seed is a `long` or a `BigInteger`, written as the decimal string every
+binding sends. `typecheck/Wrong.java` holds that a map no longer
+compiles in their place, and the eight research entries have left the
+lint's list of untyped parameters.
+
 **Every binding ships six worked examples** (`bindings/*/example/`), the
 same six scenarios in JavaScript, Dart and Python, each a program
 `cargo xtask check-{node,dart,python}` runs — every file in the

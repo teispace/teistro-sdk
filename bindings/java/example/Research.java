@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.Predicate;
 
 import com.teispace.teistro.Altitude;
@@ -12,10 +11,14 @@ import com.teispace.teistro.Latitude;
 import com.teispace.teistro.Longitude;
 import com.teispace.teistro.Observer;
 import com.teispace.teistro.ResearchBirth;
+import com.teispace.teistro.ResearchContrast;
 import com.teispace.teistro.ResearchCounts;
+import com.teispace.teistro.ResearchGroupTest;
 import com.teispace.teistro.ResearchTested;
 import com.teispace.teistro.Teistro;
 import com.teispace.teistro.request.Design;
+import com.teispace.teistro.request.RuleRequest;
+import com.teispace.teistro.request.ShippedRules;
 
 /**
  * A two-group study, as {@code 03-design/research.md} asks one to be run: the predicates named, the
@@ -48,15 +51,16 @@ public final class Research {
                 births.add(new ResearchBirth(2444240.5 + 61.37 * i + (i % 24) / 24.0, place, 20_700));
                 groups.add(i < 16 ? 1 : 0);
             }
-            Map<String, Object> rules = Map.of("shipped", List.of("YOGAS"));
+            RuleRequest rules = RuleRequest.builder().shipped(List.of(ShippedRules.YOGAS)).build();
             Design design = new Design(groups, null);
 
             ResearchCounts table = ctx.research().counts(births, rules, design, null);
             System.out.println(table.rows().size() + " rules over " + births.size() + " births");
 
-            ResearchTested tested = ctx.research().compare(births, rules, design, Map.of("seed", 2026,
-                    "permutations", 999, "contrast", Map.of("kind", "CASE_VS_REST", "case", 1), "alpha", 0.05),
-                    null);
+            ResearchGroupTest test = ResearchGroupTest.builder(2026, 999, ResearchContrast.caseVsRest(1))
+                    .alpha(0.05)
+                    .build();
+            ResearchTested tested = ctx.research().compare(births, rules, design, test, null);
             // The registration: the births, the rules, the labels and the test.
             System.out.println("registered as " + tested.provenance().inputHash());
             System.out.printf(Locale.ROOT, "%d permutations, none can say less than p = %.4f%n",

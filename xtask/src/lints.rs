@@ -2924,7 +2924,7 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
 /// taken does not compile, and this list keeps a new area method from
 /// taking a map in the first place. An entry that no longer matches is
 /// refused too, so the list cannot outlive the parameter it excuses.
-const JAVA_UNTYPED: [(&str, &str); 26] = [
+const JAVA_UNTYPED: [(&str, &str); 18] = [
     ("ChartArea.layout(layout)", MEMBER_OR_KEY),
     ("ChartOptions.ChartOptions(readings)", WRITTEN),
     ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
@@ -2946,14 +2946,6 @@ const JAVA_UNTYPED: [(&str, &str); 26] = [
     ("RashifalRequest.RashifalRequest(events)", MEMBER_OR_KEY),
     ("RashifalRequest.withEvents(grahas)", MEMBER_OR_KEY),
     ("Remedies.Remedies(rules)", ANSWERED),
-    ("ResearchArea.compare(rules)", RULES_JSON),
-    ("ResearchArea.compare(test)", RULES_JSON),
-    ("ResearchArea.counts(rules)", RULES_JSON),
-    ("ResearchArea.expected(control)", RULES_JSON),
-    ("ResearchArea.expected(rules)", RULES_JSON),
-    ("ResearchArea.expected(test)", RULES_JSON),
-    ("ResearchArea.timed(rules)", RULES_JSON),
-    ("ResearchArea.timed(test)", RULES_JSON),
 ];
 
 /// A catalogue member or a key registered at run time, as the caller has it.
@@ -2964,8 +2956,6 @@ const MEMBER_OR_KEY: &str =
 const OPEN: &str = "an open door by design, whose shape is the callee's (SDK openness mandate)";
 /// What an answer echoes back, read from JSON the SDK wrote.
 const ANSWERED: &str = "an answer's echo of the rules it was read under, as the SDK wrote them";
-/// The schema reads it as JSON.
-const RULES_JSON: &str = "the schema reads it as JSON: a rule set or a test the consumer writes";
 /// The readings already written.
 const WRITTEN: &str = "the readings as written, one JSON text a field";
 
