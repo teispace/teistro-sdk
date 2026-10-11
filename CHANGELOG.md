@@ -2465,7 +2465,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   reading's setter takes its request type (`kp(KpRequest)`), and
   `reading(field, request)` still takes any reading as a map or JSON.
   The synastry request is named `PartnerSynastry`, and a varsha's annual
-  dashas are typed as `DashaSystem` members in every schema. **Numbers:**
+  dashas are typed as `DashaSystem` members in every schema. The areas
+  take them too: naam milan's `NaamRules`, numerology's
+  `NumerologyRules`, the rashifal's `Snapshot` and the almanac's
+  `MuhurtaRequest` and `FestivalRequest`, in place of maps. **Numbers:**
   none move.
 - **The Java package, for Maven Central** (`03-design/java-binding.md`
   steps 7 to 9). `cargo xtask package stage` writes Maven's repository

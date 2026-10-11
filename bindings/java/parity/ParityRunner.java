@@ -703,7 +703,8 @@ public final class ParityRunner {
         for (int n = 0; n < names.size(); n += 1) {
             NumerologyProfile read = rules.get(n) == null
                     ? ctx.numerology().profile(names.get(n), births.get(n))
-                    : ctx.numerology().profile(names.get(n), births.get(n), rules.get(n));
+                    : ctx.numerology().profile(names.get(n), births.get(n),
+                            rules.get(n) == null ? null : NumerologyRules.of(rules.get(n)));
             Map<String, NameNumber> systems = new LinkedHashMap<>();
             systems.put("pythagorean", read.pythagoreanName());
             systems.put("chaldean", read.chaldeanName());
@@ -847,7 +848,7 @@ public final class ParityRunner {
     private static void putRashifal(Context geo, Observer place) {
         RashifalRequest week = new RashifalRequest(date(2024, 6, 17), date(2024, 6, 23), place, 20700, null, null, null);
         RashifalRequest oneDay = new RashifalRequest(date(2024, 6, 17), null, place, 20700,
-                map("at", "CLOCK", "hour", 6, "minute", 0), List.of(Graha.MARS, Graha.SATURN), null);
+                Snapshot.of(map("at", "CLOCK", "hour", 6, "minute", 0)), List.of(Graha.MARS, Graha.SATURN), null);
         RashifalAnswers sealed = geo.chart().rashifalMany(List.of(week, oneDay), "WEEKLY");
         put("rashifal-hash", sealed.provenance().inputHash());
         List<RashifalAnswer> answers = sealed.value();
@@ -906,7 +907,8 @@ public final class ParityRunner {
                 map("name", map("abhijit", "SHRAVANA"), "koota", map("nadiDosha", "MIDDLE_ONLY")),
                 map("name", map("latin", "IAST"), "porutham", map("deerghaBeyond", "SEVENTH")));
         for (int n = 0; n < brides.size(); n += 1) {
-            NaamMilan read = ctx.matching().naam(brides.get(n), grooms.get(n), rules.get(n));
+            NaamMilan read = ctx.matching().naam(brides.get(n), grooms.get(n),
+                    rules.get(n) == null ? null : NaamRules.of(rules.get(n)));
             Map<String, NameSyllable> sides = new LinkedHashMap<>();
             sides.put("bride", read.bride());
             sides.put("groom", read.groom());
@@ -2476,7 +2478,7 @@ public final class ParityRunner {
             asked.put("daysWithWindows", 3);
             asked.put("most", 12);
             MuhurtaAnswer muhurta = geo.almanac().of(date(2024, 11, 25), date(2024, 11, 27), place, 20700,
-                    asked, null, false, false, false).muhurta().orElseThrow();
+                    MuhurtaRequest.of(asked), null, false, false, false).muhurta().orElseThrow();
             putMuhurta("muhurta-" + search.getKey(), muhurta);
         }
 
@@ -2503,7 +2505,7 @@ public final class ParityRunner {
         packs.put("nepal", map("rules", List.<Object>of("NEPAL", ownFollowing)));
         for (Map.Entry<String, Map<String, Object>> pack : packs.entrySet()) {
             FestivalAnswer festivals = geo.almanac().of(date(2024, 10, 10), date(2024, 11, 3), place, 20700,
-                    null, pack.getValue(), false, false, false).festivals().orElseThrow();
+                    null, FestivalRequest.of(pack.getValue()), false, false, false).festivals().orElseThrow();
             putFestivals("festivals-" + pack.getKey(), festivals);
         }
 

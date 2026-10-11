@@ -32,7 +32,7 @@ public final class NumerologyArea {
      * @param name the name
      * @param date the birth date
      * @return the profile
-     * @see #profile(String, LocalDate, Map)
+     * @see #profile(String, LocalDate, com.teispace.teistro.request.NumerologyRules)
      */
     public NumerologyProfile profile(String name, LocalDate date) {
         return profile(name, date, null);
@@ -50,12 +50,13 @@ public final class NumerologyArea {
      *
      * @param name the name
      * @param date the birth date
-     * @param rules the readings, such as {@code Map.of("masters", "NONE")}, as
-     *     {@link Json#write} writes them; may be null for the sources' own
+     * @param rules the readings, such as
+     *     {@code NumerologyRules.builder().masters(Masters.NONE).build()}, or
+     *     {@code NumerologyRules.of(map)} from a map; may be null for the sources' own
      * @return the profile
      * @throws TeistroException naming {@code date} when it is null
      */
-    public NumerologyProfile profile(String name, LocalDate date, Map<String, ?> rules) {
+    public NumerologyProfile profile(String name, LocalDate date, com.teispace.teistro.request.NumerologyRules rules) {
         if (date == null) {
             throw Reads.invalid("date is a LocalDate, such as LocalDate.of(1872, 1, 17)", "date");
         }
@@ -66,9 +67,8 @@ public final class NumerologyArea {
         day.put("month", date.getMonthValue());
         day.put("day", date.getDayOfMonth());
         request.put("date", day);
-        String written = Reads.recordJson(rules, "rules", "Map.of(\"masters\", \"NONE\")");
-        if (written != null) {
-            request.put("rules", Json.read(written));
+        if (rules != null) {
+            request.put("rules", rules);
         }
         String json = Json.write(request);
         return NumerologyProfile.read(Json.read(context.locked((lib, raw) -> Calls.numerologyProfile(lib, raw, json))));
