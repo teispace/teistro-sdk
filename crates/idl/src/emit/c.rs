@@ -382,6 +382,7 @@ mod tests {
             }],
             blobs: vec![],
             records: Vec::new(),
+            requests: crate::records::Requests::default(),
         };
         let mut native = api.clone();
         native

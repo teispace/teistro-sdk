@@ -114,6 +114,7 @@ pub fn extract(sources: &[Source], inputs: &Inputs) -> Result<Api, ExtractError>
         functions: Vec::new(),
         blobs: inputs.blobs.clone(),
         records: Vec::new(),
+        requests: crate::records::Requests::default(),
     };
     let mut abi_version = None;
     let mut candidates: Vec<OpaqueDef> = Vec::new();

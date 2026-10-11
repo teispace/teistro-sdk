@@ -862,6 +862,7 @@ mod tests {
             functions: Vec::new(),
             blobs: Vec::new(),
             records: Vec::new(),
+            requests: teistro_idl::records::Requests::default(),
         }
     }
 

@@ -43,6 +43,15 @@ pub struct Api {
     /// schema of them, so every binding types and decodes them alike.
     #[serde(default)]
     pub records: Vec<crate::records::RecordDef>,
+    /// The JSON request records a binding writes, read from the façade's
+    /// own schemas of them; only the Java binding renders them so far.
+    ///
+    /// Never written into `api.json`: the description ships in every
+    /// package and nothing reads the requests at run time, and they would
+    /// add a third to it (47 KB gzipped, measured 2026-10-11). The
+    /// emitters are handed them in memory.
+    #[serde(skip)]
+    pub requests: crate::records::Requests,
 }
 
 impl Api {

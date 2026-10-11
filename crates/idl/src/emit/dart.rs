@@ -1676,6 +1676,7 @@ mod tests {
             functions: Vec::new(),
             blobs: Vec::new(),
             records: Vec::new(),
+            requests: crate::records::Requests::default(),
         };
         api.blobs.push(BlobSchema {
             name: String::from("probe"),

@@ -204,6 +204,25 @@ pub struct Width {
     pub bits: u8,
 }
 
+/// The JSON request records a binding writes, read from the façade's own
+/// schemas of them, so a binding can type a request as serde reads it.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct Requests {
+    /// Each record entry point's request.
+    pub roots: Vec<RequestRoot>,
+    /// Every record the roots reach, roots first.
+    pub records: Vec<RecordDef>,
+}
+
+/// A record entry point and the record its request is.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RequestRoot {
+    /// The entry point (`chart.found`).
+    pub record: String,
+    /// The request's record (`ChartFoundRequest`).
+    pub name: String,
+}
+
 /// How a schema is read.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Reading<'a> {
