@@ -48,6 +48,9 @@ const PYTHON_MANIFEST: &str = "bindings/python/pyproject.toml";
 /// from; the Dart one is [`PREBUILT`].
 const PYTHON_PREBUILT: &str = "bindings/python/teistro/_prebuilt.py";
 const API: &str = "idl/api.json";
+/// The agent server's MCP Registry entry, whose version and whose
+/// packages' versions are the release's.
+const REGISTRY_ENTRY: &str = "crates/mcp/server.json";
 const PREBUILT: &str = "bindings/dart/lib/src/prebuilt.dart";
 const CHANGELOG: &str = "CHANGELOG.md";
 
@@ -125,6 +128,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     failures.extend(check_dart(root, &wanted, released));
     failures.extend(check_python(root, &wanted, released));
     failures.extend(check_api(root, &wanted));
+    failures.extend(check_registry_entry(root, &wanted));
     failures.extend(check_changelog(root, &wanted, released));
 
     for failure in &failures {
@@ -261,6 +265,30 @@ fn check_api(root: &Path, wanted: &str) -> Vec<String> {
     }
 }
 
+/// The registry entry: its version and each package's, the release's.
+fn check_registry_entry(root: &Path, wanted: &str) -> Vec<String> {
+    let entry = match parse_manifest(root, REGISTRY_ENTRY) {
+        Ok(entry) => entry,
+        Err(failure) => return vec![failure],
+    };
+    let mut failures = Vec::new();
+    if entry["version"].as_str() != Some(wanted) {
+        failures.push(format!(
+            "{REGISTRY_ENTRY} declares version {}, the workspace declares {wanted}",
+            entry["version"]
+        ));
+    }
+    for package in entry["packages"].as_array().into_iter().flatten() {
+        if package["version"].as_str() != Some(wanted) {
+            failures.push(format!(
+                "{REGISTRY_ENTRY} lists {} at {}, the workspace declares {wanted}",
+                package["identifier"], package["version"]
+            ));
+        }
+    }
+    failures
+}
+
 /// A released version has an entry in the changelog, because the entry is
 /// where "does this move any number" is answered.
 fn check_changelog(root: &Path, wanted: &str, released: bool) -> Vec<String> {
@@ -359,6 +387,7 @@ pub(crate) fn set(root: &Path, wanted: &str) -> i32 {
         set_node(root, path, package, wanted, released, &mut written);
     }
     set_dart(root, wanted, released, &mut written);
+    set_registry_entry(root, wanted, &mut written);
     set_python(root, wanted, released, &mut written);
 
     for path in &written {
@@ -414,6 +443,23 @@ fn set_node(
         serde_json::to_string_pretty(&Value::Object(node)).expect("a manifest serialises")
     );
     write(&path, &text, written, root);
+}
+
+/// The registry entry's version and each package's.
+fn set_registry_entry(root: &Path, wanted: &str, written: &mut Vec<String>) {
+    let Ok(mut entry) = parse_manifest(root, REGISTRY_ENTRY) else {
+        eprintln!("{REGISTRY_ENTRY} is not JSON");
+        return;
+    };
+    entry["version"] = Value::String(wanted.to_string());
+    for package in entry["packages"].as_array_mut().into_iter().flatten() {
+        package["version"] = Value::String(wanted.to_string());
+    }
+    let text = format!(
+        "{}\n",
+        serde_json::to_string_pretty(&entry).expect("an entry serialises")
+    );
+    write(&root.join(REGISTRY_ENTRY), &text, written, root);
 }
 
 /// The Dart manifest and the installer's table.

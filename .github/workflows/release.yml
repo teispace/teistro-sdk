@@ -394,3 +394,24 @@ jobs:
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           MAVEN_GPG_FINGERPRINT: ${{ vars.MAVEN_GPG_FINGERPRINT }}
+
+      # The agent server's entry in the MCP Registry, last because the
+      # registry checks that `@teistro/mcp` names it (`mcpName`), which
+      # npm now serves, and because a registry still in preview must not
+      # hold up the packages above. The registry takes the runner's OIDC
+      # token as `io.github.teispace`, so no credential is stored. The
+      # publisher is pinned with its digest, as cargo-auditable is; a
+      # registry that calls it too old ("invalid audience") wants it
+      # bumped here.
+      - name: The agent server's entry in the MCP Registry
+        env:
+          MCP_PUBLISHER_VERSION: "1.8.1"
+          MCP_PUBLISHER_SHA256: "a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc"
+        run: |
+          set -eu
+          curl -sSfL -o mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/v${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum --check --strict -
+          tar -xzf mcp-publisher.tar.gz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish crates/mcp/server.json

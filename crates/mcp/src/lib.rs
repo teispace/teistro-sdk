@@ -1031,8 +1031,10 @@ fn server_info() -> Value {
         "name": env!("CARGO_PKG_NAME"),
         "title": "Teistro",
         "version": env!("CARGO_PKG_VERSION"),
-        "description": "The Teistro astrology SDK as tools: charts, almanacs, dashas, \
-                        matching and more, each answer carrying its settings and inputs",
+        // The registry's entry says the same (`server.json`), at most 100
+        // characters, and `tests/registry.rs` holds the two together.
+        "description": "Astrology as tools: charts, almanacs, dashas and matching, \
+                        each answer with its settings and inputs",
         "websiteUrl": "https://github.com/teispace/teistro-sdk",
     })
 }
