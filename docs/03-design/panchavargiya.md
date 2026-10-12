@@ -46,8 +46,14 @@ so the rule ships and the table is its test.
 **The Hudda has no rule**, and is not therefore arbitrary. Read off the
 rendered page, its degrees are the **Egyptian terms** exactly and 57 of its
 60 lords are; Gemini, Sagittarius and Aquarius each transpose two adjacent
-lords while leaving the widths alone (crux C109). It ships as printed, with
-the three named in its note, and two invariants hold over the whole of it:
+lords while leaving the widths alone (crux C109). **Decided 2026-10-12**:
+the *Tajika Nilakanthi*'s own 1893 print (the gloss closing its Prashna
+Tantra, rank 1) carries Gemini's and Sagittarius's transpositions and the
+Egyptian Aquarius, and its v. 40 example puts Venus in her own Hudda at
+Gemini 8°, so the first two are the Tajika tradition and Charak's Aquarius
+the probable slip. The table is the Nilakanthi's; `HuddaTable::Charak`
+looks Charak's cells up for a reader of the textbook, and moved 0.1% of the
+Muntha page's readings. Two invariants hold over the whole of it:
 every sign's five widths sum to thirty, and every sign carries Mars,
 Mercury, Jupiter, Venus and Saturn exactly once each. The source's own
 worked chart touches seven of the sixty cells and none of the three, which
@@ -87,7 +93,7 @@ which is the figure the year lord is actually chosen by — is Jupiter at
 | | |
 |---|---|
 | **decided** | the five parts and their maxima; positional friendship read off the annual chart; the Tajika decanate as a rule; the Hudda as printed; exact integer arithmetic in sub-sub units; the Uchcha truncation, because the source states it |
-| **not decided** | whether the Hudda's three transpositions are the tradition's or a printing fault (crux C109), which wants a second printing |
+| **decided since** | the Hudda's transpositions (crux C109): Gemini's and Sagittarius's are the Tajika Nilakanthi's own, Charak's Aquarius a slip, so the table is the Nilakanthi's and Charak's a named lookup |
 | **built** | `teistro_tajika::panchavargiya` over an `AnnualSky` of seven named longitudes — named, because every one of them is a longitude and an array would let a caller swap two and still get an answer; `sdk.chart().panchavargiya`, which needs **no ephemeris** |
 | **not built** | the **Harsha** bala and the **Dwadasha-vargiya** bala, the source's two other strengths, which nothing yet asks for. The table itself does not cross: the boundary carries the **year lord and its claimants**, which is what the strength was computed for ([`varshesha.md`](varshesha.md)), and a Rust caller who wants the whole table has `sdk.chart().panchavargiya` |
 

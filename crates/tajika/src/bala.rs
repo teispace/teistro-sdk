@@ -415,15 +415,37 @@ fn uchcha(graha: Graha, longitude_deg: f64) -> Bala {
     Bala::of_sub_sub(sub_sub).to_sub_units()
 }
 
+/// Which printing of the Hudda table a lookup reads (crux C109).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum HuddaTable {
+    /// The *Tajika Nilakanthi*'s own, as the 1893 Nirnaya Sagar print's
+    /// gloss gives it at the end of the Prashna Tantra (rank 1): the
+    /// Egyptian terms with Gemini's Venus and Jupiter and Sagittarius's
+    /// Mars and Saturn transposed, which the Samjna Tantra's v. 40
+    /// example confirms (Venus "in Gemini, in her own hadda, at 8°").
+    /// What every strength and clause in this crate reads.
+    #[default]
+    Nilakanthi,
+    /// K.S. Charak's Table VI-4 (rank 2), the Nilakanthi's except that
+    /// Aquarius also transposes Venus and Mercury: the probable slip,
+    /// kept so a reader of the textbook can look its cells up.
+    Charak,
+}
+
 /// The **Hudda** table: five terms in each sign, in degrees, with their
-/// lords (K.S. Charak, *A Textbook of Varshaphala*, Table VI-4).
+/// lords, as the *Tajika Nilakanthi* prints it (1893, the Prashna Tantra's
+/// closing gloss; crux C109).
 ///
 /// Read off the rendered page and not the OCR. Its degrees are the
-/// Egyptian terms exactly, and 57 of its 60 lords are; Gemini,
-/// Sagittarius and Aquarius each transpose two adjacent lords, which the
-/// source's own worked chart never touches (crux C109). Two invariants a
-/// test holds over the whole of it: every sign's widths sum to thirty, and
-/// every sign carries Mars, Mercury, Jupiter, Venus and Saturn once each.
+/// Egyptian terms exactly, and 58 of its 60 lords are; Gemini and
+/// Sagittarius each transpose two adjacent lords, the Tajika tradition and
+/// not a fault, since Charak's Table VI-4 prints them too. Charak's
+/// Aquarius transposes a third pair, which the Nilakanthi does not
+/// ([`HuddaTable::Charak`]). Two invariants a test holds over the whole
+/// of it: every sign's widths sum to thirty, and every sign carries Mars,
+/// Mercury, Jupiter, Venus and Saturn once each.
 const HUDDA: [[(u8, Graha); 5]; 12] = [
     // Aries
     [
@@ -505,10 +527,10 @@ const HUDDA: [[(u8, Graha); 5]; 12] = [
         (4, Graha::Saturn),
         (4, Graha::Mars),
     ],
-    // Aquarius — Venus and Mercury the other way round.
+    // Aquarius, as the Egyptian.
     [
-        (7, Graha::Venus),
-        (6, Graha::Mercury),
+        (7, Graha::Mercury),
+        (6, Graha::Venus),
         (7, Graha::Jupiter),
         (5, Graha::Mars),
         (5, Graha::Saturn),
@@ -523,17 +545,47 @@ const HUDDA: [[(u8, Graha); 5]; 12] = [
     ],
 ];
 
-/// The lord of the Hudda a longitude falls in.
+/// Charak's Aquarius (Table VI-4), Venus before Mercury.
+const CHARAK_AQUARIUS: [(u8, Graha); 5] = [
+    (7, Graha::Venus),
+    (6, Graha::Mercury),
+    (7, Graha::Jupiter),
+    (5, Graha::Mars),
+    (5, Graha::Saturn),
+];
+
+/// The lord of the Hudda a longitude falls in, by the *Tajika
+/// Nilakanthi*'s table.
 #[must_use]
 pub fn hudda_lord(longitude_deg: f64) -> Graha {
+    hudda_lord_in(HuddaTable::Nilakanthi, longitude_deg)
+}
+
+/// The lord of the Hudda a longitude falls in, by `table`.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{HuddaTable, hudda_lord_in};
+///
+/// // Aquarius 3°: Mercury's in the Nilakanthi, Venus's in Charak.
+/// assert_eq!(hudda_lord_in(HuddaTable::Nilakanthi, 303.0), Graha::Mercury);
+/// assert_eq!(hudda_lord_in(HuddaTable::Charak, 303.0), Graha::Venus);
+/// ```
+#[must_use]
+pub fn hudda_lord_in(table: HuddaTable, longitude_deg: f64) -> Graha {
     let longitude = longitude_deg.rem_euclid(360.0);
     let sign = sign_of_longitude(longitude);
     let within = longitude % 30.0;
+    let index = usize::from(sign.id() % 12);
     // Twelve signs, twelve rows, which the table's own type fixes, so the
     // sign always has one; answering Saturn rather than panicking in a
     // consumer's process is the only thing to do if that ever changes.
-    let Some(terms) = HUDDA.get(usize::from(sign.id() % 12)) else {
-        return Graha::Saturn;
+    let terms = match (table, index) {
+        (HuddaTable::Charak, 10) => &CHARAK_AQUARIUS,
+        _ => match HUDDA.get(index) {
+            Some(terms) => terms,
+            None => return Graha::Saturn,
+        },
     };
     let mut edge = 0.0;
     for (width, lord) in terms {
@@ -880,6 +932,32 @@ mod tests {
         );
         assert!((bala.as_f64() - 14.3375).abs() < 1e-12);
         assert_eq!(Bala::new(0, 0, 0).to_string(), "00:00:00");
+    }
+
+    /// The two printings differ in Aquarius's first two terms alone, and
+    /// the Nilakanthi's examples are its own table's: Venus at Gemini 8°
+    /// is in her own Hudda (Samjna Tantra v. 40), where the Egyptian
+    /// gives Jupiter. Two examples the gloss calls "own Hudda" are no
+    /// table's, and stay refused, so no table change can "fix" them: Mars
+    /// at Libra 10° (v. 42) and Saturn at Pisces 5° (v. 45).
+    #[test]
+    fn the_nilakanthi_and_charak_differ_in_aquarius_alone() {
+        use super::{HuddaTable, hudda_lord_in};
+        let differing: Vec<u16> = (0..3600_u16)
+            .filter(|&step| {
+                let longitude = f64::from(step) / 10.0;
+                hudda_lord_in(HuddaTable::Nilakanthi, longitude)
+                    != hudda_lord_in(HuddaTable::Charak, longitude)
+            })
+            .collect();
+        assert_eq!(differing.first(), Some(&3000));
+        assert_eq!(differing.last(), Some(&3129));
+        assert_eq!(differing.len(), 130);
+        assert_eq!(hudda_lord(300.0 + 3.0), Graha::Mercury);
+        assert_eq!(hudda_lord(300.0 + 10.0), Graha::Venus);
+        assert_eq!(hudda_lord(60.0 + 8.0), Graha::Venus);
+        assert_ne!(hudda_lord(180.0 + 10.0), Graha::Mars);
+        assert_ne!(hudda_lord(330.0 + 5.0), Graha::Saturn);
     }
 
     /// Every sign has a Hudda and every Hudda a lord, over the whole

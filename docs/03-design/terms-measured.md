@@ -21,6 +21,7 @@ is no corpus answer for the doctrine (crux C46).
 | the Egyptian table's totals are the ones I.XXIII states | **holds** | 0 of 5 disagree |
 | the Chaldean rule — the cycle Jupiter, Venus, Saturn and Mercury, Mars from the triplicity's own lord, widths 8 to 4 — reproduces the two orders I.XXIII spells out | **holds** | 0 of 2 disagree |
 | the same rule, with the pair Saturn first by day and Mercury by night, gives the seven totals I.XXIII states | **holds** | 0 of 7 disagree |
+| the Tajika Nilakanthi's Hudda is the Egyptian terms, degree by degree | falsified | 20 of 360 disagree; Gemini 11, Sagittarius 9 |
 | Charak's Hudda is the Egyptian terms, degree by degree | falsified | 33 of 360 disagree; Gemini 11, Sagittarius 9, Aquarius 13 |
 | I.XXIV's base widths apply where "no planet [is] found to be lord by two rights in the same sign, or in the two signs next following" | untested | it applies in 0 of 12 signs; 8 hold a double right |
 | Ptolemy's houses (I.XX) are the catalogue's sign lords | **holds** | 0 of 12 disagree |
@@ -60,10 +61,12 @@ contradicts it.
 
 **The Egyptian terms are a table, and the one the text certifies**: it
 is well-formed and its totals are the ones Ptolemy states, so
-`hellenistic` ships it as printed. Charak's Hudda is not a second
-witness to it but a variant of it, its differing degrees confined to the
-three signs crux C109 names; the Tajika crate keeps its own row and the
-two are never read for each other.
+`hellenistic` ships it as printed. The Tajika Hudda is not a second
+witness to it but a variant of it: the *Tajika Nilakanthi*'s own print
+differs in Gemini and Sagittarius alone, and Charak's textbook in
+Aquarius as well, the probable slip (crux C109). The Tajika crate keeps
+its own row, the Nilakanthi's, and the two are never read for each
+other.
 
 **The Chaldean terms are a rule**, and the rule reproduces both orders
 the chapter spells out and all seven totals it states, by day and by

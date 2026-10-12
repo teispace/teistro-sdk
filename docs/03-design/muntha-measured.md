@@ -277,10 +277,10 @@ charts and **1**, a divisibility the pass checks.
 | **GairiKamboola** | built | 0 | 0.0% |
 | **Khallasara** | built | 2 | 0.0% |
 | **Rudda** | built | 4011 | 15.5% |
-| **DuhphaliKuttha** | built | 36 | 0.1% |
+| **DuhphaliKuttha** | built | 34 | 0.1% |
 | **DutthotthaDavira** | built | 4 | 0.0% |
 | **Tambira** | built | 20 | 0.1% |
-| **Kuttha** | built | 958 | 3.7% |
+| **Kuttha** | built | 957 | 3.7% |
 | **Durapha** | built | 4 | 0.0% |
 
 **16 of the sixteen are built** and the other no are listed at every
@@ -362,18 +362,18 @@ Of the 15 085 readings, seven to each of the 2155 charts, **3197**
 |---|---:|---|
 | [0, 2) | 0 | 0.0% |
 | [2, 4) | 26 | 0.2% |
-| [4, 6) | 519 | 3.4% |
-| [6, 8) | 1742 | 11.5% |
-| [8, 10) | 3314 | 22.0% |
-| [10, 12) | 3922 | 26.0% |
-| [12, 14) | 3109 | 20.6% |
-| [14, 16) | 1949 | 12.9% |
-| [16, 18) | 485 | 3.2% |
+| [4, 6) | 516 | 3.4% |
+| [6, 8) | 1739 | 11.5% |
+| [8, 10) | 3312 | 22.0% |
+| [10, 12) | 3930 | 26.1% |
+| [12, 14) | 3101 | 20.6% |
+| [14, 16) | 1965 | 13.0% |
+| [16, 18) | 477 | 3.2% |
 | [18, 20] | 19 | 0.1% |
 
 The weakest reading anywhere in the corpus is **03:45:15**, on a scale
-of twenty. Under the default floors, **171** readings (1.1%) are weak,
-**5271** (34.9%) middling and **9643** (63.9%) strong.
+of twenty. Under the default floors, **160** readings (1.1%) are weak,
+**5274** (35.0%) middling and **9651** (64.0%) strong.
 
 Of the 25 860 matters asked, **21 964** have two distinct lords to
 judge. The two floors are **separable** — whether a planet is weak
@@ -388,22 +388,22 @@ other at its default.
 | 4 | 0.2% | 0 | 0.0% |
 | **5** (default) | 1.1% | 6 | 0.0% |
 | 6 | 3.6% | 44 | 0.2% |
-| 8 | 15.2% | 567 | 2.6% |
-| 10 | 36.1% | 2864 | 13.0% |
+| 8 | 15.1% | 566 | 2.6% |
+| 10 | 36.0% | 2845 | 13.0% |
 
 ### The upper floor: where strong begins
 
 | from | readings strong | both lords strong | of the judged |
 |---:|---:|---:|---:|
-| 5 | 98.9% | 21 454 | 97.7% |
-| 8 | 84.8% | 15 810 | 72.0% |
-| **10** (default) | 63.9% | 9041 | 41.2% |
-| 12 | 41.0% | 3727 | 17.0% |
-| 15 | 23.6% | 1294 | 5.9% |
+| 5 | 98.9% | 21 476 | 97.8% |
+| 8 | 84.9% | 15 828 | 72.1% |
+| **10** (default) | 64.0% | 9098 | 41.4% |
+| 12 | 41.0% | 3710 | 16.9% |
+| 15 | 23.6% | 1299 | 5.9% |
 | 20 | 21.2% | 1055 | 4.8% |
 
 **At the default floors, both lords are weak in 6 of the 21 964 judged
-matters (0.0%), both strong in 9041 (41.2%), and the other 12 917 are
+matters (0.0%), both strong in 9098 (41.4%), and the other 12 860 are
 mixed.** The first is a **ceiling**, not a count of anything that held:
 Dutthottha-Davira and Durapha both require a weak pair before asking
 anything else, so neither can hold in more matters than it allows.
@@ -463,7 +463,7 @@ text in reach narrows the list; every Rudda carries both lords' clauses,
 so a reader who holds a narrower reading can apply it without the yoga
 being rewritten.
 
-Duhphali-kuttha held in **36**, and Durapha in **4**. Durapha's list is
+Duhphali-kuttha held in **34**, and Durapha in **4**. Durapha's list is
 read as alternatives each lord must meet one of (crux C119); whatever
 the reading, it needs a weak pair first, and §11 puts that ceiling at
 **6**. `cargo xtask muntha` fails if either ceiling is ever exceeded:
@@ -621,9 +621,9 @@ judges its worked sahams in words, never by a score
 read in every chart through `sdk.chart().saham_strength`, under the
 year's own lord.
 
-**The two lists are not two verdicts.** Of 88 355 placements, 32 127
-meet a strong clause and no weak one, 1807 a weak clause and no strong
-one, and **54 421 meet clauses on both lists** (61.6%). A score would
+**The two lists are not two verdicts.** Of 88 355 placements, 32 144
+meet a strong clause and no weak one, 1795 a weak clause and no strong
+one, and **54 416 meet clauses on both lists** (61.6%). A score would
 have to weigh one list against the other, which is a rule the source
 does not state; the report gives the clauses. **None meets neither, and
 the pass fails if one does**: the strong list's "its lord aspects or
@@ -638,13 +638,13 @@ and the pass fails if one does.
 |---|---|---:|
 | strong | its lord is exalted | 7.8% |
 | strong | its lord is in its own sign | 15.4% |
-| strong | its lord is in its own Hudda | 16.8% |
+| strong | its lord is in its own Hudda | 16.9% |
 | strong | its lord is in its own Drekkana | 13.9% |
 | strong | its lord is in its own Navamsha | 15.4% |
 | strong | its lord is in a friend's sign | 28.5% |
 | strong | it is with a friend of its lord | 12.7% |
 | strong | it is with a natural benefic | 28.9% |
-| strong | it is with the year lord | 8.9% |
+| strong | it is with the year lord | 8.8% |
 | strong | its lord conjoins it | 8.6% |
 | strong | its lord aspects it | 67.8% |
 | strong | its lord aspects the lagna | 66.8% |
@@ -658,9 +658,9 @@ and the pass fails if one does.
 
 Kuttha wants both lords powerful, in a kendra or a panaphara, under a
 benefic's aspect and no malefic's (`03-design/tajika-yogas.md`, crux
-C117). It held in **958** of the 21 964 judged matters (4.4%). It can
+C117). It held in **957** of the 21 964 judged matters (4.4%). It can
 hold only where both lords are strong, and the default floors find
-**9041** such matters, so 8083 of them were turned away by a clause
+**9098** such matters, so 8141 of them were turned away by a clause
 other than strength.
 
 **Which clause turns a strong pair away.** A clause fails a matter where
@@ -672,12 +672,12 @@ strong pairs are counted, and the pass fails if it does not.
 | clause | turned away | alone |
 |---|---:|---:|
 | powerful | 0 | 0 |
-| in a kendra or a panaphara | 5121 | 1397 |
-| under a benefic's aspect | 630 | 50 |
-| under no malefic's aspect | 6554 | 2702 |
+| in a kendra or a panaphara | 5165 | 1395 |
+| under a benefic's aspect | 647 | 50 |
+| under no malefic's aspect | 6608 | 2716 |
 
 **The commentary's full Moon** (`moon_benefic: waxing`) holds Kuttha in
-**897** matters to the default's 958. It can only remove a benefic, so
+**896** matters to the default's 957. It can only remove a benefic, so
 it can never add a Kuttha. The pass asks it of every strong pair and
 fails if it adds one. It also fails if `favour` and the yoga disagree
 about a single matter, or if Kuttha's strong pairs differ from the

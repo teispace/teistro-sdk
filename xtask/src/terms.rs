@@ -24,7 +24,7 @@
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro::tajika::{drekkana_lord, hudda_lord};
+use teistro::tajika::{HuddaTable, drekkana_lord, hudda_lord_in};
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_hellenistic::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Sect, TermsTable, Triplicities,
@@ -637,15 +637,15 @@ fn misprinted() -> Vec<String> {
     out
 }
 
-/// The degrees whose Hudda lord (Charak, crux C109) is not their Egyptian
-/// lord, by sign.
-fn hudda_differences() -> Vec<(usize, usize)> {
+/// The degrees whose Hudda lord under `table` (crux C109) is not their
+/// Egyptian lord, by sign.
+fn hudda_differences(table: HuddaTable) -> Vec<(usize, usize)> {
     let mut differ = [0; SIGNS];
     for degree in 0..u16::from(SIGN_DEGREES) * 12 {
         let sign = usize::from(degree / u16::from(SIGN_DEGREES));
         let within = u8::try_from(degree % u16::from(SIGN_DEGREES)).unwrap_or(SIGN_DEGREES);
         let lord = lord_at(&of_printed(&EGYPTIAN[sign]), within);
-        if lord != Some(hudda_lord(f64::from(degree) + 0.5)) {
+        if lord != Some(hudda_lord_in(table, f64::from(degree) + 0.5)) {
             differ[sign] += 1;
         }
     }
@@ -681,8 +681,21 @@ fn term_claims() -> Vec<Claim> {
         .iter()
         .filter(|(sign, lords)| chaldean(*sign, true).map(|(lord, _)| lord) != *lords)
         .count();
-    let hudda = hudda_differences();
-    let hudda_degrees = hudda.iter().map(|(_, differ)| differ).sum();
+    let hudda = |table: HuddaTable, claim: &str| {
+        let differ = hudda_differences(table);
+        Claim::counted(
+            claim,
+            differ.iter().map(|(_, differ)| differ).sum(),
+            usize::from(SIGN_DEGREES) * SIGNS,
+        )
+        .with_note(
+            differ
+                .iter()
+                .map(|(sign, differ)| format!("{} {differ}", sign_name(*sign)))
+                .collect::<Vec<_>>()
+                .join(", "),
+        )
+    };
     let doubles = (0..SIGNS).filter(|sign| double(*sign).is_some()).count();
     let base_applies = (0..SIGNS)
         .filter(|sign| (0..3).all(|next| double((sign + next) % SIGNS).is_none()))
@@ -718,17 +731,13 @@ fn term_claims() -> Vec<Claim> {
             chaldean_totals,
             CHALDEAN_TOTALS.len() + 2,
         ),
-        Claim::counted(
+        hudda(
+            HuddaTable::Nilakanthi,
+            "the Tajika Nilakanthi's Hudda is the Egyptian terms, degree by degree",
+        ),
+        hudda(
+            HuddaTable::Charak,
             "Charak's Hudda is the Egyptian terms, degree by degree",
-            hudda_degrees,
-            usize::from(SIGN_DEGREES) * SIGNS,
-        )
-        .with_note(
-            hudda
-                .iter()
-                .map(|(sign, differ)| format!("{} {differ}", sign_name(*sign)))
-                .collect::<Vec<_>>()
-                .join(", "),
         ),
         Claim::stated(
             "I.XXIV's base widths apply where \"no planet [is] found to be lord by two rights in the same sign, or in the two signs next following\"",
@@ -994,9 +1003,10 @@ fn page() -> String {
         "## What it means for the module\n\n\
          **The Egyptian terms are a table, and the one the text certifies**: it is \
          well-formed and its totals are the ones Ptolemy states, so `hellenistic` ships it as \
-         printed. Charak's Hudda is not a second witness to it but a variant of it, its \
-         differing degrees confined to the three signs crux C109 names; the Tajika crate keeps \
-         its own row and the two are never read for each other.\n\n\
+         printed. The Tajika Hudda is not a second witness to it but a variant of it: the \
+         *Tajika Nilakanthi*'s own print differs in Gemini and Sagittarius alone, and Charak's \
+         textbook in Aquarius as well, the probable slip (crux C109). The Tajika crate keeps \
+         its own row, the Nilakanthi's, and the two are never read for each other.\n\n\
          **The Chaldean terms are a rule**, and the rule reproduces both orders the chapter \
          spells out and all seven totals it states, by day and by night. So it ships as the \
          rule, with the sect of the chart choosing which of Saturn and Mercury leads the air \
