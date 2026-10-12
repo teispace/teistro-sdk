@@ -34,9 +34,12 @@ jobs:
           workspaces: fuzz
       - name: The target for an hour from the committed corpus
         working-directory: fuzz
+        # The installed cargo-fuzz is a musl build and would build for musl,
+        # where a sanitizer cannot link, so the host's triple is named.
         run: |
           mkdir -p found
-          cargo +nightly fuzz run ${{ matrix.target }} found corpus/${{ matrix.target }} -- \
+          host=$(rustc +nightly -vV | sed -n 's/^host: //p')
+          cargo +nightly fuzz run --target "$host" ${{ matrix.target }} found corpus/${{ matrix.target }} -- \
             -max_total_time=3600 -rss_limit_mb=4096 -timeout=30
       - if: failure()
         uses: actions/upload-artifact@v4
