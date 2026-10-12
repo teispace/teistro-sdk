@@ -8,13 +8,16 @@ import com.teispace.teistro.record.Provenance;
  * A test's rows ({@code 03-design/research.md}), per predicate and never a single verdict.
  *
  * @param rows one row per predicate, in the request's order
- * @param permutations how many permutations were drawn
- * @param resolution the smallest p-value they can give, {@code 1/(m + 1)}
+ * @param permutations how many permutations were drawn or, when {@code enumerated}, how many
+ *     arrangements the reference set holds
+ * @param resolution the smallest p-value they can give: {@code 1/(m + 1)} drawn, {@code 1/N} enumerated
+ * @param enumerated whether every arrangement was read once, because there were no more than the
+ *     permutations asked; each p-value is then exact
  * @param shuffle the generator and shuffle that drew them, so a reader can rerun the study
  * @param provenance how it was produced; its {@code inputHash} is the study's pre-registration
  */
-public record ResearchTested(List<Row> rows, int permutations, double resolution, String shuffle,
-        Provenance provenance) {
+public record ResearchTested(List<Row> rows, int permutations, double resolution, boolean enumerated,
+        String shuffle, Provenance provenance) {
     /**
      * An estimate with its interval at the test's level.
      *

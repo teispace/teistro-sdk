@@ -1811,7 +1811,7 @@ for (const [name, rules] of [
   const putStudy = (name, answer) => {
     put(`research-${name}-hash`, answer.provenance.inputHash);
     if (answer.permutations !== undefined) {
-      put(`research-${name}-test`, `${answer.permutations} ${number(answer.resolution)} ${answer.shuffle}`);
+      put(`research-${name}-test`, `${answer.permutations} ${number(answer.resolution)} ${answer.enumerated} ${answer.shuffle}`);
     }
     answer.rows.forEach((r, k) => put(`research-${name}-row-${k}`, row(r)));
   };

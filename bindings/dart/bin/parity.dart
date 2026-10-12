@@ -2778,7 +2778,7 @@ void main() {
     put('research-$name-hash', answer.provenance.inputHash);
     put(
       'research-$name-test',
-      '${answer.permutations} ${number(answer.resolution)} ${answer.shuffle}',
+      '${answer.permutations} ${number(answer.resolution)} ${answer.enumerated} ${answer.shuffle}',
     );
     for (final (k, r) in answer.rows.indexed) {
       put(

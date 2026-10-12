@@ -7157,9 +7157,12 @@ export interface ResearchCounts {
 /** A test's rows, per predicate and never a single verdict. */
 export interface ResearchTested {
   readonly rows: readonly ResearchRow[];
+  /** Permutations drawn, or, when `enumerated`, the arrangements the reference set holds. */
   readonly permutations: number;
-  /** The smallest p-value the permutations can give, `1/(m + 1)`. */
+  /** The smallest p-value they can give: `1/(m + 1)` drawn, `1/N` enumerated. */
   readonly resolution: number;
+  /** Whether every arrangement was read once, because there were no more than the permutations asked: each p-value is then exact. */
+  readonly enumerated: boolean;
   /** The generator and shuffle, so a reader can rerun the study. */
   readonly shuffle: string;
   readonly provenance: Provenance;

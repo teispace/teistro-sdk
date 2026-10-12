@@ -129,3 +129,12 @@ The cases crowd into the second stratum, so a predicate commoner there is common
 | under Holm, a study rejects any true null no more often than 5% | **holds** | 6 of 400 studies, 0.015 |
 | under Bonferroni, a study rejects any true null no more often than 5% | **holds** | 6 of 400 studies, 0.015 |
 
+## 8. A small reference set (`research/shuffle/3`)
+
+200 studies of the first batch's eight predicates on 12 of its charts drawn at random, the first 4 the cases: 495 labellings, fewer than the 999 permutations asked, so `/3` reads each once and `/2` draws 999 with replacement. A row counts where its exact p exists, every chart read. Drawn, `(b + 1)/(m + 1)` is a valid p but carries Monte Carlo noise a walk does not (C368).
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| walked whole, a small study's raw p is the exact hypergeometric p on every row | **holds** | 0 of 1600 rows differ |
+| drawn 999 times instead, a small study's raw p is within 0.01 of the exact p on every row | falsified | 318 of 1600 rows further, the worst 0.0467; the mean departure +0.0004 |
+

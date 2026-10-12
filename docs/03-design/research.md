@@ -208,7 +208,7 @@ count**:
   (multiply-shift with rejection). Within strata, each stratum is shuffled
   in its key order (`BTreeMap`).
 - **Versioned**: the answer's provenance names the version,
-  `research/shuffle/2` by default. A change to the generator or the
+  `research/shuffle/3` by default. A change to the generator or the
   shuffle is a new version, and the old one stays selectable so a
   published study can be rerun. `/2` differs from `/1` only in an event
   study's restricted pairing, which it draws exactly (C368): the allowed
@@ -217,6 +217,25 @@ count**:
   uniformly from a pool of its subjects not yet taken, whose size never
   depends on what was taken. `/1` drew whole permutations and rejected
   them, which can refuse a study for want of luck.
+- **Walked whole** (`/3`, 2026-10-12): when the reference set holds no
+  more arrangements than the permutations asked, every one is read once
+  instead, the observed among them, and the p-value is the exact `b/N`
+  (Phipson and Smyth 2010 §3; drawing with replacement from a small set
+  is what makes `(b + 1)/(m + 1)` conservative there). It costs no more
+  than the draws would have. The answer says `enumerated`, its
+  `permutations` is `N`, its resolution `1/N` and every interval has no
+  width. The sets are counted exactly: a group test's labellings are
+  each stratum's multinomial, multiplied, unranked as multiset
+  permutations in lexicographic order; an event study's pairings are
+  each stratum's `n!`, or a restricted board's pool sizes multiplied;
+  a self-matched study's are each person's instants multiplied. A
+  sampler whose bounds never depend on its earlier choices (the board's
+  pools, each person's instants) is a bijection from the rank's
+  mixed-radix digits, so one sampler serves both. A larger set is
+  sampled as under `/2`, bit for bit, which a test holds; `/2` and `/1`
+  never walk. The resolution check (§2.6) reads the permutations asked:
+  a walked set's coarser `1/N` is exact, and no number of permutations
+  could refine it.
 - **Integer statistics**: counts are summed as integers, so a sum across
   threads is order-free. A floating statistic (a weighted score) is
   computed per permutation in a fixed order, and only integers cross
@@ -323,7 +342,7 @@ pub struct GroupTest {
     pub level: f64,                        // every interval's confidence, 0.95
     pub alpha: Option<f64>,                // only to list which fall under it
     pub parallelism: Parallelism,
-    pub shuffle: ShuffleVersion,           // research/shuffle/2 by default
+    pub shuffle: ShuffleVersion,           // research/shuffle/3 by default
 }
 
 pub struct Recombine {
@@ -596,7 +615,7 @@ uses fixed seeds, so the counts are exact and also golden.
    allowed pairing drawn alike (within its binomial over 80 000 draws, as
    rejection's are), and every other draw is `/1`'s bit for bit. Still to
    come: complete enumeration when the reference set is smaller than the
-   permutations asked. The self-matched null (C367) followed:
+   permutations asked, which `/3` then built (§2.2). The self-matched null (C367) followed:
    `SELF_MATCHED` with time-stratified `referents`, every binding
    reaching it, its statistic and exact p held against statsmodels'
    stratified table and a full enumeration, and the measured page holding

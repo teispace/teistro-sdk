@@ -796,7 +796,8 @@ public final class ParityRunner {
     private static void putTested(String name, ResearchTested answer) {
         put("research-" + name + "-hash", answer.provenance().inputHash());
         put("research-" + name + "-test",
-                answer.permutations() + " " + number(answer.resolution()) + " " + answer.shuffle());
+                answer.permutations() + " " + number(answer.resolution()) + " " + answer.enumerated() + " "
+                        + answer.shuffle());
         for (int k = 0; k < answer.rows().size(); k += 1) {
             ResearchTested.Row r = answer.rows().get(k);
             ResearchTested.Pooled pooled = r.effect() == null ? null : r.effect().pooled();

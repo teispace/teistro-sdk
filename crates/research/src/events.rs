@@ -12,9 +12,9 @@ use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
 use crate::bits::Bits;
-use crate::engine::{Layout, Permuted, step_down_order};
-use crate::rng::{ShuffleVersion, SplitMix64};
-use crate::{Alternative, Expectation, GroupCount, Parallelism, PredicateRow, Tested, p_value};
+use crate::engine::{Layout, Permuted, Walk, product, step_down_order};
+use crate::rng::{Digits, Draw, ShuffleVersion, SplitMix64};
+use crate::{Alternative, Expectation, GroupCount, Parallelism, PredicateRow, Tested};
 
 /// The most subjects an event study may have: its matrices are `N²`
 /// bits a predicate.
@@ -36,7 +36,7 @@ pub enum AfterBirth {
     #[default]
     Refuse,
     /// Permute only among pairings that keep every event after its birth,
-    /// each drawn uniformly: exactly under `research/shuffle/2`, by
+    /// each drawn uniformly: exactly from `research/shuffle/2`, by
     /// rejection under `/1`. This changes the reference set, which the
     /// answer says.
     RestrictPairings,
@@ -273,11 +273,28 @@ impl Board {
         Ok(Board { strata })
     }
 
+    /// How many pairings the board allows: each event's pool size, which
+    /// does not depend on the draws before it, multiplied; `None` past
+    /// `u64`.
+    pub(crate) fn arrangements(&self) -> Option<u64> {
+        product(self.strata.iter().flat_map(|stratum| {
+            let mut pool = 0_u64;
+            stratum.iter().map(move |(_, new)| {
+                pool += new.len() as u64;
+                let size = pool;
+                pool -= 1;
+                size
+            })
+        }))
+    }
+
     /// Draws a pairing uniformly from the board into `pairing`: each
     /// event, fewest subjects first, takes one uniformly from the pool of
     /// its subjects not yet taken, whose size does not depend on which
-    /// were taken before.
-    pub(crate) fn draw(&self, rng: &mut SplitMix64, pairing: &mut [u16], pool: &mut Vec<u16>) {
+    /// were taken before. Driven by [`Digits`], it is the pairing of that
+    /// rank, each rank below [`arrangements`](Self::arrangements) one
+    /// distinct pairing.
+    pub(crate) fn draw(&self, rng: &mut impl Draw, pairing: &mut [u16], pool: &mut Vec<u16>) {
         for stratum in &self.strata {
             pool.clear();
             for (event, new) in stratum {
@@ -299,7 +316,7 @@ struct Paired<'a> {
     layout: &'a Layout<'a>,
     seed: u64,
     restricted: bool,
-    /// The board an exact restricted draw reads, under `research/shuffle/2`.
+    /// The board an exact restricted draw reads, from `research/shuffle/2`.
     board: Option<Board>,
     alternative: Alternative,
     /// Each predicate's share over every allowed pair it was read on:
@@ -307,10 +324,11 @@ struct Paired<'a> {
     null: Vec<f64>,
 }
 
-/// One thread's pairing and stratum buffer.
+/// One thread's pairing, stratum buffer and a stratum's label counts.
 struct PairScratch {
     pairing: Vec<u16>,
     stratum: Vec<u16>,
+    counts: Vec<(u16, u64)>,
 }
 
 impl Paired<'_> {
@@ -360,7 +378,33 @@ impl Permuted for Paired<'_> {
         PairScratch {
             pairing: vec![0; self.matrix.subjects],
             stratum: Vec::new(),
+            counts: Vec::new(),
         }
+    }
+
+    fn arrangements(&self) -> Option<u64> {
+        match &self.board {
+            Some(board) => board.arrangements(),
+            // Rejection's draws are not a walk of the allowed set.
+            None if self.restricted => None,
+            None => self.layout.arrangements(),
+        }
+    }
+
+    fn arrange(&self, rank: u64, scratch: &mut PairScratch, out: &mut [f64]) {
+        match &self.board {
+            Some(board) => {
+                board.draw(
+                    &mut Digits(rank),
+                    &mut scratch.pairing,
+                    &mut scratch.stratum,
+                );
+            }
+            None => self
+                .layout
+                .arrange(rank, &mut scratch.pairing, &mut scratch.counts),
+        }
+        self.statistics(&scratch.pairing, out);
     }
 
     fn read(&self, k: u64, scratch: &mut PairScratch, out: &mut [f64]) -> Result<(), Error> {
@@ -515,9 +559,10 @@ pub fn timed(
             }
         })
         .collect();
-    let board = match test.shuffle {
-        ShuffleVersion::V2 if restricted => Some(Board::of(matrix, &layout)?),
-        ShuffleVersion::V1 | ShuffleVersion::V2 => None,
+    let board = if restricted && test.shuffle.exact_pairing() {
+        Some(Board::of(matrix, &layout)?)
+    } else {
+        None
     };
     let paired = Paired {
         matrix,
@@ -531,13 +576,14 @@ pub fn timed(
     let mut observed = vec![0.0; matrix.columns.len()];
     paired.statistics(&identity, &mut observed);
     let order = step_down_order(&observed);
+    let walk = Walk::of(test.shuffle, test.permutations, paired.arrangements());
     let counted = crate::engine::count(
         &paired,
         &crate::engine::Family::new(&observed, &order),
-        test.permutations,
+        walk,
         test.parallelism,
     )?;
-    let assessed = crate::assess(&counted, &order, test.permutations, test.level, test.alpha);
+    let assessed = crate::assess(&counted, &order, walk, test.level, test.alpha);
     let rows = matrix
         .columns
         .iter()
@@ -548,10 +594,5 @@ pub fn timed(
             diagonal_row(column, n, share, observed, assessed)
         })
         .collect();
-    Ok(Tested {
-        rows,
-        permutations: test.permutations,
-        resolution: p_value(0, u64::from(test.permutations)),
-        shuffle: test.shuffle,
-    })
+    Ok(Tested::walked(rows, walk, test.shuffle))
 }

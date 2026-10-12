@@ -19229,20 +19229,29 @@ final class ResearchCounts {
 }
 
 /// A test's rows, per predicate and never a single verdict: how many
-/// permutations, the smallest p-value they can give, and the generator and
-/// shuffle that drew them, so a reader can rerun the study.
+/// permutations, the smallest p-value they can give, whether the reference
+/// set was [enumerated], and the generator and shuffle that drew them, so a
+/// reader can rerun the study.
 final class ResearchTested {
   const ResearchTested({
     required this.rows,
     required this.permutations,
     required this.resolution,
+    required this.enumerated,
     required this.shuffle,
     required this.provenance,
   });
 
   final List<ResearchRow> rows;
+
+  /// Permutations drawn, or, when [enumerated], the arrangements the
+  /// reference set holds.
   final int permutations;
   final double resolution;
+
+  /// Whether every arrangement was read once, because there were no more
+  /// than the permutations asked: each p-value is then exact.
+  final bool enumerated;
   final String shuffle;
   final Provenance provenance;
 }
@@ -19347,6 +19356,7 @@ ResearchTested _researchTested(Map<String, Object?> answer) {
     ]),
     permutations: value['permutations']! as int,
     resolution: _real(value['resolution']),
+    enumerated: value['enumerated']! as bool,
     shuffle: value['shuffle']! as String,
     provenance: Provenance.fromJson(at(answer['provenance'])),
   );

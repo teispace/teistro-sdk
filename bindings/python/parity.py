@@ -799,7 +799,10 @@ def put_research(geo: Context) -> None:
     def put_study(name: str, answer: ResearchCounts | ResearchTested) -> None:
         put(f"research-{name}-hash", answer.provenance.input_hash)
         if isinstance(answer, ResearchTested):
-            put(f"research-{name}-test", f"{answer.permutations} {number(answer.resolution)} {answer.shuffle}")
+            put(
+                f"research-{name}-test",
+                f"{answer.permutations} {number(answer.resolution)} {lower(answer.enumerated)} {answer.shuffle}",
+            )
         rows: Sequence[ResearchCountRow | ResearchRow] = answer.rows
         for k, one in enumerate(rows):
             put(f"research-{name}-row-{k}", row(one))

@@ -481,8 +481,10 @@ public final class BindingTest {
                 ResearchTested tested = sky.research().compare(births, yogas, design,
                         ResearchGroupTest.builder(widest, 199, ResearchContrast.caseVsRest(1)).alpha(0.05).build(),
                         null);
-                same(199, tested.permutations(), "the permutations asked");
-                same(1.0 / 200, tested.resolution(), "the resolution they give");
+                // Six births, three cases: 20 labellings, fewer than the 199 asked, each read once.
+                check(tested.enumerated(), "a set this small is walked whole");
+                same(20, tested.permutations(), "every labelling");
+                same(1.0 / 20, tested.resolution(), "the resolution they give");
                 for (ResearchTested.Row row : tested.rows()) {
                     check(row.p().value() >= tested.resolution(), "never under the resolution");
                     check(row.adjusted().maxT() >= row.p().value(), "an adjustment never lowers a p-value");

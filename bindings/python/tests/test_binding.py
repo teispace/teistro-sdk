@@ -1571,8 +1571,11 @@ class AnEngine(WithLibrary):
                 design=design,
                 test={"seed": 2**64 - 1, "permutations": 199, "contrast": contrast, "alpha": 0.05},
             )
-            self.assertEqual(tested.permutations, 199)
-            self.assertEqual(tested.resolution, 1 / 200)
+            # Six births, three cases: 20 labellings, fewer than the 199
+            # asked, so each is read once and the p-values are exact.
+            self.assertTrue(tested.enumerated)
+            self.assertEqual(tested.permutations, 20)
+            self.assertEqual(tested.resolution, 1 / 20)
             for one in tested.rows:
                 self.assertIsInstance(one, ResearchRow)
                 self.assertGreaterEqual(one.p.value, tested.resolution)

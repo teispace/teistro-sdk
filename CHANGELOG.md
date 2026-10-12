@@ -283,6 +283,18 @@ yet taken. That makes every allowed pairing equally likely and never
 refuses a study that has one (C368). `/1` stays selectable through the
 test's `shuffle`.
 
+**A small study is walked whole, and its p-values are exact.**
+**Numbers:** the default shuffle is now `research/shuffle/3`, so every
+study's input hash moves. A study whose reference set holds no more
+arrangements than the permutations asked (twelve charts and four cases
+are 495 labellings; five subjects' events are 120 pairings) now reads each
+arrangement once, and its p-values, corrections and resolution move to
+the exact `b/N`. The answer says `enumerated`, and its `permutations` is
+`N`. Every other study draws `/2`'s permutations, bit for bit. On the
+measured page, 999 draws put a small study's p more than 0.01 from the
+exact one on 318 of 1 600 rows, and the walk on none (C368). `/2` and `/1`
+stay selectable through the test's `shuffle`.
+
 **An event study can match each person to themselves.** **Numbers:**
 none; a study that does not ask for it answers as before. A dasha is read
 by age and a transit by the calendar, so shuffling events among people

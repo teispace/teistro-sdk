@@ -13,8 +13,68 @@ use std::ops::Range;
 use teistro_core::error::Error;
 
 use crate::bits::{Bits, Column, Matrix};
-use crate::rng::SplitMix64;
+use crate::rng::{ShuffleVersion, SplitMix64};
 use crate::{Alternative, Contrast, Parallelism};
+
+/// How a test walks its reference set: `m` draws from it, or every one
+/// of its `N` arrangements once.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Walk {
+    /// `m` permutations drawn at random.
+    Sampled(u32),
+    /// Every arrangement, the observed one among them.
+    Enumerated(u32),
+}
+
+impl Walk {
+    /// Every arrangement when `shuffle` enumerates and the reference set
+    /// holds no more than the `permutations` asked, which then cost no
+    /// more than drawing them; the draws otherwise.
+    pub(crate) fn of(
+        shuffle: ShuffleVersion,
+        permutations: u32,
+        arrangements: Option<u64>,
+    ) -> Walk {
+        match arrangements.and_then(|n| u32::try_from(n).ok()) {
+            Some(n) if shuffle.enumerates() && n <= permutations => Walk::Enumerated(n),
+            _ => Walk::Sampled(permutations),
+        }
+    }
+
+    /// How many statistics the walk reads.
+    pub(crate) const fn len(self) -> u32 {
+        match self {
+            Walk::Sampled(m) | Walk::Enumerated(m) => m,
+        }
+    }
+
+    /// Whether the walk is the whole reference set.
+    pub(crate) const fn enumerated(self) -> bool {
+        matches!(self, Walk::Enumerated(_))
+    }
+}
+
+/// `n!/(c₁!⋯c_k!)` for counts `c` summing to `n`, or `None` past `u64`.
+fn multinomial(counts: impl IntoIterator<Item = u64>) -> Option<u64> {
+    let (mut ways, mut placed) = (1_u128, 0_u128);
+    for count in counts {
+        for i in 1..=u128::from(count) {
+            placed += 1;
+            // ways · C(placed, i) built a factor at a time; each step is
+            // a whole number, so the division is exact.
+            ways = ways.checked_mul(placed)? / i;
+            if ways > u128::from(u64::MAX) {
+                return None;
+            }
+        }
+    }
+    u64::try_from(ways).ok()
+}
+
+/// The product of `factors`, or `None` past `u64`.
+pub(crate) fn product(factors: impl IntoIterator<Item = u64>) -> Option<u64> {
+    factors.into_iter().try_fold(1_u64, u64::checked_mul)
+}
 
 /// The relative margin inside which a permuted statistic counts as a
 /// tie with the observed one. The statistics are built from integer
@@ -55,6 +115,69 @@ impl<'a> Layout<'a> {
             groups,
             group_count,
             strata,
+        }
+    }
+
+    /// Each stratum's labels, ascending, with how many positions carry
+    /// each, into `counts`.
+    fn stratum_counts(&self, positions: &[usize], counts: &mut Vec<(u16, u64)>) {
+        counts.clear();
+        for &position in positions {
+            if let Some(&label) = self.groups.get(position) {
+                match counts.binary_search_by_key(&label, |&(l, _)| l) {
+                    Ok(at) => {
+                        if let Some(entry) = counts.get_mut(at) {
+                            entry.1 += 1;
+                        }
+                    }
+                    Err(at) => counts.insert(at, (label, 1)),
+                }
+            }
+        }
+    }
+
+    /// How many distinct labellings the strata allow: each stratum's
+    /// multinomial, multiplied, or `None` past `u64`.
+    pub(crate) fn arrangements(&self) -> Option<u64> {
+        let mut counts = Vec::new();
+        product(self.strata.iter().map(|positions| {
+            self.stratum_counts(positions, &mut counts);
+            multinomial(counts.iter().map(|&(_, c)| c)).unwrap_or(u64::MAX)
+        }))
+        .filter(|&n| n < u64::MAX)
+    }
+
+    /// Writes the labelling of rank `rank` into `labels`: the rank's
+    /// mixed-radix digits over the strata, each unranked as a multiset
+    /// permutation in lexicographic order. Every rank below
+    /// [`arrangements`](Self::arrangements) is one distinct labelling.
+    pub(crate) fn arrange(&self, mut rank: u64, labels: &mut [u16], counts: &mut Vec<(u16, u64)>) {
+        for positions in &self.strata {
+            self.stratum_counts(positions, counts);
+            let radix = multinomial(counts.iter().map(|&(_, c)| c)).unwrap_or(1);
+            let mut digit = u128::from(rank % radix);
+            rank /= radix;
+            let mut ways = u128::from(radix);
+            let mut left = positions.len() as u128;
+            for &position in positions {
+                for (label, count) in counts.iter_mut() {
+                    if *count == 0 {
+                        continue;
+                    }
+                    // The labellings of the rest with `label` here.
+                    let here = ways * u128::from(*count) / left;
+                    if digit < here {
+                        if let Some(slot) = labels.get_mut(position) {
+                            *slot = *label;
+                        }
+                        *count -= 1;
+                        ways = here;
+                        break;
+                    }
+                    digit -= here;
+                }
+                left -= 1;
+            }
         }
     }
 
@@ -316,6 +439,21 @@ pub(crate) trait Permuted: Sync {
     /// Whatever stops permutation `k` being drawn (a restricted pairing
     /// that rejection cannot meet).
     fn read(&self, k: u64, scratch: &mut Self::Scratch, out: &mut [f64]) -> Result<(), Error>;
+
+    /// How many arrangements the reference set holds, each as likely
+    /// under the null; `None` past `u64`, or for a set that is not a
+    /// finite set of arrangements (replicates drawn from a population).
+    fn arrangements(&self) -> Option<u64> {
+        None
+    }
+
+    /// Every predicate's statistic under the arrangement of rank `rank`,
+    /// below [`arrangements`](Self::arrangements), into `out`. Called
+    /// only when that is `Some`.
+    fn arrange(&self, rank: u64, scratch: &mut Self::Scratch, out: &mut [f64]) {
+        let _ = (rank, scratch);
+        out.fill(f64::NAN);
+    }
 }
 
 /// The labels of a group test, permuted inside their strata, and the
@@ -332,6 +470,7 @@ pub(crate) struct Labelled<'a> {
 pub(crate) struct LabelScratch {
     labels: Vec<u16>,
     stratum: Vec<u16>,
+    counts: Vec<(u16, u64)>,
     masks: Vec<Bits>,
     shares: Vec<Share>,
 }
@@ -344,6 +483,7 @@ impl Permuted for Labelled<'_> {
         LabelScratch {
             labels: vec![0; charts],
             stratum: Vec::new(),
+            counts: Vec::new(),
             masks: masks_for(self.statistic.contrast, self.layout.group_count, charts),
             shares: Vec::new(),
         }
@@ -356,6 +496,18 @@ impl Permuted for Labelled<'_> {
         self.statistic
             .read(&scratch.masks, self.matrix, out, &mut scratch.shares);
         Ok(())
+    }
+
+    fn arrangements(&self) -> Option<u64> {
+        self.layout.arrangements()
+    }
+
+    fn arrange(&self, rank: u64, scratch: &mut LabelScratch, out: &mut [f64]) {
+        self.layout
+            .arrange(rank, &mut scratch.labels, &mut scratch.counts);
+        fill_masks(&scratch.labels, &mut scratch.masks);
+        self.statistic
+            .read(&scratch.masks, self.matrix, out, &mut scratch.shares);
     }
 }
 
@@ -422,13 +574,18 @@ fn count_range<P: Permuted>(
     permuted: &P,
     family: &Family<'_>,
     range: std::ops::Range<u64>,
+    enumerated: bool,
 ) -> Result<Counted, Error> {
     let predicates = family.observed.len();
     let mut counted = Counted::zero(predicates);
     let mut scratch = permuted.scratch();
     let mut stats = vec![0.0; predicates];
     for k in range {
-        permuted.read(k, &mut scratch, &mut stats)?;
+        if enumerated {
+            permuted.arrange(k, &mut scratch, &mut stats);
+        } else {
+            permuted.read(k, &mut scratch, &mut stats)?;
+        }
         for ((slot, &stat), &obs) in counted.exceed.iter_mut().zip(&stats).zip(family.observed) {
             *slot += u64::from(reaches(stat, obs));
         }
@@ -447,7 +604,8 @@ fn count_range<P: Permuted>(
     Ok(counted)
 }
 
-/// Counts permutations `0..permutations`, split into contiguous ranges
+/// Counts the walk's statistics, permutations or arrangements
+/// `0..walk.len()`, split into contiguous ranges
 /// over the threads `parallelism` names. A thread the platform cannot
 /// start (wasm has none) runs its range on the calling thread instead,
 /// which by construction counts the same; and when ranges fail, the
@@ -455,16 +613,17 @@ fn count_range<P: Permuted>(
 pub(crate) fn count<P: Permuted>(
     permuted: &P,
     family: &Family<'_>,
-    permutations: u32,
+    walk: Walk,
     parallelism: Parallelism,
 ) -> Result<Counted, Error> {
-    let m = u64::from(permutations);
+    let m = u64::from(walk.len());
+    let enumerated = walk.enumerated();
     let threads = match parallelism {
         Parallelism::One => 1,
         Parallelism::Threads(n) => u64::from(n.get()).min(m.max(1)),
     };
     if threads <= 1 {
-        return count_range(permuted, family, 0..m);
+        return count_range(permuted, family, 0..m, enumerated);
     }
     let ranges: Vec<std::ops::Range<u64>> = (0..threads)
         .map(|t| (m * t / threads)..(m * (t + 1) / threads))
@@ -477,7 +636,7 @@ pub(crate) fn count<P: Permuted>(
                 std::thread::Builder::new()
                     .spawn_scoped(scope, {
                         let range = range.clone();
-                        move || count_range(permuted, family, range)
+                        move || count_range(permuted, family, range, enumerated)
                     })
                     .map_err(|_| range)
             })
@@ -489,7 +648,7 @@ pub(crate) fn count<P: Permuted>(
                     Ok(part) => part,
                     Err(panic) => std::panic::resume_unwind(panic),
                 },
-                Err(range) => count_range(permuted, family, range),
+                Err(range) => count_range(permuted, family, range, enumerated),
             })
             .collect()
     });

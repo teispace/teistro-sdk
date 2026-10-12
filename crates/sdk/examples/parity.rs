@@ -6392,9 +6392,10 @@ fn the_research(report: &mut Report, geo: &Context) {
                     report,
                     &format!("research-{name}-test"),
                     format!(
-                        "{} {} {}",
+                        "{} {} {} {}",
                         value.permutations,
                         number(value.resolution),
+                        value.enumerated,
                         value.shuffle.name()
                     ),
                 );
