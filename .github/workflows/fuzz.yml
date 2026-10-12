@@ -1,0 +1,50 @@
+# The fuzz targets' long run (`docs/05-testing/03-fuzzing.md`): each for
+# an hour, weekly and on demand. The nightly minute is verify's `fuzz`
+# job. A crash fails the run and its input is uploaded; the coverage the
+# run found is offered back as an artefact, never committed by the job.
+name: fuzz
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    name: fuzz (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [json, pack, key]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: fuzz
+      - name: The target for an hour from the committed corpus
+        working-directory: fuzz
+        run: |
+          mkdir -p found
+          cargo +nightly fuzz run ${{ matrix.target }} found corpus/${{ matrix.target }} -- \
+            -max_total_time=3600 -rss_limit_mb=4096 -timeout=30
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-crashes-${{ matrix.target }}
+          path: fuzz/artifacts
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-found-${{ matrix.target }}
+          path: fuzz/found

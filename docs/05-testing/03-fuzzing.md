@@ -1,0 +1,64 @@
+# Fuzzing
+
+Status: `built`, 2026-10-12. The quality bar's fuzzing row
+([`01-quality-bar.md`](01-quality-bar.md)): pack parsers, the MF2
+engine and every C ABI entry point survive arbitrary bytes, with a
+committed corpus, a nightly smoke run and a weekly long run.
+
+## 1. What is fuzzed, and why there
+
+A binding hands the library bytes it did not check. Everything a caller
+can say crosses the C ABI, so the ABI is the surface: a target there
+reaches the JSON readers, the pack loader, the key parser and the
+computation behind each, through the same guards a binding goes
+through. Fuzzing the crates beneath instead would test code no caller
+reaches as written, and miss the boundary's own copying and checks.
+
+| target | entry points | input |
+|---|---|---|
+| `json` | every entry point that reads a caller's JSON: the 26 sections of `ts_chart_request`, `ts_research`, `ts_pakshi`, `ts_rashifal`, `ts_numerology_profile`, `ts_naam_milan`, `ts_panchanga_days`'s muhurta and festivals, `ts_intl_render`'s parameters, and the context's settings, layouts and dashas | a selector byte names the slot; the rest is the text, cut at its first NUL as a C caller's string is |
+| `pack` | `ts_intl_load_pack` | the bytes, as a caller's buffer |
+| `key` | `ts_key_parse`, `ts_intl_render`'s key, `ts_intl_entity` | the text |
+
+A chart request's other fields are fixed at a request that founds one
+chart, so every section's reader runs against a real sky; the context is
+built once per process with the compact built-in ephemeris.
+
+## 2. What a finding is
+
+The ABI catches a panic and answers `INTERNAL`, which a binding would
+survive. Under the fuzzer the panic hook aborts first, so **any panic is
+a finding**, caught or not; and so is any answer outside the status
+codes, a hang past libFuzzer's timeout, and an allocation past its RSS
+limit. A refusal is the expected answer to most inputs and is not a
+finding.
+
+Work in proportion to what was asked is not a hang. The SDK computes
+whatever it is asked, and bounding a caller is the host's job, as the
+shipped server does (`teistro_mcp::Limits`, `03-design/mcp-server.md`
+P5). So the `json` target skips a record that server would refuse for its
+size, such as two centuries of daily readings, and a timeout still
+counts as a finding on every record that server would accept.
+
+## 3. Corpus and cadence
+
+- The seed corpus is committed under `fuzz/corpus/<target>/`: each JSON
+  slot seeded with the requests the ABI's own tests send, so the fuzzer
+  starts past the parser; the pack seeded with the shipped packs.
+- **Nightly smoke** (`verify.yml`): each target for 60 seconds from the
+  committed corpus. A crash fails verify and uploads its input.
+- **Weekly long run** (`fuzz.yml`): each target for an hour; new coverage
+  is offered back as an artefact, not committed by the job.
+- A crash input, once fixed, is added to the corpus and to a regression
+  test in the crate it fixed, so the plain test suite holds it without
+  the fuzzer.
+
+The fuzz crate is outside the workspace, as the adapters are: it needs
+nightly and `libfuzzer-sys`, which the workspace builds without.
+
+## 4. Findings
+
+| found | input | what broke | fixed |
+|---|---|---|---|
+| 2026-10-12, the first two minutes of `json` | `progressions_json` asking `{"at": 1.24e30}` | the progressed chart's civil day reached `gregorian_from_fixed`, whose year arithmetic overflowed before `date_of` checked the year it made | every shipped calendar refuses a day outside its range before converting it (`OUT_OF_RANGE`, field `fixed`); `crates/calendar/tests/range.rs` holds it for each |
+| 2026-10-12, five minutes of `json` | `ts_rashifal` with one period from 1837 to 2037, `WEEKLY` | nothing: 73 000 days of readings take minutes because 73 000 were asked for | not a defect. The target holds records to the shipped server's bounds (§2), and the input is in the corpus; `a_record_past_the_servers_bounds_is_skipped` holds it |

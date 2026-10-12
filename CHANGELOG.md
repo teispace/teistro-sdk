@@ -283,6 +283,19 @@ yet taken. That makes every allowed pairing equally likely and never
 refuses a study that has one (C368). `/1` stays selectable through the
 test's `shuffle`.
 
+**The boundary is fuzzed.** **Numbers:** none moved. Three libFuzzer
+targets drive the C ABI with a caller's JSON, a pack's bytes and a key
+(`05-testing/03-fuzzing.md`): a minute each nightly, an hour each weekly,
+from a committed corpus. Their first finding is fixed. A day outside a
+calendar's range now gets `OUT_OF_RANGE` before it is converted, where a
+progression asked at a Julian day of 1.24e30 used to overflow the
+Gregorian year and answer `INTERNAL`. The context's `Limits` is gone.
+Nothing read it, and the docs that said it capped iterations and the
+memo were wrong: each solver caps itself, and the memo is
+`provider.cache_cells`. A request's size is the host's to bound, which
+the server does, and `teistro_mcp::Limits::check` is now public for a
+host that serves the SDK another way.
+
 **Saravali's readings of a graha under an aspect ship.** **Numbers:**
 none moved; 432 readings are added. Chapters 22 to 29 read each graha in
 a sign under each other graha's aspect, and `shipped::readings()` now

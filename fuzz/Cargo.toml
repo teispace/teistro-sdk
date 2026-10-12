@@ -1,0 +1,42 @@
+# The fuzz targets (`docs/05-testing/03-fuzzing.md`). Outside the
+# workspace, as the adapters are: they need nightly and libFuzzer, which
+# the workspace builds without. Run with `cargo +nightly fuzz run <target>`.
+[package]
+name = "teistro-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "Apache-2.0"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+teistro-core = { path = "../crates/core" }
+teistro-ffi = { path = "../crates/ffi" }
+teistro-mcp = { path = "../crates/mcp" }
+serde_json = "1"
+
+[[bin]]
+name = "json"
+path = "fuzz_targets/json.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "pack"
+path = "fuzz_targets/pack.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "key"
+path = "fuzz_targets/key.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]

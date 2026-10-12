@@ -1,0 +1,6 @@
+target/
+artifacts/
+coverage/
+found/
+# The pack seeds are built packs, which the root ignores elsewhere.
+!corpus/pack/*.tpack
