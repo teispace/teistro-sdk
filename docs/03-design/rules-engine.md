@@ -670,9 +670,18 @@ that holds each size to its own count.
 
 Saravali's chapters 22 to 29 give one more shape and eighty-four more
 readings: each of the seven grahas in each of the twelve signs, a chapter to a
-graha. Those chapters also read the same graha under each other graha's aspect,
-and ch. 23 v. 88 makes the whole of them wait on the strength of the sign, its
-lord and the graha; neither is here, for want of a strength measure.
+graha. Each chapter goes on to read the same graha under each other graha's
+aspect, a lord's two signs to a verse and the Moon's signs one at a time, and
+those ship too, read in the 1907 Nirnaya Sagar print: four hundred and
+thirty-two rules, one to a sign under each aspect, a rule holding where the
+graha stands in the sign and the other aspects it. The 42 verses that pair the
+Sun, Mercury and Venus are not rules, since the three never stand far enough
+apart for one to aspect another, and a test holds that no rule pairs them.
+Ch. 23 v. 88 says a sign's reading comes in full where the sign, its lord and
+the graha are strong: it weighs a reading and bars none, so it is not a
+condition. Ch. 24 vv. 22 to 23 weigh the Moon's aspect readings by her navamsa
+and set them aside where its lord is strong, naming no measure of strength;
+the family's note records both.
 
 Saravali ch. 30 adds the last of the shapes: each graha in each of the twelve
 bhavas, eighty-four more. Its closing verses say that malefics harm the bhava

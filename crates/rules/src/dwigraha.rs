@@ -5,8 +5,9 @@
 //! Brihat Jataka ch. 14 reads every pair of the seven grahas sharing a sign;
 //! Phaladeepika ch. 18 the Moon in every sign under one graha's aspect; Jataka
 //! Parijata every combination of the seven from two to six sharing a sign; and
-//! Saravali a graha in each of the twelve signs (chs. 22 to 29) and in each of
-//! the twelve bhavas (ch. 30). None of them grades anything: each verse says
+//! Saravali a graha in each of the twelve signs (chs. 22 to 29), the same
+//! graha there under each other graha's aspect, and a graha in each of the
+//! twelve bhavas (ch. 30). None of them grades anything: each verse says
 //! in words what follows, so every rule here carries an [`Outcome::Effect`]
 //! and no severity and no span. The conditions repeat, so only what changes is
 //! data — the pair, the sign, the aspecting graha, the house and the reading —
@@ -30,6 +31,7 @@ pub(crate) struct Table {
     moon_aspected: MoonAspected,
     together: Together,
     in_rasi: InRasi,
+    aspected_in_rasi: AspectedInRasi,
     in_bhava: InBhava,
     rising_part: RisingPart,
     pair_in_angle: PairInAngle,
@@ -103,6 +105,42 @@ struct InRasi {
     #[serde(flatten)]
     family: Family,
     grahas: Vec<GrahaRows>,
+}
+
+/// Saravali chs. 22 to 29 again: a graha in a sign under another's aspect.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AspectedInRasi {
+    #[serde(flatten)]
+    family: Family,
+    grahas: Vec<AspectedRows>,
+}
+
+/// One graha's aspect verses: its signs in the groups the chapter reads.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AspectedRows {
+    planet: Body,
+    chapter: String,
+    groups: Vec<SignGroup>,
+}
+
+/// The signs one run of verses covers — a lord's two, or the Moon's one —
+/// and a reading under each graha that aspects the graha there.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SignGroup {
+    signs: Vec<Rashi>,
+    readings: Vec<AspectedReading>,
+}
+
+/// What a verse says of the graha under one aspect.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AspectedReading {
+    from: Body,
+    verse: String,
+    effect: String,
 }
 
 /// Saravali ch. 30, a graha in the twelve bhavas.
@@ -269,6 +307,7 @@ impl Table {
             .chain(moon)
             .chain(self.together())
             .chain(self.in_rasi())
+            .chain(self.aspected_in_rasi())
             .chain(self.in_bhava())
             .chain(self.rising_part())
             .chain(self.pair_in_angle())
@@ -322,6 +361,45 @@ impl Table {
                         &reading.effect,
                     )
                 })
+        })
+    }
+}
+
+impl Table {
+    /// Saravali chs. 22 to 29: each graha in each sign under each graha that
+    /// can aspect it there. A verse reads a lord's two signs at once, so it
+    /// stands for a rule in each of them, and the key names the one sign.
+    fn aspected_in_rasi(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.aspected_in_rasi.family;
+        self.aspected_in_rasi.grahas.iter().flat_map(move |graha| {
+            let planet = graha.planet;
+            graha.groups.iter().flat_map(move |group| {
+                group.signs.iter().flat_map(move |sign| {
+                    group.readings.iter().map(move |reading| {
+                        stating(
+                            format!(
+                                "SARAVALI_{}_IN_{}_ASPECTED_BY_{}",
+                                planet.key(),
+                                sign.key(),
+                                reading.from.key()
+                            ),
+                            "graha-aspected-in-rasi",
+                            family.in_chapter(Some(graha.chapter.clone()), &reading.verse),
+                            vec![
+                                Condition::PlanetInSign {
+                                    planet: SignRef::Of(BodyRef::Body(planet)),
+                                    signs: vec![*sign],
+                                },
+                                Condition::PlanetAspectsPlanet {
+                                    from: BodySubject::Ref(BodyRef::Body(reading.from)),
+                                    target: SignRef::Of(BodyRef::Body(planet)),
+                                },
+                            ],
+                            &reading.effect,
+                        )
+                    })
+                })
+            })
         })
     }
 }

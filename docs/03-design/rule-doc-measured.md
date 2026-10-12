@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-1752 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 160 in `ARISHTAS`, 632 in `READINGS`, 274 in `NABHASAS`, 657 in `the corpus's own`. Their 6622 conditions are written 2806 ways, which say 2802 things, and the renderer gives those 2802 sentences.
+2184 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 160 in `ARISHTAS`, 1064 in `READINGS`, 274 in `NABHASAS`, 657 in `the corpus's own`. Their 7486 conditions are written 2811 ways, which say 2807 things, and the renderer gives those 2807 sentences.
 
-The 1095 shipped rules are what a consumer evaluates; the corpus's own
+The 1527 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 2802 disagree |
-| every condition of every rule renders | **holds** | 0 of 6622 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 2807 disagree |
+| every condition of every rule renders | **holds** | 0 of 7486 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -48,7 +48,7 @@ a change to what a rule asks changes its prose.
 | `or` | 327 | MARS is combust or MARS is retrograde |
 | `not` | 200 | it is not the case that JUPITER is combust |
 | `planet-in-house` | 757 | SUN stands in the 1st house |
-| `planet-in-sign` | 413 | SUN stands in LEO |
+| `planet-in-sign` | 845 | SUN stands in LEO |
 | `planet-dignity` | 221 | the dignity of SUN is exalted |
 | `planet-in-kendra` | 98 | SUN stands in a kendra |
 | `planet-in-trikona` | 15 | SUN stands in a trikona |
@@ -67,7 +67,7 @@ a change to what a rule asks changes its prose.
 | `chara-karaka-in-house` | 34 | the AK stands in the 1st house |
 | `planet-combust` | 25 | SUN is combust |
 | `planet-retrograde` | 22 | MARS is retrograde |
-| `planet-aspects-planet` | 294 | MARS aspects SUN |
+| `planet-aspects-planet` | 726 | MARS aspects SUN |
 | `planet-aspects-house` | 60 | MARS aspects the 1st house |
 | `planet-at-table-degree` | 10 | SUN stands at the degree MRITYU_BHAGA gives it in its sign |
 | `planet-in-table-sign` | 7 | SUN stands in a sign DAGDHA_RASHI gives the birth tithi |

@@ -283,6 +283,16 @@ yet taken. That makes every allowed pairing equally likely and never
 refuses a study that has one (C368). `/1` stays selectable through the
 test's `shuffle`.
 
+**Saravali's readings of a graha under an aspect ship.** **Numbers:**
+none moved; 432 readings are added. Chapters 22 to 29 read each graha in
+a sign under each other graha's aspect, and `shipped::readings()` now
+carries them, read in the 1907 Nirnaya Sagar print: a rule
+`SARAVALI_{graha}_IN_{sign}_ASPECTED_BY_{graha}` in category
+`graha-aspected-in-rasi` holds where the graha stands in the sign and
+the other aspects it, and says what the verse says. The Sun, Mercury and
+Venus never aspect one another, so the verses pairing them are not
+rules. The readings are 1064 rules and the kernel ships 1527.
+
 **A prashna can read the Bhuvanapradīpa's grades.** **Numbers:** none
 moved; the reading is off by default. A prashna's rules gain `graded`
 (`OFF`, `PARASHARI` or `TAJIKA`), and its answer `graded`: the lords'
