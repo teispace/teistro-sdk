@@ -868,6 +868,10 @@ mod tests {
     /// A caller can turn the memo off, and size it, through the settings a
     /// binding already passes as JSON.
     #[test]
+    #[cfg_attr(
+        miri,
+        ignore = "three contexts built in safe code, nine minutes under Miri; the other tests build one"
+    )]
     fn the_knob_is_reachable_from_a_settings_patch() {
         for cells in [0u32, 1, 4096] {
             let patch = format!(r#"{{"provider":{{"cache_cells":{cells}}}}}"#);
