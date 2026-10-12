@@ -128,9 +128,12 @@ every shipped profile. The v1 inventory:
 
 A module that adds a knob adds a row here, a default to every shipped
 profile and a note to the changelog (`09-guidelines/03-adding-a-module.md`).
-Limits (batch sizes, ranges, iteration caps, cache bytes) are context
-configuration, not settings: they do not move a number, so they are
-stamped in provenance when they bite and are outside the hash.
+A request's size is not bounded by the SDK. A context computes whatever
+it is asked, in proportion to what was asked, and bounding a caller is the
+host's job: the shipped server bounds a message, a batch and a range of
+days (`teistro_mcp::Limits`, `mcp-server.md` P5). Two bounds are not
+limits of a request. A solver's iteration cap is a constant of its own,
+and the memo's size is the knob `provider.cache_cells` above.
 
 ### 3.2 Profiles
 

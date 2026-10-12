@@ -84,8 +84,8 @@ per binding.
   `SAFETY:` comment.
 - No `panic!`, `unwrap`, `expect`, `todo`, printing or slice indexing in
   library crates (workspace lints; a tooling binary allows them with a
-  comment); errors are values; iteration caps on every search
-  (`Limits::max_iterations`).
+  comment); errors are values; every search caps its iterations with a
+  constant of its own.
 - No unordered collection in an output-producing path; no reads of the
   clock, the environment or the locale in computation crates; no `f64`
   division in a classification path; transcendental functions from

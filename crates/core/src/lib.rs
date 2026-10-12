@@ -20,7 +20,7 @@
 //!   and the hash every result carries;
 //! - [`time`]: clock offsets and the local-clock abstraction the calendars
 //!   and the time layer share;
-//! - [`registry`] and [`limits`]: what a context registers and bounds.
+//! - [`registry`]: what a context registers.
 //!
 //! ```
 //! use teistro_core::angle::Nas;
@@ -63,7 +63,6 @@ pub mod error;
 pub mod house;
 pub mod interval;
 pub mod key;
-pub mod limits;
 pub mod math;
 pub mod quantity;
 pub mod ratio;
