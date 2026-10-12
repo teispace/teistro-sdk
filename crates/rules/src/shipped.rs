@@ -165,8 +165,9 @@ pub fn arishtas() -> &'static [Rule] {
 /// written out: Brihat Jataka ch. 14's twenty-one pairs of grahas sharing a
 /// sign, which Phaladeepika ch. 18 repeats; Phaladeepika's own Moon in each of
 /// the twelve signs under each of six aspects; and Jataka Parijata's lists of
-/// two to six of the seven sharing one sign, every combination of each size.
-/// None of them grades anything, so each carries what its reading says in
+/// two to six of the seven sharing one sign, every combination of each size;
+/// and Saravali's graha in each sign, alone and under each aspect, in each
+/// bhava, in pairs in the angles, and the part of a sign that rises. None of them grades anything, so each carries what its reading says in
 /// words and nothing else.
 #[must_use]
 pub fn readings() -> &'static [Rule] {
@@ -258,7 +259,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1095);
+        assert_eq!(rules.len(), 1527);
         for rule in &rules {
             let rank = rule
                 .source
@@ -382,7 +383,7 @@ mod tests {
     }
 
     /// Every category the shipped rules use.
-    const CATEGORIES: [&str; 31] = [
+    const CATEGORIES: [&str; 32] = [
         "arishta",
         "arishta-bhanga",
         "arishta-father",
@@ -394,6 +395,7 @@ mod tests {
         "dhana",
         "dwigraha",
         "gandanta",
+        "graha-aspected-in-rasi",
         "graha-in-bhava",
         "graha-in-rasi",
         "grahas-together",

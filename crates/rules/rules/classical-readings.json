@@ -495,7 +495,7 @@
   "inRasi": {
     "text": "Saravali",
     "rank": 1,
-    "note": "A graha in a sign, and what the chapter says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, one chapter to a graha, the signs in order from Aries. The chapters add readings for the same graha under each other graha's aspect, and ch. 23 v. 88 makes the whole of them wait on the strength of the sign, its lord and the graha; neither is here, the kernel having no strength measure.",
+    "note": "A graha in a sign, and what the chapter says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, one chapter to a graha, the signs in order from Aries. The readings that follow in each chapter, of the same graha under each other graha's aspect, are the aspectedInRasi family. Ch. 23 v. 88 says a sign's reading comes in full where the sign, its lord and the graha are strong, to be judged by exaltation and debilitation: it weighs a reading and bars none, so it is no condition here.",
     "grahas": [
       {
         "planet": "SUN",
@@ -872,6 +872,1873 @@
           {
             "verse": "23-24",
             "effect": "fond of sacrifice and of the arts, chief among his relatives and friends, calm, of increasing wealth, skilful in policy, able to test diamonds, virtuous, modest, and coming later to a position of authority"
+          }
+        ]
+      }
+    ]
+  },
+  "aspectedInRasi": {
+    "text": "Saravali",
+    "rank": 1,
+    "note": "A graha in a sign under another graha's aspect, and what the chapter says of the native. Read from the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali (ed. V. Subrahmanya Sastri), chs. 22 to 29, the verses after each graha's twelve signs; the verse numbers are that print's. A chapter reads the two signs of one lord in a verse, and the Moon's chapter each sign alone, so one verse stands for a rule in each sign it covers. The Sun, Mercury and Venus never stand far enough apart for one to aspect another, so the verses the chapters print for those pairs are not rules: 42 verses, two in each of the seven groups of the Sun's, Mercury's and Venus's chapters. Ch. 23 v. 86 (Santhanam's v. 88) says a sign's reading comes in full where the sign, its lord and the graha are strong: it weighs a reading and bars none, so it is no condition here. Ch. 24 vv. 22 to 23 weigh the Moon's aspect readings by her navamsa, full in vargottama, middling in her own, small in another's, and set them aside where the navamsa's lord is strong, naming no measure of strength; that is recorded and not encoded, so each reading is what its verse says wherever the aspect holds.",
+    "grahas": [
+      {
+        "planet": "SUN",
+        "chapter": "22",
+        "groups": [
+          {
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "4",
+                "effect": "given to charity, with many servants, dear to women, and soft of body"
+              },
+              {
+                "from": "MARS",
+                "verse": "5",
+                "effect": "of fierce valour in battle, cruel, red of eye, hand and foot, and full of splendour and strength"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "7",
+                "effect": "wealthy, generous, a king's minister or a commander of his forces, and eminent"
+              },
+              {
+                "from": "SATURN",
+                "verse": "9",
+                "effect": "beset by sorrow in body, frantic in his undertakings, confused of mind, and foolish"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "12",
+                "effect": "fond of courtesans, soft of speech, a support of many women, and living by water"
+              },
+              {
+                "from": "MARS",
+                "verse": "13",
+                "effect": "brave, fond of war, splendid, winning wealth and fame by daring, and formidable"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "15",
+                "effect": "with many enemies and many friends, a king's counsellor, fair of eye, handsome, and pleasing to the king"
+              },
+              {
+                "from": "SATURN",
+                "verse": "17",
+                "effect": "low, idle, poor, keeping company with old women, ill natured, and afflicted by disease"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "20",
+                "effect": "troubled by enemies and kin, worn by journeys abroad, and much given to lament"
+              },
+              {
+                "from": "MARS",
+                "verse": "21",
+                "effect": "in fear of enemies and quarrels, grieved by war and by scandal, wretched, and abashed"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "23",
+                "effect": "voluble in many shastras, a king's envoy, travelling abroad, fierce, and ever excitable"
+              },
+              {
+                "from": "SATURN",
+                "verse": "25",
+                "effect": "anxious over many servants, ever engaged in supporting many kin, and a gambler"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CANCER"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "28",
+                "effect": "a king or the equal of one, wealthy by trade in the products of water, steadfast, and harsh"
+              },
+              {
+                "from": "MARS",
+                "verse": "29",
+                "effect": "afflicted by wasting and by fistula, estranged from his kin, and a slanderer"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "31",
+                "effect": "eminent, a king's minister, a commander of armies, renowned, and excelling in the arts"
+              },
+              {
+                "from": "SATURN",
+                "verse": "33",
+                "effect": "suffering from phlegm and wind, taking what is another's, perverse in mind and act, and a slanderer"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "LEO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "36",
+                "effect": "intelligent, with a good wife, troubled by phlegm, and a favourite of kings"
+              },
+              {
+                "from": "MARS",
+                "verse": "37",
+                "effect": "given to others' wives, brave, rash, enterprising, fierce, and a leader"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "39",
+                "effect": "a builder of temples, gardens and tanks, great of spirit, and of great intellect"
+              },
+              {
+                "from": "SATURN",
+                "verse": "41",
+                "effect": "skilled at destroying bodies, impotent, and a tormentor of others"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "50",
+                "effect": "blessed with speech, intellect, wealth and sons, the equal of a king, free of sorrow, and well built"
+              },
+              {
+                "from": "MARS",
+                "verse": "51",
+                "effect": "famed in battle, plain of speech, rich in wealth and comfort, and fierce"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "53",
+                "effect": "moving in the palaces of kings, or a king himself, with elephants, horses and wealth, and ever learned"
+              },
+              {
+                "from": "SATURN",
+                "verse": "55",
+                "effect": "unclean, coveting others' food, attached to low people, and keeping beasts for sport"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "58",
+                "effect": "skilled in deceit, fickle of mind, and losing wealth and comfort through women"
+              },
+              {
+                "from": "MARS",
+                "verse": "59",
+                "effect": "beset by diseases and enemies, wounded by weapons in others' quarrels, and maimed"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "61",
+                "effect": "of good deeds, wise, a refuge to all, of wide fame, and high minded"
+              },
+              {
+                "from": "SATURN",
+                "verse": "63",
+                "effect": "destroying his enemies' faction, his confidence raised by honours from kings"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "planet": "MOON",
+        "chapter": "23",
+        "groups": [
+          {
+            "signs": [
+              "ARIES"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "2",
+                "effect": "fierce, a king, gentle to those who bow to him, steadfast, and fond of war"
+              },
+              {
+                "from": "MARS",
+                "verse": "3",
+                "effect": "pained by diseases of the teeth and eyes, his body hurt by fire, wind and the like, the ruler of a district, and troubled"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "4",
+                "effect": "a teacher of many sciences, of good speech, agreeable, a fine poet, and of wide fame"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "5",
+                "effect": "rich in servants and wealth, and a king's minister or the commander of his army"
+              },
+              {
+                "from": "VENUS",
+                "verse": "6",
+                "effect": "fortunate, with sons and wealth, adorned by an excellent wife, and eating little"
+              },
+              {
+                "from": "SATURN",
+                "verse": "7",
+                "effect": "hated, of many sorrows, poor, unclean, and untruthful"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "TAURUS"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "9",
+                "effect": "a farmer and a worker, rich in servants and cattle, and practical"
+              },
+              {
+                "from": "MARS",
+                "verse": "10",
+                "effect": "very lustful, losing his substance and his friends for women, captivating to women, and ill-starred for his mother"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "11",
+                "effect": "wise, skilled in speech, cheerful, dear to every creature, and of peerless virtues"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "12",
+                "effect": "with lasting sons, wife and friends, devoted to his parents, very skilful, righteous, and famous"
+              },
+              {
+                "from": "VENUS",
+                "verse": "13",
+                "effect": "possessing and enjoying ornaments, vehicles, houses, beds, seats, scents, clothes and garlands"
+              },
+              {
+                "from": "SATURN",
+                "verse": "14",
+                "effect": "without wealth, a doer of harm, ever disliked by women, yet with sons, friends and kin"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "GEMINI"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "17",
+                "effect": "rich in wisdom, renowned, handsome, very righteous, yet much grieved and of little wealth"
+              },
+              {
+                "from": "MARS",
+                "verse": "18",
+                "effect": "very brave, very wise, and blessed with comfort, vehicles, riches and beauty"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "19",
+                "effect": "skilled at earning, unconquered in battle, very steadfast, and a ruler whose command is never broken"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "20",
+                "effect": "a teacher of the sciences and the shastras, famous, truthful, very handsome, honoured, and eloquent"
+              },
+              {
+                "from": "VENUS",
+                "verse": "21",
+                "effect": "sporting with fine women, garlands, clothes, vehicles, ornaments and gems"
+              },
+              {
+                "from": "SATURN",
+                "verse": "22",
+                "effect": "without kin, without the comfort of women or riches, poor, and hated by people"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CANCER"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "24",
+                "effect": "in a king's service, poor, a writer, and a keeper of forts"
+              },
+              {
+                "from": "MARS",
+                "verse": "25",
+                "effect": "brave, defective of body, a cause of misfortune to his mother, agreeable, and able"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "26",
+                "effect": "of sound mind, versed in policy, with wealth, wife and sons, a king's minister, and happy"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "27",
+                "effect": "a king with kingly virtues, happy, with a good wife, and full of policy, modesty and valour"
+              },
+              {
+                "from": "VENUS",
+                "verse": "28",
+                "effect": "a vessel of wealth, gold, clothes, women and gems, a leader of courtesans, and handsome"
+              },
+              {
+                "from": "SATURN",
+                "verse": "29",
+                "effect": "wandering, unhappy, poor, harmful to his mother, fond of lies, sinful, and low"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "LEO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "31",
+                "effect": "a rival of kings, of eminent qualities, of high station, heroic, given to sin, and famous"
+              },
+              {
+                "from": "MARS",
+                "verse": "32",
+                "effect": "a commander of armies, fierce, with servants, women, sons, wealth and vehicles, and an excellent man"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "33",
+                "effect": "womanly in nature and grace, ruled by women, a servant of women, and blessed with wealth, comfort and enjoyment"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "34",
+                "effect": "of noble birth, a son of a good family, very learned, rich in virtues, and the equal of a king"
+              },
+              {
+                "from": "VENUS",
+                "verse": "35",
+                "effect": "with women and riches, yet sickly, a servant of women, versed in love, and wise"
+              },
+              {
+                "from": "SATURN",
+                "verse": "36",
+                "effect": "a farmer, poor, untruthful, a keeper of forts, without the comfort of women, and mean"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "VIRGO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "38",
+                "effect": "keeper of a king's treasury, famous, whose word is accepted, of distinguished deeds, and without a wife"
+              },
+              {
+                "from": "MARS",
+                "verse": "39",
+                "effect": "a master of crafts, famous, wealthy, trained, steadfast, and harmful to his mother"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "40",
+                "effect": "versed in astrology and poetry, victorious in disputes and quarrels, clever, excellent, and skilful"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "41",
+                "effect": "rich in kin, happy, doing a king's business, whose word is accepted, and wealthy"
+              },
+              {
+                "from": "VENUS",
+                "verse": "42",
+                "effect": "with many wives, enjoying many ornaments, wealthy, and ever thriving and glad"
+              },
+              {
+                "from": "SATURN",
+                "verse": "43",
+                "effect": "of weak memory, poor, unhappy, motherless, ruled by women, and with wealth that women enjoy"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "LIBRA"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "45",
+                "effect": "poor, sickly, wandering, humiliated, without enjoyments, sonless, and worthless"
+              },
+              {
+                "from": "MARS",
+                "verse": "46",
+                "effect": "sharp, a thief, mean, with other men's wives, scents and garlands, clever, and troubled in the eyes"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "47",
+                "effect": "skilled in the arts, with abundant wealth and grain, of good speech, learned, and famous in the land"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "48",
+                "effect": "honoured everywhere, and skilled in buying and selling gems and every kind of merchandise"
+              },
+              {
+                "from": "VENUS",
+                "verse": "49",
+                "effect": "graceful, healthy, fortunate, well built, wealthy, wise, and knowing many expedients"
+              },
+              {
+                "from": "SATURN",
+                "verse": "50",
+                "effect": "wealthy, sweet of speech, with vehicles, given to the pleasures of the senses, unhappy, and harmful to his mother"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "SCORPIO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "52",
+                "effect": "hated by people, wise, wandering, wealthy, and unhappy"
+              },
+              {
+                "from": "MARS",
+                "verse": "53",
+                "effect": "of matchless courage, the equal of a king, wealthy, brave, invincible in battle, and a great eater"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "54",
+                "effect": "unskilled, of unpolished speech, a father of twins, resourceful, a cheat, and knowing song"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "55",
+                "effect": "devoted to his work, hated by people, wealthy, and handsome"
+              },
+              {
+                "from": "VENUS",
+                "verse": "56",
+                "effect": "very dull, very fortunate, graceful with wealth, vehicles and pleasures, and his substance ruined by women"
+              },
+              {
+                "from": "SATURN",
+                "verse": "57",
+                "effect": "with low children, miserly, sickly, poor, and untruthful"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "SAGITTARIUS"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "59",
+                "effect": "a king, wealthy, brave, famed for his manliness, and with peerless comfort and vehicles"
+              },
+              {
+                "from": "MARS",
+                "verse": "60",
+                "effect": "a commander of armies, prosperous, fortunate, famed for his manliness, and with peerless servants"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "61",
+                "effect": "with many servants, skilled in astrology, the crafts and the arts, and a master of drama"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "62",
+                "effect": "of peerless body, a king's minister, and blessed with prosperity, wealth, virtue and comfort"
+              },
+              {
+                "from": "VENUS",
+                "verse": "63",
+                "effect": "very happy, graceful, fortunate, with sons, wealth and pleasures, and with good friends and a good wife"
+              },
+              {
+                "from": "SATURN",
+                "verse": "64",
+                "effect": "affable, well spoken, learned, truthful, gentle, well born, and in a king's service"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CAPRICORN"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "66",
+                "effect": "poor, unhappy, wandering, doing others' work, unclean, and inclined to the crafts"
+              },
+              {
+                "from": "MARS",
+                "verse": "67",
+                "effect": "very rich, very generous, fortunate, wealthy, with vehicles, and fierce"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "68",
+                "effect": "foolish, given to living abroad, without a wife, fickle, harsh, unhappy, and poor"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "69",
+                "effect": "a ruler of peerless valour with kingly virtues, and with many wives, sons and friends"
+              },
+              {
+                "from": "VENUS",
+                "verse": "70",
+                "effect": "with fine women, wealth, ornaments, vehicles and garlands, yet reproached and sonless"
+              },
+              {
+                "from": "SATURN",
+                "verse": "71",
+                "effect": "idle, unclean, wealthy, sick with love, adulterous, and untruthful"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "AQUARIUS"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "73",
+                "effect": "very unclean, very brave, kingly in appearance, righteous, and a farmer"
+              },
+              {
+                "from": "MARS",
+                "verse": "74",
+                "effect": "very truthful, deprived of mother, elders and wealth, idle, crooked, and busy with others' affairs"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "75",
+                "effect": "skilled in the service of the bedchamber, versed in song, dear to women, and of slender wealth and comfort"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "76",
+                "effect": "enjoying villages, fields, trees, fine houses and fine women, noble, and good"
+              },
+              {
+                "from": "VENUS",
+                "verse": "77",
+                "effect": "low, sonless, friendless, cowardly, censured by his teachers, sinful, with a bad wife, and of little comfort"
+              },
+              {
+                "from": "SATURN",
+                "verse": "78",
+                "effect": "wearing long nails and hair, unclean, adulterous, deceitful, irreligious, owning lands, and wealthy"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "PISCES"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "80",
+                "effect": "passionate, renowned, happy, a commander of armies, rich, and with a cheerful wife"
+              },
+              {
+                "from": "MARS",
+                "verse": "81",
+                "effect": "humiliated, unhappy, the son of an unchaste woman, given to sin, and brave"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "82",
+                "effect": "a ruler, very happy, surrounded by women, and docile"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "83",
+                "effect": "graceful, a chief among governors, very wealthy, delicate, and surrounded by many women"
+              },
+              {
+                "from": "VENUS",
+                "verse": "84",
+                "effect": "well behaved, amorous, fond of dance, music and song, and captivating to women"
+              },
+              {
+                "from": "SATURN",
+                "verse": "85",
+                "effect": "defective, harmful to his mother, sick with love, without sons, wife or sense, and attached to low and ugly women"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "planet": "MARS",
+        "chapter": "25",
+        "groups": [
+          {
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "25",
+                "effect": "with wealth, wife and sons, a king's minister, a magistrate, famous, and a generous ruler"
+              },
+              {
+                "from": "MOON",
+                "verse": "26",
+                "effect": "motherless, wounded in body, disliked by his kin, friendless, jealous, and fond of maidens"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "27",
+                "effect": "skilled at taking others' wealth, untruthful, devoted to love, disliked, and a keeper of courtesans"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "28",
+                "effect": "wise, sweet, fortunate, dear to his parents, rich, a peerless lord, and wealthy"
+              },
+              {
+                "from": "VENUS",
+                "verse": "29",
+                "effect": "brought to bondage on account of women, and again and again gaining wealth through them"
+              },
+              {
+                "from": "SATURN",
+                "verse": "30",
+                "effect": "brave against thieves, yet without vigour, deserted by his kin, and the husband of another man's wife"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "31",
+                "effect": "delighting in forests and mountains, disliked by women, with many enemies, of fierce attire, and steadfast"
+              },
+              {
+                "from": "MOON",
+                "verse": "32",
+                "effect": "harmful to his mother, crooked, the husband of many women and dear to them, and afraid of battle"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "33",
+                "effect": "quarrelsome, soft of speech and of body, of few sons and little wealth, and versed in the shastras"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "34",
+                "effect": "versed in instruments and song, fortunate, dear to his kin, and prosperous"
+              },
+              {
+                "from": "VENUS",
+                "verse": "35",
+                "effect": "a king's minister, dear to the king, a commander of armies, of famous name, and happy"
+              },
+              {
+                "from": "SATURN",
+                "verse": "36",
+                "effect": "happy, famous, wealthy, with friends and kin, learned, and the head of guilds, towns and villages"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "37",
+                "effect": "with learning, wealth and valour, fond of hills, forests and forts, and of great spirit"
+              },
+              {
+                "from": "MOON",
+                "verse": "38",
+                "effect": "a guard of the women's quarters, a husband, well mannered, very fortunate, and a keeper of the royal palace"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "39",
+                "effect": "skilled in writing, arithmetic and poetry, talkative, sweet but untruthful of speech, an envoy, and bearing many hardships"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "40",
+                "effect": "a king's officer, renowned, going abroad, skilled in every work, and a leader"
+              },
+              {
+                "from": "VENUS",
+                "verse": "41",
+                "effect": "doing women's bidding, prosperous, fortunate, and enjoying clothes and food"
+              },
+              {
+                "from": "SATURN",
+                "verse": "42",
+                "effect": "fond of mines, hills and forts, a farmer, much afflicted, very brave, very unclean, and poor"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CANCER"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "43",
+                "effect": "troubled in body by bile, splendid, a magistrate, and steadfast"
+              },
+              {
+                "from": "MOON",
+                "verse": "44",
+                "effect": "afflicted by many diseases, of low conduct, ugly of body, and sorrowful"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "45",
+                "effect": "unclean, of sinful conduct, with a mean household, cast out by his kin, and shameless"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "46",
+                "effect": "famous, a king's minister, learned, generous, and fortunate, yet without enjoyments"
+              },
+              {
+                "from": "VENUS",
+                "verse": "47",
+                "effect": "troubled by consorting with women, humiliated by faults women bring, and his wealth ruined"
+              },
+              {
+                "from": "SATURN",
+                "verse": "48",
+                "effect": "travelling by water, poor, graceful in conduct like a king, and ever handsome"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "LEO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "49",
+                "effect": "kind to those who bow to him, with friends and kin, fierce, and roaming cattle pens, forests and hills"
+              },
+              {
+                "from": "MOON",
+                "verse": "50",
+                "effect": "not good for his mother, intelligent, hard of body, of wide fame, and sought by women"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "51",
+                "effect": "knowing many crafts, greedy, devoted to poetry and the arts, ill natured, and very skilful"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "52",
+                "effect": "near the king, a teacher of learning, of pure intellect, and a commander of armies"
+              },
+              {
+                "from": "VENUS",
+                "verse": "53",
+                "effect": "enjoying many women, dear to women, ever youthful, and cheerful"
+              },
+              {
+                "from": "SATURN",
+                "verse": "54",
+                "effect": "old in looks, poor, wandering in others' houses, and unhappy"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "55",
+                "effect": "honoured by people, fortunate, dwelling in forests, hills and forts, and harsh"
+              },
+              {
+                "from": "MOON",
+                "verse": "56",
+                "effect": "formidable, quarrelsome, wise, and ever hostile to the king"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "57",
+                "effect": "intelligent, very skilful, a master of crafts, and very learned"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "58",
+                "effect": "without a wife, unhappy, unassailable by enemies, wealthy, and devoted to exercise"
+              },
+              {
+                "from": "VENUS",
+                "verse": "59",
+                "effect": "very dear to maidens, with varied ornaments, generous, given to pleasures, and very fortunate"
+              },
+              {
+                "from": "SATURN",
+                "verse": "60",
+                "effect": "ill bodied, bold in battle, sinful, wandering, without a jot of comfort, and following another's religion"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "61",
+                "effect": "very dark of body, brave, with an abundance of women, children and wealth, and very sharp"
+              },
+              {
+                "from": "MOON",
+                "verse": "62",
+                "effect": "fickle, harmful to his mother, with ornaments, generous, inconstant in friendship, and wealthy"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "63",
+                "effect": "graceful of gait, poor, spiritless, a cheat, and irreligious"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "64",
+                "effect": "with kingly virtues, steady in his undertakings, long lived, and close to his kin"
+              },
+              {
+                "from": "VENUS",
+                "verse": "65",
+                "effect": "enjoying many things, wealthy, devoted to supporting women, and quarrelsome"
+              },
+              {
+                "from": "SATURN",
+                "verse": "66",
+                "effect": "a king, very wealthy, disliked by women, with many children, wise, unhappy, and valiant in war"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "planet": "MERCURY",
+        "chapter": "26",
+        "groups": [
+          {
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "26",
+                "effect": "captivating to women, a servant, very unclean, and of a wretched disposition"
+              },
+              {
+                "from": "MARS",
+                "verse": "27",
+                "effect": "fond of lies, well spoken, quarrelsome, learned, rich, dear to the king, and brave"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "28",
+                "effect": "happy, smooth and hairy of body, with fine hair, very rich, a giver of commands, and sinful"
+              },
+              {
+                "from": "SATURN",
+                "verse": "30",
+                "effect": "very unhappy, cruel, given to violence, and ever without his family"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "32",
+                "effect": "affectionate, wealthy, of firm devotion, healthy, with a steady household, famous, and a king's minister"
+              },
+              {
+                "from": "MARS",
+                "verse": "33",
+                "effect": "beset by diseases and enemies, pained by the king's insult, and cast out of every land"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "34",
+                "effect": "wise, whose word is accepted, the head of a region, a town or a guild, and famous"
+              },
+              {
+                "from": "SATURN",
+                "verse": "36",
+                "effect": "unhappy, distressed by grief for his kin, sickly, with many misfortunes, and unclean"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "38",
+                "effect": "very sweet, very talkative, quarrelsome, fond of the shastras, and fortunate in every undertaking"
+              },
+              {
+                "from": "MARS",
+                "verse": "39",
+                "effect": "wounded in body, unclean, gifted, a king's servant, and much beloved"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "40",
+                "effect": "a foremost minister of the king, handsome, with great wealth and retinue, and brave"
+              },
+              {
+                "from": "SATURN",
+                "verse": "42",
+                "effect": "ever active, modest, successful in his undertakings, and rich in possessions"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CANCER"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "44",
+                "effect": "his substance ruined by women, suffering in body on their account, and unhappy"
+              },
+              {
+                "from": "MARS",
+                "verse": "45",
+                "effect": "of little learning, very garrulous, fond of lies, a cheat, a thief, and pleasant of speech"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "46",
+                "effect": "intelligent, very beloved, fortunate, dear to kings, and a master of the sciences"
+              },
+              {
+                "from": "SATURN",
+                "verse": "48",
+                "effect": "fond of hypocrisy, sinful, brought to bondage, without virtues, and hated by his brothers and teachers"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "LEO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "50",
+                "effect": "handsome, very clever, fond of poetry, the arts, song and dance, and wealthy"
+              },
+              {
+                "from": "MARS",
+                "verse": "51",
+                "effect": "low, afflicted by sorrow, wounded in body, misshapen, ungraceful, and impotent"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "52",
+                "effect": "delicate, very wise, a master of speech, very famous, and with servants and vehicles"
+              },
+              {
+                "from": "SATURN",
+                "verse": "54",
+                "effect": "tall, rough, ugly, with sweat of a strong smell, very unhappy, and without comfort"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "56",
+                "effect": "a writer, very delicate, beloved, respected, happy, and wealthy"
+              },
+              {
+                "from": "MARS",
+                "verse": "57",
+                "effect": "a scribe, and the head of guilds, of towns, of thieves and of forest dwellers"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "58",
+                "effect": "of good memory, intellect and family, handsome, of noble learning, a keeper of the king's counsel and treasury, and a scribe"
+              },
+              {
+                "from": "SATURN",
+                "verse": "60",
+                "effect": "fond of forts and forests, eating much, ill natured, very unclean, and failing in every undertaking"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "62",
+                "effect": "living by water, prosperous, or a trader in flowers, fruits and roots, and timid"
+              },
+              {
+                "from": "MARS",
+                "verse": "63",
+                "effect": "fickle of speech, very gentle, shy, idle and slow, and a seat of comfort"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "64",
+                "effect": "rich in wealth and grain, honoured by villages, towns and guilds, happy, and famous"
+              },
+              {
+                "from": "SATURN",
+                "verse": "66",
+                "effect": "a sinner, very poor, a labourer, very unhappy, and wretched"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "planet": "JUPITER",
+        "chapter": "27",
+        "groups": [
+          {
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "25",
+                "effect": "very righteous, afraid of untruth, with famous sons, very fortunate, and very hairy"
+              },
+              {
+                "from": "MOON",
+                "verse": "26",
+                "effect": "skilled in the histories and in poetry, rich in gems, favoured by women, a ruler, and wise"
+              },
+              {
+                "from": "MARS",
+                "verse": "27",
+                "effect": "a king's man, brave, fierce, with policy and modesty, poor, and with disobedient servants and wife"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "28",
+                "effect": "untruthful, sinful by deceit, skilled at finding the weak points of others, versed in service, and a cheat"
+              },
+              {
+                "from": "VENUS",
+                "verse": "29",
+                "effect": "furnished with houses, beds, clothes, scents, garlands, ornaments, women and riches, and very timid"
+              },
+              {
+                "from": "SATURN",
+                "verse": "30",
+                "effect": "unclean, greedy, harsh, rash, and with inconstant friends and children"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "31",
+                "effect": "owning servants and cattle, tall, wise, and a king's minister"
+              },
+              {
+                "from": "MOON",
+                "verse": "32",
+                "effect": "very rich, very sweet, dear to his mother and to women, and enjoying much"
+              },
+              {
+                "from": "MARS",
+                "verse": "33",
+                "effect": "dear to courtesans, wise, brave, rich, happy, and a king's man"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "34",
+                "effect": "wise, clever, sweet, wealthy, prosperous, rich in virtues, of charming ways, and handsome"
+              },
+              {
+                "from": "VENUS",
+                "verse": "35",
+                "effect": "very graceful, very rich, wearing fine ornaments, and with fine beds and clothes"
+              },
+              {
+                "from": "SATURN",
+                "verse": "36",
+                "effect": "rich in wealth and grain, a chief of villages, towns and men, unclean, ugly, and without a wife"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "37",
+                "effect": "noble, the chief of a village, and a householder with wife, sons and wealth"
+              },
+              {
+                "from": "MOON",
+                "verse": "38",
+                "effect": "wealthy, dear to his mother, fortunate, with comfort, wife and sons, very handsome, and learned"
+              },
+              {
+                "from": "MARS",
+                "verse": "39",
+                "effect": "ever obtaining his pleasures, marked of body, wealthy, and respected in the world"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "40",
+                "effect": "skilled in astrology, with many sons and wives, a writer of aphorisms, and very harsh of speech"
+              },
+              {
+                "from": "VENUS",
+                "verse": "41",
+                "effect": "a builder of temples, enjoying courtesans, and captivating to women"
+              },
+              {
+                "from": "SATURN",
+                "verse": "42",
+                "effect": "a leader of guilds, assemblies and realms, and of villages and towns, and handsome"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CANCER"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "43",
+                "effect": "famous, a leader of companies, without comfort, wealth or wife at first, and wealthy later"
+              },
+              {
+                "from": "MOON",
+                "verse": "44",
+                "effect": "very splendid, a king, rich in treasure and vehicles, and with an excellent wife and sons"
+              },
+              {
+                "from": "MARS",
+                "verse": "45",
+                "effect": "married young, wealthy, with ornaments of gold, wise, brave, and scarred in body"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "46",
+                "effect": "wealthy through his kin alone, quarrelsome, free of sin, and dear to ministers"
+              },
+              {
+                "from": "VENUS",
+                "verse": "47",
+                "effect": "with many wives, much wealth and many ornaments, happy, and fortunate"
+              },
+              {
+                "from": "SATURN",
+                "verse": "48",
+                "effect": "a chief of villages, armies and towns, talkative, wealthy, and enjoying his old age"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "LEO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "49",
+                "effect": "beloved, famous among the good, a king, very rich, and very well behaved"
+              },
+              {
+                "from": "MOON",
+                "verse": "50",
+                "effect": "very fortunate, very unclean, wealthy through women, and master of his senses"
+              },
+              {
+                "from": "MARS",
+                "verse": "51",
+                "effect": "truthful, of distinguished deeds among the good and his elders, fierce, very skilful, pure, brave, and harsh"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "52",
+                "effect": "versed in houses and building, learned and virtuous, of pleasing speech, a foremost minister, and famous"
+              },
+              {
+                "from": "VENUS",
+                "verse": "53",
+                "effect": "dear to women, fortunate, honoured by kings, and of great spirit"
+              },
+              {
+                "from": "SATURN",
+                "verse": "54",
+                "effect": "garrulous and sweet of speech, unhappy, with varied possessions, and sharp"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "55",
+                "effect": "hostile to the king, distressed, and abandoned by wealth and kin"
+              },
+              {
+                "from": "MOON",
+                "verse": "56",
+                "effect": "with many kinds of comfort, very dear to women, and proud of his honour, wealth and power"
+              },
+              {
+                "from": "MARS",
+                "verse": "57",
+                "effect": "maimed in battle, cruel, a slayer, and losing his family"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "58",
+                "effect": "a minister or a king, with sons, wealth, fortune and comfort, and delighting all"
+              },
+              {
+                "from": "VENUS",
+                "verse": "59",
+                "effect": "happy, rich, wise, faultless, long lived, fortunate, and surrounded by prosperity"
+              },
+              {
+                "from": "SATURN",
+                "verse": "60",
+                "effect": "very unclean, fearful, reviled by villages, towns and guilds, wretched, and without comfort, enjoyment or virtue"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "61",
+                "effect": "wise, a ruler, rich in subjects, with many enjoyments, and valiant"
+              },
+              {
+                "from": "MOON",
+                "verse": "62",
+                "effect": "devoted to his parents, noble, well born, wise, wealthy, acceptable, well behaved, and very righteous"
+              },
+              {
+                "from": "MARS",
+                "verse": "63",
+                "effect": "brave, a king's warrior, proud, vigorous, well dressed, famous, and honoured by the noble"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "64",
+                "effect": "devoted to his work, the head of a company, a wealthy leader of caravans, famous, and with many friends"
+              },
+              {
+                "from": "VENUS",
+                "verse": "65",
+                "effect": "rich in food and drink, with fine houses, beds and seats and the best of women, and with ornaments and clothes"
+              },
+              {
+                "from": "SATURN",
+                "verse": "66",
+                "effect": "of peerless learning and conduct, a chief, the ruler of a region, rich in servants and cattle, and enjoying"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "planet": "VENUS",
+        "chapter": "28",
+        "groups": [
+          {
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "26",
+                "effect": "in danger of the noose, very fickle, love-sick, and the husband of a low woman"
+              },
+              {
+                "from": "MARS",
+                "verse": "27",
+                "effect": "without wealth, comfort or honour, doing the work of others, and unclean in conduct"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "29",
+                "effect": "fair of eye, generous in giving, well built, tall, and with many sons"
+              },
+              {
+                "from": "SATURN",
+                "verse": "30",
+                "effect": "very unclean, idle, wandering, serving those he favours, and a thief"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "32",
+                "effect": "of very noble birth, possessed of comfort, wealth and gifts, and handsome"
+              },
+              {
+                "from": "MARS",
+                "verse": "33",
+                "effect": "the husband of an ill-conducted wife, losing house and wife on account of women"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "35",
+                "effect": "enjoying women, sons and houses, and carriages and vehicles"
+              },
+              {
+                "from": "SATURN",
+                "verse": "36",
+                "effect": "with little comfort and little wealth, ill conducted, a master of carpenters, and diseased in body"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "38",
+                "effect": "dark eyed, fine haired, enjoying beds, seats and vehicles, handsome, delicate, and fortunate"
+              },
+              {
+                "from": "MARS",
+                "verse": "39",
+                "effect": "very lustful, fortunate, and losing his wealth for the sake of women"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "41",
+                "effect": "very happy, a maker of likenesses, learned, and a teacher"
+              },
+              {
+                "from": "SATURN",
+                "verse": "42",
+                "effect": "very unhappy, despised, fickle, disliked, and foolish"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CANCER"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "44",
+                "effect": "with a stepmother, his first child a daughter, with many sons, happy, and fortunate"
+              },
+              {
+                "from": "MARS",
+                "verse": "45",
+                "effect": "skilled in the fine arts, wealthy, grieved on account of women, fortunate, and prospering his kin"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "47",
+                "effect": "with servants, wealth, sons, vehicles, enjoyments, kin and friends, and dear to the king"
+              },
+              {
+                "from": "SATURN",
+                "verse": "48",
+                "effect": "ruled by women, poor, fallen, ugly, fickle, and without comfort"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "LEO"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "50",
+                "effect": "with a stepmother, grieved on account of women, prosperous, and of varied mind"
+              },
+              {
+                "from": "MARS",
+                "verse": "51",
+                "effect": "a king's man, famous, rich, fortunate, and given to others' wives"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "53",
+                "effect": "with vehicles, wealth and servants, with many wives, and a great king"
+              },
+              {
+                "from": "SATURN",
+                "verse": "54",
+                "effect": "a king or the equal of one, famous, rich in treasure and vehicles, married to a widow, handsome, and unhappy"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "56",
+                "effect": "famous, a king's man, and furnished with enjoyments and food"
+              },
+              {
+                "from": "MARS",
+                "verse": "57",
+                "effect": "much disliked by women, with varied joys and sorrows, wealthy, and foremost in cattle"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "59",
+                "effect": "rich in elephants, horses and cattle, with many sons and wives, very happy, and of great wealth"
+              },
+              {
+                "from": "SATURN",
+                "verse": "60",
+                "effect": "blamed, yet wealthy, happy, with enjoyments, and fortunate"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "readings": [
+              {
+                "from": "MOON",
+                "verse": "62",
+                "effect": "vigorous, very brave, well off, well built, fortunate, and handsome"
+              },
+              {
+                "from": "MARS",
+                "verse": "63",
+                "effect": "the cause of his wife's ruin, wealthy, sickly, worn by toil, and happy later"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "65",
+                "effect": "fond of fine clothes, garlands and scents, delicate, versed in song and music, and with a wife"
+              },
+              {
+                "from": "SATURN",
+                "verse": "66",
+                "effect": "with palanquins, wealth and enjoyments, unclean, dark of body, of handsome limbs, and large bodied"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "planet": "SATURN",
+        "chapter": "29",
+        "groups": [
+          {
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "25",
+                "effect": "given to tillage, wealthy, with cattle, buffaloes, goats and sheep, fortunate, and rising by his work"
+              },
+              {
+                "from": "MOON",
+                "verse": "26",
+                "effect": "fickle, low natured, attached to low and ugly women, and without comfort or wealth"
+              },
+              {
+                "from": "MARS",
+                "verse": "27",
+                "effect": "bent on killing creatures, mean, a famous chief of thieves, and fond of women, meat and drink"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "28",
+                "effect": "untruthful, unrighteous, a great talker, an open thief, and deprived of comfort and riches"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "29",
+                "effect": "with comfort, wealth and fortune, a king's minister, and the foremost of counsellors"
+              },
+              {
+                "from": "VENUS",
+                "verse": "30",
+                "effect": "very fickle, very ugly, attached to others' wives and to courtesans, and deprived of enjoyments"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "31",
+                "effect": "plain of speech, without wealth, learned, eating in others' houses, and very gentle"
+              },
+              {
+                "from": "MOON",
+                "verse": "32",
+                "effect": "made prosperous by women, honoured by kings and ministers, dear to women, and supporting his household"
+              },
+              {
+                "from": "MARS",
+                "verse": "33",
+                "effect": "versed in tales of war, fleeing from battle, very talkative, and surrounded by people and wealth"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "34",
+                "effect": "ever given to laughter, effeminate, a servant of women, and low"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "35",
+                "effect": "sharing others' joys and sorrows in other lands, doing others' work, dear to the world, generous, and gentle"
+              },
+              {
+                "from": "VENUS",
+                "verse": "36",
+                "effect": "finding his pleasure in wine and women, a vessel of gems, of great spirit, and dear to the king"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "37",
+                "effect": "without comfort or wealth, righteous, master of his anger, a connoisseur of tastes, and steadfast"
+              },
+              {
+                "from": "MOON",
+                "verse": "38",
+                "effect": "like a king, smooth of body, honoured and enriched by women, or doing the work of women"
+              },
+              {
+                "from": "MARS",
+                "verse": "39",
+                "effect": "famous, bearing heavy burdens, and with a deformed body"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "40",
+                "effect": "wealthy, skilled in wrestling, a teacher of conduct, skilled in song, and very clever at crafts"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "41",
+                "effect": "foremost in the royal household, possessed of every virtue, dear to the good, and with hidden wealth"
+              },
+              {
+                "from": "VENUS",
+                "verse": "42",
+                "effect": "skilled in adorning women, a teacher of yoga or a yogi, and dear to women"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CANCER"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "43",
+                "effect": "fatherless in childhood, without wealth, comfort or wife, content with poor food, and sinful"
+              },
+              {
+                "from": "MOON",
+                "verse": "44",
+                "effect": "bringing misfortune to his mother at birth, wealthy, and troubled by his brothers"
+              },
+              {
+                "from": "MARS",
+                "verse": "45",
+                "effect": "enriched by the king, maimed, with gold and gems, and given to the wives of bad kin"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "46",
+                "effect": "harsh, very talkative, subduing his enemies, proud, and of excellent conduct"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "47",
+                "effect": "enjoying fields, houses, friends and sons, and with wealth, gems and wife"
+              },
+              {
+                "from": "VENUS",
+                "verse": "48",
+                "effect": "born of a long family and yet without beauty, grace or comfort"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "LEO"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "49",
+                "effect": "without comfort or wealth, ignoble, fond of lies, given to drink, lean, a hireling, unhappy, and alone"
+              },
+              {
+                "from": "MOON",
+                "verse": "50",
+                "effect": "a vessel of many gems, much wealth and young women, of wide fame, and dear to the king"
+              },
+              {
+                "from": "MARS",
+                "verse": "51",
+                "effect": "ever wandering, unfortunate, a thief, living in hill forts, mean, and without wife or sons"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "52",
+                "effect": "deceitful, idle, poor, doing women's work, dirty, and wretched"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "53",
+                "effect": "foremost among villages, towns and guilds, with sons, eminent, and well behaved"
+              },
+              {
+                "from": "VENUS",
+                "verse": "54",
+                "effect": "disliked by young women, handsome, slow, enjoying comfort, and wealthy"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "55",
+                "effect": "a father to others' sons, gaining from them wealth, a famous name and honour"
+              },
+              {
+                "from": "MOON",
+                "verse": "56",
+                "effect": "good to his mother, well behaved, bearing two names, and with wife, sons and wealth"
+              },
+              {
+                "from": "MARS",
+                "verse": "57",
+                "effect": "seized by diseases of wind, disliked by people, sinful, mean, and of blamed conduct"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "58",
+                "effect": "like a king, happy, a teacher, respected, wealthy, gentle, and fortunate"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "59",
+                "effect": "a king or the equal of one, a minister or a commander of armies, and free of every calamity"
+              },
+              {
+                "from": "VENUS",
+                "verse": "60",
+                "effect": "with two mothers or two fathers, living in forests and hills, of varied conduct, and devoted to work"
+              }
+            ]
+          },
+          {
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "readings": [
+              {
+                "from": "SUN",
+                "verse": "61",
+                "effect": "sickly, with an ugly wife, eating others' food, enduring great sorrow, given to wandering, and bearing burdens"
+              },
+              {
+                "from": "MOON",
+                "verse": "62",
+                "effect": "fickle, untruthful, sinful, bringing misfortune to his mother, fond of lies, well off, and suffering exile"
+              },
+              {
+                "from": "MARS",
+                "verse": "63",
+                "effect": "very brave, valiant, of famous virtues, a leader of the great, sharp, and rash"
+              },
+              {
+                "from": "MERCURY",
+                "verse": "64",
+                "effect": "bearing burdens, dull, handsome, a wanderer, with little wealth, and fortunate"
+              },
+              {
+                "from": "JUPITER",
+                "verse": "65",
+                "effect": "of every virtue, a king, founding a royal line, long lived, and free of disease"
+              },
+              {
+                "from": "VENUS",
+                "verse": "66",
+                "effect": "wealthy, given to others' wives, fortunate, happy, prosperous, and rich in food and drink"
+              }
+            ]
           }
         ]
       }
