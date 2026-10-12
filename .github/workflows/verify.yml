@@ -468,9 +468,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: sanitizers
+      # On Linux the ASan runtime is linked into the test binary, and the
+      # adapter the loader tests open is instrumented too, so the binary
+      # exports its symbols for that library to bind to.
       - name: The C ABI's and the vtable's tests under ASan and LSan
         env:
-          RUSTFLAGS: -Zsanitizer=address
+          RUSTFLAGS: -Zsanitizer=address -Clink-arg=-Wl,--export-dynamic
           ASAN_OPTIONS: detect_leaks=1
         run: cargo +nightly test -p teistro-ffi -p teistro-port-ephemeris --features teistro-port-ephemeris/load --lib --tests --target x86_64-unknown-linux-gnu
       - name: The shared memo and the surface's workers under TSan
