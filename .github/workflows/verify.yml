@@ -361,6 +361,39 @@ jobs:
       - name: Every body's shortest run bounds its scan, and the scan is the fine one's to the bit
         run: cargo xtask check-stations
 
+  # The fuzz targets' smoke run (`05-testing/03-fuzzing.md`): each for a
+  # minute from the committed corpus. A crash fails the job and its input
+  # is uploaded; the long run is `fuzz.yml`, weekly.
+  fuzz:
+    name: fuzz smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: fuzz
+      - name: The harness names every JSON section of a chart request, and every slot answers its seed
+        run: cargo +nightly test --manifest-path fuzz/Cargo.toml --lib
+      - name: Each target for a minute from the committed corpus
+        working-directory: fuzz
+        run: |
+          for target in json pack key; do
+            mkdir -p "found/$target"
+            cargo +nightly fuzz run "$target" "found/$target" "corpus/$target" -- \
+              -max_total_time=60 -rss_limit_mb=4096 -timeout=30
+          done
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-crashes
+          path: fuzz/artifacts
+
   # Phase 3's exit asks for the conformance kit against **every tier**,
   # and a tier is a cargo feature, so the kit is whichever one is
   # compiled: running it three times is running it three times. Without
