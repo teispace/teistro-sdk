@@ -186,7 +186,7 @@ tables they need are rules rather than tables.
    ([`panchavargiya.md`](panchavargiya.md)), exact in integer sub-sub
    units, and reproducing all 49 figures of the source's own tabulated
    chart. Its Drekkana ships as the rule `(sign + 5 × decanate) mod 7`,
-   its Hudda as printed with the three transpositions named (crux C109),
+   its Hudda the *Tajika Nilakanthi*'s, Charak's Aquarius a named slip (crux C109),
    and its friendship is Tajika's positional one — in which a planet
    sharing a sign with that sign's lord is its **enemy**.
 3. **The Tajika aspects**, with their orbs, for "aspects the annual

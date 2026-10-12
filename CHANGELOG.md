@@ -283,6 +283,17 @@ yet taken. That makes every allowed pairing equally likely and never
 refuses a study that has one (C368). `/1` stays selectable through the
 test's `shuffle`.
 
+**The Tajika Hudda is the Tajika Nilakanthi's.** **Numbers:** a Hudda
+lord in Aquarius 0° to 13° moves: Mercury's to 7° and Venus's to 13°, as
+the Egyptian terms have them, where Charak's textbook printed them the
+other way round. So every Panchavargiya bala and every "own Hudda" clause
+there moves, and with them about 0.1% of the Muntha page's readings
+(Kuttha held in 957 judged matters, not 958). The Nilakanthi's own 1893
+print gives the whole table and keeps Gemini's and Sagittarius's
+transpositions, which one of its worked examples confirms, so those are
+the tradition and Charak's Aquarius the slip (C109). `hudda_lord_in`
+with `HuddaTable::Charak` still reads Charak's cells.
+
 **A small study is walked whole, and its p-values are exact.**
 **Numbers:** the default shuffle is now `research/shuffle/3`, so every
 study's input hash moves. A study whose reference set holds no more

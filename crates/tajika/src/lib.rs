@@ -49,8 +49,8 @@ pub use annual_dasha::{
     year_clock,
 };
 pub use bala::{
-    AnnualSky, Bala, Panchavargiya, Relation, SEVEN, drekkana_lord, hudda_lord, navamsha_lord,
-    panchavargiya,
+    AnnualSky, Bala, HuddaTable, Panchavargiya, Relation, SEVEN, drekkana_lord, hudda_lord,
+    hudda_lord_in, navamsha_lord, panchavargiya,
 };
 pub use drishti::{
     BY_SPEED, Between, Drishti, DrishtiRules, POORNA_DEG, RASHYANTA_DEG, SubDegree, Yoga,
