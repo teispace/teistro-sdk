@@ -4,7 +4,9 @@
 //! evaluates each predicate on each once, into a [`Matrix`]; this crate
 //! permutes the study's labels over that matrix. A test answers, for every
 //! predicate, a permutation p-value `(b + 1)/(m + 1)` with its Monte Carlo
-//! interval, the family's adjusted p-values and the effect sizes. It
+//! interval (or, when every labelling is no more than the permutations
+//! asked, the exact `b/N` over all of them), the family's adjusted
+//! p-values and the effect sizes. It
 //! never says "significant": a caller who passes an `alpha` is told which
 //! predicates fall under it by each method, and nothing more.
 //!
@@ -27,7 +29,11 @@
 //! // at least this far from the mean: 0, 1, 4 or 5 of them holding it.
 //! let exact = row.exact.expect("two groups, every chart read");
 //! assert!((exact - 52.0 / 252.0).abs() < 1e-12);
-//! assert!(row.p.low <= exact && exact <= row.p.high);
+//! // 252 labellings are fewer than the 9 999 permutations asked, so each
+//! // is read once and the permutation p is that count itself.
+//! assert!(tested.enumerated);
+//! assert_eq!(tested.permutations, 252);
+//! assert_eq!(row.p.value, 52.0 / 252.0);
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
@@ -59,7 +65,7 @@ pub use recombined::{MAX_REPLICATES, ReplicateTest, replicated};
 pub use rng::{ShuffleVersion, SplitMix64, stream_seed};
 
 use effect::Table;
-use engine::Layout;
+use engine::{Layout, Permuted as _, Walk};
 
 /// The most permutations one test may draw. It bounds a request's cost
 /// (charts × predicates × permutations / 64 popcounts), and its
@@ -346,12 +352,33 @@ pub struct PredicateRow {
 pub struct Tested {
     /// One row per predicate, in the matrix's order.
     pub rows: Vec<PredicateRow>,
-    /// How many permutations were drawn.
+    /// How many permutations were drawn, or, when `enumerated`, how
+    /// many arrangements the reference set holds.
     pub permutations: u32,
-    /// The smallest p-value they can give, `1/(m + 1)`.
+    /// The smallest p-value they can give: `1/(m + 1)` drawn, `1/N`
+    /// enumerated.
     pub resolution: f64,
+    /// Whether the reference set was walked whole, every arrangement
+    /// once, because it held no more than the permutations asked. Every
+    /// p-value is then exact, `b/N` with no Monte Carlo interval, and
+    /// more permutations could not refine it.
+    #[serde(default)]
+    pub enumerated: bool,
     /// The generator and shuffle they were drawn by.
     pub shuffle: ShuffleVersion,
+}
+
+impl Tested {
+    /// The answer of `rows` walked by `walk` under `shuffle`.
+    pub(crate) fn walked(rows: Vec<PredicateRow>, walk: Walk, shuffle: ShuffleVersion) -> Tested {
+        Tested {
+            rows,
+            permutations: walk.len(),
+            resolution: walk.resolution(),
+            enumerated: walk.enumerated(),
+            shuffle,
+        }
+    }
 }
 
 fn refuse(field: &str, message: String) -> Error {
@@ -667,13 +694,14 @@ pub fn compare(matrix: &Matrix, design: &Design, test: &GroupTest) -> Result<Tes
         statistic: &statistic,
         seed: test.seed,
     };
+    let walk = Walk::of(test.shuffle, test.permutations, labelled.arrangements());
     let counted = engine::count(
         &labelled,
         &engine::Family::new(&observed, &order),
-        test.permutations,
+        walk,
         test.parallelism,
     )?;
-    let assessed = assess(&counted, &order, test.permutations, test.level, test.alpha);
+    let assessed = assess(&counted, &order, walk, test.level, test.alpha);
     let context = RowContext {
         design,
         group_count,
@@ -689,12 +717,7 @@ pub fn compare(matrix: &Matrix, design: &Design, test: &GroupTest) -> Result<Tes
         .zip(assessed)
         .map(|((column, &observed), assessed)| context.row(column, observed, assessed))
         .collect();
-    Ok(Tested {
-        rows,
-        permutations: test.permutations,
-        resolution: p_value(0, u64::from(test.permutations)),
-        shuffle: test.shuffle,
-    })
+    Ok(Tested::walked(rows, walk, test.shuffle))
 }
 
 /// Whether `permutations` can put the smallest p-value they give,
@@ -740,6 +763,32 @@ fn p_value(b: u64, m: u64) -> f64 {
     (b as f64 + 1.0) / (m as f64 + 1.0)
 }
 
+impl Walk {
+    /// The p-value of `b` statistics reaching the observed one:
+    /// `(b + 1)/(m + 1)` over `m` draws, the observed labelling added to
+    /// its own reference set; `b/N` over all `N`, which already hold it.
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "both are at most MAX_PERMUTATIONS + 1, far inside f64's exact integers"
+    )]
+    pub(crate) fn p(self, b: u64) -> f64 {
+        match self {
+            Walk::Sampled(m) => p_value(b, u64::from(m)),
+            Walk::Enumerated(n) => b as f64 / f64::from(n),
+        }
+    }
+
+    /// The smallest p-value the walk can give: no draw reaching the
+    /// observed statistic, or, walked whole, the observed arrangement
+    /// alone, which always reaches itself.
+    pub(crate) fn resolution(self) -> f64 {
+        match self {
+            Walk::Sampled(_) => self.p(0),
+            Walk::Enumerated(_) => self.p(1),
+        }
+    }
+}
+
 /// One predicate's p-value, adjusted p-values and verdicts by alpha.
 #[derive(Clone, Copy)]
 pub(crate) struct Assessed {
@@ -753,19 +802,18 @@ pub(crate) struct Assessed {
 pub(crate) fn assess(
     counted: &engine::Counted,
     order: &[usize],
-    permutations: u32,
+    walk: Walk,
     level: f64,
     alpha: Option<f64>,
 ) -> Vec<Assessed> {
-    let m = u64::from(permutations);
-    let raw: Vec<f64> = counted.exceed.iter().map(|&b| p_value(b, m)).collect();
+    let raw: Vec<f64> = counted.exceed.iter().map(|&b| walk.p(b)).collect();
     let mut running: f64 = 0.0;
     let max_t = correct::in_request_order(
         order
             .iter()
             .zip(&counted.step_down)
             .map(|(&j, &b)| {
-                running = running.max(p_value(b, m));
+                running = running.max(walk.p(b));
                 (j, running)
             })
             .collect(),
@@ -779,7 +827,10 @@ pub(crate) fn assess(
         .zip(raw.iter().zip(&counted.exceed))
         .map(
             |(((((max_t, holm), bonferroni), bh), by), (&value, &exceed))| {
-                let (low, high) = special::clopper_pearson(exceed, m, level);
+                let (low, high) = match walk {
+                    Walk::Sampled(m) => special::clopper_pearson(exceed, u64::from(m), level),
+                    Walk::Enumerated(_) => (value, value),
+                };
                 let adjusted = Adjusted {
                     max_t,
                     holm,

@@ -1,4 +1,4 @@
-//! The generator and the shuffle, `research/shuffle/1` and `/2`
+//! The generator and the shuffle, `research/shuffle/1` to `/3`
 //! (`research.md` §2.2).
 //!
 //! Both are part of the answer's contract, so they are written here and
@@ -30,14 +30,22 @@ pub enum ShuffleVersion {
     /// before it and not yet taken. Every allowed pairing is equally
     /// likely and none is ever refused for want of luck. Every other draw
     /// is `/1`'s, bit for bit.
-    #[default]
     #[serde(rename = "research/shuffle/2")]
     V2,
+    /// `/2`, except that a reference set no larger than the permutations
+    /// asked is walked whole: every arrangement once, the observed one
+    /// among them, so the p-value is exact (`b/N`, Phipson and Smyth
+    /// 2010 §3) and costs no more than sampling would have. A larger set
+    /// is sampled as under `/2`, bit for bit.
+    #[default]
+    #[serde(rename = "research/shuffle/3")]
+    V3,
 }
 
 impl ShuffleVersion {
     /// Every version this build carries, oldest first.
-    pub const ALL: [ShuffleVersion; 2] = [ShuffleVersion::V1, ShuffleVersion::V2];
+    pub const ALL: [ShuffleVersion; 3] =
+        [ShuffleVersion::V1, ShuffleVersion::V2, ShuffleVersion::V3];
 
     /// The name the answer's provenance prints.
     #[must_use]
@@ -45,7 +53,49 @@ impl ShuffleVersion {
         match self {
             ShuffleVersion::V1 => "research/shuffle/1",
             ShuffleVersion::V2 => "research/shuffle/2",
+            ShuffleVersion::V3 => "research/shuffle/3",
         }
+    }
+
+    /// Whether a reference set small enough is walked whole.
+    #[must_use]
+    pub const fn enumerates(self) -> bool {
+        matches!(self, ShuffleVersion::V3)
+    }
+
+    /// Whether an event study's restricted pairing is drawn exactly
+    /// rather than by rejection.
+    #[must_use]
+    pub const fn exact_pairing(self) -> bool {
+        !matches!(self, ShuffleVersion::V1)
+    }
+}
+
+/// What a sampler draws its choices from: a generator, or the digits of
+/// an arrangement's rank.
+pub(crate) trait Draw {
+    /// A choice in `0..bound`.
+    fn below(&mut self, bound: u64) -> u64;
+}
+
+impl Draw for SplitMix64 {
+    fn below(&mut self, bound: u64) -> u64 {
+        SplitMix64::below(self, bound)
+    }
+}
+
+/// An arrangement's rank read as mixed-radix digits, the least
+/// significant first. A sampler whose `bound`s never depend on the
+/// choices before them (Fisher–Yates, a Ferrers board's pools, each
+/// person's instants) is then a bijection from the ranks `0..∏ bound` to
+/// its arrangements.
+pub(crate) struct Digits(pub(crate) u64);
+
+impl Draw for Digits {
+    fn below(&mut self, bound: u64) -> u64 {
+        let digit = self.0 % bound;
+        self.0 /= bound;
+        digit
     }
 }
 

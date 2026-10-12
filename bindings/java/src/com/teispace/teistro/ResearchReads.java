@@ -246,6 +246,7 @@ final class ResearchReads {
                 Reads.each(value, "rows", ResearchReads::row),
                 Reads.integer(value, "permutations"),
                 Reads.number(value, "resolution"),
+                Reads.flag(value, "enumerated"),
                 Reads.string(value, "shuffle"),
                 Provenance.of(Reads.field(answer, "provenance")));
     }

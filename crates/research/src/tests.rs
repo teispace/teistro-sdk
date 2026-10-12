@@ -275,7 +275,7 @@ fn the_answer_speaks_camel_case() {
     test.alpha = Some(0.5);
     let json = serde_json::to_value(compare(&matrix, &design, &test).unwrap()).unwrap();
     snake_free(&json);
-    assert_eq!(json["shuffle"], "research/shuffle/2");
+    assert_eq!(json["shuffle"], "research/shuffle/3");
     let back: GroupTest = serde_json::from_str(
         r#"{"seed":3,"permutations":99,"contrast":{"kind":"CASE_VS_REST","case":1},"alpha":0.5}"#,
     )
@@ -873,6 +873,13 @@ fn the_stratified_exact_p_meets_an_enumeration() {
         let mut test = case_test(23, 20_000);
         test.alternative = alternative;
         test.level = 0.999;
+        let walked = compare(&matrix, &design, &test).unwrap();
+        // The 300 arrangements are fewer than the permutations asked, so
+        // they are walked whole and the p is the enumeration's own.
+        assert!(walked.enumerated);
+        assert_eq!(walked.permutations, 300);
+        let whole = walked.rows[0].p;
+        test.shuffle = ShuffleVersion::V2;
         let row = compare(&matrix, &design, &test).unwrap().rows.remove(0);
         let observed = row.observed.unwrap();
         let (mut reached, mut total) = (0_u32, 0_u32);
@@ -897,6 +904,9 @@ fn the_stratified_exact_p_meets_an_enumeration() {
             (exact - enumerated).abs() < 1e-12,
             "{alternative:?}: {exact} against {enumerated}"
         );
+        assert_eq!(whole.value, enumerated, "{alternative:?}");
+        assert_eq!(whole.exceed, u64::from(reached), "{alternative:?}");
+        assert_eq!((whole.low, whole.high), (whole.value, whole.value));
         assert!(
             row.p.low <= exact && exact <= row.p.high,
             "{alternative:?}: {:?}",
@@ -1038,4 +1048,163 @@ fn a_self_matched_study_is_the_same_at_every_thread_count() {
         MatchedMatrix::new(&[3, 0]).unwrap_err().field(),
         Some("subjects[1]")
     );
+}
+
+/// Every rank of `layout` unranked, the labellings in rank order.
+fn unranked(layout: &Layout<'_>) -> Vec<Vec<u16>> {
+    let n = layout.arrangements().unwrap();
+    let mut counts = Vec::new();
+    (0..n)
+        .map(|rank| {
+            let mut labels = vec![u16::MAX; layout.groups.len()];
+            layout.arrange(rank, &mut labels, &mut counts);
+            labels
+        })
+        .collect()
+}
+
+#[test]
+fn every_rank_is_one_labelling_and_every_labelling_has_a_rank() {
+    // Six charts in groups of two, three and one: 6!/(2!·3!·1!) = 60.
+    let groups = [0, 0, 1, 1, 1, 2];
+    let whole = Layout::new(&groups, 3, None);
+    assert_eq!(whole.arrangements(), Some(60));
+    let labellings = unranked(&whole);
+    let distinct: std::collections::BTreeSet<&Vec<u16>> = labellings.iter().collect();
+    assert_eq!(distinct.len(), 60);
+    for labels in &labellings {
+        let mut sorted = labels.clone();
+        sorted.sort_unstable();
+        assert_eq!(sorted, groups, "a labelling keeps the groups' sizes");
+    }
+    // Lexicographic: rank 0 is the sorted labelling, the last its reverse.
+    assert_eq!(labellings[0], [0, 0, 1, 1, 1, 2]);
+    assert_eq!(labellings[59], [2, 1, 1, 1, 0, 0]);
+    // Inside strata a label stays in its stratum: 3 · 3 labellings.
+    let groups = [0, 1, 1, 0, 0, 1];
+    let strata = [0, 0, 0, 1, 1, 1];
+    let layered = Layout::new(&groups, 2, Some(&strata));
+    assert_eq!(layered.arrangements(), Some(9));
+    let labellings = unranked(&layered);
+    let distinct: std::collections::BTreeSet<&Vec<u16>> = labellings.iter().collect();
+    assert_eq!(distinct.len(), 9);
+    for labels in &labellings {
+        assert_eq!(labels[..3].iter().filter(|&&l| l == 1).count(), 2);
+        assert_eq!(labels[3..].iter().filter(|&&l| l == 1).count(), 1);
+    }
+    // Distinct labels are permutations: 5! of five subjects' events.
+    let identity = [0, 1, 2, 3, 4];
+    let pairings = Layout::new(&identity, 0, None);
+    assert_eq!(pairings.arrangements(), Some(120));
+    let distinct: std::collections::BTreeSet<Vec<u16>> = unranked(&pairings).into_iter().collect();
+    assert_eq!(distinct.len(), 120);
+    // A set past 64 bits is not offered for walking.
+    let wide: Vec<u16> = (0..80).map(|i| u16::from(i % 2 == 0)).collect();
+    assert_eq!(Layout::new(&wide, 2, None).arrangements(), None);
+}
+
+#[test]
+fn a_board_s_ranks_are_its_allowed_pairings_once_each() {
+    // Eligible counts 2, 3, 4, 4: the eight pairings rejection finds.
+    let board = board_of(&[2, 3, 4, 4]);
+    let identity: Vec<u16> = (0..4).collect();
+    let layout = Layout::new(&identity, 0, None);
+    let exact = events::Board::of(&board, &layout).unwrap();
+    assert_eq!(exact.arrangements(), Some(8));
+    let (mut pairing, mut pool) = (vec![0; 4], Vec::new());
+    let mut ranked = std::collections::BTreeSet::new();
+    for rank in 0..8 {
+        exact.draw(&mut rng::Digits(rank), &mut pairing, &mut pool);
+        ranked.insert(pairing.clone());
+    }
+    let sampled: std::collections::BTreeSet<Vec<u16>> =
+        drawn(&board, 8_000, false).into_keys().collect();
+    assert_eq!(ranked, sampled);
+}
+
+#[test]
+fn a_walked_study_is_exact_and_a_larger_one_is_sampled_as_before() {
+    // Ten charts, five cases: 252 labellings, walked whole under /3 at 999
+    // permutations and sampled under /2.
+    let (matrix, design) = study(10, 5, 4, 9);
+    let mut test = case_test(4, 999);
+    let walked = compare(&matrix, &design, &test).unwrap();
+    assert!(walked.enumerated);
+    assert_eq!(walked.permutations, 252);
+    assert_eq!(walked.resolution, 1.0 / 252.0);
+    for row in &walked.rows {
+        let exact = row.exact.unwrap();
+        assert!((row.p.value - exact).abs() < 1e-12, "{row:?}");
+        assert!(row.adjusted.max_t >= row.p.value);
+    }
+    test.parallelism = Parallelism::Threads(NonZeroU16::new(3).unwrap());
+    assert_eq!(walked, compare(&matrix, &design, &test).unwrap());
+    // Fewer permutations than labellings: drawn, and /3 draws /2's bits.
+    let mut test = case_test(4, 199);
+    let sampled = compare(&matrix, &design, &test).unwrap();
+    assert!(!sampled.enumerated);
+    assert_eq!(sampled.permutations, 199);
+    assert_eq!(sampled.resolution, 1.0 / 200.0);
+    test.shuffle = ShuffleVersion::V2;
+    let before = compare(&matrix, &design, &test).unwrap();
+    assert_eq!(sampled.rows, before.rows);
+    // /2 never walks, however small the set.
+    let mut test = case_test(4, 999);
+    test.shuffle = ShuffleVersion::V2;
+    let drawn = compare(&matrix, &design, &test).unwrap();
+    assert!(!drawn.enumerated);
+    assert_eq!(drawn.permutations, 999);
+}
+
+#[test]
+fn a_walked_event_study_reads_every_pairing() {
+    // Five subjects: 120 pairings, walked whole at 999 permutations, at
+    // every thread count, and an unrestricted p is a count of 120.
+    let matrix = events(5, 0.6, 0.3, 3);
+    let mut test = EventTest::new(2, 999);
+    let one = timed(&matrix, None, &test).unwrap();
+    assert!(one.enumerated);
+    assert_eq!(one.permutations, 120);
+    let p = one.rows[0].p;
+    assert_eq!(p.value, p.exceed as f64 / 120.0);
+    test.parallelism = Parallelism::Threads(NonZeroU16::new(4).unwrap());
+    assert_eq!(one, timed(&matrix, None, &test).unwrap());
+    // Restricted to a board of eight pairings, those eight are walked.
+    let mut board = board_of(&[2, 3, 4, 4]);
+    board
+        .push(
+            "first",
+            |i, j| if i == j { Cell::Present } else { Cell::Absent },
+        )
+        .unwrap();
+    let mut test = EventTest::new(2, 999);
+    test.after_birth = AfterBirth::RestrictPairings;
+    let restricted = timed(&board, None, &test).unwrap();
+    assert!(restricted.enumerated);
+    assert_eq!(restricted.permutations, 8);
+}
+
+#[test]
+fn a_walked_self_matched_study_meets_its_poisson_binomial() {
+    // 4 · 4 · 5 · 3 = 240 labellings, walked at 999 permutations: the
+    // permutation p is the exact p, both counted over the same set.
+    let matrix = matched_of(&[(4, 1, true), (4, 2, true), (5, 1, false), (3, 2, true)]);
+    for alternative in [
+        Alternative::TwoSided,
+        Alternative::Greater,
+        Alternative::Less,
+    ] {
+        let mut test = EventTest::new(8, 999);
+        test.alternative = alternative;
+        let tested = matched(&matrix, &test).unwrap();
+        assert!(tested.enumerated);
+        assert_eq!(tested.permutations, 240);
+        let row = &tested.rows[0];
+        let exact = row.exact.unwrap();
+        assert!(
+            (row.p.value - exact).abs() < 1e-12,
+            "{alternative:?}: {} against {exact}",
+            row.p.value
+        );
+    }
 }

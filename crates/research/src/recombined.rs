@@ -12,11 +12,11 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
-use crate::engine::{Family, Permuted, count, step_down_order};
+use crate::engine::{Family, Permuted, Walk, count, step_down_order};
 use crate::rng::ShuffleVersion;
 use crate::{
     Alternative, Expectation, GroupCount, Parallelism, PredicateRow, Tested, assess,
-    check_permutations, default_level, p_value,
+    check_permutations, default_level,
 };
 
 /// The most replicates one study may refound.
@@ -225,10 +225,16 @@ pub fn replicated(
     let counted = count(
         &replicas,
         &Family::new(&statistics, &order),
-        count_of,
+        Walk::Sampled(count_of),
         Parallelism::One,
     )?;
-    let assessed = assess(&counted, &order, count_of, test.level, test.alpha);
+    let assessed = assess(
+        &counted,
+        &order,
+        Walk::Sampled(count_of),
+        test.level,
+        test.alpha,
+    );
     let rows = names
         .iter()
         .zip(observed)
@@ -257,10 +263,9 @@ pub fn replicated(
             }
         })
         .collect();
-    Ok(Tested {
+    Ok(Tested::walked(
         rows,
-        permutations: count_of,
-        resolution: p_value(0, u64::from(count_of)),
-        shuffle: ShuffleVersion::default(),
-    })
+        Walk::Sampled(count_of),
+        ShuffleVersion::default(),
+    ))
 }

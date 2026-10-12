@@ -4587,8 +4587,11 @@ void _engineTests() {
         alpha: 0.05,
       ),
     );
-    expect(tested.permutations, 199);
-    expect(tested.resolution, 1 / 200);
+    // Six births, three cases: 20 labellings, fewer than the 199 asked,
+    // so each is read once and the p-values are exact.
+    expect(tested.enumerated, isTrue);
+    expect(tested.permutations, 20);
+    expect(tested.resolution, 1 / 20);
     for (final row in tested.rows) {
       expect(row.p.value, greaterThanOrEqualTo(tested.resolution));
       expect(row.adjusted.maxT, greaterThanOrEqualTo(row.p.value));

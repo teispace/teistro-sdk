@@ -2536,12 +2536,16 @@ class ResearchCounts:
 @dataclass(frozen=True)
 class ResearchTested:
     """A test's rows, per predicate and never a single verdict: how many
-    permutations, the smallest p-value they can give, and the generator
-    and shuffle that drew them, so a reader can rerun the study."""
+    permutations, the smallest p-value they can give, whether the
+    reference set was `enumerated` (every arrangement read once, because
+    there were no more than the permutations asked, so each p-value is
+    exact), and the generator and shuffle that drew them, so a reader can
+    rerun the study."""
 
     rows: Tuple[ResearchRow, ...]
     permutations: int
     resolution: float
+    enumerated: bool
     shuffle: str
     provenance: Provenance
 
@@ -11142,6 +11146,7 @@ def _research_tested(answer: Mapping[str, Any]) -> ResearchTested:
         rows=tuple(row(one) for one in value["rows"]),
         permutations=value["permutations"],
         resolution=value["resolution"],
+        enumerated=value["enumerated"],
         shuffle=value["shuffle"],
         provenance=decode_provenance(answer["provenance"]),
     )

@@ -29,8 +29,8 @@ use teistro::catalogue::DashaSystem;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::research::{
     AfterBirth, Birth, Cell, Contrast, DEFAULT_UNCERTAINTY_STEP_MINUTES, Design, EventShuffle,
-    EventStudy, EventTest, GroupTest, Matrix, Recombine, Referents, ReplicateTest, SplitMix64,
-    Study, Subject, Tested, compare,
+    EventStudy, EventTest, GroupTest, Matrix, Recombine, Referents, ReplicateTest, ShuffleVersion,
+    SplitMix64, Study, Subject, Tested, compare,
 };
 use teistro::rules::Rule;
 use teistro::{ChartRequest, Context, Ephemeris, RuleRequest, RuleSet, ShippedRules, UtcOffset};
@@ -494,6 +494,86 @@ fn stratified_nulls() -> Result<(Rejections, Rejections), String> {
     Ok((with, without))
 }
 
+/// Small studies (§8): twelve charts, four of them cases, so 495
+/// labellings, fewer than the permutations asked.
+const SMALL_CHARTS: usize = 12;
+const SMALL_CASES: usize = 4;
+const SMALL_STUDIES: u64 = 200;
+const SMALL_PERMUTATIONS: u32 = 999;
+/// How far a drawn p may stray from the exact one before the page calls
+/// it inexact.
+const SMALL_TOLERANCE: f64 = 0.01;
+
+/// What the small studies measured: every row's walked and drawn p
+/// against the exact one.
+#[derive(Default)]
+struct Small {
+    rows: usize,
+    walked_off: usize,
+    drawn_off: usize,
+    drawn_worst: f64,
+    drawn_bias: f64,
+    labellings: u32,
+}
+
+/// Small studies of the first batch's eight predicates on twelve of its
+/// charts, read walked (`/3`) and drawn (`/2`).
+fn small_studies(batch: &Batch) -> Result<Small, String> {
+    let mut seen = Small::default();
+    let groups: Vec<u16> = (0..SMALL_CHARTS)
+        .map(|chart| u16::from(chart < SMALL_CASES))
+        .collect();
+    for k in 0..SMALL_STUDIES {
+        let mut rng = SplitMix64::new(4_000 + k);
+        let mut matrix = Matrix::new(SMALL_CHARTS);
+        let charts: Vec<usize> = (0..SMALL_CHARTS)
+            .map(|_| usize::try_from(rng.below(CHARTS as u64)).unwrap_or(0))
+            .collect();
+        for (j, name) in NAMES.iter().enumerate() {
+            let column: Vec<Cell> = charts
+                .iter()
+                .map(|&chart| {
+                    let holds = batch
+                        .holds
+                        .get(chart)
+                        .and_then(|cells| cells.get(j))
+                        .copied()
+                        .unwrap_or(false);
+                    if holds { Cell::Present } else { Cell::Absent }
+                })
+                .collect();
+            matrix.push(*name, &column).map_err(|why| why.to_string())?;
+        }
+        let design = Design::new(groups.clone());
+        let mut test = GroupTest::new(k, SMALL_PERMUTATIONS, Contrast::CaseVsRest { case: 1 });
+        let walked = compare(&matrix, &design, &test).map_err(|why| why.to_string())?;
+        if !walked.enumerated {
+            return Err(format!("small study {k} was not walked whole"));
+        }
+        seen.labellings = walked.permutations;
+        test.shuffle = ShuffleVersion::V2;
+        let drawn = compare(&matrix, &design, &test).map_err(|why| why.to_string())?;
+        for (whole, sampled) in walked.rows.iter().zip(&drawn.rows) {
+            let Some(exact) = whole.exact else { continue };
+            seen.rows += 1;
+            seen.walked_off += usize::from((whole.p.value - exact).abs() > 1e-12);
+            let off = sampled.p.value - exact;
+            seen.drawn_off += usize::from(off.abs() > SMALL_TOLERANCE);
+            seen.drawn_worst = seen.drawn_worst.max(off.abs());
+            seen.drawn_bias += off;
+        }
+    }
+    if seen.rows > 0 {
+        #[allow(
+            clippy::cast_precision_loss,
+            reason = "a row count is far inside f64's exact integers"
+        )]
+        let rows = seen.rows as f64;
+        seen.drawn_bias /= rows;
+    }
+    Ok(seen)
+}
+
 fn place(latitude: f64, longitude: f64) -> Result<Place, String> {
     Ok(Place::new(
         Latitude::try_new(latitude).map_err(|why| why.to_string())?,
@@ -756,6 +836,7 @@ fn page() -> Result<String, String> {
         .map(|&minutes| window(&sdk, minutes))
         .collect::<Result<Vec<_>, _>>()?;
     let (with, without) = stratified_nulls()?;
+    let small = small_studies(&batch)?;
     let mut out = String::new();
     header(&mut out);
     calibration(&mut out, &null);
@@ -765,6 +846,7 @@ fn page() -> Result<String, String> {
     uncertainty(&mut out, &windows);
     strata(&mut out, &with, &without);
     discoveries(&mut out, &partial_null);
+    walked(&mut out, &small);
     Ok(out)
 }
 
@@ -1210,6 +1292,41 @@ fn discoveries(out: &mut String, partial: &Partial) {
          A mean is judged by its 99% interval: it fails only when the whole \
          interval lies above 0.05.\n\n{}",
         planted.join("` and `"),
+        table(&claims)
+    );
+}
+
+fn walked(out: &mut String, small: &Small) {
+    let claims = [
+        Claim::stated(
+            "walked whole, a small study's raw p is the exact hypergeometric p on every row",
+            verdict_of(small.walked_off == 0),
+            format!("{} of {} rows differ", small.walked_off, small.rows),
+        ),
+        Claim::stated(
+            format!(
+                "drawn {SMALL_PERMUTATIONS} times instead, a small study's raw p is within \
+                 {SMALL_TOLERANCE} of the exact p on every row"
+            ),
+            verdict_of(small.drawn_off == 0),
+            format!(
+                "{} of {} rows further, the worst {:.4}; the mean departure {:+.4}",
+                small.drawn_off, small.rows, small.drawn_worst, small.drawn_bias
+            ),
+        ),
+    ];
+    let _ = writeln!(
+        out,
+        "## 8. A small reference set (`research/shuffle/3`)\n\n\
+         {SMALL_STUDIES} studies of the first batch's eight predicates on \
+         {SMALL_CHARTS} of its charts drawn at random, the first \
+         {SMALL_CASES} the cases: {} labellings, fewer than the \
+         {SMALL_PERMUTATIONS} permutations asked, so `/3` reads each once \
+         and `/2` draws {SMALL_PERMUTATIONS} with replacement. A row counts \
+         where its exact p exists, every chart read. Drawn, `(b + 1)/(m + 1)` \
+         is a valid p but carries Monte Carlo noise a walk does not \
+         (C368).\n\n{}",
+        small.labellings,
         table(&claims)
     );
 }

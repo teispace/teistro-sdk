@@ -13,10 +13,10 @@ use teistro_core::error::Error;
 
 use crate::bits::{Bits, Cell};
 use crate::effect::{Effect, Pooled, Table};
-use crate::engine::{Permuted, reaches, step_down_order};
+use crate::engine::{Permuted, Walk, product, reaches, step_down_order};
 use crate::events::{AfterBirth, EventTest, MAX_SUBJECTS};
-use crate::rng::SplitMix64;
-use crate::{Alternative, Expectation, GroupCount, PredicateRow, Tested, p_value, special};
+use crate::rng::{Digits, Draw, SplitMix64};
+use crate::{Alternative, Expectation, GroupCount, PredicateRow, Tested, special};
 
 /// The most instants one subject may be read at, its event included.
 pub const MAX_INSTANTS: u16 = 1_000;
@@ -160,6 +160,15 @@ struct Matched<'a> {
 }
 
 impl Matched<'_> {
+    /// Every predicate's statistic with each subject's event drawn among
+    /// its instants by `draw`.
+    fn draw(&self, draw: &mut impl Draw, labels: &mut [u16], out: &mut [f64]) {
+        for (label, &count) in labels.iter_mut().zip(&self.matrix.instants) {
+            *label = u16::try_from(draw.below(u64::from(count))).unwrap_or(0);
+        }
+        self.statistics(labels, out);
+    }
+
     /// Every predicate's standardised count with subject `i` at instant
     /// `labels[i]`.
     fn statistics(&self, labels: &[u16], out: &mut [f64]) {
@@ -208,12 +217,16 @@ impl Permuted for Matched<'_> {
     }
 
     fn read(&self, k: u64, labels: &mut Vec<u16>, out: &mut [f64]) -> Result<(), Error> {
-        let mut rng = SplitMix64::for_permutation(self.seed, k);
-        for (label, &count) in labels.iter_mut().zip(&self.matrix.instants) {
-            *label = u16::try_from(rng.below(u64::from(count))).unwrap_or(0);
-        }
-        self.statistics(labels, out);
+        self.draw(&mut SplitMix64::for_permutation(self.seed, k), labels, out);
         Ok(())
+    }
+
+    fn arrangements(&self) -> Option<u64> {
+        product(self.matrix.instants.iter().map(|&count| u64::from(count)))
+    }
+
+    fn arrange(&self, rank: u64, labels: &mut Vec<u16>, out: &mut [f64]) {
+        self.draw(&mut Digits(rank), labels, out);
     }
 }
 
@@ -413,13 +426,14 @@ pub fn matched(matrix: &MatchedMatrix, test: &EventTest) -> Result<Tested, Error
     let mut observed = vec![0.0; matrix.columns.len()];
     paired.statistics(&vec![0; matrix.subjects()], &mut observed);
     let order = step_down_order(&observed);
+    let walk = Walk::of(test.shuffle, test.permutations, paired.arrangements());
     let counted = crate::engine::count(
         &paired,
         &crate::engine::Family::new(&observed, &order),
-        test.permutations,
+        walk,
         test.parallelism,
     )?;
-    let assessed = crate::assess(&counted, &order, test.permutations, test.level, test.alpha);
+    let assessed = crate::assess(&counted, &order, walk, test.level, test.alpha);
     let rows = matrix
         .columns
         .iter()
@@ -431,10 +445,5 @@ pub fn matched(matrix: &MatchedMatrix, test: &EventTest) -> Result<Tested, Error
             row(column, exposures, moments, test, observed, assessed)
         })
         .collect();
-    Ok(Tested {
-        rows,
-        permutations: test.permutations,
-        resolution: p_value(0, u64::from(test.permutations)),
-        shuffle: test.shuffle,
-    })
+    Ok(Tested::walked(rows, walk, test.shuffle))
 }
