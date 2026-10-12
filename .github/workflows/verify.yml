@@ -382,10 +382,13 @@ jobs:
         run: cargo +nightly test --manifest-path fuzz/Cargo.toml --lib
       - name: Each target for a minute from the committed corpus
         working-directory: fuzz
+        # The installed cargo-fuzz is a musl build and would build for musl,
+        # where a sanitizer cannot link, so the host's triple is named.
         run: |
+          host=$(rustc +nightly -vV | sed -n 's/^host: //p')
           for target in json pack key; do
             mkdir -p "found/$target"
-            cargo +nightly fuzz run "$target" "found/$target" "corpus/$target" -- \
+            cargo +nightly fuzz run --target "$host" "$target" "found/$target" "corpus/$target" -- \
               -max_total_time=60 -rss_limit_mb=4096 -timeout=30
           done
       - if: failure()
