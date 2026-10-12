@@ -995,7 +995,7 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 /// `nature` are both catalogued and neither is named anywhere. A kind that
 /// gains a vetted table now fails here, so the reason cannot outlive the
 /// blocker.
-const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 14] = [
+const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 15] = [
     (
         "PANCHANGA",
         &["panchanga", "phala"],
@@ -1144,6 +1144,18 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 14] = [
         missing is the sentence, in every locale, and a janma-patrika's \
         wording wants a vetted text rather than one drafted here \
         (`matching.md`, C301)",
+        &[],
+    ),
+    (
+        "MOMENT",
+        &[],
+        "\
+        the sign rising at the instant, when it rose and sets, and the \
+        eclipse seen there. The rules read both, so a gandanta or an \
+        eclipsed birth is said where a rule holds; a sentence of its own \
+        would give the lagna's span as times, a reader of **times** like \
+        the panchanga's spans, and an eclipse as a condition of the birth \
+        that no vetted text words yet",
         &[],
     ),
 ];

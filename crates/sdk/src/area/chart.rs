@@ -3,6 +3,7 @@
 
 use teistro_aspect::Aspects;
 use teistro_astro::completion::Completion;
+use teistro_astro::eclipse::{Eclipses, ShadowRule, Visible};
 use teistro_astro::events::{FrameLongitudes, StationKind};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
@@ -12,6 +13,7 @@ use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{
     ChartAngles, ChartFoundation, Founder, TransitEventKind, angles_of, cusps_of,
 };
+use teistro_chart::moment::{BirthEclipse, Moment, rising};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
     CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Rashi, Star, Vara, Varga,
@@ -45,7 +47,7 @@ use teistro_houses::system::override_of;
 use teistro_panchanga::limb::{Zodiac as LimbZodiac, moon_between, nakshatra_at};
 use teistro_points::Points;
 use teistro_points::arudha::arudha_by;
-use teistro_port_ephemeris::EphemerisProvider;
+use teistro_port_ephemeris::{Astronomy, EphemerisProvider, Horizon};
 use teistro_serial::Document;
 use teistro_state::{GrahaState, state};
 use teistro_strength::shadbala::{SAPTAVARGAJA_VARGAS, ShadbalaGraha};
@@ -67,6 +69,9 @@ use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
 use teistro_rules::longevity::{Bindus, Computed, dasayus, span_choice};
 
+/// How far either side of a chart's instant an eclipse's greatest moment is
+/// looked for, days: no eclipse is seen for half a day either side of it.
+const ECLIPSE_REACH_DAYS: f64 = 0.5;
 /// The grahas as ch. 46's ladder reads them, each one's sign and dignity, in
 /// a chart whose lagna is `lagna`, with its arudha lagna counted to each
 /// sign's pada lord under the co-lordship (crux C135): the one assembly the
@@ -706,6 +711,9 @@ impl<'a> ChartArea<'a> {
         }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
+        }
+        if request.sections.has(Sections::MOMENT) {
+            document = document.with_moment(self.moment_of(founder, foundation)?);
         }
         for (index, (layout, varga)) in request.drawings().iter().enumerate() {
             let at = format!("drawings[{index}]");
@@ -2594,6 +2602,61 @@ impl<'a> ChartArea<'a> {
     /// chart's** — the same house system, the same polar policy, the
     /// same zodiac — which is what `Founder::ascendant_at` answers and
     /// why the founder is threaded this far.
+    /// What the instant falls in: the rising sign's span, from the lagna
+    /// at instants around it, and the eclipse seen at the place.
+    fn moment_of(
+        self,
+        founder: &Founder<'_, dyn EphemerisProvider + '_>,
+        foundation: &ChartFoundation,
+    ) -> Result<Moment, Error> {
+        let (place, zodiac) = (&foundation.place, &foundation.zodiac);
+        let rising = rising(foundation.instant, |at| {
+            founder.ascendant_at(at, place, zodiac)
+        })?;
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        let settings = self.context.settings();
+        let delta_t = self.context.delta_t();
+        let sky = Completion::new(provider, settings.provider.overrides, delta_t);
+        if sky.capabilities().astronomy == Astronomy::Classical {
+            return Ok(Moment {
+                rising,
+                eclipse: BirthEclipse::Unjudged,
+            });
+        }
+        // UT1 read as UTC, as the almanac's eclipses read it; the greatest
+        // moment of any eclipse seen at the instant lies within half a day.
+        let at = foundation.instant.get();
+        let found = Eclipses::new(&sky, delta_t)
+            .with_shadow(ShadowRule::of_setting(settings.panchanga.eclipse_shadow)?)
+            .here_between(
+                JulianDay::<Ut1>::literal(at - ECLIPSE_REACH_DAYS),
+                JulianDay::<Ut1>::literal(at + ECLIPSE_REACH_DAYS),
+                *place,
+                &Horizon::from_convention(settings.panchanga.eclipse_horizon),
+            )?;
+        let covers = |seen: Option<Visible>| {
+            seen.is_some_and(|span| span.from.get() <= at && at <= span.to.get())
+        };
+        let lunar = found
+            .lunar
+            .iter()
+            .find(|lunar| covers(lunar.here.umbral_seen))
+            .map(|lunar| BirthEclipse::Lunar {
+                greatest: lunar.eclipse.greatest,
+            });
+        let solar = found
+            .solar
+            .iter()
+            .find(|solar| covers(solar.here.and_then(|view| view.seen)))
+            .map(|solar| BirthEclipse::Solar {
+                greatest: solar.eclipse.greatest,
+            });
+        Ok(Moment {
+            rising,
+            eclipse: lunar.or(solar).unwrap_or(BirthEclipse::None),
+        })
+    }
+
     fn points_of(
         founder: &Founder<'_, dyn EphemerisProvider + '_>,
         foundation: &ChartFoundation,

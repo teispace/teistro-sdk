@@ -2,7 +2,7 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1527 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1480 rules hold at least once and 47 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1527 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1481 rules hold at least once and 46 never do.
 
 Rules holding on the same 5 or more charts form 109 groups, and each is explained. Below that, 4 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
@@ -138,7 +138,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 
 ## Never held
 
-A rule that holds on none of the charts is not a duplicate of anything, but it is either rare or dead, and these are the ones to read first. 2 of the 47 are computed in code rather than written as conditions, and this evaluation does not see them; the rest follow.
+A rule that holds on none of the charts is not a duplicate of anything, but it is either rare or dead, and these are the ones to read first. 2 of the 46 are computed in code rather than written as conditions, and this evaluation does not see them; the rest follow.
 
 | category | rules |
 |---|---|
@@ -148,7 +148,6 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | arishta-mother | `PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON` |
 | ayur | `BPHS_CANCER_RISING_WITH_JUPITER_AND_MOON_LIMITLESS`<br>`BPHS_BENEFICS_ANGULAR_OR_TRINE_MALEFICS_UPACHAYA_BENEFIC_EIGHTH_DIVINE`<br>`BPHS_MALEFICS_UPACHAYA_BENEFICS_ANGULAR_LONG`<br>`BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM`<br>`PARIJATA_MALEFICS_IN_UPACHAYAS_BENEFICS_ANGULAR_STRONG_LAGNA_LORD`<br>`PARIJATA_BENEFICS_SIXTH_TO_EIGHTH_MALEFICS_IN_UPACHAYAS` |
 | dhana | `SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON`<br>`SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY`<br>`BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH`<br>`BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH`<br>`BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH` |
-| gandanta | `LAGNA_GANDANTA` |
 | grahas-together | `PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN`<br>`PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_SATURN`<br>`PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN`<br>`PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN`<br>`PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN` |
 | miscellaneous | `PARASHARA_MATSYA`<br>`PARASHARA_KOORMA` |
 | nabhasa | `NABHASA_NALA`<br>`NABHASA_GADA`<br>`NABHASA_SAKATA`<br>`NABHASA_VIHAGA`<br>`NABHASA_KAMALA`<br>`NABHASA_GOLA` |

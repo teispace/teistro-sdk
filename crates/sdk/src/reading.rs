@@ -70,6 +70,8 @@ impl Sections {
     pub(crate) const OUTER: Sections = Sections(1 << 12);
     /// The Moon's avakahada.
     pub(crate) const AVAKAHADA: Sections = Sections(1 << 13);
+    /// What the instant falls in: the rising sign's span and the eclipse.
+    pub(crate) const MOMENT: Sections = Sections(1 << 14);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -227,12 +229,13 @@ impl ChartRequest {
         rules: impl IntoIterator<Item = &'r teistro_rules::Rule>,
         points: bool,
     ) -> ChartRequest {
-        let (mut named_points, mut strength, mut limbs) = (false, false, false);
+        let (mut named_points, mut strength, mut limbs, mut moment) = (false, false, false, false);
         let mut asked = self.vargas.clone();
         for rule in rules {
             named_points |= rule.reads_points();
             strength |= rule.reads_strength();
             limbs |= rule.reads_panchanga();
+            moment |= rule.reads_moment();
             for varga in rule.vargas() {
                 if !asked.contains(&varga) {
                     asked.push(varga);
@@ -253,6 +256,11 @@ impl ChartRequest {
         // give them one (`rules_bridge::birth_limbs`).
         if limbs {
             request = request.with_panchanga();
+        }
+        // The lagna's span and the eclipse are the instant's rather than
+        // the day's, and no almanac holds them.
+        if moment {
+            request = request.with_moment();
         }
         request
     }
@@ -441,6 +449,32 @@ impl ChartRequest {
         self
     }
 
+    /// What the instant falls in: the sign rising, when it rose and when
+    /// it sets, and the eclipse seen where the chart is cast, if any
+    /// (`teistro_chart::moment`). A rule that reads the lagna's edge or an
+    /// eclipse at birth reads them here, and a request for such rules asks
+    /// for this section itself.
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{BirthEclipse, ChartRequest, Context, Ephemeris, UtcOffset};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_moment();
+    /// let chart = sdk.chart().reading(JulianDay::try_new(2_451_545.0)?, &request)?.value;
+    /// let moment = chart.moment.expect("asked for");
+    /// let (rose, sets) = (moment.rising.rose.expect("a sign rises"), moment.rising.sets.expect("and sets"));
+    /// assert!(rose.get() < 2_451_545.0 && 2_451_545.0 < sets.get());
+    /// assert_eq!(moment.eclipse, BirthEclipse::None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_moment(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::MOMENT);
+        self
+    }
+
     /// Uranus, Neptune and Pluto, placed beside the nine in the
     /// foundation's `outer` and asked for in the same request to the
     /// ephemeris (`03-design/western-outer-planets.md`). Left out, the
@@ -598,6 +632,7 @@ impl ChartRequest {
             .with_bhava_bala()
             .with_dasha_phala()
             .with_jaimini()
+            .with_moment()
     }
 
     /// The same reading cast for another place under another clock: what
