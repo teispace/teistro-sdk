@@ -7,7 +7,7 @@ members:
   - key: WHOLE_SIGN
     id: 0
     doc: "Whole Sign"
-    attributes: { swiss_letter: W, degeneracy: NONE }
+    attributes: { swiss_letter: "W", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -18,7 +18,7 @@ members:
   - key: PLACIDUS
     id: 1
     doc: "Placidus"
-    attributes: { swiss_letter: P, degeneracy: POLAR_UNDEFINED }
+    attributes: { swiss_letter: "P", degeneracy: POLAR_UNDEFINED }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -29,7 +29,7 @@ members:
   - key: KOCH
     id: 2
     doc: "Koch"
-    attributes: { swiss_letter: K, degeneracy: POLAR_UNDEFINED }
+    attributes: { swiss_letter: "K", degeneracy: POLAR_UNDEFINED }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -40,7 +40,7 @@ members:
   - key: REGIOMONTANUS
     id: 3
     doc: "Regiomontanus"
-    attributes: { swiss_letter: R, degeneracy: NONE }
+    attributes: { swiss_letter: "R", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -51,7 +51,7 @@ members:
   - key: CAMPANUS
     id: 4
     doc: "Campanus"
-    attributes: { swiss_letter: C, degeneracy: NONE }
+    attributes: { swiss_letter: "C", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -62,7 +62,7 @@ members:
   - key: EQUAL
     id: 5
     doc: "Equal"
-    attributes: { swiss_letter: A, degeneracy: NONE }
+    attributes: { swiss_letter: "A", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -73,7 +73,7 @@ members:
   - key: MERIDIAN
     id: 6
     doc: "Meridian"
-    attributes: { swiss_letter: X, degeneracy: NONE }
+    attributes: { swiss_letter: "X", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -84,7 +84,7 @@ members:
   - key: ALCABITIUS
     id: 7
     doc: "Alcabitius"
-    attributes: { swiss_letter: B, degeneracy: POLAR_UNDEFINED }
+    attributes: { swiss_letter: "B", degeneracy: POLAR_UNDEFINED }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -95,7 +95,7 @@ members:
   - key: PORPHYRY
     id: 8
     doc: "Porphyry"
-    attributes: { swiss_letter: O, degeneracy: NONE }
+    attributes: { swiss_letter: "O", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -106,7 +106,7 @@ members:
   - key: TOPOCENTRIC
     id: 9
     doc: "Topocentric"
-    attributes: { swiss_letter: T, degeneracy: POLAR_UNDEFINED }
+    attributes: { swiss_letter: "T", degeneracy: POLAR_UNDEFINED }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -117,7 +117,7 @@ members:
   - key: MORINUS
     id: 10
     doc: "Morinus"
-    attributes: { swiss_letter: M, degeneracy: NONE }
+    attributes: { swiss_letter: "M", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -128,7 +128,7 @@ members:
   - key: SRIPATI
     id: 11
     doc: "Sripati"
-    attributes: { swiss_letter: S, degeneracy: NONE }
+    attributes: { swiss_letter: "S", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -139,7 +139,7 @@ members:
   - key: EQUAL_MC
     id: 12
     doc: "Equal Mc"
-    attributes: { swiss_letter: D, degeneracy: NONE }
+    attributes: { swiss_letter: "D", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -150,7 +150,7 @@ members:
   - key: EQUAL_ARIES
     id: 13
     doc: "Equal Aries"
-    attributes: { swiss_letter: N, degeneracy: NONE }
+    attributes: { swiss_letter: "N", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -161,7 +161,7 @@ members:
   - key: VEHLOW
     id: 14
     doc: "Vehlow"
-    attributes: { swiss_letter: V, degeneracy: NONE }
+    attributes: { swiss_letter: "V", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -172,7 +172,7 @@ members:
   - key: CARTER
     id: 15
     doc: "Carter"
-    attributes: { swiss_letter: F, degeneracy: NONE }
+    attributes: { swiss_letter: "F", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -183,7 +183,7 @@ members:
   - key: HORIZON
     id: 16
     doc: "Horizon"
-    attributes: { swiss_letter: H, degeneracy: NONE }
+    attributes: { swiss_letter: "H", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -194,7 +194,7 @@ members:
   - key: SUNSHINE
     id: 17
     doc: "Sunshine"
-    attributes: { swiss_letter: I, degeneracy: POLAR_UNDEFINED }
+    attributes: { swiss_letter: "I", degeneracy: POLAR_UNDEFINED }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -205,7 +205,7 @@ members:
   - key: PULLEN_SD
     id: 18
     doc: "Pullen Sd"
-    attributes: { swiss_letter: L, degeneracy: NONE }
+    attributes: { swiss_letter: "L", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -216,7 +216,7 @@ members:
   - key: PULLEN_SR
     id: 19
     doc: "Pullen Sr"
-    attributes: { swiss_letter: Q, degeneracy: NONE }
+    attributes: { swiss_letter: "Q", degeneracy: NONE }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -227,7 +227,7 @@ members:
   - key: KRUSINSKI
     id: 20
     doc: "Krusinski"
-    attributes: { swiss_letter: U, degeneracy: POLAR_UNDEFINED }
+    attributes: { swiss_letter: "U", degeneracy: POLAR_UNDEFINED }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -238,7 +238,7 @@ members:
   - key: APC
     id: 21
     doc: "Apc"
-    attributes: { swiss_letter: Y, degeneracy: POLAR_UNDEFINED }
+    attributes: { swiss_letter: "Y", degeneracy: POLAR_UNDEFINED }
     sources:
       - text: "baseline-engine"
         ref: "core data"

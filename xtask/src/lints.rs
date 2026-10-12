@@ -564,10 +564,13 @@ fn workflows_parse(root: &Path, outcome: &mut Outcome) {
         let Ok(text) = std::fs::read_to_string(&path) else {
             continue;
         };
-        if let Err(error) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&text) {
+        if let Err(error) = serde_saphyr::from_str::<serde_json::Value>(&text) {
             outcome.failures.push(Finding {
                 file: shown,
-                line: error.location().map_or(0, |place| place.line()),
+                line: error
+                    .location()
+                    .and_then(|place| usize::try_from(place.line()).ok())
+                    .unwrap_or(0),
                 text: error.to_string(),
                 rule: "workflow-parses",
             });
@@ -2345,19 +2348,17 @@ fn platform_runners(root: &Path, outcome: &mut Outcome) {
         };
         // A workflow that does not parse is `workflow-parses`'s to
         // report; this rule says nothing about it.
-        let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&text) else {
+        let Ok(doc) = serde_saphyr::from_str::<serde_json::Value>(&text) else {
             continue;
         };
         for entry in matrix_rows(&doc) {
             let (Some(platform), Some(os)) = (
-                entry.get("platform").and_then(serde_yaml_ng::Value::as_str),
-                entry.get("os").and_then(serde_yaml_ng::Value::as_str),
+                entry.get("platform").and_then(serde_json::Value::as_str),
+                entry.get("os").and_then(serde_json::Value::as_str),
             ) else {
                 continue;
             };
-            let container = entry
-                .get("container")
-                .and_then(serde_yaml_ng::Value::as_str);
+            let container = entry.get("container").and_then(serde_json::Value::as_str);
             // A mobile slice is a row of its own table (`xtask/src/mobile.rs`),
             // cross-built on a host runner and never in a container.
             let row = crate::platform::Platform::by_name(platform)
@@ -2476,7 +2477,7 @@ fn node_is_tested_at_its_floor(root: &Path, outcome: &mut Outcome) {
         let Ok(text) = std::fs::read_to_string(&path) else {
             continue;
         };
-        let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&text) else {
+        let Ok(doc) = serde_saphyr::from_str::<serde_json::Value>(&text) else {
             continue;
         };
         let excused = NODE_OFF_FLOOR.iter().any(|(file, _)| *file == name);
@@ -2519,25 +2520,25 @@ fn node_floor(engines: &str) -> Option<String> {
 /// The Node version each `actions/setup-node` step of a workflow asks
 /// for, as written (`22`, `"22"` and `22.x` are three spellings; only the
 /// first two are the floor).
-fn node_versions(doc: &serde_yaml_ng::Value) -> Vec<String> {
+fn node_versions(doc: &serde_json::Value) -> Vec<String> {
     let mut out = Vec::new();
-    let Some(jobs) = doc.get("jobs").and_then(serde_yaml_ng::Value::as_mapping) else {
+    let Some(jobs) = doc.get("jobs").and_then(serde_json::Value::as_object) else {
         return out;
     };
     for (_, job) in jobs {
-        let steps = job.get("steps").and_then(serde_yaml_ng::Value::as_sequence);
+        let steps = job.get("steps").and_then(serde_json::Value::as_array);
         for step in steps.into_iter().flatten() {
             let sets_up_node = step
                 .get("uses")
-                .and_then(serde_yaml_ng::Value::as_str)
+                .and_then(serde_json::Value::as_str)
                 .is_some_and(|uses| uses.starts_with("actions/setup-node@"));
             if !sets_up_node {
                 continue;
             }
             let version = step.get("with").and_then(|with| with.get("node-version"));
             out.push(match version {
-                Some(serde_yaml_ng::Value::String(text)) => text.clone(),
-                Some(serde_yaml_ng::Value::Number(number)) => number.to_string(),
+                Some(serde_json::Value::String(text)) => text.clone(),
+                Some(serde_json::Value::Number(number)) => number.to_string(),
                 // No version is whatever the runner has, which is no floor.
                 _ => String::from("(unset)"),
             });
@@ -2571,9 +2572,9 @@ fn manifests(root: &Path) -> Vec<PathBuf> {
 }
 
 /// Every `strategy.matrix.include` entry of every job of a workflow.
-fn matrix_rows(doc: &serde_yaml_ng::Value) -> Vec<&serde_yaml_ng::Value> {
+fn matrix_rows(doc: &serde_json::Value) -> Vec<&serde_json::Value> {
     let mut out = Vec::new();
-    let Some(jobs) = doc.get("jobs").and_then(serde_yaml_ng::Value::as_mapping) else {
+    let Some(jobs) = doc.get("jobs").and_then(serde_json::Value::as_object) else {
         return out;
     };
     for (_, job) in jobs {
@@ -2581,7 +2582,7 @@ fn matrix_rows(doc: &serde_yaml_ng::Value) -> Vec<&serde_yaml_ng::Value> {
             .get("strategy")
             .and_then(|strategy| strategy.get("matrix"))
             .and_then(|matrix| matrix.get("include"))
-            .and_then(serde_yaml_ng::Value::as_sequence);
+            .and_then(serde_json::Value::as_array);
         if let Some(entries) = include {
             out.extend(entries.iter());
         }
@@ -3366,7 +3367,7 @@ mod serialised_type_describes_itself {
 
     #[test]
     fn every_setup_node_is_read_in_every_spelling() {
-        let doc: serde_yaml_ng::Value = serde_yaml_ng::from_str(
+        let doc: serde_json::Value = serde_saphyr::from_str(
             "jobs:\n  a:\n    steps:\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n\
              \x20     - uses: actions/checkout@v4\n  b:\n    steps:\n      - uses: actions/setup-node@v4\n        with:\n          node-version: \"24\"\n\
              \x20     - uses: actions/setup-node@v4\n",
