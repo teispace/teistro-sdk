@@ -9819,7 +9819,9 @@ fn a_study_crosses_as_the_facade_answers_it() {
         .unwrap();
     assert_eq!(crossed, teistro_core::envelope::canonical_json(&answer));
     let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
-    assert_eq!(read["value"]["permutations"], serde_json::json!(99));
+    // C(8, 4) = 70 labellings, fewer than the 99 asked: walked whole.
+    assert_eq!(read["value"]["permutations"], serde_json::json!(70));
+    assert_eq!(read["value"]["enumerated"], serde_json::json!(true));
     assert!(read["provenance"]["input_hash"].is_string());
     for (request, field) in [
         (
