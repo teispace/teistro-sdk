@@ -722,8 +722,9 @@ test('every catalogue enum has a complete id table', () => {
   // seven, and `TsBhakootDosha`, four; 1325 since the ten considerations'
   // `TsDhinamRule`, eleven, and `TsRajju`, five; 1330 since the marriage
   // doshas' `TsDoshaSystem`, three, and `TsMatchRole`, two; 1341 since
-  // naam milan's `TsNameVarga`, eight, and `TsVargaRelation`, three.
-  assert.equal(entries, 1341, 'every member of every enum is in a table');
+  // naam milan's `TsNameVarga`, eight, and `TsVargaRelation`, three;
+  // 1345 since the moment's `TsBirthEclipse`, four.
+  assert.equal(entries, 1345, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2906,6 +2907,32 @@ test('a chart carries its avakahada, whose syllable names the birth pada', () =>
     (error) => error instanceof TeistroError && error.field === 'avakahada',
   );
   western.dispose();
+  ctx.dispose();
+});
+
+/**
+ * A chart's moment crosses whole: the rising sign's edges bound the
+ * instant, and the lunar eclipse of 2025 March 14, seen from New York, is
+ * the instant's and not a day later's (C378). `null` unless asked.
+ */
+test('a chart carries its moment, the eclipse its place sees', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 40.71, longitude: -74.0 };
+  const eclipse = 2460748.7908;
+  assert.equal(ctx.chart.found({ instant: eclipse, place, utcOffsetSeconds: 0 }).moment, null);
+  const batch = ctx.chart.foundMany({ instants: [eclipse, eclipse + 1], place, utcOffsetSeconds: 0, moment: true });
+  const [during, after] = [batch.at(0).moment, batch.at(1).moment];
+  for (const [moment, instant] of [
+    [during, eclipse],
+    [after, eclipse + 1],
+  ]) {
+    assert.ok(Object.isFrozen(moment) && Object.isFrozen(moment.rising) && Object.isFrozen(moment.eclipse));
+    assert.ok(moment.rising.sign.startsWith('rashi.'), moment.rising.sign);
+    assert.ok(moment.rising.rose <= instant && instant < moment.rising.sets);
+  }
+  assert.equal(during.eclipse.kind, 'LUNAR');
+  assert.ok(Math.abs(during.eclipse.greatest - eclipse) < 0.1, `${during.eclipse.greatest}`);
+  assert.deepEqual(after.eclipse, { kind: 'NONE', greatest: null });
   ctx.dispose();
 });
 

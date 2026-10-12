@@ -578,7 +578,7 @@ final class VedicReads {
         return List.copyOf(out);
     }
 
-    // ---- jaimini, avakahada, vaiseshikamsa, vimshopaka ----
+    // ---- jaimini, avakahada, moment, vaiseshikamsa, vimshopaka ----
 
     /** Jaimini's significators, when {@code jaimini} asked for them. Ports {@code Chart.jaimini}. */
     static Optional<JaiminiReading> jaimini(Chart chart) {
@@ -642,6 +642,22 @@ final class VedicReads {
                     Nadi.of(c.nadi(chart)),
                     new BirthSyllable(c.cell(chart), JsonRead.text(syllable.get(0)), JsonRead.text(syllable.get(1)),
                             NameVarga.of(c.varga(chart)))));
+        }
+        return List.copyOf(out);
+    }
+
+    /** What the instant falls in, when {@code moment} asked for it. Ports {@code Chart.moment}. */
+    static Optional<Moment> moment(Chart chart) {
+        return at(chart.batch().cached("moments", () -> moments(decoded(chart))), chart.index());
+    }
+
+    private static List<Moment> moments(Charts decoded) {
+        Charts.Moment c = decoded.moment();
+        List<Moment> out = new ArrayList<>(c.length());
+        for (int chart = 0; chart < c.length(); chart += 1) {
+            out.add(new Moment(
+                    new RisingSign(Rashi.of(c.sign(chart)), bound(c.rose(chart)), bound(c.sets(chart))),
+                    new MomentEclipse(BirthEclipse.of(c.eclipse(chart)), bound(c.greatest(chart)))));
         }
         return List.copyOf(out);
     }

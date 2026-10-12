@@ -1745,6 +1745,17 @@ export function decodeCharts(bytes) {
     const at = section(blob, 123, 'lalkitab');
     out.lalkitab = text(blob, at);
   }
+  {
+    const at = section(blob, 124, 'moment');
+    out.moment = {
+      sign: column(blob, at, 0, 'u16', at.count),
+      rose: column(blob, at, 1, 'f64', at.count),
+      sets: column(blob, at, 2, 'f64', at.count),
+      eclipse: column(blob, at, 3, 'u8', at.count),
+      greatest: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

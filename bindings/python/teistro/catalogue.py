@@ -4463,6 +4463,26 @@ class DashaPhase(Member):
     """At its end."""
 
 
+class BirthEclipse(Member):
+    """The eclipse a chart's instant falls in, as the `moment` section's
+    `eclipse` column carries it (C378).
+    """
+
+    NONE = 0
+    """No eclipse is seen at the instant."""
+
+    LUNAR = 1
+    """A lunar eclipse's umbral phase, the Moon up."""
+
+    SOLAR = 2
+    """A solar eclipse, the Sun up."""
+
+    UNJUDGED = 3
+    """Not reckoned: the chart's astronomy is a classical one, whose
+    eclipse the SDK does not build (C188).
+    """
+
+
 class VarsheshaChosen(Member):
     """Which step of the year lord's chain decided it
     (`03-design/varshesha.md`).
@@ -6793,6 +6813,12 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "COMMENCEMENT",
         1: "MIDDLE",
         2: "END",
+    },
+    "BirthEclipse": {
+        0: "NONE",
+        1: "LUNAR",
+        2: "SOLAR",
+        3: "UNJUDGED",
     },
     "VarsheshaChosen": {
         0: "STRONGEST",

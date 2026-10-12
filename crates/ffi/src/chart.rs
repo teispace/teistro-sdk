@@ -1251,8 +1251,14 @@ pub const TS_CHART_OUTER: u32 = 4096;
 ///
 /// `api: constant`
 pub const TS_CHART_AVAKAHADA: u32 = 8192;
+/// A chart request's `sections` bit: what the chart's instant falls in,
+/// the rising sign's span and the eclipse seen where it is cast, in the
+/// `moment` section (C378).
+///
+/// `api: constant`
+pub const TS_CHART_MOMENT: u32 = 16384;
 
-const SECTION_BITS: [SectionBit; 14] = [
+const SECTION_BITS: [SectionBit; 15] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
@@ -1267,6 +1273,7 @@ const SECTION_BITS: [SectionBit; 14] = [
     (TS_CHART_JAIMINI, ChartRequest::with_jaimini),
     (TS_CHART_OUTER, ChartRequest::with_outer_planets),
     (TS_CHART_AVAKAHADA, ChartRequest::with_avakahada),
+    (TS_CHART_MOMENT, ChartRequest::with_moment),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -2031,6 +2038,77 @@ impl AvakahadaColumns {
             ],
         )?;
         writer.bytes("avakahada_syllables", self.syllables.as_bytes())
+    }
+}
+
+/// The eclipse a chart's instant falls in, as the `moment` section's
+/// `eclipse` column carries it (C378).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsBirthEclipse {
+    /// No eclipse is seen at the instant.
+    None = 0,
+    /// A lunar eclipse's umbral phase, the Moon up.
+    Lunar = 1,
+    /// A solar eclipse, the Sun up.
+    Solar = 2,
+    /// Not reckoned: the chart's astronomy is a classical one, whose
+    /// eclipse the SDK does not build (C188).
+    Unjudged = 3,
+}
+
+impl TsBirthEclipse {
+    /// The code an eclipse crosses as, and its greatest moment (UT1), NaN
+    /// unless one is seen.
+    #[must_use]
+    pub fn of(eclipse: teistro::BirthEclipse) -> (TsBirthEclipse, f64) {
+        use teistro::BirthEclipse;
+        match eclipse {
+            BirthEclipse::None => (TsBirthEclipse::None, f64::NAN),
+            BirthEclipse::Lunar { greatest } => (TsBirthEclipse::Lunar, greatest.get()),
+            BirthEclipse::Solar { greatest } => (TsBirthEclipse::Solar, greatest.get()),
+            BirthEclipse::Unjudged => (TsBirthEclipse::Unjudged, f64::NAN),
+        }
+    }
+}
+
+/// Every chart's moment, a row a chart that asked for it.
+#[derive(Default)]
+struct MomentColumns {
+    sign: Vec<u16>,
+    rose: Vec<f64>,
+    sets: Vec<f64>,
+    eclipse: Vec<u8>,
+    greatest: Vec<f64>,
+}
+
+impl MomentColumns {
+    fn of(documents: &[Document]) -> MomentColumns {
+        let mut columns = MomentColumns::default();
+        for moment in documents.iter().filter_map(|d| d.moment.as_ref()) {
+            let edge = |at: Option<JulianDay<Utc>>| at.map_or(f64::NAN, JulianDay::get);
+            let (eclipse, greatest) = TsBirthEclipse::of(moment.eclipse);
+            columns.sign.push(moment.rising.sign.id());
+            columns.rose.push(edge(moment.rising.rose));
+            columns.sets.push(edge(moment.rising.sets));
+            columns.eclipse.push(eclipse as u8);
+            columns.greatest.push(greatest);
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "moment",
+            self.sign.len(),
+            &[
+                ColumnData::U16(&self.sign),
+                ColumnData::F64(&self.rose),
+                ColumnData::F64(&self.sets),
+                ColumnData::U8(&self.eclipse),
+                ColumnData::F64(&self.greatest),
+            ],
+        )
     }
 }
 
@@ -5019,6 +5097,7 @@ pub fn encode(
         GrahaColumns::of(charts, |c| &c.outer).write(&mut writer, "outer")?;
         tables.write(&mut writer)?;
         by.avakahada.write(&mut writer)?;
+        by.moment.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -5722,6 +5801,7 @@ struct Sections {
     jaimini: JaiminiColumns,
     years: crate::family::tajika::PraveshaColumns,
     avakahada: AvakahadaColumns,
+    moment: MomentColumns,
 }
 
 impl Sections {
@@ -5747,6 +5827,7 @@ impl Sections {
             jaimini: JaiminiColumns::of(documents),
             years: crate::family::tajika::PraveshaColumns::of(praveshas)?,
             avakahada: AvakahadaColumns::of(documents),
+            moment: MomentColumns::of(documents),
         })
     }
 }

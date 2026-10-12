@@ -4678,6 +4678,39 @@ final class ChartsAvakahada {
   final int length;
 }
 
+/// The `moment` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+final class ChartsMoment {
+  const ChartsMoment({
+    required this.sign,
+    required this.rose,
+    required this.sets,
+    required this.eclipse,
+    required this.greatest,
+    required this.length,
+  });
+
+  /// The sign rising at the instant.
+  final Uint16List sign;
+
+  /// When it began to rise, a UTC Julian day found to a second; NaN when it was already rising a day before, which only a place inside a polar circle sees.
+  final Float64List rose;
+
+  /// When the next sign begins to rise, a UTC Julian day; NaN likewise.
+  final Float64List sets;
+
+  /// The eclipse the instant falls in: a lunar eclipse's umbral phase with the Moon up, or a solar eclipse with the Sun up. A classical astronomy's chart is not judged (C188).
+  final Uint8List eclipse;
+
+  /// The eclipse's greatest moment, a UT1 Julian day; NaN unless `eclipse` is `LUNAR` or `SOLAR`.
+  final Float64List greatest;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5197,6 +5230,7 @@ final class Charts {
     required this.remedies,
     required this.rectification,
     required this.lalkitab,
+    required this.moment,
   });
 
   /// What kind of chart these are.
@@ -5612,6 +5646,9 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each `{reading, cycle, periods, year}` (`03-design/lalkitab.md`). `reading` is the teva's: `planets`, each `{graha, house, dignities, owners, awake, kayam, casts}` with `dignities` among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`, `owners` each `{owner, regard}` (`FRIEND`, `EQUAL` or `ENEMY`) and `casts` each aspect `{to, strength, onto}` (`QUARTER`, `HALF` or `FULL`); `houses`, each `{house, occupants, lookedAtBy, awake, waker}` with `lookedAtBy` each `{from, strength}`; `masnui`, each pair in one house `{pair, house, countsAs}`; `rinas`, each debt `{rin, of, seated}` with `seated` each `{enemy, house}`; `pitri`, the ancestors' debt's first state `{ninth, mercury}`; and `flags` `{ratandha, nabalig, dharmi, sathi}`. `cycle` is the 35-year cycle's start `{planet, year}` and `periods` its periods `{planet, from, to}` over years 1 to 120 of life. `year` is `{year, ruler, thirds, annual}`, `annual` the annual teva's reading in the same shape when the record sent a `varshphal` list, otherwise null; `year` itself is null unless the record named one. Grahas are bare catalogue keys. Empty when `lalkitab_json` asked for none.
   final String lalkitab;
 
+  /// What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+  final ChartsMoment moment;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5742,6 +5779,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atRemedies = blob.section(121, 'remedies');
   final atRectification = blob.section(122, 'rectification');
   final atLalkitab = blob.section(123, 'lalkitab');
+  final atMoment = blob.section(124, 'moment');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -10243,6 +10281,34 @@ Charts decodeCharts(Uint8List bytes) {
     remedies: blob.text(atRemedies),
     rectification: blob.text(atRectification),
     lalkitab: blob.text(atLalkitab),
+    moment: ChartsMoment(
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoment, 0),
+        blob.columnOffset(atMoment, 0) + atMoment.count * 2,
+      ),
+      rose: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoment, 1),
+        blob.columnOffset(atMoment, 1) + atMoment.count * 8,
+      ),
+      sets: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoment, 2),
+        blob.columnOffset(atMoment, 2) + atMoment.count * 8,
+      ),
+      eclipse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoment, 3),
+        blob.columnOffset(atMoment, 3) + atMoment.count * 1,
+      ),
+      greatest: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoment, 4),
+        blob.columnOffset(atMoment, 4) + atMoment.count * 8,
+      ),
+      length: atMoment.count,
+    ),
   );
 }
 

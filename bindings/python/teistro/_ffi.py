@@ -38,6 +38,7 @@ from .catalogue import (
     BalaScheme,
     Balance,
     BhakootDosha,
+    BirthEclipse,
     BlackoutKind,
     Body,
     BodyClass,
@@ -232,6 +233,11 @@ CHART_OUTER: Final = 4096
 # `avakahada` and `avakahada_syllables` sections; a tropical chart
 # refuses it (`03-design/matching.md`, C301).
 CHART_AVAKAHADA: Final = 8192
+
+# A chart request's `sections` bit: what the chart's instant falls in,
+# the rising sign's span and the eclipse seen where it is cast, in the
+# `moment` section (C378).
+CHART_MOMENT: Final = 16384
 
 # `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
 # `sections` for the lunar years its days fall in.

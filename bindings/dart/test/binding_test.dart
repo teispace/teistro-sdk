@@ -3879,6 +3879,46 @@ void _engineTests() {
     },
   );
 
+  test('a chart carries its moment, the eclipse its place sees', () {
+    // The rising sign's edges bound the instant, and the lunar eclipse of
+    // 2025 March 14, seen from New York, is the instant's and not a day
+    // later's (C378); null unless asked.
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final newYork = Observer(
+      latitudeDeg: Latitude(40.71),
+      longitudeDeg: Longitude(-74.0),
+      altitudeM: Altitude(0),
+    );
+    const eclipse = 2460748.7908;
+    expect(
+      ctx.chart
+          .found(instant: eclipse, place: newYork, utcOffsetSeconds: 0)
+          .moment,
+      isNull,
+    );
+    final batch = ctx.chart.foundMany(
+      instants: [eclipse, eclipse + 1],
+      place: newYork,
+      utcOffsetSeconds: 0,
+      moment: true,
+    );
+    final during = batch.at(0).moment!;
+    final after = batch.at(1).moment!;
+    for (final (moment, instant) in [(during, eclipse), (after, eclipse + 1)]) {
+      expect(moment.rising.rose!, lessThanOrEqualTo(instant));
+      expect(moment.rising.sets!, greaterThan(instant));
+    }
+    expect(during.eclipse.kind, BirthEclipse.lunar);
+    expect(during.eclipse.greatest!, closeTo(eclipse, 0.1));
+    expect(
+      after.eclipse,
+      const MomentEclipse(kind: BirthEclipse.none, greatest: null),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its synastry with a partner', () {
     // King George V and Queen Mary (Leo, *How to Judge a Nativity*,
     // p. 130): the recast's closest contacts, the lagna left out on

@@ -295,6 +295,11 @@ A request for rules that read either asks for the section itself, and
 `LAGNA_GANDANTA` and `BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH` never
 holding, because the rules were given no lagna span and no eclipse. The
 gandanta now holds in the first and last half ghatika of its signs.
+`TS_CHART_MOMENT` carries the section across the C boundary, a row a
+chart with an edge or a greatest moment that is not there as NaN, and
+`moment` asks for it in Node, Python, Dart and Java (`chart.moment`) and
+in a found request's JSON. The type is `RisingSign`, because the catalogue
+already names a sign's way of rising `Rising`.
 
 **The boundary is fuzzed.** **Numbers:** none moved. Three libFuzzer
 targets drive the C ABI with a caller's JSON, a pack's bytes and a key

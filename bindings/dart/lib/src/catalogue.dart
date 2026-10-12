@@ -75,6 +75,11 @@ const int chartOuter = 4096;
 /// refuses it (`03-design/matching.md`, C301).
 const int chartAvakahada = 8192;
 
+/// A chart request's `sections` bit: what the chart's instant falls in,
+/// the rising sign's span and the eclipse seen where it is cast, in the
+/// `moment` section (C378).
+const int chartMoment = 16384;
+
 /// `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
 /// `sections` for the lunar years its days fall in.
 ///
@@ -6663,6 +6668,46 @@ enum DashaPhase {
 
   /// The member with a key, or `null` for one this build does not know.
   static DashaPhase? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The eclipse a chart's instant falls in, as the `moment` section's
+/// `eclipse` column carries it (C378).
+enum BirthEclipse {
+  /// No eclipse is seen at the instant.
+  none(0, 'NONE'),
+  /// A lunar eclipse's umbral phase, the Moon up.
+  lunar(1, 'LUNAR'),
+  /// A solar eclipse, the Sun up.
+  solar(2, 'SOLAR'),
+  /// Not reckoned: the chart's astronomy is a classical one, whose
+  /// eclipse the SDK does not build (C188).
+  unjudged(3, 'UNJUDGED');
+
+  const BirthEclipse(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static BirthEclipse byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a BirthEclipse'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static BirthEclipse? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

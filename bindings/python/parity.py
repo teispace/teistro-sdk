@@ -185,6 +185,11 @@ def number(value: float | int) -> str:
     return f"{value:.9f}"
 
 
+def number_or_dash(value: float | None) -> str:
+    """[`number`], or `-` for a value that is absent."""
+    return "-" if value is None else number(value)
+
+
 def fnv(text: str) -> str:
     """FNV-1a over UTF-8 bytes, so a JSON section can be compared without
     a parser."""
@@ -1181,6 +1186,7 @@ def main() -> None:
             dasha_phala=True,
             jaimini=True,
             avakahada=True,
+            moment=True,
             outer_planets=True,
             gochar={"instants": [2460676.5, 2460736.5], "ashtakavarga": True},
             hits={
@@ -1535,6 +1541,13 @@ def main() -> None:
                 f"chart-{i}-avakahada-syllable",
                 f"{syllable.cell} {syllable.devanagari} {syllable.iast} {syllable.varga.key}",
             )
+            fell = chart.moment
+            assert fell is not None
+            put(
+                f"chart-{i}-moment",
+                f"{fell.rising.sign.full_key} {number_or_dash(fell.rising.rose)} {number_or_dash(fell.rising.sets)} "
+                + f"{fell.eclipse.kind.key} {number_or_dash(fell.eclipse.greatest)}",
+            )
             put(
                 f"chart-{i}-brahma",
                 f"{brahma_graha.rule.key} {brahma_graha.counted_from.full_key} "
@@ -1582,12 +1595,9 @@ def main() -> None:
             assert ss is not None
             put(f"chart-{i}-sade-sati", f"{ss.reference.from_.key} {ss.reference.sign.full_key} {ss.reckoning.key}")
 
-            def bound(jd: float | None) -> str:
-                return "-" if jd is None else number(jd)
-
             periods = [one.phases for one in ss.sade_sati] + [(spell,) for spell in ss.spells]
             lines = [
-                f"{period} {spell.house} {bound(v.from_)} {bound(v.to)}"
+                f"{period} {spell.house} {number_or_dash(v.from_)} {number_or_dash(v.to)}"
                 for period, spells in enumerate(periods)
                 for spell in spells
                 for v in spell.visits
@@ -2524,9 +2534,6 @@ def main() -> None:
         ).eclipses
     assert eclipses is not None
 
-    def eclipse_number(value: Optional[float]) -> str:
-        return "-" if value is None else number(value)
-
     def eclipse_moment(m: Optional[EclipseMoment]) -> str:
         return "-" if m is None else f"{number(m.at)}@{number(m.altitude_deg)}"
 
@@ -2551,7 +2558,7 @@ def main() -> None:
                 )
             ),
         )
-        put(f"eclipses-lunar-{k}-contacts", " ".join(eclipse_number(at) for at in (contacts.p1, contacts.u1, contacts.u2, contacts.u3, contacts.u4, contacts.p4)))
+        put(f"eclipses-lunar-{k}-contacts", " ".join(number_or_dash(at) for at in (contacts.p1, contacts.u1, contacts.u2, contacts.u3, contacts.u4, contacts.p4)))
         put(
             f"eclipses-lunar-{k}-here",
             " ".join([eclipse_moment(m) for m in (lunar_view.p1, lunar_view.u1, lunar_view.u2, lunar_view.greatest, lunar_view.u3, lunar_view.u4, lunar_view.p4)] + [eclipse_seen(lunar_view.seen), eclipse_seen(lunar_view.umbral_seen)]),

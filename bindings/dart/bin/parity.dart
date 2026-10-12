@@ -102,6 +102,9 @@ String number(num value) {
       : d.toStringAsFixed(9);
 }
 
+/// [number], or `-` for a value that is absent.
+String numberOrDash(double? value) => value == null ? '-' : number(value);
+
 /// FNV-1a over UTF-8 bytes, so a JSON section can be compared without a
 /// parser.
 String fnv(String text) {
@@ -1058,6 +1061,7 @@ void main() {
     dashaPhala: true,
     jaimini: true,
     avakahada: true,
+    moment: true,
     outerPlanets: true,
     gochar: const GocharRequest(
       instants: [2460676.5, 2460736.5],
@@ -1497,6 +1501,13 @@ void main() {
       'chart-$i-avakahada-syllable',
       '${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga.key}',
     );
+    final fell = chart.moment!;
+    put(
+      'chart-$i-moment',
+      '${fell.rising.sign.fullKey} ${numberOrDash(fell.rising.rose)} '
+          '${numberOrDash(fell.rising.sets)} ${fell.eclipse.kind.key} '
+          '${numberOrDash(fell.eclipse.greatest)}',
+    );
     final qualified = b.qualified.map((g) => g.fullKey).join(',');
     put(
       'chart-$i-brahma',
@@ -1564,7 +1575,6 @@ void main() {
       'chart-$i-sade-sati',
       '${ss.reference.from.key} ${ss.reference.sign.fullKey} ${ss.reckoning.key}',
     );
-    String bound(double? jd) => jd == null ? '-' : number(jd);
     final periods = [
       for (final one in ss.sadeSati) one.phases,
       for (final spell in ss.spells) [spell],
@@ -1573,7 +1583,7 @@ void main() {
       for (final (period, spells) in periods.indexed)
         for (final spell in spells)
           for (final v in spell.visits)
-            '$period ${spell.house} ${bound(v.from)} ${bound(v.to)}',
+            '$period ${spell.house} ${numberOrDash(v.from)} ${numberOrDash(v.to)}',
     ];
     for (final (k, line) in lines.indexed) {
       put('chart-$i-sade-sati-$k', line);
@@ -2944,7 +2954,6 @@ void main() {
           )
           .eclipses!;
   builtin.dispose();
-  String maybe(double? value) => value == null ? '-' : number(value);
   String moment(EclipseMoment? m) =>
       m == null ? '-' : '${number(m.at)}@${number(m.altitudeDeg)}';
   String seen(EclipseSeen? s) =>
@@ -2970,7 +2979,7 @@ void main() {
     );
     put(
       'eclipses-lunar-$k-contacts',
-      [c.p1, c.u1, c.u2, c.u3, c.u4, c.p4].map(maybe).join(' '),
+      [c.p1, c.u1, c.u2, c.u3, c.u4, c.p4].map(numberOrDash).join(' '),
     );
     put(
       'eclipses-lunar-$k-here',

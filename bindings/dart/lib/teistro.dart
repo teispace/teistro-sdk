@@ -719,6 +719,7 @@ final class ChartArea extends _Area {
     bool dashaPhala = false,
     bool jaimini = false,
     bool avakahada = false,
+    bool moment = false,
     bool outerPlanets = false,
     bool shadbala = false,
     bool bhavaBala = false,
@@ -766,6 +767,7 @@ final class ChartArea extends _Area {
     dashaPhala: dashaPhala,
     jaimini: jaimini,
     avakahada: avakahada,
+    moment: moment,
     outerPlanets: outerPlanets,
     shadbala: shadbala,
     bhavaBala: bhavaBala,
@@ -833,6 +835,7 @@ final class ChartArea extends _Area {
     bool dashaPhala = false,
     bool jaimini = false,
     bool avakahada = false,
+    bool moment = false,
     bool outerPlanets = false,
     bool shadbala = false,
     bool bhavaBala = false,
@@ -862,6 +865,7 @@ final class ChartArea extends _Area {
                 (dashaPhala ? chartDashaPhala : 0) |
                 (jaimini ? chartJaimini : 0) |
                 (avakahada ? chartAvakahada : 0) |
+                (moment ? chartMoment : 0) |
                 (outerPlanets ? chartOuter : 0) |
                 (shadbala ? chartShadbala : 0) |
                 (bhavaBala ? chartBhavaBala : 0) |
@@ -6323,6 +6327,32 @@ List<JaiminiReading> _decodeJaiminis(Charts batch) {
   }, growable: false);
 }
 
+/// Each batch's moments, decoded once however many charts read them.
+final Expando<List<Moment>> _moments = Expando<List<Moment>>('moments');
+
+List<Moment> _momentsOf(Charts batch) =>
+    _moments[batch] ??= _decodeMoments(batch);
+
+List<Moment> _decodeMoments(Charts batch) {
+  final c = batch.moment;
+  double? jd(double value) => value.isNaN ? null : value;
+  return List<Moment>.generate(
+    c.length,
+    (chart) => Moment(
+      rising: RisingSign(
+        sign: Rashi.byId(c.sign[chart]),
+        rose: jd(c.rose[chart]),
+        sets: jd(c.sets[chart]),
+      ),
+      eclipse: MomentEclipse(
+        kind: BirthEclipse.byId(c.eclipse[chart]),
+        greatest: jd(c.greatest[chart]),
+      ),
+    ),
+    growable: false,
+  );
+}
+
 /// Each batch's avakahadas, decoded once however many charts read them.
 final Expando<List<Avakahada>> _avakahadas = Expando<List<Avakahada>>(
   'avakahadas',
@@ -9930,6 +9960,67 @@ final class Avakahada extends _Value {
     nadi,
     syllable,
   ];
+}
+
+/// The sign rising at a chart's instant, and its span (C378).
+final class RisingSign extends _Value {
+  const RisingSign({
+    required this.sign,
+    required this.rose,
+    required this.sets,
+  });
+
+  /// The sign.
+  final Rashi sign;
+
+  /// When it began to rise, a UTC Julian day found to a second; null when
+  /// it was already rising a day before, which only a place inside a polar
+  /// circle sees.
+  final double? rose;
+
+  /// When the next sign begins to rise, a UTC Julian day; null likewise.
+  final double? sets;
+
+  @override
+  List<Object?> get _fields => [sign, rose, sets];
+}
+
+/// The eclipse a chart's instant falls in, seen where the chart is cast: a
+/// lunar eclipse's umbral phase with the Moon up, or a solar eclipse with
+/// the Sun up. A classical astronomy's chart is [BirthEclipse.unjudged]
+/// (C188).
+final class MomentEclipse extends _Value {
+  const MomentEclipse({required this.kind, required this.greatest});
+
+  /// Which, or [BirthEclipse.none].
+  final BirthEclipse kind;
+
+  /// Its greatest moment, a UT1 Julian day; null unless lunar or solar.
+  final double? greatest;
+
+  @override
+  List<Object?> get _fields => [kind, greatest];
+}
+
+/// What a chart's instant falls in: the sign rising and its span, which
+/// BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the
+/// chart is cast, which Brihat Jataka ch. 6 v. 9 reads (C378).
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */ moment: true);
+/// final rising = chart.moment!.rising.sign;
+/// ```
+final class Moment extends _Value {
+  const Moment({required this.rising, required this.eclipse});
+
+  /// The sign rising and when it rose and sets.
+  final RisingSign rising;
+
+  /// The eclipse the instant falls in.
+  final MomentEclipse eclipse;
+
+  @override
+  List<Object?> get _fields => [rising, eclipse];
 }
 
 /// Two names' vargas and how they stand (*Muhurta Chintamani* VI.35,
@@ -23553,6 +23644,12 @@ final class Chart {
   /// chart refuses it, named `avakahada`.
   Avakahada? get avakahada {
     final all = _avakahadasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// What the instant falls in, when `moment: true` asked for it.
+  Moment? get moment {
+    final all = _momentsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

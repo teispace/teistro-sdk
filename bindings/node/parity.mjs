@@ -355,6 +355,7 @@ const charts = geo.chart.foundMany({
   dashaPhala: true,
   jaimini: true,
   avakahada: true,
+  moment: true,
   outerPlanets: true,
   gochar: { instants: [2460676.5, 2460736.5], ashtakavarga: true },
   hits: { from: 2460676.5, to: 2460736.5, grahas: ['SUN', 'MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 },
@@ -831,6 +832,12 @@ for (const chart of charts) {
   );
   const syllable = birth.syllable;
   put(`chart-${i}-avakahada-syllable`, `${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga}`);
+  const { rising, eclipse } = chart.moment;
+  const at = (jd) => (jd === null ? '-' : number(jd));
+  put(
+    `chart-${i}-moment`,
+    `${rising.sign} ${at(rising.rose)} ${at(rising.sets)} ${eclipse.kind} ${at(eclipse.greatest)}`,
+  );
   chart.gochar.forEach((reading, at) => {
     const { reference: ref, rules } = reading;
     put(

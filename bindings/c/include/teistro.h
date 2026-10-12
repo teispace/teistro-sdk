@@ -113,6 +113,13 @@ extern "C" {
 #define TS_CHART_AVAKAHADA ((uint32_t)8192)
 
 /**
+ * A chart request's `sections` bit: what the chart's instant falls in,
+ * the rising sign's span and the eclipse seen where it is cast, in the
+ * `moment` section (C378).
+ */
+#define TS_CHART_MOMENT ((uint32_t)16384)
+
+/**
  * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
  * `sections` for the lunar years its days fall in.
  *
@@ -5673,6 +5680,30 @@ typedef enum ts_dasha_phase {
      */
     TS_DASHA_PHASE_END = 2,
 } ts_dasha_phase;
+
+/**
+ * The eclipse a chart's instant falls in, as the `moment` section's
+ * `eclipse` column carries it (C378).
+ */
+typedef enum ts_birth_eclipse {
+    /**
+     * No eclipse is seen at the instant.
+     */
+    TS_BIRTH_ECLIPSE_NONE = 0,
+    /**
+     * A lunar eclipse's umbral phase, the Moon up.
+     */
+    TS_BIRTH_ECLIPSE_LUNAR = 1,
+    /**
+     * A solar eclipse, the Sun up.
+     */
+    TS_BIRTH_ECLIPSE_SOLAR = 2,
+    /**
+     * Not reckoned: the chart's astronomy is a classical one, whose
+     * eclipse the SDK does not build (C188).
+     */
+    TS_BIRTH_ECLIPSE_UNJUDGED = 3,
+} ts_birth_eclipse;
 
 /**
  * Which step of the year lord's chain decided it

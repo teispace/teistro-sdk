@@ -379,6 +379,7 @@ pub fn charts() -> BlobSchema {
             chart_remedies_section(121),
             chart_rectification_section(122),
             chart_lalkitab_section(123),
+            chart_moment_section(124),
         ])
         .collect(),
     }
@@ -2150,6 +2151,40 @@ fn chart_rectification_section(id: u32) -> SectionSchema {
         id,
         "rectification",
         "UTF-8 JSON, canonical: an array with one entry per chart, each with a member for every reading the record asked and none for one it did not. `purified` is what the purifier of BPHS ch. 2 vv. 67-78 leaves standing of the window around the chart's instant, `{intervals, removed, edges, grid}`: each interval `{from, to, verdict}` with the clauses that held, each removed run naming the clause that failed. `conception` is `{birth, pranapadaHouse, nisheka, moon}` at the chart's instant (BPHS ch. 3 vv. 25-29, *Brihat Jataka* IV.21). `circumstance` is `{sky, father, presentation, lamp, attending, weights}` (*Brihat Jataka* ch. V), each fact given one weight. `baseline` is the baseline engine's unsourced cascade around the chart's instant, `{window, sunrise, intervals, intervalWidthMinutes, resolutionMinutes, suggested, concentration, candidates, stages, eventsUsed, eventsHeldOut, holdOut}`. `svarodaya` is the Shiva Svarodaya's nadi and tattva, `{at, runs}`: `at` the reading at the chart's instant `{sunrise, nextSunrise, tithi, sunriseNadi, run, junctions}` and `runs` every run `{from, to, nadi, turn, tattva, sex}` of the window around it, a report the text does not make at a birth. Instants are Julian days UTC. Empty when `rectification_json` asked for none.",
+    )
+}
+
+/// Every chart's moment: the rising sign's span and the eclipse seen
+/// where the chart is cast (C378).
+fn chart_moment_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "moment",
+        "What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.",
+        vec![
+            ColumnDef::new("sign", Scalar::U16, "The sign rising at the instant.").of_enum("Rashi"),
+            ColumnDef::new(
+                "rose",
+                Scalar::F64,
+                "When it began to rise, a UTC Julian day found to a second; NaN when it was already rising a day before, which only a place inside a polar circle sees.",
+            ),
+            ColumnDef::new(
+                "sets",
+                Scalar::F64,
+                "When the next sign begins to rise, a UTC Julian day; NaN likewise.",
+            ),
+            ColumnDef::new(
+                "eclipse",
+                Scalar::U8,
+                "The eclipse the instant falls in: a lunar eclipse's umbral phase with the Moon up, or a solar eclipse with the Sun up. A classical astronomy's chart is not judged (C188).",
+            )
+            .of_enum("TsBirthEclipse"),
+            ColumnDef::new(
+                "greatest",
+                Scalar::F64,
+                "The eclipse's greatest moment, a UT1 Julian day; NaN unless `eclipse` is `LUNAR` or `SOLAR`.",
+            ),
+        ],
     )
 }
 

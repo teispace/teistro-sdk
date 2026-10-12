@@ -130,6 +130,13 @@ public final class Native {
     public static final int TS_CHART_AVAKAHADA = 8192;
 
     /**
+     * A chart request's `sections` bit: what the chart's instant falls in,
+     * the rising sign's span and the eclipse seen where it is cast, in the
+     * `moment` section (C378).
+     */
+    public static final int TS_CHART_MOMENT = 16384;
+
+    /**
      * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
      * `sections` for the lunar years its days fall in.
      *

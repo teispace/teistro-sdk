@@ -2052,6 +2052,17 @@ Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
 | `TS_DASHA_PHASE_MIDDLE` | 1 | In its middle. |
 | `TS_DASHA_PHASE_END` | 2 | At its end. |
 
+## ts_birth_eclipse
+
+The eclipse a chart's instant falls in, as the `moment` section's `eclipse` column carries it (C378).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BIRTH_ECLIPSE_NONE` | 0 | No eclipse is seen at the instant. |
+| `TS_BIRTH_ECLIPSE_LUNAR` | 1 | A lunar eclipse's umbral phase, the Moon up. |
+| `TS_BIRTH_ECLIPSE_SOLAR` | 2 | A solar eclipse, the Sun up. |
+| `TS_BIRTH_ECLIPSE_UNJUDGED` | 3 | Not reckoned: the chart's astronomy is a classical one, whose eclipse the SDK does not build (C188). |
+
 ## ts_varshesha_chosen
 
 Which step of the year lord's chain decided it (`03-design/varshesha.md`).

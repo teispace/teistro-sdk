@@ -29,7 +29,10 @@ import type {
   AshtaKoota,
   NaamMilan,
   Avakahada,
+  BirthEclipse,
   BirthSyllable,
+  Moment,
+  RisingSign,
   NaamRules,
   NumerologyProfile,
   NumerologyRules,
@@ -1740,6 +1743,21 @@ function theAvakahada(ctx: Context): string {
 }
 
 void theAvakahada;
+
+// A chart's moment, read down to its rising sign's edges and its eclipse.
+function theMoment(ctx: Context): string {
+  const place = { latitude: 40.71, longitude: -74.0 };
+  const moment: Moment | null = ctx.chart.found({ instant: 2460748.7908, place, utcOffsetSeconds: 0, moment: true })
+    .moment;
+  if (moment === null) return '';
+  const rising: RisingSign = moment.rising;
+  const rose: number | null = rising.rose;
+  const kind: BirthEclipse | 'unknown' = moment.eclipse.kind;
+  const greatest: number | null = moment.eclipse.greatest;
+  return `${rising.sign} ${rose ?? '-'} ${rising.sets ?? '-'} ${kind} ${greatest ?? '-'}`;
+}
+
+void theMoment;
 
 // A lunar and a solar return, asked through the hit list.
 function theReturns(ctx: Context): string {
