@@ -341,6 +341,7 @@ mod rectification;
 mod release;
 mod render;
 mod research;
+mod review;
 mod ritu;
 mod rule_doc;
 mod rules_corpus;
@@ -503,6 +504,7 @@ const PASSES: &[Pass] = &[
     ),
     ("arudhas", arudhas::generate, arudhas::check_generated),
     ("terms", terms::generate, terms::check_generated),
+    ("review-sheets", review::generate, review::check_generated),
     ("sect", sect::generate, sect::check_generated),
     ("reception", reception::generate, reception::check_generated),
     (

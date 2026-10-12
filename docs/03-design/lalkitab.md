@@ -259,4 +259,9 @@ measured.
    and none of its numbers. The guide is this page and each binding's
    documented accessor.
 4. A second reading of LK-C6's remarks, LK-C8's tables and the debt's
-   second state, against the Urdu.
+   second state, against the Urdu. **Handed out 2026-10-12**: every table
+   the kernel holds is laid out for that reader in
+   [`lalkitab-tables.md`](lalkitab-tables.md), written by
+   `cargo xtask review-sheets` from the kernel's own functions, each cell
+   numbered and cited to its page; `check-review-sheets` fails when a table
+   changes and its sheet does not.
