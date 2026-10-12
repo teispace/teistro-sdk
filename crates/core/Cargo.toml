@@ -54,6 +54,12 @@ sha2 = "0.11"
 libm = "0.2"
 schemars = { version = "1.2", optional = true }
 
+# Miri cannot run inline assembly, which libm's `sqrt`, `fma` and `rint`
+# use on x86_64 and aarch64; its soft versions are correctly rounded too,
+# so a Miri run computes the same numbers (`05-testing/01-quality-bar.md`).
+[target.'cfg(miri)'.dependencies]
+libm = { version = "0.2", features = ["force-soft-floats"] }
+
 [dev-dependencies]
 criterion = { version = "0.5", default-features = false }
 proptest = "1"

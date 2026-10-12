@@ -885,6 +885,10 @@ mod tests {
     /// that: a blob whose offsets were off by a day would still parse,
     /// into another day's tithis.
     #[test]
+    #[cfg_attr(
+        miri,
+        ignore = "a month's almanac computed in safe code, fifteen minutes under Miri; the blob writer is the chart round trip's"
+    )]
     fn a_batch_of_almanacs_round_trips_through_its_blob() {
         use teistro_idl::blob::Reader;
 
@@ -972,6 +976,10 @@ mod tests {
 
     /// A range of one day is a blob, and the ordinary case.
     #[test]
+    #[cfg_attr(
+        miri,
+        ignore = "the same month's almanac computed in safe code, twelve minutes under Miri"
+    )]
     fn a_range_of_one_day_is_a_batch_of_one() {
         use teistro_idl::blob::Reader;
 

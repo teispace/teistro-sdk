@@ -301,6 +301,14 @@ chart with an edge or a greatest moment that is not there as NaN, and
 in a found request's JSON. The type is `RisingSign`, because the catalogue
 already names a sign's way of rising `Rising`.
 
+**The boundary runs under Miri and AddressSanitizer.** **Numbers:** none
+moved. Verify runs the unit tests of the two crates that hold `unsafe`
+code, the C ABI and the engine vtable, under Miri, and their unit and
+integration tests built with AddressSanitizer and LeakSanitizer. Neither
+found a defect in the SDK. Miri found one in sha2 0.11.0's aarch64
+backend, already fixed upstream and not yet released, so the Miri job uses
+sha2's soft backend until a release carries the fix.
+
 **The boundary is fuzzed.** **Numbers:** none moved. Three libFuzzer
 targets drive the C ABI with a caller's JSON, a pack's bytes and a key
 (`05-testing/03-fuzzing.md`): a minute each nightly, an hour each weekly,
