@@ -133,8 +133,12 @@ time asked about. Parity with it is declared as a departure, not measured.
 
 ## 6. For a Tamil reader
 
-The kernel ships on the readings above. These questions are handed out
-rather than guessed:
+The kernel ships on the readings above. Every cell it answers is laid out
+for a reader in [`pakshi-tables.md`](pakshi-tables.md), written by
+`cargo xtask review-sheets` from the kernel's own functions and held to them
+by `check-review-sheets`, each cell numbered so a reader can name the one
+the print does not bear out. These questions are handed out rather than
+guessed:
 
 1. AG p26: are the headers or the cells mis-set? Collate with the 1863,
    1867, 1879, 1907 and 1916 prints.

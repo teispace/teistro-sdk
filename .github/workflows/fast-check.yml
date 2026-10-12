@@ -159,6 +159,8 @@ jobs:
         run: cargo xtask check-research
       - name: Terms page (the Egyptian, Chaldean and Ptolemaic terms of the Tetrabiblos and Lilly's table, each held to its printing, its stated totals and its rule)
         run: cargo xtask check-terms
+      - name: Review sheets (every Pancha Pakshi and Lal Kitab table cell, from the kernels, for a reader to vet)
+        run: cargo xtask check-review-sheets
       - name: Lots page (Valens's lots over the corpus, each reading of Fortune by night counted)
         run: cargo xtask check-lots
       - name: Outer planets page (Uranus, Neptune and Pluto against the corpus's recording, and C239's parallax)
