@@ -1284,9 +1284,11 @@ final class ChartRequestStruct extends ffi.Struct {
   /// a JSON object, every member optional: `question` (`house`, the
   /// matter's house 1 to 12, which the verdict's I.3 clauses and the
   /// Tajika links read; `number`, the querent's 1 to 108, read only by
-  /// the baseline engine's unsourced rule, C340) and `rules` (`pisces`,
-  /// `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by
-  /// default). A prashna reads the seven's Shadbala, so asking for one
+  /// the baseline engine's unsourced rule, C340; `tense`, `UNSPECIFIED`,
+  /// `FUTURE` or `PAST`, which decides what a separation means, C370)
+  /// and `rules` (`pisces`, `timing`, `mook`, `moon` `{kshina}`,
+  /// `offices` `{order, drekkana, enemy, hudda}`, `weakness`
+  /// `{setting}`, `moonScope` and `score`, the texts' own by default). A prashna reads the seven's Shadbala, so asking for one
   /// asks for the `shadbala` sections too. Each chart's reading comes
   /// back in the `prashna` section. Null for none, which costs nothing
   /// (`03-design/prashna.md`). Refusals are named from the record every
@@ -3849,9 +3851,11 @@ final class ChartRequest {
   /// a JSON object, every member optional: `question` (`house`, the
   /// matter's house 1 to 12, which the verdict's I.3 clauses and the
   /// Tajika links read; `number`, the querent's 1 to 108, read only by
-  /// the baseline engine's unsourced rule, C340) and `rules` (`pisces`,
-  /// `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by
-  /// default). A prashna reads the seven's Shadbala, so asking for one
+  /// the baseline engine's unsourced rule, C340; `tense`, `UNSPECIFIED`,
+  /// `FUTURE` or `PAST`, which decides what a separation means, C370)
+  /// and `rules` (`pisces`, `timing`, `mook`, `moon` `{kshina}`,
+  /// `offices` `{order, drekkana, enemy, hudda}`, `weakness`
+  /// `{setting}`, `moonScope` and `score`, the texts' own by default). A prashna reads the seven's Shadbala, so asking for one
   /// asks for the `shadbala` sections too. Each chart's reading comes
   /// back in the `prashna` section. Null for none, which costs nothing
   /// (`03-design/prashna.md`). Refusals are named from the record every

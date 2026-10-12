@@ -33,6 +33,7 @@ mod annual_dasha;
 mod bala;
 mod drishti;
 mod harsha;
+mod kamboola;
 mod moon;
 mod muntha;
 mod office;
@@ -41,6 +42,7 @@ mod saham_strength;
 mod states;
 mod varsha;
 mod varshesha;
+mod weak;
 mod yoga;
 
 pub use annual_dasha::{
@@ -58,6 +60,10 @@ pub use drishti::{
     deeptamsha, orb_between, speed_rank,
 };
 pub use harsha::{HARSHA_PART_UNITS, Harsha, HarshaGrade, HarshaRules, VenusPlace, harsha};
+pub use kamboola::{
+    Adhikara, DrekkanaReading, EnemySign, KamboolaGrade, OfficeClause, OfficeOrder, OfficeRules,
+    Offices, kamboola_grade, offices,
+};
 pub use moon::{KshinaRule, MoonClause, MoonRules, MoonWeakness, moon_weakness, shunya_marga};
 pub use muntha::{DAILY_DEG, MONTHLY_DEG, Muntha, MunthaDegree, muntha};
 pub use office::{Office, OfficeBearers, YearCharts, office_bearers, tri_rashi_lord};
@@ -78,6 +84,9 @@ pub use varsha::{
 pub use varshesha::{
     Chosen, Claim, MoonMayRule, MoonPartner, NoneAspects, Tied, Varshesha, VarsheshaRules,
     WEAK_BELOW, aspects, varshesha,
+};
+pub use weak::{
+    GrahaClause, GrahaWeakness, SettingPart, WeaknessRules, graha_weakness, weaknesses,
 };
 pub use yoga::{
     Affliction, BENEFICS, Favour, Held, MALEFICS, MoonBenefic, Qualification, Strength,

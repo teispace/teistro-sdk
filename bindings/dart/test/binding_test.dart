@@ -4464,6 +4464,33 @@ void _engineTests() {
       reason: 'the points are the factors added',
     );
 
+    expect(plain.link, isNull, reason: 'no house, no link');
+    expect(
+      plain.rules.offices,
+      const OfficeRules(),
+      reason: 'the gloss\'s own',
+    );
+    final link = read.link!;
+    expect(PrashnaMeaning.values, contains(link.meaning));
+    expect(
+      link.kamboola == null,
+      isNot(read.links!.holds(YearYoga.kamboola) ?? false),
+    );
+    expect(read.triKala.lagnesha, isNot(Graha.unknown));
+    final past =
+        found(
+          const PrashnaRequest(
+            house: 7,
+            tense: PrashnaTense.past,
+            rules: PrashnaRules(offices: OfficeRules(hudda: HuddaTable.charak)),
+          ),
+        )!;
+    expect(past.rules.offices.hudda, HuddaTable.charak);
+    if (past.link!.kind == PrashnaLinkKind.separated) {
+      expect(past.link!.meaning, PrashnaMeaning.past);
+    }
+    expect(past.link!.meaning, isNot(PrashnaMeaning.failsOrPast));
+
     for (final (bad, field) in [
       (const PrashnaRequest(house: 13), 'prashna.question.house'),
       (const PrashnaRequest(number: 109), 'prashna.question.number'),

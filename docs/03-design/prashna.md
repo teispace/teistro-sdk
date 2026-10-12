@@ -2,8 +2,9 @@
 
 Status: steps 1, 3 and 4 `built` (`crates/prashna`, 2026-10-07: the
 verdict, change, timing and the unspoken question; the `BASELINE` values;
-the façade and every binding), step 2 partly built (the Tajika links and
-the Moon; the akṣara-lagna and the six points open, C353). The
+the façade and every binding), step 2 partly built (the Tajika links,
+what they say of the matter with Kamboola's grades and the tri-kāla, and
+the Moon, 2026-10-12; the akṣara-lagna and the six points open, C353). The
 `SHADVARGA` rising varga is designed, not built (C336).
 
 A prashna is a chart cast for the moment a question is asked. Casting it
@@ -189,7 +190,10 @@ let reading = sdk.prashna().read(&chart, &PrashnaQuestion {
 |---|---|
 | `verdict` | each clause of SP I.4, I.3 and II.2 with its graha or varga, and `SUCCEEDS`, `WITH_DIFFICULTY` or `FAILS` |
 | `change` | the lagna's modality read as II.1–2: `STAYS`, `CHANGES`, or a dual sign's half |
-| `links` | the Tajika connection between the lagna lord and the kāryesha (ithasala, nakta or yamaya with the carrier, isharafa, none), with kamboola and v. 96's Moon clause; present only when a house is asked |
+| `links` | the sixteen Tajika yogas between the lagna lord and the kāryesha, as a year's matter; present only when a house is asked |
+| `link` | what they say of the matter: `kind` (`DIRECT`, `THROUGH`, `DESTROYED`, `SEPARATED`, `SAME_LORD`, `UNLINKED`), its `meaning` under the question's `tense` (C370), the yoga and third graha, and a Kamboola's grade (C371, C372); present when `links` is |
+| `triKala` | the lagnesha's own yogas as past (Ishrafa), present (Vartamana or Poorna Ithasala) and future (Bhavishyat, or applying outside the orb), C375 |
+| `weak` | each of the seven's clauses of the Samjna Tantra v. 72: unseen by the lagna, in the Sun's setting part (C377), officeless, in Ishrafa with a malefic |
 | `timing` | count, unit, multiplier and the graha it came from, with `tie: bool` |
 | `mook` | the person (SP VII.7–8) or the topic (`MOON_HOUSE`), plus the class of the thing thought of |
 | `aksharaLagna`, `sixPoints` | the sign from the syllable; PM 8.1's six signs when an ārūḍha is supplied |
@@ -206,7 +210,19 @@ let reading = sdk.prashna().read(&chart, &PrashnaQuestion {
 - `score`: `OFF` by default, `BASELINE` adds the baseline's points
   beside the clauses and never replaces them;
 - `moon`: `MoonRules`, Tajika's reading of the Moon's weaknesses
-  (Samjna Tantra vv. 73–74), reused.
+  (Samjna Tantra vv. 73–74), reused;
+- `offices`: `OfficeRules`, how Kamboola's offices are read: `order`
+  (`GLOSS` by default, `HIGHEST`, `LOWEST`; C371), `drekkana` (`TAJIKA`
+  or `PARASHARI`), `enemy` (`TAJIKA` or `IGNORED`) and `hudda`
+  (`NILAKANTHI` or `CHARAK`, C109);
+- `weakness`: `WeaknessRules`, v. 72's setting part (`NAVAMSHA_SIGN` by
+  default or `NAVAMSHA_ARC`, C377);
+- `moon_scope`: which questions v. 96's Moon governs (`EVERY` by
+  default, or `GAIN`, C376).
+
+`Question::tense` (`UNSPECIFIED` by default, `FUTURE` or `PAST`) says
+when the matter falls, which is what a separation's meaning turns on
+(C370).
 
 `PrashnaRules::baseline()` sets every `BASELINE` value at once.
 
@@ -257,7 +273,29 @@ Each names its field under `prashna`.
    Pisces, the Moon carrying the light. `Prashna::moon` reports each
    clause of the Samjna Tantra vv. 73–74 that holds, read by
    `crates/tajika`'s `moon_weakness` with the empty road of vv. 55–56
-   (C352). The akṣara-lagna and the six points are open (C353): two
+   (C352). `Prashna::link` reads what the links say, as the Prashna
+   Tantra's final section does: an Ithasala promises the matter (v. 14),
+   Nakta or Yamaya promise it through the third graha (vv. 17–20), Manau
+   destroys it (the Samjna Tantra's example to v. 35 is a query: Libra
+   rising, the kingdom "taken away", which passes as printed), and an
+   Ishrafa fails a matter to come or finds one past (v. 16, C370). Where
+   the Moon joins the Ithasala the link carries **Kamboola's grade**
+   (`crates/tajika`'s `kamboola_grade`, Samjna Tantra vv. 36–46): each
+   of the Moon, the lagnesha and the karyesha holds an office, *uttama*
+   (own sign, exaltation), *madhyama* (own hudda, drekkāṇa, navāṁśa),
+   *sama* or *adhama* (debilitation, an enemy's sign), every clause it
+   meets reported. The gloss does not say which office counts when a
+   graha holds several; its worked examples do, read in the order
+   debilitation, division, sign, enemy, which reproduces nine of the
+   twelve it grades where "the highest counts" reproduces six (C371),
+   and the three it misses each miss on a different question, named by
+   the test. The pair's office is named only when the lords agree (C372).
+   `Prashna::tri_kala` reads the lagnesha's yogas with every other graha
+   as past, present and future (n179, C375). The link also reports
+   v. 96's `moonless` (C376) and Samarasiṁha's conditions that hold, his
+   "loss" clause left open (C374), and `Prashna::weak` each of the
+   seven's weaknesses of v. 72 (C377), the empty road and the Moon's
+   own clauses reading the same offices. The akṣara-lagna and the six points are open (C353): two
    prints carry vv. 12–15 without a gloss, and the root leaves four
    readings unsettled.
 3. **The `BASELINE` values**, built, transcribed from the baseline

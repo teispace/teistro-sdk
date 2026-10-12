@@ -1904,7 +1904,8 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
 
 /// The prashna every runner asks for: the seventh house, a querent's
 /// number, and the baseline's points beside the texts' clauses.
-const PRASHNA_JSON: &str = r#"{"question":{"house":7,"number":14},"rules":{"score":"BASELINE"}}"#;
+const PRASHNA_JSON: &str =
+    r#"{"question":{"house":7,"number":14,"tense":"FUTURE"},"rules":{"score":"BASELINE"}}"#;
 
 /// A prashna as the other three print it: the rules and the answers in
 /// one row, then each clause, the timing, the unspoken question, the
@@ -1987,7 +1988,9 @@ fn the_prashna(report: &mut Report, sdk: &Context, index: usize, document: &teis
 }
 
 /// What a prashna carries beside the texts' clauses: the baseline's
-/// points, and the Tajika links as a year's matter with their states.
+/// points, the Tajika links as a year's matter with their states, what
+/// they say of the matter with a Kamboola's grade, and the lagnesha's
+/// yogas as time.
 fn prashna_beside(
     report: &mut Report,
     key: &dyn Fn(&str) -> String,
@@ -2026,6 +2029,97 @@ fn prashna_beside(
             );
         }
     }
+    prashna_link(report, key, read);
+}
+
+/// The office rules, the link and its Kamboola's grade, and the tri-kala.
+fn prashna_link(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::prashna::Prashna,
+) {
+    let offices = &read.rules.offices;
+    put(
+        report,
+        &key("-offices"),
+        format!(
+            "{} {} {} {}",
+            wire_key(&offices.order),
+            wire_key(&offices.drekkana),
+            wire_key(&offices.enemy),
+            wire_key(&offices.hudda)
+        ),
+    );
+    if let Some(link) = &read.link {
+        put(
+            report,
+            &key("-link"),
+            format!(
+                "{} {} {} {} {} {}",
+                wire_key(&link.kind),
+                wire_key(&link.meaning),
+                link.yoga
+                    .map_or_else(|| String::from("-"), |yoga| wire_key(&yoga)),
+                graha_or_dash(link.through),
+                link.moonless
+                    .map_or_else(|| String::from("-"), |moonless| moonless.to_string()),
+                dashed(link.samarasimha.iter().map(wire_key))
+            ),
+        );
+        if let Some(grade) = &link.kamboola {
+            let office = |one: &teistro::tajika::Offices| {
+                format!(
+                    "{}:{}:{}",
+                    one.graha.full_key(),
+                    dashed(one.held.iter().map(wire_key)),
+                    wire_key(&one.adhikara)
+                )
+            };
+            put(
+                report,
+                &key("-kamboola"),
+                format!(
+                    "{} {} {} {}",
+                    grade
+                        .pair
+                        .map_or_else(|| String::from("-"), |pair| wire_key(&pair)),
+                    office(&grade.moon),
+                    office(&grade.lagnesha),
+                    office(&grade.karyesha)
+                ),
+            );
+        }
+    }
+    put(
+        report,
+        &key("-weak"),
+        format!(
+            "{} {} {}",
+            wire_key(&read.rules.weakness.setting),
+            wire_key(&read.rules.moon_scope),
+            read.weak
+                .iter()
+                .map(|weak| format!(
+                    "{}:{}",
+                    weak.graha.full_key(),
+                    dashed(weak.clauses.iter().map(wire_key))
+                ))
+                .collect::<Vec<_>>()
+                .join(" ")
+        ),
+    );
+    let time = &read.tri_kala;
+    put(
+        report,
+        &key("-trikala"),
+        format!(
+            "{} P:{} N:{} F:{}",
+            time.lagnesha.full_key(),
+            full_keys(&time.past),
+            full_keys(&time.present),
+            full_keys(&time.future)
+        ),
+    );
 }
 
 /// The rectification every runner asks for: twenty minutes either side

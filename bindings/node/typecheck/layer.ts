@@ -112,8 +112,10 @@ import type {
   KpLords,
   KpReading,
   KpRequest,
+  KamboolaGrade,
   Prashna,
   PrashnaRequest,
+  TajikaOffices,
   AmatyaDevata,
   Devotion,
   Remedies,
@@ -831,12 +833,15 @@ void theKpReading;
 // A prashna read all the way down, and a request in every field.
 function thePrashna(ctx: Context): string {
   const asked: PrashnaRequest = {
-    question: { house: 7, number: 14 },
+    question: { house: 7, number: 14, tense: 'PAST' },
     rules: {
       pisces: 'SHIRSHODAYA',
       timing: 'BASELINE',
       mook: 'MOON_HOUSE',
       moon: { kshina: 'DARK_ELEVENTH_TO_NEW_MOON' },
+      offices: { order: 'LOWEST', drekkana: 'PARASHARI', enemy: 'IGNORED', hudda: 'CHARAK' },
+      weakness: { setting: 'NAVAMSHA_ARC' },
+      moonScope: 'GAIN',
       score: 'BASELINE',
     },
   };
@@ -848,7 +853,18 @@ function thePrashna(ctx: Context): string {
   }).prashna;
   if (read === null) return 'none';
   const clauses = read.verdict.clauses.map((c) => `${c.kind} ${c.graha ?? '-'} ${c.favour}`);
-  const { timing, mook, links, moon, score } = read;
+  const { timing, mook, links, link, triKala, moon, score } = read;
+  const office = (o: TajikaOffices): string => `${o.graha} ${o.held.join()} ${o.adhikara}`;
+  const grade = (g: KamboolaGrade): string =>
+    `${g.rules.order} ${g.rules.drekkana} ${g.rules.enemy} ${g.rules.hudda} ${g.pair ?? '-'} ` +
+    [g.moon, g.lagnesha, g.karyesha].map(office).join();
+  const linked =
+    link === null
+      ? '-'
+      : `${link.kind} ${link.meaning} ${link.yoga ?? '-'} ${link.through ?? '-'} ${link.kamboola === null ? '-' : grade(link.kamboola)}`;
+  const time = `${triKala.lagnesha} ${triKala.past.join()} ${triKala.present.join()} ${triKala.future.join()}`;
+  const weak = read.weak.map((w) => `${w.graha} ${w.clauses.join()}`).join();
+  const samara = link === null ? '-' : `${link.moonless ?? '-'} ${link.samarasimha.join()}`;
   const when = `${timing.rule} ${timing.graha} ${timing.tie} ${timing.count} ${timing.multiplier} ${timing.amount ?? '-'} ${timing.unit} ${timing.between.join()}`;
   const about = `${mook.rule} ${mook.graha} ${mook.tie} ${mook.house} ${mook.person ?? '-'} ${mook.thought}`;
   const tied =
@@ -863,6 +879,8 @@ function thePrashna(ctx: Context): string {
       : `${score.points} ${score.answer} ${score.factors.map((f) => `${f.kind} ${f.points}`).join()} ${score.void} ${score.applyingTo ?? '-'}`;
   // @ts-expect-error a house is a number
   const wrong: PrashnaRequest = { question: { house: '7' } };
+  // @ts-expect-error a tense is one of three
+  const soon: PrashnaRequest = { question: { tense: 'SOON' } };
   return [
     read.rules.mook,
     read.verdict.outcome,
@@ -875,7 +893,13 @@ function thePrashna(ctx: Context): string {
     moon.clauses.join(),
     points,
     read.numberSign ?? '-',
+    linked,
+    time,
+    weak,
+    samara,
+    read.rules.offices.order ?? '-',
     String(wrong),
+    String(soon),
   ].join();
 }
 

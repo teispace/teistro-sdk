@@ -4071,6 +4071,15 @@ test('a chart carries its prashna', () => {
     'the points are the factors added',
   );
 
+  assert.equal(plain.link, null);
+  assert.ok(['PROMISED', 'FAILS', 'PAST', 'FAILS_OR_PAST', 'UNREAD'].includes(read.link.meaning));
+  assert.ok(read.triKala.lagnesha.startsWith('graha.'));
+  assert.ok([...read.triKala.past, ...read.triKala.present, ...read.triKala.future].every((g) => g.startsWith('graha.')));
+  assert.deepEqual(read.rules.offices, { order: 'GLOSS', drekkana: 'TAJIKA', enemy: 'TAJIKA', hudda: 'NILAKANTHI' });
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, prashna: { question: { house: 7, tense: 'SOON' } } }),
+    (error) => error.field === 'prashna.question.tense',
+  );
   assert.throws(
     () => ctx.chart.found({ instant, ...at, prashna: { question: { house: 13 } } }),
     (error) => error.field === 'prashna.question.house',

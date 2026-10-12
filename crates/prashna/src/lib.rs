@@ -46,15 +46,17 @@ use teistro_core::Error;
 use teistro_core::catalogue::{Graha, Modality, Parity, Rashi, Rising};
 use teistro_core::house::House;
 use teistro_tajika::{
-    AnnualSky, AnnualStates, MoonRules, MoonWeakness, YearYogas, YogaRules, moon_weakness,
-    year_yogas_with_states,
+    AnnualSky, AnnualStates, GrahaWeakness, MoonRules, MoonWeakness, OfficeRules, WeaknessRules,
+    YearYogas, YogaRules, moon_weakness, weaknesses, year_yogas_with_states,
 };
 
 mod baseline;
+mod link;
 #[cfg(test)]
 mod tests;
 
 pub use baseline::{Answer, Factor, FactorKind, Score, ScoreRule, number_sign};
+pub use link::{Link, LinkKind, Meaning, MoonScope, SamarasimhaClause, Tense, TriKala};
 
 /// The nine grahas a prashna places, in the order [`PrashnaSky`] holds
 /// them.
@@ -333,6 +335,12 @@ pub struct PrashnaRules {
     /// How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna
     /// Tantra vv. 73–74).
     pub moon: MoonRules,
+    /// How a Kamboola's offices are read (Samjna Tantra vv. 36–46).
+    pub offices: OfficeRules,
+    /// How v. 72's weaknesses are read.
+    pub weakness: WeaknessRules,
+    /// Which questions v. 96's Moon governs.
+    pub moon_scope: MoonScope,
     /// Whether the baseline engine's points come beside the clauses.
     pub score: ScoreRule,
 }
@@ -349,6 +357,16 @@ impl PrashnaRules {
             moon: MoonRules {
                 kshina: teistro_tajika::KshinaRule::DarkEighthToBrightEighth,
             },
+            offices: OfficeRules {
+                order: teistro_tajika::OfficeOrder::Gloss,
+                drekkana: teistro_tajika::DrekkanaReading::Tajika,
+                enemy: teistro_tajika::EnemySign::Tajika,
+                hudda: teistro_tajika::HuddaTable::Nilakanthi,
+            },
+            weakness: WeaknessRules {
+                setting: teistro_tajika::SettingPart::NavamshaSign,
+            },
+            moon_scope: MoonScope::Every,
         }
     }
 }
@@ -364,6 +382,9 @@ pub struct Question {
     /// The number the querent chose, 1 to 108, read only by the
     /// unsourced [`number_sign`] (C340).
     pub number: Option<u8>,
+    /// When the matter falls, which decides what a separation means
+    /// (C370).
+    pub tense: Tense,
 }
 
 impl Question {
@@ -380,6 +401,7 @@ impl Question {
         Question {
             house: Some(house),
             number: None,
+            tense: Tense::Unspecified,
         }
     }
 }
@@ -601,6 +623,15 @@ pub struct Prashna {
     /// Nilakanthi's Prashna Tantra, vv. 9–21): present only when a
     /// house is asked.
     pub links: Option<YearYogas>,
+    /// What those yogas say of the matter (Prashna Tantra vv. 14–21),
+    /// with a Kamboola's grade: present when [`Prashna::links`] is.
+    pub link: Option<Link>,
+    /// The lagnesha's own yogas read as past, present and future
+    /// (Prashna Tantra, the general section, n179).
+    pub tri_kala: TriKala,
+    /// Each of the seven's weaknesses of v. 72, the Sun first: a graha
+    /// "unable to bring about the matter".
+    pub weak: Vec<GrahaWeakness>,
     /// The Moon's weaknesses, which Tajika Nilakanthi's Samjna Tantra
     /// v. 74 reads "at birth or in a query": each clause of vv. 73–74
     /// that holds, none weighed.
@@ -627,14 +658,29 @@ pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result
         return Err(Error::invalid_arg(format!("house {house} is not 1 to 12"))
             .with_field("question.house"));
     }
+    let seven = annual(sky)?;
+    let links = links(sky, question)?;
+    let link = links
+        .as_ref()
+        .map(|links| {
+            let rules = link::LinkRules {
+                offices: rules.offices,
+                moon_scope: rules.moon_scope,
+            };
+            link::link(links, &seven, sky.lagna(), question.tense, rules)
+        })
+        .transpose()?;
     Ok(Prashna {
         rules,
         verdict: verdict(sky, question, rules),
         change: change(sky),
         timing: timing(sky, rules.timing)?,
         mook: mook(sky, rules.mook)?,
-        links: links(sky, question)?,
-        moon: moon_weakness(&annual(sky)?, rules.moon)?,
+        links,
+        link,
+        tri_kala: link::tri_kala(sky.lagna().attributes().lord, &seven)?,
+        weak: weaknesses(sky.lagna_deg, &seven, rules.weakness)?,
+        moon: moon_weakness(&seven, rules.moon)?,
         score: match rules.score {
             ScoreRule::Off => None,
             ScoreRule::Baseline => Some(baseline::score(sky)?),

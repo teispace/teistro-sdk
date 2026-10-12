@@ -2,6 +2,7 @@ package com.teispace.teistro;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,6 +14,9 @@ import java.util.Map;
  * @param timing When the matter comes to pass.
  * @param mook What an unspoken question is about.
  * @param links The Tajika links; null when no house was asked. May be null.
+ * @param link What the links say of the matter; null when no house was asked. May be null.
+ * @param triKala The lagnesha's own yogas read as past, present and future.
+ * @param weak Each of the seven's weaknesses of v. 72, the Sun first.
  * @param moon The Moon's weaknesses.
  * @param score The baseline's points; null unless {@code rules.score} is {@code BASELINE}. May be
  *     null.
@@ -25,11 +29,15 @@ public record Prashna(
         PrashnaTiming timing,
         PrashnaMook mook,
         PrashnaLinks links,
+        PrashnaLink link,
+        TriKala triKala,
+        List<GrahaWeakness> weak,
         MoonWeakness moon,
         PrashnaScore score,
         Rashi numberSign) {
     /** The value, its lists copied and unmodifiable. */
     public Prashna {
         rules = Collections.unmodifiableMap(new LinkedHashMap<>(rules));
+        weak = List.copyOf(weak);
     }
 }

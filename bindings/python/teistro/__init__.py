@@ -698,6 +698,20 @@ __all__ = [
     "PrashnaRequest",
     "PrashnaQuestion",
     "PrashnaRules",
+    "PrashnaTense",
+    "PrashnaLink",
+    "TriKala",
+    "GrahaWeakness",
+    "WeaknessRules",
+    "SettingPart",
+    "MoonScope",
+    "KamboolaGrade",
+    "TajikaOffices",
+    "OfficeRules",
+    "OfficeOrder",
+    "DrekkanaReading",
+    "EnemySign",
+    "HuddaTable",
     "PiscesRising",
     "TimingRule",
     "MookRule",
@@ -8277,14 +8291,20 @@ class TajikaMatter:
         return any(one.yoga == yoga for one in self.held)
 
 
+PrashnaTense = Literal["UNSPECIFIED", "FUTURE", "PAST"]
+"""When the matter falls, a `PrashnaQuestion` `tense`: it decides whether a
+separation fails the matter or finds it past (C370)."""
+
+
 class PrashnaQuestion(TypedDict, total=False):
     """What a prashna asks: `house`, the matter's house 1 to 12, which the
-    verdict's I.3 clauses and the Tajika links read; and `number`, the
+    verdict's I.3 clauses and the Tajika links read; `number`, the
     querent's 1 to 108, read only by the baseline engine's unsourced rule
-    (C340)."""
+    (C340); and `tense`, `UNSPECIFIED` (the default), `FUTURE` or `PAST`."""
 
     house: int
     number: int
+    tense: PrashnaTense
 
 
 KshinaRule = Literal["DARK_EIGHTH_TO_BRIGHT_EIGHTH", "DARK_ELEVENTH_TO_NEW_MOON"]
@@ -8297,6 +8317,32 @@ class PrashnaMoonRules(TypedDict, total=False):
     `DARK_ELEVENTH_TO_NEW_MOON` (its "some say")."""
 
     kshina: KshinaRule
+
+
+OfficeOrder = Literal["GLOSS", "HIGHEST", "LOWEST"]
+"""Which office counts when a graha holds several, an `OfficeRules` `order`
+(C371)."""
+
+DrekkanaReading = Literal["TAJIKA", "PARASHARI"]
+"""Which drekkana is a graha's own, an `OfficeRules` `drekkana`."""
+
+EnemySign = Literal["TAJIKA", "IGNORED"]
+"""Whether an enemy's sign makes a graha adhama, an `OfficeRules` `enemy`."""
+
+HuddaTable = Literal["NILAKANTHI", "CHARAK"]
+"""Which printing of the Hudda table, an `OfficeRules` `hudda` (C109)."""
+
+
+class OfficeRules(TypedDict, total=False):
+    """How a Kamboola's offices are read (Samjna Tantra vv. 36–46), the
+    gloss's own by default: `order` (`GLOSS`, `HIGHEST` or `LOWEST`),
+    `drekkana` (`TAJIKA` or `PARASHARI`), `enemy` (`TAJIKA` or `IGNORED`)
+    and `hudda` (`NILAKANTHI` or `CHARAK`)."""
+
+    order: OfficeOrder
+    drekkana: DrekkanaReading
+    enemy: EnemySign
+    hudda: HuddaTable
 
 
 PiscesRising = Literal["BOTH_WAYS", "SHIRSHODAYA"]
@@ -8313,17 +8359,38 @@ ScoreRule = Literal["OFF", "BASELINE"]
 `PrashnaRules` `score`."""
 
 
+SettingPart = Literal["NAVAMSHA_SIGN", "NAVAMSHA_ARC"]
+"""What the Sun's setting part is (Samjna Tantra v. 72, C377), a
+`WeaknessRules` `setting`."""
+
+
+class WeaknessRules(TypedDict, total=False):
+    """How v. 72's weaknesses are read: `setting`, `NAVAMSHA_SIGN` (the
+    default) or `NAVAMSHA_ARC`."""
+
+    setting: SettingPart
+
+
+MoonScope = Literal["EVERY", "GAIN"]
+"""Which questions v. 96's "all yogas are fruitless without the Moon"
+governs (C376), a `PrashnaRules` `moon_scope`."""
+
+
 class PrashnaRules(TypedDict, total=False):
     """The readings a prashna is given under, one knob per crux, the texts'
     own by default: `pisces` (`BOTH_WAYS` or `SHIRSHODAYA`), `timing`
     (`STRONGEST_GRAHA`, `FIRST_OCCUPIED`, `MOON_DAYS` or the unsourced
     `BASELINE`), `mook` (`SHATPANCHASHIKA`, `MOON_HOUSE` or `BASELINE`),
-    `moon` and `score` (`OFF` or `BASELINE`)."""
+    `moon`, `offices`, `weakness`, `moonScope` (`EVERY` or `GAIN`) and
+    `score` (`OFF` or `BASELINE`)."""
 
     pisces: PiscesRising
     timing: TimingRule
     mook: MookRule
     moon: PrashnaMoonRules
+    offices: OfficeRules
+    weakness: WeaknessRules
+    moonScope: MoonScope
     score: ScoreRule
 
 
@@ -8419,6 +8486,81 @@ class MoonWeakness:
 
 
 @dataclass(frozen=True)
+class TajikaOffices:
+    """The offices one graha holds: every clause of the gloss's definition
+    it meets (`OWN_SIGN`, `EXALTED`, `OWN_HUDDA`, `OWN_DREKKANA`,
+    `OWN_NAVAMSHA`, `DEBILITATED`, `ENEMY_SIGN`), and the office that
+    counts (`UTTAMA`, `MADHYAMA`, `SAMA` or `ADHAMA`)."""
+
+    graha: Graha
+    held: Tuple[str, ...]
+    adhikara: str
+
+
+@dataclass(frozen=True)
+class KamboolaGrade:
+    """A Kamboola's grade: the Moon's offices and the pair's (Samjna Tantra
+    vv. 36–46). `pair` is the lords' office when they hold the same one,
+    `None` when they differ (C372)."""
+
+    rules: OfficeRules
+    moon: TajikaOffices
+    lagnesha: TajikaOffices
+    karyesha: TajikaOffices
+    pair: Optional[str]
+
+    def cell(self) -> Optional[Tuple[str, str]]:
+        """The cell the gloss names, the Moon's office first and the pair's
+        second, when the pair has one."""
+        return None if self.pair is None else (self.moon.adhikara, self.pair)
+
+
+@dataclass(frozen=True)
+class PrashnaLink:
+    """What the Tajika links say of the matter (Prashna Tantra vv. 14–21):
+    `kind` (`DIRECT`, `THROUGH`, `DESTROYED`, `SEPARATED`, `SAME_LORD` or
+    `UNLINKED`) and `meaning` under the question's tense (`PROMISED`,
+    `FAILS`, `PAST`, `FAILS_OR_PAST` or `UNREAD`)."""
+
+    kind: str
+    meaning: str
+    yoga: Optional[YearYoga]
+    """The yoga that made it: Ithasala, Nakta, Yamaya, Manau or Ishrafa."""
+    through: Optional[Graha]
+    """The third graha carrying or gathering the light, or the malefic."""
+    kamboola: Optional[KamboolaGrade]
+    """The Kamboola's grade, when the Moon joins the Ithasala."""
+    moonless: Optional[bool]
+    """v. 96: whether the Moon looks at neither lord; `None` where the
+    rules' `moonScope` does not reach the question."""
+    samarasimha: Tuple[str, ...]
+    """Samarasimha's conditions that hold, in his order
+    (`LORDS_SEE_THEIR_HOUSES`, `KARYESHA_IN_LAGNA_SEES_LAGNESHA`,
+    `KARYESHA_ELSEWHERE_SEES_LAGNESHA`, `MOON_SEES_LAGNESHA`)."""
+
+
+@dataclass(frozen=True)
+class GrahaWeakness:
+    """The clauses of the Samjna Tantra v. 72 that hold for one graha
+    (`UNSEEN_LAGNA`, `SETTING_PART`, `OFFICELESS`, `MALEFIC_ISHRAFA`): a
+    graha "unable to bring about the matter", none weighed."""
+
+    graha: Graha
+    clauses: Tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class TriKala:
+    """The lagnesha's own yogas read as time (n179, C375): those it is
+    separating from, joined with, and coming to."""
+
+    lagnesha: Graha
+    past: Tuple[Graha, ...]
+    present: Tuple[Graha, ...]
+    future: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
 class PrashnaFactor:
     """One factor of the baseline's points, and what it gave."""
 
@@ -8453,6 +8595,11 @@ class Prashna:
     mook: PrashnaMook
     links: Optional[PrashnaLinks]
     """The Tajika links; `None` when no house was asked."""
+    link: Optional[PrashnaLink]
+    """What the links say of the matter; `None` when no house was asked."""
+    tri_kala: TriKala
+    weak: Tuple[GrahaWeakness, ...]
+    """Each of the seven's weaknesses of v. 72, the Sun first."""
     moon: MoonWeakness
     score: Optional[PrashnaScore]
     """The baseline's points; `None` unless `rules.score` is `BASELINE`."""
@@ -10797,6 +10944,8 @@ def _prashna(raw: Mapping[str, Any]) -> Prashna:
     timing = raw["timing"]
     mook = raw["mook"]
     links = raw["links"]
+    link = raw["link"]
+    tri_kala = raw["triKala"]
     score = raw["score"]
     sign = raw["numberSign"]
     return Prashna(
@@ -10828,6 +10977,14 @@ def _prashna(raw: Mapping[str, Any]) -> Prashna:
             thought=mook["thought"],
         ),
         links=None if links is None else _links(links),
+        link=None if link is None else _prashna_link(link),
+        weak=tuple(GrahaWeakness(graha=some(w["graha"]), clauses=tuple(w["clauses"])) for w in raw["weak"]),
+        tri_kala=TriKala(
+            lagnesha=some(tri_kala["lagnesha"]),
+            past=tuple(some(key) for key in tri_kala["past"]),
+            present=tuple(some(key) for key in tri_kala["present"]),
+            future=tuple(some(key) for key in tri_kala["future"]),
+        ),
         moon=MoonWeakness(rules=raw["moon"]["rules"], clauses=tuple(raw["moon"]["clauses"])),
         score=None
         if score is None
@@ -11607,6 +11764,36 @@ def _rectification_baseline(raw: Mapping[str, Any]) -> BaselineAnswer:
             )
             for h in raw["holdOut"]
         ),
+    )
+
+
+def _prashna_link(raw: Mapping[str, Any]) -> PrashnaLink:
+    """A prashna's link as the boundary's JSON writes it."""
+
+    def offices(one: Mapping[str, Any]) -> TajikaOffices:
+        return TajikaOffices(
+            graha=_member(Graha, one["graha"]), held=tuple(one["held"]), adhikara=one["adhikara"]
+        )
+
+    yoga = raw["yoga"]
+    through = raw["through"]
+    grade = raw["kamboola"]
+    return PrashnaLink(
+        kind=raw["kind"],
+        meaning=raw["meaning"],
+        yoga=None if yoga is None else _member(YearYoga, yoga),
+        through=None if through is None else _member(Graha, through),
+        kamboola=None
+        if grade is None
+        else KamboolaGrade(
+            rules=grade["rules"],
+            moon=offices(grade["moon"]),
+            lagnesha=offices(grade["lagnesha"]),
+            karyesha=offices(grade["karyesha"]),
+            pair=grade["pair"],
+        ),
+        moonless=raw["moonless"],
+        samarasimha=tuple(raw["samarasimha"]),
     )
 
 

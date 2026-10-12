@@ -14187,6 +14187,51 @@ Prashna _prashna(Map<String, Object?> raw) {
   PrashnaMoonRules moonRules(Object? value) => PrashnaMoonRules(
     kshina: _keyedIn(KshinaRule.values, at(value)['kshina']),
   );
+  OfficeRules officeRules(Object? value) => OfficeRules(
+    order: _keyedIn(OfficeOrder.values, at(value)['order']),
+    drekkana: _keyedIn(DrekkanaReading.values, at(value)['drekkana']),
+    enemy: _keyedIn(EnemySign.values, at(value)['enemy']),
+    hudda: _keyedIn(HuddaTable.values, at(value)['hudda']),
+  );
+  TajikaOffices offices(Object? value) => TajikaOffices(
+    graha: graha(at(value)['graha']),
+    held: List<OfficeClause>.unmodifiable([
+      for (final key in each(at(value)['held']))
+        _keyedIn(OfficeClause.values, key),
+    ]),
+    adhikara: _keyedIn(Adhikara.values, at(value)['adhikara']),
+  );
+  PrashnaLink link(Map<String, Object?> one) {
+    final grade = one['kamboola'];
+    return PrashnaLink(
+      kind: _keyedIn(PrashnaLinkKind.values, one['kind']),
+      meaning: _keyedIn(PrashnaMeaning.values, one['meaning']),
+      yoga:
+          one['yoga'] == null
+              ? null
+              : YearYoga.byKey(one['yoga']! as String) ??
+                  (throw StateError('a prashna spelling ${one['yoga']}')),
+      through: some(one['through']),
+      moonless: one['moonless'] as bool?,
+      samarasimha: List<SamarasimhaClause>.unmodifiable([
+        for (final key in each(one['samarasimha']))
+          _keyedIn(SamarasimhaClause.values, key),
+      ]),
+      kamboola:
+          grade == null
+              ? null
+              : KamboolaGrade(
+                rules: officeRules(at(grade)['rules']),
+                moon: offices(at(grade)['moon']),
+                lagnesha: offices(at(grade)['lagnesha']),
+                karyesha: offices(at(grade)['karyesha']),
+                pair:
+                    at(grade)['pair'] == null
+                        ? null
+                        : _keyedIn(Adhikara.values, at(grade)['pair']),
+              ),
+    );
+  }
 
   final rules = at(raw['rules']);
   final verdict = at(raw['verdict']);
@@ -14194,6 +14239,8 @@ Prashna _prashna(Map<String, Object?> raw) {
   final mook = at(raw['mook']);
   final moon = at(raw['moon']);
   final links = raw['links'];
+  final linked = raw['link'];
+  final triKala = at(raw['triKala']);
   final score = raw['score'];
   final sign = raw['numberSign'];
   return Prashna(
@@ -14202,6 +14249,11 @@ Prashna _prashna(Map<String, Object?> raw) {
       timing: _keyedIn(TimingRule.values, rules['timing']),
       mook: _keyedIn(MookRule.values, rules['mook']),
       moon: moonRules(rules['moon']),
+      offices: officeRules(rules['offices']),
+      weakness: WeaknessRules(
+        setting: _keyedIn(SettingPart.values, at(rules['weakness'])['setting']),
+      ),
+      moonScope: _keyedIn(MoonScope.values, rules['moonScope']),
       score: _keyedIn(ScoreRule.values, rules['score']),
     ),
     verdict: PrashnaVerdict(
@@ -14238,6 +14290,23 @@ Prashna _prashna(Map<String, Object?> raw) {
       thought: _keyedIn(PrashnaThought.values, mook['thought']),
     ),
     links: links == null ? null : _prashnaLinks(at(links)),
+    link: linked == null ? null : link(at(linked)),
+    weak: List<GrahaWeakness>.unmodifiable([
+      for (final one in each(raw['weak']).map(at))
+        GrahaWeakness(
+          graha: graha(one['graha']),
+          clauses: List<GrahaClause>.unmodifiable([
+            for (final key in each(one['clauses']))
+              _keyedIn(GrahaClause.values, key),
+          ]),
+        ),
+    ]),
+    triKala: TriKala(
+      lagnesha: graha(triKala['lagnesha']),
+      past: List<Graha>.unmodifiable(grahas(triKala['past'])),
+      present: List<Graha>.unmodifiable(grahas(triKala['present'])),
+      future: List<Graha>.unmodifiable(grahas(triKala['future'])),
+    ),
     moon: MoonWeakness(
       rules: moonRules(moon['rules']),
       clauses: List<MoonWeaknessClause>.unmodifiable([
@@ -16395,6 +16464,134 @@ final class PrashnaMoonRules extends _Value {
   List<Object?> get _fields => [kshina];
 }
 
+/// Which office counts when a graha holds several (C371).
+enum OfficeOrder implements _Keyed {
+  /// The worked examples' order: debilitation, a division, own sign or
+  /// exaltation, an enemy's sign; the default.
+  gloss('GLOSS'),
+
+  /// The best office held.
+  highest('HIGHEST'),
+
+  /// The worst office held.
+  lowest('LOWEST');
+
+  const OfficeOrder(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which drekkana is a graha's own.
+enum DrekkanaReading implements _Keyed {
+  /// The Tajika one, the weekday cycle from Mars; the default.
+  tajika('TAJIKA'),
+
+  /// The Parashari one: the sign, its fifth, its ninth.
+  parashari('PARASHARI');
+
+  const DrekkanaReading(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whether an enemy's sign makes a graha adhama.
+enum EnemySign implements _Keyed {
+  /// Read, the enemy as Tajika reads one; the default.
+  tajika('TAJIKA'),
+
+  /// Not read.
+  ignored('IGNORED');
+
+  const EnemySign(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which printing of the Hudda table (C109).
+enum HuddaTable implements _Keyed {
+  /// The Tajika Nilakanthi's own (1893); the default.
+  nilakanthi('NILAKANTHI'),
+
+  /// K. S. Charak's, whose Aquarius puts Venus first.
+  charak('CHARAK');
+
+  const HuddaTable(this.key);
+
+  @override
+  final String key;
+}
+
+/// How a Kamboola's offices are read (Samjna Tantra vv. 36–46), the
+/// gloss's own by default.
+final class OfficeRules extends _Value {
+  const OfficeRules({
+    this.order = OfficeOrder.gloss,
+    this.drekkana = DrekkanaReading.tajika,
+    this.enemy = EnemySign.tajika,
+    this.hudda = HuddaTable.nilakanthi,
+  });
+
+  final OfficeOrder order;
+  final DrekkanaReading drekkana;
+  final EnemySign enemy;
+  final HuddaTable hudda;
+
+  Map<String, Object?> get _record => {
+    'order': order.key,
+    'drekkana': drekkana.key,
+    'enemy': enemy.key,
+    'hudda': hudda.key,
+  };
+
+  @override
+  List<Object?> get _fields => [order, drekkana, enemy, hudda];
+}
+
+/// What the Sun's setting part is (Samjna Tantra v. 72, C377).
+enum SettingPart implements _Keyed {
+  /// Any navamsha whose sign is the seventh from the Sun's navamsha's;
+  /// the default.
+  navamshaSign('NAVAMSHA_SIGN'),
+
+  /// The one navamsha-arc seven on from the Sun's.
+  navamshaArc('NAVAMSHA_ARC');
+
+  const SettingPart(this.key);
+
+  @override
+  final String key;
+}
+
+/// How v. 72's weaknesses are read.
+final class WeaknessRules extends _Value {
+  const WeaknessRules({this.setting = SettingPart.navamshaSign});
+
+  final SettingPart setting;
+
+  Map<String, Object?> get _record => {'setting': setting.key};
+
+  @override
+  List<Object?> get _fields => [setting];
+}
+
+/// Which questions v. 96's "all yogas are fruitless without the Moon"
+/// governs (C376).
+enum MoonScope implements _Keyed {
+  /// Every question; the default.
+  every('EVERY'),
+
+  /// Questions of gain, the 11th house, where the verse stands.
+  gain('GAIN');
+
+  const MoonScope(this.key);
+
+  @override
+  final String key;
+}
+
 /// The readings a prashna is given under, one a crux, the texts' own by
 /// default (`03-design/prashna.md`).
 final class PrashnaRules extends _Value {
@@ -16403,6 +16600,9 @@ final class PrashnaRules extends _Value {
     this.timing = TimingRule.strongestGraha,
     this.mook = MookRule.shatpanchashika,
     this.moon = const PrashnaMoonRules(),
+    this.offices = const OfficeRules(),
+    this.weakness = const WeaknessRules(),
+    this.moonScope = MoonScope.every,
     this.score = ScoreRule.off,
   });
 
@@ -16410,6 +16610,15 @@ final class PrashnaRules extends _Value {
   final TimingRule timing;
   final MookRule mook;
   final PrashnaMoonRules moon;
+
+  /// How a Kamboola's offices are read.
+  final OfficeRules offices;
+
+  /// How v. 72's weaknesses are read.
+  final WeaknessRules weakness;
+
+  /// Which questions v. 96's Moon governs.
+  final MoonScope moonScope;
   final ScoreRule score;
 
   Map<String, Object?> get _record => {
@@ -16417,11 +16626,41 @@ final class PrashnaRules extends _Value {
     'timing': timing.key,
     'mook': mook.key,
     'moon': moon._record,
+    'offices': offices._record,
+    'weakness': weakness._record,
+    'moonScope': moonScope.key,
     'score': score.key,
   };
 
   @override
-  List<Object?> get _fields => [pisces, timing, mook, moon, score];
+  List<Object?> get _fields => [
+    pisces,
+    timing,
+    mook,
+    moon,
+    offices,
+    weakness,
+    moonScope,
+    score,
+  ];
+}
+
+/// When the matter asked about falls, which decides whether a separation
+/// fails it or finds it past (C370).
+enum PrashnaTense implements _Keyed {
+  /// Not said: a separation reads both ways; the default.
+  unspecified('UNSPECIFIED'),
+
+  /// A matter still to come.
+  future('FUTURE'),
+
+  /// A matter that may already have happened.
+  past('PAST');
+
+  const PrashnaTense(this.key);
+
+  @override
+  final String key;
 }
 
 /// A question to read every chart of a request as the chart of its moment
@@ -16438,6 +16677,7 @@ final class PrashnaRequest {
   const PrashnaRequest({
     this.house,
     this.number,
+    this.tense = PrashnaTense.unspecified,
     this.rules = const PrashnaRules(),
   });
 
@@ -16449,6 +16689,9 @@ final class PrashnaRequest {
   /// unsourced rule (C340); refused by `prashna.question.number` outside it.
   final int? number;
 
+  /// When the matter falls (C370).
+  final PrashnaTense tense;
+
   /// The readings.
   final PrashnaRules rules;
 
@@ -16456,6 +16699,7 @@ final class PrashnaRequest {
     'question': {
       if (house != null) 'house': house,
       if (number != null) 'number': number,
+      'tense': tense.key,
     },
     'rules': rules._record,
   });
@@ -16815,6 +17059,231 @@ final class PrashnaScore extends _Value {
 }
 
 /// A chart read as a prashna (`03-design/prashna.md`).
+/// One of the four offices, best first (Samjna Tantra vv. 36–46).
+enum Adhikara implements _Keyed {
+  /// Own sign or exaltation.
+  uttama('UTTAMA'),
+
+  /// Own hudda, drekkana or navamsha.
+  madhyama('MADHYAMA'),
+
+  /// None of the offices.
+  sama('SAMA'),
+
+  /// Debilitation or an enemy's sign.
+  adhama('ADHAMA');
+
+  const Adhikara(this.key);
+
+  @override
+  final String key;
+}
+
+/// One clause of the gloss's definition of the offices.
+enum OfficeClause implements _Keyed {
+  ownSign('OWN_SIGN'),
+  exalted('EXALTED'),
+  ownHudda('OWN_HUDDA'),
+  ownDrekkana('OWN_DREKKANA'),
+  ownNavamsha('OWN_NAVAMSHA'),
+  debilitated('DEBILITATED'),
+  enemySign('ENEMY_SIGN');
+
+  const OfficeClause(this.key);
+
+  @override
+  final String key;
+}
+
+/// The offices one graha holds.
+final class TajikaOffices extends _Value {
+  const TajikaOffices({
+    required this.graha,
+    required this.held,
+    required this.adhikara,
+  });
+
+  final Graha graha;
+
+  /// Every clause of the definition it meets, in the definition's order.
+  final List<OfficeClause> held;
+
+  /// The office that counts, by [OfficeRules.order].
+  final Adhikara adhikara;
+
+  @override
+  List<Object?> get _fields => [graha, ...held, adhikara];
+}
+
+/// A Kamboola's grade: the Moon's offices and the pair's.
+final class KamboolaGrade extends _Value {
+  const KamboolaGrade({
+    required this.rules,
+    required this.moon,
+    required this.lagnesha,
+    required this.karyesha,
+    required this.pair,
+  });
+
+  final OfficeRules rules;
+  final TajikaOffices moon;
+  final TajikaOffices lagnesha;
+  final TajikaOffices karyesha;
+
+  /// The lords' office when they hold the same one; null when they differ
+  /// (C372).
+  final Adhikara? pair;
+
+  /// The cell the gloss names, the Moon's office first and the pair's
+  /// second; null when the pair has none.
+  (Adhikara, Adhikara)? get cell =>
+      pair == null ? null : (moon.adhikara, pair!);
+
+  @override
+  List<Object?> get _fields => [rules, moon, lagnesha, karyesha, pair];
+}
+
+/// How the lagnesha and the karyesha are linked (Prashna Tantra vv. 14–21).
+enum PrashnaLinkKind implements _Keyed {
+  direct('DIRECT'),
+  through('THROUGH'),
+  destroyed('DESTROYED'),
+  separated('SEPARATED'),
+  sameLord('SAME_LORD'),
+  unlinked('UNLINKED');
+
+  const PrashnaLinkKind(this.key);
+
+  @override
+  final String key;
+}
+
+/// What a link says of the matter, under the question's tense.
+enum PrashnaMeaning implements _Keyed {
+  promised('PROMISED'),
+  fails('FAILS'),
+  past('PAST'),
+  failsOrPast('FAILS_OR_PAST'),
+  unread('UNREAD');
+
+  const PrashnaMeaning(this.key);
+
+  @override
+  final String key;
+}
+
+/// A condition Samarasimha sets for a question (n178), reported.
+enum SamarasimhaClause implements _Keyed {
+  lordsSeeTheirHouses('LORDS_SEE_THEIR_HOUSES'),
+  karyeshaInLagnaSeesLagnesha('KARYESHA_IN_LAGNA_SEES_LAGNESHA'),
+  karyeshaElsewhereSeesLagnesha('KARYESHA_ELSEWHERE_SEES_LAGNESHA'),
+  moonSeesLagnesha('MOON_SEES_LAGNESHA');
+
+  const SamarasimhaClause(this.key);
+
+  @override
+  final String key;
+}
+
+/// A clause of the Samjna Tantra v. 72: a graha unable to bring about
+/// the matter.
+enum GrahaClause implements _Keyed {
+  unseenLagna('UNSEEN_LAGNA'),
+  settingPart('SETTING_PART'),
+  officeless('OFFICELESS'),
+  maleficIshrafa('MALEFIC_ISHRAFA');
+
+  const GrahaClause(this.key);
+
+  @override
+  final String key;
+}
+
+/// The clauses of v. 72 that hold for one graha.
+final class GrahaWeakness extends _Value {
+  const GrahaWeakness({required this.graha, required this.clauses});
+
+  final Graha graha;
+  final List<GrahaClause> clauses;
+
+  @override
+  List<Object?> get _fields => [graha, ...clauses];
+}
+
+/// What the Tajika links say of the matter.
+final class PrashnaLink extends _Value {
+  const PrashnaLink({
+    required this.kind,
+    required this.meaning,
+    required this.yoga,
+    required this.through,
+    required this.kamboola,
+    required this.moonless,
+    required this.samarasimha,
+  });
+
+  final PrashnaLinkKind kind;
+  final PrashnaMeaning meaning;
+
+  /// The yoga that made it: Ithasala, Nakta, Yamaya, Manau or Ishrafa.
+  final YearYoga? yoga;
+
+  /// The third graha carrying or gathering the light, or the malefic.
+  final Graha? through;
+
+  /// The Kamboola's grade, when the Moon joins the Ithasala.
+  final KamboolaGrade? kamboola;
+
+  /// v. 96: whether the Moon looks at neither lord; null where
+  /// [PrashnaRules.moonScope] does not reach the question.
+  final bool? moonless;
+
+  /// Samarasimha's conditions that hold, in his order.
+  final List<SamarasimhaClause> samarasimha;
+
+  @override
+  List<Object?> get _fields => [
+    kind,
+    meaning,
+    yoga,
+    through,
+    kamboola,
+    moonless,
+    ...samarasimha,
+  ];
+}
+
+/// The lagnesha's own yogas read as time (n179, C375).
+final class TriKala extends _Value {
+  const TriKala({
+    required this.lagnesha,
+    required this.past,
+    required this.present,
+    required this.future,
+  });
+
+  final Graha lagnesha;
+
+  /// Those it is separating from.
+  final List<Graha> past;
+
+  /// Those it is joined with.
+  final List<Graha> present;
+
+  /// Those it will join.
+  final List<Graha> future;
+
+  @override
+  List<Object?> get _fields => [
+    lagnesha,
+    ...past,
+    null,
+    ...present,
+    null,
+    ...future,
+  ];
+}
+
 final class Prashna {
   const Prashna({
     required this.rules,
@@ -16823,6 +17292,9 @@ final class Prashna {
     required this.timing,
     required this.mook,
     required this.links,
+    required this.link,
+    required this.triKala,
+    required this.weak,
     required this.moon,
     required this.score,
     required this.numberSign,
@@ -16839,6 +17311,15 @@ final class Prashna {
 
   /// The Tajika links; null when no house was asked.
   final PrashnaLinks? links;
+
+  /// What the links say of the matter; null when no house was asked.
+  final PrashnaLink? link;
+
+  /// The lagnesha's own yogas read as past, present and future.
+  final TriKala triKala;
+
+  /// Each of the seven's weaknesses of v. 72, the Sun first.
+  final List<GrahaWeakness> weak;
   final MoonWeakness moon;
 
   /// The baseline's points; null unless [PrashnaRules.score] is

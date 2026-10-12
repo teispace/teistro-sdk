@@ -369,7 +369,7 @@ const charts = geo.chart.foundMany({
   lots: { fortune: 'REVERSED_WHILE_MOON_UP' },
   considerations: { moonLateFromDeg: 25 },
   perfection: { house: 7, rules: { horizonDays: 120 } },
-  prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE' } },
+  prashna: { question: { house: 7, number: 14, tense: 'FUTURE' }, rules: { score: 'BASELINE' } },
   remedies: { at: 2460676.5, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
   // A varshphal list with the book's structure and none of its numbers:
   // year y sends natal house h to h + y − 1, round the twelve.
@@ -1038,6 +1038,24 @@ for (const chart of charts) {
   );
   matterSaid(`chart-${i}-prashna-links`, pr.links);
   put(`chart-${i}-prashna-links-states`, `R:${list(pr.links.states.retrograde)} C:${list(pr.links.states.combust)}`);
+  const ro = pRules.offices;
+  put(`chart-${i}-prashna-offices`, `${ro.order} ${ro.drekkana} ${ro.enemy} ${ro.hudda}`);
+  const ln = pr.link;
+  put(
+    `chart-${i}-prashna-link`,
+    `${ln.kind} ${ln.meaning} ${some(ln.yoga)} ${some(ln.through)} ${some(ln.moonless)} ${list(ln.samarasimha)}`,
+  );
+  put(
+    `chart-${i}-prashna-weak`,
+    `${pRules.weakness.setting} ${pRules.moonScope} ${pr.weak.map((w) => `${w.graha}:${list(w.clauses)}`).join(' ')}`,
+  );
+  const kg = ln.kamboola;
+  if (kg !== null) {
+    const office = (o) => `${o.graha}:${list(o.held)}:${o.adhikara}`;
+    put(`chart-${i}-prashna-kamboola`, `${some(kg.pair)} ${[kg.moon, kg.lagnesha, kg.karyesha].map(office).join(' ')}`);
+  }
+  const tk = pr.triKala;
+  put(`chart-${i}-prashna-trikala`, `${tk.lagnesha} P:${list(tk.past)} N:${list(tk.present)} F:${list(tk.future)}`);
   const rm = chart.remedies;
   const fn = rm.functional;
   put(

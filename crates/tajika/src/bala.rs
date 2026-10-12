@@ -654,6 +654,22 @@ pub fn navamsha_lord(longitude_deg: f64) -> Graha {
         .lord
 }
 
+/// The lord of the **Parashari** decanate a longitude falls in: the sign
+/// itself, then its fifth and its ninth.
+///
+/// Not the Tajika one ([`drekkana_lord`]); a reading of Kamboola's offices
+/// asks for it by name (`crate::DrekkanaReading::Parashari`).
+pub(crate) fn parashari_drekkana_lord(longitude_deg: f64) -> Graha {
+    let Ok(degrees) = Degrees::try_new(longitude_deg.rem_euclid(360.0)) else {
+        // As in `navamsha_lord`: the sky is checked first.
+        return Rashi::Aries.attributes().lord;
+    };
+    place(&Scheme::of(Varga::D3), Nas::from_degrees(degrees))
+        .sign
+        .attributes()
+        .lord
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(
