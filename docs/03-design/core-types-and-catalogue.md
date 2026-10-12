@@ -378,9 +378,9 @@ consumer definition with the kind's whole-table invariants (ADR-0017)
 and seals; a registration after sealing is `INVALID_ARG`. `Capabilities`
 is the shape every provider declares and every port refines (identity,
 version, data hashes, coverage, what it can compute), so provenance
-stamps them uniformly. `Limits` is per context: batch sizes, instant and
-place ranges, iteration caps per solver, cache bytes; every limit has a
-default in the profile and is stamped when it bites (`LIMIT`).
+stamps them uniformly. A request's size is the host's to bound, not the
+context's (`settings-and-profiles.md` §3.1); `LIMIT` is the status a
+host's bound answers with.
 
 ## 4. Algorithms
 

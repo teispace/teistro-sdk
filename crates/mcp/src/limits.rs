@@ -65,7 +65,30 @@ const DAYS_OPTION: &str = "--max-days";
 impl Limits {
     /// Whether `request`, a tool's record, is inside the bounds; a
     /// refusal is `LIMIT`, its field the record's own spelling.
-    pub(crate) fn check(&self, request: &Value) -> Result<(), Error> {
+    ///
+    /// Public for a host that hands callers' records to the SDK some
+    /// other way and holds them to the server's bounds: the SDK itself
+    /// computes whatever it is asked, so bounding a caller is the host's.
+    ///
+    /// ```
+    /// use serde_json::json;
+    /// use teistro_mcp::Limits;
+    ///
+    /// let century = json!({"periods": [{
+    ///     "first": {"year": 1937, "month": 1, "day": 1},
+    ///     "last": {"year": 2036, "month": 12, "day": 31},
+    /// }]});
+    /// let refused = Limits::default().check(&century).unwrap_err();
+    /// assert_eq!(refused.field(), Some("periods[0].last"));
+    /// assert!(Limits::UNBOUNDED.check(&century).is_ok());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `LIMIT` naming the array or the range's `last` that passed a
+    /// bound, the bound, and the option that moves it.
+    pub fn check(&self, request: &Value) -> Result<(), Error> {
         self.walk(request, &mut String::new(), &mut 0)
     }
 
