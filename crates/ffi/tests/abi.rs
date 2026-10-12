@@ -9331,6 +9331,7 @@ fn a_chart_request_answers_prashna() {
         keys(one),
         [
             "change",
+            "link",
             "links",
             "mook",
             "moon",
@@ -9338,9 +9339,28 @@ fn a_chart_request_answers_prashna() {
             "rules",
             "score",
             "timing",
-            "verdict"
+            "triKala",
+            "verdict",
+            "weak"
         ]
     );
+    assert_eq!(
+        keys(&one["link"]),
+        [
+            "kamboola",
+            "kind",
+            "meaning",
+            "moonless",
+            "samarasimha",
+            "through",
+            "yoga"
+        ]
+    );
+    assert_eq!(
+        keys(&one["triKala"]),
+        ["future", "lagnesha", "past", "present"]
+    );
+    assert_eq!(one["weak"].as_array().map(Vec::len), Some(7));
     assert_eq!(keys(&one["verdict"]), ["clauses", "outcome"]);
     assert_eq!(
         keys(&one["timing"]),

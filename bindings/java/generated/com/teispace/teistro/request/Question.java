@@ -13,8 +13,9 @@ import java.util.Objects;
  *
  * @param house The house the matter belongs to, 1 to 12, when the question names one (the kārya bhāva). Null leaves the SDK's default.
  * @param number The number the querent chose, 1 to 108, read only by the unsourced `number_sign` (C340). Null leaves the SDK's default.
+ * @param tense When the matter falls, which decides what a separation means (C370). Null leaves the SDK's default.
  */
-public record Question(Integer house, Integer number) implements RequestJson {
+public record Question(Integer house, Integer number, PrashnaTense tense) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -45,6 +46,7 @@ public record Question(Integer house, Integer number) implements RequestJson {
     public static final class Builder {
         private Integer house;
         private Integer number;
+        private PrashnaTense tense;
 
         private Builder() {}
 
@@ -71,13 +73,24 @@ public record Question(Integer house, Integer number) implements RequestJson {
         }
 
         /**
+         * Sets {@code tense}.
+         *
+         * @param tense When the matter falls, which decides what a separation means (C370). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder tense(PrashnaTense tense) {
+            this.tense = tense;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public Question build() {
-            return new Question(house, number);
+            return new Question(house, number, tense);
         }
     }
 
@@ -92,7 +105,8 @@ public record Question(Integer house, Integer number) implements RequestJson {
         Map<String, Object> json = Read.object(raw, "Question");
         return new Question(
             Read.orNull(json.get("house"), present -> Read.int32(present, "Question.house")),
-            Read.orNull(json.get("number"), present -> Read.int32(present, "Question.number")));
+            Read.orNull(json.get("number"), present -> Read.int32(present, "Question.number")),
+            Read.orNull(json.get("tense"), present -> Read.member(present, "Question.tense", PrashnaTense::byKey)));
     }
 
     @Override
@@ -103,6 +117,9 @@ public record Question(Integer house, Integer number) implements RequestJson {
         }
         if (number != null) {
             json.put("number", number);
+        }
+        if (tense != null) {
+            json.put("tense", tense.toJson());
         }
         return json;
     }

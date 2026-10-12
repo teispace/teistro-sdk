@@ -13,11 +13,14 @@ import java.util.Objects;
  *
  * @param mook Which rule reads an unspoken question. Null leaves the SDK's default.
  * @param moon How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna Tantra vv. 73–74). Null leaves the SDK's default.
+ * @param moonScope Which questions v. 96's Moon governs. Null leaves the SDK's default.
+ * @param offices How a Kamboola's offices are read (Samjna Tantra vv. 36–46). Null leaves the SDK's default.
  * @param pisces How Pisces rises. Null leaves the SDK's default.
  * @param score Whether the baseline engine's points come beside the clauses. Null leaves the SDK's default.
  * @param timing Which rule times the matter. Null leaves the SDK's default.
+ * @param weakness How v. 72's weaknesses are read. Null leaves the SDK's default.
  */
-public record PrashnaRules(MookRule mook, MoonRules moon, PiscesRising pisces, ScoreRule score, TimingRule timing) implements RequestJson {
+public record PrashnaRules(MookRule mook, MoonRules moon, MoonScope moonScope, OfficeRules offices, PiscesRising pisces, ScoreRule score, TimingRule timing, WeaknessRules weakness) implements RequestJson {
     /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
@@ -32,9 +35,12 @@ public record PrashnaRules(MookRule mook, MoonRules moon, PiscesRising pisces, S
     public static final class Builder {
         private MookRule mook;
         private MoonRules moon;
+        private MoonScope moonScope;
+        private OfficeRules offices;
         private PiscesRising pisces;
         private ScoreRule score;
         private TimingRule timing;
+        private WeaknessRules weakness;
 
         private Builder() {}
 
@@ -57,6 +63,28 @@ public record PrashnaRules(MookRule mook, MoonRules moon, PiscesRising pisces, S
          */
         public Builder moon(MoonRules moon) {
             this.moon = moon;
+            return this;
+        }
+
+        /**
+         * Sets {@code moonScope}.
+         *
+         * @param moonScope Which questions v. 96's Moon governs. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder moonScope(MoonScope moonScope) {
+            this.moonScope = moonScope;
+            return this;
+        }
+
+        /**
+         * Sets {@code offices}.
+         *
+         * @param offices How a Kamboola's offices are read (Samjna Tantra vv. 36–46). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder offices(OfficeRules offices) {
+            this.offices = offices;
             return this;
         }
 
@@ -94,13 +122,24 @@ public record PrashnaRules(MookRule mook, MoonRules moon, PiscesRising pisces, S
         }
 
         /**
+         * Sets {@code weakness}.
+         *
+         * @param weakness How v. 72's weaknesses are read. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder weakness(WeaknessRules weakness) {
+            this.weakness = weakness;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public PrashnaRules build() {
-            return new PrashnaRules(mook, moon, pisces, score, timing);
+            return new PrashnaRules(mook, moon, moonScope, offices, pisces, score, timing, weakness);
         }
     }
 
@@ -116,9 +155,12 @@ public record PrashnaRules(MookRule mook, MoonRules moon, PiscesRising pisces, S
         return new PrashnaRules(
             Read.orNull(json.get("mook"), present -> Read.member(present, "PrashnaRules.mook", MookRule::byKey)),
             Read.orNull(json.get("moon"), present -> MoonRules.of(present)),
+            Read.orNull(json.get("moonScope"), present -> Read.member(present, "PrashnaRules.moonScope", MoonScope::byKey)),
+            Read.orNull(json.get("offices"), present -> OfficeRules.of(present)),
             Read.orNull(json.get("pisces"), present -> Read.member(present, "PrashnaRules.pisces", PiscesRising::byKey)),
             Read.orNull(json.get("score"), present -> Read.member(present, "PrashnaRules.score", ScoreRule::byKey)),
-            Read.orNull(json.get("timing"), present -> Read.member(present, "PrashnaRules.timing", TimingRule::byKey)));
+            Read.orNull(json.get("timing"), present -> Read.member(present, "PrashnaRules.timing", TimingRule::byKey)),
+            Read.orNull(json.get("weakness"), present -> WeaknessRules.of(present)));
     }
 
     @Override
@@ -130,6 +172,12 @@ public record PrashnaRules(MookRule mook, MoonRules moon, PiscesRising pisces, S
         if (moon != null) {
             json.put("moon", moon.toJson());
         }
+        if (moonScope != null) {
+            json.put("moonScope", moonScope.toJson());
+        }
+        if (offices != null) {
+            json.put("offices", offices.toJson());
+        }
         if (pisces != null) {
             json.put("pisces", pisces.toJson());
         }
@@ -138,6 +186,9 @@ public record PrashnaRules(MookRule mook, MoonRules moon, PiscesRising pisces, S
         }
         if (timing != null) {
             json.put("timing", timing.toJson());
+        }
+        if (weakness != null) {
+            json.put("weakness", weakness.toJson());
         }
         return json;
     }

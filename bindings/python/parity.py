@@ -1210,7 +1210,7 @@ def main() -> None:
             lots={"fortune": "REVERSED_WHILE_MOON_UP"},
             considerations={"moonLateFromDeg": 25},
             perfection={"house": 7, "rules": {"horizonDays": 120}},
-            prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE"}},
+            prashna={"question": {"house": 7, "number": 14, "tense": "FUTURE"}, "rules": {"score": "BASELINE"}},
             remedies={"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
             # A varshphal list with the book's structure and none of its
             # numbers: year y sends natal house h to h + y - 1, round the twelve.
@@ -1857,6 +1857,34 @@ def main() -> None:
             states = pq.links.states
             assert states is not None
             put(f"chart-{i}-prashna-links-states", f"R:{joined(g.full_key for g in states.retrograde)} C:{joined(g.full_key for g in states.combust)}")
+            ro = rq["offices"]
+            put(f"chart-{i}-prashna-offices", f"{ro['order']} {ro['drekkana']} {ro['enemy']} {ro['hudda']}")
+            ln = pq.link
+            assert ln is not None
+            put(
+                f"chart-{i}-prashna-link",
+                f"{ln.kind} {ln.meaning} {ln.yoga.key if ln.yoga is not None else '-'}"
+                f" {ln.through.full_key if ln.through is not None else '-'}"
+                f" {'-' if ln.moonless is None else lower(ln.moonless)} {joined(ln.samarasimha)}",
+            )
+            put(
+                f"chart-{i}-prashna-weak",
+                f"{rq['weakness']['setting']} {rq['moonScope']} "
+                + " ".join(f"{w.graha.full_key}:{joined(w.clauses)}" for w in pq.weak),
+            )
+            kg = ln.kamboola
+            if kg is not None:
+                put(
+                    f"chart-{i}-prashna-kamboola",
+                    f"{kg.pair or '-'} "
+                    + " ".join(f"{o.graha.full_key}:{joined(o.held)}:{o.adhikara}" for o in (kg.moon, kg.lagnesha, kg.karyesha)),
+                )
+            tk = pq.tri_kala
+            put(
+                f"chart-{i}-prashna-trikala",
+                f"{tk.lagnesha.full_key} P:{joined(g.full_key for g in tk.past)}"
+                f" N:{joined(g.full_key for g in tk.present)} F:{joined(g.full_key for g in tk.future)}",
+            )
             rm = chart.remedies
             assert rm is not None
             put_remedies(f"chart-{i}-remedies", rm)

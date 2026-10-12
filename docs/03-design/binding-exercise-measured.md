@@ -23,9 +23,9 @@ is therefore one nothing touches.
 | Node | 42 | 40 | 2 |
 | Dart | 33 | 31 | 2 |
 | Rust | 131 | 131 | 0 |
-| Python | 169 | 167 | 2 |
+| Python | 170 | 168 | 2 |
 
-**6 members nothing names**, of 375 members the four surfaces declare.
+**6 members nothing names**, of 376 members the four surfaces declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 

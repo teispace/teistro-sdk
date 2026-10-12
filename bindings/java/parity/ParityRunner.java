@@ -1445,7 +1445,7 @@ public final class ParityRunner {
                 .lots(LotRequest.of(map("fortune", "REVERSED_WHILE_MOON_UP")))
                 .considerations(com.teispace.teistro.request.ConsiderationRules.of(map("moonLateFromDeg", 25)))
                 .perfection(PerfectionRequest.of(map("house", 7, "rules", map("horizonDays", 120))))
-                .prashna(PrashnaRequest.of(map("question", map("house", 7, "number", 14), "rules", map("score", "BASELINE"))))
+                .prashna(PrashnaRequest.of(map("question", map("house", 7, "number", 14, "tense", "FUTURE"), "rules", map("score", "BASELINE"))))
                 .remedies(RemedyRequest.of(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA")))))
                 // A varshphal list with the book's structure and none of its numbers:
                 // year y sends natal house h to h + y - 1, round the twelve.
@@ -2169,6 +2169,23 @@ public final class ParityRunner {
         putMatter(c + "-prashna-links", links.matter());
         AnnualStatesRead states = Objects.requireNonNull(links.states(), "the prashna's links have no states");
         put(c + "-prashna-links-states", "R:" + grahaKeys(states.retrograde()) + " C:" + grahaKeys(states.combust()));
+        put(c + "-prashna-offices", py(dig(rq, "offices", "order")) + " " + py(dig(rq, "offices", "drekkana")) + " "
+                + py(dig(rq, "offices", "enemy")) + " " + py(dig(rq, "offices", "hudda")));
+        PrashnaLink ln = Objects.requireNonNull(pq.link(), "the prashna has no link");
+        put(c + "-prashna-link", ln.kind() + " " + ln.meaning() + " " + (ln.yoga() != null ? ln.yoga().key() : "-") + " "
+                + (ln.through() != null ? ln.through().fullKey() : "-") + " "
+                + (ln.moonless() == null ? "-" : lower(ln.moonless())) + " " + orDash(String.join(",", ln.samarasimha())));
+        put(c + "-prashna-weak", py(dig(rq, "weakness", "setting")) + " " + py(dig(rq, "moonScope")) + " "
+                + join(" ", pq.weak(), w -> w.graha().fullKey() + ":" + orDash(String.join(",", w.clauses()))));
+        KamboolaGrade kg = ln.kamboola();
+        if (kg != null) {
+            put(c + "-prashna-kamboola", (kg.pair() != null ? kg.pair() : "-") + " "
+                    + join(" ", List.of(kg.moon(), kg.lagnesha(), kg.karyesha()),
+                            o -> o.graha().fullKey() + ":" + orDash(String.join(",", o.held())) + ":" + o.adhikara()));
+        }
+        TriKala tk = pq.triKala();
+        put(c + "-prashna-trikala", tk.lagnesha().fullKey() + " P:" + grahaKeys(tk.past()) + " N:"
+                + grahaKeys(tk.present()) + " F:" + grahaKeys(tk.future()));
     }
 
     /** The purifier's verdict as every runner spells it: whether pure, then each clause colon-joined. */

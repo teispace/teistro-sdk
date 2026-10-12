@@ -11,9 +11,9 @@ use teistro_core::catalogue::{Graha, Rashi};
 use teistro_tajika::{KshinaRule, MoonClause, MoonRules};
 
 use crate::{
-    Answer, Change, ClauseKind, FactorKind, Favour, MookRule, Outcome, Person, PiscesRising,
-    Placed, PrashnaRules, PrashnaSky, Question, Score, ScoreRule, Thought, TimingRule, Unit,
-    number_sign, read,
+    Answer, Change, ClauseKind, FactorKind, Favour, LinkKind, Meaning, MookRule, Outcome, Person,
+    PiscesRising, Placed, PrashnaRules, PrashnaSky, Question, Score, ScoreRule, Tense, Thought,
+    TimingRule, Unit, number_sign, read,
 };
 
 /// A sky with the lagna at `lagna_deg` and the nine grahas, Sun to Ketu,
@@ -509,4 +509,185 @@ fn the_default_reaches_no_baseline_value_and_baseline_reaches_all() {
             ScoreRule::Baseline
         )
     );
+}
+
+#[test]
+fn the_nakta_example_promises_the_matter_through_the_moon() {
+    // Prashna Tantra vv. 18-19, as above: "attainment through another's
+    // hand".
+    let virgo = sky(
+        160.0,
+        Rashi::Virgo,
+        [165.0, 252.0, 280.0, 130.0, 350.0, 190.0, 310.0, 40.0, 220.0],
+    );
+    let link = read(&virgo, Question::about(7), rules())
+        .unwrap()
+        .link
+        .unwrap();
+    assert_eq!(
+        (link.kind, link.meaning, link.yoga, link.through),
+        (
+            LinkKind::Through,
+            Meaning::Promised,
+            Some(teistro_tajika::YearYoga::Nakta),
+            Some(Graha::Moon)
+        )
+    );
+    assert_eq!(
+        read(&virgo, Question::default(), rules()).unwrap().link,
+        None
+    );
+}
+
+/// The Samjna Tantra's example to v. 35 (n50), a query about a kingdom:
+/// Libra rising, Venus its lord in Cancer 15°, the Moon lord of the 10th
+/// exalted in Taurus 10°, Mars and Saturn in Taurus 16° taking the light.
+fn kingdom() -> PrashnaSky {
+    sky(
+        190.0,
+        Rashi::Libra,
+        [250.0, 40.0, 46.0, 260.0, 70.0, 105.0, 46.0, 0.0, 180.0],
+    )
+}
+
+#[test]
+fn manau_takes_the_kingdom_away_as_the_example_to_v35_prints() {
+    let answer = read(&kingdom(), Question::about(10), rules()).unwrap();
+    let links = answer.links.unwrap();
+    assert_eq!(
+        (links.lagnesha, links.karyesha),
+        (Graha::Venus, Graha::Moon)
+    );
+    // The pair are in Ithasala, and Manau overrides it.
+    assert_eq!(links.holds(teistro_tajika::YearYoga::Ithasala), Some(true));
+    let link = answer.link.unwrap();
+    assert_eq!(
+        (link.kind, link.meaning, link.yoga),
+        (
+            LinkKind::Destroyed,
+            Meaning::Fails,
+            Some(teistro_tajika::YearYoga::Manau)
+        )
+    );
+}
+
+#[test]
+fn a_separation_fails_a_matter_to_come_and_is_past_for_one_that_was() {
+    // The kingdom's sky with the Moon past Venus by five degrees, and
+    // every other graha in Gemini or Sagittarius, which neither Cancer
+    // nor Taurus aspects.
+    let parted = sky(
+        190.0,
+        Rashi::Libra,
+        [250.0, 50.0, 255.0, 260.0, 70.0, 105.0, 75.0, 0.0, 180.0],
+    );
+    let meaning = |tense| {
+        let asked = Question {
+            tense,
+            ..Question::about(10)
+        };
+        let link = read(&parted, asked, rules()).unwrap().link.unwrap();
+        assert_eq!(link.kind, LinkKind::Separated);
+        link.meaning
+    };
+    assert_eq!(meaning(Tense::Future), Meaning::Fails);
+    assert_eq!(meaning(Tense::Past), Meaning::Past);
+    assert_eq!(meaning(Tense::Unspecified), Meaning::FailsOrPast);
+}
+
+#[test]
+fn a_kamboola_in_a_query_carries_its_grade() {
+    // The gloss's example to v. 39 (n53): a question about a wife, Libra
+    // rising; Venus debilitated at Virgo 10° in Ithasala with Mars
+    // debilitated at Cancer 15°, the Moon at Cancer 12° joining Mars.
+    // The rest stand in Aquarius, which sees neither.
+    let wife = sky(
+        190.0,
+        Rashi::Libra,
+        [305.0, 102.0, 105.0, 320.0, 310.0, 160.0, 315.0, 0.0, 180.0],
+    );
+    let answer = read(&wife, Question::about(7), rules()).unwrap();
+    let link = answer.link.unwrap();
+    assert_eq!(link.kind, LinkKind::Direct);
+    let grade = link.kamboola.unwrap();
+    assert_eq!(
+        grade.cell(),
+        Some([
+            teistro_tajika::Adhikara::Uttama,
+            teistro_tajika::Adhikara::Adhama
+        ])
+    );
+    assert_eq!(grade.rules, rules().offices);
+}
+
+#[test]
+fn the_lagneshas_yogas_tell_the_past_the_present_and_the_future() {
+    // The kingdom: Venus is coming to Mars and Saturn a degree on and
+    // the Moon is five behind her, all in orb: joined. Move the Moon to
+    // Taurus 20° and she has passed Venus: separating, the past. Move her
+    // to Taurus 1°, fourteen behind, and she will join: the future.
+    let at = |moon: f64| {
+        let mut sky = kingdom();
+        sky.grahas[1].longitude_deg = moon;
+        read(&sky, Question::default(), rules()).unwrap().tri_kala
+    };
+    let now = at(40.0);
+    assert_eq!(now.lagnesha, Graha::Venus);
+    assert_eq!(now.present, [Graha::Moon, Graha::Mars, Graha::Saturn]);
+    assert_eq!(at(50.0).past, [Graha::Moon]);
+    assert_eq!(at(31.0).future, [Graha::Moon]);
+}
+
+#[test]
+fn the_kingdom_meets_samarasimhas_conditions_and_has_its_moon() {
+    // Libra rising, the 10th Cancer. Venus in Cancer looks at Libra from
+    // its 4th and the Moon in Taurus at Cancer from its 3rd: each lord
+    // sees its house. The Moon, the karyesha, sees Venus from outside the
+    // lagna: not soon. So the Moon is not absent (v. 96).
+    use crate::{MoonScope, SamarasimhaClause};
+    let answer = read(&kingdom(), Question::about(10), rules()).unwrap();
+    let link = answer.link.unwrap();
+    assert_eq!(link.moonless, Some(false));
+    assert_eq!(
+        link.samarasimha,
+        [
+            SamarasimhaClause::LordsSeeTheirHouses,
+            SamarasimhaClause::KaryeshaElsewhereSeesLagnesha,
+            SamarasimhaClause::MoonSeesLagnesha
+        ]
+    );
+    // Under the narrow reading v. 96 governs only a question of gain.
+    let gain = PrashnaRules {
+        moon_scope: MoonScope::Gain,
+        ..rules()
+    };
+    let narrow = read(&kingdom(), Question::about(10), gain).unwrap();
+    assert_eq!(narrow.link.unwrap().moonless, None);
+}
+
+#[test]
+fn every_graha_carries_its_weaknesses_of_v72() {
+    let answer = read(&kingdom(), Question::default(), rules()).unwrap();
+    let grahas: Vec<Graha> = answer.weak.iter().map(|weak| weak.graha).collect();
+    assert_eq!(
+        grahas,
+        [
+            Graha::Sun,
+            Graha::Moon,
+            Graha::Mars,
+            Graha::Mercury,
+            Graha::Jupiter,
+            Graha::Venus,
+            Graha::Saturn
+        ]
+    );
+    // The Sun in Sagittarius and Jupiter in Gemini see Libra from its 3rd
+    // and 9th; Mars and Saturn in Taurus (the 8th) do not.
+    let unseen = |graha: Graha| {
+        answer.weak[usize::from(graha.id())]
+            .clauses
+            .contains(&teistro_tajika::GrahaClause::UnseenLagna)
+    };
+    assert!(!unseen(Graha::Sun) && !unseen(Graha::Jupiter));
+    assert!(unseen(Graha::Mars) && unseen(Graha::Saturn));
 }

@@ -283,6 +283,24 @@ yet taken. That makes every allowed pairing equally likely and never
 refuses a study that has one (C368). `/1` stays selectable through the
 test's `shuffle`.
 
+**A prashna says what its links mean, and grades a Kamboola.**
+**Numbers:** none moved; a prashna answer gains `link` and `triKala`, its
+rules `offices`, and its question `tense`. The link reads the pair's yogas
+as the Prashna Tantra's final section does: promised directly, promised
+through another, destroyed by Manau (the Samjna Tantra's v. 35 query,
+passing as printed), or separated, which fails a matter to come and finds
+one past (C370). A Kamboola carries each of the three grahas' offices
+(`kamboola_grade`, every clause reported) and the gloss's cell; which
+office counts was not stated, and the order the gloss's own examples
+follow reproduces nine of twelve where "the highest" reproduces six
+(C371, C372). `triKala` reads the lagnesha's yogas as past, present and
+future (C375). Each of the seven carries the Samjna Tantra v. 72's
+weaknesses (`weak`, the Sun's setting part read by navāṁśa sign, C377),
+and the link v. 96's `moonless` (C376) and Samarasiṁha's conditions; his
+clause on loss waits for a second print (C374). The empty road (vv.
+55–56) now reads the same offices as Kamboola, so the two cannot
+disagree. Every binding reads all of it.
+
 **The Tajika Hudda is the Tajika Nilakanthi's.** **Numbers:** a Hudda
 lord in Aquarius 0° to 13° moves: Mercury's to 7° and Venus's to 13°, as
 the Egyptian terms have them, where Charak's textbook printed them the

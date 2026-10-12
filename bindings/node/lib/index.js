@@ -4915,13 +4915,37 @@ function prashnasOf(batch) {
  */
 function prashnaFrom(read) {
   const graha = (key) => (key === null ? null : `graha.${key}`);
-  const { verdict, timing, mook, links, score, numberSign } = read;
+  const { verdict, timing, mook, links, link, triKala, score, numberSign } = read;
+  const offices = (one) => ({ ...one, graha: graha(one.graha) });
   return {
     ...read,
     verdict: { ...verdict, clauses: verdict.clauses.map((clause) => ({ ...clause, graha: graha(clause.graha) })) },
     timing: { ...timing, graha: graha(timing.graha), between: timing.between.map(graha) },
     mook: { ...mook, graha: graha(mook.graha) },
     links: links === null ? null : yogasFrom(links),
+    link:
+      link === null
+        ? null
+        : {
+            ...link,
+            through: graha(link.through),
+            kamboola:
+              link.kamboola === null
+                ? null
+                : {
+                    ...link.kamboola,
+                    moon: offices(link.kamboola.moon),
+                    lagnesha: offices(link.kamboola.lagnesha),
+                    karyesha: offices(link.kamboola.karyesha),
+                  },
+          },
+    weak: read.weak.map((one) => ({ ...one, graha: graha(one.graha) })),
+    triKala: {
+      lagnesha: graha(triKala.lagnesha),
+      past: triKala.past.map(graha),
+      present: triKala.present.map(graha),
+      future: triKala.future.map(graha),
+    },
     score: score === null ? null : { ...score, applyingTo: graha(score.applyingTo) },
     numberSign: numberSign === null ? null : `rashi.${numberSign}`,
   };

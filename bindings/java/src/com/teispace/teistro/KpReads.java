@@ -166,6 +166,8 @@ final class KpReads {
         Object timing = at(raw, "timing");
         Object mook = at(raw, "mook");
         Object links = at(raw, "links");
+        Object link = at(raw, "link");
+        Object triKala = at(raw, "triKala");
         Object score = at(raw, "score");
         Object sign = at(raw, "numberSign");
         Object verdict = at(raw, "verdict");
@@ -205,9 +207,51 @@ final class KpReads {
                         JsonRead.textOrNull(at(mook, "person")),
                         JsonRead.text(at(mook, "thought"))),
                 links == null ? null : links(links),
+                link == null ? null : link(link),
+                new TriKala(
+                        graha(at(triKala, "lagnesha")),
+                        grahas(at(triKala, "past")),
+                        grahas(at(triKala, "present")),
+                        grahas(at(triKala, "future"))),
+                weak(at(raw, "weak")),
                 new MoonWeakness(JsonRead.object(at(moon, "rules")), JsonRead.texts(at(moon, "clauses"))),
                 scored,
                 sign == null ? null : rashi(sign));
+    }
+
+    /** A prashna's link as the boundary's JSON writes it. */
+    private static PrashnaLink link(Object one) {
+        Object grade = at(one, "kamboola");
+        return new PrashnaLink(
+                JsonRead.text(at(one, "kind")),
+                JsonRead.text(at(one, "meaning")),
+                JsonRead.memberOrNull(YearYoga::byKey, "YearYoga", at(one, "yoga")),
+                grahaOrNull(at(one, "through")),
+                grade == null
+                        ? null
+                        : new KamboolaGrade(
+                                com.teispace.teistro.request.OfficeRules.of(at(grade, "rules")),
+                                offices(at(grade, "moon")),
+                                offices(at(grade, "lagnesha")),
+                                offices(at(grade, "karyesha")),
+                                JsonRead.textOrNull(at(grade, "pair"))),
+                (Boolean) at(one, "moonless"),
+                JsonRead.texts(at(one, "samarasimha")));
+    }
+
+    /** The seven's weaknesses of v. 72 as the boundary's JSON writes them. */
+    private static List<GrahaWeakness> weak(Object raw) {
+        List<GrahaWeakness> out = new ArrayList<>();
+        for (Object one : JsonRead.list(raw)) {
+            out.add(new GrahaWeakness(graha(at(one, "graha")), JsonRead.texts(at(one, "clauses"))));
+        }
+        return List.copyOf(out);
+    }
+
+    /** One graha's offices as the boundary's JSON writes them. */
+    private static TajikaOffices offices(Object one) {
+        return new TajikaOffices(
+                graha(at(one, "graha")), JsonRead.texts(at(one, "held")), JsonRead.text(at(one, "adhikara")));
     }
 
     /** Two planets of an annual chart as the boundary's JSON writes them, or null for JSON null. */

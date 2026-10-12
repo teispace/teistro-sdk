@@ -35,8 +35,9 @@ use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_core::house::House;
 
-use crate::bala::{AnnualSky, Relation, SEVEN, drekkana_lord, hudda_lord, navamsha_lord};
+use crate::bala::{AnnualSky, SEVEN};
 use crate::drishti::Drishti;
+use crate::kamboola::{OfficeRules, held};
 
 /// The span of a navāṁśa, degrees.
 const NAVAMSHA_DEG: f64 = 30.0 / 9.0;
@@ -185,23 +186,11 @@ pub fn shunya_marga(graha: Graha, sky: &AnnualSky) -> Result<bool, Error> {
     Ok(empty_road(graha, sky))
 }
 
-/// vv. 55–56 on a checked sky, for one of the seven.
+/// vv. 55–56 on a checked sky, for one of the seven: none of the five
+/// dignities, neither fault, and unaspected. The dignities and faults are
+/// Kamboola's offices read under the default rules.
 fn empty_road(graha: Graha, sky: &AnnualSky) -> bool {
-    let longitude = sky.longitude_of(graha);
-    let sign = sky.sign_of(graha);
-    let lord = sign.attributes().lord;
-    let attributes = graha.attributes();
-    let in_sign = |fixed: Option<teistro_core::catalogue::SignDegree>| {
-        fixed.is_some_and(|fixed| fixed.sign == sign)
-    };
-    let dignified = lord == graha
-        || in_sign(attributes.exaltation)
-        || hudda_lord(longitude) == graha
-        || drekkana_lord(longitude) == graha
-        || navamsha_lord(longitude) == graha;
-    let afflicted =
-        in_sign(attributes.debilitation) || Relation::between(graha, lord, sky) == Relation::Enemy;
-    !dignified && !afflicted && !aspected(graha, sky, |_| true)
+    held(graha, sky, OfficeRules::default()).is_empty() && !aspected(graha, sky, |_| true)
 }
 
 /// Whether any of the seven but `graha` that `by` admits aspects it.

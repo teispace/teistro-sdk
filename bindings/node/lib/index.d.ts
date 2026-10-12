@@ -2624,6 +2624,8 @@ export interface PrashnaRequest {
     readonly house?: number;
     /** The querent's number, 1 to 108, read only by the baseline engine's unsourced rule (C340). */
     readonly number?: number;
+    /** When the matter falls, which decides whether a separation fails it or finds it past (C370): `UNSPECIFIED` by default. */
+    readonly tense?: PrashnaTense;
   };
   /** The readings; the texts' own when left out. */
   readonly rules?: PrashnaRules;
@@ -2639,6 +2641,12 @@ export interface PrashnaRules {
   readonly mook?: 'SHATPANCHASHIKA' | 'MOON_HOUSE' | 'BASELINE';
   /** How the Moon's weaknesses are read (Samjna Tantra vv. 73–74, C352). */
   readonly moon?: { readonly kshina?: 'DARK_EIGHTH_TO_BRIGHT_EIGHTH' | 'DARK_ELEVENTH_TO_NEW_MOON' };
+  /** How a Kamboola's offices are read (Samjna Tantra vv. 36–46), the gloss's own by default. */
+  readonly offices?: OfficeRules;
+  /** How v. 72's weaknesses are read: the Sun's setting part by navamsha sign (the default) or arc (C377). */
+  readonly weakness?: { readonly setting?: 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC' };
+  /** Which questions v. 96's "fruitless without the Moon" governs (C376): `EVERY` by default, or `GAIN` (the 11th). */
+  readonly moonScope?: 'EVERY' | 'GAIN';
   /** Whether the baseline engine's points come beside the clauses: `OFF` by default. */
   readonly score?: 'OFF' | 'BASELINE';
 }
@@ -2660,6 +2668,15 @@ export interface Prashna {
   readonly mook: PrashnaMook;
   /** The Tajika yogas between the lagna lord and the asked house's lord; `null` when no house was asked. */
   readonly links: PrashnaLinks | null;
+  /** What those yogas say of the matter (Prashna Tantra vv. 14–21); `null` when no house was asked. */
+  readonly link: PrashnaLink | null;
+  /** The lagnesha's own yogas read as past, present and future (n179, C375). */
+  readonly triKala: TriKala;
+  /** Each of the seven's weaknesses of the Samjna Tantra v. 72, the Sun first. */
+  readonly weak: readonly {
+    readonly graha: Graha;
+    readonly clauses: readonly ('UNSEEN_LAGNA' | 'SETTING_PART' | 'OFFICELESS' | 'MALEFIC_ISHRAFA')[];
+  }[];
   /** The Moon's weaknesses that hold, in the verses' order (Samjna Tantra vv. 73–74, C352). */
   readonly moon: {
     readonly rules: { readonly kshina: 'DARK_EIGHTH_TO_BRIGHT_EIGHTH' | 'DARK_ELEVENTH_TO_NEW_MOON' };
@@ -2727,6 +2744,73 @@ export interface PrashnaMook {
 export interface PrashnaLinks extends TajikaMatter {
   /** Which of the seven are retrograde and which combust; `null` when not given. */
   readonly states: { readonly retrograde: readonly Graha[]; readonly combust: readonly Graha[] } | null;
+}
+
+/** When the matter asked about falls (C370). */
+export type PrashnaTense = 'UNSPECIFIED' | 'FUTURE' | 'PAST';
+
+/** How a Kamboola's offices are read, every member optional. */
+export interface OfficeRules {
+  /** Which office counts when a graha holds several (C371): `GLOSS`, the worked examples' order, by default. */
+  readonly order?: 'GLOSS' | 'HIGHEST' | 'LOWEST';
+  /** Which drekkana is a graha's own: `TAJIKA` by default. */
+  readonly drekkana?: 'TAJIKA' | 'PARASHARI';
+  /** Whether an enemy's sign makes a graha adhama: `TAJIKA` (read) by default. */
+  readonly enemy?: 'TAJIKA' | 'IGNORED';
+  /** Which printing of the Hudda table (C109): `NILAKANTHI` by default. */
+  readonly hudda?: 'NILAKANTHI' | 'CHARAK';
+}
+
+/** One of the four offices, best first. */
+export type Adhikara = 'UTTAMA' | 'MADHYAMA' | 'SAMA' | 'ADHAMA';
+
+/** The offices one graha holds. */
+export interface TajikaOffices {
+  readonly graha: Graha;
+  /** Every clause of the gloss's definition it meets, in the definition's order. */
+  readonly held: readonly ('OWN_SIGN' | 'EXALTED' | 'OWN_HUDDA' | 'OWN_DREKKANA' | 'OWN_NAVAMSHA' | 'DEBILITATED' | 'ENEMY_SIGN')[];
+  /** The office that counts, by the rules' `order`. */
+  readonly adhikara: Adhikara;
+}
+
+/** A Kamboola's grade: the Moon's offices and the pair's (Samjna Tantra vv. 36–46). */
+export interface KamboolaGrade {
+  readonly rules: Required<OfficeRules>;
+  readonly moon: TajikaOffices;
+  readonly lagnesha: TajikaOffices;
+  readonly karyesha: TajikaOffices;
+  /** The lords' office when they hold the same one; `null` when they differ (C372). */
+  readonly pair: Adhikara | null;
+}
+
+/** What the Tajika links say of the matter. */
+export interface PrashnaLink {
+  readonly kind: 'DIRECT' | 'THROUGH' | 'DESTROYED' | 'SEPARATED' | 'SAME_LORD' | 'UNLINKED';
+  /** What it says under the question's tense. */
+  readonly meaning: 'PROMISED' | 'FAILS' | 'PAST' | 'FAILS_OR_PAST' | 'UNREAD';
+  /** The yoga that made it: Ithasala, Nakta, Yamaya, Manau or Ishrafa. */
+  readonly yoga: YearYoga | null;
+  /** The third graha carrying or gathering the light, or the malefic destroying it. */
+  readonly through: Graha | null;
+  /** The Kamboola's grade, when the Moon joins the Ithasala. */
+  readonly kamboola: KamboolaGrade | null;
+  /** v. 96: whether the Moon looks at neither lord; `null` where `moonScope` does not reach the question. */
+  readonly moonless: boolean | null;
+  /** Samarasimha's conditions that hold, in his order. */
+  readonly samarasimha: readonly (
+    | 'LORDS_SEE_THEIR_HOUSES'
+    | 'KARYESHA_IN_LAGNA_SEES_LAGNESHA'
+    | 'KARYESHA_ELSEWHERE_SEES_LAGNESHA'
+    | 'MOON_SEES_LAGNESHA'
+  )[];
+}
+
+/** The lagnesha's own yogas read as time: those it separates from, is joined with, and will join. */
+export interface TriKala {
+  readonly lagnesha: Graha;
+  readonly past: readonly Graha[];
+  readonly present: readonly Graha[];
+  readonly future: readonly Graha[];
 }
 
 /** A clause of the Samjna Tantra vv. 73–74 that weakens the Moon. */

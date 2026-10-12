@@ -1104,6 +1104,7 @@ void main() {
     prashna: const PrashnaRequest(
       house: 7,
       number: 14,
+      tense: PrashnaTense.future,
       rules: PrashnaRules(score: ScoreRule.baseline),
     ),
     remedies: const RemedyRequest(
@@ -1882,6 +1883,40 @@ void main() {
       'chart-$i-prashna-links-states',
       'R:${joined(links.states!.retrograde.map((g) => g.fullKey))} '
           'C:${joined(links.states!.combust.map((g) => g.fullKey))}',
+    );
+    final ro = rq.offices;
+    put(
+      'chart-$i-prashna-offices',
+      '${ro.order.key} ${ro.drekkana.key} ${ro.enemy.key} ${ro.hudda.key}',
+    );
+    final ln = pq.link!;
+    put(
+      'chart-$i-prashna-link',
+      '${ln.kind.key} ${ln.meaning.key} ${ln.yoga?.key ?? '-'} '
+          '${ln.through?.fullKey ?? '-'} ${ln.moonless ?? '-'} '
+          '${joined(ln.samarasimha.map((c) => c.key))}',
+    );
+    put(
+      'chart-$i-prashna-weak',
+      '${rq.weakness.setting.key} ${rq.moonScope.key} '
+          '${pq.weak.map((w) => '${w.graha.fullKey}:${joined(w.clauses.map((c) => c.key))}').join(' ')}',
+    );
+    final kg = ln.kamboola;
+    if (kg != null) {
+      String office(TajikaOffices o) =>
+          '${o.graha.fullKey}:${joined(o.held.map((c) => c.key))}:${o.adhikara.key}';
+      put(
+        'chart-$i-prashna-kamboola',
+        '${kg.pair?.key ?? '-'} '
+            '${[kg.moon, kg.lagnesha, kg.karyesha].map(office).join(' ')}',
+      );
+    }
+    final tk = pq.triKala;
+    put(
+      'chart-$i-prashna-trikala',
+      '${tk.lagnesha.fullKey} P:${joined(tk.past.map((g) => g.fullKey))} '
+          'N:${joined(tk.present.map((g) => g.fullKey))} '
+          'F:${joined(tk.future.map((g) => g.fullKey))}',
     );
     putRemedies('chart-$i-remedies', chart.remedies!);
     putLalKitab('chart-$i-lalkitab', chart.lalkitab!);

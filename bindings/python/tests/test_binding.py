@@ -1496,6 +1496,14 @@ class AnEngine(WithLibrary):
             self.assertEqual(read.links.house, 7)
             self.assertIsInstance(read.links.holds(YearYoga.ITHASALA), bool)
             self.assertEqual(sum(factor.points for factor in read.score.factors), read.score.points)
+            self.assertIsNone(plain.link)
+            assert read.link is not None
+            self.assertIn(read.link.meaning, ("PROMISED", "FAILS", "PAST", "FAILS_OR_PAST", "UNREAD"))
+            self.assertIsInstance(read.tri_kala.lagnesha, Graha)
+            self.assertEqual(read.rules["offices"], {"order": "GLOSS", "drekkana": "TAJIKA", "enemy": "TAJIKA", "hudda": "NILAKANTHI"})
+            with self.assertRaises(TeistroError) as tense:
+                ctx.chart.found(instant=instant, prashna={"question": {"house": 7, "tense": "SOON"}}, **at)  # type: ignore[arg-type]
+            self.assertEqual(tense.exception.field, "prashna.question.tense")
             with self.assertRaises(TeistroError) as refused:
                 ctx.chart.found(instant=instant, prashna={"question": {"house": 13}}, **at)
             self.assertEqual(refused.exception.field, "prashna.question.house")
