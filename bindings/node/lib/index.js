@@ -4940,6 +4940,15 @@ function prashnaFrom(read) {
                   },
           },
     weak: read.weak.map((one) => ({ ...one, graha: graha(one.graha) })),
+    graded:
+      read.graded === null
+        ? null
+        : {
+            ...read.graded,
+            onLagna: read.graded.onLagna.map(graha),
+            onLagnesha: read.graded.onLagnesha.map(graha),
+            ill: read.graded.ill.map(graha),
+          },
     triKala: {
       lagnesha: graha(triKala.lagnesha),
       past: triKala.past.map(graha),

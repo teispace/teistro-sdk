@@ -369,7 +369,7 @@ const charts = geo.chart.foundMany({
   lots: { fortune: 'REVERSED_WHILE_MOON_UP' },
   considerations: { moonLateFromDeg: 25 },
   perfection: { house: 7, rules: { horizonDays: 120 } },
-  prashna: { question: { house: 7, number: 14, tense: 'FUTURE' }, rules: { score: 'BASELINE' } },
+  prashna: { question: { house: 7, number: 14, tense: 'FUTURE' }, rules: { score: 'BASELINE', graded: 'TAJIKA' } },
   remedies: { at: 2460676.5, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
   // A varshphal list with the book's structure and none of its numbers:
   // year y sends natal house h to h + y − 1, round the twelve.
@@ -1056,6 +1056,13 @@ for (const chart of charts) {
   }
   const tk = pr.triKala;
   put(`chart-${i}-prashna-trikala`, `${tk.lagnesha} P:${list(tk.past)} N:${list(tk.present)} F:${list(tk.future)}`);
+  const gd = pr.graded;
+  if (gd !== null) {
+    put(
+      `chart-${i}-prashna-graded`,
+      `${gd.rule} ${list(gd.grades)} L:${list(gd.lords)} B:${list(gd.onLagna)} N:${list(gd.onLagnesha)} I:${list(gd.ill)} ${gd.moonSeesLagna} ${gd.lagneshaSeesLagna} ${gd.moonFree}`,
+    );
+  }
   const rm = chart.remedies;
   const fn = rm.functional;
   put(

@@ -168,6 +168,7 @@ final class KpReads {
         Object links = at(raw, "links");
         Object link = at(raw, "link");
         Object triKala = at(raw, "triKala");
+        Object graded = at(raw, "graded");
         Object score = at(raw, "score");
         Object sign = at(raw, "numberSign");
         Object verdict = at(raw, "verdict");
@@ -214,6 +215,18 @@ final class KpReads {
                         grahas(at(triKala, "present")),
                         grahas(at(triKala, "future"))),
                 weak(at(raw, "weak")),
+                graded == null
+                        ? null
+                        : new PrashnaGraded(
+                                JsonRead.text(at(graded, "rule")),
+                                JsonRead.texts(at(graded, "lords")),
+                                JsonRead.bool(at(graded, "moonSeesLagna")),
+                                JsonRead.bool(at(graded, "lagneshaSeesLagna")),
+                                grahas(at(graded, "onLagna")),
+                                grahas(at(graded, "onLagnesha")),
+                                JsonRead.bool(at(graded, "moonFree")),
+                                JsonRead.texts(at(graded, "grades")),
+                                grahas(at(graded, "ill"))),
                 new MoonWeakness(JsonRead.object(at(moon, "rules")), JsonRead.texts(at(moon, "clauses"))),
                 scored,
                 sign == null ? null : rashi(sign));

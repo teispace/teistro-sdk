@@ -842,6 +842,7 @@ function thePrashna(ctx: Context): string {
       offices: { order: 'LOWEST', drekkana: 'PARASHARI', enemy: 'IGNORED', hudda: 'CHARAK' },
       weakness: { setting: 'NAVAMSHA_ARC' },
       moonScope: 'GAIN',
+      graded: 'TAJIKA',
       score: 'BASELINE',
     },
   };
@@ -864,6 +865,12 @@ function thePrashna(ctx: Context): string {
       : `${link.kind} ${link.meaning} ${link.yoga ?? '-'} ${link.through ?? '-'} ${link.kamboola === null ? '-' : grade(link.kamboola)}`;
   const time = `${triKala.lagnesha} ${triKala.past.join()} ${triKala.present.join()} ${triKala.future.join()}`;
   const weak = read.weak.map((w) => `${w.graha} ${w.clauses.join()}`).join();
+  const g = read.graded;
+  const graded =
+    g === null
+      ? '-'
+      : `${g.rule} ${g.lords.join()} ${g.moonSeesLagna} ${g.lagneshaSeesLagna} ${g.onLagna.join()} ` +
+        `${g.onLagnesha.join()} ${g.moonFree} ${g.grades.join()} ${g.ill.join()}`;
   const samara = link === null ? '-' : `${link.moonless ?? '-'} ${link.samarasimha.join()}`;
   const when = `${timing.rule} ${timing.graha} ${timing.tie} ${timing.count} ${timing.multiplier} ${timing.amount ?? '-'} ${timing.unit} ${timing.between.join()}`;
   const about = `${mook.rule} ${mook.graha} ${mook.tie} ${mook.house} ${mook.person ?? '-'} ${mook.thought}`;
@@ -896,6 +903,7 @@ function thePrashna(ctx: Context): string {
     linked,
     time,
     weak,
+    graded,
     samara,
     read.rules.offices.order ?? '-',
     String(wrong),

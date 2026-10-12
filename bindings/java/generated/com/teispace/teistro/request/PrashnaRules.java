@@ -11,6 +11,7 @@ import java.util.Objects;
 /**
  * The readings a prashna is given under.
  *
+ * @param graded Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (C373, open: off by default). Null leaves the SDK's default.
  * @param mook Which rule reads an unspoken question. Null leaves the SDK's default.
  * @param moon How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna Tantra vv. 73–74). Null leaves the SDK's default.
  * @param moonScope Which questions v. 96's Moon governs. Null leaves the SDK's default.
@@ -20,7 +21,7 @@ import java.util.Objects;
  * @param timing Which rule times the matter. Null leaves the SDK's default.
  * @param weakness How v. 72's weaknesses are read. Null leaves the SDK's default.
  */
-public record PrashnaRules(MookRule mook, MoonRules moon, MoonScope moonScope, OfficeRules offices, PiscesRising pisces, ScoreRule score, TimingRule timing, WeaknessRules weakness) implements RequestJson {
+public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, MoonScope moonScope, OfficeRules offices, PiscesRising pisces, ScoreRule score, TimingRule timing, WeaknessRules weakness) implements RequestJson {
     /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
@@ -33,6 +34,7 @@ public record PrashnaRules(MookRule mook, MoonRules moon, MoonScope moonScope, O
 
     /** Builds a {@link PrashnaRules} a field at a time. */
     public static final class Builder {
+        private GradedRule graded;
         private MookRule mook;
         private MoonRules moon;
         private MoonScope moonScope;
@@ -43,6 +45,17 @@ public record PrashnaRules(MookRule mook, MoonRules moon, MoonScope moonScope, O
         private WeaknessRules weakness;
 
         private Builder() {}
+
+        /**
+         * Sets {@code graded}.
+         *
+         * @param graded Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (C373, open: off by default). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder graded(GradedRule graded) {
+            this.graded = graded;
+            return this;
+        }
 
         /**
          * Sets {@code mook}.
@@ -139,7 +152,7 @@ public record PrashnaRules(MookRule mook, MoonRules moon, MoonScope moonScope, O
          * @throws NullPointerException naming a required field left unset
          */
         public PrashnaRules build() {
-            return new PrashnaRules(mook, moon, moonScope, offices, pisces, score, timing, weakness);
+            return new PrashnaRules(graded, mook, moon, moonScope, offices, pisces, score, timing, weakness);
         }
     }
 
@@ -153,6 +166,7 @@ public record PrashnaRules(MookRule mook, MoonRules moon, MoonScope moonScope, O
     public static PrashnaRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PrashnaRules");
         return new PrashnaRules(
+            Read.orNull(json.get("graded"), present -> Read.member(present, "PrashnaRules.graded", GradedRule::byKey)),
             Read.orNull(json.get("mook"), present -> Read.member(present, "PrashnaRules.mook", MookRule::byKey)),
             Read.orNull(json.get("moon"), present -> MoonRules.of(present)),
             Read.orNull(json.get("moonScope"), present -> Read.member(present, "PrashnaRules.moonScope", MoonScope::byKey)),
@@ -166,6 +180,9 @@ public record PrashnaRules(MookRule mook, MoonRules moon, MoonScope moonScope, O
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (graded != null) {
+            json.put("graded", graded.toJson());
+        }
         if (mook != null) {
             json.put("mook", mook.toJson());
         }

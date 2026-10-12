@@ -14241,6 +14241,7 @@ Prashna _prashna(Map<String, Object?> raw) {
   final links = raw['links'];
   final linked = raw['link'];
   final triKala = at(raw['triKala']);
+  final graded = raw['graded'];
   final score = raw['score'];
   final sign = raw['numberSign'];
   return Prashna(
@@ -14254,6 +14255,7 @@ Prashna _prashna(Map<String, Object?> raw) {
         setting: _keyedIn(SettingPart.values, at(rules['weakness'])['setting']),
       ),
       moonScope: _keyedIn(MoonScope.values, rules['moonScope']),
+      graded: _keyedIn(GradedRule.values, rules['graded']),
       score: _keyedIn(ScoreRule.values, rules['score']),
     ),
     verdict: PrashnaVerdict(
@@ -14307,6 +14309,7 @@ Prashna _prashna(Map<String, Object?> raw) {
       present: List<Graha>.unmodifiable(grahas(triKala['present'])),
       future: List<Graha>.unmodifiable(grahas(triKala['future'])),
     ),
+    graded: graded == null ? null : _prashnaGraded(at(graded)),
     moon: MoonWeakness(
       rules: moonRules(moon['rules']),
       clauses: List<MoonWeaknessClause>.unmodifiable([
@@ -14332,6 +14335,29 @@ Prashna _prashna(Map<String, Object?> raw) {
             ),
     numberSign:
         sign == null ? null : Rashi.byKey(sign as String) ?? Rashi.unknown,
+  );
+}
+
+/// The Bhuvanapradipa's grades as the boundary's JSON writes them.
+PrashnaGraded _prashnaGraded(Map<String, Object?> raw) {
+  List<Object?> each(Object? value) => value! as List<Object?>;
+  List<Graha> grahas(Object? keys) => List<Graha>.unmodifiable([
+    for (final key in each(keys)) Graha.byKey(key! as String) ?? Graha.unknown,
+  ]);
+  return PrashnaGraded(
+    rule: _keyedIn(GradedRule.values, raw['rule']),
+    lords: List<LordsSee>.unmodifiable([
+      for (final key in each(raw['lords'])) _keyedIn(LordsSee.values, key),
+    ]),
+    moonSeesLagna: raw['moonSeesLagna']! as bool,
+    lagneshaSeesLagna: raw['lagneshaSeesLagna']! as bool,
+    onLagna: grahas(raw['onLagna']),
+    onLagnesha: grahas(raw['onLagnesha']),
+    moonFree: raw['moonFree']! as bool,
+    grades: List<PrashnaGrade>.unmodifiable([
+      for (final key in each(raw['grades'])) _keyedIn(PrashnaGrade.values, key),
+    ]),
+    ill: grahas(raw['ill']),
   );
 }
 
@@ -16592,6 +16618,129 @@ enum MoonScope implements _Keyed {
   final String key;
 }
 
+/// Whether the Bhuvanapradipa's graded yogas are read, and by which
+/// aspect (C373, open: off by default).
+enum GradedRule implements _Keyed {
+  /// Not read; the default.
+  off('OFF'),
+
+  /// By Parashara's full aspects; a graha does not see its own sign.
+  parashari('PARASHARI'),
+
+  /// By Tajika's sign aspects, the conjunction included.
+  tajika('TAJIKA');
+
+  const GradedRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// How the lagnesha and the karyesha look at the two houses.
+enum LordsSee implements _Keyed {
+  /// Each lord looks at its own house.
+  ownHouses('OWN_HOUSES'),
+
+  /// Each looks at the other's house.
+  eachOthersHouses('EACH_OTHERS_HOUSES'),
+
+  /// The two look at each other.
+  eachOther('EACH_OTHER');
+
+  const LordsSee(this.key);
+
+  @override
+  final String key;
+}
+
+/// A graded yoga of the Bhuvanapradipa, by its name; the names are
+/// fractions, but the passage does not rank them as numbers would.
+enum PrashnaGrade implements _Keyed {
+  /// *Paripurna*: a lords' configuration with the Moon on the lagna.
+  paripurna('PARIPURNA'),
+
+  /// *Pada*, a quarter: the lagnesha on the lagna and no benefic.
+  pada('PADA'),
+
+  /// *Ardha*, a half: the quarter, and a benefic on the lagnesha.
+  ardha('ARDHA'),
+
+  /// *Padona*, less a quarter: one benefic on the lagna and its lord.
+  padona('PADONA'),
+
+  /// *Tribhagona*, less a third: two or three benefics on the lagna.
+  tribhagona('TRIBHAGONA'),
+
+  /// *Purna*, full: the benefics on the lagna and the Moon free.
+  purna('PURNA');
+
+  const PrashnaGrade(this.key);
+
+  @override
+  final String key;
+}
+
+/// The Bhuvanapradipa's graded yogas (n178, C373): every clause the
+/// grades are built from, and the grades whose clauses hold.
+final class PrashnaGraded extends _Value {
+  const PrashnaGraded({
+    required this.rule,
+    required this.lords,
+    required this.moonSeesLagna,
+    required this.lagneshaSeesLagna,
+    required this.onLagna,
+    required this.onLagnesha,
+    required this.moonFree,
+    required this.grades,
+    required this.ill,
+  });
+
+  /// The aspect the clauses were read by.
+  final GradedRule rule;
+
+  /// The lords' configurations that hold; empty when no house was asked.
+  final List<LordsSee> lords;
+
+  /// Whether the Moon looks at the lagna.
+  final bool moonSeesLagna;
+
+  /// Whether the lagnesha looks at the lagna.
+  final bool lagneshaSeesLagna;
+
+  /// The benefics, the lagnesha left out, looking at the lagna.
+  final List<Graha> onLagna;
+
+  /// The benefics looking at the lagnesha.
+  final List<Graha> onLagnesha;
+
+  /// Whether no malefic looks at the Moon.
+  final bool moonFree;
+
+  /// The grades whose clauses hold, in the passage's order.
+  final List<PrashnaGrade> grades;
+
+  /// The grahas that give ill: sharing a sign with a malefic, looked at
+  /// by one, or burnt by the Sun.
+  final List<Graha> ill;
+
+  @override
+  List<Object?> get _fields => [
+    rule,
+    ...lords,
+    null,
+    moonSeesLagna,
+    lagneshaSeesLagna,
+    ...onLagna,
+    null,
+    ...onLagnesha,
+    null,
+    moonFree,
+    ...grades,
+    null,
+    ...ill,
+  ];
+}
+
 /// The readings a prashna is given under, one a crux, the texts' own by
 /// default (`03-design/prashna.md`).
 final class PrashnaRules extends _Value {
@@ -16603,6 +16752,7 @@ final class PrashnaRules extends _Value {
     this.offices = const OfficeRules(),
     this.weakness = const WeaknessRules(),
     this.moonScope = MoonScope.every,
+    this.graded = GradedRule.off,
     this.score = ScoreRule.off,
   });
 
@@ -16619,6 +16769,9 @@ final class PrashnaRules extends _Value {
 
   /// Which questions v. 96's Moon governs.
   final MoonScope moonScope;
+
+  /// Whether the Bhuvanapradipa's graded yogas are read (C373).
+  final GradedRule graded;
   final ScoreRule score;
 
   Map<String, Object?> get _record => {
@@ -16629,6 +16782,7 @@ final class PrashnaRules extends _Value {
     'offices': offices._record,
     'weakness': weakness._record,
     'moonScope': moonScope.key,
+    'graded': graded.key,
     'score': score.key,
   };
 
@@ -16641,6 +16795,7 @@ final class PrashnaRules extends _Value {
     offices,
     weakness,
     moonScope,
+    graded,
     score,
   ];
 }
@@ -17295,6 +17450,7 @@ final class Prashna {
     required this.link,
     required this.triKala,
     required this.weak,
+    required this.graded,
     required this.moon,
     required this.score,
     required this.numberSign,
@@ -17320,6 +17476,9 @@ final class Prashna {
 
   /// Each of the seven's weaknesses of v. 72, the Sun first.
   final List<GrahaWeakness> weak;
+
+  /// The Bhuvanapradipa's grades; null unless [PrashnaRules.graded] asks.
+  final PrashnaGraded? graded;
   final MoonWeakness moon;
 
   /// The baseline's points; null unless [PrashnaRules.score] is

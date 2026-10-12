@@ -9281,7 +9281,8 @@ fn a_chart_request_answers_prashna() {
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
     let births = [2_447_995.489_583_333_5, 2_451_545.0];
     let base = chart_request(&births, (27.7172, 85.324), 20_700);
-    let text = r#"{"question":{"house":7,"number":14},"rules":{"score":"BASELINE"}}"#;
+    let text =
+        r#"{"question":{"house":7,"number":14},"rules":{"score":"BASELINE","graded":"PARASHARI"}}"#;
     let json = CString::new(text).unwrap();
     let section = |asked: &TsChartRequest| {
         let bytes = chart_blob(&ctx, asked)
@@ -9331,6 +9332,7 @@ fn a_chart_request_answers_prashna() {
         keys(one),
         [
             "change",
+            "graded",
             "link",
             "links",
             "mook",
@@ -9361,6 +9363,20 @@ fn a_chart_request_answers_prashna() {
         ["future", "lagnesha", "past", "present"]
     );
     assert_eq!(one["weak"].as_array().map(Vec::len), Some(7));
+    assert_eq!(
+        keys(&one["graded"]),
+        [
+            "grades",
+            "ill",
+            "lagneshaSeesLagna",
+            "lords",
+            "moonFree",
+            "moonSeesLagna",
+            "onLagna",
+            "onLagnesha",
+            "rule"
+        ]
+    );
     assert_eq!(keys(&one["verdict"]), ["clauses", "outcome"]);
     assert_eq!(
         keys(&one["timing"]),

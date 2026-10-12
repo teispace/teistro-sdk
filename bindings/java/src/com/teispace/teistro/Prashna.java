@@ -17,6 +17,7 @@ import java.util.Map;
  * @param link What the links say of the matter; null when no house was asked. May be null.
  * @param triKala The lagnesha's own yogas read as past, present and future.
  * @param weak Each of the seven's weaknesses of v. 72, the Sun first.
+ * @param graded The Bhuvanapradipa's grades; null unless {@code rules.graded} asks. May be null.
  * @param moon The Moon's weaknesses.
  * @param score The baseline's points; null unless {@code rules.score} is {@code BASELINE}. May be
  *     null.
@@ -32,6 +33,7 @@ public record Prashna(
         PrashnaLink link,
         TriKala triKala,
         List<GrahaWeakness> weak,
+        PrashnaGraded graded,
         MoonWeakness moon,
         PrashnaScore score,
         Rashi numberSign) {

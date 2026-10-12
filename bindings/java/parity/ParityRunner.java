@@ -1445,7 +1445,7 @@ public final class ParityRunner {
                 .lots(LotRequest.of(map("fortune", "REVERSED_WHILE_MOON_UP")))
                 .considerations(com.teispace.teistro.request.ConsiderationRules.of(map("moonLateFromDeg", 25)))
                 .perfection(PerfectionRequest.of(map("house", 7, "rules", map("horizonDays", 120))))
-                .prashna(PrashnaRequest.of(map("question", map("house", 7, "number", 14, "tense", "FUTURE"), "rules", map("score", "BASELINE"))))
+                .prashna(PrashnaRequest.of(map("question", map("house", 7, "number", 14, "tense", "FUTURE"), "rules", map("score", "BASELINE", "graded", "TAJIKA"))))
                 .remedies(RemedyRequest.of(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA")))))
                 // A varshphal list with the book's structure and none of its numbers:
                 // year y sends natal house h to h + y - 1, round the twelve.
@@ -2186,6 +2186,13 @@ public final class ParityRunner {
         TriKala tk = pq.triKala();
         put(c + "-prashna-trikala", tk.lagnesha().fullKey() + " P:" + grahaKeys(tk.past()) + " N:"
                 + grahaKeys(tk.present()) + " F:" + grahaKeys(tk.future()));
+        PrashnaGraded gd = pq.graded();
+        if (gd != null) {
+            put(c + "-prashna-graded", gd.rule() + " " + orDash(String.join(",", gd.grades())) + " L:"
+                    + orDash(String.join(",", gd.lords())) + " B:" + grahaKeys(gd.onLagna()) + " N:"
+                    + grahaKeys(gd.onLagnesha()) + " I:" + grahaKeys(gd.ill()) + " " + lower(gd.moonSeesLagna()) + " "
+                    + lower(gd.lagneshaSeesLagna()) + " " + lower(gd.moonFree()));
+        }
     }
 
     /** The purifier's verdict as every runner spells it: whether pure, then each clause colon-joined. */

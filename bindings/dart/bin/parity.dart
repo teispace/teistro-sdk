@@ -1105,7 +1105,7 @@ void main() {
       house: 7,
       number: 14,
       tense: PrashnaTense.future,
-      rules: PrashnaRules(score: ScoreRule.baseline),
+      rules: PrashnaRules(score: ScoreRule.baseline, graded: GradedRule.tajika),
     ),
     remedies: const RemedyRequest(
       at: 2460676.5,
@@ -1918,6 +1918,18 @@ void main() {
           'N:${joined(tk.present.map((g) => g.fullKey))} '
           'F:${joined(tk.future.map((g) => g.fullKey))}',
     );
+    final gd = pq.graded;
+    if (gd != null) {
+      put(
+        'chart-$i-prashna-graded',
+        '${gd.rule.key} ${joined(gd.grades.map((g) => g.key))} '
+            'L:${joined(gd.lords.map((l) => l.key))} '
+            'B:${joined(gd.onLagna.map((g) => g.fullKey))} '
+            'N:${joined(gd.onLagnesha.map((g) => g.fullKey))} '
+            'I:${joined(gd.ill.map((g) => g.fullKey))} '
+            '${gd.moonSeesLagna} ${gd.lagneshaSeesLagna} ${gd.moonFree}',
+      );
+    }
     putRemedies('chart-$i-remedies', chart.remedies!);
     putLalKitab('chart-$i-lalkitab', chart.lalkitab!);
     putRectification('chart-$i-rectification', chart.rectification!);
