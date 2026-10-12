@@ -4,7 +4,7 @@
 use teistro_core::catalogue::{Calendar, Era};
 use teistro_core::error::Error;
 
-use crate::date::{CalendarCapabilities, CalendarDate, CalendarSystem, check_day};
+use crate::date::{CalendarCapabilities, CalendarDate, CalendarSystem, check_day, check_fixed};
 use crate::fixed::FixedDay;
 use crate::gregorian::{YEAR_RANGE, check_year, common_month_length, era_of};
 
@@ -90,6 +90,7 @@ impl CalendarSystem for Julian {
     }
 
     fn date_of(&self, fixed: FixedDay) -> Result<CalendarDate, Error> {
+        check_fixed(Calendar::Julian, self.capabilities().range, fixed)?;
         let (year, month, day) = julian_from_fixed(fixed);
         check_year(Calendar::Julian, year)?;
         let (era, era_year) = era_of(year);

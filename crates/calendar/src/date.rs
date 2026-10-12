@@ -162,6 +162,27 @@ pub(crate) fn out_of_range(message: String) -> Error {
     Error::new(Status::OutOfRange, message)
 }
 
+/// Refuses a fixed day outside a calendar's range before its conversion
+/// meets it: a day far enough out overflows the year the arithmetic would
+/// compute, so the check on that year comes too late.
+pub(crate) fn check_fixed(
+    calendar: Calendar,
+    (first, last): (FixedDay, FixedDay),
+    fixed: FixedDay,
+) -> Result<(), Error> {
+    if fixed.get() < first.get() || fixed.get() > last.get() {
+        return Err(out_of_range(format!(
+            "{} covers fixed days {} to {}, not {}",
+            calendar.key(),
+            first.get(),
+            last.get(),
+            fixed.get()
+        ))
+        .with_field("fixed"));
+    }
+    Ok(())
+}
+
 /// Checks a month and a day against a month length.
 pub(crate) fn check_day(
     calendar: Calendar,

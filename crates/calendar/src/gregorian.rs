@@ -4,7 +4,9 @@
 use teistro_core::catalogue::{Calendar, Era};
 use teistro_core::error::Error;
 
-use crate::date::{CalendarCapabilities, CalendarDate, CalendarSystem, check_day, out_of_range};
+use crate::date::{
+    CalendarCapabilities, CalendarDate, CalendarSystem, check_day, check_fixed, out_of_range,
+};
 use crate::fixed::FixedDay;
 
 /// The proleptic Gregorian calendar.
@@ -142,6 +144,7 @@ impl CalendarSystem for Gregorian {
     }
 
     fn date_of(&self, fixed: FixedDay) -> Result<CalendarDate, Error> {
+        check_fixed(Calendar::Gregorian, self.capabilities().range, fixed)?;
         let (year, month, day) = gregorian_from_fixed(fixed);
         check_year(Calendar::Gregorian, year)?;
         let (era, era_year) = era_of(year);

@@ -5,7 +5,9 @@
 use teistro_core::catalogue::{Calendar, Era};
 use teistro_core::error::Error;
 
-use crate::date::{CalendarCapabilities, CalendarDate, CalendarSystem, check_day, nonexistent};
+use crate::date::{
+    CalendarCapabilities, CalendarDate, CalendarSystem, check_day, check_fixed, nonexistent,
+};
 use crate::fixed::{FixedDay, Weekday};
 use crate::gregorian::{YEAR_RANGE, check_year, fixed_from_gregorian, year_from_fixed};
 
@@ -85,6 +87,7 @@ impl CalendarSystem for IsoWeek {
     }
 
     fn date_of(&self, fixed: FixedDay) -> Result<CalendarDate, Error> {
+        check_fixed(Calendar::IsoWeek, self.capabilities().range, fixed)?;
         let date = iso_from_fixed(fixed);
         check_year(Calendar::IsoWeek, date.week_year)?;
         Ok(CalendarDate::defined(
