@@ -39,8 +39,10 @@ teistro_port_ephemeris::export_provider!(TestProvider, open);
 
 /// Where cargo put this adapter's shared library, for a test that loads
 /// it: beside the running test binary, in the `deps` directory a
-/// dev-dependency is built into, under the platform's library name with
-/// or without cargo's hash; the newest when there are several.
+/// dev-dependency is built into, or, in the build-dir layout nightly cargo
+/// writes, in this package's own `build/teistro-test-adapter/<hash>/out`;
+/// under the platform's library name with or without cargo's hash; the
+/// newest when there are several.
 ///
 /// A test crate names this crate as a dev-dependency, which is what makes
 /// cargo build the library before the test runs, and calls this to find
@@ -53,8 +55,21 @@ pub fn library() -> Result<PathBuf, String> {
     let exe = std::env::current_exe().map_err(|why| format!("no test binary path: {why}"))?;
     let stem = format!("{}teistro_test_adapter", std::env::consts::DLL_PREFIX);
     let suffix = std::env::consts::DLL_SUFFIX;
+    let mut dirs: Vec<PathBuf> = exe
+        .ancestors()
+        .skip(1)
+        .take(2)
+        .map(std::path::Path::to_path_buf)
+        .collect();
+    // The build-dir layout gives every unit `build/<package>/<hash>/out`,
+    // the test binary's and this library's alike.
+    if let Some(build) = exe.ancestors().find(|dir| dir.ends_with("build"))
+        && let Ok(units) = std::fs::read_dir(build.join("teistro-test-adapter"))
+    {
+        dirs.extend(units.flatten().map(|unit| unit.path().join("out")));
+    }
     let mut found: Vec<(std::time::SystemTime, PathBuf)> = Vec::new();
-    for dir in exe.ancestors().skip(1).take(2) {
+    for dir in &dirs {
         let Ok(entries) = std::fs::read_dir(dir) else {
             continue;
         };
