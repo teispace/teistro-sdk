@@ -51,11 +51,13 @@ use teistro_tajika::{
 };
 
 mod baseline;
+mod graded;
 mod link;
 #[cfg(test)]
 mod tests;
 
 pub use baseline::{Answer, Factor, FactorKind, Score, ScoreRule, number_sign};
+pub use graded::{Grade, Graded, GradedRule, LordsSee};
 pub use link::{Link, LinkKind, Meaning, MoonScope, SamarasimhaClause, Tense, TriKala};
 
 /// The nine grahas a prashna places, in the order [`PrashnaSky`] holds
@@ -341,6 +343,9 @@ pub struct PrashnaRules {
     pub weakness: WeaknessRules,
     /// Which questions v. 96's Moon governs.
     pub moon_scope: MoonScope,
+    /// Whether the Bhuvanapradīpa's graded yogas are read, and by which
+    /// aspect (C373, open: off by default).
+    pub graded: GradedRule,
     /// Whether the baseline engine's points come beside the clauses.
     pub score: ScoreRule,
 }
@@ -367,6 +372,7 @@ impl PrashnaRules {
                 setting: teistro_tajika::SettingPart::NavamshaSign,
             },
             moon_scope: MoonScope::Every,
+            graded: GradedRule::Off,
         }
     }
 }
@@ -632,6 +638,9 @@ pub struct Prashna {
     /// Each of the seven's weaknesses of v. 72, the Sun first: a graha
     /// "unable to bring about the matter".
     pub weak: Vec<GrahaWeakness>,
+    /// The Bhuvanapradīpa's graded yogas (n178), under
+    /// [`PrashnaRules::graded`] only.
+    pub graded: Option<Graded>,
     /// The Moon's weaknesses, which Tajika Nilakanthi's Samjna Tantra
     /// v. 74 reads "at birth or in a query": each clause of vv. 73–74
     /// that holds, none weighed.
@@ -670,6 +679,11 @@ pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result
             link::link(links, &seven, sky.lagna(), question.tense, rules)
         })
         .transpose()?;
+    let graded = graded::graded(
+        sky,
+        links.as_ref().map(|links| (links.karyesha, links.sign)),
+        rules.graded,
+    );
     Ok(Prashna {
         rules,
         verdict: verdict(sky, question, rules),
@@ -680,6 +694,7 @@ pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result
         link,
         tri_kala: link::tri_kala(sky.lagna().attributes().lord, &seven)?,
         weak: weaknesses(sky.lagna_deg, &seven, rules.weakness)?,
+        graded,
         moon: moon_weakness(&seven, rules.moon)?,
         score: match rules.score {
             ScoreRule::Off => None,

@@ -705,6 +705,8 @@ __all__ = [
     "WeaknessRules",
     "SettingPart",
     "MoonScope",
+    "GradedRule",
+    "PrashnaGraded",
     "KamboolaGrade",
     "TajikaOffices",
     "OfficeRules",
@@ -8376,13 +8378,19 @@ MoonScope = Literal["EVERY", "GAIN"]
 governs (C376), a `PrashnaRules` `moon_scope`."""
 
 
+GradedRule = Literal["OFF", "PARASHARI", "TAJIKA"]
+"""Whether the Bhuvanapradipa's graded yogas are read, and by which aspect
+(C373, open: `OFF` by default), a `PrashnaRules` `graded`."""
+
+
 class PrashnaRules(TypedDict, total=False):
     """The readings a prashna is given under, one knob per crux, the texts'
     own by default: `pisces` (`BOTH_WAYS` or `SHIRSHODAYA`), `timing`
     (`STRONGEST_GRAHA`, `FIRST_OCCUPIED`, `MOON_DAYS` or the unsourced
     `BASELINE`), `mook` (`SHATPANCHASHIKA`, `MOON_HOUSE` or `BASELINE`),
-    `moon`, `offices`, `weakness`, `moonScope` (`EVERY` or `GAIN`) and
-    `score` (`OFF` or `BASELINE`)."""
+    `moon`, `offices`, `weakness`, `moonScope` (`EVERY` or `GAIN`),
+    `graded` (`OFF`, `PARASHARI` or `TAJIKA`) and `score` (`OFF` or
+    `BASELINE`)."""
 
     pisces: PiscesRising
     timing: TimingRule
@@ -8391,6 +8399,7 @@ class PrashnaRules(TypedDict, total=False):
     offices: OfficeRules
     weakness: WeaknessRules
     moonScope: MoonScope
+    graded: GradedRule
     score: ScoreRule
 
 
@@ -8550,6 +8559,32 @@ class GrahaWeakness:
 
 
 @dataclass(frozen=True)
+class PrashnaGraded:
+    """The Bhuvanapradipa's graded yogas (n178, C373): every clause the
+    grades are built from, and the grades whose clauses hold, by name
+    (`PARIPURNA`, `PADA`, `ARDHA`, `PADONA`, `TRIBHAGONA`, `PURNA`), never
+    ranked."""
+
+    rule: GradedRule
+    """The aspect the clauses were read by, `PARASHARI` or `TAJIKA`."""
+    lords: Tuple[str, ...]
+    """The lords' configurations that hold (`OWN_HOUSES`,
+    `EACH_OTHERS_HOUSES`, `EACH_OTHER`); empty when no house was asked."""
+    moon_sees_lagna: bool
+    lagnesha_sees_lagna: bool
+    on_lagna: Tuple[Graha, ...]
+    """The benefics, the lagnesha left out, looking at the lagna."""
+    on_lagnesha: Tuple[Graha, ...]
+    """The benefics looking at the lagnesha."""
+    moon_free: bool
+    """Whether no malefic looks at the Moon."""
+    grades: Tuple[str, ...]
+    ill: Tuple[Graha, ...]
+    """The grahas that give ill: sharing a sign with a malefic, looked at
+    by one, or burnt by the Sun."""
+
+
+@dataclass(frozen=True)
 class TriKala:
     """The lagnesha's own yogas read as time (n179, C375): those it is
     separating from, joined with, and coming to."""
@@ -8600,6 +8635,8 @@ class Prashna:
     tri_kala: TriKala
     weak: Tuple[GrahaWeakness, ...]
     """Each of the seven's weaknesses of v. 72, the Sun first."""
+    graded: Optional[PrashnaGraded]
+    """The Bhuvanapradipa's grades; `None` unless `rules.graded` asks."""
     moon: MoonWeakness
     score: Optional[PrashnaScore]
     """The baseline's points; `None` unless `rules.score` is `BASELINE`."""
@@ -10946,6 +10983,7 @@ def _prashna(raw: Mapping[str, Any]) -> Prashna:
     links = raw["links"]
     link = raw["link"]
     tri_kala = raw["triKala"]
+    graded = raw["graded"]
     score = raw["score"]
     sign = raw["numberSign"]
     return Prashna(
@@ -10984,6 +11022,19 @@ def _prashna(raw: Mapping[str, Any]) -> Prashna:
             past=tuple(some(key) for key in tri_kala["past"]),
             present=tuple(some(key) for key in tri_kala["present"]),
             future=tuple(some(key) for key in tri_kala["future"]),
+        ),
+        graded=None
+        if graded is None
+        else PrashnaGraded(
+            rule=graded["rule"],
+            lords=tuple(graded["lords"]),
+            moon_sees_lagna=graded["moonSeesLagna"],
+            lagnesha_sees_lagna=graded["lagneshaSeesLagna"],
+            on_lagna=tuple(some(key) for key in graded["onLagna"]),
+            on_lagnesha=tuple(some(key) for key in graded["onLagnesha"]),
+            moon_free=graded["moonFree"],
+            grades=tuple(graded["grades"]),
+            ill=tuple(some(key) for key in graded["ill"]),
         ),
         moon=MoonWeakness(rules=raw["moon"]["rules"], clauses=tuple(raw["moon"]["clauses"])),
         score=None

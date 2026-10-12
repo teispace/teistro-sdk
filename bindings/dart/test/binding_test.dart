@@ -4447,6 +4447,7 @@ void _engineTests() {
             rules: PrashnaRules(
               score: ScoreRule.baseline,
               mook: MookRule.baseline,
+              graded: GradedRule.parashari,
             ),
           ),
         )!;
@@ -4477,6 +4478,14 @@ void _engineTests() {
       isNot(read.links!.holds(YearYoga.kamboola) ?? false),
     );
     expect(read.triKala.lagnesha, isNot(Graha.unknown));
+    expect(plain.graded, isNull, reason: 'off by default (C373)');
+    final graded = read.graded!;
+    expect(graded.rule, GradedRule.parashari);
+    expect([
+      ...graded.onLagna,
+      ...graded.onLagnesha,
+      ...graded.ill,
+    ], everyElement(isNot(Graha.unknown)));
     final past =
         found(
           const PrashnaRequest(

@@ -4,7 +4,8 @@ Status: steps 1, 3 and 4 `built` (`crates/prashna`, 2026-10-07: the
 verdict, change, timing and the unspoken question; the `BASELINE` values;
 the façade and every binding), step 2 partly built (the Tajika links,
 what they say of the matter with Kamboola's grades and the tri-kāla, and
-the Moon, 2026-10-12; the akṣara-lagna and the six points open, C353). The
+the Moon, 2026-10-12; the Bhuvanapradīpa's grades built off, C373; the
+akṣara-lagna and the six points open, C353). The
 `SHADVARGA` rising varga is designed, not built (C336).
 
 A prashna is a chart cast for the moment a question is asked. Casting it
@@ -218,7 +219,9 @@ let reading = sdk.prashna().read(&chart, &PrashnaQuestion {
 - `weakness`: `WeaknessRules`, v. 72's setting part (`NAVAMSHA_SIGN` by
   default or `NAVAMSHA_ARC`, C377);
 - `moon_scope`: which questions v. 96's Moon governs (`EVERY` by
-  default, or `GAIN`, C376).
+  default, or `GAIN`, C376);
+- `graded`: the Bhuvanapradīpa's graded yogas, `OFF` by default while
+  C373 is open, or read by `PARASHARI` or `TAJIKA` aspect.
 
 `Question::tense` (`UNSPECIFIED` by default, `FUTURE` or `PAST`) says
 when the matter falls, which is what a separation's meaning turns on
@@ -295,7 +298,13 @@ Each names its field under `prashna`.
    v. 96's `moonless` (C376) and Samarasiṁha's conditions that hold, his
    "loss" clause left open (C374), and `Prashna::weak` each of the
    seven's weaknesses of v. 72 (C377), the empty road and the Moon's
-   own clauses reading the same offices. The akṣara-lagna and the six points are open (C353): two
+   own clauses reading the same offices. Under `graded`,
+   `Prashna::graded` reports the Bhuvanapradīpa's grades as the
+   general section quotes them (n178): every clause they are built
+   from (the lords' three configurations, the benefics on the lagna and
+   on its lord, the Moon's freedom) and each grade whose clauses hold,
+   by name, with the grahas that give ill. It is off by default (C373).
+   The akṣara-lagna and the six points are open (C353): two
    prints carry vv. 12–15 without a gloss, and the root leaves four
    readings unsettled.
 3. **The `BASELINE` values**, built, transcribed from the baseline

@@ -11,9 +11,9 @@ use teistro_core::catalogue::{Graha, Rashi};
 use teistro_tajika::{KshinaRule, MoonClause, MoonRules};
 
 use crate::{
-    Answer, Change, ClauseKind, FactorKind, Favour, LinkKind, Meaning, MookRule, Outcome, Person,
-    PiscesRising, Placed, PrashnaRules, PrashnaSky, Question, Score, ScoreRule, Tense, Thought,
-    TimingRule, Unit, number_sign, read,
+    Answer, Change, ClauseKind, FactorKind, Favour, Grade, GradedRule, LinkKind, LordsSee, Meaning,
+    MookRule, Outcome, Person, PiscesRising, Placed, PrashnaRules, PrashnaSky, Question, Score,
+    ScoreRule, Tense, Thought, TimingRule, Unit, number_sign, read,
 };
 
 /// A sky with the lagna at `lagna_deg` and the nine grahas, Sun to Ketu,
@@ -690,4 +690,128 @@ fn every_graha_carries_its_weaknesses_of_v72() {
     };
     assert!(!unseen(Graha::Sun) && !unseen(Graha::Jupiter));
     assert!(unseen(Graha::Mars) && unseen(Graha::Saturn));
+}
+
+/// Aries rising, Mars (its lord) in Capricorn seeing it by his 4th;
+/// Jupiter in Leo (9th) and Venus in Libra (7th) see it too; Mercury and a
+/// waxing Moon in Taurus, the Sun in Pisces, Saturn in Gemini.
+fn benefics_on_aries() -> PrashnaSky {
+    sky(
+        15.0,
+        Rashi::Aries,
+        [350.0, 40.0, 280.0, 50.0, 130.0, 190.0, 70.0, 100.0, 280.0],
+    )
+}
+
+fn graded_by(rule: GradedRule) -> PrashnaRules {
+    PrashnaRules {
+        graded: rule,
+        ..rules()
+    }
+}
+
+#[test]
+fn the_graded_yogas_are_off_by_default() {
+    let answer = read(&benefics_on_aries(), Question::about(10), rules()).unwrap();
+    assert_eq!(answer.graded, None);
+}
+
+#[test]
+fn two_benefics_on_the_lagna_make_less_a_third_and_full_while_the_moon_is_free() {
+    // No malefic sees the Moon in Taurus by Parashara: the Sun in Pisces
+    // sees Virgo, Mars in Capricorn Aries, Cancer and Leo, Saturn in
+    // Gemini Leo, Sagittarius and Pisces. Jupiter in Leo is seen by Mars
+    // (8th) and Saturn (3rd), the Sun by Saturn (10th): they give ill.
+    let answer = read(
+        &benefics_on_aries(),
+        Question::about(10),
+        graded_by(GradedRule::Parashari),
+    )
+    .unwrap();
+    let graded = answer.graded.unwrap();
+    assert!(graded.lagnesha_sees_lagna && graded.moon_free && !graded.moon_sees_lagna);
+    assert_eq!(graded.on_lagna, [Graha::Jupiter, Graha::Venus]);
+    assert_eq!(graded.on_lagnesha, []);
+    // Saturn, lord of the 10th, sees neither house from Gemini.
+    assert_eq!(graded.lords, []);
+    assert_eq!(graded.grades, [Grade::Tribhagona, Grade::Purna]);
+    assert_eq!(graded.ill, [Graha::Sun, Graha::Jupiter]);
+    // By Tajika's sign aspects the Sun in Pisces sees Taurus from its
+    // 3rd, so the Moon is not free and the full yoga goes; Venus in Libra
+    // sees Mars in Capricorn from its 4th as well as the lagna, so one
+    // benefic sees both: less a quarter.
+    let tajika = read(
+        &benefics_on_aries(),
+        Question::about(10),
+        graded_by(GradedRule::Tajika),
+    )
+    .unwrap()
+    .graded
+    .unwrap();
+    assert!(!tajika.moon_free);
+    assert_eq!(
+        tajika.on_lagnesha,
+        [Graha::Moon, Graha::Mercury, Graha::Venus]
+    );
+    assert_eq!(tajika.grades, [Grade::Padona, Grade::Tribhagona]);
+}
+
+#[test]
+fn the_lords_see_each_other_and_the_moon_the_lagna() {
+    // Aries rising, Mars in Libra sees it (7th). The 7th's lord Venus in
+    // Aries sees Libra: each lord sees its house, and the two see each
+    // other. The Moon in Libra, waning (the Sun in Aquarius), sees the
+    // lagna and is no benefic; no benefic sees Aries, and Jupiter in
+    // Aquarius (9th) and Venus see Mars: a quarter, and a half.
+    let mutual = sky(
+        15.0,
+        Rashi::Aries,
+        [330.0, 200.0, 190.0, 50.0, 310.0, 10.0, 70.0, 100.0, 280.0],
+    );
+    let graded = read(
+        &mutual,
+        Question::about(7),
+        graded_by(GradedRule::Parashari),
+    )
+    .unwrap()
+    .graded
+    .unwrap();
+    assert_eq!(graded.lords, [LordsSee::OwnHouses, LordsSee::EachOther]);
+    assert!(graded.moon_sees_lagna && graded.on_lagna.is_empty());
+    assert_eq!(graded.on_lagnesha, [Graha::Jupiter, Graha::Venus]);
+    assert_eq!(graded.grades, [Grade::Paripurna, Grade::Pada, Grade::Ardha]);
+    // Without a house the lords' configurations are not read.
+    let unasked = read(
+        &mutual,
+        Question::default(),
+        graded_by(GradedRule::Parashari),
+    )
+    .unwrap()
+    .graded
+    .unwrap();
+    assert_eq!(unasked.lords, []);
+    assert_eq!(unasked.grades, [Grade::Pada, Grade::Ardha]);
+}
+
+#[test]
+fn one_benefic_on_the_lagna_and_its_lord_is_less_a_quarter() {
+    // Mars in Aries, the lagna itself: by Parashara he does not see the
+    // sign he stands in. Venus in Libra sees both the lagna and Mars.
+    let joined = sky(
+        15.0,
+        Rashi::Aries,
+        [300.0, 100.0, 10.0, 280.0, 70.0, 190.0, 160.0, 40.0, 220.0],
+    );
+    let graded = read(
+        &joined,
+        Question::default(),
+        graded_by(GradedRule::Parashari),
+    )
+    .unwrap()
+    .graded
+    .unwrap();
+    assert!(!graded.lagnesha_sees_lagna);
+    assert_eq!(graded.on_lagna, [Graha::Venus]);
+    assert_eq!(graded.on_lagnesha, [Graha::Venus]);
+    assert_eq!(graded.grades, [Grade::Padona]);
 }

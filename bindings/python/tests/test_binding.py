@@ -1481,11 +1481,12 @@ class AnEngine(WithLibrary):
             assert plain is not None
             self.assertIsNone(plain.links)
             self.assertIsNone(plain.score)
+            self.assertIsNone(plain.graded)
             self.assertEqual(plain.rules["mook"], "SHATPANCHASHIKA")
             self.assertIn(plain.verdict.outcome, ("SUCCEEDS", "WITH_DIFFICULTY", "FAILS"))
             read = ctx.chart.found(
                 instant=instant,
-                prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE", "mook": "BASELINE"}},
+                prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE", "mook": "BASELINE", "graded": "PARASHARI"}},
                 **at,
             ).prashna
             assert read is not None and read.links is not None and read.score is not None
@@ -1500,6 +1501,11 @@ class AnEngine(WithLibrary):
             assert read.link is not None
             self.assertIn(read.link.meaning, ("PROMISED", "FAILS", "PAST", "FAILS_OR_PAST", "UNREAD"))
             self.assertIsInstance(read.tri_kala.lagnesha, Graha)
+            graded = read.graded
+            assert graded is not None
+            self.assertEqual(graded.rule, "PARASHARI")
+            self.assertLessEqual(set(graded.grades), {"PARIPURNA", "PADA", "ARDHA", "PADONA", "TRIBHAGONA", "PURNA"})
+            self.assertTrue(all(isinstance(g, Graha) for g in graded.on_lagna + graded.on_lagnesha + graded.ill))
             self.assertEqual(read.rules["offices"], {"order": "GLOSS", "drekkana": "TAJIKA", "enemy": "TAJIKA", "hudda": "NILAKANTHI"})
             with self.assertRaises(TeistroError) as tense:
                 ctx.chart.found(instant=instant, prashna={"question": {"house": 7, "tense": "SOON"}}, **at)  # type: ignore[arg-type]

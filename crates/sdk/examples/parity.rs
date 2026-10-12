@@ -1903,9 +1903,9 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
-/// number, and the baseline's points beside the texts' clauses.
-const PRASHNA_JSON: &str =
-    r#"{"question":{"house":7,"number":14,"tense":"FUTURE"},"rules":{"score":"BASELINE"}}"#;
+/// number, the baseline's points beside the texts' clauses, and the
+/// Bhuvanapradipa's grades by Tajika aspect.
+const PRASHNA_JSON: &str = r#"{"question":{"house":7,"number":14,"tense":"FUTURE"},"rules":{"score":"BASELINE","graded":"TAJIKA"}}"#;
 
 /// A prashna as the other three print it: the rules and the answers in
 /// one row, then each clause, the timing, the unspoken question, the
@@ -2120,6 +2120,24 @@ fn prashna_link(
             full_keys(&time.future)
         ),
     );
+    if let Some(graded) = &read.graded {
+        put(
+            report,
+            &key("-graded"),
+            format!(
+                "{} {} L:{} B:{} N:{} I:{} {} {} {}",
+                wire_key(&graded.rule),
+                dashed(graded.grades.iter().map(wire_key)),
+                dashed(graded.lords.iter().map(wire_key)),
+                full_keys(&graded.on_lagna),
+                full_keys(&graded.on_lagnesha),
+                full_keys(&graded.ill),
+                graded.moon_sees_lagna,
+                graded.lagnesha_sees_lagna,
+                graded.moon_free
+            ),
+        );
+    }
 }
 
 /// The rectification every runner asks for: twenty minutes either side

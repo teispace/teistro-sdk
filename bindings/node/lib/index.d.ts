@@ -2647,6 +2647,8 @@ export interface PrashnaRules {
   readonly weakness?: { readonly setting?: 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC' };
   /** Which questions v. 96's "fruitless without the Moon" governs (C376): `EVERY` by default, or `GAIN` (the 11th). */
   readonly moonScope?: 'EVERY' | 'GAIN';
+  /** Whether the Bhuvanapradipa's graded yogas are read, and by which aspect (C373, open): `OFF` by default. */
+  readonly graded?: 'OFF' | 'PARASHARI' | 'TAJIKA';
   /** Whether the baseline engine's points come beside the clauses: `OFF` by default. */
   readonly score?: 'OFF' | 'BASELINE';
 }
@@ -2677,6 +2679,8 @@ export interface Prashna {
     readonly graha: Graha;
     readonly clauses: readonly ('UNSEEN_LAGNA' | 'SETTING_PART' | 'OFFICELESS' | 'MALEFIC_ISHRAFA')[];
   }[];
+  /** The Bhuvanapradipa's graded yogas (n178, C373); `null` unless `rules.graded` asks. */
+  readonly graded: PrashnaGraded | null;
   /** The Moon's weaknesses that hold, in the verses' order (Samjna Tantra vv. 73–74, C352). */
   readonly moon: {
     readonly rules: { readonly kshina: 'DARK_EIGHTH_TO_BRIGHT_EIGHTH' | 'DARK_ELEVENTH_TO_NEW_MOON' };
@@ -2803,6 +2807,31 @@ export interface PrashnaLink {
     | 'KARYESHA_ELSEWHERE_SEES_LAGNESHA'
     | 'MOON_SEES_LAGNESHA'
   )[];
+}
+
+/**
+ * The Bhuvanapradipa's graded yogas: every clause the grades are built from, and the grades whose
+ * clauses hold, by name, never ranked (C373).
+ */
+export interface PrashnaGraded {
+  /** The aspect the clauses were read by. */
+  readonly rule: 'PARASHARI' | 'TAJIKA';
+  /** The lords' configurations that hold; empty when no house was asked. */
+  readonly lords: readonly ('OWN_HOUSES' | 'EACH_OTHERS_HOUSES' | 'EACH_OTHER')[];
+  /** Whether the Moon looks at the lagna. */
+  readonly moonSeesLagna: boolean;
+  /** Whether the lagnesha looks at the lagna. */
+  readonly lagneshaSeesLagna: boolean;
+  /** The benefics, the lagnesha left out, looking at the lagna. */
+  readonly onLagna: readonly Graha[];
+  /** The benefics looking at the lagnesha. */
+  readonly onLagnesha: readonly Graha[];
+  /** Whether no malefic looks at the Moon. */
+  readonly moonFree: boolean;
+  /** The grades whose clauses hold, in the passage's order. */
+  readonly grades: readonly ('PARIPURNA' | 'PADA' | 'ARDHA' | 'PADONA' | 'TRIBHAGONA' | 'PURNA')[];
+  /** The grahas that give ill: sharing a sign with a malefic, looked at by one, or burnt by the Sun. */
+  readonly ill: readonly Graha[];
 }
 
 /** The lagnesha's own yogas read as time: those it separates from, is joined with, and will join. */

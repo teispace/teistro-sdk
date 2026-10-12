@@ -283,6 +283,17 @@ yet taken. That makes every allowed pairing equally likely and never
 refuses a study that has one (C368). `/1` stays selectable through the
 test's `shuffle`.
 
+**A prashna can read the Bhuvanapradīpa's grades.** **Numbers:** none
+moved; the reading is off by default. A prashna's rules gain `graded`
+(`OFF`, `PARASHARI` or `TAJIKA`), and its answer `graded`: the lords'
+three configurations, the benefics looking at the lagna and at its lord,
+whether the Moon is free of a malefic's aspect, each grade whose clauses
+hold (*paripūrṇa*, *pāda*, *ardha*, *pādona*, *tribhāga-ūna*, *pūrṇa*,
+named and never ranked, since the passage's fractions are not an order)
+and the grahas that give ill. Which aspect sees, and one word of the
+quarter yoga, wait for the Bhuvanadīpaka's own print (C373). Every
+binding reads it.
+
 **A prashna says what its links mean, and grades a Kamboola.**
 **Numbers:** none moved; a prashna answer gains `link` and `triKala`, its
 rules `offices`, and its question `tense`. The link reads the pair's yogas

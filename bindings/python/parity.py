@@ -1210,7 +1210,7 @@ def main() -> None:
             lots={"fortune": "REVERSED_WHILE_MOON_UP"},
             considerations={"moonLateFromDeg": 25},
             perfection={"house": 7, "rules": {"horizonDays": 120}},
-            prashna={"question": {"house": 7, "number": 14, "tense": "FUTURE"}, "rules": {"score": "BASELINE"}},
+            prashna={"question": {"house": 7, "number": 14, "tense": "FUTURE"}, "rules": {"score": "BASELINE", "graded": "TAJIKA"}},
             remedies={"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
             # A varshphal list with the book's structure and none of its
             # numbers: year y sends natal house h to h + y - 1, round the twelve.
@@ -1885,6 +1885,15 @@ def main() -> None:
                 f"{tk.lagnesha.full_key} P:{joined(g.full_key for g in tk.past)}"
                 f" N:{joined(g.full_key for g in tk.present)} F:{joined(g.full_key for g in tk.future)}",
             )
+            gd = pq.graded
+            if gd is not None:
+                put(
+                    f"chart-{i}-prashna-graded",
+                    f"{gd.rule} {joined(gd.grades)} L:{joined(gd.lords)}"
+                    f" B:{joined(g.full_key for g in gd.on_lagna)} N:{joined(g.full_key for g in gd.on_lagnesha)}"
+                    f" I:{joined(g.full_key for g in gd.ill)}"
+                    f" {lower(gd.moon_sees_lagna)} {lower(gd.lagnesha_sees_lagna)} {lower(gd.moon_free)}",
+                )
             rm = chart.remedies
             assert rm is not None
             put_remedies(f"chart-{i}-remedies", rm)

@@ -4053,7 +4053,7 @@ test('a chart carries its prashna', () => {
   const read = ctx.chart.found({
     instant,
     ...at,
-    prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE', mook: 'BASELINE' } },
+    prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE', mook: 'BASELINE', graded: 'PARASHARI' } },
   }).prashna;
   // Keys in full, as every other accessor gives them.
   assert.ok(read.timing.graha.startsWith('graha.'));
@@ -4075,6 +4075,10 @@ test('a chart carries its prashna', () => {
   assert.ok(['PROMISED', 'FAILS', 'PAST', 'FAILS_OR_PAST', 'UNREAD'].includes(read.link.meaning));
   assert.ok(read.triKala.lagnesha.startsWith('graha.'));
   assert.ok([...read.triKala.past, ...read.triKala.present, ...read.triKala.future].every((g) => g.startsWith('graha.')));
+  assert.equal(plain.graded, null);
+  assert.equal(read.graded.rule, 'PARASHARI');
+  assert.ok(read.graded.grades.every((g) => ['PARIPURNA', 'PADA', 'ARDHA', 'PADONA', 'TRIBHAGONA', 'PURNA'].includes(g)));
+  assert.ok([...read.graded.onLagna, ...read.graded.onLagnesha, ...read.graded.ill].every((g) => g.startsWith('graha.')));
   assert.deepEqual(read.rules.offices, { order: 'GLOSS', drekkana: 'TAJIKA', enemy: 'TAJIKA', hudda: 'NILAKANTHI' });
   assert.throws(
     () => ctx.chart.found({ instant, ...at, prashna: { question: { house: 7, tense: 'SOON' } } }),

@@ -2195,7 +2195,8 @@ pub struct ChartRequest {
     /// `FUTURE` or `PAST`, which decides what a separation means, C370)
     /// and `rules` (`pisces`, `timing`, `mook`, `moon` `{kshina}`,
     /// `offices` `{order, drekkana, enemy, hudda}`, `weakness`
-    /// `{setting}`, `moonScope` and `score`, the texts' own by default). A prashna reads the seven's Shadbala, so asking for one
+    /// `{setting}`, `moonScope`, `graded` (`OFF`, `PARASHARI` or
+    /// `TAJIKA`, C373) and `score`, the texts' own by default). A prashna reads the seven's Shadbala, so asking for one
     /// asks for the `shadbala` sections too. Each chart's reading comes
     /// back in the `prashna` section. Null for none, which costs nothing
     /// (`03-design/prashna.md`). Refusals are named from the record every
