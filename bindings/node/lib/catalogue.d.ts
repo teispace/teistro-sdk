@@ -125,6 +125,13 @@ export declare const CHART_OUTER: 4096;
 export declare const CHART_AVAKAHADA: 8192;
 
 /**
+ * A chart request's `sections` bit: what the chart's instant falls in,
+ * the rising sign's span and the eclipse seen where it is cast, in the
+ * `moment` section (C378).
+ */
+export declare const CHART_MOMENT: 16384;
+
+/**
  * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
  * `sections` for the lunar years its days fall in.
  *
@@ -7614,6 +7621,39 @@ export declare const DashaPhase: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const DashaPhaseById: ReadonlyMap<number, DashaPhase>;
+
+/**
+ * The eclipse a chart's instant falls in, as the `moment` section's
+ * `eclipse` column carries it (C378).
+ */
+export type BirthEclipse = 'NONE' | 'LUNAR' | 'SOLAR' | 'UNJUDGED';
+
+/** Every BirthEclipse by name; the values are the strings the union accepts. */
+export declare const BirthEclipse: {
+  /**
+   * No eclipse is seen at the instant.
+   */
+  readonly None: 'NONE';
+  /**
+   * A lunar eclipse's umbral phase, the Moon up.
+   */
+  readonly Lunar: 'LUNAR';
+  /**
+   * A solar eclipse, the Sun up.
+   */
+  readonly Solar: 'SOLAR';
+  /**
+   * Not reckoned: the chart's astronomy is a classical one, whose
+   * eclipse the SDK does not build (C188).
+   */
+  readonly Unjudged: 'UNJUDGED';
+};
+
+/**
+ * Every BirthEclipse by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BirthEclipseById: ReadonlyMap<number, BirthEclipse>;
 
 /**
  * Which step of the year lord's chain decided it

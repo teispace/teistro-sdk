@@ -2874,6 +2874,32 @@ class AnEngine(WithLibrary):
                 western.chart.found(instant=2451545.0, avakahada=True, **kathmandu)
             self.assertEqual(caught.exception.field, "avakahada")
 
+    def test_a_chart_carries_its_moment_the_eclipse_its_place_sees(self) -> None:
+        """The moment crosses whole: the rising sign's edges bound the
+        instant, and the lunar eclipse of 2025 March 14, seen from New York,
+        is the instant's and not a day later's (C378). `None` unless asked."""
+        from teistro import BirthEclipse, Moment, MomentEclipse
+
+        new_york: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(40.71), longitude_deg=Longitude(-74.0), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        eclipse = 2460748.7908
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=eclipse, **new_york).moment)
+            batch = ctx.chart.found_many(instants=[eclipse, eclipse + 1], moment=True, **new_york)
+            during, after = batch.at(0).moment, batch.at(1).moment
+            for moment, instant in ((during, eclipse), (after, eclipse + 1)):
+                assert isinstance(moment, Moment)
+                rose, sets = moment.rising.rose, moment.rising.sets
+                assert rose is not None and sets is not None
+                self.assertTrue(rose <= instant < sets)
+            assert during is not None and after is not None
+            self.assertIs(during.eclipse.kind, BirthEclipse.LUNAR)
+            assert during.eclipse.greatest is not None
+            self.assertLess(abs(during.eclipse.greatest - eclipse), 0.1)
+            self.assertEqual(after.eclipse, MomentEclipse(kind=BirthEclipse.NONE, greatest=None))
+
     def test_a_chart_carries_its_synastry_with_a_partner(self) -> None:
         """A synastry crosses whole on King George V and Queen Mary (Leo,
         *How to Judge a Nativity*, p. 130): the recast's closest contacts,

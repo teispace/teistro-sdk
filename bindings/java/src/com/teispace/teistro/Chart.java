@@ -380,6 +380,15 @@ public final class Chart {
     }
 
     /**
+     * What the instant falls in, when it was asked for.
+     *
+     * @return the moment, empty when it was not asked for
+     */
+    public Optional<Moment> moment() {
+        return VedicReads.moment(this);
+    }
+
+    /**
      * The Vaiseshikamsa standing, when it was asked for.
      *
      * @return the reading, empty when it was not asked for

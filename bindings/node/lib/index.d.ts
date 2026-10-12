@@ -73,6 +73,7 @@ import type {
   RadicalGround,
   ApplicationKind,
   ImpedimentKind,
+  BirthEclipse,
   Way,
   Motion,
   WesternAspect,
@@ -736,6 +737,44 @@ export interface Avakahada {
   readonly gana: Gana;
   readonly nadi: Nadi;
   readonly syllable: BirthSyllable;
+}
+
+/** The sign rising at a chart's instant, and its span (C378). */
+export interface RisingSign {
+  readonly sign: Rashi | 'unknown';
+  /**
+   * When it began to rise, a UTC Julian day found to a second; `null` when
+   * it was already rising a day before, which only a place inside a polar
+   * circle sees.
+   */
+  readonly rose: number | null;
+  /** When the next sign begins to rise, a UTC Julian day; `null` likewise. */
+  readonly sets: number | null;
+}
+
+/**
+ * The eclipse a chart's instant falls in, seen where the chart is cast: a
+ * lunar eclipse's umbral phase with the Moon up, or a solar eclipse with
+ * the Sun up. A classical astronomy's chart is `UNJUDGED` (C188).
+ */
+export interface MomentEclipse {
+  readonly kind: BirthEclipse | 'unknown';
+  /** Its greatest moment, a UT1 Julian day; `null` unless `LUNAR` or `SOLAR`. */
+  readonly greatest: number | null;
+}
+
+/**
+ * What a chart's instant falls in: the sign rising and its span, which BPHS
+ * ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart
+ * is cast, which Brihat Jataka ch. 6 v. 9 reads (C378).
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, moment: true });
+ * console.log(chart.moment?.rising.sign, chart.moment?.eclipse.kind);
+ */
+export interface Moment {
+  readonly rising: RisingSign;
+  readonly eclipse: MomentEclipse;
 }
 
 /** What a gochar reading counted its houses from, and that point's sign. */
@@ -5112,6 +5151,8 @@ export declare class Chart {
   readonly jaimini: JaiminiReading | null;
   /** The Moon's avakahada; `null` unless `avakahada` asked for it. */
   readonly avakahada: Avakahada | null;
+  /** What the instant falls in; `null` unless `moment` asked for it. */
+  readonly moment: Moment | null;
   /** The Shadbala; `null` unless `shadbala` asked for it. */
   readonly shadbala: Shadbala | null;
   /** The Bhava bala; `null` unless `bhavaBala` asked for it. */
@@ -6606,6 +6647,11 @@ export interface ChartRequest {
    * chart refuses it, named `avakahada`.
    */
   readonly avakahada?: boolean;
+  /**
+   * Whether to read what the instant falls in, the rising sign's span and
+   * the eclipse seen from the place; false by default.
+   */
+  readonly moment?: boolean;
   /**
    * Whether to place Uranus, Neptune and Pluto beside the nine, in
    * `chart.outer`; false by default. A progression's later charts and a

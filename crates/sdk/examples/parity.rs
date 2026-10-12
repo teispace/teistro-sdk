@@ -1139,6 +1139,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartReq
         .with_dasha_phala()
         .with_jaimini()
         .with_avakahada()
+        .with_moment()
         .with_outer_planets()
         .with_shadbala()
         .with_bhava_bala()
@@ -5028,6 +5029,7 @@ fn the_strength(report: &mut Report, index: usize, document: &teistro::Document)
     the_dasha_phala(report, index, document);
     the_jaimini(report, index, document);
     the_avakahada(report, index, document);
+    the_moment(report, index, document);
     the_shadbala(report, index, document);
     the_bhava_bala(report, index, document);
 }
@@ -5154,9 +5156,6 @@ fn the_dasha_phala(report: &mut Report, index: usize, document: &teistro::Docume
     }
 }
 
-/// Jaimini's significators as the other three print them: the karakamsha
-/// with its houses in both charts, and the Brahma graha's rule, count, marks
-/// and answer, `-` for each that is absent.
 /// The avakahada as the other three print it: the Moon's readings, then
 /// the syllable it names the child by.
 fn the_avakahada(report: &mut Report, index: usize, document: &teistro::Document) {
@@ -5193,6 +5192,35 @@ fn the_avakahada(report: &mut Report, index: usize, document: &teistro::Document
     );
 }
 
+/// The moment as the other three print it: the rising sign and its edges,
+/// then the eclipse's kind and greatest moment, `-` for each that is absent.
+fn the_moment(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(moment) = document.moment.as_ref() else {
+        return;
+    };
+    let at = |jd: Option<f64>| jd.map_or_else(|| "-".to_owned(), number);
+    let (kind, greatest) = match moment.eclipse {
+        teistro::BirthEclipse::None => ("NONE", None),
+        teistro::BirthEclipse::Lunar { greatest } => ("LUNAR", Some(greatest.get())),
+        teistro::BirthEclipse::Solar { greatest } => ("SOLAR", Some(greatest.get())),
+        teistro::BirthEclipse::Unjudged => ("UNJUDGED", None),
+    };
+    put(
+        report,
+        &format!("chart-{index}-moment"),
+        format!(
+            "{} {} {} {kind} {}",
+            moment.rising.sign.full_key(),
+            at(moment.rising.rose.map(JulianDay::get)),
+            at(moment.rising.sets.map(JulianDay::get)),
+            at(greatest)
+        ),
+    );
+}
+
+/// Jaimini's significators as the other three print them: the karakamsha
+/// with its houses in both charts, and the Brahma graha's rule, count, marks
+/// and answer, `-` for each that is absent.
 fn the_jaimini(report: &mut Report, index: usize, document: &teistro::Document) {
     let Some(reading) = document.jaimini.as_ref() else {
         return;

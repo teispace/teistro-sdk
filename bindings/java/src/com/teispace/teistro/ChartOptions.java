@@ -242,6 +242,16 @@ public record ChartOptions(
         }
 
         /**
+         * What the instant falls in: the rising sign's span and the eclipse seen from the place.
+         *
+         * @param on whether to read it
+         * @return this builder
+         */
+        public Builder moment(boolean on) {
+            return section(Native.TS_CHART_MOMENT, on);
+        }
+
+        /**
          * Uranus, Neptune and Pluto beside the nine.
          *
          * @param on whether to place them

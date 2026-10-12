@@ -533,6 +533,30 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart carries its moment, the eclipse its place sees", () -> {
+            // The rising sign's edges bound the instant, and the lunar eclipse of 2025 March 14,
+            // seen from New York, is the instant's and not a day later's (C378).
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer newYork = new Observer(new Longitude(-74.0), new Latitude(40.71), new Altitude(0));
+                double eclipse = 2_460_748.790_8;
+                check(sky.chart().found(eclipse, newYork, 0, ChartOptions.builder().build()).moment().isEmpty(),
+                        "none unless asked");
+                double[] instants = {eclipse, eclipse + 1};
+                ChartBatch batch = sky.chart().foundMany(instants, newYork, 0,
+                        ChartOptions.builder().moment(true).build());
+                for (int k = 0; k < instants.length; k += 1) {
+                    RisingSign rising = batch.get(k).moment().orElseThrow().rising();
+                    check(rising.rose() <= instants[k] && instants[k] < rising.sets(),
+                            "the rising sign's edges bound the instant");
+                }
+                Moment during = batch.get(0).moment().orElseThrow();
+                Moment after = batch.get(1).moment().orElseThrow();
+                same(BirthEclipse.LUNAR, during.eclipse().kind(), "the eclipse New York sees");
+                check(Math.abs(during.eclipse().greatest() - eclipse) < 0.1, "its greatest moment");
+                same(new MomentEclipse(BirthEclipse.NONE, null), after.eclipse(), "a day later");
+            }
+        });
+
         tests.put("a chart carries its Lal Kitab", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
@@ -577,7 +601,7 @@ public final class BindingTest {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
                 ChartOptions everything = ChartOptions.builder().state(true).aspects(true).points(true).houses(true)
                         .ashtakavarga(true).vimshopaka(true).vaiseshikamsa(true).dashaPhala(true).jaimini(true)
-                        .avakahada(true).outerPlanets(true).shadbala(true).bhavaBala(true)
+                        .avakahada(true).moment(true).outerPlanets(true).shadbala(true).bhavaBala(true)
                         .vargas(Varga.D9).dashas(DashaSystem.VIMSHOTTARI).remedies(RemedyRequest.of(Map.of()))
                         .fortitudes(FortitudeRequest.of(Map.of())).lots(LotRequest.of(Map.of())).westernAspects(AspectRequest.of(Map.of()))
                         .westernHouses(HouseRequest.of(Map.of())).antiscia(AntisciaRequest.of(Map.of())).midpoints(MidpointRequest.of(Map.of())).parallels(ParallelRequest.of(Map.of()))
@@ -601,6 +625,7 @@ public final class BindingTest {
                     check(chart.dashaPhala().isPresent(), "the dasha phala");
                     check(chart.jaimini().isPresent(), "the jaimini reading");
                     check(chart.avakahada().isPresent(), "the avakahada");
+                    check(chart.moment().isPresent(), "the moment");
                     check(chart.shadbala().isPresent(), "the shadbala");
                     check(chart.bhavaBala().isPresent(), "the bhava bala");
                     check(chart.kp().isEmpty(), "KP needs its own ayanamsha, and was not asked");

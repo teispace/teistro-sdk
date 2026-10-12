@@ -707,6 +707,24 @@ fn perfection(api: &Api) -> Vec<&'static str> {
     ]
 }
 
+/// The birth eclipse, tagged by `kind` (C378).
+fn moment(api: &Api) -> Vec<&'static str> {
+    use teistro_ffi::chart::TsBirthEclipse;
+    let samples: Vec<teistro::BirthEclipse> =
+        read_keys(api, "TsBirthEclipse", "kind", |key| match key {
+            "LUNAR" | "SOLAR" => json!({"greatest": 2_460_000.5}),
+            _ => json!({}),
+        });
+    vec![spelled_as(
+        api,
+        "TsBirthEclipse",
+        "kind",
+        &samples,
+        |e| Some(i64::from(TsBirthEclipse::of(*e).0 as u8)),
+        &[],
+    )]
+}
+
 #[test]
 fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
     let api = api();
@@ -719,6 +737,7 @@ fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
         dignities(&api),
         fortitudes(&api),
         perfection(&api),
+        moment(&api),
         matching(&api),
         time_and_calendar(&api),
     ]

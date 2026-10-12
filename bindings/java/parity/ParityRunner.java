@@ -1427,6 +1427,7 @@ public final class ParityRunner {
                 .dashaPhala(true)
                 .jaimini(true)
                 .avakahada(true)
+                .moment(true)
                 .outerPlanets(true)
                 .gochar(GocharRequest.of(map("instants", List.of(2460676.5, 2460736.5), "ashtakavarga", true)))
                 .hits(HitRequest.of(map("from", 2460676.5, "to", 2460736.5, "grahas", List.of("SUN", "MERCURY", "SATURN"),
@@ -1727,6 +1728,10 @@ public final class ParityRunner {
         BirthSyllable syllable = birth.syllable();
         put(c + "-avakahada-syllable", syllable.cell() + " " + syllable.devanagari() + " " + syllable.iast() + " "
                 + syllable.varga().key());
+        Moment fell = chart.moment().orElseThrow();
+        put(c + "-moment", fell.rising().sign().fullKey() + " " + bound(fell.rising().rose()) + " "
+                + bound(fell.rising().sets()) + " " + fell.eclipse().kind().key() + " "
+                + bound(fell.eclipse().greatest()));
         put(c + "-brahma", brahma.rule().key() + " " + brahma.countedFrom().fullKey() + " "
                 + grahaKeys(brahma.qualified())
                 + " " + (brahma.graha() != null ? brahma.graha().fullKey() : "-")

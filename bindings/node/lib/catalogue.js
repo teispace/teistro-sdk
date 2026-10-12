@@ -93,6 +93,13 @@ export const CHART_OUTER = 4096;
 export const CHART_AVAKAHADA = 8192;
 
 /**
+ * A chart request's `sections` bit: what the chart's instant falls in,
+ * the rising sign's span and the eclipse seen where it is cast, in the
+ * `moment` section (C378).
+ */
+export const CHART_MOMENT = 16384;
+
+/**
  * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
  * `sections` for the lunar years its days fall in.
  *
@@ -3800,6 +3807,25 @@ export const DashaPhaseById = /* @__PURE__ */ new Map([
   [0, 'COMMENCEMENT'],
   [1, 'MIDDLE'],
   [2, 'END'],
+]);
+
+/** Every BirthEclipse by name. */
+export const BirthEclipse = /* @__PURE__ */ Object.freeze({
+  None: 'NONE',
+  Lunar: 'LUNAR',
+  Solar: 'SOLAR',
+  Unjudged: 'UNJUDGED',
+});
+
+/**
+ * Every BirthEclipse by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BirthEclipseById = /* @__PURE__ */ new Map([
+  [0, 'NONE'],
+  [1, 'LUNAR'],
+  [2, 'SOLAR'],
+  [3, 'UNJUDGED'],
 ]);
 
 /** Every VarsheshaChosen by name. */

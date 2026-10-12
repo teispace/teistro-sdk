@@ -153,6 +153,7 @@ public final class Charts {
     private final String remedies;
     private final String rectification;
     private final String lalkitab;
+    private final Moment moment;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -296,6 +297,7 @@ public final class Charts {
         this.remedies = blob.text(121, "remedies");
         this.rectification = blob.text(122, "rectification");
         this.lalkitab = blob.text(123, "lalkitab");
+        this.moment = new Moment(blob, 124, "moment");
     }
 
     /**
@@ -1558,6 +1560,15 @@ public final class Charts {
      */
     public String lalkitab() {
         return lalkitab;
+    }
+
+    /**
+     * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+     *
+     * @return the moment
+     */
+    public Moment moment() {
+        return moment;
     }
 
 
@@ -14238,6 +14249,100 @@ public final class Charts {
          */
         public int varga(int row) {
             return Byte.toUnsignedInt(bytes.get(vargaAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `moment` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+     */
+    public static final class Moment {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int signAt;
+        private final int roseAt;
+        private final int setsAt;
+        private final int eclipseAt;
+        private final int greatestAt;
+
+        Moment(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.signAt = blob.column(at, 0, 2);
+            this.roseAt = blob.column(at, 1, 8);
+            this.setsAt = blob.column(at, 2, 8);
+            this.eclipseAt = blob.column(at, 3, 1);
+            this.greatestAt = blob.column(at, 4, 8);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The sign rising at the instant.
+         *
+         * The id of a {@code Rashi}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int sign(int row) {
+            return Short.toUnsignedInt(bytes.getShort(signAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * When it began to rise, a UTC Julian day found to a second; NaN when it was already rising a day before, which only a place inside a polar circle sees.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double rose(int row) {
+            return bytes.getDouble(roseAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * When the next sign begins to rise, a UTC Julian day; NaN likewise.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double sets(int row) {
+            return bytes.getDouble(setsAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The eclipse the instant falls in: a lunar eclipse's umbral phase with the Moon up, or a solar eclipse with the Sun up. A classical astronomy's chart is not judged (C188).
+         *
+         * The id of a {@code BirthEclipse}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int eclipse(int row) {
+            return Byte.toUnsignedInt(bytes.get(eclipseAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The eclipse's greatest moment, a UT1 Julian day; NaN unless `eclipse` is `LUNAR` or `SOLAR`.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double greatest(int row) {
+            return bytes.getDouble(greatestAt + Objects.checkIndex(row, length) * 8);
         }
     }
 }

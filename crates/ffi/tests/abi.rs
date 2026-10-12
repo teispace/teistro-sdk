@@ -8706,6 +8706,96 @@ fn a_chart_request_answers_its_avakahada() {
     assert_eq!(western.last_error().2.as_deref(), Some("avakahada"));
 }
 
+/// The moment crosses whole: every cell equals the façade's over a batch
+/// holding the lunar eclipse of 2025 March 14 seen from New York, an edge
+/// unknown is NaN, and nothing asked is an empty section (C378).
+#[test]
+fn a_chart_request_answers_its_moment() {
+    use teistro_ffi::chart::{TS_CHART_MOMENT, TsBirthEclipse};
+
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let instants = [2_460_748.790_8, 2_460_749.790_8, 2_451_545.0];
+    let base = chart_request(&instants, (40.71, -74.0), 0);
+    let asked = TsChartRequest {
+        sections: TS_CHART_MOMENT,
+        ..base
+    };
+    let bytes = chart_blob(&ctx, &asked)
+        .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(40.71, -74.0, 0.0).unwrap();
+    let moments: Vec<teistro::Moment> = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(place, teistro::UtcOffset::UTC).with_moment(),
+        )
+        .unwrap()
+        .value
+        .into_iter()
+        .map(|document| document.moment.unwrap())
+        .collect();
+    let column = |name: &str| reader.column("moment", name).unwrap();
+    let bits = |values: Vec<f64>| values.into_iter().map(f64::to_bits).collect::<Vec<_>>();
+    let floats = |name: &str| bits(column(name).into_iter().map(ScalarValue::as_f64).collect());
+    let ints =
+        |name: &str| -> Vec<i64> { column(name).into_iter().map(ScalarValue::as_i64).collect() };
+    let edge = |at: Option<teistro::quantity::JulianDay<teistro::quantity::Utc>>| {
+        at.map_or(f64::NAN, teistro::quantity::JulianDay::get)
+    };
+    assert_eq!(
+        ints("sign"),
+        moments
+            .iter()
+            .map(|m| i64::from(m.rising.sign.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        floats("rose"),
+        bits(moments.iter().map(|m| edge(m.rising.rose)).collect())
+    );
+    assert_eq!(
+        floats("sets"),
+        bits(moments.iter().map(|m| edge(m.rising.sets)).collect())
+    );
+    assert_eq!(
+        ints("eclipse"),
+        moments
+            .iter()
+            .map(|m| i64::from(TsBirthEclipse::of(m.eclipse).0 as u8))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        floats("greatest"),
+        bits(
+            moments
+                .iter()
+                .map(|m| TsBirthEclipse::of(m.eclipse).1)
+                .collect()
+        )
+    );
+    // The first instant is in the eclipse and the second, a day on, is not.
+    assert_eq!(
+        &ints("eclipse")[..2],
+        &[TsBirthEclipse::Lunar as i64, TsBirthEclipse::None as i64]
+    );
+    assert!(column("greatest")[1].as_f64().is_nan());
+
+    // None asked is an empty section.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    assert_eq!(reader.column("moment", "sign").unwrap().len(), 0);
+}
+
 /// A match crosses whole: every cell of the two sections equals the
 /// façade's over a batch, each chart on the side the partner leaves it, and
 /// a refusal is named by its field (`03-design/matching.md`).

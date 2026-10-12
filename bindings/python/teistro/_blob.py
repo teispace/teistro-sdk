@@ -3768,6 +3768,33 @@ class ChartsAvakahada:
 
 
 @dataclass(frozen=True)
+class ChartsMoment:
+    """The `moment` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+    """
+
+    sign: memoryview[int]
+    """The sign rising at the instant."""
+
+    rose: memoryview[float]
+    """When it began to rise, a UTC Julian day found to a second; NaN when it was already rising a day before, which only a place inside a polar circle sees."""
+
+    sets: memoryview[float]
+    """When the next sign begins to rise, a UTC Julian day; NaN likewise."""
+
+    eclipse: memoryview[int]
+    """The eclipse the instant falls in: a lunar eclipse's umbral phase with the Moon up, or a solar eclipse with the Sun up. A classical astronomy's chart is not judged (C188)."""
+
+    greatest: memoryview[float]
+    """The eclipse's greatest moment, a UT1 Julian day; NaN unless `eclipse` is `LUNAR` or `SOLAR`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4482,6 +4509,9 @@ class Charts:
     lalkitab: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each `{reading, cycle, periods, year}` (`03-design/lalkitab.md`). `reading` is the teva's: `planets`, each `{graha, house, dignities, owners, awake, kayam, casts}` with `dignities` among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`, `owners` each `{owner, regard}` (`FRIEND`, `EQUAL` or `ENEMY`) and `casts` each aspect `{to, strength, onto}` (`QUARTER`, `HALF` or `FULL`); `houses`, each `{house, occupants, lookedAtBy, awake, waker}` with `lookedAtBy` each `{from, strength}`; `masnui`, each pair in one house `{pair, house, countsAs}`; `rinas`, each debt `{rin, of, seated}` with `seated` each `{enemy, house}`; `pitri`, the ancestors' debt's first state `{ninth, mercury}`; and `flags` `{ratandha, nabalig, dharmi, sathi}`. `cycle` is the 35-year cycle's start `{planet, year}` and `periods` its periods `{planet, from, to}` over years 1 to 120 of life. `year` is `{year, ruler, thirds, annual}`, `annual` the annual teva's reading in the same shape when the record sent a `varshphal` list, otherwise null; `year` itself is null unless the record named one. Grahas are bare catalogue keys. Empty when `lalkitab_json` asked for none."""
 
+    moment: ChartsMoment
+    """What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4614,6 +4644,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_remedies = blob.section(121, "remedies")
     at_rectification = blob.section(122, "rectification")
     at_lalkitab = blob.section(123, "lalkitab")
+    at_moment = blob.section(124, "moment")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7197,6 +7228,14 @@ def decode_charts(raw: bytes) -> Charts:
         remedies=blob.text(at_remedies),
         rectification=blob.text(at_rectification),
         lalkitab=blob.text(at_lalkitab),
+        moment=ChartsMoment(
+            sign=blob.column(at_moment, 0, 2, at_moment.count).cast("H"),
+            rose=blob.column(at_moment, 1, 8, at_moment.count).cast("d"),
+            sets=blob.column(at_moment, 2, 8, at_moment.count).cast("d"),
+            eclipse=blob.column(at_moment, 3, 1, at_moment.count).cast("B"),
+            greatest=blob.column(at_moment, 4, 8, at_moment.count).cast("d"),
+            length=at_moment.count,
+        ),
     )
 
 

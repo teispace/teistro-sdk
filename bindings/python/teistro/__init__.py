@@ -60,6 +60,7 @@ from ._ffi import (
     CHART_ASHTAKAVARGA,
     CHART_ASPECTS,
     CHART_AVAKAHADA,
+    CHART_MOMENT,
     CHART_BHAVA_BALA,
     CHART_DASHA_PHALA,
     CHART_HOUSES,
@@ -188,6 +189,7 @@ from .catalogue import (
     RadicalGround,
     ApplicationKind,
     ImpedimentKind,
+    BirthEclipse,
     Way,
     VarsheshaChosen,
     VimshopakaScoring,
@@ -588,6 +590,10 @@ __all__ = [
     "NameSyllable",
     "Avakahada",
     "BirthSyllable",
+    "Moment",
+    "RisingSign",
+    "MomentEclipse",
+    "BirthEclipse",
     "VargaKoota",
     "NaamMilan",
     "NumerologyRules",
@@ -1891,6 +1897,7 @@ class ChartArea(_Area):
         dasha_phala: bool = False,
         jaimini: bool = False,
         avakahada: bool = False,
+        moment: bool = False,
         outer_planets: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
@@ -1952,6 +1959,7 @@ class ChartArea(_Area):
             dasha_phala=dasha_phala,
             jaimini=jaimini,
             avakahada=avakahada,
+            moment=moment,
             outer_planets=outer_planets,
             shadbala=shadbala,
             bhava_bala=bhava_bala,
@@ -2003,6 +2011,7 @@ class ChartArea(_Area):
         dasha_phala: bool = False,
         jaimini: bool = False,
         avakahada: bool = False,
+        moment: bool = False,
         outer_planets: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
@@ -2045,6 +2054,7 @@ class ChartArea(_Area):
             | (CHART_DASHA_PHALA if dasha_phala else 0)
             | (CHART_JAIMINI if jaimini else 0)
             | (CHART_AVAKAHADA if avakahada else 0)
+            | (CHART_MOMENT if moment else 0)
             | (CHART_OUTER if outer_planets else 0)
             | (CHART_SHADBALA if shadbala else 0)
             | (CHART_BHAVA_BALA if bhava_bala else 0)
@@ -5588,6 +5598,55 @@ class Avakahada:
 
     syllable: BirthSyllable
     """The syllable the child is named by."""
+
+
+@dataclass(frozen=True)
+class RisingSign:
+    """The sign rising at a chart's instant, and its span (C378)."""
+
+    sign: Rashi
+    """The sign."""
+
+    rose: Optional[float]
+    """When it began to rise, a UTC Julian day found to a second; `None`
+    when it was already rising a day before, which only a place inside a
+    polar circle sees."""
+
+    sets: Optional[float]
+    """When the next sign begins to rise, a UTC Julian day; `None`
+    likewise."""
+
+
+@dataclass(frozen=True)
+class MomentEclipse:
+    """The eclipse a chart's instant falls in, seen where the chart is
+    cast: a lunar eclipse's umbral phase with the Moon up, or a solar
+    eclipse with the Sun up. A classical astronomy's chart is `UNJUDGED`
+    (C188)."""
+
+    kind: BirthEclipse
+    """Which, or `NONE`."""
+
+    greatest: Optional[float]
+    """Its greatest moment, a UT1 Julian day; `None` unless `LUNAR` or
+    `SOLAR`."""
+
+
+@dataclass(frozen=True)
+class Moment:
+    """What a chart's instant falls in: the sign rising and its span,
+    which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen
+    where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads (C378).
+
+    >>> # chart = ctx.chart.found(..., moment=True)
+    >>> # chart.moment.rising.sign, chart.moment.eclipse.kind
+    """
+
+    rising: RisingSign
+    """The sign rising and when it rose and sets."""
+
+    eclipse: MomentEclipse
+    """The eclipse the instant falls in."""
 
 
 @dataclass(frozen=True)
@@ -13679,6 +13738,12 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def moment(self) -> Optional[Moment]:
+        """What the instant falls in, when `moment=True` asked for it."""
+        parsed = self.batch._moments
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def vaiseshikamsa(self) -> Optional[VaiseshikamsaReading]:
         """The Vaiseshikamsa, when `vaiseshikamsa=True` asked for it."""
         parsed = self.batch._vaiseshikamsas
@@ -14056,6 +14121,30 @@ class ChartBatch:
             )
 
         return [reading(chart) for chart in range(c.length)]
+
+    @cached_property
+    def _moments(self) -> list[Moment]:
+        """Every chart's moment, decoded once; empty when none was asked
+        for."""
+        c = self.decoded.moment
+
+        def jd(value: float) -> Optional[float]:
+            return None if math.isnan(value) else value
+
+        return [
+            Moment(
+                rising=RisingSign(
+                    sign=Rashi(c.sign[chart]),
+                    rose=jd(c.rose[chart]),
+                    sets=jd(c.sets[chart]),
+                ),
+                eclipse=MomentEclipse(
+                    kind=BirthEclipse(c.eclipse[chart]),
+                    greatest=jd(c.greatest[chart]),
+                ),
+            )
+            for chart in range(c.length)
+        ]
 
     @cached_property
     def _avakahadas(self) -> list[Avakahada]:

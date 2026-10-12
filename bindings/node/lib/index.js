@@ -32,6 +32,7 @@ import {
   CHART_HOUSES,
   CHART_JAIMINI,
   CHART_AVAKAHADA,
+  CHART_MOMENT,
   CHART_OUTER,
   CHART_POINTS,
   CHART_SHADBALA,
@@ -119,6 +120,7 @@ import {
   RadicalGroundById,
   ApplicationKindById,
   ImpedimentKindById,
+  BirthEclipseById,
   WayById,
   MotionById,
   WesternAspectById,
@@ -966,6 +968,15 @@ export class Chart {
    */
   get avakahada() {
     return avakahadasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * What the chart's instant falls in (`moment: true`): the sign rising and
+   * its span, and the eclipse seen where the chart is cast (C378); `null`
+   * unless asked for.
+   */
+  get moment() {
+    return momentsOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2609,6 +2620,7 @@ export class ChartArea extends Area {
           (request.dashaPhala === true ? CHART_DASHA_PHALA : 0) |
           (request.jaimini === true ? CHART_JAIMINI : 0) |
           (request.avakahada === true ? CHART_AVAKAHADA : 0) |
+          (request.moment === true ? CHART_MOMENT : 0) |
           (request.outerPlanets === true ? CHART_OUTER : 0) |
           (request.state === true ? CHART_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
@@ -5875,6 +5887,33 @@ function bala(subSub) {
     toString: () => `${pad(parts.units)}:${pad(parts.subUnits)}:${pad(parts.subSub)}`,
   };
 }
+/** Each batch's moments, decoded once however many charts read them. */
+const MOMENTS = new WeakMap();
+
+/** Every chart's moment in a batch; empty when none was asked for. */
+function momentsOf(batch) {
+  let decoded = MOMENTS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.moment;
+    const jd = (value) => (Number.isNaN(value) ? null : value);
+    decoded = Array.from({ length: c.length }, (_, chart) =>
+      Object.freeze({
+        rising: Object.freeze({
+          sign: RashiById.get(c.sign[chart]) ?? 'unknown',
+          rose: jd(c.rose[chart]),
+          sets: jd(c.sets[chart]),
+        }),
+        eclipse: Object.freeze({
+          kind: BirthEclipseById.get(c.eclipse[chart]) ?? 'unknown',
+          greatest: jd(c.greatest[chart]),
+        }),
+      }),
+    );
+    MOMENTS.set(batch, decoded);
+  }
+  return decoded;
+}
+
 /** Each batch's avakahadas, decoded once however many charts read them. */
 const AVAKAHADAS = new WeakMap();
 
