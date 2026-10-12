@@ -361,6 +361,24 @@ jobs:
       - name: Every body's shortest run bounds its scan, and the scan is the fine one's to the bit
         run: cargo xtask check-stations
 
+  # Rules holding on exactly the same charts are probable duplicates; this
+  # evaluates every shipped rule over 6 000 charts the SDK computes and
+  # fails on a group of one text nothing explains
+  # (03-design/rule-cofiring-measured.md). Here and not in fast-check: each
+  # chart's reading computes its own panchanga, which is minutes, and a
+  # branch that adds rules dispatches this workflow before it merges.
+  cofiring:
+    name: rules that hold together
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Every group of rules holding on the same charts is explained
+        run: cargo xtask check-cofiring
+
   # The fuzz targets' smoke run (`05-testing/03-fuzzing.md`): each for a
   # minute from the committed corpus. A crash fails the job and its input
   # is uploaded; the long run is `fuzz.yml`, weekly.

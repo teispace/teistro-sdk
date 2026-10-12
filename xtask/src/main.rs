@@ -272,6 +272,7 @@ mod chalit;
 mod chebyshev;
 mod classical;
 mod classical_chart;
+mod cofiring;
 mod composites;
 mod conformance;
 mod consumer;
@@ -505,6 +506,7 @@ const PASSES: &[Pass] = &[
     ("arudhas", arudhas::generate, arudhas::check_generated),
     ("terms", terms::generate, terms::check_generated),
     ("review-sheets", review::generate, review::check_generated),
+    ("cofiring", cofiring::generate, cofiring::check_generated),
     ("sect", sect::generate, sect::check_generated),
     ("reception", reception::generate, reception::check_generated),
     (
