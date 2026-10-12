@@ -22,6 +22,7 @@
 //! read the chart, and take an evaluator from what came back.
 
 use teistro_chart::foundation::ChartFoundation;
+use teistro_chart::moment::{BirthEclipse, Moment, Rising};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Dignity, Graha, Rashi, Varga};
 use teistro_core::error::Error;
@@ -31,8 +32,8 @@ use teistro_core::quantity::{Depth, JulianDay, Utc};
 use teistro_dasha::{Chain, Period, Timeline};
 use teistro_rules::longevity::{Vulnerability, age_span};
 use teistro_rules::{
-    Body, EightKarakas, Evaluator, House, LifeClass, Panchanga, Placement, PointAt, Readings,
-    RuleChart, Running, StrengthMeasure, Strengths, VargaSigns,
+    Body, Eclipse, EightKarakas, Evaluator, House, LifeClass, Panchanga, Placement, PointAt,
+    Readings, RuleChart, Running, StrengthMeasure, Strengths, VargaSigns,
 };
 use teistro_serial::Document;
 use teistro_state::GrahaState;
@@ -57,10 +58,19 @@ const GHATIKAS_PER_DAY: f64 = 60.0;
 ///
 /// `None` when the almanac carries no tithi at the instant, which is the
 /// one limb every panchanga-reading rule needs.
+///
+/// The rising sign's span and the eclipse are the instant's rather than the
+/// day's, and come from the document's `moment` when it carries one; without
+/// it the lagna's edge and an eclipse at birth are unknown, and a rule that
+/// reads either does not hold. They were unknown everywhere until 2026-10-12,
+/// when a sky of 6000 charts found `LAGNA_GANDANTA` and
+/// `BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH` never holding
+/// (`03-design/rule-cofiring-measured.md`).
 fn birth_limbs(
     day: &teistro_panchanga::almanac::Panchanga,
     instant: JulianDay<Utc>,
     pada: teistro_rules::Pada,
+    moment: Option<&Moment>,
 ) -> Option<Panchanga> {
     let tithi = day.tithi_at(instant)?;
     let nakshatra = day.nakshatra_at(instant)?;
@@ -77,9 +87,7 @@ fn birth_limbs(
         spans: teistro_rules::Spans {
             tithi: ghatikas(tithi.whole, instant),
             nakshatra: ghatikas(nakshatra.whole, instant),
-            // The rising sign's span is the chart's and not the almanac's:
-            // the lagna moves at its own rate and no limb list holds it.
-            lagna: None,
+            lagna: moment.and_then(|moment| lagna_span(&moment.rising, instant)),
         },
         by_day: Some(
             instant.get() >= day.day.sunrise.get() && instant.get() < day.day.sunset.get(),
@@ -88,8 +96,27 @@ fn birth_limbs(
         // maker reads, not a fact the almanac settles: `SunDay::sankranti`
         // says the day had one and says nothing about how near is near.
         on_sankranti: false,
-        eclipse: None,
+        eclipse: moment.and_then(|moment| match moment.eclipse {
+            BirthEclipse::Lunar { .. } => Some(Eclipse::Lunar),
+            BirthEclipse::Solar { .. } => Some(Eclipse::Solar),
+            BirthEclipse::None | BirthEclipse::Unjudged => None,
+        }),
     })
+}
+
+/// How much of the rising sign had risen at an instant and how much was
+/// left, in ghatikas; an edge the search did not reach, which only a place
+/// inside a polar circle has, is infinitely far, so the instant is never at
+/// it.
+fn lagna_span(rising: &Rising, instant: JulianDay<Utc>) -> Option<teistro_rules::Span> {
+    let at = instant.get();
+    let elapsed = rising
+        .rose
+        .map_or(f64::INFINITY, |rose| (at - rose.get()) * GHATIKAS_PER_DAY);
+    let remaining = rising
+        .sets
+        .map_or(f64::INFINITY, |sets| (sets.get() - at) * GHATIKAS_PER_DAY);
+    (elapsed >= 0.0 && remaining >= 0.0).then_some(teistro_rules::Span { elapsed, remaining })
 }
 
 /// The pada of the nakshatra the Moon stands in, one to four.
@@ -215,6 +242,7 @@ impl RuleInputs {
                 day,
                 document.foundation.instant,
                 moons_pada(&document.foundation)?,
+                document.moment.as_ref(),
             )
         });
         let chart = rule_chart(&document.foundation, states, limbs, strengths)?;

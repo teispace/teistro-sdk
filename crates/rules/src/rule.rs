@@ -622,6 +622,13 @@ impl Rule {
         self.every_condition().any(Condition::reads_panchanga)
     }
 
+    /// Whether any of its conditions reads what the instant falls in, so a
+    /// caller knows to give the chart its moment.
+    #[must_use]
+    pub fn reads_moment(&self) -> bool {
+        self.every_condition().any(Condition::reads_moment)
+    }
+
     /// The status a present rule stands at when `cancelled` of its
     /// cancellations held and it was found from `found` places.
     #[must_use]

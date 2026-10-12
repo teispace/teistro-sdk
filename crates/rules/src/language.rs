@@ -1209,6 +1209,21 @@ impl Condition {
         )
     }
 
+    /// Whether this condition itself reads what the chart's instant falls in
+    /// rather than its day: the rising sign's edge or an eclipse. Each also
+    /// reads the panchanga, which carries both to the evaluator.
+    #[must_use]
+    pub const fn reads_moment(&self) -> bool {
+        matches!(
+            self,
+            Condition::BirthDuringEclipse { .. }
+                | Condition::AtLimbEdge {
+                    limb: Limb::Lagna,
+                    ..
+                }
+        )
+    }
+
     /// The first condition inside it, itself included, that names `SELF` with
     /// no `for-any` above it to bind one.
     #[must_use]

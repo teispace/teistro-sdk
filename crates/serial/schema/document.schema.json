@@ -992,6 +992,73 @@
       ],
       "type": "object"
     },
+    "BirthEclipse": {
+      "description": "The eclipse an instant falls in, at one place.",
+      "oneOf": [
+        {
+          "description": "No eclipse is seen at the instant.",
+          "properties": {
+            "kind": {
+              "const": "NONE",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A lunar eclipse's umbral phase, the Moon up.",
+          "properties": {
+            "greatest": {
+              "$ref": "#/$defs/JulianDay",
+              "description": "Its greatest moment, UT1."
+            },
+            "kind": {
+              "const": "LUNAR",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "greatest"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A solar eclipse, the Sun up.",
+          "properties": {
+            "greatest": {
+              "$ref": "#/$defs/JulianDay",
+              "description": "Its greatest moment, UT1."
+            },
+            "kind": {
+              "const": "SOLAR",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "greatest"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Not reckoned: a classical astronomy's eclipse is its own method, which the SDK does not build (crux C188), and a modern eclipse beside a text's sky would answer a question the chart did not ask.",
+          "properties": {
+            "kind": {
+              "const": "UNJUDGED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
     "BirthPeriod": {
       "description": "How a dasha's birth period is divided among its sub-periods.",
       "oneOf": [
@@ -2422,6 +2489,17 @@
             }
           ],
           "description": "Jaimini's significators: the karakamsha and the Brahma graha, or why the rule found none (`03-design/jaimini-significators.md`)."
+        },
+        "moment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Moment"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "What the instant falls in: the rising sign's span and the eclipse seen where the chart is cast (`teistro_chart::moment`)."
         },
         "panchanga": {
           "anyOf": [
@@ -4348,6 +4426,24 @@
       "description": "A key of the `masa` catalogue, bare or full.",
       "x-teistro-kind": "masa"
     },
+    "Moment": {
+      "description": "The instant's own facts.",
+      "properties": {
+        "eclipse": {
+          "$ref": "#/$defs/BirthEclipse",
+          "description": "The eclipse the instant falls in, as seen where the chart is cast."
+        },
+        "rising": {
+          "$ref": "#/$defs/Rising",
+          "description": "The sign rising at the instant and when it rose and sets."
+        }
+      },
+      "required": [
+        "rising",
+        "eclipse"
+      ],
+      "type": "object"
+    },
     "MonthDay": {
       "description": "A month and a day inside a year, for a divergence report.",
       "properties": {
@@ -5963,6 +6059,41 @@
           "type": "string"
         }
       ]
+    },
+    "Rising": {
+      "description": "The sign rising at an instant, and its span.",
+      "properties": {
+        "rose": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JulianDay"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "When it began to rise, UTC; `None` when it was rising a day before, which only a place inside a polar circle sees."
+        },
+        "sets": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JulianDay"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "When the next sign begins to rise, UTC; `None` likewise."
+        },
+        "sign": {
+          "$ref": "#/$defs/Rashi",
+          "description": "The sign."
+        }
+      },
+      "required": [
+        "sign"
+      ],
+      "type": "object"
     },
     "Ritu": {
       "anyOf": [

@@ -13,6 +13,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_aspect::Aspects;
 use teistro_chart::foundation::ChartFoundation;
+use teistro_chart::moment::Moment;
 use teistro_core::envelope::Provenance;
 use teistro_dasha::DashaReading;
 use teistro_dasha::jaimini::JaiminiReading;
@@ -88,6 +89,10 @@ pub struct Document {
     /// one native (`03-design/matching.md`, C301).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub avakahada: Option<Avakahada>,
+    /// What the instant falls in: the rising sign's span and the eclipse
+    /// seen where the chart is cast (`teistro_chart::moment`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub moment: Option<Moment>,
     /// The charts drawn in the layouts asked for: which chart, placed in
     /// which layout (`03-design/chart-geometry.md`).
     ///
@@ -121,6 +126,7 @@ impl Document {
             dasha_phala: None,
             jaimini: None,
             avakahada: None,
+            moment: None,
             shadbala: None,
             bhava_bala: None,
             drawings: Vec::new(),
@@ -195,6 +201,13 @@ impl Document {
     #[must_use]
     pub fn with_jaimini(mut self, jaimini: JaiminiReading) -> Document {
         self.jaimini = Some(jaimini);
+        self
+    }
+
+    /// With what the instant falls in.
+    #[must_use]
+    pub fn with_moment(mut self, moment: Moment) -> Document {
+        self.moment = Some(moment);
         self
     }
 

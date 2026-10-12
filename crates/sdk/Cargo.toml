@@ -354,6 +354,10 @@ name = "matching"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "moment"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "western_houses"
 required-features = ["builtin-ephemeris"]
 

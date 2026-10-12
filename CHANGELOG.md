@@ -283,6 +283,19 @@ yet taken. That makes every allowed pairing equally likely and never
 refuses a study that has one (C368). `/1` stays selectable through the
 test's `shuffle`.
 
+**A chart says what its instant falls in, and two rules that never could hold now can.**
+**Numbers:** no number moved; two rules that could never hold now hold
+where their conditions are met. `ChartRequest::with_moment` adds the
+chart's `moment`: the sign rising, when it rose and when it sets, and the
+eclipse seen where the chart is cast (`NONE`, `LUNAR`, `SOLAR`, or
+`UNJUDGED` over a classical sky). A lunar eclipse counts through its
+umbral phase with the Moon up, and a solar one with the Sun up (C378).
+A request for rules that read either asks for the section itself, and
+`with_everything` includes it. A sky of 6000 charts found
+`LAGNA_GANDANTA` and `BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH` never
+holding, because the rules were given no lagna span and no eclipse. The
+gandanta now holds in the first and last half ghatika of its signs.
+
 **The boundary is fuzzed.** **Numbers:** none moved. Three libFuzzer
 targets drive the C ABI with a caller's JSON, a pack's bytes and a key
 (`05-testing/03-fuzzing.md`): a minute each nightly, an hour each weekly,
