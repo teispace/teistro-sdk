@@ -17,7 +17,7 @@ md-5 = "0.11"
 regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
-serde_yaml_ng = "0.10"
+serde-saphyr = { version = "1", default-features = false, features = ["deserialize"] }
 schemars = "1.2"
 sha1 = "0.11"
 sha2 = "0.11"

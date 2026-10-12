@@ -169,7 +169,7 @@ fn render(rows: &Rows, measurements: &[Measurement]) -> String {
 }
 
 fn outputs(root: &Path) -> Vec<Output> {
-    let rows: Rows = serde_yaml_ng::from_str(
+    let rows: Rows = serde_saphyr::from_str(
         &std::fs::read_to_string(root.join(ROWS)).expect("the accuracy rows"),
     )
     .expect("valid accuracy rows");

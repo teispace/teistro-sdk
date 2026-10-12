@@ -9,7 +9,11 @@ use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
-use serde_yaml_ng::{Mapping, Value};
+use serde_json::{Map, Value};
+
+/// A YAML mapping, read as JSON reads one: the catalogue's keys are all
+/// strings.
+type Mapping = Map<String, Value>;
 
 /// An **open** kind: `catalogue/<kind>.yaml` with `open: true` and no
 /// members, beside every closed kind's file.
@@ -192,9 +196,9 @@ pub(crate) struct Catalogue {
 
 fn mapping_str(m: &Mapping, what: &str) -> Result<Vec<(String, String)>, String> {
     m.iter()
-        .map(|(k, v)| match (k.as_str(), v.as_str()) {
-            (Some(k), Some(v)) => Ok((k.to_string(), v.to_string())),
-            _ => Err(format!("{what}: entries must be `name: type`")),
+        .map(|(k, v)| match v.as_str() {
+            Some(v) => Ok((k.clone(), v.to_string())),
+            None => Err(format!("{what}: entries must be `name: type`")),
         })
         .collect()
 }
@@ -221,7 +225,7 @@ impl Catalogue {
                     continue;
                 }
             };
-            let file: KindFile = match serde_yaml_ng::from_str(&text) {
+            let file: KindFile = match serde_saphyr::from_str(&text) {
                 Ok(f) => f,
                 Err(e) => {
                     errors.push(format!("{}: {e}", path.display()));
@@ -316,7 +320,7 @@ impl Catalogue {
                             }
                         }
                         for (k, _) in attrs {
-                            let k = k.as_str().unwrap_or_default();
+                            let k = k.as_str();
                             if !kind.schema.iter().any(|(n, _)| n == k) {
                                 errors.push(format!(
                                     "{prefix}: attribute `{k}` is not in the schema"
@@ -411,7 +415,7 @@ impl Catalogue {
                     self.check_value(value, inner, kind, at)
                 }
             }
-            Ty::List(inner) => match value.as_sequence() {
+            Ty::List(inner) => match value.as_array() {
                 Some(items) => items
                     .iter()
                     .enumerate()
@@ -419,7 +423,7 @@ impl Catalogue {
                     .collect(),
                 None => bad("a list"),
             },
-            Ty::Array(inner, n) => match value.as_sequence() {
+            Ty::Array(inner, n) => match value.as_array() {
                 Some(items) if items.len() == *n => items
                     .iter()
                     .enumerate()
@@ -432,7 +436,7 @@ impl Catalogue {
                 let Some((_, fields)) = kind.types.iter().find(|(n, _)| n == name) else {
                     return vec![format!("{at}: unknown composite `{name}`")];
                 };
-                let Some(map) = value.as_mapping() else {
+                let Some(map) = value.as_object() else {
                     return bad(&format!("a `{name}` object"));
                 };
                 let mut errors = Vec::new();
@@ -864,7 +868,7 @@ impl Catalogue {
             }
             Ty::List(inner) | Ty::Array(inner, _) => {
                 let items: Vec<String> = value
-                    .as_sequence()
+                    .as_array()
                     .map(|seq| {
                         seq.iter()
                             .map(|v| Self::render_value(v, inner, kind))
@@ -884,7 +888,7 @@ impl Catalogue {
                     .find(|(n, _)| n == name)
                     .map(|(_, f)| f.as_slice())
                     .unwrap_or_default();
-                let map = value.as_mapping();
+                let map = value.as_object();
                 let parts: Vec<String> = fields
                     .iter()
                     .map(|(fname, fty)| {
@@ -914,12 +918,12 @@ impl Catalogue {
                     "number": k.file.number,
                     "version": k.file.version,
                     "doc": k.file.doc,
-                    "types": yaml_to_json(&Value::Mapping(k.file.types.clone())),
-                    "attributes": yaml_to_json(&Value::Mapping(k.file.attributes.clone())),
+                    "types": k.file.types,
+                    "attributes": k.file.attributes,
                     "members": k.file.members.iter().map(|m| serde_json::json!({
                         "key": m.key, "id": m.id, "doc": m.doc, "glyph": m.glyph, "aliases": m.aliases,
                         "deprecated": m.deprecated,
-                        "attributes": m.attributes.as_ref().map(|a| yaml_to_json(&Value::Mapping(a.clone()))),
+                        "attributes": m.attributes,
                         "sources": m.sources.iter().map(|s| serde_json::json!({"text": s.text, "ref": s.reference})).collect::<Vec<_>>(),
                         "mark": m.mark, "unverified": m.unverified,
                     })).collect::<Vec<_>>(),
@@ -951,7 +955,7 @@ impl Catalogue {
                 }
                 let gender = m.attributes.as_ref().and_then(|a| {
                     a.get("descriptors")
-                        .and_then(|d| d.as_mapping())
+                        .and_then(|d| d.as_object())
                         .and_then(|d| d.get("gender"))
                         .and_then(Value::as_str)
                         .map(str::to_string)
@@ -994,24 +998,6 @@ fn collect_keys(ty: &Ty, out: &mut BTreeSet<String>) {
     }
 }
 
-fn yaml_to_json(value: &Value) -> serde_json::Value {
-    match value {
-        Value::Null => serde_json::Value::Null,
-        Value::Bool(b) => serde_json::Value::Bool(*b),
-        Value::Number(n) => n
-            .as_i64()
-            .map_or_else(|| serde_json::json!(n.as_f64()), |i| serde_json::json!(i)),
-        Value::String(s) => serde_json::Value::String(s.clone()),
-        Value::Sequence(seq) => serde_json::Value::Array(seq.iter().map(yaml_to_json).collect()),
-        Value::Mapping(map) => serde_json::Value::Object(
-            map.iter()
-                .map(|(k, v)| (k.as_str().unwrap_or_default().to_string(), yaml_to_json(v)))
-                .collect(),
-        ),
-        Value::Tagged(t) => yaml_to_json(&t.value),
-    }
-}
-
 impl Kind {
     fn new(file: KindFile) -> Result<Kind, Vec<String>> {
         let mut errors = Vec::new();
@@ -1021,9 +1007,9 @@ impl Kind {
         }
         let mut types = Vec::new();
         for (tname, fields) in &file.types {
-            let tname = tname.as_str().unwrap_or_default().to_string();
+            let tname = tname.clone();
             match fields
-                .as_mapping()
+                .as_object()
                 .ok_or_else(|| format!("{name}: type `{tname}` must be a mapping"))
                 .and_then(|m| mapping_str(m, &format!("{name}.types.{tname}")))
             {
