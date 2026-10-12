@@ -22,7 +22,7 @@
 //! read the chart, and take an evaluator from what came back.
 
 use teistro_chart::foundation::ChartFoundation;
-use teistro_chart::moment::{BirthEclipse, Moment, Rising};
+use teistro_chart::moment::{BirthEclipse, Moment, RisingSign};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Dignity, Graha, Rashi, Varga};
 use teistro_core::error::Error;
@@ -108,7 +108,7 @@ fn birth_limbs(
 /// left, in ghatikas; an edge the search did not reach, which only a place
 /// inside a polar circle has, is infinitely far, so the instant is never at
 /// it.
-fn lagna_span(rising: &Rising, instant: JulianDay<Utc>) -> Option<teistro_rules::Span> {
+fn lagna_span(rising: &RisingSign, instant: JulianDay<Utc>) -> Option<teistro_rules::Span> {
     let at = instant.get();
     let elapsed = rising
         .rose

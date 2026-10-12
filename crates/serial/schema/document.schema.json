@@ -4434,7 +4434,7 @@
           "description": "The eclipse the instant falls in, as seen where the chart is cast."
         },
         "rising": {
-          "$ref": "#/$defs/Rising",
+          "$ref": "#/$defs/RisingSign",
           "description": "The sign rising at the instant and when it rose and sets."
         }
       },
@@ -6060,7 +6060,7 @@
         }
       ]
     },
-    "Rising": {
+    "RisingSign": {
       "description": "The sign rising at an instant, and its span.",
       "properties": {
         "rose": {

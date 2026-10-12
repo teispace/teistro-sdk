@@ -41,5 +41,5 @@ pub use day::{ChartDay, DayPart};
 pub use foundation::{
     ChartAngles, ChartFoundation, Founder, GrahaPosition, OUTER, OuterPlanets, body_of,
 };
-pub use moment::{BirthEclipse, Moment, Rising};
+pub use moment::{BirthEclipse, Moment, RisingSign};
 pub use zodiac::ChartZodiac;

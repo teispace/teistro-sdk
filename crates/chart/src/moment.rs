@@ -30,7 +30,7 @@ const TOLERANCE_DAYS: f64 = 1.0 / 86_400.0;
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Moment {
     /// The sign rising at the instant and when it rose and sets.
-    pub rising: Rising,
+    pub rising: RisingSign,
     /// The eclipse the instant falls in, as seen where the chart is cast.
     pub eclipse: BirthEclipse,
 }
@@ -38,7 +38,7 @@ pub struct Moment {
 /// The sign rising at an instant, and its span.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-pub struct Rising {
+pub struct RisingSign {
     /// The sign.
     pub sign: Rashi,
     /// When it began to rise, UTC; `None` when it was rising a day before,
@@ -86,7 +86,7 @@ pub enum BirthEclipse {
 /// # Errors
 ///
 /// Whatever `lagna_at` returns.
-pub fn rising<F>(at: JulianDay<Utc>, mut lagna_at: F) -> Result<Rising, Error>
+pub fn rising<F>(at: JulianDay<Utc>, mut lagna_at: F) -> Result<RisingSign, Error>
 where
     F: FnMut(JulianDay<Utc>) -> Result<f64, Error>,
 {
@@ -94,7 +94,7 @@ where
     let sign = sign_at(at.get())?;
     let rose = edge(at.get(), -1.0, sign, &mut sign_at)?;
     let sets = edge(at.get(), 1.0, sign, &mut sign_at)?;
-    Ok(Rising {
+    Ok(RisingSign {
         sign,
         rose: rose.map(JulianDay::literal),
         sets: sets.map(JulianDay::literal),
