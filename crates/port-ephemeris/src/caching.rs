@@ -583,6 +583,46 @@ mod tests {
         }
     }
 
+    /// Threads sharing one memo each get the provider's own answer, and
+    /// every cell asked is counted once, a hit or a miss: the shared state
+    /// is the two locked maps and the counters, and nothing else. The
+    /// verify workflow's sanitizer job runs this under the thread
+    /// sanitizer.
+    #[test]
+    fn threads_sharing_a_memo_get_the_providers_answers() {
+        const THREADS: u32 = 4;
+        const ROUNDS: u32 = 25;
+        let cached = CachingProvider::new(TestProvider::new());
+        let plain = TestProvider::new();
+        // Each thread walks grids that overlap the others', so a cell is
+        // stored by one thread and read by another.
+        let grid_of = |thread: u32, round: u32| -> Vec<f64> {
+            (0..3)
+                .map(|at| 2_451_545.0 + f64::from((thread + round + at) % 7))
+                .collect()
+        };
+        std::thread::scope(|scope| {
+            for thread in 0..THREADS {
+                let (cached, plain) = (&cached, &plain);
+                scope.spawn(move || {
+                    for round in 0..ROUNDS {
+                        let jds = grid_of(thread, round);
+                        let request =
+                            PositionRequest::new(&jds, TimeScale::Ut1, &BODIES, Frame::CANONICAL);
+                        assert_eq!(
+                            cached.positions(&request).unwrap(),
+                            plain.positions(&request).unwrap()
+                        );
+                    }
+                });
+            }
+        });
+        let stats = cached.stats();
+        let asked = u64::from(THREADS * ROUNDS * 3) * BODIES.len() as u64;
+        assert_eq!(stats.hits + stats.misses, asked, "{stats:?}");
+        assert_eq!(stats.stored, 7 * BODIES.len() as u64, "{stats:?}");
+    }
+
     #[test]
     fn a_repeated_cell_is_answered_from_memory() {
         let inner = CountingProvider::new(TestProvider::new());

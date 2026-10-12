@@ -450,23 +450,35 @@ jobs:
   # AddressSanitizer, which on Linux brings LeakSanitizer: every ABI test
   # (`crates/ffi/tests`), the engine adapter loaded through the vtable,
   # and the vtable's own tests, at native speed. The target is named so
-  # build scripts and proc macros are left uninstrumented.
+  # build scripts and proc macros are left uninstrumented. Then the state
+  # threads share under ThreadSanitizer, the standard library rebuilt
+  # instrumented: the ephemeris memo four threads ask at once, and the
+  # surface tests, whose workers each build a context over the SDK's
+  # lazily built tables.
   sanitizers:
-    name: no memory errors or leaks (AddressSanitizer)
+    name: no memory errors, leaks or data races (ASan, TSan)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rust-src
       - uses: Swatinem/rust-cache@v2
         with:
-          key: asan
+          key: sanitizers
       - name: The C ABI's and the vtable's tests under ASan and LSan
         env:
           RUSTFLAGS: -Zsanitizer=address
           ASAN_OPTIONS: detect_leaks=1
         run: cargo +nightly test -p teistro-ffi -p teistro-port-ephemeris --features teistro-port-ephemeris/load --lib --tests --target x86_64-unknown-linux-gnu
+      - name: The shared memo and the surface's workers under TSan
+        env:
+          RUSTFLAGS: -Zsanitizer=thread
+        run: |
+          cargo +nightly test -Zbuild-std --target x86_64-unknown-linux-gnu -p teistro-port-ephemeris --lib
+          cargo +nightly test -Zbuild-std --target x86_64-unknown-linux-gnu -p teistro --test surface
 
   # Phase 3's exit asks for the conformance kit against **every tier**,
   # and a tier is a cargo feature, so the kit is whichever one is
