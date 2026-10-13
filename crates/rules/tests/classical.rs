@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 168);
+    assert_eq!(rules.len(), 180);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -39,7 +39,9 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
             rule.key
         );
         assert!(rule.source.verse.is_some(), "{}: cites a verse", rule.key);
-        Tables::EMPTY.check(rule).expect("these name no table");
+        Tables::classical()
+            .check(rule)
+            .expect("the tables these name are shipped");
         // Saravali grades, and Brihat Jataka once (ch. 6 v. 6): no other
         // text read says how long the child lives.
         assert!(
@@ -70,6 +72,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
     let owned: Vec<Rule> = rules.iter().map(|rule| (*rule).clone()).collect();
     teistro_rules::check_references(&owned).expect("the pack names itself soundly");
     saravali_evils_name_the_antidotes_of_their_own_text(&rules);
+    phaladeepika_evils_name_the_antidotes_of_their_own_text(&rules);
     the_sirshodaya_rule_names_the_catalogue_s_sirshodaya_signs(&rules);
 
     let mut fired: BTreeMap<&str, usize> =
@@ -80,7 +83,9 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
     let (mut cancelled, mut saravali_cancelled) = (0, 0);
     for (path, file) in files_in("doshas") {
         let chart = chart_at(&path, &file["inputs"]);
-        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&owned);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE)
+            .with_rules(&owned)
+            .with_tables(Tables::classical());
         charts += 1;
         for rule in &rules {
             let result = evaluator.evaluate(rule);
@@ -188,6 +193,34 @@ fn saravali_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
     }
 }
 
+/// Phaladeepika ch. 13's evils name the chapter's antidotes, vv. 21, 23 and
+/// 24, and v. 22's strong Jupiter in the lagna, which is BPHS ch. 10 v. 3
+/// and ships once, under BPHS.
+fn phaladeepika_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
+    let of_text = |category: &str| -> Vec<&Rule> {
+        rules
+            .iter()
+            .copied()
+            .filter(|rule| rule.source.text == "Phaladeepika" && rule.category == category)
+            .collect()
+    };
+    let (evils, antidotes) = (of_text("arishta"), of_text("arishta-bhanga"));
+    assert_eq!((evils.len(), antidotes.len()), (9, 3));
+    let mut expected: Vec<&str> = antidotes.iter().map(|rule| rule.key.as_str()).collect();
+    expected.insert(1, "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA");
+    for rule in evils {
+        let named: Vec<&str> = rule
+            .cancellations
+            .iter()
+            .map(|cancellation| match &cancellation.condition {
+                teistro_rules::Condition::RuleHolds { key } => key.as_str(),
+                other => panic!("{}: {other:?} is not an antidote by key", rule.key),
+            })
+            .collect();
+        assert_eq!(named, expected, "{}", rule.key);
+    }
+}
+
 /// The rules whose verse says what follows: Saravali ch. 10's evils, all but
 /// two of them with the span they leave, and the one antidote of ch. 12 that
 /// counts a life in years rather than calling it illimitable. Saravali is the
@@ -242,7 +275,7 @@ const GRADED: [&str; 46] = [
 ];
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 70] = [
+const SILENT: [&str; 77] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
     "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA",
@@ -302,6 +335,13 @@ const SILENT: [&str; 70] = [
     "PARIJATA_SUN_SATURN_MARS_IN_LAGNA_WANING_MOON_IN_A_VENUS_SEVENTH",
     "PARIJATA_SUN_WITH_JUPITER_IN_A_SCORPIO_LAGNA",
     "PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA",
+    "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR",
+    "PHALADEEPIKA_BIRTH_IN_A_GANDANTA",
+    "PHALADEEPIKA_LAGNA_OR_MOON_BETWEEN_MALEFICS",
+    "PHALADEEPIKA_MALEFICS_IN_THE_EIGHTH_AND_THE_KENDRAS",
+    "PHALADEEPIKA_MALEFICS_IN_THE_LAGNA_AND_THE_EIGHTH",
+    "PHALADEEPIKA_MALEFICS_IN_THE_SEVENTH_AND_THE_EIGHTH",
+    "PHALADEEPIKA_WANING_MOON_WITH_A_MALEFIC_IN_THE_LAGNA_A_TRIKONA_OR_SEVENTH",
     "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS",
     "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA",
     "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON",
@@ -316,7 +356,7 @@ const SILENT: [&str; 70] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 168] = [
+const ANSWERED: [(&str, usize); 180] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
@@ -539,6 +579,33 @@ const ANSWERED: [(&str, usize); 168] = [
         "PARIJATA_WANING_MOON_IN_LAGNA_MALEFIC_IN_A_KENDRA_OR_EIGHTH",
         6,
     ),
+    (
+        "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR",
+        0,
+    ),
+    (
+        "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS",
+        4,
+    ),
+    (
+        "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER",
+        5,
+    ),
+    ("PHALADEEPIKA_BIRTH_IN_A_GANDANTA", 0),
+    ("PHALADEEPIKA_LAGNA_OR_MOON_BETWEEN_MALEFICS", 0),
+    ("PHALADEEPIKA_MALEFICS_IN_THE_EIGHTH_AND_THE_KENDRAS", 0),
+    ("PHALADEEPIKA_MALEFICS_IN_THE_LAGNA_AND_THE_EIGHTH", 0),
+    ("PHALADEEPIKA_MALEFICS_IN_THE_LAGNA_AND_THE_SEVENTH", 1),
+    ("PHALADEEPIKA_MALEFICS_IN_THE_SEVENTH_AND_THE_EIGHTH", 0),
+    (
+        "PHALADEEPIKA_MOON_AT_A_MRITYU_BHAGA_IN_A_KENDRA_OR_EIGHTH",
+        5,
+    ),
+    (
+        "PHALADEEPIKA_WANING_MOON_WITH_A_MALEFIC_IN_THE_LAGNA_A_TRIKONA_OR_SEVENTH",
+        0,
+    ),
+    ("PHALADEEPIKA_WEAK_MOON_IN_A_DUSTHANA", 1),
     ("SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS", 0),
     (
         "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON",

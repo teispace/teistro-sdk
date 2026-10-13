@@ -1,0 +1,1276 @@
+{
+  "rules": [
+    {
+      "key": "PHALADEEPIKA_BIRTH_IN_A_GANDANTA",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "9",
+        "rank": 1,
+        "note": "A birth in a gandanta: the father, the mother or the child dies, and a child that lives becomes a king. The translator sends the word to ch. 1 v. 4, the closing part of Scorpio, Pisces and Cancer, so it is read as the Moon's or the lagna's junction there: BPHS ch. 92's nakshatra and lagna gandantas, named by key, which bound it in ghatikas where Phaladeepika gives no span; the tithi gandanta, no junction of signs, is not named. The verse's first figure, a birth at a sign's junction joined or aspected by malefics, and its third, at any of the four junctions, bound nothing (C381) and are not built. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "rule",
+              "key": "NAKSHATRA_GANDANTA"
+            },
+            {
+              "type": "rule",
+              "key": "LAGNA_GANDANTA"
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_MOON_AT_A_MRITYU_BHAGA_IN_A_KENDRA_OR_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "9-10",
+        "rank": 1,
+        "note": "The Moon at her mrityu bhaga in a kendra or the eighth: death. v. 10 gives her degree in each sign, the row MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA holds; v. 11's other row is \"by some\" and does not say whose degrees they are (C380), so it is not built. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-at-table-degree",
+          "planet": "MOON",
+          "table": "MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            4,
+            7,
+            8,
+            10
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_MALEFICS_IN_THE_EIGHTH_AND_THE_KENDRAS",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "12",
+        "rank": 1,
+        "note": "Malefics in the eighth and the kendras: the child dies soon. \"The kendras\" is read as a malefic in at least one. The verse closes \"if no benefic is in a kendra, nor a benefic's conjunction or aspect\", which the Sanskrit lays on all seven of its figures and Sastri lists as an eighth (C379). His \"no benefic occupies or aspects a kendra\" cannot hold, since Jupiter in any house stands in a kendra or aspects one, so it is read as Ojha reads it: no benefic in a kendra, and none joining or aspecting the lagna, the Moon or the figure's malefics. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": "MOON",
+                "atLeast": 1,
+                "except": [
+                  "MOON"
+                ]
+              },
+              {
+                "type": "count-aspecting",
+                "planets": "any-benefic",
+                "target": "MOON",
+                "atLeast": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8,
+                    1,
+                    4,
+                    7,
+                    10
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        1
+                      ],
+                      "from": "SELF",
+                      "atLeast": 1,
+                      "except": [
+                        "SELF"
+                      ]
+                    },
+                    {
+                      "type": "count-aspecting",
+                      "planets": "any-benefic",
+                      "target": "SELF",
+                      "atLeast": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_MALEFICS_IN_THE_LAGNA_AND_THE_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "12",
+        "rank": 1,
+        "note": "Malefics in the lagna and the eighth: the child dies soon. The verse closes \"if no benefic is in a kendra, nor a benefic's conjunction or aspect\", which the Sanskrit lays on all seven of its figures and Sastri lists as an eighth (C379). His \"no benefic occupies or aspects a kendra\" cannot hold, since Jupiter in any house stands in a kendra or aspects one, so it is read as Ojha reads it: no benefic in a kendra, and none joining or aspecting the lagna, the Moon or the figure's malefics. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": "MOON",
+                "atLeast": 1,
+                "except": [
+                  "MOON"
+                ]
+              },
+              {
+                "type": "count-aspecting",
+                "planets": "any-benefic",
+                "target": "MOON",
+                "atLeast": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    1,
+                    8
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        1
+                      ],
+                      "from": "SELF",
+                      "atLeast": 1,
+                      "except": [
+                        "SELF"
+                      ]
+                    },
+                    {
+                      "type": "count-aspecting",
+                      "planets": "any-benefic",
+                      "target": "SELF",
+                      "atLeast": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_MALEFICS_IN_THE_LAGNA_AND_THE_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "12",
+        "rank": 1,
+        "note": "Malefics in the lagna and the seventh: the child dies soon. The verse closes \"if no benefic is in a kendra, nor a benefic's conjunction or aspect\", which the Sanskrit lays on all seven of its figures and Sastri lists as an eighth (C379). His \"no benefic occupies or aspects a kendra\" cannot hold, since Jupiter in any house stands in a kendra or aspects one, so it is read as Ojha reads it: no benefic in a kendra, and none joining or aspecting the lagna, the Moon or the figure's malefics. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": "MOON",
+                "atLeast": 1,
+                "except": [
+                  "MOON"
+                ]
+              },
+              {
+                "type": "count-aspecting",
+                "planets": "any-benefic",
+                "target": "MOON",
+                "atLeast": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    1,
+                    7
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        1
+                      ],
+                      "from": "SELF",
+                      "atLeast": 1,
+                      "except": [
+                        "SELF"
+                      ]
+                    },
+                    {
+                      "type": "count-aspecting",
+                      "planets": "any-benefic",
+                      "target": "SELF",
+                      "atLeast": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_LAGNA_OR_MOON_BETWEEN_MALEFICS",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "12",
+        "rank": 1,
+        "note": "The lagna or the Moon between malefics: the child dies soon. The verse closes \"if no benefic is in a kendra, nor a benefic's conjunction or aspect\", which the Sanskrit lays on all seven of its figures and Sastri lists as an eighth (C379). His \"no benefic occupies or aspects a kendra\" cannot hold, since Jupiter in any house stands in a kendra or aspects one, so it is read as Ojha reads it: no benefic in a kendra, and none joining or aspecting the lagna, the Moon or the figure's malefics. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    2
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    12
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    2
+                  ],
+                  "atLeast": 1,
+                  "from": "MOON",
+                  "except": [
+                    "MOON"
+                  ]
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    12
+                  ],
+                  "atLeast": 1,
+                  "from": "MOON",
+                  "except": [
+                    "MOON"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": "MOON",
+                "atLeast": 1,
+                "except": [
+                  "MOON"
+                ]
+              },
+              {
+                "type": "count-aspecting",
+                "planets": "any-benefic",
+                "target": "MOON",
+                "atLeast": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SELF",
+                      "houses": [
+                        2,
+                        12
+                      ]
+                    },
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "SELF",
+                      "reference": "MOON",
+                      "houses": [
+                        2,
+                        12
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        1
+                      ],
+                      "from": "SELF",
+                      "atLeast": 1,
+                      "except": [
+                        "SELF"
+                      ]
+                    },
+                    {
+                      "type": "count-aspecting",
+                      "planets": "any-benefic",
+                      "target": "SELF",
+                      "atLeast": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_WEAK_MOON_IN_A_DUSTHANA",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "12",
+        "rank": 1,
+        "note": "The Moon without strength in the sixth, the eighth or the twelfth: the child dies soon; a chart that carries no strength never fires it. The verse closes \"if no benefic is in a kendra, nor a benefic's conjunction or aspect\", which the Sanskrit lays on all seven of its figures and Sastri lists as an eighth (C379). His \"no benefic occupies or aspects a kendra\" cannot hold, since Jupiter in any house stands in a kendra or aspects one, so it is read as Ojha reads it: no benefic in a kendra, and none joining or aspecting the lagna, the Moon or the figure's malefics. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-weak",
+          "planet": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": "MOON",
+                "atLeast": 1,
+                "except": [
+                  "MOON"
+                ]
+              },
+              {
+                "type": "count-aspecting",
+                "planets": "any-benefic",
+                "target": "MOON",
+                "atLeast": 1
+              }
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_WANING_MOON_WITH_A_MALEFIC_IN_THE_LAGNA_A_TRIKONA_OR_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "12",
+        "rank": 1,
+        "note": "The waning Moon with a malefic in the lagna, the seventh, the ninth or the fifth: the child dies soon. Waning is read as the dark half. The verse closes \"if no benefic is in a kendra, nor a benefic's conjunction or aspect\", which the Sanskrit lays on all seven of its figures and Sastri lists as an eighth (C379). His \"no benefic occupies or aspects a kendra\" cannot hold, since Jupiter in any house stands in a kendra or aspects one, so it is read as Ojha reads it: no benefic in a kendra, and none joining or aspecting the lagna, the Moon or the figure's malefics. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            5,
+            7,
+            9
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": "MOON",
+                "atLeast": 1,
+                "except": [
+                  "MOON"
+                ]
+              },
+              {
+                "type": "count-aspecting",
+                "planets": "any-benefic",
+                "target": "MOON",
+                "atLeast": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SELF",
+                  "reference": "MOON",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        1
+                      ],
+                      "from": "SELF",
+                      "atLeast": 1,
+                      "except": [
+                        "SELF"
+                      ]
+                    },
+                    {
+                      "type": "count-aspecting",
+                      "planets": "any-benefic",
+                      "target": "SELF",
+                      "atLeast": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_MALEFICS_IN_THE_SEVENTH_AND_THE_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "12",
+        "rank": 1,
+        "note": "Malefics in the eighth and the seventh: the child dies soon. The verse closes \"if no benefic is in a kendra, nor a benefic's conjunction or aspect\", which the Sanskrit lays on all seven of its figures and Sastri lists as an eighth (C379). His \"no benefic occupies or aspects a kendra\" cannot hold, since Jupiter in any house stands in a kendra or aspects one, so it is read as Ojha reads it: no benefic in a kendra, and none joining or aspecting the lagna, the Moon or the figure's malefics. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": "MOON",
+                "atLeast": 1,
+                "except": [
+                  "MOON"
+                ]
+              },
+              {
+                "type": "count-aspecting",
+                "planets": "any-benefic",
+                "target": "MOON",
+                "atLeast": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    7,
+                    8
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        1
+                      ],
+                      "from": "SELF",
+                      "atLeast": 1,
+                      "except": [
+                        "SELF"
+                      ]
+                    },
+                    {
+                      "type": "count-aspecting",
+                      "planets": "any-benefic",
+                      "target": "SELF",
+                      "atLeast": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "21",
+        "rank": 1,
+        "note": "The lagna lord very strong, in a kendra, aspected by benefics and by no malefic, wards off death and gives a long life. The antidotes stand after the evils, so they ship as rules of their own, which every evil of the chapter names; v. 22, a strong Jupiter alone in the lagna, is BPHS ch. 10 v. 3 and is named as ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA rather than written twice. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": {
+              "lordOf": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "23",
+        "rank": 1,
+        "note": "The waxing Moon in a trikona, the eleventh or a kendra, in a sign or navamsha of the Sun, the Moon or Jupiter, wards off all ills completely. Waxing is read as the bright half. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "shukla"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": "MOON",
+              "signs": [
+                "LEO",
+                "CANCER",
+                "SAGITTARIUS",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D9",
+              "condition": {
+                "type": "planet-in-sign",
+                "planet": "MOON",
+                "signs": [
+                  "LEO",
+                  "CANCER",
+                  "SAGITTARIUS",
+                  "PISCES"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "24",
+        "rank": 1,
+        "note": "No malefic in the first, fourth, fifth, seventh, eighth, ninth or tenth, and the lagna lord and Jupiter in kendras: a hundred years free from disease, which the chapter's own index counts among the yogas countering arishta. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        }
+      ]
+    }
+  ]
+}
