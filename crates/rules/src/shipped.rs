@@ -50,6 +50,7 @@ const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
 const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
 /// Jataka Parijata ch. 4's evils at birth, their years and their antidotes.
 const PARIJATA: &str = include_str!("../rules/classical-parijata.json");
+/// Phaladeepika ch. 13's evils at birth and their antidotes.
 const PHALADEEPIKA: &str = include_str!("../rules/classical-phaladeepika-arishta.json");
 /// The Nabhasa yogas of BPHS ch. 35.
 const NABHASA: &str = include_str!("../rules/classical-nabhasa.json");
@@ -73,6 +74,8 @@ const DHANA: &str = include_str!("../rules/classical-dhana.json");
 const RAJA: &str = include_str!("../rules/classical-raja.json");
 /// BPHS ch. 44's manner and place of death and the worlds before and after.
 const MARANA: &str = include_str!("../rules/classical-marana.json");
+/// Phaladeepika ch. 14's diseases, death and the births before and after.
+const PHALADEEPIKA_MARANA: &str = include_str!("../rules/classical-phaladeepika-marana.json");
 /// BPHS ch. 43's combinations for the class of life.
 const AYUR: &str = include_str!("../rules/classical-ayur.json");
 /// Jataka Parijata ch. 4's middle and long lives.
@@ -125,6 +128,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(AYUR));
     rules.append(&mut read(PARIJATA_AYUR));
     rules.append(&mut read(MARANA));
+    rules.append(&mut read(PHALADEEPIKA_MARANA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -218,8 +222,10 @@ pub fn readings() -> &'static [Rule] {
 /// naming the other twenty-five as cancellations, as v. 17 requires — and
 /// ch. 37's lunar and ch. 38's solar yogas beside them, the five Pancha
 /// Mahapurusha yogas as Saravali ch. 37 gives them, and the named yogas of
-/// ch. 36 the language can say. Each carries what its verse says and nothing
-/// the SDK invented: a description, a span of life, or both.
+/// ch. 36 the language can say, and beside BPHS ch. 44's manner of death,
+/// Phaladeepika ch. 14's diseases, death and the births before and after.
+/// Each carries what its verse says and nothing the SDK invented: a
+/// description, a span of life, or both.
 #[must_use]
 pub fn nabhasas() -> &'static [Rule] {
     &NABHASAS
@@ -348,7 +354,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1543);
+        assert_eq!(rules.len(), 1628);
         for rule in &rules {
             let rank = rule
                 .source
@@ -472,7 +478,7 @@ mod tests {
     }
 
     /// Every category the shipped rules use.
-    const CATEGORIES: [&str; 32] = [
+    const CATEGORIES: [&str; 33] = [
         "arishta",
         "arishta-bhanga",
         "arishta-father",
@@ -504,6 +510,7 @@ mod tests {
         "pravrajya",
         "raja",
         "rising-part",
+        "roga",
         "surya",
     ];
 }

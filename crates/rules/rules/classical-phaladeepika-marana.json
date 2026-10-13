@@ -1,0 +1,4783 @@
+{
+  "rules": [
+    {
+      "key": "PHALADEEPIKA_LUMINARY_IN_THE_SECOND_OR_TWELFTH_AFFLICTED_EYE_DISEASE",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "10",
+        "rank": 1,
+        "note": "The Sun or the Moon in the second or the twelfth, joined or aspected by Saturn or Mars: a disease of the eyes. The verse's own reading is checked against both glosses (C383). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SUN",
+                  "houses": [
+                    2,
+                    12
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "SATURN",
+                      "reference": "SUN",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "SATURN",
+                      "target": "SUN"
+                    },
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "MARS",
+                      "reference": "SUN",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "MARS",
+                      "target": "SUN"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    2,
+                    12
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "SATURN",
+                      "reference": "MOON",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "SATURN",
+                      "target": "MOON"
+                    },
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "MARS",
+                      "reference": "MOON",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "MARS",
+                      "target": "MOON"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a disease of the eyes"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_THIRD_ELEVENTH_AND_JUPITER_AFFLICTED_EAR_DISEASE",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "10",
+        "rank": 1,
+        "note": "The third, the eleventh and Jupiter each joined or aspected by Saturn or Mars: a disease of the ears. The verse's own reading is checked against both glosses (C383). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "SATURN",
+              "houseRuled": 3
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "MARS",
+              "houseRuled": 3
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                11
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "SATURN",
+              "houseRuled": 11
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                11
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "MARS",
+              "houseRuled": 11
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "JUPITER",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "JUPITER"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "JUPITER",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": "JUPITER"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a disease of the ears"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MALEFIC_WITH_SIXTH_OR_EIGHTH_LORD_IN_FIFTH_BELLY_DISEASE",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "10",
+        "rank": 1,
+        "note": "A malefic in the fifth with the lord of the sixth or the eighth: a disease of the belly. The verse's own reading is checked against both glosses (C383). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "lordOf": 6
+                  },
+                  "houses": [
+                    5
+                  ]
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    5
+                  ],
+                  "atLeast": 1,
+                  "except": [
+                    {
+                      "lordOf": 6
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "lordOf": 8
+                  },
+                  "houses": [
+                    5
+                  ]
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    5
+                  ],
+                  "atLeast": 1,
+                  "except": [
+                    {
+                      "lordOf": 8
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a disease of the belly"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MALEFIC_WITH_SIXTH_OR_EIGHTH_LORD_IN_SEVENTH_OR_EIGHTH_RECTAL_DISEASE",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "10",
+        "rank": 1,
+        "note": "Likewise in the seventh or the eighth, a malefic with the lord of the sixth or the eighth: a disease of the rectum. The verse's own reading is checked against both glosses (C383). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": {
+                        "lordOf": 6
+                      },
+                      "houses": [
+                        7
+                      ]
+                    },
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-malefic",
+                      "houses": [
+                        7
+                      ],
+                      "atLeast": 1,
+                      "except": [
+                        {
+                          "lordOf": 6
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": {
+                        "lordOf": 8
+                      },
+                      "houses": [
+                        7
+                      ]
+                    },
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-malefic",
+                      "houses": [
+                        7
+                      ],
+                      "atLeast": 1,
+                      "except": [
+                        {
+                          "lordOf": 8
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": {
+                        "lordOf": 6
+                      },
+                      "houses": [
+                        8
+                      ]
+                    },
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-malefic",
+                      "houses": [
+                        8
+                      ],
+                      "atLeast": 1,
+                      "except": [
+                        {
+                          "lordOf": 6
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": {
+                        "lordOf": 8
+                      },
+                      "houses": [
+                        8
+                      ]
+                    },
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-malefic",
+                      "houses": [
+                        8
+                      ],
+                      "atLeast": 1,
+                      "except": [
+                        {
+                          "lordOf": 8
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a disease of the rectum"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_VENUS_WITH_SIXTH_OR_EIGHTH_LORD_IN_SEVENTH_OR_EIGHTH_GENITAL_DISEASE",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "10",
+        "rank": 1,
+        "note": "Venus in the place of the malefic, with the lord of the sixth or the eighth in the seventh or the eighth: a disease of the private parts. The verse's own reading is checked against both glosses (C383). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": {
+                        "lordOf": 6
+                      },
+                      "houses": [
+                        7
+                      ]
+                    },
+                    {
+                      "type": "and",
+                      "conditions": [
+                        {
+                          "type": "planet-in-house",
+                          "planet": "VENUS",
+                          "houses": [
+                            7
+                          ]
+                        },
+                        {
+                          "type": "not",
+                          "condition": {
+                            "type": "same-body",
+                            "of": "VENUS",
+                            "as": {
+                              "lordOf": 6
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": {
+                        "lordOf": 8
+                      },
+                      "houses": [
+                        7
+                      ]
+                    },
+                    {
+                      "type": "and",
+                      "conditions": [
+                        {
+                          "type": "planet-in-house",
+                          "planet": "VENUS",
+                          "houses": [
+                            7
+                          ]
+                        },
+                        {
+                          "type": "not",
+                          "condition": {
+                            "type": "same-body",
+                            "of": "VENUS",
+                            "as": {
+                              "lordOf": 8
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": {
+                        "lordOf": 6
+                      },
+                      "houses": [
+                        8
+                      ]
+                    },
+                    {
+                      "type": "and",
+                      "conditions": [
+                        {
+                          "type": "planet-in-house",
+                          "planet": "VENUS",
+                          "houses": [
+                            8
+                          ]
+                        },
+                        {
+                          "type": "not",
+                          "condition": {
+                            "type": "same-body",
+                            "of": "VENUS",
+                            "as": {
+                              "lordOf": 6
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": {
+                        "lordOf": 8
+                      },
+                      "houses": [
+                        8
+                      ]
+                    },
+                    {
+                      "type": "and",
+                      "conditions": [
+                        {
+                          "type": "planet-in-house",
+                          "planet": "VENUS",
+                          "houses": [
+                            8
+                          ]
+                        },
+                        {
+                          "type": "not",
+                          "condition": {
+                            "type": "same-body",
+                            "of": "VENUS",
+                            "as": {
+                              "lordOf": 8
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a disease of the private parts"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SUN_IN_SIXTH_OR_EIGHTH_FEVER",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "11",
+        "rank": 1,
+        "note": "The Sun in the sixth or the eighth. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            6,
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fear of fever"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MARS_OR_KETU_IN_SIXTH_OR_EIGHTH_WOUNDS",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "11",
+        "rank": 1,
+        "note": "Mars or Ketu in the sixth or the eighth. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                6,
+                8
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "KETU",
+              "houses": [
+                6,
+                8
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wounds and ulcers"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_VENUS_IN_SIXTH_OR_EIGHTH_GENITAL_DISEASE",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "11",
+        "rank": 1,
+        "note": "Venus in the sixth or the eighth. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            6,
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a disease of the private parts"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_JUPITER_IN_SIXTH_OR_EIGHTH_CONSUMPTION",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "11",
+        "rank": 1,
+        "note": "Jupiter in the sixth or the eighth. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            6,
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "consumption"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SATURN_IN_SIXTH_OR_EIGHTH_WIND_DISEASE",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "11",
+        "rank": 1,
+        "note": "Saturn in the sixth or the eighth. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            6,
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a disease of the wind humour"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_RAHU_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_MARS_BOILS",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "11",
+        "rank": 1,
+        "note": "Rahu in the sixth or the eighth, aspected by Mars. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MARS",
+          "target": "RAHU"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "boils and carbuncles"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SATURN_WITH_THE_MOON_IN_SIXTH_OR_EIGHTH_ABDOMINAL_SWELLING",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "11",
+        "rank": 1,
+        "note": "Saturn with the Moon in the sixth or the eighth. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "MOON",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a swelling in the abdomen, of the spleen"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_WANING_MOON_WITH_A_MALEFIC_IN_A_WATERY_SIXTH_OR_EIGHTH_WATER_DISEASE",
+      "category": "roga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "11",
+        "rank": 1,
+        "note": "The waning Moon with a malefic in a watery sign, the sixth or the eighth; waning is read as the dark half, and the watery signs are ch. 1 v. 7's, Cancer, the latter half of Capricorn and Pisces. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": "MOON",
+              "signs": [
+                "CANCER",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 15.0,
+                  "to": 30.0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": "MOON",
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a water disease such as dropsy, or consumption"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SUN_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Sun in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "SUN",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through fire, a burning fever, bile or a weapon"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MOON_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Moon in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "MOON",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through cholera, dropsy and the water diseases, or consumption"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MARS_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Mars in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "MARS",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through burns, the blood, sorcery or a weapon"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MERCURY_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Mercury in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MERCURY",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "MERCURY",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through anaemia and its kind, or giddiness"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_JUPITER_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Jupiter in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "JUPITER",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through phlegm, or without struggle"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_VENUS_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Venus in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "VENUS",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through a disease of sexual excess"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SATURN_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Saturn in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "SATURN",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through the wind humour, or a fever of all three humours"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_RAHU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Rahu in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "RAHU",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "RAHU",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through leprosy, poisoned food, venom or smallpox"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KETU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "12-15",
+        "rank": 1,
+        "note": "Ketu in the eighth or aspecting it: death through what vv. 14 and 15 give it. v. 12 takes the strongest of the grahas in or aspecting the eighth, and v. 13 any of them, which is what is built: each is reported (C384). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "KETU",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "KETU",
+              "houseRuled": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an untimely death, through enemies or vermin"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_ARIES_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 17",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Aries: death through what that sign's nature brings, which v. 17 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "VIRGO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through bilious fever, heat, or a failing digestion"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_TAURUS_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 17",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Taurus: death through what that sign's nature brings, which v. 17 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "LIBRA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through the three humours deranged, fire, or a weapon"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_GEMINI_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 17",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Gemini: death through what that sign's nature brings, which v. 17 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SCORPIO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through asthma, heat, or colic"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_CANCER_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 17",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Cancer: death through what that sign's nature brings, which v. 17 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through madness, the wind humour, or a failing appetite"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_LEO_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 18",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Leo: death through what that sign's nature brings, which v. 18 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through wild beasts, fever, abscesses, or enemies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_VIRGO_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 18",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Virgo: death through what that sign's nature brings, which v. 18 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through women, a disease of the private parts, or a fall"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_LIBRA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 18",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Libra: death through what that sign's nature brings, which v. 18 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through a fever of the brain, or of all three humours"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_SCORPIO_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 18",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Scorpio: death through what that sign's nature brings, which v. 18 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through the spleen, anaemia, or dysentery"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_SAGITTARIUS_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 19",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Sagittarius: death through what that sign's nature brings, which v. 19 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "TAURUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through a tree, water, wood, or a weapon"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_CAPRICORN_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 19",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Capricorn: death through what that sign's nature brings, which v. 19 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "GEMINI"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through colic, a failing appetite, or a deranged mind"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_AQUARIUS_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 19",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Aquarius: death through what that sign's nature brings, which v. 19 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through cough, fever, or consumption"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EMPTY_EIGHTH_IN_PISCES_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "13, 19",
+        "rank": 1,
+        "note": "No graha in the eighth or aspecting it, and the eighth is Pisces: death through what that sign's nature brings, which v. 19 gives. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "SELF",
+                  "houseRuled": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "LEO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through water, or a water disease"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_ARIES_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 17",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Aries: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "ARIES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through bilious fever, heat, or a failing digestion"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_TAURUS_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 17",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Taurus: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "TAURUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through the three humours deranged, fire, or a weapon"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_GEMINI_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 17",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Gemini: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "GEMINI"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through asthma, heat, or colic"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_CANCER_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 17",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Cancer: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through madness, the wind humour, or a failing appetite"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_LEO_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 18",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Leo: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "LEO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through wild beasts, fever, abscesses, or enemies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_VIRGO_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 18",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Virgo: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "VIRGO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through women, a disease of the private parts, or a fall"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_LIBRA_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 18",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Libra: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "LIBRA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through a fever of the brain, or of all three humours"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_SCORPIO_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 18",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Scorpio: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "SCORPIO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through the spleen, anaemia, or dysentery"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_SAGITTARIUS_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 19",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Sagittarius: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through a tree, water, wood, or a weapon"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_CAPRICORN_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 19",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Capricorn: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through colic, a failing appetite, or a deranged mind"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_AQUARIUS_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 19",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Aquarius: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through cough, fever, or consumption"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_EIGHTH_LORD_IN_A_PISCES_NAVAMSHA_CAUSE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "16, 19",
+        "rank": 1,
+        "note": "The eighth lord's navamsha is Pisces: death through what that sign's nature brings, the verse's second way beside the eighth's own sign. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 8
+            }
+          },
+          "signs": [
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through water, or a water disease"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MALEFIC_OWNED_EIGHTH_HOLDING_A_MALEFIC_VIOLENT_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "20",
+        "rank": 1,
+        "note": "The eighth a malefic's sign, and a malefic in it: death by a weapon, fire, a tiger or a snake. The verse's \"p\u0101park\u1e63a\" is read as a malefic's sign, as Ojha reads it (C385). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": 8
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by a weapon, fire, a tiger or a snake"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_TWO_MALEFICS_IN_KENDRAS_ASPECTING_EACH_OTHER_DEATH_BY_THE_KING",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "20",
+        "rank": 1,
+        "note": "Two malefics in kendras, each aspecting the other: death through the ruler's anger, a weapon, poison or fire. Jupiter and Venus are never malefic, and the nodes as a pair are left out, since they always stand opposite (C385). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SUN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "MOON",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SUN"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MOON"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SUN",
+                  "target": "MOON"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MOON",
+                  "target": "SUN"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SUN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "MARS",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SUN"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MARS"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SUN",
+                  "target": "MARS"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MARS",
+                  "target": "SUN"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SUN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "MERCURY",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SUN"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MERCURY"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SUN",
+                  "target": "MERCURY"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MERCURY",
+                  "target": "SUN"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SUN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "SATURN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SUN"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SUN",
+                  "target": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SATURN",
+                  "target": "SUN"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SUN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "RAHU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SUN"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SUN",
+                  "target": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "RAHU",
+                  "target": "SUN"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SUN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "KETU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SUN"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SUN",
+                  "target": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "KETU",
+                  "target": "SUN"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MOON",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "MARS",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MOON"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MARS"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MOON",
+                  "target": "MARS"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MARS",
+                  "target": "MOON"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MOON",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "MERCURY",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MOON"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MERCURY"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MOON",
+                  "target": "MERCURY"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MERCURY",
+                  "target": "MOON"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MOON",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "SATURN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MOON"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MOON",
+                  "target": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SATURN",
+                  "target": "MOON"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MOON",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "RAHU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MOON"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MOON",
+                  "target": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "RAHU",
+                  "target": "MOON"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MOON",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "KETU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MOON"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MOON",
+                  "target": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "KETU",
+                  "target": "MOON"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MARS",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "MERCURY",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MARS"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MERCURY"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MARS",
+                  "target": "MERCURY"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MERCURY",
+                  "target": "MARS"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MARS",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "SATURN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MARS"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MARS",
+                  "target": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SATURN",
+                  "target": "MARS"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MARS",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "RAHU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MARS"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MARS",
+                  "target": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "RAHU",
+                  "target": "MARS"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MARS",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "KETU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MARS"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MARS",
+                  "target": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "KETU",
+                  "target": "MARS"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MERCURY",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "SATURN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MERCURY"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MERCURY",
+                  "target": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SATURN",
+                  "target": "MERCURY"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MERCURY",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "RAHU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MERCURY"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MERCURY",
+                  "target": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "RAHU",
+                  "target": "MERCURY"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "MERCURY",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "KETU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "MERCURY"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MERCURY",
+                  "target": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "KETU",
+                  "target": "MERCURY"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SATURN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "RAHU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SATURN"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SATURN",
+                  "target": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "RAHU",
+                  "target": "SATURN"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SATURN",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-is",
+                  "planet": "KETU",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SATURN"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SATURN",
+                  "target": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "KETU",
+                  "target": "SATURN"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through the ruler's anger, a weapon, poison or fire"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_TWELFTH_OR_ITS_LORD_WITH_BENEFICS_PEACEFUL_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "21",
+        "rank": 1,
+        "note": "The twelfth or its lord in a benefic's sign or navamsha, or joined by a benefic: a death without anguish. The twelfth, a whole sign, has no navamsha of its own, so its sign and its company are read. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-is",
+              "planet": {
+                "lordOf": 12
+              },
+              "class": "benefic"
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                12
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-is",
+              "planet": {
+                "lordOf": {
+                  "lordOf": 12
+                }
+              },
+              "class": "benefic"
+            },
+            {
+              "type": "planet-is",
+              "planet": {
+                "lordOf": {
+                  "navamsha": {
+                    "lordOf": 12
+                  }
+                }
+              },
+              "class": "benefic"
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": 12
+              },
+              "atLeast": 1,
+              "except": [
+                {
+                  "lordOf": 12
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a death without anguish"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_TWELFTH_AND_ITS_LORD_WITHOUT_BENEFICS_PAINFUL_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "21",
+        "rank": 1,
+        "note": "Otherwise, a painful death. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": {
+                  "lordOf": 12
+                },
+                "class": "benefic"
+              },
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  12
+                ],
+                "atLeast": 1
+              },
+              {
+                "type": "planet-is",
+                "planet": {
+                  "lordOf": {
+                    "lordOf": 12
+                  }
+                },
+                "class": "benefic"
+              },
+              {
+                "type": "planet-is",
+                "planet": {
+                  "lordOf": {
+                    "navamsha": {
+                      "lordOf": 12
+                    }
+                  }
+                },
+                "class": "benefic"
+              },
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": {
+                  "lordOf": 12
+                },
+                "atLeast": 1,
+                "except": [
+                  {
+                    "lordOf": 12
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a painful death"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_TWELFTH_LORD_EXALTED_BEFRIENDED_OR_JOINED_BY_A_BENEFIC_RISES",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "22",
+        "rank": 1,
+        "note": "The twelfth lord exalted, in a friend's sign, or joined by a benefic: the departed go upward. The verse's \"benefic varga\" and the opinion reading the twelfth's rising are not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 12
+              },
+              "as": {
+                "exaltationOf": {
+                  "lordOf": 12
+                }
+              }
+            },
+            {
+              "type": "natural-relation",
+              "of": {
+                "lordOf": 12
+              },
+              "to": {
+                "lordOf": {
+                  "lordOf": 12
+                }
+              },
+              "relations": [
+                "friend"
+              ]
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": 12
+              },
+              "atLeast": 1,
+              "except": [
+                {
+                  "lordOf": 12
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, the way upward, to heaven"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_TWELFTH_LORD_OTHERWISE_DESCENDS",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "22",
+        "rank": 1,
+        "note": "Otherwise the departed go downward. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": {
+                  "lordOf": 12
+                },
+                "as": {
+                  "exaltationOf": {
+                    "lordOf": 12
+                  }
+                }
+              },
+              {
+                "type": "natural-relation",
+                "of": {
+                  "lordOf": 12
+                },
+                "to": {
+                  "lordOf": {
+                    "lordOf": 12
+                  }
+                },
+                "relations": [
+                  "friend"
+                ]
+              },
+              {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  1
+                ],
+                "from": {
+                  "lordOf": 12
+                },
+                "atLeast": 1,
+                "except": [
+                  {
+                    "lordOf": 12
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, the way downward"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SUN_OR_MOON_OF_THE_TWELFTH_GOES_TO_KAILASA",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "23",
+        "rank": 1,
+        "note": "Sun or Moon in the twelfth or joined with its lord: the departed go to Kailasa, Shiva's world. The verse's third way, a graha in the twelfth's navamsha, is not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SUN",
+                  "houses": [
+                    12
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "SUN",
+                      "reference": {
+                        "lordOf": 12
+                      },
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": "SUN",
+                        "as": {
+                          "lordOf": 12
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    12
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "MOON",
+                      "reference": {
+                        "lordOf": 12
+                      },
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": "MOON",
+                        "as": {
+                          "lordOf": 12
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, Kailasa, Shiva's world"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_VENUS_OF_THE_TWELFTH_GOES_TO_SVARGA",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "23",
+        "rank": 1,
+        "note": "Venus in the twelfth or joined with its lord: the departed go to Svarga, Indra's heaven. The verse's third way, a graha in the twelfth's navamsha, is not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": {
+                    "lordOf": 12
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "VENUS",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, Svarga, Indra's heaven"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MARS_OF_THE_TWELFTH_GOES_TO_THE_EARTH",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "23",
+        "rank": 1,
+        "note": "Mars in the twelfth or joined with its lord: the departed go to the earth again. The verse's third way, a graha in the twelfth's navamsha, is not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": {
+                    "lordOf": 12
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "MARS",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, the earth again"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MERCURY_OF_THE_TWELFTH_GOES_TO_VAIKUNTHA",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "23",
+        "rank": 1,
+        "note": "Mercury in the twelfth or joined with its lord: the departed go to Vaikuntha, Vishnu's world. The verse's third way, a graha in the twelfth's navamsha, is not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MERCURY",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": {
+                    "lordOf": 12
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "MERCURY",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, Vaikuntha, Vishnu's world"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SATURN_OF_THE_TWELFTH_GOES_TO_YAMAS_CITY",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "23",
+        "rank": 1,
+        "note": "Saturn in the twelfth or joined with its lord: the departed go to Yama's city. The verse's third way, a graha in the twelfth's navamsha, is not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": {
+                    "lordOf": 12
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SATURN",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, Yama's city"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_JUPITER_OF_THE_TWELFTH_GOES_TO_BRAHMALOKA",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "23",
+        "rank": 1,
+        "note": "Jupiter in the twelfth or joined with its lord: the departed go to Brahmaloka. The verse's third way, a graha in the twelfth's navamsha, is not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": {
+                    "lordOf": 12
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "JUPITER",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, Brahmaloka"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_RAHU_OF_THE_TWELFTH_GOES_TO_OTHER_ISLANDS",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "23",
+        "rank": 1,
+        "note": "Rahu in the twelfth or joined with its lord: the departed go to other islands. The verse's third way, a graha in the twelfth's navamsha, is not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "RAHU",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "RAHU",
+                  "reference": {
+                    "lordOf": 12
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "RAHU",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, other islands"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KETU_OF_THE_TWELFTH_GOES_TO_HELL",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "23",
+        "rank": 1,
+        "note": "Ketu in the twelfth or joined with its lord: the departed go to hell. The verse's third way, a graha in the twelfth's navamsha, is not built (C386). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "KETU",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "KETU",
+                  "reference": {
+                    "lordOf": 12
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "KETU",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "after death, hell"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_EXALTED_LAND_OF_THE_GODS",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24-25",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, exalted: a land of the gods. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 9
+          },
+          "as": {
+            "exaltationOf": {
+              "lordOf": 9
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, in a land of the gods"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_DEBILITATED_OR_HOSTILE_FOREIGN_ISLAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24-25",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, not exalted, and debilitated or in an enemy's sign: another island. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": {
+              "lordOf": 9
+            },
+            "as": {
+              "exaltationOf": {
+                "lordOf": 9
+              }
+            }
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 9
+              },
+              "as": {
+                "debilitationOf": {
+                  "lordOf": 9
+                }
+              }
+            },
+            {
+              "type": "natural-relation",
+              "of": {
+                "lordOf": 9
+              },
+              "to": {
+                "lordOf": {
+                  "lordOf": 9
+                }
+              },
+              "relations": [
+                "enemy"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, on another island"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_AT_HOME_BHARATAVARSHA",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24-25",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, in its own, a friend's or a neutral's sign, and neither exalted nor debilitated: Bharatavarsha. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": {
+              "lordOf": 9
+            },
+            "as": {
+              "exaltationOf": {
+                "lordOf": 9
+              }
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": {
+              "lordOf": 9
+            },
+            "as": {
+              "debilitationOf": {
+                "lordOf": 9
+              }
+            }
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "lordOf": 9
+                }
+              },
+              "as": {
+                "lordOf": 9
+              }
+            },
+            {
+              "type": "natural-relation",
+              "of": {
+                "lordOf": 9
+              },
+              "to": {
+                "lordOf": {
+                  "lordOf": 9
+                }
+              },
+              "relations": [
+                "friend",
+                "neutral"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, in Bharatavarsha"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_JUPITER_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, is Jupiter: Aryavarta. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 9,
+          "planets": [
+            "JUPITER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, in Aryavarta"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_VENUS_OR_MOON_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, is Venus or Moon: a land watered by the sacred rivers. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 9,
+          "planets": [
+            "VENUS",
+            "MOON"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, in a land watered by the sacred rivers"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_MERCURY_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, is Mercury: a place of pilgrimage. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 9,
+          "planets": [
+            "MERCURY"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, in a place of pilgrimage"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_SATURN_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, is Saturn: a land of foreigners. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 9,
+          "planets": [
+            "SATURN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, in a land of foreigners"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_SUN_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, is Sun: a land of hills and forests. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 9,
+          "planets": [
+            "SUN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, in a land of hills and forests"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_MARS_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, is Mars: Kikata. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 9,
+          "planets": [
+            "MARS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, in Kikata"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_IN_A_SIGN_KIND_TO_THE_LAGNA_LORD_HUMAN",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "28",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, in the lagna lord's exaltation, own sign or a friend's sign: a human birth. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 9
+              },
+              "as": {
+                "exaltationOf": {
+                  "lordOf": 1
+                }
+              }
+            },
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "lordOf": 9
+                }
+              },
+              "as": {
+                "lordOf": 1
+              }
+            },
+            {
+              "type": "natural-relation",
+              "of": {
+                "lordOf": 1
+              },
+              "to": {
+                "lordOf": {
+                  "lordOf": 9
+                }
+              },
+              "relations": [
+                "friend"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, as a human"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_IN_A_SIGN_NEUTRAL_TO_THE_LAGNA_LORD_BEAST",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "28",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, otherwise in a sign whose lord the lagna lord counts neutral: a beast. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": {
+                  "lordOf": 9
+                },
+                "as": {
+                  "exaltationOf": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              {
+                "type": "same-body",
+                "of": {
+                  "lordOf": {
+                    "lordOf": 9
+                  }
+                },
+                "as": {
+                  "lordOf": 1
+                }
+              },
+              {
+                "type": "natural-relation",
+                "of": {
+                  "lordOf": 1
+                },
+                "to": {
+                  "lordOf": {
+                    "lordOf": 9
+                  }
+                },
+                "relations": [
+                  "friend"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "natural-relation",
+          "of": {
+            "lordOf": 1
+          },
+          "to": {
+            "lordOf": {
+              "lordOf": 9
+            }
+          },
+          "relations": [
+            "neutral"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, as a beast"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAST_BIRTH_LORD_IN_A_SIGN_HOSTILE_TO_THE_LAGNA_LORD_BIRD",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "28",
+        "rank": 1,
+        "note": "The lord of the 9th, which tells the birth before, in any other sign: a bird. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": {
+                  "lordOf": 9
+                },
+                "as": {
+                  "exaltationOf": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              {
+                "type": "same-body",
+                "of": {
+                  "lordOf": {
+                    "lordOf": 9
+                  }
+                },
+                "as": {
+                  "lordOf": 1
+                }
+              },
+              {
+                "type": "natural-relation",
+                "of": {
+                  "lordOf": 1
+                },
+                "to": {
+                  "lordOf": {
+                    "lordOf": 9
+                  }
+                },
+                "relations": [
+                  "friend"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "natural-relation",
+            "of": {
+              "lordOf": 1
+            },
+            "to": {
+              "lordOf": {
+                "lordOf": 9
+              }
+            },
+            "relations": [
+              "neutral"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth before, as a bird"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_EXALTED_LAND_OF_THE_GODS",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24-25",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, exalted: a land of the gods. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 5
+          },
+          "as": {
+            "exaltationOf": {
+              "lordOf": 5
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, in a land of the gods"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_DEBILITATED_OR_HOSTILE_FOREIGN_ISLAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24-25",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, not exalted, and debilitated or in an enemy's sign: another island. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": {
+              "lordOf": 5
+            },
+            "as": {
+              "exaltationOf": {
+                "lordOf": 5
+              }
+            }
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 5
+              },
+              "as": {
+                "debilitationOf": {
+                  "lordOf": 5
+                }
+              }
+            },
+            {
+              "type": "natural-relation",
+              "of": {
+                "lordOf": 5
+              },
+              "to": {
+                "lordOf": {
+                  "lordOf": 5
+                }
+              },
+              "relations": [
+                "enemy"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, on another island"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_AT_HOME_BHARATAVARSHA",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24-25",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, in its own, a friend's or a neutral's sign, and neither exalted nor debilitated: Bharatavarsha. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": {
+              "lordOf": 5
+            },
+            "as": {
+              "exaltationOf": {
+                "lordOf": 5
+              }
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": {
+              "lordOf": 5
+            },
+            "as": {
+              "debilitationOf": {
+                "lordOf": 5
+              }
+            }
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "lordOf": 5
+                }
+              },
+              "as": {
+                "lordOf": 5
+              }
+            },
+            {
+              "type": "natural-relation",
+              "of": {
+                "lordOf": 5
+              },
+              "to": {
+                "lordOf": {
+                  "lordOf": 5
+                }
+              },
+              "relations": [
+                "friend",
+                "neutral"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, in Bharatavarsha"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_JUPITER_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, is Jupiter: Aryavarta. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 5,
+          "planets": [
+            "JUPITER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, in Aryavarta"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_VENUS_OR_MOON_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, is Venus or Moon: a land watered by the sacred rivers. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 5,
+          "planets": [
+            "VENUS",
+            "MOON"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, in a land watered by the sacred rivers"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_MERCURY_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, is Mercury: a place of pilgrimage. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 5,
+          "planets": [
+            "MERCURY"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, in a place of pilgrimage"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_SATURN_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, is Saturn: a land of foreigners. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 5,
+          "planets": [
+            "SATURN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, in a land of foreigners"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_SUN_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, is Sun: a land of hills and forests. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 5,
+          "planets": [
+            "SUN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, in a land of hills and forests"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_MARS_LAND",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "24, 26",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, is Mars: Kikata. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 5,
+          "planets": [
+            "MARS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, in Kikata"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_IN_A_SIGN_KIND_TO_THE_LAGNA_LORD_HUMAN",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "28",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, in the lagna lord's exaltation, own sign or a friend's sign: a human birth. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 5
+              },
+              "as": {
+                "exaltationOf": {
+                  "lordOf": 1
+                }
+              }
+            },
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "lordOf": 5
+                }
+              },
+              "as": {
+                "lordOf": 1
+              }
+            },
+            {
+              "type": "natural-relation",
+              "of": {
+                "lordOf": 1
+              },
+              "to": {
+                "lordOf": {
+                  "lordOf": 5
+                }
+              },
+              "relations": [
+                "friend"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, as a human"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_IN_A_SIGN_NEUTRAL_TO_THE_LAGNA_LORD_BEAST",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "28",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, otherwise in a sign whose lord the lagna lord counts neutral: a beast. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": {
+                  "lordOf": 5
+                },
+                "as": {
+                  "exaltationOf": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              {
+                "type": "same-body",
+                "of": {
+                  "lordOf": {
+                    "lordOf": 5
+                  }
+                },
+                "as": {
+                  "lordOf": 1
+                }
+              },
+              {
+                "type": "natural-relation",
+                "of": {
+                  "lordOf": 1
+                },
+                "to": {
+                  "lordOf": {
+                    "lordOf": 5
+                  }
+                },
+                "relations": [
+                  "friend"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "natural-relation",
+          "of": {
+            "lordOf": 1
+          },
+          "to": {
+            "lordOf": {
+              "lordOf": 5
+            }
+          },
+          "relations": [
+            "neutral"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, as a beast"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NEXT_BIRTH_LORD_IN_A_SIGN_HOSTILE_TO_THE_LAGNA_LORD_BIRD",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "28",
+        "rank": 1,
+        "note": "The lord of the 5th, which tells the birth after, in any other sign: a bird. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": {
+                  "lordOf": 5
+                },
+                "as": {
+                  "exaltationOf": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              {
+                "type": "same-body",
+                "of": {
+                  "lordOf": {
+                    "lordOf": 5
+                  }
+                },
+                "as": {
+                  "lordOf": 1
+                }
+              },
+              {
+                "type": "natural-relation",
+                "of": {
+                  "lordOf": 1
+                },
+                "to": {
+                  "lordOf": {
+                    "lordOf": 5
+                  }
+                },
+                "relations": [
+                  "friend"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "natural-relation",
+            "of": {
+              "lordOf": 1
+            },
+            "to": {
+              "lordOf": {
+                "lordOf": 5
+              }
+            },
+            "relations": [
+              "neutral"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the birth after, as a bird"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_FIFTH_AND_NINTH_LORDS_TOGETHER_BORN_AT_HOME",
+      "category": "loka",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "14",
+        "verse": "29",
+        "rank": 1,
+        "note": "The lords of the ninth and the fifth in one sign: both births in one's own country. The verse's equal strength, giving one caste, is not built. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 9
+          },
+          "as": {
+            "lordOf": 5
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the births before and after, in one's own country"
+        }
+      ]
+    }
+  ]
+}

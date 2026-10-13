@@ -730,11 +730,15 @@ fn the_chart_says_the_almanac_of_its_own_day() {
     // A document with the states but no almanac is refused by the knob's
     // name. The states come first because `RuleInputs` needs them for
     // every chart, so a bare document is refused for those instead — which
-    // is why this asks for a rule pack that reads no limb.
+    // is why this asks for the nabhasas' rules that read no limb.
     let (without, unread) = common::reading("{}", |request| {
-        request.with_rule_inputs(shipped::nabhasas())
+        request.with_rule_inputs(
+            shipped::nabhasas()
+                .iter()
+                .filter(|rule| !rule.reads_panchanga()),
+        )
     });
-    assert!(unread.panchanga.is_none(), "the nabhasas read no limb");
+    assert!(unread.panchanga.is_none(), "the rules read no limb");
     let refused = without.interpret().panchanga(&unread).unwrap_err();
     assert_eq!(refused.field(), Some("panchanga"));
 }
@@ -958,9 +962,13 @@ fn a_phala_asked_for_alone_says_the_day_as_well() {
     // A document with its states and no panchanga is refused by the
     // section's name, not said by halves.
     let (without, unread) = common::reading("{}", |request| {
-        request.with_rule_inputs(shipped::nabhasas())
+        request.with_rule_inputs(
+            shipped::nabhasas()
+                .iter()
+                .filter(|rule| !rule.reads_panchanga()),
+        )
     });
-    assert!(unread.panchanga.is_none(), "the nabhasas read no limb");
+    assert!(unread.panchanga.is_none(), "the rules read no limb");
     let refused = without.interpret().phala(&unread).unwrap_err();
     assert_eq!(refused.field(), Some("panchanga"));
 }

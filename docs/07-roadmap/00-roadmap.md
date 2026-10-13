@@ -620,8 +620,9 @@ still a sourcing question.
 therefore a sourcing question rather than a coding one.** The arishta
 corpus covers BPHS chs. 9 and 10 (the twilight births and the chapter's
 last two antidotes were built on 2026-10-13), Brihat Jataka ch. 6 and
-Saravali chs. 10 to 12; Phaladeepika chs. 13 and 14 are left, against the
-1965 print's Sanskrit; and the readings want
+Saravali chs. 10 to 12, and Phaladeepika chs. 13 and 14 (built on
+2026-10-14, the Sanskrit checked in Ojha's 1975 commentary); and the
+readings want
 Saravali chs. 22 to 31 and 49 to 51, which no rule cites yet. Each rule
 carries a note paraphrasing what its verse says, so writing one without
 the verse in front of you invents scripture in a product whose worth is
@@ -1030,9 +1031,9 @@ each difference counted on a generated page (the C89 and C289 precedent).
 
 ### Track C: Phase 6 and 7 remainders, interleaved
 
-- **The arishta corpus.** BPHS ch. 9 vv. 12 and 15 to 20 and ch. 10 v. 6
-  (in progress); Phaladeepika ch. 13 and 14 against the 1965 print's
-  Sanskrit.
+- **The arishta corpus.** Built through Phaladeepika chs. 13 and 14
+  (2026-10-14); what their verses leave undefined is in cruxes C379 to
+  C386.
 - **Saravali's readings**, chs. 22 to 31 and 49 to 51: Santhanam's
   edition is in hand in print, with its Sanskrit.
 - **Ibn Ezra's weights.**
