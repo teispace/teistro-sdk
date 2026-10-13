@@ -323,6 +323,16 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**The twilight births.** **Numbers:** two arishtas join the shipped set
+(1529 rules); no other rule's answer moved. BPHS ch. 9 v. 13, a birth in
+the twilight, in the Moon's hora and in a gandanta, and Brihat Jataka ch. 6
+v. 1's first figure, the twilight and the lunar hora with a malefic in a
+sign's last navamsa. A rule now reads the night as a limb: `at-limb-edge`
+with `"limb": "night"` measures the ghatikas since sunset or until the next
+sunrise, so v. 14's twilights, three ghatikas either side, need no new
+condition. The arishtas carry ch. 92's gandantas written in, so asking for
+the arishtas alone still works.
+
 **Progressions read the progressed planets' contacts among themselves.**
 **Numbers:** none moved; nothing is read unless asked. `mutual: true` in
 a contact window asks for Leo's "P. to P." list (*The Progressed

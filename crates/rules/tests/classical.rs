@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 164);
+    assert_eq!(rules.len(), 166);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -242,7 +242,7 @@ const GRADED: [&str; 46] = [
 ];
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 68] = [
+const SILENT: [&str; 70] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
     "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA",
@@ -263,11 +263,13 @@ const SILENT: [&str; 68] = [
     "ARISHTA_SATURN_TWELFTH_SUN_NINTH_MARS_EIGHTH",
     "ARISHTA_SUN_NINTH_MARS_SEVENTH_JUPITER_VENUS_ELEVENTH",
     "ARISHTA_SUN_SEVENTH_MARS_TENTH_RAHU_TWELFTH",
+    "ARISHTA_TWILIGHT_MOONS_HORA_AND_GANDANTA",
     "BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH",
     "BJ_LUMINARY_IN_LAGNA_MALEFICS_IN_FIVE_EIGHT_NINE",
     "BJ_MOON_BETWEEN_MALEFICS_IN_FOURTH_SEVENTH_OR_EIGHTH",
     "BJ_MOON_BETWEEN_MALEFICS_IN_LAGNA_MALEFICS_SEVENTH_AND_EIGHTH",
     "BJ_SATURN_SUN_MOON_MARS_IN_ORDER",
+    "BJ_TWILIGHT_LUNAR_HORA_MALEFIC_IN_LAST_NAVAMSA",
     "BJ_WANING_MOON_IN_TWELFTH",
     "LAGNA_GANDANTA",
     "NAKSHATRA_GANDANTA",
@@ -314,7 +316,7 @@ const SILENT: [&str; 68] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 164] = [
+const ANSWERED: [(&str, usize); 166] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
@@ -362,6 +364,7 @@ const ANSWERED: [(&str, usize); 164] = [
     ("ARISHTA_SUN_HEMMED_OR_ASPECTED_BY_MALEFICS", 40),
     ("ARISHTA_SUN_NINTH_MARS_SEVENTH_JUPITER_VENUS_ELEVENTH", 0),
     ("ARISHTA_SUN_SEVENTH_MARS_TENTH_RAHU_TWELFTH", 0),
+    ("ARISHTA_TWILIGHT_MOONS_HORA_AND_GANDANTA", 0),
     ("ARISHTA_WANING_MOON_IN_LAGNA_MALEFICS_KENDRA_AND_EIGHTH", 1),
     ("ARISHTA_WANING_MOON_IN_LAGNA_MALEFIC_SEVENTH", 1),
     ("BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH", 0),
@@ -383,6 +386,7 @@ const ANSWERED: [(&str, usize); 164] = [
     ("BJ_MOON_IN_THE_LAST_NAVAMSHA", 3),
     ("BJ_MOON_WITH_A_MALEFIC_UNSUPPORTED", 1),
     ("BJ_SATURN_SUN_MOON_MARS_IN_ORDER", 0),
+    ("BJ_TWILIGHT_LUNAR_HORA_MALEFIC_IN_LAST_NAVAMSA", 0),
     ("BJ_WANING_MOON_IN_LAGNA_MALEFICS_IN_EIGHTH_AND_KENDRAS", 1),
     ("BJ_WANING_MOON_IN_TWELFTH", 0),
     ("BJ_WANING_MOON_WITH_A_MALEFIC", 22),

@@ -33,6 +33,7 @@ use std::sync::LazyLock;
 
 use serde::Deserialize;
 
+use crate::language::Condition;
 use crate::rule::Rule;
 
 /// The doshas the recording engine computes in code, as rules.
@@ -130,8 +131,43 @@ static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(BALARISHTA));
     rules.append(&mut read(SARAVALI));
     rules.append(&mut read(PARIJATA));
+    // BPHS ch. 9 v. 13's birth "in a gandanta" is ch. 92's, named by key.
+    link(&mut rules, &GANDANTAS);
     rules
 });
+
+/// Writes each rule of `other` that a condition of `rules` names in place
+/// of the name, as the conditions it holds by: the one, or their `and`.
+///
+/// A shipped set is asked on its own, and a set naming a rule it lacks is
+/// refused (`check_references`); so where a verse means another set's rule,
+/// as BPHS ch. 9 v. 13 means ch. 92's gandantas, the set carries that
+/// rule's conditions rather than a second copy of them in its data.
+fn link(rules: &mut [Rule], other: &[Rule]) {
+    fn walk(condition: &mut Condition, other: &[Rule]) {
+        if let Condition::RuleHolds { key } = condition
+            && let Some(named) = other.iter().find(|rule| rule.key == *key)
+        {
+            // A rule holding by one condition is that condition, and an
+            // `and` of one would read differently while saying the same.
+            *condition = match named.conditions.as_slice() {
+                [only] => only.clone(),
+                all => Condition::And {
+                    conditions: all.to_vec(),
+                },
+            };
+            return;
+        }
+        for child in condition.children_mut() {
+            walk(child, other);
+        }
+    }
+    for rule in rules {
+        for condition in &mut rule.conditions {
+            walk(condition, other);
+        }
+    }
+}
 
 /// The seventeen doshas the recording engine computes in code, as rules.
 #[must_use]
@@ -250,6 +286,56 @@ mod tests {
     }
 
     #[test]
+    fn the_arishtas_carry_the_gandantas_they_name_and_stand_alone() {
+        let twilight = arishtas()
+            .iter()
+            .find(|rule| rule.key == "ARISHTA_TWILIGHT_MOONS_HORA_AND_GANDANTA")
+            .expect("shipped");
+        // No condition names a rule outside the set any more: each gandanta
+        // is written as its own conditions.
+        let referenced: Vec<&str> = arishtas()
+            .iter()
+            .flat_map(|rule| rule.conditions.iter())
+            .flat_map(Condition::walk)
+            .filter_map(|condition| match condition {
+                Condition::RuleHolds { key } => Some(key.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert!(
+            gandantas()
+                .iter()
+                .all(|rule| !referenced.contains(&rule.key.as_str()))
+        );
+        let Some(Condition::Or { conditions }) = twilight.conditions.last() else {
+            panic!("the gandanta is an `or` of three");
+        };
+        // A linked rule holding by several conditions is their `and`, and one
+        // holding by a single condition is that condition.
+        let written: Vec<&[Condition]> = conditions
+            .iter()
+            .map(|condition| match condition {
+                Condition::And { conditions } => conditions.as_slice(),
+                one => core::slice::from_ref(one),
+            })
+            .collect();
+        let gandanta: Vec<&[Condition]> =
+            ["TITHI_GANDANTA", "NAKSHATRA_GANDANTA", "LAGNA_GANDANTA"]
+                .iter()
+                .map(|key| {
+                    gandantas()
+                        .iter()
+                        .find(|rule| rule.key == *key)
+                        .map(|rule| rule.conditions.as_slice())
+                        .expect("ch. 92 ships it")
+                })
+                .collect();
+        assert_eq!(written, gandanta);
+        let owned: Vec<Rule> = arishtas().to_vec();
+        assert_eq!(crate::rule::check_references(&owned), Ok(()));
+    }
+
+    #[test]
     fn every_shipped_rule_and_table_says_how_good_its_evidence_is() {
         let rules: Vec<&Rule> = computed_doshas()
             .iter()
@@ -259,7 +345,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1527);
+        assert_eq!(rules.len(), 1529);
         for rule in &rules {
             let rank = rule
                 .source

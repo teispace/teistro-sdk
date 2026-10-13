@@ -18,7 +18,11 @@ public enum Limb implements RequestJson {
     /**
      * The rising sign.
      */
-    LAGNA("lagna");
+    LAGNA("lagna"),
+    /**
+     * The night, sunset to sunrise, whose first and last ghatikas are the twilights.
+     */
+    NIGHT("night");
 
     private final String key;
 

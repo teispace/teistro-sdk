@@ -358,6 +358,10 @@ name = "moment"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "twilight"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "western_houses"
 required-features = ["builtin-ephemeris"]
 

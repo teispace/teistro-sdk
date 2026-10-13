@@ -219,6 +219,7 @@ impl Display for Limb {
             Limb::Tithi => "the tithi",
             Limb::Nakshatra => "the nakshatra",
             Limb::Lagna => "the rising sign",
+            Limb::Night => "the night",
         })
     }
 }
