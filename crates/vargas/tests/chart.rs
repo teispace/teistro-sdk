@@ -109,9 +109,16 @@ fn every_catalogued_chart_places_every_body() {
         assert_eq!(chart.grahas.len(), foundation.grahas.len());
         assert_eq!(chart.signs().len(), foundation.grahas.len() + 1);
         for placement in &chart.grahas {
-            assert!(chart.graha(placement.graha).is_some());
+            assert_eq!(chart.graha(placement.graha), Some(&placement.at));
             placed += 1;
         }
+        let keeping: Vec<Graha> = chart
+            .grahas
+            .iter()
+            .filter(|placement| placement.at.keeps_its_sign())
+            .map(|placement| placement.graha)
+            .collect();
+        assert_eq!(chart.keeping_their_sign(), keeping, "{varga:?}");
     }
     println!("{placed} placements over {} charts", charts.len());
     assert_eq!(placed, Varga::ALL.len() * foundation.grahas.len());
@@ -155,9 +162,17 @@ fn vargottama_is_answered_for_the_navamsha_and_refused_elsewhere() {
     let dashamsha = chart(&foundation, Axis::of(Varga::D10)).expect("a founded moment");
     assert!(dashamsha.vargottama(Graha::Sun).is_none());
     assert!(dashamsha.lagna_vargottama().is_none());
-    // The general fact is still available there.
+    // The general fact is still available there; in the rashi chart
+    // every body keeps the sign it stands in, which is what it is.
     let keeping = dashamsha.keeping_their_sign();
     assert!(keeping.len() <= dashamsha.grahas.len());
+    let rashi = chart(&foundation, Axis::of(Varga::D1)).expect("a founded moment");
+    let every: Vec<Graha> = rashi
+        .grahas
+        .iter()
+        .map(|placement| placement.graha)
+        .collect();
+    assert_eq!(rashi.keeping_their_sign(), every);
 }
 
 #[test]
