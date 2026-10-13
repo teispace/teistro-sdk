@@ -20,6 +20,23 @@ use crate::{Alternative, Expectation, GroupCount, Parallelism, PredicateRow, Tes
 /// bits a predicate.
 pub const MAX_SUBJECTS: usize = 20_000;
 
+/// The most instants an event study reads the sky at, unless its test
+/// raises the cap ([`EventTest::max_pairs`]): a transit rule is read at
+/// every pairing's instant, `N²` of them under the age shuffle.
+pub const DEFAULT_MAX_PAIRS: u64 = 1_000_000;
+
+const fn default_max_pairs() -> u64 {
+    DEFAULT_MAX_PAIRS
+}
+
+#[expect(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde's skip_serializing_if passes the field by reference"
+)]
+const fn is_default_max_pairs(cap: &u64) -> bool {
+    *cap == DEFAULT_MAX_PAIRS
+}
+
 /// The most attempts one permutation may make to draw a pairing that puts
 /// no event before its birth, under [`AfterBirth::RestrictPairings`] and
 /// `research/shuffle/1`, which draws by rejection.
@@ -188,6 +205,16 @@ pub struct EventTest {
     /// The generator and shuffle.
     #[serde(default)]
     pub shuffle: ShuffleVersion,
+    /// The most instants the study may read the sky at, which only a rule
+    /// reading transits asks for ([`DEFAULT_MAX_PAIRS`] unless given). It
+    /// is the cost a study chooses rather than meets (`research.md` §2.3);
+    /// above it the study is refused with the count it would need, and it
+    /// does not change an answer, so it is not registered.
+    #[serde(
+        default = "default_max_pairs",
+        skip_serializing_if = "is_default_max_pairs"
+    )]
+    pub max_pairs: u64,
 }
 
 impl EventTest {
@@ -203,6 +230,7 @@ impl EventTest {
             alpha: None,
             parallelism: Parallelism::default(),
             shuffle: ShuffleVersion::default(),
+            max_pairs: DEFAULT_MAX_PAIRS,
         }
     }
 }

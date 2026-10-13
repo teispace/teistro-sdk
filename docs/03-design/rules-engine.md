@@ -547,6 +547,16 @@ antidotes answer 4, 5 and 0. The rest answer none: v. 12's clause asks
 every benefic to stay out of the kendras, and v. 9's gandanta needs
 ghatikas the corpus does not record.
 
+**A rule can read a transit (2026-10-14).** `{"type": "transit-in-house",
+"planet": …, "houses": […], "from": …}` holds when the graha's sign in a
+sky the evaluator is given (`with_transits`, a `TransitSky`) stands in one
+of the houses counted from the natal sign `from` names. Without a sky it
+holds on nothing, and inside `in-varga` it is refused, a transit having no
+divisional sign. `Rule::reads_transits` lets a caller that has no sky
+refuse such a rule rather than answer it false: the SDK's natal reading
+and the research studies of births do; `research.timed` gives it the sky
+at each instant (C382).
+
 **A rule can name another (2026-09-16).** `{"type": "rule", "key": …}` holds
 when the rule it names holds, read from the set an evaluator is given
 (`with_rules`). That is the design's `ref { rule }`, and it is what lets ch. 9's

@@ -4236,6 +4236,30 @@ test('a study counts and tests its rules over a batch of births', () => {
     () => ctx.research.compare({ births, rules, design }),
     (error) => error.field === 'research.test',
   );
+  // A transit rule is read at each pairing's instant, the sky's cost chosen
+  // with maxPairs: six lives under the age shuffle need the sky at up to 36
+  // instants.
+  const subjects = births.map((birth) => ({ birth, event: birth.instant + 9000.5 }));
+  const saturnReturn = {
+    rules: [
+      {
+        key: 'SATURN_RETURN',
+        category: 'transit',
+        source: { text: 'a test' },
+        conditions: [{ type: 'transit-in-house', planet: 'SATURN', houses: [1], from: 'SATURN' }],
+      },
+    ],
+  };
+  const timed = (test) =>
+    ctx.research.timed({ subjects, rules: saturnReturn, dasha: 'dasha_system.VIMSHOTTARI', shuffle: 'AGES_AT_EVENT', test });
+  assert.deepEqual(
+    timed({ seed: 1, permutations: 19 }).rows.map((row) => row.predicate),
+    ['SATURN_RETURN'],
+  );
+  assert.throws(
+    () => timed({ seed: 1, permutations: 19, maxPairs: 2 }),
+    (error) => error.field === 'test.maxPairs',
+  );
   // An uncertain birth's window is read every step, and the step is part
   // of the study it pre-registers.
   const uncertain = births.map((birth) => ({ ...birth, uncertaintyMinutes: 30 }));

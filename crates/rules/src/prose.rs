@@ -584,6 +584,15 @@ impl Display for Condition {
                     Some(hours) => write!(f, ", within {hours} hours of it"),
                 }
             }
+            Condition::TransitInHouse {
+                planet,
+                houses,
+                from,
+            } => {
+                write!(f, "{} in transit stands in the ", planet.key())?;
+                ordinals(f, houses, OR)?;
+                write!(f, " from the natal {from}")
+            }
             Condition::PlanetInNakshatra {
                 planet,
                 nakshatras,
@@ -1127,6 +1136,10 @@ mod tests {
         (
             r#"{"type": "birth-on-sankranti"}"#,
             "the birth falls on a sankranti",
+        ),
+        (
+            r#"{"type": "transit-in-house", "planet": "SATURN", "houses": [12, 1, 2], "from": "MOON"}"#,
+            "SATURN in transit stands in the 12th, 1st or 2nd from the natal MOON",
         ),
         (
             r#"{"type": "planet-in-nakshatra", "planet": "KETU", "nakshatras": ["MULA"]}"#,

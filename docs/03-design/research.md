@@ -1,7 +1,7 @@
 # `research`: statistics over chart batches
 
-Status: `built`, 2026-10-10 (drafted 2026-10-08; every step of §4 built,
-step 4 for dasha delivery alone: transits wait for a consumer).
+Status: `built`, 2026-10-14 (drafted 2026-10-08; every step of §4 built,
+step 4's transits and `max_pairs` on 2026-10-14).
 Track B row 7 of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `research` row
 ("batch computation, statistics, rule search over sets") and
@@ -264,10 +264,14 @@ Event studies precompute an `N × N` matrix (chart *i* at event *j*'s
 instant, or at `birth_i + age_j`), and a permutation sums along it in
 O(N). Under the event-date shuffle, a transit predicate asks the sky only
 at the N distinct event instants, in one batched request. Under the
-age shuffle there are N² instants. The request was to carry `max_pairs` and
-be refused above it, naming the field, so that cost is chosen rather than
-met. Designed, not built: transits are not built, and dasha delivery asks
-no sky per pair, so no request carries the cap yet.
+age shuffle there are N² instants. The request carries `max_pairs` and is
+refused above it, naming the field, so that cost is chosen rather than
+met. **Built** 2026-10-14: the cap counts the distinct instants the study
+asks the sky at, a place at a time (one place's skies are founded in one
+batched request), and only when a rule reads transits; dasha delivery asks
+no sky per pair, so a study without a transit rule is never refused by it.
+The cap's default, 1 000 000, is left out of the input hash, so naming it
+changes no answer.
 
 ### 2.4 API sketch
 
@@ -359,7 +363,7 @@ pub struct EventTest {
     pub shuffle: EventShuffle,             // EventDates | AgesAtEvent | SelfMatched
     pub referents: Option<Referents>,      // { window_days, step_days }: SelfMatched's only
     pub after_birth: AfterBirth,           // Refuse | RestrictPairings
-    // `max_pairs: u64`: designed, not built (§2.3)
+    pub max_pairs: u64,                    // skies a transit rule may cost (§2.3)
     pub parallelism: Parallelism,
 }
 
@@ -406,7 +410,7 @@ the event's instant is designed, not built.
 | `uncertaintyMinutes` (per birth) | 0 | rounded hours are the field's commonest data error |
 | `Readings` | the rule set's own | the predicate's meaning is part of the request |
 | `parallelism` | `One` | the answer is the same either way |
-| `max_pairs` | a fixed cap | event studies' cost is chosen, not met; designed, not built (§2.3) |
+| `max_pairs` | 1 000 000 | event studies' cost is chosen, not met; counted in distinct sky instants per place (§2.3) |
 
 **Decided when the kernel was built (2026-10-09).** Three knobs of the
 sketch were dropped, and the reasons are kept here:
@@ -466,8 +470,11 @@ a hint where one helps:
 - every stratum a singleton, so nothing can move (`strata`);
 - under `EventDates` with `Refuse`, a shuffled pairing that would put an
   event before a birth, and no permutation possible (`after_birth`);
-- `max_pairs` exceeded (`max_pairs`, with the pair count it would need):
-  designed, not built, with the cap;
+- `max_pairs` exceeded (`test.maxPairs`, with the count of instants it would
+  need, and the hint to raise it to that);
+- a transit rule outside a timed study: a natal reading, `counts`,
+  `compare` and `expected` read a birth at no instant but its own
+  (`rules`);
 - a uniform expectation, which is not offered at all, so `expected`
   takes only the recombined control (C365). The sketch allowed one for a
   predicate on signs alone, but births are seasonal and the Sun's stay in
@@ -560,9 +567,10 @@ uses fixed seeds, so the counts are exact and also golden.
    refused names the birth that refused it.
 4. **`timed`**: dasha delivery first (no sky per pair), then transits
    under the event-date shuffle, then the age shuffle under `max_pairs`
-   (the cap not built).
-   Test 5. **Built** 2026-10-09 for dasha delivery under both shuffles;
-   transits wait for a consumer.
+   Test 5. **Built** 2026-10-09 for dasha delivery under both shuffles,
+   and 2026-10-14 for transits (the condition `transit-in-house`) under
+   every shuffle with the cap: a rule that reads transits holds under the
+   sky at the instant, with no dasha delivery (C382).
 5. **`expected`** with `Recombine`. Test 4. **Built** 2026-10-09.
 6. **The boundary** (`research_json`), the bindings, parity, and a page in
    the docs site's guides with an executed example of a two-group study.

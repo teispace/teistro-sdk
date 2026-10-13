@@ -7260,6 +7260,8 @@ export interface ResearchEventTest {
   readonly level?: number;
   readonly alpha?: number;
   readonly parallelism?: ResearchParallelism;
+  /** The most instants a transit rule may have the sky read at; a study above it is refused. The SDK's default when absent. */
+  readonly maxPairs?: number;
 }
 
 /** One subject of an event study: a birth and the event of its life. */

@@ -57,7 +57,7 @@
 use core::fmt;
 
 use serde::{Serialize, Serializer};
-use teistro_core::catalogue::{Rashi, Tithi};
+use teistro_core::catalogue::{Graha, Rashi, Tithi};
 
 use crate::eval::RuleResult;
 use crate::language::{Body, Condition, House};
@@ -102,6 +102,14 @@ pub enum Resolved {
         degree: Option<SignDegree>,
         /// How far into its sign it stands, degrees.
         in_sign: f64,
+    },
+    /// A graha's sign in the sky in transit.
+    Transit {
+        /// The graha.
+        graha: Graha,
+        /// The sign it stands in; none when the evaluator was given no sky,
+        /// or a sky without it.
+        sign: Option<Rashi>,
     },
     /// The chart's tithi looked up in a signs-by-tithi table.
     Burnt {
@@ -270,6 +278,13 @@ impl fmt::Display for Resolved {
                 reference,
                 body: None,
             } => write!(f, "{reference} is no body"),
+            Resolved::Transit {
+                graha,
+                sign: Some(sign),
+            } => write!(f, "{} in transit stands in {}", graha.key(), sign.key()),
+            Resolved::Transit { graha, sign: None } => {
+                write!(f, "{} has no place in transit", graha.key())
+            }
             Resolved::Sign {
                 reference: reference @ SignRef::House(_),
                 place: Some((sign, _)),

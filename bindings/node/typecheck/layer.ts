@@ -1068,8 +1068,10 @@ function theResearch(ctx: Context): string {
     dasha: 'dasha_system.VIMSHOTTARI',
     shuffle: 'SELF_MATCHED',
     referents: { windowDays: 365.25, stepDays: 30 },
-    test: { seed: 4, permutations: 9 },
+    test: { seed: 4, permutations: 9, maxPairs: 1_000_000 },
   });
+  // @ts-expect-error the cap on a transit rule's skies is a count
+  ctx.research.timed({ subjects, rules, dasha: 'dasha_system.VIMSHOTTARI', shuffle: 'EVENT_DATES', test: { seed: 4, permutations: 9, maxPairs: 'all' } });
   // @ts-expect-error a self-matched study reads referents
   ctx.research.timed({ subjects, rules, dasha: 'dasha_system.VIMSHOTTARI', shuffle: 'SELF_MATCHED', test: { seed: 4, permutations: 9 } });
   // @ts-expect-error a person matched to themselves has no strata

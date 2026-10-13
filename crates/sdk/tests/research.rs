@@ -905,3 +905,114 @@ fn a_self_matched_record_names_its_referents_where_they_are_wrong() {
         );
     }
 }
+
+/// A rule of the sky in transit, read at each event's instant: Saturn back
+/// in his natal sign, the Saturn return near the thirtieth year.
+fn saturn_return() -> teistro::RuleSet {
+    let rule: teistro::rules::Rule = serde_json::from_str(
+        r#"{"key": "SATURN_RETURN", "category": "transit", "source": {"text": "a test"},
+            "conditions": [{"type": "transit-in-house", "planet": "SATURN", "houses": [1], "from": "SATURN"}]}"#,
+    )
+    .unwrap();
+    RuleRequest::default()
+        .with_rules([rule])
+        .rule_set()
+        .unwrap()
+}
+
+#[test]
+fn a_transit_is_read_at_each_event_and_its_cost_is_chosen() {
+    // Events planted at the Saturn return, 10 759 days (his period) after
+    // each birth, give or take two months. Moving the dates among people
+    // breaks it; keeping the ages cannot, since every age is the same
+    // return: the date shuffle finds what the age shuffle by design keeps.
+    let sdk = sdk();
+    let set = saturn_return();
+    let request = template();
+    let mut rng = SplitMix64::new(11);
+    let subjects: Vec<Subject> = births(40, 11)
+        .into_iter()
+        .map(|birth| {
+            let born = 2_433_282.5 + rng.below(30 * 365) as f64 + 0.25;
+            let age = 10_759.0 - 60.0 + rng.below(120) as f64;
+            Subject {
+                birth: Birth {
+                    instant: JulianDay::<Utc>::literal(born),
+                    ..birth
+                },
+                event: JulianDay::<Utc>::literal(born + age),
+            }
+        })
+        .collect();
+    let study = EventStudy::new(
+        &subjects,
+        &request,
+        &set,
+        DashaSystem::Vimshottari,
+        EventShuffle::EventDates,
+    );
+    let test = EventTest {
+        after_birth: AfterBirth::RestrictPairings,
+        ..EventTest::new(5, 999)
+    };
+    let dated = sdk.research().timed(study, None, &test).unwrap().value;
+    let row = &dated.rows[0];
+    let seen = row.expected.unwrap();
+    // Most, not all: a natal Saturn near a sign's edge can stand a sign
+    // over two months either side of his exact return.
+    assert!(seen.observed > 0.6, "{row:?}");
+    assert!(seen.expected < 0.3, "{row:?}");
+    assert!(row.p.value < 0.01, "{row:?}");
+    let aged = sdk
+        .research()
+        .timed(study.shuffled(EventShuffle::AgesAtEvent), None, &test)
+        .unwrap()
+        .value;
+    let kept = aged.rows[0].expected.unwrap();
+    assert_eq!(kept.observed, seen.observed);
+    assert!((kept.observed - kept.expected).abs() < 0.1, "{kept:?}");
+
+    // The age shuffle reads the sky at every pairing's instant, up to 40²
+    // of them (fewer where two pairings fall on one instant); a cap below
+    // that is refused with the count it would need.
+    let capped = EventTest {
+        max_pairs: 1_000,
+        ..test.clone()
+    };
+    let refused = sdk
+        .research()
+        .timed(study.shuffled(EventShuffle::AgesAtEvent), None, &capped)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("test.maxPairs"));
+    let needed: u64 = refused
+        .message
+        .split_once("at ")
+        .and_then(|(_, rest)| rest.split_once(" instants"))
+        .and_then(|(count, _)| count.parse().ok())
+        .unwrap();
+    assert!((1_001..=1_600).contains(&needed), "{}", refused.message);
+    // The date shuffle reads it at each event a place at a time: 40 events
+    // at each of three places at most.
+    sdk.research().timed(study, None, &capped).unwrap();
+    // The cap does not change an answer, so it is not registered.
+    let again = sdk.research().timed(study, None, &capped).unwrap();
+    let first = sdk.research().timed(study, None, &test).unwrap();
+    assert_eq!(again.provenance.input_hash, first.provenance.input_hash);
+
+    // Where no instant is read, a transit rule is refused rather than
+    // silently absent.
+    let births: Vec<Birth> = subjects.iter().map(|s| s.birth).collect();
+    let natal = sdk
+        .chart()
+        .readings_with_rules(&[births[0].instant], &request, &set)
+        .unwrap_err();
+    assert_eq!(natal.field(), Some("rules"));
+    let counted = sdk
+        .research()
+        .counts(
+            Study::new(&births, &request, &set),
+            &Design::new(vec![0; births.len()]),
+        )
+        .unwrap_err();
+    assert_eq!(counted.field(), Some("rules"));
+}

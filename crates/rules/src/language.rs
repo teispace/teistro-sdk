@@ -275,10 +275,10 @@ fn is_lagna(from: &SignRef) -> bool {
 /// ```
 /// use teistro_rules::language::KINDS;
 ///
-/// assert_eq!(KINDS.len(), 64);
+/// assert_eq!(KINDS.len(), 65);
 /// assert!(KINDS.contains(&"planet-in-kendra"));
 /// ```
-pub const KINDS: [&str; 64] = [
+pub const KINDS: [&str; 65] = [
     "and",
     "or",
     "not",
@@ -323,6 +323,7 @@ pub const KINDS: [&str; 64] = [
     "panchanga-karana",
     "birth-during-eclipse",
     "birth-on-sankranti",
+    "transit-in-house",
     "planet-in-nakshatra",
     "same-nakshatra",
     "planet-strong",
@@ -862,6 +863,21 @@ pub enum Condition {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         window_hours: Option<f64>,
     },
+    /// A graha in transit stands in one of the houses counted from a natal
+    /// sign: Saturn in the twelfth, first or second from the natal Moon is
+    /// sade sati, and gochar is counted from the Moon (Phaladeepika ch. 26
+    /// v. 1). It reads the sky at an instant an evaluator was given
+    /// ([`Evaluator::with_transits`](crate::Evaluator::with_transits)) and
+    /// never holds without one; the transiting graha is not a natal body,
+    /// so it adds no participant.
+    TransitInHouse {
+        /// The graha in transit.
+        planet: Graha,
+        /// Which houses, counted from `from`.
+        houses: Vec<House>,
+        /// The natal sign counted from.
+        from: SignRef,
+    },
 }
 
 /// A natural relationship between two grahas.
@@ -1078,6 +1094,7 @@ impl Condition {
             Condition::PanchangaKarana { .. } => "panchanga-karana",
             Condition::BirthDuringEclipse { .. } => "birth-during-eclipse",
             Condition::BirthOnSankranti { .. } => "birth-on-sankranti",
+            Condition::TransitInHouse { .. } => "transit-in-house",
             Condition::PlanetInNakshatra { .. } => "planet-in-nakshatra",
             Condition::SameNakshatra { .. } => "same-nakshatra",
             Condition::PlanetStrong { .. } => "planet-strong",
@@ -1162,12 +1179,14 @@ impl Condition {
     }
 
     /// Whether it reads a body's longitude, which a divisional chart does not
-    /// move: such a condition is refused inside an `in-varga`.
+    /// move, or the sky in transit, which no divisional chart holds: such a
+    /// condition is refused inside an `in-varga`.
     #[must_use]
     pub const fn reads_a_longitude(&self) -> bool {
         matches!(
             self,
             Condition::PlanetAtTableDegree { .. }
+                | Condition::TransitInHouse { .. }
                 | Condition::PlanetAtGandanta { .. }
                 | Condition::PlanetInDegrees { .. }
                 | Condition::PlanetConjunct {
@@ -1205,6 +1224,13 @@ impl Condition {
                 | Condition::PlanetStrongerThan { .. }
                 | Condition::Argala { .. }
         )
+    }
+
+    /// Whether this condition itself reads the sky in transit, so a caller
+    /// knows to give the evaluator one; without it the condition is false.
+    #[must_use]
+    pub const fn reads_transits(&self) -> bool {
+        matches!(self, Condition::TransitInHouse { .. })
     }
 
     /// Whether this condition itself reads the chart's panchanga.

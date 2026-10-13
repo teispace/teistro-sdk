@@ -6325,9 +6325,10 @@ export class ResearchArea extends Area {
   /**
    * Whether each rule is delivered by a dasha's running periods at the
    * subjects' own events more (or less) often than at events shuffled
-   * among them.
+   * among them; a rule that reads transits holds under the sky at each
+   * instant instead, and `test.maxPairs` caps how many instants that is.
    *
-   * @param {object} request the `subjects`, each `{ birth, event }` with the event a Julian day in UTC; `rules`; `dasha`, a dasha system's key; `shuffle`, `'EVENT_DATES'`, `'AGES_AT_EVENT'` or `'SELF_MATCHED'`, which has no default because each keeps different margins; under `'SELF_MATCHED'`, `referents` `{ windowDays, stepDays }` in place of `strata`; `test` `{ seed, permutations, alternative, afterBirth, level, alpha, parallelism }`; and optionally `depth` (2) and `strata`
+   * @param {object} request the `subjects`, each `{ birth, event }` with the event a Julian day in UTC; `rules`; `dasha`, a dasha system's key; `shuffle`, `'EVENT_DATES'`, `'AGES_AT_EVENT'` or `'SELF_MATCHED'`, which has no default because each keeps different margins; under `'SELF_MATCHED'`, `referents` `{ windowDays, stepDays }` in place of `strata`; `test` `{ seed, permutations, alternative, afterBirth, level, alpha, parallelism, maxPairs }`; and optionally `depth` (2) and `strata`
    * @returns {object}
    */
   timed(request) {

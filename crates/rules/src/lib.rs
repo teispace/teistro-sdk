@@ -55,7 +55,7 @@ pub mod trace;
 pub use chart::{
     AspectGathering, Benefics, Bhaga, Conjunction, DignityMatch, Eclipse, EightKarakas, Gathering,
     Houses, Limb, NodeMotion, NodeSides, Panchanga, Placement, PointAt, Readings, RuleChart, Span,
-    Spans, StrengthMeasure, Strengths, Upapada, VargaSigns,
+    Spans, StrengthMeasure, Strengths, TransitSky, Upapada, VargaSigns,
 };
 pub use eval::{Evaluator, Found, Participants, RuleResult};
 pub use house::{COMPOSITIONS, Composition, Held, HouseReading, Kind};
