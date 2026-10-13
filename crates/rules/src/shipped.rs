@@ -1,8 +1,8 @@
 //! The rules the SDK ships as data (`03-design/rules-engine.md`).
 //!
 //! [`arishtas`] holds the evils at birth and their antidotes: BPHS chs. 9
-//! and 10, Brihat Jataka ch. 6, Saravali chs. 10 to 12 and Jataka Parijata
-//! ch. 4.
+//! and 10, Brihat Jataka ch. 6, Saravali chs. 10 to 12, Jataka Parijata
+//! ch. 4 and Phaladeepika ch. 13.
 //! [`gandantas`] holds the three gandantas of BPHS ch. 92 and its Abhukta
 //! Moola, the SDK's first rules read from a text rather than mirrored from an
 //! implementation. [`computed_yogas`] holds the eight yogas it computes in code, the Neecha
@@ -50,6 +50,7 @@ const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
 const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
 /// Jataka Parijata ch. 4's evils at birth, their years and their antidotes.
 const PARIJATA: &str = include_str!("../rules/classical-parijata.json");
+const PHALADEEPIKA: &str = include_str!("../rules/classical-phaladeepika-arishta.json");
 /// The Nabhasa yogas of BPHS ch. 35.
 const NABHASA: &str = include_str!("../rules/classical-nabhasa.json");
 /// The lunar yogas of BPHS ch. 37 and the solar yogas of ch. 38.
@@ -131,7 +132,9 @@ static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(BALARISHTA));
     rules.append(&mut read(SARAVALI));
     rules.append(&mut read(PARIJATA));
-    // BPHS ch. 9 v. 13's birth "in a gandanta" is ch. 92's, named by key.
+    rules.append(&mut read(PHALADEEPIKA));
+    // The birth "in a gandanta" of BPHS ch. 9 v. 13 and Phaladeepika
+    // ch. 13 v. 9 is ch. 92's, named by key.
     link(&mut rules, &GANDANTAS);
     rules
 });
@@ -274,7 +277,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (57, 3));
+        assert_eq!((strength, points), (59, 3));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -345,7 +348,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1531);
+        assert_eq!(rules.len(), 1543);
         for rule in &rules {
             let rank = rule
                 .source

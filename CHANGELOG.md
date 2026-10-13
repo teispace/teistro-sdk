@@ -323,6 +323,15 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**Phaladeepika ch. 13's evils at birth.** **Numbers:** twelve rules
+join the arishta set (1543 shipped); no other rule's answer moved. Nine
+evils from vv. 9, 10 and 12 and three antidotes from vv. 21, 23 and 24,
+each evil naming the three and BPHS's strong Jupiter in the lagna, which
+v. 22 repeats: a birth in a gandanta, the Moon at her mrityu bhaga in a
+kendra or the eighth, and v. 12's seven figures, each held only while no
+benefic stands in a kendra or joins or aspects the lagna, the Moon or the
+figure's malefics (cruxes C379 to C381).
+
 **Mrityu Bhaga and Dagdha Rashi answer through the SDK.** **Numbers:**
 the two shipped doshas that read a table held on no chart through the SDK,
 in Rust or any binding, because its evaluator was never given the tables

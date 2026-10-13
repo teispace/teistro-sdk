@@ -507,6 +507,46 @@ and says so. They answer 1 and 19 of the corpus's charts; neither
 cancels an evil no other antidote already did, so the cancelled count
 stays 446.
 
+**Phaladeepika ch. 13's evils, built (2026-10-14).** Read from V.
+Subrahmanya Sastri's 1937 translation, its Sanskrit checked in Gopesh Kumar
+Ojha's 1975 commentary, as `classical-phaladeepika-arishta.json`: nine
+evils and three antidotes, each evil naming the three and v. 22's strong
+Jupiter in the lagna, which is BPHS ch. 10 v. 3 and ships once.
+- **v. 9:** a birth in a gandanta, which the translator glosses with ch.
+  1 v. 4, the closing part of Scorpio, Pisces and Cancer. It names BPHS
+  ch. 92's nakshatra and lagna gandantas, which bound the junction in
+  ghatikas, linked in as BPHS's twilight birth is. The verse's sign
+  junction joined by malefics, and its four junctions, give no span and
+  are not built (C381).
+- **vv. 9 and 10:** the Moon at her mrityu bhaga in a kendra or the
+  eighth. v. 10's row is `MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA`'s. v. 11's
+  second row, "by some", names no body and is not built (C380).
+- **v. 12:** seven figures under one closing clause (C379). Sastri renders
+  that clause as an eighth figure, "no benefic occupies or aspects a
+  kendra", and that reading is one no sky allows: Jupiter in any house
+  stands in a kendra or aspects one by his fifth, seventh or ninth. So it
+  is read as Ojha reads it, the condition of all seven: no benefic in a
+  kendra, and none joining or aspecting the lagna, the Moon or a malefic
+  standing where the figure puts it.
+- **vv. 21, 23 and 24, the antidotes:**
+  - a very strong lagna lord in a kendra, aspected by benefics and by no
+    malefic;
+  - the waxing Moon in a kendra, a trikona or the eleventh, in a sign or
+    navamsha of the Sun, the Moon or Jupiter;
+  - no malefic in the first, fourth, fifth, seventh, eighth, ninth or
+    tenth, with the lagna lord and Jupiter in kendras.
+
+Answering this needed the SDK's evaluator to carry the shipped tables,
+which it never had: through the SDK, Mrityu Bhaga and Dagdha Rashi held
+on no chart (fixed the same day, `crates/sdk/tests/rules.rs`).
+
+Over the corpus, the Moon at a mrityu bhaga answers 5 charts, and two of
+v. 12's figures answer one each (malefics in the lagna and the seventh,
+and the weak Moon in a dusthana); none of the three is cancelled. The
+antidotes answer 4, 5 and 0. The rest answer none: v. 12's clause asks
+every benefic to stay out of the kendras, and v. 9's gandanta needs
+ghatikas the corpus does not record.
+
 **A rule can name another (2026-09-16).** `{"type": "rule", "key": …}` holds
 when the rule it names holds, read from the set an evaluator is given
 (`with_rules`). That is the design's `ref { rule }`, and it is what lets ch. 9's
