@@ -681,7 +681,10 @@ pub fn ascii_decimal(value: f64, min: usize, max: usize) -> String {
 
 /// The engine over a set of locales.
 pub struct Intl {
-    pub(crate) locales: BTreeMap<String, LocaleSource>,
+    /// Shared, so engines over the same decoded sources hold one copy; a
+    /// locale a runtime pack changes is copied for this engine alone
+    /// (`Arc::make_mut`).
+    pub(crate) locales: BTreeMap<String, Arc<LocaleSource>>,
     pub(crate) plurals: BTreeMap<String, Plurals>,
     pub(crate) current: String,
     /// Messages parsed once, by locale and key; parsing costs four times a
@@ -767,6 +770,24 @@ impl Intl {
     ///
     /// A locale tag ICU4X cannot parse or has no plural rules for.
     pub fn new(locales: BTreeMap<String, LocaleSource>) -> Result<Intl, IntlError> {
+        Intl::shared(
+            locales
+                .into_iter()
+                .map(|(tag, locale)| (tag, Arc::new(locale)))
+                .collect(),
+        )
+    }
+
+    /// An engine over sources decoded once and shared: what many engines
+    /// over the same packs build from, each at the cost of the plural
+    /// rules rather than of decoding every message again. A locale one
+    /// engine changes ([`Intl::load_pack`]) is copied for it alone, so
+    /// the others never see the change.
+    ///
+    /// # Errors
+    ///
+    /// As [`Intl::new`].
+    pub fn shared(locales: BTreeMap<String, Arc<LocaleSource>>) -> Result<Intl, IntlError> {
         let mut plurals = BTreeMap::new();
         for tag in locales.keys() {
             plurals.insert(tag.clone(), plurals_for(tag)?);
@@ -868,14 +889,14 @@ impl Intl {
 
     /// The locales loaded, sorted.
     pub fn locales(&self) -> impl Iterator<Item = &LocaleSource> {
-        self.locales.values()
+        self.locales.values().map(Arc::as_ref)
     }
 
     /// The resolution chain from a locale: itself, then its declared
     /// fallbacks that are loaded.
     #[must_use]
     pub fn chain_from(&self, tag: &str) -> Vec<&LocaleSource> {
-        let Some(first) = self.locales.get(tag) else {
+        let Some(first) = self.locales.get(tag).map(Arc::as_ref) else {
             return Vec::new();
         };
         let mut chain = vec![first];
@@ -884,7 +905,7 @@ impl Intl {
                 .meta
                 .fallback
                 .iter()
-                .filter_map(|t| self.locales.get(t)),
+                .filter_map(|t| self.locales.get(t).map(Arc::as_ref)),
         );
         chain
     }
