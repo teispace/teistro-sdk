@@ -347,7 +347,7 @@ pub use teistro_hellenistic::{
 #[cfg(feature = "western")]
 pub use crate::progressed::{
     ContactRequest, Directed, DirectedPlanet, DirectionArc, Progressed, ProgressedContact,
-    ProgressionRequest,
+    ProgressedParallel, ProgressionRequest,
 };
 #[cfg(feature = "western")]
 pub use crate::progressions_request::{ContactWindow, Progressions, ProgressionsRequest};

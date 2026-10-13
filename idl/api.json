@@ -19926,6 +19926,16 @@
               "name": "contacts_asked",
               "scalar": "u8",
               "doc": "1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none."
+            },
+            {
+              "name": "parallel_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `progressed_parallels` section belong to this chart; 0 when the record's `contacts` named no `parallels`."
+            },
+            {
+              "name": "parallels_asked",
+              "scalar": "u8",
+              "doc": "1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none."
             }
           ]
         },
@@ -20002,7 +20012,7 @@
             {
               "name": "to_lagna",
               "scalar": "u8",
-              "doc": "1 when the radical point is the lagna, 0 when it is a radical graha."
+              "doc": "1 when the radical point is the lagna, 0 otherwise."
             },
             {
               "name": "to_graha",
@@ -21543,6 +21553,60 @@
               "name": "greatest",
               "scalar": "f64",
               "doc": "The eclipse's greatest moment, a UT1 Julian day; NaN unless `eclipse` is `LUNAR` or `SOLAR`."
+            }
+          ]
+        },
+        {
+          "id": 125,
+          "name": "progressed_parallels",
+          "doc": "Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "closest",
+              "scalar": "f64",
+              "doc": "The first instant of life the two distances stood closest, a Julian day (UTC): the exact parallel, when the span reaches it."
+            },
+            {
+              "name": "enters",
+              "scalar": "f64",
+              "doc": "The instant of life it came within the orb, a Julian day (UTC); NaN when it already stood within the orb at the window's start."
+            },
+            {
+              "name": "leaves",
+              "scalar": "f64",
+              "doc": "The instant of life it left the orb, a Julian day (UTC); NaN when it still stood within it at the window's end."
+            },
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The progressed planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "to_lagna",
+              "scalar": "u8",
+              "doc": "1 when the radical point is the lagna, 0 otherwise."
+            },
+            {
+              "name": "to_graha",
+              "scalar": "u16",
+              "doc": "The radical graha (a `Graha` id); 0 for the lagna or the midheaven."
+            },
+            {
+              "name": "to_midheaven",
+              "scalar": "u8",
+              "doc": "1 when the radical point is the midheaven, 0 otherwise."
+            },
+            {
+              "name": "closest_deg",
+              "scalar": "f64",
+              "doc": "How far apart the two distances from the equator stood at `closest`, degrees."
+            },
+            {
+              "name": "contrary",
+              "scalar": "u8",
+              "doc": "1 when the two stood on opposite sides of the equator at `closest`: the contra-parallel, which Leo counts a parallel."
             }
           ]
         }

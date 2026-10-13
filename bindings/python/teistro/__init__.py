@@ -532,6 +532,7 @@ __all__ = [
     "Directed",
     "DirectedPlanet",
     "ProgressedContact",
+    "ProgressedParallel",
     # The Western aspects.
     "WesternAspectRequest",
     "WesternAspectRow",
@@ -4699,6 +4700,7 @@ ProgressionContacts = TypedDict(
         "grahas": Sequence[Union[Graha, str]],
         "points": Sequence[Union["NatalPoint", Graha, str]],
         "aspects": Sequence[int],
+        "parallels": "ParallelRequest",
     },
     total=False,
 )
@@ -4706,8 +4708,9 @@ ProgressionContacts.__doc__ = """A window of life to find a birth's
 progressed contacts in: `from` and `to`, UTC Julian days, and optionally the
 progressed `grahas` (the seven by default), the radical `points` (the seven,
 the lagna and the midheaven) and the `aspects` (whole degrees to 180; Leo's table, p. 48),
-spelled as a `HitRequest` spells them. A functional `TypedDict` because
-`from` is a keyword.
+spelled as a `HitRequest` spells them, and `parallels`, an orb (`{}` for
+Leo's 1°) asking the parallels of declination over the same window. A
+functional `TypedDict` because `from` is a keyword.
 """
 
 
@@ -4811,10 +4814,38 @@ class ProgressedContact:
 
 
 @dataclass(frozen=True)
+class ProgressedParallel:
+    """A stretch of life a progressed planet stands within the orb of a
+    radical point's distance from the equator, on either side of it (Leo,
+    *The Progressed Horoscope*, p. 34)."""
+
+    graha: Graha
+    to: "NatalPoint"
+    enters: Optional[float]
+    """The instant of life it came within the orb, a UTC Julian day;
+    `None` when it already stood within it at the window's start."""
+
+    leaves: Optional[float]
+    """The instant of life it left the orb; `None` when it still stood
+    within it at the window's end."""
+
+    closest: float
+    """The first instant of life the two distances stood closest: the
+    exact parallel, when the span reaches it."""
+
+    closest_deg: float
+    """How far apart the two distances stood then, degrees."""
+
+    contrary: bool
+    """Whether the two stood on opposite sides of the equator then."""
+
+
+@dataclass(frozen=True)
 class Progressions:
     """A birth read through its progressions
     (`03-design/western-progressions.md`): `progressed` and `directed` are
-    `None` without `at`, `contacts` `None` without a window.
+    `None` without `at`, `contacts` `None` without a window, and
+    `parallels` `None` unless the window asked for them.
 
     >>> # chart = ctx.chart.found(..., progressions={"at": 2460676.5})
     >>> # moon = next(g for g in chart.progressions.progressed.grahas if g.graha is Graha.MOON)
@@ -4823,6 +4854,7 @@ class Progressions:
     progressed: Optional[Progressed]
     directed: Optional[Directed]
     contacts: Optional[Tuple[ProgressedContact, ...]]
+    parallels: Optional[Tuple[ProgressedParallel, ...]] = None
 
 
 class WesternAspectRequest(TypedDict, total=False):
@@ -10796,6 +10828,11 @@ def _poruthams_in(p: Poruthams, r: PoruthamRows, charts: int) -> list[Porutham]:
     return matched
 
 
+def _number_or_none(value: float) -> Optional[float]:
+    """A number a column carries, or `None` where it carries NaN for none."""
+    return None if math.isnan(value) else value
+
+
 def _point_at(to_lagna: int, to_graha: int, to_midheaven: int = 0) -> NatalPoint:
     """A natal point from a `to_lagna`, a `to_graha` and a `to_midheaven`
     column's cells; a synastry's columns carry no midheaven."""
@@ -14141,19 +14178,16 @@ class ChartBatch:
         for."""
         c = self.decoded.moment
 
-        def jd(value: float) -> Optional[float]:
-            return None if math.isnan(value) else value
-
         return [
             Moment(
                 rising=RisingSign(
                     sign=Rashi(c.sign[chart]),
-                    rose=jd(c.rose[chart]),
-                    sets=jd(c.sets[chart]),
+                    rose=_number_or_none(c.rose[chart]),
+                    sets=_number_or_none(c.sets[chart]),
                 ),
                 eclipse=MomentEclipse(
                     kind=BirthEclipse(c.eclipse[chart]),
-                    greatest=jd(c.greatest[chart]),
+                    greatest=_number_or_none(c.greatest[chart]),
                 ),
             )
             for chart in range(c.length)
@@ -14308,6 +14342,7 @@ class ChartBatch:
         g = self.decoded.progressed_grahas
         d = self.decoded.directed_grahas
         c = self.decoded.progressed_contacts
+        r = self.decoded.progressed_parallels
         charts = len(self.decoded.cast.instant)
         if p.length == 0:
             return []
@@ -14318,14 +14353,17 @@ class ChartBatch:
             or d.length != g.length
             or g.length != per_chart * charts
             or c.length != sum(p.contact_count)
+            or r.length != sum(p.parallel_count)
         ):
             raise TeistroError(
                 Status.INTERNAL,
                 f"progressions has {p.length} rows, progressed_grahas {g.length},"
-                f" directed_grahas {d.length} and progressed_contacts {c.length} for {charts} charts",
+                f" directed_grahas {d.length}, progressed_contacts {c.length} and"
+                f" progressed_parallels {r.length} for {charts} charts",
             )
         read: list[Progressions] = []
         contact = 0
+        parallel = 0
         for k in range(charts):
             planets = range(k * per_chart, (k + 1) * per_chart)
             contacts: Optional[Tuple[ProgressedContact, ...]] = None
@@ -14343,6 +14381,21 @@ class ChartBatch:
                     for at in rows
                 )
             contact += p.contact_count[k]
+            parallels: Optional[Tuple[ProgressedParallel, ...]] = None
+            if p.parallels_asked[k] == 1:
+                parallels = tuple(
+                    ProgressedParallel(
+                        graha=Graha(r.graha[at]),
+                        to=_point_at(r.to_lagna[at], r.to_graha[at], r.to_midheaven[at]),
+                        enters=_number_or_none(r.enters[at]),
+                        leaves=_number_or_none(r.leaves[at]),
+                        closest=r.closest[at],
+                        closest_deg=r.closest_deg[at],
+                        contrary=r.contrary[at] == 1,
+                    )
+                    for at in range(parallel, parallel + p.parallel_count[k])
+                )
+            parallel += p.parallel_count[k]
             read.append(
                 Progressions(
                     progressed=Progressed(
@@ -14375,6 +14428,7 @@ class ChartBatch:
                     if asked
                     else None,
                     contacts=contacts,
+                    parallels=parallels,
                 )
             )
         return read
@@ -15088,9 +15142,6 @@ class ChartBatch:
                 f" whose counts sum to {sum(counts)}; it is a row a chart and every chart's visits",
             )
 
-        def bound(jd: float) -> Optional[float]:
-            return None if math.isnan(jd) else jd
-
         def report(chart: int, start: int) -> SadeSatiReport:
             # A period's rows are adjacent and share `period`; a spell's are
             # the run of one house inside it.
@@ -15101,7 +15152,7 @@ class ChartBatch:
                 spells = periods[v.period[row]]
                 if not spells or spells[-1][0] != v.house[row]:
                     spells.append((v.house[row], []))
-                spells[-1][1].append(SadeSatiVisit(from_=bound(v.from_[row]), to=bound(v.to[row])))
+                spells[-1][1].append(SadeSatiVisit(from_=_number_or_none(v.from_[row]), to=_number_or_none(v.to[row])))
 
             def spell(house: int, visits: List[SadeSatiVisit]) -> SadeSatiSpell:
                 return SadeSatiSpell(house=house, visits=tuple(visits))

@@ -323,6 +323,17 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**Progressions read the parallels of declination.** **Numbers:** none
+moved; nothing is read unless asked. A contact window's `parallels`
+(`{"orbDeg": 1}`, or `{}` for Leo's degree) asks for every stretch of
+life a progressed planet stands within the orb of a radical point's
+distance from the equator, on either side of it, with when it came
+within the orb, when it left and the instant the two stood closest
+(*The Progressed Horoscope*, pp. 33–34). Leo's map for 1907 reads as he
+prints it: Jupiter and Mercury in force as his year opens, the Moon
+coming to Uranus's parallel just after. `progressed_parallels` carries
+them at the C boundary, and every binding reads them.
+
 **The radical midheaven is a natal point.** **Numbers:** a request for
 progressed contacts that names no points now also finds the contacts to
 the lagna and the midheaven, so Leo's lunar year reads his trine to the

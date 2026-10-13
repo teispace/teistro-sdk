@@ -648,6 +648,33 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart's progressions carry their parallels when the window asks them", () -> {
+            try (Context leo = teistro.context(ContextOptions.builder().profile("western-tropical-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer london = new Observer(new Longitude(0), new Latitude(51.5), new Altitude(0));
+                double birth = 2_400_629.742_361_111;
+                // Jupiter "has moved to the parallel of the radical Sun" (p. 33):
+                // within Leo's degree as his year opens, and separating.
+                Map<String, Object> window = new java.util.HashMap<>(Map.of("from", 2_417_523.5, "to", 2_417_888.5,
+                        "grahas", List.of("JUPITER"), "points", List.of(Map.of("point", "GRAHA", "graha", "SUN"))));
+                Progressions plain = leo.chart().found(birth, london, 0, ChartOptions.builder()
+                        .progressions(ProgressionsRequest.of(Map.of("contacts", window))).build())
+                        .progressions().orElseThrow();
+                check(plain.parallels() == null, "no parallels unless the window asks them");
+                window.put("parallels", Map.of());
+                Progressions read = leo.chart().found(birth, london, 0, ChartOptions.builder()
+                        .progressions(ProgressionsRequest.of(Map.of("contacts", window))).build())
+                        .progressions().orElseThrow();
+                same(1, read.parallels().size(), "one parallel");
+                ProgressedParallel parallel = read.parallels().get(0);
+                same(Graha.JUPITER, parallel.graha(), "the progressed planet");
+                same(new NatalPoint("GRAHA", Graha.SUN), parallel.to(), "the radical Sun");
+                check(parallel.enters() == null, "in force as the window opens");
+                same(2_417_523.5, parallel.closest(), "closest as the window opens");
+                check(!parallel.contrary() && parallel.closestDeg() < 1, "within the degree, the same side");
+            }
+        });
+
         tests.put("a chart founded under KP's ayanamsha carries its KP reading", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("kp-default")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

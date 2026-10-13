@@ -6629,7 +6629,8 @@ fn a_chart_request_answers_the_progressions() {
     ];
     let base = chart_request(&instants, (51.5, -0.12), 0);
     let asked_text = r#"{"at": 2430000.5, "year": "NOON_SIDEREAL_TIME", "angles": "SOLAR_ARC_LONGITUDE",
-        "contacts": {"from": 2425000.5, "to": 2428000.5, "grahas": ["MOON", "SUN"], "points": ["LAGNA", "MARS", "VENUS"]}}"#;
+        "contacts": {"from": 2425000.5, "to": 2428000.5, "grahas": ["MOON", "SUN"], "points": ["LAGNA", "MARS", "VENUS"],
+                     "parallels": {"orbDeg": 1.5}}}"#;
     let asked_json = CString::new(asked_text).unwrap();
     let bytes = chart_blob(
         &ctx,
@@ -6747,6 +6748,72 @@ fn a_chart_request_answers_the_progressions() {
     assert_eq!(
         ints("progressions", "contacts_asked"),
         vec![1; instants.len()]
+    );
+
+    // The parallels, ragged the same way.
+    assert_eq!(
+        ints("progressions", "parallels_asked"),
+        vec![1; instants.len()]
+    );
+    assert_eq!(
+        ints("progressions", "parallel_count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.parallels.as_ref().unwrap().len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let parallels: Vec<&teistro::ProgressedParallel> = expected
+        .iter()
+        .flat_map(|one| one.parallels.as_deref().unwrap())
+        .collect();
+    assert!(!parallels.is_empty(), "the window holds parallels");
+    let parallel_bits = |read: &dyn Fn(&teistro::ProgressedParallel) -> f64| -> Vec<u64> {
+        parallels.iter().map(|row| read(row).to_bits()).collect()
+    };
+    let instant_or_nan = |at: Option<teistro::quantity::JulianDay<teistro::quantity::Utc>>| {
+        at.map_or(f64::NAN, teistro::quantity::JulianDay::get)
+    };
+    assert_eq!(
+        bits("progressed_parallels", "closest"),
+        parallel_bits(&|row| row.closest.get())
+    );
+    assert_eq!(
+        bits("progressed_parallels", "enters"),
+        parallel_bits(&|row| instant_or_nan(row.enters))
+    );
+    assert_eq!(
+        bits("progressed_parallels", "leaves"),
+        parallel_bits(&|row| instant_or_nan(row.leaves))
+    );
+    assert_eq!(
+        bits("progressed_parallels", "closest_deg"),
+        parallel_bits(&|row| row.closest_deg)
+    );
+    let parallel_ints = |read: &dyn Fn(&teistro::ProgressedParallel) -> i64| -> Vec<i64> {
+        parallels.iter().map(|row| read(row)).collect()
+    };
+    assert_eq!(
+        ints("progressed_parallels", "graha"),
+        parallel_ints(&|row| i64::from(row.graha.id()))
+    );
+    assert_eq!(
+        ints("progressed_parallels", "to_lagna"),
+        parallel_ints(&|row| i64::from(row.to == teistro::NatalPoint::Lagna))
+    );
+    assert_eq!(
+        ints("progressed_parallels", "to_graha"),
+        parallel_ints(&|row| match row.to {
+            teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
+            teistro::NatalPoint::Lagna | teistro::NatalPoint::Midheaven => 0,
+        })
+    );
+    assert_eq!(
+        ints("progressed_parallels", "to_midheaven"),
+        parallel_ints(&|row| i64::from(row.to == teistro::NatalPoint::Midheaven))
+    );
+    assert_eq!(
+        ints("progressed_parallels", "contrary"),
+        parallel_ints(&|row| i64::from(row.contrary))
     );
 
     // The planets, the same number a chart: every section asked, so the

@@ -10,18 +10,22 @@ use std::borrow::Cow;
 use teistro_astro::houses::{Input, houses};
 use teistro_astro::sky::{Spherical, ecliptic_to_equatorial};
 use teistro_chart::OuterPlanets;
-use teistro_chart::foundation::ChartAngles;
+use teistro_chart::foundation::{ChartAngles, ChartFoundation};
+use teistro_core::angle::declination_deg;
 use teistro_core::catalogue::{Graha, HouseSystem};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::time::UtcOffset;
 use teistro_gochar::hits::{HitEvent, Motion, NatalPoint};
 use teistro_serial::Document;
 use teistro_western::{
-    AngleMethod, ArcMeasure, Meridian, Progression, SunAt, YearMeasure, progressed_armc,
+    AngleMethod, ArcMeasure, Meridian, ParallelRequest, Progression, SpanSearch, SunAt,
+    YearMeasure, parallel_spans, progressed_armc,
 };
 
 use crate::area::ChartArea;
+use crate::declinations::Declinations;
 use crate::hit_request::{HitKind, HitRequest};
 use crate::reading::ChartRequest;
 
@@ -198,6 +202,10 @@ pub struct ContactRequest {
     /// The aspects' angles, whole degrees from 0 to 180: Leo's table
     /// unless asked.
     pub aspects: Vec<u16>,
+    /// The parallels of declination, read by
+    /// [`ChartArea::progressed_parallels`] under this orb; none unless
+    /// asked, and that reading takes Leo's 1° then.
+    pub parallels: Option<ParallelRequest>,
 }
 
 impl ContactRequest {
@@ -240,6 +248,16 @@ impl ContactRequest {
             ..self
         }
     }
+
+    /// The same request asking the parallels of declination too, under
+    /// this orb.
+    #[must_use]
+    pub fn with_parallels(self, parallels: ParallelRequest) -> ContactRequest {
+        ContactRequest {
+            parallels: Some(parallels),
+            ..self
+        }
+    }
 }
 
 impl ContactRequest {
@@ -265,6 +283,7 @@ impl Default for ContactRequest {
                 .chain([NatalPoint::Lagna, NatalPoint::Midheaven])
                 .collect(),
             aspects: ContactRequest::LEO_ASPECTS.to_vec(),
+            parallels: None,
         }
     }
 }
@@ -286,6 +305,36 @@ pub struct ProgressedContact {
     pub angle: u16,
     /// Which way the progressed planet was moving.
     pub motion: Motion,
+}
+
+/// One parallel of declination: a progressed planet within the orb of a
+/// radical point's distance from the equator, on either side of it, over a
+/// stretch of life. Leo keeps parallels "as a class quite apart from
+/// aspects": they "remain in force for a period of several years" and
+/// count only "within one degree of completion" (*The Progressed
+/// Horoscope*, p. 34).
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct ProgressedParallel {
+    /// The progressed planet.
+    pub graha: Graha,
+    /// The radical point.
+    pub to: NatalPoint,
+    /// The instant of life it came within the orb; none when it already
+    /// stood within it at the window's start.
+    pub enters: Option<JulianDay<Utc>>,
+    /// The instant of life it left the orb; none when it still stood
+    /// within it at the window's end.
+    pub leaves: Option<JulianDay<Utc>>,
+    /// The first instant of life the two distances stood closest: the
+    /// exact parallel, when the span reaches it.
+    pub closest: JulianDay<Utc>,
+    /// How far apart the two distances stood then, degrees.
+    pub closest_deg: f64,
+    /// Whether the two stood on opposite sides of the equator then: the
+    /// contra-parallel, which Leo counts a parallel ("it is unnecessary to
+    /// add N. or S.", p. 34).
+    pub contrary: bool,
 }
 
 impl ChartArea<'_> {
@@ -499,14 +548,7 @@ impl ChartArea<'_> {
         to: JulianDay<Utc>,
         asked: &ContactRequest,
     ) -> Result<Vec<ProgressedContact>, Error> {
-        if to.get() <= from.get() {
-            return Err(Error::invalid_arg(format!(
-                "a contact window must run forward, and {} is not after {}",
-                to.get(),
-                from.get()
-            ))
-            .with_field("to"));
-        }
+        forward(from, to)?;
         let born = birth.foundation.instant;
         let progression = asked.progression;
         // Leo's rule reaches the last minutes before each noon of sky twice,
@@ -544,6 +586,204 @@ impl ChartArea<'_> {
         // Stable, so contacts due together keep the hit list's order.
         contacts.sort_by(|a, b| a.life.get().total_cmp(&b.life.get()));
         Ok(contacts)
+    }
+
+    /// The **parallels of declination** a birth's progressed planets make
+    /// to its radical points over a window of life (`03-design/
+    /// western-progressions.md`): each the stretch of life a progressed
+    /// planet stands within the orb of a radical point's distance from the
+    /// equator, on either side of it, with the instant they stand closest.
+    /// The planets, the points and the progression are the request's, and
+    /// the orb its `parallels`' (Leo's 1° when it names none); its aspects
+    /// play no part. Ordered by the closest instant.
+    ///
+    /// The radical points' declinations are the birth's own
+    /// ([`ChartArea::declinations`]); the progressed planets' are read
+    /// where the progression puts each instant of life, by the same rule.
+    ///
+    /// ```no_run
+    /// # use teistro::{ContactRequest, Context, Document, Ephemeris, ParallelRequest};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (birth, from, to): (Document, JulianDay<Utc>, JulianDay<Utc>) = todo!();
+    /// let asked = ContactRequest::default().with_parallels(ParallelRequest::default());
+    /// for row in sdk.chart().progressed_parallels(&birth, from, to, &asked)? {
+    ///     println!("{:?} to {:?}: closest {:.2}° at {}", row.graha, row.to, row.closest_deg, row.closest.get());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A window that does not run forward, what the hit list refuses of
+    /// the planets and points, what [`ParallelRequest::check`] refuses of
+    /// the orb, and an instant the ephemeris cannot place, named under
+    /// `contacts`.
+    pub fn progressed_parallels(
+        self,
+        birth: &Document,
+        from: JulianDay<Utc>,
+        to: JulianDay<Utc>,
+        asked: &ContactRequest,
+    ) -> Result<Vec<ProgressedParallel>, Error> {
+        self.parallels_of(birth, from, to, asked)
+            .map_err(|error| error.under("contacts"))
+    }
+
+    fn parallels_of(
+        self,
+        birth: &Document,
+        from: JulianDay<Utc>,
+        to: JulianDay<Utc>,
+        asked: &ContactRequest,
+    ) -> Result<Vec<ProgressedParallel>, Error> {
+        forward(from, to)?;
+        asked.hits_between(from, to).check()?;
+        let orb = asked.parallels.unwrap_or_default();
+        orb.check().map_err(|why| why.under("parallels"))?;
+        let foundation = &birth.foundation;
+        let born = foundation.instant;
+        let progression = asked.progression;
+        let radical = self.declinations(birth)?;
+        let fixed: Vec<(NatalPoint, f64)> = asked
+            .points
+            .iter()
+            .map(|&point| radical_declination(&radical, foundation, point).map(|d| (point, d)))
+            .collect::<Result<_, Error>>()?;
+        // Fine enough that no body's declination moves half the orb
+        // between two samples: no span inside the orb is missed, and one
+        // through it between two is found by its crossing.
+        let sky = |life: JulianDay<Utc>| progression.sky_at(born, life);
+        let sky_days = sky(to)?.get() - sky(from)?.get();
+        let life_days = to.get() - from.get();
+        let step_sky =
+            (orb.orb_deg / (2.0 * FASTEST_DECLINATION_DEG_PER_DAY)).max(MIN_SKY_STEP_DAYS);
+        let steps = sample_count(sky_days.abs() / step_sky)?;
+        let lives: Vec<JulianDay<Utc>> = (0..=steps)
+            .map(|k| from.plus_days(life_days * f64::from(k) / f64::from(steps)))
+            .collect::<Result<_, _>>()?;
+        let skies: Vec<JulianDay<Utc>> = lives
+            .iter()
+            .map(|&life| sky(life))
+            .collect::<Result<_, _>>()?;
+        let mut rows = self.founding(UtcOffset::UTC, |founder| {
+            let read = |instants: &[JulianDay<Utc>], grahas: &[Graha]| {
+                founder.declinations_at(instants, &foundation.place, &foundation.zodiac, grahas)
+            };
+            let grid = read(&skies, &asked.grahas)?;
+            let mut rows = Vec::new();
+            for (column, &graha) in asked.grahas.iter().enumerate() {
+                let samples: Vec<(f64, f64)> = lives
+                    .iter()
+                    .zip(&grid)
+                    .map(|(life, row)| (life.get(), row.get(column).copied().unwrap_or(f64::NAN)))
+                    .collect();
+                for &(point, fixed_deg) in &fixed {
+                    let search = SpanSearch {
+                        fixed_deg,
+                        orb_deg: orb.orb_deg,
+                        tolerance: LIFE_TOLERANCE_DAYS,
+                    };
+                    let spans = parallel_spans(&samples, search, |life| {
+                        let sky = sky(JulianDay::try_new(life)?)?;
+                        read(&[sky], &[graha])?
+                            .first()
+                            .and_then(|row| row.first().copied())
+                            .ok_or_else(|| Error::internal("a declination was asked and none read"))
+                    })?;
+                    for span in spans {
+                        rows.push(ProgressedParallel {
+                            graha,
+                            to: point,
+                            enters: span.enters.map(JulianDay::try_new).transpose()?,
+                            leaves: span.leaves.map(JulianDay::try_new).transpose()?,
+                            closest: JulianDay::try_new(span.closest)?,
+                            closest_deg: span.closest_deg,
+                            contrary: span.contrary,
+                        });
+                    }
+                }
+            }
+            Ok(rows)
+        })?;
+        // Stable, so spans closest together keep the planets' order.
+        rows.sort_by(|a, b| a.closest.get().total_cmp(&b.closest.get()));
+        Ok(rows)
+    }
+}
+
+/// The fastest any planet's declination moves, degrees a day of sky: the
+/// Moon's, at most 15.4° a day of longitude turned by the obliquity and
+/// her latitude, with room to spare.
+const FASTEST_DECLINATION_DEG_PER_DAY: f64 = 8.0;
+
+/// The finest a parallels' search samples the sky, days: a narrower orb
+/// is found by its crossings between samples.
+const MIN_SKY_STEP_DAYS: f64 = 1e-3;
+
+/// How close in life a parallel's edges and closest instant are found,
+/// days: about nine seconds.
+const LIFE_TOLERANCE_DAYS: f64 = 1e-4;
+
+/// The most samples a parallels' search reads.
+const MAX_SAMPLES: u32 = 1_000_000;
+
+/// How many steps cover `steps` (a fraction), at least one, refused
+/// past [`MAX_SAMPLES`].
+fn sample_count(steps: f64) -> Result<u32, Error> {
+    let whole = steps.ceil().max(1.0);
+    if whole.is_finite() && whole <= f64::from(MAX_SAMPLES) {
+        // Whole, positive and at most `MAX_SAMPLES`, so it converts.
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "checked above"
+        )]
+        return Ok(whole as u32);
+    }
+    Err(Error::invalid_arg(format!(
+        "a parallels' window would read {whole} instants of sky, more than {MAX_SAMPLES}"
+    ))
+    .with_field("to")
+    .with_hint("ask a shorter window of life"))
+}
+
+/// Refuses a window of life that does not run forward.
+fn forward(from: JulianDay<Utc>, to: JulianDay<Utc>) -> Result<(), Error> {
+    if to.get() > from.get() {
+        return Ok(());
+    }
+    Err(Error::invalid_arg(format!(
+        "a contact window must run forward, and {} is not after {}",
+        to.get(),
+        from.get()
+    ))
+    .with_field("to"))
+}
+
+/// A radical point's declination: an angle's as the birth's declinations
+/// read it, a graha's from its own place, the nodes' included.
+fn radical_declination(
+    radical: &Declinations,
+    foundation: &ChartFoundation,
+    point: NatalPoint,
+) -> Result<f64, Error> {
+    match point {
+        NatalPoint::Lagna => Ok(radical.lagna_deg),
+        NatalPoint::Midheaven => Ok(radical.midheaven_deg),
+        NatalPoint::Graha { graha } => foundation
+            .grahas
+            .iter()
+            .chain(&foundation.outer)
+            .find(|at| at.graha == graha)
+            .map(|at| declination_deg(at.tropical_deg, at.latitude_deg, radical.obliquity_deg))
+            .ok_or_else(|| {
+                Error::invalid_arg(format!("the birth chart places no {}", graha.key()))
+                    .with_field("points")
+                    .with_hint("found the birth with the outer planets placed")
+            }),
     }
 }
 

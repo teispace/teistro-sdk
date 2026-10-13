@@ -33,6 +33,8 @@ const report = new Map();
 
 /** A number as every binding spells it: nine decimals, never an exponent. */
 const number = (value) => (Number.isInteger(value) ? String(value) : value.toFixed(9));
+/** A number, or `-` where there is none, as every runner prints it. */
+const numberOrDash = (value) => (value === null ? '-' : number(value));
 // A natal point as every runner prints it: `LAGNA`, `MIDHEAVEN`, or the
 // graha's full key.
 const point = (p) => (p.point === 'GRAHA' ? p.graha : p.point);
@@ -439,6 +441,7 @@ const charts = geo.chart.foundMany({
       grahas: ['MOON', 'SUN'],
       points: ['LAGNA', 'MIDHEAVEN', 'MARS', 'VENUS'],
       aspects: [0, 45, 90, 135, 180],
+      parallels: { orbDeg: 1.5 },
     },
   },
   shadbala: true,
@@ -836,10 +839,9 @@ for (const chart of charts) {
   const syllable = birth.syllable;
   put(`chart-${i}-avakahada-syllable`, `${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga}`);
   const { rising, eclipse } = chart.moment;
-  const at = (jd) => (jd === null ? '-' : number(jd));
   put(
     `chart-${i}-moment`,
-    `${rising.sign} ${at(rising.rose)} ${at(rising.sets)} ${eclipse.kind} ${at(eclipse.greatest)}`,
+    `${rising.sign} ${numberOrDash(rising.rose)} ${numberOrDash(rising.sets)} ${eclipse.kind} ${numberOrDash(eclipse.greatest)}`,
   );
   chart.gochar.forEach((reading, at) => {
     const { reference: ref, rules } = reading;
@@ -1141,7 +1143,7 @@ for (const chart of charts) {
   );
   put(`chart-${i}-lalkitab-periods`, list(lk.periods.map((p) => `${p.planet}:${p.from}-${p.to}`)));
   put(`chart-${i}-lalkitab-annual`, list(lk.year.annual.planets.map((p) => `${p.graha}:${p.house}`)));
-  const { progressed: pg, directed: dr, contacts } = chart.progressions;
+  const { progressed: pg, directed: dr, contacts, parallels: progressedParallels } = chart.progressions;
   put(
     `chart-${i}-progressed`,
     `${number(pg.life)} ${number(pg.sky)} ${number(pg.armcDeg)} ${number(pg.angles.ascendantDeg)} ${number(pg.angles.midheavenDeg)}`,
@@ -1159,6 +1161,14 @@ for (const chart of charts) {
     put(
       `chart-${i}-progressed-contact-${n}`,
       `${number(at.life)} ${number(at.sky)} ${at.graha} ${point(at.to)} ${at.angle} ${at.motion}`,
+    ),
+  );
+  put(`chart-${i}-progressed-parallel-count`, `${progressedParallels.length}`);
+  progressedParallels.forEach((at, n) =>
+    put(
+      `chart-${i}-progressed-parallel-${n}`,
+      `${number(at.closest)} ${numberOrDash(at.enters)} ${numberOrDash(at.leaves)} ${at.graha} ${point(at.to)} ` +
+        `${number(at.closestDeg)} ${at.contrary ? 1 : 0}`,
     ),
   );
   const western = chart.westernAspects;

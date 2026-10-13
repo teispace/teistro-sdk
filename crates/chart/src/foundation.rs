@@ -26,6 +26,7 @@ use teistro_astro::scale::tt_of;
 use teistro_astro::sidereal::Sidereal;
 use teistro_calendar::CalendarSystem;
 use teistro_calendar::solar::SolarModel;
+use teistro_core::angle::declination_deg;
 use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
 use teistro_core::envelope::Version;
 use teistro_core::envelope::{Deviation, Envelope, Hash, Provenance, content_hash};
@@ -35,7 +36,7 @@ use teistro_core::settings::{
     GhatiReckoning, HoraReckoning, Node, OverridePolicy, PolarPolicy, Resolved, Settings,
 };
 use teistro_core::time::LocalClock;
-use teistro_port_ephemeris::columns::CellStatus;
+use teistro_port_ephemeris::columns::{Cell, CellStatus};
 use teistro_port_ephemeris::{
     Angles, AnglesRequest, Astronomy, Body, EphemerisProvider, Frame, Overrides, PositionRequest,
     ProviderError, TimeScale,
@@ -743,17 +744,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             let mut places = [0.0; 9];
             let mut rahu_tropical = None;
             for (index, body) in bodies.iter().enumerate() {
-                let cell = completed.columns.at(row, index).ok_or_else(|| {
-                    Error::internal(format!("the grid has no cell for {}", body.key()))
-                })?;
-                if cell.status != CellStatus::Ok {
-                    return Err(Error::unsupported(format!(
-                        "the provider could not place {}: {:?}",
-                        body.key(),
-                        cell.status
-                    ))
-                    .with_field("bodies"));
-                }
+                let cell = placed_cell(&completed, row, index, *body)?;
                 let graha = body
                     .graha()
                     .ok_or_else(|| Error::internal(format!("{} is not a graha", body.key())))?;
@@ -832,17 +823,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             .iter()
             .enumerate()
             .map(|(index, &(graha, body))| {
-                let cell = completed.columns.at(0, index).ok_or_else(|| {
-                    Error::internal(format!("the grid has no cell for {}", body.key()))
-                })?;
-                if cell.status != CellStatus::Ok {
-                    return Err(Error::unsupported(format!(
-                        "the provider could not place {}: {:?}",
-                        body.key(),
-                        cell.status
-                    ))
-                    .with_field("bodies"));
-                }
+                let cell = placed_cell(&completed, 0, index, body)?;
                 let tropical = cell.lon.rem_euclid(360.0);
                 let tropical = if graha == Graha::Ketu {
                     (tropical + 180.0).rem_euclid(360.0)
@@ -850,6 +831,79 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                     tropical
                 };
                 Ok(zodiac.of_tropical(tropical))
+            })
+            .collect()
+    }
+
+    /// Some grahas' declinations at many instants, unstamped: each row the
+    /// asked grahas' distances from the equator, degrees north, in their
+    /// order. Each is turned from the tropical longitude and ecliptic
+    /// latitude a chart founded there would place, by the true obliquity
+    /// its angles carry, so it is the declination that chart's reading
+    /// gives; Ketu is Rahu's opposite point, its latitude turned too. One
+    /// request asks for every instant.
+    ///
+    /// The zodiac is taken, as [`Founder::longitudes_in`] takes it, for
+    /// the frame the provider is asked in; a declination does not depend
+    /// on it.
+    ///
+    /// # Errors
+    ///
+    /// An instant outside the Delta T model's range, a graha the settings
+    /// do not place, or a provider that cannot place one.
+    pub fn declinations_at(
+        &self,
+        instants: &[JulianDay<Utc>],
+        place: &Place,
+        zodiac: &ChartZodiac,
+        grahas: &[Graha],
+    ) -> Result<Vec<Vec<f64>>, Error> {
+        let asked: Vec<(Body, f64)> = grahas
+            .iter()
+            .map(|&graha| {
+                body_of(graha, self.settings()).ok_or_else(|| {
+                    Error::unsupported(format!("the settings place no {}", graha.key()))
+                        .with_field("grahas")
+                })
+            })
+            .collect::<Result<_, Error>>()?;
+        let mut jds = Vec::with_capacity(instants.len());
+        let mut obliquities = Vec::with_capacity(instants.len());
+        for instant in instants {
+            let ut1 = JulianDay::<Ut1>::literal(instant.get());
+            let (tt, _) = tt_of(ut1, self.delta_t)?;
+            jds.push(ut1.get());
+            obliquities.push(teistro_astro::sky::obliquity(tt).true_deg);
+        }
+        let bodies: Vec<Body> = asked.iter().map(|&(body, _)| body).collect();
+        let mut request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, zodiac.request);
+        if zodiac.needs_observer() {
+            request.observer = Some(*place);
+        }
+        let completed: Completed = self.placing().positions(&request)?;
+        obliquities
+            .iter()
+            .enumerate()
+            .map(|(row, &obliquity)| {
+                asked
+                    .iter()
+                    .enumerate()
+                    .map(|(index, &(body, turn))| {
+                        let cell = placed_cell(&completed, row, index, body)?;
+                        // Turned half a circle, a point's latitude turns
+                        // with it, as the founding places Ketu.
+                        let (longitude, latitude) = if turn == 0.0 {
+                            (cell.lon, cell.lat)
+                        } else {
+                            (cell.lon + turn, -cell.lat)
+                        };
+                        Ok(declination_deg(
+                            longitude.rem_euclid(360.0),
+                            latitude,
+                            obliquity,
+                        ))
+                    })
+                    .collect()
             })
             .collect()
     }
@@ -1342,17 +1396,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let mut grahas = Vec::with_capacity(bodies.len() + 1);
         let mut placed_outer = Vec::new();
         for (index, body) in bodies.iter().enumerate() {
-            let cell = completed.columns.at(0, index).ok_or_else(|| {
-                Error::internal(format!("the grid has no cell for {}", body.key()))
-            })?;
-            if cell.status != CellStatus::Ok {
-                return Err(Error::unsupported(format!(
-                    "the provider could not place {}: {:?}",
-                    body.key(),
-                    cell.status
-                ))
-                .with_field("bodies"));
-            }
+            let cell = placed_cell(&completed, 0, index, *body)?;
             let graha = body
                 .graha()
                 .ok_or_else(|| Error::internal(format!("{} is not a graha", body.key())))?;
@@ -1419,6 +1463,24 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             house: houses.place(longitude_deg),
         }
     }
+}
+
+/// The `index`th body's cell in the `row`th instant's row of a grid, when
+/// the provider placed it.
+fn placed_cell(completed: &Completed, row: usize, index: usize, body: Body) -> Result<Cell, Error> {
+    let cell = completed
+        .columns
+        .at(row, index)
+        .ok_or_else(|| Error::internal(format!("the grid has no cell for {}", body.key())))?;
+    if cell.status != CellStatus::Ok {
+        return Err(Error::unsupported(format!(
+            "the provider could not place {}: {:?}",
+            body.key(),
+            cell.status
+        ))
+        .with_field("bodies"));
+    }
+    Ok(cell)
 }
 
 /// The angles and the obliquity at an instant, in a chart's zodiac: the

@@ -3484,6 +3484,8 @@ final class ChartsProgressions {
     required this.directedMidheavenDeg,
     required this.contactCount,
     required this.contactsAsked,
+    required this.parallelCount,
+    required this.parallelsAsked,
     required this.length,
   });
 
@@ -3516,6 +3518,12 @@ final class ChartsProgressions {
 
   /// 1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none.
   final Uint8List contactsAsked;
+
+  /// How many rows of the `progressed_parallels` section belong to this chart; 0 when the record's `contacts` named no `parallels`.
+  final Uint32List parallelCount;
+
+  /// 1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none.
+  final Uint8List parallelsAsked;
 
   /// The number of rows every column holds.
   final int length;
@@ -3597,7 +3605,7 @@ final class ChartsProgressedContacts {
   /// The progressed planet.
   final Uint16List graha;
 
-  /// 1 when the radical point is the lagna, 0 when it is a radical graha.
+  /// 1 when the radical point is the lagna, 0 otherwise.
   final Uint8List toLagna;
 
   /// The radical graha aspected (a `Graha` id); 0 for the lagna or the midheaven.
@@ -4719,6 +4727,55 @@ final class ChartsMoment {
   final int length;
 }
 
+/// The `progressed_parallels` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
+final class ChartsProgressedParallels {
+  const ChartsProgressedParallels({
+    required this.closest,
+    required this.enters,
+    required this.leaves,
+    required this.graha,
+    required this.toLagna,
+    required this.toGraha,
+    required this.toMidheaven,
+    required this.closestDeg,
+    required this.contrary,
+    required this.length,
+  });
+
+  /// The first instant of life the two distances stood closest, a Julian day (UTC): the exact parallel, when the span reaches it.
+  final Float64List closest;
+
+  /// The instant of life it came within the orb, a Julian day (UTC); NaN when it already stood within the orb at the window's start.
+  final Float64List enters;
+
+  /// The instant of life it left the orb, a Julian day (UTC); NaN when it still stood within it at the window's end.
+  final Float64List leaves;
+
+  /// The progressed planet.
+  final Uint16List graha;
+
+  /// 1 when the radical point is the lagna, 0 otherwise.
+  final Uint8List toLagna;
+
+  /// The radical graha (a `Graha` id); 0 for the lagna or the midheaven.
+  final Uint16List toGraha;
+
+  /// 1 when the radical point is the midheaven, 0 otherwise.
+  final Uint8List toMidheaven;
+
+  /// How far apart the two distances from the equator stood at `closest`, degrees.
+  final Float64List closestDeg;
+
+  /// 1 when the two stood on opposite sides of the equator at `closest`: the contra-parallel, which Leo counts a parallel.
+  final Uint8List contrary;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5239,6 +5296,7 @@ final class Charts {
     required this.rectification,
     required this.lalkitab,
     required this.moment,
+    required this.progressedParallels,
   });
 
   /// What kind of chart these are.
@@ -5657,6 +5715,9 @@ final class Charts {
   /// What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
   final ChartsMoment moment;
 
+  /// Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
+  final ChartsProgressedParallels progressedParallels;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5788,6 +5849,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atRectification = blob.section(122, 'rectification');
   final atLalkitab = blob.section(123, 'lalkitab');
   final atMoment = blob.section(124, 'moment');
+  final atProgressedParallels = blob.section(125, 'progressed_parallels');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -9024,6 +9086,16 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atProgressions, 9),
         blob.columnOffset(atProgressions, 9) + atProgressions.count * 1,
       ),
+      parallelCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 10),
+        blob.columnOffset(atProgressions, 10) + atProgressions.count * 4,
+      ),
+      parallelsAsked: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 11),
+        blob.columnOffset(atProgressions, 11) + atProgressions.count * 1,
+      ),
       length: atProgressions.count,
     ),
     progressedGrahas: ChartsProgressedGrahas(
@@ -10326,6 +10398,54 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atMoment, 4) + atMoment.count * 8,
       ),
       length: atMoment.count,
+    ),
+    progressedParallels: ChartsProgressedParallels(
+      closest: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 0),
+        blob.columnOffset(atProgressedParallels, 0) + atProgressedParallels.count * 8,
+      ),
+      enters: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 1),
+        blob.columnOffset(atProgressedParallels, 1) + atProgressedParallels.count * 8,
+      ),
+      leaves: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 2),
+        blob.columnOffset(atProgressedParallels, 2) + atProgressedParallels.count * 8,
+      ),
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 3),
+        blob.columnOffset(atProgressedParallels, 3) + atProgressedParallels.count * 2,
+      ),
+      toLagna: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 4),
+        blob.columnOffset(atProgressedParallels, 4) + atProgressedParallels.count * 1,
+      ),
+      toGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 5),
+        blob.columnOffset(atProgressedParallels, 5) + atProgressedParallels.count * 2,
+      ),
+      toMidheaven: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 6),
+        blob.columnOffset(atProgressedParallels, 6) + atProgressedParallels.count * 1,
+      ),
+      closestDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 7),
+        blob.columnOffset(atProgressedParallels, 7) + atProgressedParallels.count * 8,
+      ),
+      contrary: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedParallels, 8),
+        blob.columnOffset(atProgressedParallels, 8) + atProgressedParallels.count * 1,
+      ),
+      length: atProgressedParallels.count,
     ),
   );
 }

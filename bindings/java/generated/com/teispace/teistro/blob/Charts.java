@@ -154,6 +154,7 @@ public final class Charts {
     private final String rectification;
     private final String lalkitab;
     private final Moment moment;
+    private final ProgressedParallels progressedParallels;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -298,6 +299,7 @@ public final class Charts {
         this.rectification = blob.text(122, "rectification");
         this.lalkitab = blob.text(123, "lalkitab");
         this.moment = new Moment(blob, 124, "moment");
+        this.progressedParallels = new ProgressedParallels(blob, 125, "progressed_parallels");
     }
 
     /**
@@ -1569,6 +1571,15 @@ public final class Charts {
      */
     public Moment moment() {
         return moment;
+    }
+
+    /**
+     * Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
+     *
+     * @return the progressedParallels
+     */
+    public ProgressedParallels progressedParallels() {
+        return progressedParallels;
     }
 
 
@@ -10903,6 +10914,8 @@ public final class Charts {
         private final int directedMidheavenDegAt;
         private final int contactCountAt;
         private final int contactsAskedAt;
+        private final int parallelCountAt;
+        private final int parallelsAskedAt;
 
         Progressions(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -10918,6 +10931,8 @@ public final class Charts {
             this.directedMidheavenDegAt = blob.column(at, 7, 8);
             this.contactCountAt = blob.column(at, 8, 4);
             this.contactsAskedAt = blob.column(at, 9, 1);
+            this.parallelCountAt = blob.column(at, 10, 4);
+            this.parallelsAskedAt = blob.column(at, 11, 1);
         }
 
         /**
@@ -11037,6 +11052,28 @@ public final class Charts {
          */
         public int contactsAsked(int row) {
             return Byte.toUnsignedInt(bytes.get(contactsAskedAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * How many rows of the `progressed_parallels` section belong to this chart; 0 when the record's `contacts` named no `parallels`.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public long parallelCount(int row) {
+            return Integer.toUnsignedLong(bytes.getInt(parallelCountAt + Objects.checkIndex(row, length) * 4));
+        }
+
+        /**
+         * 1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int parallelsAsked(int row) {
+            return Byte.toUnsignedInt(bytes.get(parallelsAskedAt + Objects.checkIndex(row, length) * 1));
         }
     }
 
@@ -11248,7 +11285,7 @@ public final class Charts {
         }
 
         /**
-         * 1 when the radical point is the lagna, 0 when it is a radical graha.
+         * 1 when the radical point is the lagna, 0 otherwise.
          *
          * @param row the row, from 0
          * @return the value in that row
@@ -14369,6 +14406,150 @@ public final class Charts {
          */
         public double greatest(int row) {
             return bytes.getDouble(greatestAt + Objects.checkIndex(row, length) * 8);
+        }
+    }
+
+    /**
+     * The `progressed_parallels` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
+     */
+    public static final class ProgressedParallels {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int closestAt;
+        private final int entersAt;
+        private final int leavesAt;
+        private final int grahaAt;
+        private final int toLagnaAt;
+        private final int toGrahaAt;
+        private final int toMidheavenAt;
+        private final int closestDegAt;
+        private final int contraryAt;
+
+        ProgressedParallels(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.closestAt = blob.column(at, 0, 8);
+            this.entersAt = blob.column(at, 1, 8);
+            this.leavesAt = blob.column(at, 2, 8);
+            this.grahaAt = blob.column(at, 3, 2);
+            this.toLagnaAt = blob.column(at, 4, 1);
+            this.toGrahaAt = blob.column(at, 5, 2);
+            this.toMidheavenAt = blob.column(at, 6, 1);
+            this.closestDegAt = blob.column(at, 7, 8);
+            this.contraryAt = blob.column(at, 8, 1);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The first instant of life the two distances stood closest, a Julian day (UTC): the exact parallel, when the span reaches it.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double closest(int row) {
+            return bytes.getDouble(closestAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The instant of life it came within the orb, a Julian day (UTC); NaN when it already stood within the orb at the window's start.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double enters(int row) {
+            return bytes.getDouble(entersAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The instant of life it left the orb, a Julian day (UTC); NaN when it still stood within it at the window's end.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double leaves(int row) {
+            return bytes.getDouble(leavesAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The progressed planet.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int graha(int row) {
+            return Short.toUnsignedInt(bytes.getShort(grahaAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * 1 when the radical point is the lagna, 0 otherwise.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int toLagna(int row) {
+            return Byte.toUnsignedInt(bytes.get(toLagnaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The radical graha (a `Graha` id); 0 for the lagna or the midheaven.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int toGraha(int row) {
+            return Short.toUnsignedInt(bytes.getShort(toGrahaAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * 1 when the radical point is the midheaven, 0 otherwise.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int toMidheaven(int row) {
+            return Byte.toUnsignedInt(bytes.get(toMidheavenAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * How far apart the two distances from the equator stood at `closest`, degrees.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double closestDeg(int row) {
+            return bytes.getDouble(closestDegAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * 1 when the two stood on opposite sides of the equator at `closest`: the contra-parallel, which Leo counts a parallel.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int contrary(int row) {
+            return Byte.toUnsignedInt(bytes.get(contraryAt + Objects.checkIndex(row, length) * 1));
         }
     }
 }

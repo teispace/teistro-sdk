@@ -2899,6 +2899,35 @@ void _engineTests() {
           ),
         ).progressions!;
     expect(none.contacts, isEmpty, reason: 'a window asked holding none');
+    expect(none.parallels, isNull, reason: 'none unless the window asks');
+
+    // Jupiter "has moved to the parallel of the radical Sun" (p. 33):
+    // within Leo's degree as his year opens, and separating.
+    final leo =
+        found(
+          birth,
+          progressions: const ProgressionsRequest(
+            contacts: ProgressionContacts(
+              from: 2417523.5,
+              to: 2417888.5,
+              grahas: [Graha.jupiter],
+              points: [NatalGraha(Graha.sun)],
+              parallels: ParallelRequest(),
+            ),
+          ),
+        ).progressions!;
+    final [parallel] = leo.parallels!;
+    expect(
+      (
+        parallel.graha,
+        parallel.to,
+        parallel.enters,
+        parallel.closest,
+        parallel.contrary,
+      ),
+      (Graha.jupiter, const NatalGraha(Graha.sun), null, 2417523.5, false),
+    );
+    expect(parallel.closestDeg, lessThan(1));
 
     final instants = [birth, birth + 3000.25, birth + 9000.5];
     const many = ProgressionsRequest(
@@ -2929,6 +2958,16 @@ void _engineTests() {
           contacts: ProgressionContacts(from: 2, to: 1),
         ),
         'progressions.contacts.to',
+      ),
+      (
+        const ProgressionsRequest(
+          contacts: ProgressionContacts(
+            from: 1,
+            to: 2,
+            parallels: ParallelRequest(orbDeg: 11),
+          ),
+        ),
+        'progressions.contacts.parallels.orbDeg',
       ),
     ]) {
       expect(

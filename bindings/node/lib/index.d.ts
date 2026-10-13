@@ -1589,6 +1589,8 @@ export interface ProgressionsRequest {
     readonly points?: HitRequest['points'];
     /** The aspects' angles, whole degrees to 180; Leo's table (p. 48) by default. */
     readonly aspects?: HitRequest['aspects'];
+    /** Asks the parallels of declination over the window too, under this orb; `{}` for Leo's 1°. */
+    readonly parallels?: ParallelRequest;
   };
 }
 
@@ -2461,6 +2463,28 @@ export interface ProgressedContact {
 }
 
 /**
+ * A stretch of life a progressed planet stands within the orb of a radical
+ * point's distance from the equator, on either side of it (Leo, *The
+ * Progressed Horoscope*, p. 34).
+ */
+export interface ProgressedParallel {
+  /** The progressed planet. */
+  readonly graha: Graha | 'unknown';
+  /** The radical point, spelled as a hit's `to`. */
+  readonly to: NatalPoint;
+  /** The instant of life it came within the orb, a UTC Julian day; `null` when it already stood within it at the window's start. */
+  readonly enters: number | null;
+  /** The instant of life it left the orb; `null` when it still stood within it at the window's end. */
+  readonly leaves: number | null;
+  /** The first instant of life the two distances stood closest: the exact parallel, when the span reaches it. */
+  readonly closest: number;
+  /** How far apart the two distances stood then, degrees. */
+  readonly closestDeg: number;
+  /** Whether the two stood on opposite sides of the equator then. */
+  readonly contrary: boolean;
+}
+
+/**
  * A birth read through its progressions (`03-design/western-progressions.md`).
  *
  * @example
@@ -2493,6 +2517,8 @@ export interface Progressions {
   } | null;
   /** The contacts in the window, as they fall due; `null` without `contacts`. */
   readonly contacts: readonly ProgressedContact[] | null;
+  /** The parallels of declination in the window, by their closest instant; `null` unless `contacts` asked `parallels`. */
+  readonly parallels: readonly ProgressedParallel[] | null;
 }
 
 /**
