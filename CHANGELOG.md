@@ -311,6 +311,13 @@ the SDK. Miri found one in sha2 0.11.0's aarch64
 backend, already fixed upstream and not yet released, so the Miri job uses
 sha2's soft backend until a release carries the fix.
 
+**A release keeps the API the last one shipped.** **Numbers:** none moved.
+The release gate compares the C ABI's description with the last
+release's, and fails a removal or a change a binding generated for the
+old one would misread unless `TS_ABI_VERSION` rose; anything added
+passes. It runs `cargo semver-checks` over the published crates against
+the same release. With no release yet, both say there is nothing to keep.
+
 **Every crate holds a coverage floor.** **Numbers:** none moved. Verify
 measures each library crate's line coverage and fails one that falls
 under the floor `docs/05-testing/coverage.json` keeps for it. Floors are
