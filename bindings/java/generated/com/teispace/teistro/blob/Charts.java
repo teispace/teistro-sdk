@@ -7497,6 +7497,7 @@ public final class Charts {
         private final int motionAt;
         private final int toLagnaAt;
         private final int toGrahaAt;
+        private final int toMidheavenAt;
         private final int angleAt;
         private final int phaseAt;
 
@@ -7511,8 +7512,9 @@ public final class Charts {
             this.motionAt = blob.column(at, 4, 1);
             this.toLagnaAt = blob.column(at, 5, 1);
             this.toGrahaAt = blob.column(at, 6, 2);
-            this.angleAt = blob.column(at, 7, 2);
-            this.phaseAt = blob.column(at, 8, 1);
+            this.toMidheavenAt = blob.column(at, 7, 1);
+            this.angleAt = blob.column(at, 8, 2);
+            this.phaseAt = blob.column(at, 9, 1);
         }
 
         /**
@@ -7605,6 +7607,17 @@ public final class Charts {
          */
         public int toGraha(int row) {
             return Short.toUnsignedInt(bytes.getShort(toGrahaAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int toMidheaven(int row) {
+            return Byte.toUnsignedInt(bytes.get(toMidheavenAt + Objects.checkIndex(row, length) * 1));
         }
 
         /**
@@ -11172,6 +11185,7 @@ public final class Charts {
         private final int grahaAt;
         private final int toLagnaAt;
         private final int toGrahaAt;
+        private final int toMidheavenAt;
         private final int angleAt;
         private final int motionAt;
 
@@ -11184,8 +11198,9 @@ public final class Charts {
             this.grahaAt = blob.column(at, 2, 2);
             this.toLagnaAt = blob.column(at, 3, 1);
             this.toGrahaAt = blob.column(at, 4, 2);
-            this.angleAt = blob.column(at, 5, 2);
-            this.motionAt = blob.column(at, 6, 1);
+            this.toMidheavenAt = blob.column(at, 5, 1);
+            this.angleAt = blob.column(at, 6, 2);
+            this.motionAt = blob.column(at, 7, 1);
         }
 
         /**
@@ -11244,7 +11259,7 @@ public final class Charts {
         }
 
         /**
-         * The radical graha aspected (a `Graha` id); 0 for the lagna.
+         * The radical graha aspected (a `Graha` id); 0 for the lagna or the midheaven.
          *
          * @param row the row, from 0
          * @return the value in that row
@@ -11252,6 +11267,17 @@ public final class Charts {
          */
         public int toGraha(int row) {
             return Short.toUnsignedInt(bytes.getShort(toGrahaAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * 1 when the radical point is the midheaven, 0 otherwise.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int toMidheaven(int row) {
+            return Byte.toUnsignedInt(bytes.get(toMidheavenAt + Objects.checkIndex(row, length) * 1));
         }
 
         /**

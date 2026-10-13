@@ -6,9 +6,9 @@ package com.teispace.teistro.request;
 import java.util.Map;
 
 /**
- * A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna.
+ * A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven.
  */
-public sealed interface NatalPoint extends RequestJson permits NatalPointGraha, NatalPointLagna {
+public sealed interface NatalPoint extends RequestJson permits NatalPointGraha, NatalPointLagna, NatalPointMidheaven {
     /**
      * A {@code NatalPoint} from its JSON, by its `point`.
      *
@@ -23,6 +23,9 @@ public sealed interface NatalPoint extends RequestJson permits NatalPointGraha, 
         }
         if ("LAGNA".equals(which)) {
             return NatalPointLagna.of(raw);
+        }
+        if ("MIDHEAVEN".equals(which)) {
+            return NatalPointMidheaven.of(raw);
         }
         throw new IllegalArgumentException("not a NatalPoint: point " + which);
     }

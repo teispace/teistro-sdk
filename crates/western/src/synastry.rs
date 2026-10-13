@@ -513,6 +513,7 @@ const fn point_key(point: NatalPoint) -> &'static str {
     match point {
         NatalPoint::Graha { graha } => graha.key(),
         NatalPoint::Lagna => "LAGNA",
+        NatalPoint::Midheaven => "MIDHEAVEN",
     }
 }
 

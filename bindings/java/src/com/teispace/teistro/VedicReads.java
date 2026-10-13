@@ -410,15 +410,19 @@ final class VedicReads {
             case SIGN_INGRESS -> new SignIngress(Rashi.of(columns.into(row)), motion);
             case NAKSHATRA_INGRESS -> new NakshatraIngress(Nakshatra.of(columns.into(row)), motion);
             case STATION -> new Station(motion);
-            default -> new AspectHit(pointAt(columns.toLagna(row), columns.toGraha(row)), columns.angle(row),
+            default -> new AspectHit(pointAt(columns.toLagna(row), columns.toGraha(row), columns.toMidheaven(row)),
+                    columns.angle(row),
                     AspectPhase.of(columns.phase(row)), motion);
         };
         return new Hit(columns.instant(row), Graha.of(columns.graha(row)), event);
     }
 
-    /** A natal point from a {@code to_lagna} and a {@code to_graha} column's cells. */
-    static NatalPoint pointAt(int toLagna, int toGraha) {
-        return toLagna != 0 ? new NatalPoint("LAGNA", null) : new NatalPoint("GRAHA", Graha.of(toGraha));
+    /** A natal point from a {@code to_lagna}, a {@code to_graha} and a {@code to_midheaven} column's cells. */
+    static NatalPoint pointAt(int toLagna, int toGraha, int toMidheaven) {
+        if (toLagna != 0) {
+            return new NatalPoint("LAGNA", null);
+        }
+        return toMidheaven != 0 ? new NatalPoint("MIDHEAVEN", null) : new NatalPoint("GRAHA", Graha.of(toGraha));
     }
 
     /**

@@ -907,8 +907,9 @@ export function decodeCharts(bytes) {
       motion: column(blob, at, 4, 'u8', at.count),
       toLagna: column(blob, at, 5, 'u8', at.count),
       toGraha: column(blob, at, 6, 'u16', at.count),
-      angle: column(blob, at, 7, 'u16', at.count),
-      phase: column(blob, at, 8, 'u8', at.count),
+      toMidheaven: column(blob, at, 7, 'u8', at.count),
+      angle: column(blob, at, 8, 'u16', at.count),
+      phase: column(blob, at, 9, 'u8', at.count),
       length: at.count,
     };
   }
@@ -1277,8 +1278,9 @@ export function decodeCharts(bytes) {
       graha: column(blob, at, 2, 'u16', at.count),
       toLagna: column(blob, at, 3, 'u8', at.count),
       toGraha: column(blob, at, 4, 'u16', at.count),
-      angle: column(blob, at, 5, 'u16', at.count),
-      motion: column(blob, at, 6, 'u8', at.count),
+      toMidheaven: column(blob, at, 5, 'u8', at.count),
+      angle: column(blob, at, 6, 'u16', at.count),
+      motion: column(blob, at, 7, 'u8', at.count),
       length: at.count,
     };
   }

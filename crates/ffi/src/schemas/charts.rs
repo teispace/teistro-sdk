@@ -2502,7 +2502,12 @@ fn progressed_contacts_section(id: u32, empty: &str) -> SectionSchema {
             ColumnDef::new(
                 "to_graha",
                 Scalar::U16,
-                "The radical graha aspected (a `Graha` id); 0 for the lagna.",
+                "The radical graha aspected (a `Graha` id); 0 for the lagna or the midheaven.",
+            ),
+            ColumnDef::new(
+                "to_midheaven",
+                Scalar::U8,
+                "1 when the radical point is the midheaven, 0 otherwise.",
             ),
             ColumnDef::new(
                 "angle",
@@ -2889,6 +2894,11 @@ fn chart_hits_section(id: u32) -> SectionSchema {
                 "to_graha",
                 Scalar::U16,
                 "For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.",
+            ),
+            ColumnDef::new(
+                "to_midheaven",
+                Scalar::U8,
+                "For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise.",
             ),
             ColumnDef::new(
                 "angle",

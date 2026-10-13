@@ -1359,7 +1359,7 @@ impl<'a> ChartArea<'a> {
     ) -> Result<Envelope<Vec<Vec<teistro_gochar::hits::Hit>>>, Error> {
         use crate::hit_request::{HitKind, groups, hit_of, lattices_of};
         use teistro_core::settings::Centre;
-        use teistro_gochar::hits::{self, Hit};
+        use teistro_gochar::hits::{self, Hit, NatalPoint};
 
         request.check()?;
         let natals: Vec<&Document> = natals.into_iter().collect();
@@ -1370,10 +1370,20 @@ impl<'a> ChartArea<'a> {
             );
         }
         let topocentric = self.context.settings().frame.centre == Centre::Topocentric;
+        // The midheaven is no field of a chart, so it is read from each
+        // chart's angles, and only when it is asked for.
+        let midheavens = if request.points().contains(&NatalPoint::Midheaven) {
+            natals
+                .iter()
+                .map(|natal| self.angles(natal).map(|angles| Some(angles.midheaven_deg)))
+                .collect::<Result<Vec<_>, Error>>()?
+        } else {
+            vec![None; natals.len()]
+        };
         let mut lists: Vec<Vec<Hit>> = vec![Vec::new(); natals.len()];
         let mut provenance = None;
         for (place, members) in groups(&natals, topocentric) {
-            let meanings = lattices_of(request, &natals, &members)?;
+            let meanings = lattices_of(request, &natals, &midheavens, &members)?;
             let lattices: Vec<_> = meanings.iter().map(|(_, lattice)| *lattice).collect();
             let found = self.founding(UtcOffset::UTC, |founder| {
                 founder.transit_events(

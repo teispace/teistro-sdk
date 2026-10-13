@@ -1486,7 +1486,7 @@ class AnEngine(WithLibrary):
             self.assertIn(plain.verdict.outcome, ("SUCCEEDS", "WITH_DIFFICULTY", "FAILS"))
             read = ctx.chart.found(
                 instant=instant,
-                prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE", "mook": "BASELINE", "graded": "PARASHARI"}},
+                prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE", "mook": "BASELINE", "graded": "PARASHARI", "risingVarga": "SHADVARGA"}},
                 **at,
             ).prashna
             assert read is not None and read.links is not None and read.score is not None
@@ -1498,6 +1498,10 @@ class AnEngine(WithLibrary):
             self.assertIsInstance(read.links.holds(YearYoga.ITHASALA), bool)
             self.assertEqual(sum(factor.points for factor in read.score.factors), read.score.points)
             self.assertIsNone(plain.link)
+            kinds = [clause.kind for clause in read.verdict.clauses]
+            self.assertIn("RISING_SHADVARGA", kinds)
+            self.assertNotIn("RISING_NAVAMSHA", kinds)
+            self.assertIn("RISING_NAVAMSHA", [clause.kind for clause in plain.verdict.clauses])
             assert read.link is not None
             self.assertIn(read.link.meaning, ("PROMISED", "FAILS", "PAST", "FAILS_OR_PAST", "UNREAD"))
             self.assertIsInstance(read.tri_kala.lagnesha, Graha)

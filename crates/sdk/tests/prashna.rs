@@ -7,8 +7,10 @@
     reason = "tests fail by panicking on what they asked for"
 )]
 
-use teistro::catalogue::Graha;
-use teistro::prashna::{GRAHAS, MookRule, PrashnaRules, Question, ScoreRule};
+use teistro::catalogue::{Graha, Rashi};
+use teistro::prashna::{
+    ClauseKind, GRAHAS, MookRule, PrashnaRules, Question, RisingVarga, ScoreRule,
+};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{ChartRequest, Context, Document, Ephemeris, PrashnaRequest, UtcOffset};
 
@@ -59,6 +61,55 @@ fn the_sky_is_the_charts_own() {
         .find(|one| one.graha == Graha::Sun)
         .unwrap();
     assert_eq!(sky.strength[0], sun.rupas);
+    // The lagna's six vargas: the rasi is its sign, the hora a luminary's,
+    // and the navāṁśa the ninth part counted round the zodiac.
+    let [rasi, hora, _, navamsha, _, _] = sky.lagna_vargas;
+    assert_eq!(rasi, sky.lagna());
+    assert!(matches!(hora, Rashi::Leo | Rashi::Cancer), "{hora:?}");
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a ninth part of the zodiac, 0 to 107"
+    )]
+    let ninth = (sky.lagna_deg * 9.0 / 30.0).floor() as u16 % 12;
+    assert_eq!(navamsha, Rashi::from_id(ninth).unwrap());
+    assert_eq!(sky.lagna_navamsha(), navamsha);
+}
+
+#[test]
+fn the_rising_varga_is_read_as_the_request_names_it() {
+    let sdk = sdk();
+    let document = chart(&sdk, true);
+    let kinds = |json: &str| {
+        let asked = PrashnaRequest::from_json(json).unwrap();
+        let read = sdk.chart().prashna(&document, &asked).unwrap();
+        read.verdict
+            .clauses
+            .iter()
+            .map(|clause| clause.kind)
+            .filter(|kind| {
+                matches!(
+                    kind,
+                    ClauseKind::RisingNavamsha | ClauseKind::RisingShadvarga
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(kinds("{}"), [ClauseKind::RisingNavamsha]);
+    assert_eq!(
+        kinds(r#"{"rules": {"risingVarga": "SHADVARGA"}}"#),
+        [ClauseKind::RisingShadvarga]
+    );
+    let error =
+        PrashnaRequest::from_json(r#"{"rules": {"risingVarga": "SAPTAVARGA"}}"#).unwrap_err();
+    assert_eq!(error.field(), Some("prashna.rules.risingVarga"));
+    assert_eq!(
+        PrashnaRequest::from_json(r#"{"rules": {"risingVarga": "SHADVARGA"}}"#)
+            .unwrap()
+            .rules
+            .rising_varga,
+        RisingVarga::Shadvarga
+    );
 }
 
 #[test]

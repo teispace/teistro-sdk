@@ -118,6 +118,7 @@ fn point_index(point: NatalPoint) -> u8 {
     match point {
         NatalPoint::Graha { graha } => graha as u8,
         NatalPoint::Lagna => u8::MAX,
+        NatalPoint::Midheaven => u8::MAX - 1,
     }
 }
 
@@ -143,6 +144,8 @@ fn natal_deg(document: &Document, point: NatalPoint) -> Result<f64, String> {
     match point {
         NatalPoint::Graha { graha } => longitude_of(&document.foundation, graha),
         NatalPoint::Lagna => Ok(document.foundation.lagna_deg),
+        // The page asks the default points, which leave the midheaven out.
+        NatalPoint::Midheaven => Err("the page measures no aspect to the midheaven".to_owned()),
     }
 }
 

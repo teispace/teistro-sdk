@@ -12,17 +12,19 @@ use teistro_tajika::{KshinaRule, MoonClause, MoonRules};
 
 use crate::{
     Answer, Change, ClauseKind, FactorKind, Favour, Grade, GradedRule, LinkKind, LordsSee, Meaning,
-    MookRule, Outcome, Person, PiscesRising, Placed, PrashnaRules, PrashnaSky, Question, Score,
-    ScoreRule, Tense, Thought, TimingRule, Unit, number_sign, read,
+    MookRule, Outcome, Person, PiscesRising, Placed, PrashnaRules, PrashnaSky, Question,
+    RisingVarga, Score, ScoreRule, Tense, Thought, TimingRule, Unit, number_sign, read,
 };
 
 /// A sky with the lagna at `lagna_deg` and the nine grahas, Sun to Ketu,
 /// at `at`; every navāṁśa Aries unless a test sets it, and strengths
-/// rising from the Sun so none ties.
+/// rising from the Sun so none ties. The lagna's other vargas are its own
+/// sign unless a test sets them.
 fn sky(lagna_deg: f64, lagna_navamsha: Rashi, at: [f64; 9]) -> PrashnaSky {
+    let lagna = crate::sign_at(lagna_deg);
     PrashnaSky {
         lagna_deg,
-        lagna_navamsha,
+        lagna_vargas: [lagna, lagna, lagna, lagna_navamsha, lagna, lagna],
         grahas: at.map(|longitude_deg| Placed {
             longitude_deg,
             navamsha: Rashi::Aries,
@@ -100,6 +102,108 @@ fn pisces_rises_both_ways_unless_the_rules_say_by_the_head() {
     };
     let read = read(&pisces, Question::default(), by_the_head).unwrap();
     assert_eq!(read.verdict.outcome, Outcome::Succeeds);
+}
+
+/// C336's knob: under the six vargas, four lords of one kind decide the
+/// rising varga's clause, and three of each leave it both ways.
+#[test]
+fn the_rising_varga_is_the_navamsha_s_or_the_majority_of_six() {
+    let six = PrashnaRules {
+        rising_varga: RisingVarga::Shadvarga,
+        ..rules()
+    };
+    let clause = |sky: &PrashnaSky, rules: PrashnaRules| {
+        let read = read(sky, Question::default(), rules).unwrap();
+        let rising: Vec<(ClauseKind, Option<Graha>, Favour)> = read
+            .verdict
+            .clauses
+            .iter()
+            .filter(|clause| {
+                matches!(
+                    clause.kind,
+                    ClauseKind::RisingNavamsha | ClauseKind::RisingShadvarga
+                )
+            })
+            .map(|clause| (clause.kind, clause.graha, clause.favour))
+            .collect();
+        (rising, read.verdict.outcome)
+    };
+    // Gemini 15° rising: the rasi Mercury's, joined by the Sun and so a
+    // malefic; the hora the waxing Moon's, the drekkana Venus's, and the
+    // navāṁśa, dvādaśāṁśa and triṁśāṁśa Jupiter's. Five of six are
+    // benefics.
+    let mut gemini = gemini();
+    gemini.lagna_vargas = [
+        Rashi::Gemini,
+        Rashi::Cancer,
+        Rashi::Libra,
+        Rashi::Sagittarius,
+        Rashi::Sagittarius,
+        Rashi::Sagittarius,
+    ];
+    assert_eq!(
+        clause(&gemini, rules()),
+        (
+            vec![(
+                ClauseKind::RisingNavamsha,
+                Some(Graha::Jupiter),
+                Favour::For
+            )],
+            Outcome::Succeeds
+        )
+    );
+    assert_eq!(
+        clause(&gemini, six),
+        (
+            vec![(ClauseKind::RisingShadvarga, None, Favour::For)],
+            Outcome::Succeeds
+        )
+    );
+    // Three malefics' vargas and three benefics': both ways.
+    gemini.lagna_vargas = [
+        Rashi::Gemini,
+        Rashi::Leo,
+        Rashi::Aries,
+        Rashi::Sagittarius,
+        Rashi::Taurus,
+        Rashi::Pisces,
+    ];
+    assert_eq!(
+        clause(&gemini, six),
+        (
+            vec![(ClauseKind::RisingShadvarga, None, Favour::Both)],
+            Outcome::WithDifficulty
+        )
+    );
+    // Aries 10° rising: Mars's rasi and drekkana, the Sun's hora and
+    // dvādaśāṁśa, Saturn's navāṁśa, Jupiter's triṁśāṁśa. Five malefics.
+    let aries = sky(
+        10.0,
+        Rashi::Aquarius,
+        [100.0, 10.0, 15.0, 40.0, 45.0, 50.0, 20.0, 160.0, 340.0],
+    );
+    let aries = PrashnaSky {
+        lagna_vargas: [
+            Rashi::Aries,
+            Rashi::Leo,
+            Rashi::Aries,
+            Rashi::Aquarius,
+            Rashi::Leo,
+            Rashi::Sagittarius,
+        ],
+        ..aries
+    };
+    assert_eq!(
+        clause(&aries, six),
+        (
+            vec![(ClauseKind::RisingShadvarga, None, Favour::Against)],
+            Outcome::Fails
+        )
+    );
+    assert_eq!(
+        ClauseKind::RisingShadvarga.source(),
+        "Shatpanchashika I.4, the 1941 gloss"
+    );
 }
 
 #[test]

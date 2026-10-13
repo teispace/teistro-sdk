@@ -33,6 +33,9 @@ const report = new Map();
 
 /** A number as every binding spells it: nine decimals, never an exponent. */
 const number = (value) => (Number.isInteger(value) ? String(value) : value.toFixed(9));
+// A natal point as every runner prints it: `LAGNA`, `MIDHEAVEN`, or the
+// graha's full key.
+const point = (p) => (p.point === 'GRAHA' ? p.graha : p.point);
 
 /** FNV-1a over UTF-8 bytes, so a JSON section can be compared without a parser. */
 function fnv(text) {
@@ -434,7 +437,7 @@ const charts = geo.chart.foundMany({
       from: 2462000.5,
       to: 2465652.5,
       grahas: ['MOON', 'SUN'],
-      points: ['LAGNA', 'MARS', 'VENUS'],
+      points: ['LAGNA', 'MIDHEAVEN', 'MARS', 'VENUS'],
       aspects: [0, 45, 90, 135, 180],
     },
   },
@@ -860,7 +863,7 @@ for (const chart of charts) {
   });
   chart.hits.forEach((hit, k) => {
     const e = hit.event;
-    const to = e.to === undefined ? '-' : e.to.point === 'LAGNA' ? 'LAGNA' : e.to.graha;
+    const to = e.to === undefined ? '-' : point(e.to);
     put(
       `chart-${i}-hit-${k}`,
       `${number(hit.instant)} ${hit.graha} ${e.kind} ${e.into ?? '-'} ${e.motion ?? e.turns} ${to} ` +
@@ -1155,7 +1158,7 @@ for (const chart of charts) {
   contacts.forEach((at, n) =>
     put(
       `chart-${i}-progressed-contact-${n}`,
-      `${number(at.life)} ${number(at.sky)} ${at.graha} ${at.to.point === 'LAGNA' ? 'LAGNA' : at.to.graha} ${at.angle} ${at.motion}`,
+      `${number(at.life)} ${number(at.sky)} ${at.graha} ${point(at.to)} ${at.angle} ${at.motion}`,
     ),
   );
   const western = chart.westernAspects;
@@ -1237,7 +1240,6 @@ for (const chart of charts) {
   doshas.forEach((d, n) =>
     put(`chart-${i}-dosha-${n}`, `${d.system} ${d.koota ?? 'NONE'} ${d.side ?? 'NONE'} ${flag(d.lifted)}`),
   );
-  const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);
   const synastry = chart.synastry;
   put(`chart-${i}-synastry-count`, `${synastry.length}`);
   synastry.forEach((at, n) =>

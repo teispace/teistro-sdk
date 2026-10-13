@@ -192,7 +192,8 @@ pub struct ContactRequest {
     pub progression: Progression,
     /// The progressed planets: the seven unless asked.
     pub grahas: Vec<Graha>,
-    /// The radical points: the seven and the ascendant unless asked.
+    /// The radical points: the seven, the ascendant and the midheaven
+    /// unless asked.
     pub points: Vec<NatalPoint>,
     /// The aspects' angles, whole degrees from 0 to 180: Leo's table
     /// unless asked.
@@ -261,7 +262,7 @@ impl Default for ContactRequest {
             points: SEVEN
                 .iter()
                 .map(|graha| NatalPoint::Graha { graha: *graha })
-                .chain([NatalPoint::Lagna])
+                .chain([NatalPoint::Lagna, NatalPoint::Midheaven])
                 .collect(),
             aspects: ContactRequest::LEO_ASPECTS.to_vec(),
         }

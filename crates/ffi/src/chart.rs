@@ -2381,6 +2381,7 @@ struct HitColumns {
     motion: Vec<u8>,
     to_lagna: Vec<u8>,
     to_graha: Vec<u16>,
+    to_midheaven: Vec<u8>,
     angle: Vec<u16>,
     phase: Vec<u8>,
 }
@@ -2423,9 +2424,10 @@ impl HitColumns {
             columns.kind.push(TsHitKind::from(&hit.event) as u8);
             columns.into.push(into);
             columns.motion.push(TsMotion::from(motion) as u8);
-            let (to_lagna, to_graha) = point_cells(to);
+            let (to_lagna, to_graha, to_midheaven) = point_cells(to);
             columns.to_lagna.push(to_lagna);
             columns.to_graha.push(to_graha);
+            columns.to_midheaven.push(to_midheaven);
             columns.angle.push(angle);
             columns.phase.push(phase);
         }
@@ -2444,6 +2446,7 @@ impl HitColumns {
                 ColumnData::U8(&self.motion),
                 ColumnData::U8(&self.to_lagna),
                 ColumnData::U16(&self.to_graha),
+                ColumnData::U8(&self.to_midheaven),
                 ColumnData::U16(&self.angle),
                 ColumnData::U8(&self.phase),
             ],
@@ -3287,13 +3290,15 @@ impl AspectTables {
     }
 }
 
-/// A natal point as the boundary carries it: 1 and 0 for the lagna, 0 and
-/// the graha's id for a graha, and 0 and 0 for none.
-pub(crate) fn point_cells(point: Option<teistro::NatalPoint>) -> (u8, u16) {
+/// A natal point as the boundary carries it, a lagna flag, a graha id and
+/// a midheaven flag: 1, 0 and 0 for the lagna, 0, the graha's id and 0
+/// for a graha, 0, 0 and 1 for the midheaven, and all 0 for none.
+pub(crate) fn point_cells(point: Option<teistro::NatalPoint>) -> (u8, u16, u8) {
     match point {
-        Some(teistro::NatalPoint::Lagna) => (1, 0),
-        Some(teistro::NatalPoint::Graha { graha }) => (0, graha.id()),
-        None => (0, 0),
+        Some(teistro::NatalPoint::Lagna) => (1, 0, 0),
+        Some(teistro::NatalPoint::Graha { graha }) => (0, graha.id(), 0),
+        Some(teistro::NatalPoint::Midheaven) => (0, 0, 1),
+        None => (0, 0, 0),
     }
 }
 

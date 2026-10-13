@@ -858,12 +858,14 @@ export type GrahaName = Exclude<Graha, 'unknown'> | BareKey<Graha>;
 type BareKey<Full> = Full extends `${string}.${infer Bare}` ? Bare : never;
 
 /**
- * A natal point a transit aspects: a natal graha or the lagna. The same
- * spelling goes into `HitRequest.points` and comes back as an aspect's `to`.
+ * A natal point a transit aspects: a natal graha, the lagna or the
+ * midheaven. The same spelling goes into `HitRequest.points` and comes back
+ * as an aspect's `to`.
  */
 export type NatalPoint =
   | { readonly point: 'GRAHA'; readonly graha: Graha | 'unknown' }
-  | { readonly point: 'LAGNA' };
+  | { readonly point: 'LAGNA' }
+  | { readonly point: 'MIDHEAVEN' };
 
 /** What a hit was, tagged by `kind`; each kind carries its own fields. */
 export type HitEvent =
@@ -1029,11 +1031,12 @@ export interface HitRequest {
   readonly grahas?: readonly GrahaName[];
   /** The kinds of event to report; all four by default. */
   readonly kinds?: readonly HitKind[];
-  /** The natal points aspected: a graha's key, `'LAGNA'`, or an aspect's `to`; the nine and the lagna by default. */
+  /** The natal points aspected: a graha's key, `'LAGNA'`, `'MIDHEAVEN'`, or an aspect's `to`; the nine and the lagna by default. */
   readonly points?: readonly (
     | NatalPoint
     | { readonly point: 'GRAHA'; readonly graha: GrahaName }
     | 'LAGNA'
+    | 'MIDHEAVEN'
     | GrahaName
   )[];
   /** The aspects' angles, whole degrees from 0 to 180; the conjunction and opposition by default (C145). */
@@ -1582,7 +1585,7 @@ export interface ProgressionsRequest {
     readonly to: number;
     /** The progressed planets; the seven by default. */
     readonly grahas?: HitRequest['grahas'];
-    /** The radical points; the seven and the lagna by default. */
+    /** The radical points; the seven, the lagna and the midheaven by default. */
     readonly points?: HitRequest['points'];
     /** The aspects' angles, whole degrees to 180; Leo's table (p. 48) by default. */
     readonly aspects?: HitRequest['aspects'];
@@ -2674,6 +2677,8 @@ export interface PrashnaRequest {
 export interface PrashnaRules {
   /** How Pisces rises: both ways (the default) or by the head. */
   readonly pisces?: 'BOTH_WAYS' | 'SHIRSHODAYA';
+  /** Whose the rising varga is (C336): the navamsha's lord (the default) or the majority of the lagna's six vargas. */
+  readonly risingVarga?: 'NAVAMSHA' | 'SHADVARGA';
   /** Which rule times the matter; `BASELINE` is unsourced. */
   readonly timing?: 'STRONGEST_GRAHA' | 'FIRST_OCCUPIED' | 'MOON_DAYS' | 'BASELINE';
   /** Which rule reads an unspoken question; `BASELINE` is unsourced. */
@@ -2733,7 +2738,7 @@ export interface Prashna {
 
 /** One clause of the verdict, naming its verse by its kind. */
 export interface PrashnaClause {
-  readonly kind: 'LAGNA_RISING' | 'IN_LAGNA' | 'RISING_NAVAMSHA' | 'ASPECTS_LAGNA' | 'ASPECTS_MOON' | 'KARYA_HOUSE';
+  readonly kind: 'LAGNA_RISING' | 'IN_LAGNA' | 'RISING_NAVAMSHA' | 'RISING_SHADVARGA' | 'ASPECTS_LAGNA' | 'ASPECTS_MOON' | 'KARYA_HOUSE';
   /** The graha it is about; `null` for how the lagna rises. */
   readonly graha: Graha | null;
   readonly favour: 'FOR' | 'AGAINST' | 'BOTH';

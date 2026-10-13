@@ -353,9 +353,9 @@ public final class ParityRunner {
 
     // ── The shared readings ───────────────────────────────────────────────
 
-    /** A natal point as every runner prints it: {@code LAGNA}, or the graha's full key. */
+    /** A natal point as every runner prints it: {@code LAGNA}, {@code MIDHEAVEN}, or the graha's full key. */
     private static String natalKey(NatalPoint point) {
-        return point.graha() == null ? "LAGNA" : point.graha().fullKey();
+        return point.graha() == null ? point.point() : point.graha().fullKey();
     }
 
     /** A harmonic point as every runner prints it: a graha's full key, or the angle's name. */
@@ -1474,7 +1474,7 @@ public final class ParityRunner {
                         "midpoints", map("orbDeg", 1.5), "composite", true, "davison", true)))
                 .progressions(ProgressionsRequest.of(map("at", 2470000.5, "year", "NOON_SIDEREAL_TIME", "angles", "SOLAR_ARC_LONGITUDE",
                         "direction", "NAIBOD", "contacts", map("from", 2462000.5, "to", 2465652.5,
-                                "grahas", List.of("MOON", "SUN"), "points", List.of(map("point", "LAGNA"), map("point", "GRAHA", "graha", "MARS"),
+                                "grahas", List.of("MOON", "SUN"), "points", List.of(map("point", "LAGNA"), map("point", "MIDHEAVEN"), map("point", "GRAHA", "graha", "MARS"),
                                         map("point", "GRAHA", "graha", "VENUS")),
                                 "aspects", List.of(0, 45, 90, 135, 180)))))
                 .shadbala(true)

@@ -9,14 +9,16 @@
 //! carries only when the request asked for it.
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
-use teistro_prashna::{GRAHAS, Placed, Prashna, PrashnaRules, PrashnaSky, Question, read};
+use teistro_prashna::{
+    GRAHAS, Placed, Prashna, PrashnaRules, PrashnaSky, Question, SHADVARGA, read,
+};
 use teistro_serial::Document;
 use teistro_state::state;
 
 use crate::ChartArea;
-use crate::rules_bridge::navamsha_of;
+use crate::rules_bridge::{navamsha_of, varga_sign};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -135,7 +137,7 @@ impl ChartArea<'_> {
         }
         Ok(PrashnaSky {
             lagna_deg: foundation.lagna_deg,
-            lagna_navamsha: navamsha_of(foundation.lagna_deg)?,
+            lagna_vargas: lagna_vargas(foundation.lagna_deg)?,
             grahas,
             strength,
         })
@@ -154,4 +156,14 @@ impl ChartArea<'_> {
         read(&self.prashna_sky(document)?, asked.question, asked.rules)
             .map_err(|error| error.under(PRASHNA))
     }
+}
+
+/// The lagna's sign in each of the [`SHADVARGA`], under the SDK's classical
+/// scheme for each, as the grahas' navāṁśas are read.
+fn lagna_vargas(lagna_deg: f64) -> Result<[Rashi; 6], Error> {
+    let mut signs = [Rashi::Aries; 6];
+    for (slot, varga) in signs.iter_mut().zip(SHADVARGA) {
+        *slot = varga_sign(varga, lagna_deg)?;
+    }
+    Ok(signs)
 }

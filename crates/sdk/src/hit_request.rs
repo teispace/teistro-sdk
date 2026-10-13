@@ -247,7 +247,7 @@ impl HitRequest {
             placeable(
                 self.points.iter().filter_map(|point| match point {
                     NatalPoint::Graha { graha } => Some(*graha),
-                    NatalPoint::Lagna => None,
+                    NatalPoint::Lagna | NatalPoint::Midheaven => None,
                 }),
                 "points",
             )?;
@@ -361,8 +361,9 @@ pub(crate) struct Asked {
 }
 
 /// A natal point as a request may name it: as an answer's `to` spells it
-/// (`{"point": "GRAHA", "graha": "graha.MOON"}`, `{"point": "LAGNA"}`), or
-/// bare, a graha's key or `"LAGNA"`.
+/// (`{"point": "GRAHA", "graha": "graha.MOON"}`, `{"point": "LAGNA"}`,
+/// `{"point": "MIDHEAVEN"}`), or bare, a graha's key, `"LAGNA"` or
+/// `"MIDHEAVEN"`.
 #[derive(Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
@@ -377,9 +378,12 @@ impl<'de> Deserialize<'de> for PointAsked {
                 .map(|graha| PointAsked(NatalPoint::Graha { graha }))
                 .map_err(D::Error::custom)
         };
-        let shapes = "a point is \"LAGNA\", a graha's key, or an aspect's `to`";
+        let shapes = "a point is \"LAGNA\", \"MIDHEAVEN\", a graha's key, or an aspect's `to`";
         match &value {
             serde_json::Value::String(key) if key == "LAGNA" => Ok(PointAsked(NatalPoint::Lagna)),
+            serde_json::Value::String(key) if key == "MIDHEAVEN" => {
+                Ok(PointAsked(NatalPoint::Midheaven))
+            }
             serde_json::Value::String(key) => {
                 graha(key).map_err(|why| D::Error::custom(format!("{why}; {shapes}")))
             }
@@ -387,6 +391,7 @@ impl<'de> Deserialize<'de> for PointAsked {
                 let field = |name: &str| fields.get(name).and_then(serde_json::Value::as_str);
                 match (field("point"), field("graha"), fields.len()) {
                     (Some("LAGNA"), None, 1) => Ok(PointAsked(NatalPoint::Lagna)),
+                    (Some("MIDHEAVEN"), None, 1) => Ok(PointAsked(NatalPoint::Midheaven)),
                     (Some("GRAHA"), Some(key), 2) => graha(key),
                     _ => Err(D::Error::custom(format!(
                         "{value} is not a natal point; {shapes}"
@@ -478,6 +483,7 @@ pub(crate) fn groups(natals: &[&Document], topocentric: bool) -> Vec<(Place, Vec
 pub(crate) fn lattices_of(
     request: &HitRequest,
     natals: &[&Document],
+    midheavens: &[Option<f64>],
     members: &[usize],
 ) -> Result<Vec<(Meaning, Lattice)>, Error> {
     let mut meanings = Vec::new();
@@ -506,6 +512,7 @@ pub(crate) fn lattices_of(
             let natal_deg = match point {
                 NatalPoint::Graha { graha } => foundation.graha(*graha).map(|at| at.longitude_deg),
                 NatalPoint::Lagna => Some(foundation.lagna_deg),
+                NatalPoint::Midheaven => midheavens.get(*chart).copied().flatten(),
             }
             .ok_or_else(|| {
                 Error::invalid_arg(format!("natal chart {chart} has no {point:?} to aspect"))
@@ -607,6 +614,19 @@ mod tests {
                 NatalPoint::Graha { graha: Graha::Moon }
             ]
         );
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "points": ["MIDHEAVEN", {{"point": "MIDHEAVEN"}}]}}"#
+        ));
+        assert_eq!(asked.unwrap_err().field(), Some("hits.points"));
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "points": [{{"point": "MIDHEAVEN"}}, "LAGNA"]}}"#
+        ))
+        .unwrap();
+        assert_eq!(asked.points(), [NatalPoint::Midheaven, NatalPoint::Lagna]);
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "points": [{{"point": "MIDHEAVEN", "graha": "SUN"}}]}}"#
+        ));
+        assert_eq!(asked.unwrap_err().field(), Some("hits.points[0]"));
     }
 
     #[test]

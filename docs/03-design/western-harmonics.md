@@ -79,9 +79,11 @@ Libra; Pluto (♋12.8) in the tenth.
 2. **The points are the planets the chart places, the Ascendant and the
    midheaven.** The nodes are left out, as every Western page leaves
    them. A point of the harmonic chart is a `HarmonicPoint`: a graha,
-   the Ascendant or the midheaven. The hit list's `NatalPoint` names
-   no midheaven, and widening it would move every reader of the hits
-   and the synastry for a point only this chart carries.
+   the Ascendant or the midheaven. It stays its own type although the
+   hit list's `NatalPoint` now names the midheaven too: a harmonic
+   point is a position the chart multiplies, a natal point a target a
+   moving planet reaches, and either may gain a member the other does
+   not.
 3. **In the chart's own zodiac (C253).** The positions are multiplied
    as the chart holds them, as the Western houses are read: under the
    tropical profile Addey's chart to the letter, under a sidereal one

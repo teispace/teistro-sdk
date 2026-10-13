@@ -1966,7 +1966,16 @@ fn a_chart_request_answers_the_hit_list() {
     }
     assert_ne!(lists[0].len(), lists[1].len(), "two charts, two lists");
     let columns = [
-        "instant", "graha", "kind", "into", "motion", "to_lagna", "to_graha", "angle", "phase",
+        "instant",
+        "graha",
+        "kind",
+        "into",
+        "motion",
+        "to_lagna",
+        "to_graha",
+        "angle",
+        "phase",
+        "to_midheaven",
     ]
     .map(column);
     let expected: Vec<&teistro::Hit> = lists.iter().flatten().collect();
@@ -1999,9 +2008,12 @@ fn a_chart_request_answers_the_hit_list() {
             } => {
                 assert_eq!(cell(4), i64::from(TsMotion::from(motion) as u8));
                 match to {
-                    teistro::NatalPoint::Lagna => assert_eq!(cell(5), 1),
+                    teistro::NatalPoint::Lagna => assert_eq!((cell(5), cell(9)), (1, 0)),
+                    teistro::NatalPoint::Midheaven => {
+                        assert_eq!((cell(5), cell(6), cell(9)), (0, 0, 1));
+                    }
                     teistro::NatalPoint::Graha { graha } => {
-                        assert_eq!((cell(5), cell(6)), (0, i64::from(graha.id())));
+                        assert_eq!((cell(5), cell(6), cell(9)), (0, i64::from(graha.id()), 0));
                     }
                 }
                 assert_eq!(cell(7), i64::from(angle));
@@ -6826,8 +6838,15 @@ fn a_chart_request_answers_the_progressions() {
             .iter()
             .map(|c| match c.to {
                 teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
-                teistro::NatalPoint::Lagna => 0,
+                teistro::NatalPoint::Lagna | teistro::NatalPoint::Midheaven => 0,
             })
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("progressed_contacts", "to_midheaven"),
+        contacts
+            .iter()
+            .map(|c| i64::from(c.to == teistro::NatalPoint::Midheaven))
             .collect::<Vec<_>>()
     );
     assert_eq!(
@@ -7139,7 +7158,7 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
     let lagna = |point: teistro::NatalPoint| i64::from(point == teistro::NatalPoint::Lagna);
     let graha = |point: teistro::NatalPoint| match point {
         teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
-        teistro::NatalPoint::Lagna => 0,
+        teistro::NatalPoint::Lagna | teistro::NatalPoint::Midheaven => 0,
     };
     assert_eq!(
         ints("synastry_rows", "first_lagna"),
@@ -7179,14 +7198,14 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
         }),
         ("first_graha", |row| match row.first {
             teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
-            teistro::NatalPoint::Lagna => 0,
+            teistro::NatalPoint::Lagna | teistro::NatalPoint::Midheaven => 0,
         }),
         ("second_lagna", |row| {
             i64::from(row.second == teistro::NatalPoint::Lagna)
         }),
         ("second_graha", |row| match row.second {
             teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
-            teistro::NatalPoint::Lagna => 0,
+            teistro::NatalPoint::Lagna | teistro::NatalPoint::Midheaven => 0,
         }),
         ("contrary", |row| i64::from(row.contrary)),
     ];

@@ -839,6 +839,7 @@ function thePrashna(ctx: Context): string {
     question: { house: 7, number: 14, tense: 'PAST' },
     rules: {
       pisces: 'SHIRSHODAYA',
+      risingVarga: 'SHADVARGA',
       timing: 'BASELINE',
       mook: 'MOON_HOUSE',
       moon: { kshina: 'DARK_ELEVENTH_TO_NEW_MOON' },
