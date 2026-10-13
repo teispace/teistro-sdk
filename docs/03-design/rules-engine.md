@@ -493,6 +493,20 @@ rather than carrying a second copy of ch. 92 in its data. Neither rule
 answers a corpus chart, which records no night; both hold on real skies
 (`crates/sdk/tests/twilight.rs`).
 
+**Ch. 10's last antidotes, built (2026-10-13).** The prints' vv. 44 to 52
+are the chapter's antidotes, and two were left. Their v. 50 (the modern
+8): a malefic in the fourth or tenth standing between benefics, with
+benefics in the kendras and trikonas, "makes the father happy", so it is
+named by the father's evils alone (ch. 9 vv. 25 and 35 to 45 and the Sun's
+rules of 43 to 45) and lifts no evil of the child's own. Their v. 51, in a
+different metre: a malefic in the fourth with Jupiter in a kendra or
+trikona gives long life and health and gladdens both families, so every
+evil names it. The modern numbering counts their 50 as its 8 and their 52
+as its 9 and has no number for 51, which is cited under the 8 it follows
+and says so. They answer 1 and 19 of the corpus's charts; neither
+cancels an evil no other antidote already did, so the cancelled count
+stays 446.
+
 **A rule can name another (2026-09-16).** `{"type": "rule", "key": …}` holds
 when the rule it names holds, read from the set an evaluator is given
 (`with_rules`). That is the design's `ref { rule }`, and it is what lets ch. 9's

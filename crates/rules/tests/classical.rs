@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 166);
+    assert_eq!(rules.len(), 168);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -316,12 +316,20 @@ const SILENT: [&str; 70] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 166] = [
+const ANSWERED: [(&str, usize); 168] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
     ("ARISHTA_BHANGA_BENEFIC_IN_KENDRA", 70),
     ("ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA", 12),
+    (
+        "ARISHTA_BHANGA_MALEFIC_FOURTH_JUPITER_IN_KENDRA_OR_TRIKONA",
+        19,
+    ),
+    (
+        "ARISHTA_BHANGA_MALEFIC_IN_FOURTH_OR_TENTH_AMONG_BENEFICS",
+        1,
+    ),
     ("ARISHTA_BHANGA_MARS_WITH_JUPITER", 31),
     ("ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA", 2),
     ("ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA", 25),
