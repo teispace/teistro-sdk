@@ -3,7 +3,8 @@
 //! stream when it carries a progress token; the headers the revision
 //! requires are checked against the body; a foreign origin, another
 //! method and another path are refused; and closing the connection
-//! cancels the call it carries.
+//! cancels the call it carries. The transport is served in this
+//! process; the binary is started once, to show its options reach it.
 
 #![allow(
     clippy::unwrap_used,
@@ -15,50 +16,45 @@
 
 use std::fmt::Write as _;
 use std::io::{BufRead as _, BufReader, Read as _, Write as _};
-use std::net::TcpStream;
-use std::process::{Child, Command, Stdio};
+use std::net::{TcpListener, TcpStream};
+use std::process::{Command, Stdio};
+use std::sync::Arc;
 use std::time::Instant;
 
 use serde_json::{Value, json};
+use teistro_mcp::http::{self, Http, MakeServer};
+use teistro_mcp::{Engine, Limits, Server};
 
 const MODERN: &str = "2026-07-28";
 
-/// The binary serving HTTP on a port of its own, and its address.
+/// The transport serving on a loopback port of its own, in this process
+/// so what it runs is measured; the thread lives until the tests end.
 struct Served {
-    child: Child,
     address: String,
 }
 
 impl Served {
-    fn start(args: &[&str]) -> Served {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_teistro-mcp"))
-            .args(["--http", "127.0.0.1:0"])
-            .args(args)
-            .stdin(Stdio::null())
-            .stderr(Stdio::piped())
-            .spawn()
-            .expect("the binary starts");
-        let mut stderr = BufReader::new(child.stderr.take().unwrap());
-        let mut line = String::new();
-        stderr.read_line(&mut line).unwrap();
-        let address = line
-            .trim()
-            .strip_prefix("teistro-mcp: serving http://")
-            .and_then(|rest| rest.strip_suffix("/mcp"))
-            .unwrap_or_else(|| panic!("no address in {line:?}"))
-            .to_owned();
-        Served { child, address }
+    /// Serves `engine` as the binary would with `http`, the message bound
+    /// given to the server's limits as `--max-message-bytes` gives it.
+    fn start(engine: Engine, http: Http) -> Served {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap().to_string();
+        let limits = Limits {
+            message_bytes: http.message_bytes,
+            ..Limits::default()
+        };
+        let make: Arc<MakeServer> = Arc::new(move || Ok(Server::new(engine).with_limits(limits)));
+        std::thread::spawn(move || http::serve(&listener, &http, &make));
+        Served { address }
+    }
+
+    /// The shipped transport over no ephemeris.
+    fn plain() -> Served {
+        Served::start(Engine::None, Http::default())
     }
 
     fn connect(&self) -> TcpStream {
         TcpStream::connect(&self.address).unwrap()
-    }
-}
-
-impl Drop for Served {
-    fn drop(&mut self) {
-        let _ = self.child.kill();
-        let _ = self.child.wait();
     }
 }
 
@@ -184,7 +180,7 @@ fn days(id: u64, token: Option<&str>) -> Value {
 /// server, and a notification is accepted with no body.
 #[test]
 fn a_post_answers_as_json_and_a_notification_is_accepted() {
-    let served = Served::start(&["--ephemeris", "NONE"]);
+    let served = Served::plain();
     let answer = post(&served, &numerology(1));
     assert_eq!(answer.status, 200, "{}", answer.body);
     assert_eq!(answer.header("content-type"), Some("application/json"));
@@ -212,7 +208,7 @@ fn a_post_answers_as_json_and_a_notification_is_accepted() {
 /// is computed; a revision the transport does not speak is `-32022`.
 #[test]
 fn the_required_headers_are_checked_against_the_body() {
-    let served = Served::start(&["--ephemeris", "NONE"]);
+    let served = Served::plain();
     for (change, header) in [
         (("MCP-Protocol-Version", None), "MCP-Protocol-Version"),
         (("Mcp-Method", Some("tools/list")), "Mcp-Method"),
@@ -246,14 +242,14 @@ fn the_required_headers_are_checked_against_the_body() {
 /// past the bound 413.
 #[test]
 fn a_foreign_origin_another_method_or_path_is_refused() {
-    let served = Served::start(&[
-        "--ephemeris",
-        "NONE",
-        "--allow-origin",
-        "https://app.example",
-        "--max-message-bytes",
-        "4096",
-    ]);
+    let served = Served::start(
+        Engine::None,
+        Http {
+            origins: vec![String::from("https://app.example")],
+            message_bytes: Some(4096),
+            ..Http::default()
+        },
+    );
     let call = numerology(6);
     for origin in ["https://evil.example", "null"] {
         let refused = post_with(&served, &call, &[("Origin", Some(origin))]);
@@ -287,7 +283,7 @@ fn a_foreign_origin_another_method_or_path_is_refused() {
 /// unbuffered by a proxy.
 #[test]
 fn a_call_with_a_token_is_answered_as_an_event_stream() {
-    let served = Served::start(&[]);
+    let served = Served::start(Engine::Builtin, Http::default());
     let answer = post(&served, &days(8, Some("quarter")));
     assert_eq!(answer.status, 200);
     assert_eq!(answer.header("content-type"), Some("text/event-stream"));
@@ -321,7 +317,13 @@ fn a_call_with_a_token_is_answered_as_an_event_stream() {
 /// free for the next call sooner than a whole call takes.
 #[test]
 fn closing_the_connection_cancels_its_call() {
-    let served = Served::start(&["--http-workers", "1"]);
+    let served = Served::start(
+        Engine::Builtin,
+        Http {
+            workers: 1,
+            ..Http::default()
+        },
+    );
     let started = Instant::now();
     let message = days(9, Some("cancel-me"));
     let headers = required(&message);
@@ -352,7 +354,7 @@ fn closing_the_connection_cancels_its_call() {
 /// graceful closure are events of one response.
 #[test]
 fn a_subscription_is_acknowledged_and_closed_on_one_stream() {
-    let served = Served::start(&["--ephemeris", "NONE"]);
+    let served = Served::plain();
     let listen = json!({ "jsonrpc": "2.0", "id": 12, "method": "subscriptions/listen",
                          "params": { "_meta": meta(), "notifications": { "toolsListChanged": true } } });
     let answer = post(&served, &listen);
@@ -376,7 +378,13 @@ fn a_subscription_is_acknowledged_and_closed_on_one_stream() {
 /// `429` with a `Retry-After`.
 #[test]
 fn a_peer_past_its_rate_is_told_to_wait() {
-    let served = Served::start(&["--ephemeris", "NONE", "--http-rate", "1"]);
+    let served = Served::start(
+        Engine::None,
+        Http {
+            rate: Some(1),
+            ..Http::default()
+        },
+    );
     let ping =
         json!({ "jsonrpc": "2.0", "id": 13, "method": "ping", "params": { "_meta": meta() } });
     let statuses: Vec<u16> = (0..3).map(|_| post(&served, &ping).status).collect();
@@ -387,11 +395,51 @@ fn a_peer_past_its_rate_is_told_to_wait() {
 /// revision's Base64 form agrees with the body it names.
 #[test]
 fn an_encoded_name_header_is_decoded() {
-    let served = Served::start(&["--ephemeris", "NONE"]);
+    let served = Served::plain();
     let answered = post_with(
         &served,
         &numerology(14),
         &[("Mcp-Name", Some("=?base64?bnVtZXJvbG9neS5wcm9maWxl?="))],
     );
     assert_eq!(answered.status, 200, "{}", answered.body);
+}
+
+/// **The binary serves the transport** (P8): `--http` names the endpoint
+/// on stderr, port and all, and its options reach the transport, the
+/// rate here.
+#[test]
+fn the_binary_serves_the_endpoint_its_options_describe() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_teistro-mcp"))
+        .args([
+            "--http",
+            "127.0.0.1:0",
+            "--ephemeris",
+            "NONE",
+            "--http-rate",
+            "1",
+        ])
+        .stdin(Stdio::null())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("the binary starts");
+    let mut stderr = BufReader::new(child.stderr.take().unwrap());
+    let mut line = String::new();
+    stderr.read_line(&mut line).unwrap();
+    let address = line
+        .trim()
+        .strip_prefix("teistro-mcp: serving http://")
+        .and_then(|rest| rest.strip_suffix("/mcp"))
+        .map(str::to_owned);
+    let statuses: Option<Vec<u16>> = address.as_ref().map(|address| {
+        let served = Served {
+            address: address.clone(),
+        };
+        (0..3)
+            .map(|_| post(&served, &numerology(15)).status)
+            .collect()
+    });
+    let _ = child.kill();
+    let _ = child.wait();
+    assert!(address.is_some(), "no address in {line:?}");
+    assert_eq!(statuses, Some(vec![200, 200, 429]));
 }
