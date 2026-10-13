@@ -17,7 +17,7 @@ use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::time::UtcOffset;
-use teistro_gochar::hits::{HitEvent, Motion, NatalPoint};
+use teistro_gochar::hits::{HitEvent, Motion, NatalPoint, aspect_step_deg};
 use teistro_serial::Document;
 use teistro_western::{
     AngleMethod, ArcMeasure, Meridian, ParallelRequest, Progression, SpanSearch, SunAt,
@@ -206,6 +206,10 @@ pub struct ContactRequest {
     /// [`ChartArea::progressed_parallels`] under this orb; none unless
     /// asked, and that reading takes Leo's 1° then.
     pub parallels: Option<ParallelRequest>,
+    /// Whether the progressed planets' contacts among themselves are
+    /// asked too ([`ChartArea::progressed_mutual_contacts`]): Leo's "P. to
+    /// P." list (p. 41). Not unless asked.
+    pub mutual: bool,
 }
 
 impl ContactRequest {
@@ -249,6 +253,13 @@ impl ContactRequest {
         }
     }
 
+    /// The same request asking the progressed planets' contacts among
+    /// themselves too.
+    #[must_use]
+    pub fn with_mutual(self, mutual: bool) -> ContactRequest {
+        ContactRequest { mutual, ..self }
+    }
+
     /// The same request asking the parallels of declination too, under
     /// this orb.
     #[must_use]
@@ -284,6 +295,7 @@ impl Default for ContactRequest {
                 .collect(),
             aspects: ContactRequest::LEO_ASPECTS.to_vec(),
             parallels: None,
+            mutual: false,
         }
     }
 }
@@ -305,6 +317,24 @@ pub struct ProgressedContact {
     pub angle: u16,
     /// Which way the progressed planet was moving.
     pub motion: Motion,
+}
+
+/// Two progressed planets exactly in aspect with each other, and the
+/// instant of life it falls due: a line of Leo's "P. to P." list (*The
+/// Progressed Horoscope*, p. 41).
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct MutualContact {
+    /// The instant of life the contact measures to.
+    pub life: JulianDay<Utc>,
+    /// The instant of sky the aspect is exact at.
+    pub sky: JulianDay<Utc>,
+    /// The first planet, in the request's order.
+    pub first: Graha,
+    /// The second.
+    pub second: Graha,
+    /// The aspect's angle, 0 to 180 degrees.
+    pub angle: u16,
 }
 
 /// One parallel of declination: a progressed planet within the orb of a
@@ -711,6 +741,111 @@ impl ChartArea<'_> {
         // Stable, so spans closest together keep the planets' order.
         rows.sort_by(|a, b| a.closest.get().total_cmp(&b.closest.get()));
         Ok(rows)
+    }
+}
+
+impl ChartArea<'_> {
+    /// The **contacts among a birth's progressed planets** over a window
+    /// of life: each instant two of the request's planets stand at one of
+    /// its aspects to each other, with the instant of life it measures
+    /// to, in the order they fall due. Leo lists them beside the contacts
+    /// to the radical chart, "the aspects of the progressed among
+    /// themselves" (*The Progressed Horoscope*, pp. 40–41). Each pair is
+    /// read once, in the order the request names the planets; the points
+    /// play no part.
+    ///
+    /// ```no_run
+    /// # use teistro::{ContactRequest, Context, Document, Ephemeris};
+    /// # use teistro::catalogue::Graha;
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (birth, from, to): (Document, JulianDay<Utc>, JulianDay<Utc>) = todo!();
+    /// let asked = ContactRequest::default().with_grahas([Graha::Moon, Graha::Venus, Graha::Jupiter]);
+    /// for contact in sdk.chart().progressed_mutual_contacts(&birth, from, to, &asked)? {
+    ///     println!("{:?} {}° {:?} at {}", contact.first, contact.angle, contact.second, contact.life.get());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A window that does not run forward, what the hit list refuses of
+    /// the planets and aspects, and a planet the settings do not place,
+    /// named under `contacts`.
+    pub fn progressed_mutual_contacts(
+        self,
+        birth: &Document,
+        from: JulianDay<Utc>,
+        to: JulianDay<Utc>,
+        asked: &ContactRequest,
+    ) -> Result<Vec<MutualContact>, Error> {
+        self.mutual_of(birth, from, to, asked)
+            .map_err(|error| error.under("contacts"))
+    }
+
+    fn mutual_of(
+        self,
+        birth: &Document,
+        from: JulianDay<Utc>,
+        to: JulianDay<Utc>,
+        asked: &ContactRequest,
+    ) -> Result<Vec<MutualContact>, Error> {
+        forward(from, to)?;
+        asked.hits_between(from, to).check()?;
+        let foundation = &birth.foundation;
+        let born = foundation.instant;
+        let progression = asked.progression;
+        let pairs: Vec<[Graha; 2]> = asked
+            .grahas
+            .iter()
+            .enumerate()
+            .flat_map(|(k, &first)| {
+                asked
+                    .grahas
+                    .iter()
+                    .skip(k + 1)
+                    .map(move |&second| [first, second])
+            })
+            .collect();
+        // As the contacts' window: a day of life earlier, for Leo's rule.
+        let sky = (
+            progression.sky_at(born, from.plus_days(-1.0)?)?,
+            progression.sky_at(born, to)?,
+        );
+        let step = aspect_step_deg(&asked.aspects);
+        let found = self.founding(UtcOffset::UTC, |founder| {
+            founder.separation_events(&foundation.place, &pairs, step, sky)
+        })?;
+        let mut contacts = Vec::new();
+        for event in found.value {
+            let folded = event.separation_deg.min(360.0 - event.separation_deg);
+            let angle = folded.round();
+            // A line of the lattice is a whole degree; one the request did
+            // not ask for is a step between its aspects.
+            let Some(&angle) = asked
+                .aspects
+                .iter()
+                .find(|&&asked_angle| (f64::from(asked_angle) - angle).abs() < 0.5)
+            else {
+                continue;
+            };
+            let life = progression.life_at(born, event.instant)?;
+            if (from.get()..=to.get()).contains(&life.get()) {
+                let [first, second] = event.planets;
+                contacts.push(MutualContact {
+                    life,
+                    sky: event.instant,
+                    first,
+                    second,
+                    angle,
+                });
+            }
+        }
+        // Stable, so contacts due together keep the search's order.
+        contacts.sort_by(|a, b| a.life.get().total_cmp(&b.life.get()));
+        Ok(contacts)
     }
 }
 

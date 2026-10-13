@@ -2374,6 +2374,16 @@ test('a chart carries its progressions', () => {
     ['graha.JUPITER', { point: 'GRAHA', graha: 'graha.SUN' }, null, 2417523.5, false],
   );
   assert.ok(parallel.closestDeg < 1);
+  assert.equal(leo.mutual, null, 'no mutual contacts unless asked');
+
+  // The progressed Moon quincunx the progressed Venus (p. 41, "P. to P."),
+  // July 1907 by Leo's month for each degree.
+  const mutual = { from: 2417484.5, to: 2417941.5, grahas: ['MOON', 'VENUS'], aspects: [150], mutual: true };
+  const pp = ctx.chart.found({ instant: birth, ...london, progressions: { contacts: mutual } }).progressions;
+  assert.equal(pp.mutual.length, 1);
+  const [venus] = pp.mutual;
+  assert.deepEqual([venus.first, venus.second, venus.angle], ['graha.MOON', 'graha.VENUS', 150]);
+  assert.ok(venus.life >= 2417712.5 && venus.life < 2417773.5, `${venus.life}`);
 
   const instants = [birth, birth + 3000.25, birth + 9000.5];
   const asked = { at: 2430000.5, angles: 'SOLAR_ARC_LONGITUDE', direction: 'NAIBOD' };

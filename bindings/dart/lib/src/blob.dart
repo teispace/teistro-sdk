@@ -3486,6 +3486,8 @@ final class ChartsProgressions {
     required this.contactsAsked,
     required this.parallelCount,
     required this.parallelsAsked,
+    required this.mutualCount,
+    required this.mutualAsked,
     required this.length,
   });
 
@@ -3524,6 +3526,12 @@ final class ChartsProgressions {
 
   /// 1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none.
   final Uint8List parallelsAsked;
+
+  /// How many rows of the `progressed_mutual_contacts` section belong to this chart; 0 when the record's `contacts` did not ask `mutual`.
+  final Uint32List mutualCount;
+
+  /// 1 when the record's `contacts` asked `mutual`, so a count of 0 is a window holding none; 0 when they did not.
+  final Uint8List mutualAsked;
 
   /// The number of rows every column holds.
   final int length;
@@ -4776,6 +4784,39 @@ final class ChartsProgressedParallels {
   final int length;
 }
 
+/// The `progressed_mutual_contacts` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+final class ChartsProgressedMutualContacts {
+  const ChartsProgressedMutualContacts({
+    required this.life,
+    required this.sky,
+    required this.first,
+    required this.second,
+    required this.angle,
+    required this.length,
+  });
+
+  /// The instant of life it falls due, a Julian day (UTC).
+  final Float64List life;
+
+  /// The instant of sky the aspect is exact at, a Julian day (UTC).
+  final Float64List sky;
+
+  /// The first planet, in the record's order.
+  final Uint16List first;
+
+  /// The second.
+  final Uint16List second;
+
+  /// The aspect's angle, a whole degree 0 to 180.
+  final Uint16List angle;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5297,6 +5338,7 @@ final class Charts {
     required this.lalkitab,
     required this.moment,
     required this.progressedParallels,
+    required this.progressedMutualContacts,
   });
 
   /// What kind of chart these are.
@@ -5718,6 +5760,9 @@ final class Charts {
   /// Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
   final ChartsProgressedParallels progressedParallels;
 
+  /// Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+  final ChartsProgressedMutualContacts progressedMutualContacts;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5850,6 +5895,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atLalkitab = blob.section(123, 'lalkitab');
   final atMoment = blob.section(124, 'moment');
   final atProgressedParallels = blob.section(125, 'progressed_parallels');
+  final atProgressedMutualContacts = blob.section(126, 'progressed_mutual_contacts');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -9096,6 +9142,16 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atProgressions, 11),
         blob.columnOffset(atProgressions, 11) + atProgressions.count * 1,
       ),
+      mutualCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 12),
+        blob.columnOffset(atProgressions, 12) + atProgressions.count * 4,
+      ),
+      mutualAsked: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 13),
+        blob.columnOffset(atProgressions, 13) + atProgressions.count * 1,
+      ),
       length: atProgressions.count,
     ),
     progressedGrahas: ChartsProgressedGrahas(
@@ -10446,6 +10502,34 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atProgressedParallels, 8) + atProgressedParallels.count * 1,
       ),
       length: atProgressedParallels.count,
+    ),
+    progressedMutualContacts: ChartsProgressedMutualContacts(
+      life: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedMutualContacts, 0),
+        blob.columnOffset(atProgressedMutualContacts, 0) + atProgressedMutualContacts.count * 8,
+      ),
+      sky: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedMutualContacts, 1),
+        blob.columnOffset(atProgressedMutualContacts, 1) + atProgressedMutualContacts.count * 8,
+      ),
+      first: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedMutualContacts, 2),
+        blob.columnOffset(atProgressedMutualContacts, 2) + atProgressedMutualContacts.count * 2,
+      ),
+      second: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedMutualContacts, 3),
+        blob.columnOffset(atProgressedMutualContacts, 3) + atProgressedMutualContacts.count * 2,
+      ),
+      angle: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedMutualContacts, 4),
+        blob.columnOffset(atProgressedMutualContacts, 4) + atProgressedMutualContacts.count * 2,
+      ),
+      length: atProgressedMutualContacts.count,
     ),
   );
 }

@@ -323,6 +323,16 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**Progressions read the progressed planets' contacts among themselves.**
+**Numbers:** none moved; nothing is read unless asked. `mutual: true` in
+a contact window asks for Leo's "P. to P." list (*The Progressed
+Horoscope*, p. 41): every instant two of the window's planets stand at
+one of its aspects to each other, with the instant of life it measures
+to. His three dated lunar ones fall in his months: the Moon quincunx the
+progressed Uranus in May 1907, Venus in July and Jupiter in November.
+`progressed_mutual_contacts` carries them at the C boundary, and every
+binding reads them.
+
 **Progressions read the parallels of declination.** **Numbers:** none
 moved; nothing is read unless asked. A contact window's `parallels`
 (`{"orbDeg": 1}`, or `{}` for Leo's degree) asks for every stretch of

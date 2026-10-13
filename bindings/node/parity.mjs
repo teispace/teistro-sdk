@@ -442,6 +442,7 @@ const charts = geo.chart.foundMany({
       points: ['LAGNA', 'MIDHEAVEN', 'MARS', 'VENUS'],
       aspects: [0, 45, 90, 135, 180],
       parallels: { orbDeg: 1.5 },
+      mutual: true,
     },
   },
   shadbala: true,
@@ -1143,7 +1144,13 @@ for (const chart of charts) {
   );
   put(`chart-${i}-lalkitab-periods`, list(lk.periods.map((p) => `${p.planet}:${p.from}-${p.to}`)));
   put(`chart-${i}-lalkitab-annual`, list(lk.year.annual.planets.map((p) => `${p.graha}:${p.house}`)));
-  const { progressed: pg, directed: dr, contacts, parallels: progressedParallels } = chart.progressions;
+  const {
+    progressed: pg,
+    directed: dr,
+    contacts,
+    parallels: progressedParallels,
+    mutual: progressedMutual,
+  } = chart.progressions;
   put(
     `chart-${i}-progressed`,
     `${number(pg.life)} ${number(pg.sky)} ${number(pg.armcDeg)} ${number(pg.angles.ascendantDeg)} ${number(pg.angles.midheavenDeg)}`,
@@ -1169,6 +1176,13 @@ for (const chart of charts) {
       `chart-${i}-progressed-parallel-${n}`,
       `${number(at.closest)} ${numberOrDash(at.enters)} ${numberOrDash(at.leaves)} ${at.graha} ${point(at.to)} ` +
         `${number(at.closestDeg)} ${at.contrary ? 1 : 0}`,
+    ),
+  );
+  put(`chart-${i}-progressed-mutual-count`, `${progressedMutual.length}`);
+  progressedMutual.forEach((at, n) =>
+    put(
+      `chart-${i}-progressed-mutual-${n}`,
+      `${number(at.life)} ${number(at.sky)} ${at.first} ${at.second} ${at.angle}`,
     ),
   );
   const western = chart.westernAspects;

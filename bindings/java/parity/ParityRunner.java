@@ -1476,7 +1476,7 @@ public final class ParityRunner {
                         "direction", "NAIBOD", "contacts", map("from", 2462000.5, "to", 2465652.5,
                                 "grahas", List.of("MOON", "SUN"), "points", List.of(map("point", "LAGNA"), map("point", "MIDHEAVEN"), map("point", "GRAHA", "graha", "MARS"),
                                         map("point", "GRAHA", "graha", "VENUS")),
-                                "aspects", List.of(0, 45, 90, 135, 180), "parallels", map("orbDeg", 1.5)))))
+                                "aspects", List.of(0, 45, 90, 135, 180), "parallels", map("orbDeg", 1.5), "mutual", true))))
                 .shadbala(true)
                 .bhavaBala(true)
                 .state(true)
@@ -2338,6 +2338,13 @@ public final class ParityRunner {
             put(c + "-progressed-parallel-" + n, number(pl.closest()) + " " + bound(pl.enters()) + " "
                     + bound(pl.leaves()) + " " + pl.graha().fullKey() + " " + natalKey(pl.to()) + " "
                     + number(pl.closestDeg()) + " " + (pl.contrary() ? 1 : 0));
+        }
+        List<MutualContact> progressedMutual = Objects.requireNonNull(pr.mutual(), "no mutual contacts");
+        put(c + "-progressed-mutual-count", String.valueOf(progressedMutual.size()));
+        for (int n = 0; n < progressedMutual.size(); n += 1) {
+            MutualContact mc = progressedMutual.get(n);
+            put(c + "-progressed-mutual-" + n, number(mc.life()) + " " + number(mc.sky()) + " "
+                    + mc.first().fullKey() + " " + mc.second().fullKey() + " " + mc.angle());
         }
     }
 

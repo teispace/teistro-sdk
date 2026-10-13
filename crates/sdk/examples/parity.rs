@@ -2844,7 +2844,7 @@ fn dashed(items: impl Iterator<Item = String>) -> String {
 /// The progressions every runner asks for: a life in 2050 under the noon
 /// sidereal year, the angles by the solar arc in longitude and Naibod's
 /// direction, and ten years of the Moon's and the Sun's contacts.
-const PROGRESSIONS_JSON: &str = r#"{"at":2470000.5,"year":"NOON_SIDEREAL_TIME","angles":"SOLAR_ARC_LONGITUDE","direction":"NAIBOD","contacts":{"from":2462000.5,"to":2465652.5,"grahas":["MOON","SUN"],"points":["LAGNA","MIDHEAVEN","MARS","VENUS"],"aspects":[0,45,90,135,180],"parallels":{"orbDeg":1.5}}}"#;
+const PROGRESSIONS_JSON: &str = r#"{"at":2470000.5,"year":"NOON_SIDEREAL_TIME","angles":"SOLAR_ARC_LONGITUDE","direction":"NAIBOD","contacts":{"from":2462000.5,"to":2465652.5,"grahas":["MOON","SUN"],"points":["LAGNA","MIDHEAVEN","MARS","VENUS"],"aspects":[0,45,90,135,180],"parallels":{"orbDeg":1.5},"mutual":true}}"#;
 
 /// The progressions as the other three print them: the progressed chart's
 /// instants and angles, each of its grahas, the direction, and each
@@ -2909,15 +2909,10 @@ fn the_progressions(
         );
     }
     let contacts = read.contacts.expect("asked over a window");
-    put(
+    put_list(
         report,
-        &key("progressed-contact-count"),
-        contacts.len().to_string(),
-    );
-    for (n, at) in contacts.iter().enumerate() {
-        put(
-            report,
-            &key(&format!("progressed-contact-{n}")),
+        &key("progressed-contact"),
+        contacts.iter().map(|at| {
             format!(
                 "{} {} {} {} {} {}",
                 number(at.life.get()),
@@ -2926,19 +2921,14 @@ fn the_progressions(
                 natal_key(at.to),
                 at.angle,
                 wire_key(&at.motion)
-            ),
-        );
-    }
-    let parallels = read.parallels.expect("asked over the window");
-    put(
-        report,
-        &key("progressed-parallel-count"),
-        parallels.len().to_string(),
+            )
+        }),
     );
-    for (n, at) in parallels.iter().enumerate() {
-        put(
-            report,
-            &key(&format!("progressed-parallel-{n}")),
+    let parallels = read.parallels.expect("asked over the window");
+    put_list(
+        report,
+        &key("progressed-parallel"),
+        parallels.iter().map(|at| {
             format!(
                 "{} {} {} {} {} {} {}",
                 number(at.closest.get()),
@@ -2948,8 +2938,31 @@ fn the_progressions(
                 natal_key(at.to),
                 number(at.closest_deg),
                 u8::from(at.contrary)
-            ),
-        );
+            )
+        }),
+    );
+    let mutual = read.mutual.expect("asked over the window");
+    put_list(
+        report,
+        &key("progressed-mutual"),
+        mutual.iter().map(|at| {
+            format!(
+                "{} {} {} {} {}",
+                number(at.life.get()),
+                number(at.sky.get()),
+                at.first.full_key(),
+                at.second.full_key(),
+                at.angle
+            )
+        }),
+    );
+}
+
+/// A list as every runner prints it: `<key>-count`, then `<key>-<n>`.
+fn put_list(report: &mut Report, key: &str, rows: impl ExactSizeIterator<Item = String>) {
+    put(report, &format!("{key}-count"), rows.len().to_string());
+    for (n, row) in rows.enumerate() {
+        put(report, &format!("{key}-{n}"), row);
     }
 }
 

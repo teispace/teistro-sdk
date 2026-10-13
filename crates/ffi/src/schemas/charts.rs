@@ -381,6 +381,7 @@ pub fn charts() -> BlobSchema {
             chart_lalkitab_section(123),
             chart_moment_section(124),
             progressed_parallels_section(125),
+            progressed_mutual_contacts_section(126),
         ])
         .collect(),
     }
@@ -2479,6 +2480,45 @@ fn progressions_section(id: u32, empty: &str) -> SectionSchema {
                 "parallels_asked",
                 Scalar::U8,
                 "1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none.",
+            ),
+            ColumnDef::new(
+                "mutual_count",
+                Scalar::U32,
+                "How many rows of the `progressed_mutual_contacts` section belong to this chart; 0 when the record's `contacts` did not ask `mutual`.",
+            ),
+            ColumnDef::new(
+                "mutual_asked",
+                Scalar::U8,
+                "1 when the record's `contacts` asked `mutual`, so a count of 0 is a window holding none; 0 when they did not.",
+            ),
+        ],
+    )
+}
+
+/// The `progressed_mutual_contacts` section: every contact among the
+/// progressed planets, ragged under the `progressions` row.
+fn progressed_mutual_contacts_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "progressed_mutual_contacts",
+        "Every exact aspect two progressed planets make to each other in the record's window (Leo's \"P. to P.\" list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.",
+        vec![
+            ColumnDef::new(
+                "life",
+                Scalar::F64,
+                "The instant of life it falls due, a Julian day (UTC).",
+            ),
+            ColumnDef::new(
+                "sky",
+                Scalar::F64,
+                "The instant of sky the aspect is exact at, a Julian day (UTC).",
+            ),
+            graha_column("first", "The first planet, in the record's order."),
+            graha_column("second", "The second."),
+            ColumnDef::new(
+                "angle",
+                Scalar::U16,
+                "The aspect's angle, a whole degree 0 to 180.",
             ),
         ],
     )

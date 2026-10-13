@@ -99,6 +99,13 @@ His sidereal time at birth, 2h 52m 54s, and at Greenwich noon that day,
    separating, and the Moon, falling from 25° south towards Uranus's 22°
    north, comes within it just after the year ends: his tenses, read
    exactly.
+8. **The progressed planets among themselves** (pp. 40–41). "We first
+   find the aspects of progressed planets and angles to radical, and
+   next the aspects of the progressed among themselves": each series
+   has a "P. to R." and a "P. to P." list. His lunar "P. to P." list
+   dates three, the progressed Moon quincunx the progressed Uranus in
+   May 1907, Venus in July and Jupiter in November, each found in his
+   month or the month before as his "P. to R." list is.
 
 ## The design
 
@@ -161,8 +168,21 @@ The calls:
 
   The radical midheaven is a natal point of the hit list and in the
   default request, so the September trine is found with the planets'
-  contacts (`leos_lunar_year_is_found_month_by_month`). Contacts
-  between two progressed planets are not covered.
+  contacts (`leos_lunar_year_is_found_month_by_month`).
+
+- **The progressed planets among themselves are a separation search.**
+  `ContactRequest::mutual` asks them and
+  `ChartArea::progressed_mutual_contacts` reads them: each pair of the
+  request's planets once, in its order, over the lattice of its aspects
+  (15° for Leo's table, so the semi-square and sesquiquadrate come),
+  each crossing kept when it is one of the aspects asked and its instant
+  of life falls in the window. The search is the perfection's, made
+  general: `Founder::separation_events` takes any lattice and any graha
+  the settings place, Ketu as Rahu's lattice turned half a circle, and
+  `Founder::contact_events` is its 30° case among the seven. Leo's
+  "P. to P." list also holds the progressed angles' aspects (the
+  ascendant square the midheaven); those turn with the angle method and
+  are not searched.
 
 - **The parallels of declination are stretches of life, not instants.**
   A row is a progressed planet within the orb of a radical point's
@@ -212,19 +232,20 @@ is optional, and a section the record does not ask for costs nothing.
   method (C237), spelled as their Rust members, with Leo's defaults;
 - `direction`: `"SOLAR"` or an arc measure (`"NAIBOD"`, `"PTOLEMY"`, or
   `{"PER_YEAR": degrees}`);
-- `contacts`: `{from, to, grahas, points, aspects, parallels}`, spelled
-  as the hit list spells them, `parallels` an orb (`{}` for Leo's)
-  asking the parallels of declination too.
+- `contacts`: `{from, to, grahas, points, aspects, parallels, mutual}`,
+  spelled as the hit list spells them, `parallels` an orb (`{}` for
+  Leo's) asking the parallels of declination too and `mutual: true` the
+  progressed planets' contacts among themselves.
 
 A record with neither `at` nor `contacts` is refused under
 `progressions.at`, and every refusal is named from the record's root
 (`progressions.contacts.points[0]`, `progressions.direction`).
 
-Five sections answer it:
+Six sections answer it:
 - `progressions`, a row a chart: the instants of life and sky, the
   progressed meridian, ascendant and midheaven, the direction's arc and
-  directed angles, the contact and parallel counts, and whether each was
-  asked.
+  directed angles, the contact, parallel and mutual counts, and whether
+  each was asked.
   A chart read without `at` writes NaN in the instants and angles.
 - `progressed_grahas`, a row a progressed graha: the longitude in the
   chart's zodiac, the tropical longitude and the speed. The nine, and
@@ -239,6 +260,8 @@ Five sections answer it:
 - `progressed_parallels`, ragged by the chart's parallel count: the
   closest instant, the edges (NaN where the window cuts the stretch),
   the planet, the point, the distance apart and whether contrary.
+- `progressed_mutual_contacts`, ragged by the chart's mutual count: the
+  instants of life and sky, the two planets and the angle.
 
 The boundary founds a progressed chart on the batch's foundation alone
 (its place, clock and kind). It writes the grahas and angles and nothing
@@ -247,13 +270,13 @@ asks every section and still matches the façade's bare request cell for
 cell.
 
 Node, wasm, Python and Dart read these as one value, `chart.progressions`
-(`{progressed, directed, contacts, parallels}`, each null when not
-asked). The
+(`{progressed, directed, contacts, parallels, mutual}`, each null when
+not asked). The
 parity runners ask the same record of both their charts: a life in 2050
 under the noon sidereal year, the solar arc in longitude, Naibod's
 direction, and ten years of the Moon's and the Sun's contacts and
 parallels (under a 1.5° orb) to the lagna, the midheaven, Mars and
-Venus.
+Venus, and their contacts with each other.
 
 ## What building it found
 

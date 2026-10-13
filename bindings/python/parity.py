@@ -1289,6 +1289,7 @@ def main() -> None:
                     "points": ["LAGNA", "MIDHEAVEN", "MARS", "VENUS"],
                     "aspects": [0, 45, 90, 135, 180],
                     "parallels": {"orbDeg": 1.5},
+                    "mutual": True,
                 },
             },
             shadbala=True,
@@ -1948,6 +1949,13 @@ def main() -> None:
                     f"chart-{i}-progressed-parallel-{n}",
                     f"{number(pl.closest)} {number_or_dash(pl.enters)} {number_or_dash(pl.leaves)} "
                     f"{pl.graha.full_key} {natal_key(pl.to)} {number(pl.closest_deg)} {int(pl.contrary)}",
+                )
+            assert pr.mutual is not None
+            put(f"chart-{i}-progressed-mutual-count", str(len(pr.mutual)))
+            for n, mc in enumerate(pr.mutual):
+                put(
+                    f"chart-{i}-progressed-mutual-{n}",
+                    f"{number(mc.life)} {number(mc.sky)} {mc.first.full_key} {mc.second.full_key} {mc.angle}",
                 )
             western = chart.western_aspects
             assert western is not None

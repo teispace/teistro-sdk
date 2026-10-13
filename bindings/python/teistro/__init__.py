@@ -533,6 +533,7 @@ __all__ = [
     "DirectedPlanet",
     "ProgressedContact",
     "ProgressedParallel",
+    "MutualContact",
     # The Western aspects.
     "WesternAspectRequest",
     "WesternAspectRow",
@@ -4701,6 +4702,7 @@ ProgressionContacts = TypedDict(
         "points": Sequence[Union["NatalPoint", Graha, str]],
         "aspects": Sequence[int],
         "parallels": "ParallelRequest",
+        "mutual": bool,
     },
     total=False,
 )
@@ -4708,9 +4710,10 @@ ProgressionContacts.__doc__ = """A window of life to find a birth's
 progressed contacts in: `from` and `to`, UTC Julian days, and optionally the
 progressed `grahas` (the seven by default), the radical `points` (the seven,
 the lagna and the midheaven) and the `aspects` (whole degrees to 180; Leo's table, p. 48),
-spelled as a `HitRequest` spells them, and `parallels`, an orb (`{}` for
-Leo's 1°) asking the parallels of declination over the same window. A
-functional `TypedDict` because `from` is a keyword.
+spelled as a `HitRequest` spells them; `parallels`, an orb (`{}` for
+Leo's 1°) asking the parallels of declination over the same window; and
+`mutual`, `True` to ask the progressed planets' contacts among themselves
+(Leo's "P. to P."). A functional `TypedDict` because `from` is a keyword.
 """
 
 
@@ -4814,6 +4817,25 @@ class ProgressedContact:
 
 
 @dataclass(frozen=True)
+class MutualContact:
+    """Two progressed planets exactly in aspect with each other: a line of
+    Leo's "P. to P." list (*The Progressed Horoscope*, p. 41)."""
+
+    life: float
+    """The instant of life it falls due, a UTC Julian day."""
+
+    sky: float
+    """The instant of sky it is exact at."""
+
+    first: Graha
+    """The first planet, in the request's order."""
+
+    second: Graha
+    angle: int
+    """A whole degree 0 to 180."""
+
+
+@dataclass(frozen=True)
 class ProgressedParallel:
     """A stretch of life a progressed planet stands within the orb of a
     radical point's distance from the equator, on either side of it (Leo,
@@ -4845,7 +4867,7 @@ class Progressions:
     """A birth read through its progressions
     (`03-design/western-progressions.md`): `progressed` and `directed` are
     `None` without `at`, `contacts` `None` without a window, and
-    `parallels` `None` unless the window asked for them.
+    `parallels` and `mutual` `None` unless the window asked for them.
 
     >>> # chart = ctx.chart.found(..., progressions={"at": 2460676.5})
     >>> # moon = next(g for g in chart.progressions.progressed.grahas if g.graha is Graha.MOON)
@@ -4855,6 +4877,7 @@ class Progressions:
     directed: Optional[Directed]
     contacts: Optional[Tuple[ProgressedContact, ...]]
     parallels: Optional[Tuple[ProgressedParallel, ...]] = None
+    mutual: Optional[Tuple[MutualContact, ...]] = None
 
 
 class WesternAspectRequest(TypedDict, total=False):
@@ -14343,6 +14366,7 @@ class ChartBatch:
         d = self.decoded.directed_grahas
         c = self.decoded.progressed_contacts
         r = self.decoded.progressed_parallels
+        u = self.decoded.progressed_mutual_contacts
         charts = len(self.decoded.cast.instant)
         if p.length == 0:
             return []
@@ -14354,16 +14378,19 @@ class ChartBatch:
             or g.length != per_chart * charts
             or c.length != sum(p.contact_count)
             or r.length != sum(p.parallel_count)
+            or u.length != sum(p.mutual_count)
         ):
             raise TeistroError(
                 Status.INTERNAL,
                 f"progressions has {p.length} rows, progressed_grahas {g.length},"
-                f" directed_grahas {d.length}, progressed_contacts {c.length} and"
-                f" progressed_parallels {r.length} for {charts} charts",
+                f" directed_grahas {d.length}, progressed_contacts {c.length},"
+                f" progressed_parallels {r.length} and progressed_mutual_contacts {u.length}"
+                f" for {charts} charts",
             )
         read: list[Progressions] = []
         contact = 0
         parallel = 0
+        mutual_at = 0
         for k in range(charts):
             planets = range(k * per_chart, (k + 1) * per_chart)
             contacts: Optional[Tuple[ProgressedContact, ...]] = None
@@ -14396,6 +14423,19 @@ class ChartBatch:
                     for at in range(parallel, parallel + p.parallel_count[k])
                 )
             parallel += p.parallel_count[k]
+            mutual: Optional[Tuple[MutualContact, ...]] = None
+            if p.mutual_asked[k] == 1:
+                mutual = tuple(
+                    MutualContact(
+                        life=u.life[at],
+                        sky=u.sky[at],
+                        first=Graha(u.first[at]),
+                        second=Graha(u.second[at]),
+                        angle=u.angle[at],
+                    )
+                    for at in range(mutual_at, mutual_at + p.mutual_count[k])
+                )
+            mutual_at += p.mutual_count[k]
             read.append(
                 Progressions(
                     progressed=Progressed(
@@ -14429,6 +14469,7 @@ class ChartBatch:
                     else None,
                     contacts=contacts,
                     parallels=parallels,
+                    mutual=mutual,
                 )
             )
         return read

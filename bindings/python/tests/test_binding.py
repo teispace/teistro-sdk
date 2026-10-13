@@ -2300,6 +2300,22 @@ class AnEngine(WithLibrary):
                 (Graha.JUPITER, NatalPoint("GRAHA", Graha.SUN), None, 2417523.5, False),
             )
             self.assertLess(parallel.closest_deg, 1)
+            self.assertIsNone(leo.mutual, "no mutual contacts unless asked")
+
+            # The progressed Moon quincunx the progressed Venus (p. 41,
+            # "P. to P."), July 1907 by Leo's month for each degree.
+            mutual: ProgressionContacts = {
+                "from": 2417484.5,
+                "to": 2417941.5,
+                "grahas": ["MOON", "VENUS"],
+                "aspects": [150],
+                "mutual": True,
+            }
+            pp = ctx.chart.found(instant=birth, progressions={"contacts": mutual}, **london).progressions
+            assert pp is not None and pp.mutual is not None
+            (venus,) = pp.mutual
+            self.assertEqual((venus.first, venus.second, venus.angle), (Graha.MOON, Graha.VENUS, 150))
+            self.assertTrue(2417712.5 <= venus.life < 2417773.5, venus.life)
 
             instants = [birth, birth + 3000.25, birth + 9000.5]
             many: ProgressionsRequest = {"at": 2430000.5, "angles": "SOLAR_ARC_LONGITUDE", "direction": "NAIBOD"}

@@ -694,3 +694,121 @@ fn a_parallels_request_is_refused_by_the_field_it_names() {
         Some("contacts.points")
     );
 }
+
+/// Leo's mutual list for his forty-seventh year (p. 41, "P. to P."): the
+/// progressed Moon quincunx the progressed Uranus in May 1907, Venus in
+/// July and Jupiter in November, dated as his lunar list dates the
+/// contacts to the radical chart, a month for each degree.
+#[test]
+fn leos_progressed_moon_meets_the_progressed_planets_in_his_months() {
+    let sdk = context();
+    let born = sdk
+        .chart()
+        .reading(jd(BIRTH), &request().with_outer_planets())
+        .unwrap()
+        .value;
+    let asked = ContactRequest::default()
+        .with_grahas([Graha::Moon, Graha::Venus, Graha::Jupiter, Graha::Uranus])
+        .with_mutual(true);
+    let found = sdk
+        .chart()
+        .progressed_mutual_contacts(&born, jd(first_of(1906, 10)), jd(first_of(1908, 1)), &asked)
+        .unwrap();
+    let moon: Vec<(Graha, u16, f64)> = found
+        .iter()
+        .filter(|c| c.first == Graha::Moon)
+        .map(|c| (c.second, c.angle, c.life.get()))
+        .collect();
+    for (graha, (year, month)) in [
+        (Graha::Uranus, (1907, 5)),
+        (Graha::Venus, (1907, 7)),
+        (Graha::Jupiter, (1907, 11)),
+    ] {
+        let (_, _, life) = moon
+            .iter()
+            .find(|(second, angle, _)| *second == graha && *angle == 150)
+            .unwrap_or_else(|| panic!("{graha:?} in {moon:?}"));
+        let before = if month == 1 {
+            (year - 1, 12)
+        } else {
+            (year, month - 1)
+        };
+        let next = if month == 12 {
+            (year + 1, 1)
+        } else {
+            (year, month + 1)
+        };
+        assert!(
+            (first_of(before.0, before.1)..first_of(next.0, next.1)).contains(life),
+            "{graha:?} at {life}"
+        );
+    }
+    // Each exact at its instant of sky, read back through the chart there.
+    for contact in &found {
+        let chart = sdk
+            .chart()
+            .reading(contact.sky, &request().with_outer_planets())
+            .unwrap()
+            .value;
+        let at = |graha| {
+            chart
+                .foundation
+                .grahas
+                .iter()
+                .chain(&chart.foundation.outer)
+                .find(|p| p.graha == graha)
+                .unwrap()
+                .tropical_deg
+        };
+        let apart = (at(contact.first) - at(contact.second)).rem_euclid(360.0);
+        let apart = apart.min(360.0 - apart);
+        assert!(
+            (apart - f64::from(contact.angle)).abs() < 1e-4,
+            "{contact:?}: {apart}"
+        );
+    }
+    assert!(found.windows(2).all(|pair| match pair {
+        [a, b] => a.life.get() <= b.life.get(),
+        _ => true,
+    }));
+}
+
+/// Ketu is Rahu turned half a circle, so its contacts are Rahu's lattice
+/// turned: each read back exact against the chart's own Ketu.
+#[test]
+fn a_mutual_contact_with_ketu_is_exact_against_the_chart_s_ketu() {
+    let sdk = context();
+    let born = birth(&sdk);
+    let asked = ContactRequest::default()
+        .with_grahas([Graha::Sun, Graha::Ketu])
+        .with_aspects([0, 45, 90, 135, 180]);
+    let (from, to) = (jd(first_of(1880, 1)), jd(first_of(1940, 1)));
+    let found = sdk
+        .chart()
+        .progressed_mutual_contacts(&born, from, to, &asked)
+        .unwrap();
+    assert_ne!(found.len(), 0, "the Sun meets Ketu in sixty years");
+    for contact in &found {
+        let chart = sdk.chart().reading(contact.sky, &request()).unwrap().value;
+        let at = |graha| tropical(&chart, graha);
+        let apart = (at(Graha::Sun) - at(Graha::Ketu)).rem_euclid(360.0);
+        let apart = apart.min(360.0 - apart);
+        assert!(
+            (apart - f64::from(contact.angle)).abs() < 1e-4,
+            "{contact:?}: {apart}"
+        );
+    }
+    let refused = sdk
+        .chart()
+        .progressed_mutual_contacts(&born, to, from, &asked)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("contacts.to"));
+    let uranus = asked.with_grahas([Graha::Sun, Graha::Uranus]);
+    let without = sdk
+        .chart()
+        .progressed_mutual_contacts(&born, from, to, &uranus);
+    assert!(
+        without.is_ok(),
+        "the outer planets are placed by the settings, not the birth: {without:?}"
+    );
+}

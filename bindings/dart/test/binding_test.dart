@@ -2928,6 +2928,29 @@ void _engineTests() {
       (Graha.jupiter, const NatalGraha(Graha.sun), null, 2417523.5, false),
     );
     expect(parallel.closestDeg, lessThan(1));
+    expect(leo.mutual, isNull, reason: 'no mutual contacts unless asked');
+
+    // The progressed Moon quincunx the progressed Venus (p. 41, "P. to
+    // P."), July 1907 by Leo's month for each degree.
+    final pp =
+        found(
+          birth,
+          progressions: const ProgressionsRequest(
+            contacts: ProgressionContacts(
+              from: 2417484.5,
+              to: 2417941.5,
+              grahas: [Graha.moon, Graha.venus],
+              aspects: [150],
+              mutual: true,
+            ),
+          ),
+        ).progressions!;
+    final [venus] = pp.mutual!;
+    expect(
+      (venus.first, venus.second, venus.angle),
+      (Graha.moon, Graha.venus, 150),
+    );
+    expect(venus.life, inInclusiveRange(2417712.5, 2417773.5));
 
     final instants = [birth, birth + 3000.25, birth + 9000.5];
     const many = ProgressionsRequest(

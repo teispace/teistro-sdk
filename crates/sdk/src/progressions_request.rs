@@ -11,8 +11,8 @@ use teistro_western::{AngleMethod, ArcMeasure, ParallelRequest, Progression, Rat
 use crate::area::ChartArea;
 use crate::hit_request::PointAsked;
 use crate::progressed::{
-    ContactRequest, Directed, DirectionArc, Progressed, ProgressedContact, ProgressedParallel,
-    ProgressionRequest,
+    ContactRequest, Directed, DirectionArc, MutualContact, Progressed, ProgressedContact,
+    ProgressedParallel, ProgressionRequest,
 };
 use crate::reading::ChartRequest;
 
@@ -76,6 +76,9 @@ pub struct Progressions {
     /// The parallels of declination in the request's window, when its
     /// contacts asked them.
     pub parallels: Option<Vec<ProgressedParallel>>,
+    /// The progressed planets' contacts among themselves in the request's
+    /// window, when its contacts asked them.
+    pub mutual: Option<Vec<MutualContact>>,
 }
 
 impl ProgressionsRequest {
@@ -85,9 +88,10 @@ impl ProgressionsRequest {
     /// (`"NOON_SIDEREAL_TIME"`, `{"sky": "DAY", "life": "YEAR"}`), the
     /// direction `"SOLAR"`, `"NAIBOD"`, `"PTOLEMY"` or `{"PER_YEAR": 1}`,
     /// and the contacts `{"from", "to", "grahas", "points", "aspects",
-    /// "parallels"}` as the hit list spells them, `parallels` an orb
-    /// (`{"orbDeg": 1}`, or `{}` for Leo's) asking the parallels of
-    /// declination too.
+    /// "parallels", "mutual"}` as the hit list spells them, `parallels` an
+    /// orb (`{"orbDeg": 1}`, or `{}` for Leo's) asking the parallels of
+    /// declination too, and `mutual: true` the progressed planets'
+    /// contacts among themselves.
     ///
     /// # Errors
     ///
@@ -122,6 +126,15 @@ impl ChartArea<'_> {
             ),
             None => (None, None),
         };
+        let mutual = match &asked.contacts {
+            Some(window) if window.asked.mutual => Some(self.progressed_mutual_contacts(
+                birth,
+                window.from,
+                window.to,
+                &window.asked,
+            )?),
+            _ => None,
+        };
         let (contacts, parallels) = match &asked.contacts {
             Some(window) => (
                 Some(self.progressed_contacts(birth, window.from, window.to, &window.asked)?),
@@ -142,6 +155,7 @@ impl ChartArea<'_> {
             directed,
             contacts,
             parallels,
+            mutual,
         })
     }
 }
@@ -193,6 +207,8 @@ struct ContactsAsked {
     aspects: Option<Vec<u16>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     parallels: Option<ParallelRequest>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    mutual: bool,
 }
 
 impl Asked {
@@ -269,6 +285,7 @@ impl ContactsAsked {
             parallels.check().map_err(|why| why.under("parallels"))?;
             asked = asked.with_parallels(parallels);
         }
+        asked = asked.with_mutual(self.mutual);
         // The planets, points and aspects are the hit list's, refused as
         // it refuses them; the window of sky it searches comes later.
         asked.hits_between(from, to).check()?;
@@ -309,7 +326,7 @@ mod tests {
             r#"{"at": 2417505.5, "rate": {"sky": "DAY", "life": {"DAYS": 30}},
                 "angles": "QUOTIDIAN", "direction": {"PER_YEAR": 1.5},
                 "contacts": {"from": 1e6, "to": 2e6, "points": ["LAGNA", "graha.SUN"], "aspects": [45],
-                             "parallels": {}}}"#,
+                             "parallels": {}, "mutual": true}}"#,
         )
         .unwrap();
         assert_eq!(
@@ -324,6 +341,7 @@ mod tests {
         let window = asked.contacts.unwrap();
         assert_eq!(window.asked.aspects, [45]);
         assert_eq!(window.asked.parallels, Some(ParallelRequest::default()));
+        assert!(window.asked.mutual);
         assert_eq!(window.asked.points.len(), 2);
         assert_eq!(window.asked.progression, asked.progressed.progression);
     }
