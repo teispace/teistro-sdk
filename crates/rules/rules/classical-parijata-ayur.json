@@ -334,7 +334,7 @@
         "chapter": "4",
         "verse": "90",
         "rank": 1,
-        "note": "Malefics in the third, sixth and eleventh, benefics in kendras or trikonas, and the lagna lord strong: long life. Read from V. Subrahmanya Sastri's 1932 translation."
+        "note": "Malefics in the third, sixth and eleventh, benefics in kendras or trikonas, and the lagna lord strong: long life. The nodes are left out of the malefics: they stand six houses apart, and no two of the third, sixth and eleventh are, so with them the verse could never hold. Read from V. Subrahmanya Sastri's 1932 translation."
       },
       "conditions": [
         {
@@ -363,7 +363,11 @@
               10,
               12
             ],
-            "atLeast": 1
+            "atLeast": 1,
+            "except": [
+              "RAHU",
+              "KETU"
+            ]
           }
         },
         {
@@ -401,7 +405,7 @@
         "chapter": "4",
         "verse": "91",
         "rank": 1,
-        "note": "Benefics together in the sixth, seventh or eighth, and malefics in the third, sixth and eleventh: long life. Read from V. Subrahmanya Sastri's 1932 translation."
+        "note": "Benefics together in the sixth, seventh or eighth, and malefics in the third, sixth and eleventh: long life. The nodes are left out of the malefics: they stand six houses apart, and no two of the third, sixth and eleventh are, so with them the verse could never hold. Read from V. Subrahmanya Sastri's 1932 translation."
       },
       "conditions": [
         {
@@ -440,7 +444,11 @@
               10,
               12
             ],
-            "atLeast": 1
+            "atLeast": 1,
+            "except": [
+              "RAHU",
+              "KETU"
+            ]
           }
         }
       ],

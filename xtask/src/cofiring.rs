@@ -1,5 +1,6 @@
-//! Rules that hold on exactly the same charts: probable duplicates
-//! (`05-testing/01-quality-bar.md`, "rule fixtures").
+//! Rules that hold on exactly the same charts, probable duplicates, and
+//! rules that hold on none or on all of them (`05-testing/01-quality-bar.md`,
+//! "rule fixtures").
 //!
 //! Every shipped rule is evaluated over a sky the SDK computes: charts
 //! spread over two centuries at six places, no two sharing an instant.
@@ -18,13 +19,17 @@
 //!
 //! Anything else is a rule copied where it should have differed, and the
 //! gate fails naming it; so does a [`REVIEWED`] entry that no longer
-//! co-fires. The pass computes each chart's whole reading, its panchanga
+//! co-fires. A rule written as conditions that holds on no chart is listed
+//! in [`FIXTURES`] with an instant and a place where it does, which the
+//! pass evaluates, or in [`UNSEEN`] with why it cannot; one unlisted fails,
+//! and so does a rule holding on every chart, since nothing then shows it
+//! can fail, unless [`ALWAYS`] says it names grahas rather than asks. The pass computes each chart's whole reading, its panchanga
 //! included, so it runs in verify rather than fast-check.
 //!
 //! `cargo xtask cofiring` writes the page; `check-cofiring` regenerates it
 //! in memory and fails on any difference.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::path::Path;
 
@@ -92,6 +97,198 @@ const REVIEWED: [(&[&str], &str); 3] = [
     ),
 ];
 
+/// Rules the sky never holds, each with an instant (a Julian day in UT)
+/// and a place, its latitude and longitude, where it does: rare rules,
+/// shown alive. Each was found at Kathmandu's latitude, on the meridian
+/// that puts the lagna the rule asks for on the horizon.
+const FIXTURES: [(&str, f64, f64, f64); 27] = [
+    (
+        "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
+        2_415_023.166_67,
+        27.7172,
+        172.13,
+    ),
+    (
+        "ARISHTA_NODES_WITH_LUMINARIES_LAGNA_AFFLICTED",
+        2_415_345.25,
+        27.7172,
+        -86.883,
+    ),
+    (
+        "ARISHTA_SATURN_LAGNA_MOON_EIGHTH_JUPITER_THIRD",
+        2_416_294.083_33,
+        27.7172,
+        105.938,
+    ),
+    (
+        "BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH",
+        2_425_046.833_33,
+        27.7172,
+        167.283,
+    ),
+    (
+        "BJ_SATURN_SUN_MOON_MARS_IN_ORDER",
+        2_416_033.75,
+        27.7172,
+        121.864,
+    ),
+    (
+        "BPHS_CANCER_RISING_WITH_JUPITER_AND_MOON_LIMITLESS",
+        2_404_926.5,
+        27.7172,
+        152.741,
+    ),
+    (
+        "BPHS_MOON_AND_A_BENEFIC_IN_ARUDHA_LAGNA_AND_JUPITER_SECOND",
+        2_436_428.666_67,
+        27.7172,
+        79.059,
+    ),
+    (
+        "BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH",
+        2_415_964.166_67,
+        27.7172,
+        -95.118,
+    ),
+    (
+        "BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH",
+        2_524_474.333_33,
+        27.7172,
+        17.863,
+    ),
+    ("NABHASA_GADA", 2_430_110.0, 27.7172, -93.752),
+    ("NABHASA_GOLA", 2_437_699.083_33, 27.7172, -37.399),
+    ("NABHASA_KAMALA", 2_420_757.166_67, 27.7172, 119.593),
+    ("NABHASA_NALA", 2_420_757.166_67, 27.7172, 59.593),
+    ("NABHASA_SAKATA", 2_418_976.25, 27.7172, -8.53),
+    ("NABHASA_VIHAGA", 2_418_976.25, 27.7172, 81.47),
+    ("PARASHARA_MATSYA", 2_418_336.0, 27.7172, 112.354),
+    (
+        "PARIJATA_JUPITER_EIGHTH_IN_A_SIGN_OF_MARS_ASPECTED_BY_FOUR",
+        2_428_308.916_67,
+        27.7172,
+        -89.235,
+    ),
+    (
+        "PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON",
+        2_417_139.0,
+        27.7172,
+        -89.502,
+    ),
+    (
+        "PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_LAGNA_LORD_EXALTED",
+        2_416_949.0,
+        27.7172,
+        48.39,
+    ),
+    (
+        "PARIJATA_SUN_SATURN_MARS_IN_LAGNA_WANING_MOON_IN_A_VENUS_SEVENTH",
+        2_425_223.25,
+        27.7172,
+        169.281,
+    ),
+    (
+        "PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
+        2_428_308.916_67,
+        27.7172,
+        -89.235,
+    ),
+    (
+        "SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH",
+        2_451_702.416_67,
+        27.7172,
+        -97.355,
+    ),
+];
+
+/// Rules the sky never holds and no instant searched does, each with why.
+const UNSEEN: [(&str, &str); 11] = [
+    (
+        "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
+        "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
+    ),
+    (
+        "BPHS_DEBILITATED_GRAHAS_SIXTH_EIGHTH_THIRD_AND_LAGNA_LORD_DIGNIFIED",
+        "Only Leo and Aquarius rising have a sign of debilitation in each of the third, sixth and eighth, and in both the graha debilitated in the third is the lagna lord, the Sun in Libra or Saturn in Aries, whom the verse wants exalted or in his own sign.",
+    ),
+    (
+        "BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM",
+        "No lagna lord regards the Sun as a neutral: the Moon, Mars, Mercury and Jupiter count him a friend, Venus and Saturn an enemy, and for Leo rising the lord is the Sun himself.",
+    ),
+    (
+        "BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH",
+        "It asks Mars and Jupiter together in the sign opposite Mercury in his own, so both near opposition to the Sun, with the Moon there too: no day from 1800 to 2400, the span the built-in ephemeris covers, has the slower grahas so.",
+    ),
+    (
+        "BPHS_SIX_GRAHAS_EXALTED",
+        "Mercury exalted in Virgo and Venus in Pisces would stand opposite, which the two never do, so the six are the Sun in Aries, the Moon in Taurus, Mars in Capricorn, Jupiter in Cancer, Venus in Pisces and Saturn in Libra: no day from 1800 to 2400 has the slower grahas so.",
+    ),
+    (
+        "PARASHARA_KOORMA",
+        "It asks the Sun, Mars and Saturn each in its own or exaltation sign in the lagna, third and eleventh, with a benefic in each of the fifth, sixth and seventh: no day from 1800 to 2400 has the grahas other than the Moon so.",
+    ),
+    (
+        "PARIJATA_MOON_IN_LEO_SUN_AND_SATURN_EIGHTH_VENUS_ASPECTING",
+        "Venus casts only the seventh aspect and never stands seventh from the Sun. The verse holds under the partial aspects Jataka Parijata ch. 2 counts, which the condition language does not read.",
+    ),
+    (
+        "PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA",
+        "A lagna's strength is its bhava bala, which has no required figure for it to fall short \
+         of, so no chart carries a weak lagna.",
+    ),
+    (
+        "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA",
+        "Four days from 1800 to 2400, all in 1895, have Jupiter in Cancer, Mercury and Saturn in Libra and the Sun, Mars and Venus as the rule asks, and on them the Moon is in Libra to Sagittarius, never Cancer.",
+    ),
+    (
+        "SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON",
+        "A Moon aspecting the second while the Sun stands in it is opposite the Sun, near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there.",
+    ),
+    (
+        "SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY",
+        "Mercury casts only the seventh aspect and keeps near the Sun, so the Moon he aspects is near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there.",
+    ),
+];
+
+/// Rules that hold on every chart by design, each with why: a rule that
+/// names grahas rather than asking whether, and says what it says in its
+/// participants.
+const ALWAYS: [(&str, &str); 1] = [(
+    "BPHS_NINTH_AND_FIFTH_LORDS_AND_THEIR_COMPANIONS_GIVE_WEALTH",
+    "BPHS names every chart's wealth-givers, the lords of the ninth and fifth and the grahas \
+     joining either, and the rule says which they are in its participants.",
+)];
+
 /// The instants of the `place`-th place: evenly through the span, each
 /// place offset by a fraction of a step so no two places share a sky, and
 /// an hour of the day that walks the golden ratio so the lagna visits
@@ -109,11 +306,13 @@ fn instants(place: u32) -> Vec<JulianDay<Utc>> {
         .collect()
 }
 
-/// What the sky gave: the shipped rules and, for each that held at least
-/// once, the charts it held on.
+/// What the sky gave: the shipped rules, for each that held at least
+/// once the charts it held on, and the [`FIXTURES`] that held at their
+/// instants.
 struct Sky {
     rules: Vec<Rule>,
     held: BTreeMap<String, Vec<u32>>,
+    fixed: BTreeSet<String>,
 }
 
 fn sky() -> Result<Sky, String> {
@@ -124,18 +323,20 @@ fn sky() -> Result<Sky, String> {
     let set = RuleRequest::shipped(ShippedRules::ALL)
         .rule_set()
         .map_err(|e| e.to_string())?;
-    let mut held: BTreeMap<String, Vec<u32>> = BTreeMap::new();
-    let mut chart = 0_u32;
-    for ((latitude, longitude), at) in PLACES.into_iter().zip(0..) {
+    let request = |(latitude, longitude): (f64, f64)| -> Result<ChartRequest, String> {
         let place = Place::new(
             Latitude::try_new(latitude).map_err(|e| e.to_string())?,
             Longitude::try_new(longitude).map_err(|e| e.to_string())?,
             Altitude::try_new(0.0).map_err(|e| e.to_string())?,
         );
-        let request = ChartRequest::at(place, UtcOffset::UTC);
+        Ok(ChartRequest::at(place, UtcOffset::UTC))
+    };
+    let mut held: BTreeMap<String, Vec<u32>> = BTreeMap::new();
+    let mut chart = 0_u32;
+    for (place, at) in PLACES.into_iter().zip(0..) {
         let read = sdk
             .chart()
-            .readings_with_rules(&instants(at), &request, &set)
+            .readings_with_rules(&instants(at), &request(place)?, &set)
             .map_err(|e| e.to_string())?
             .value;
         for (_, reading) in &read {
@@ -147,9 +348,28 @@ fn sky() -> Result<Sky, String> {
             chart += 1;
         }
     }
+    let mut fixed = BTreeSet::new();
+    for (key, jd, latitude, longitude) in FIXTURES {
+        let read = sdk
+            .chart()
+            .readings_with_rules(
+                &[JulianDay::literal(jd)],
+                &request((latitude, longitude))?,
+                &set,
+            )
+            .map_err(|e| e.to_string())?
+            .value;
+        if read
+            .iter()
+            .any(|(_, reading)| reading.present.iter().any(|p| p.rule.key == key))
+        {
+            fixed.insert(key.to_owned());
+        }
+    }
     Ok(Sky {
         rules: set.rules().to_vec(),
         held,
+        fixed,
     })
 }
 
@@ -290,23 +510,113 @@ fn rows(groups: &[Group<'_>], keep: impl Fn(Why) -> bool, reason: bool) -> Strin
     out
 }
 
-/// The rules written in the condition language that held on no chart, a
-/// row to a category.
-fn never(sky: &Sky) -> String {
-    let mut by_category: BTreeMap<&str, Vec<String>> = BTreeMap::new();
-    for rule in sky
-        .rules
+/// The rules written in the condition language: a rule computed in code
+/// has no conditions for this evaluation to read, and `check-doshas`
+/// measures it.
+fn written(sky: &Sky) -> impl Iterator<Item = &Rule> {
+    sky.rules.iter().filter(|r| !r.conditions.is_empty())
+}
+
+/// Refuses a written rule the sky never holds with neither a fixture nor
+/// a reason, a listed one the sky holds or the catalogue lacks, a fixture
+/// that does not hold at its instant, and a rule that holds on every
+/// chart, which has no negative fixture.
+fn unseen_refusals(sky: &Sky) -> Result<(), String> {
+    let listed: Vec<&str> = FIXTURES
         .iter()
-        .filter(|r| !r.conditions.is_empty() && !sky.held.contains_key(&r.key))
-    {
-        by_category
-            .entry(rule.category.as_str())
-            .or_default()
-            .push(format!("`{}`", rule.key));
+        .map(|(key, ..)| *key)
+        .chain(UNSEEN.iter().map(|(key, _)| *key))
+        .collect();
+    let charts = (PER_PLACE * PLACE_COUNT) as usize;
+    let mut found = Vec::new();
+    for rule in written(sky) {
+        let key = rule.key.as_str();
+        if !sky.held.contains_key(key) && !listed.contains(&key) {
+            found.push(format!(
+                "`{key}` holds on no chart of the sky; find an instant and a place where it holds \
+                 and list it in FIXTURES, or say in UNSEEN why none can"
+            ));
+        }
+        let always = ALWAYS.iter().any(|(listed, _)| *listed == key);
+        let everywhere = sky.held.get(key).is_some_and(|on| on.len() == charts);
+        if everywhere && !always {
+            found.push(format!(
+                "`{key}` holds on every chart of the sky, so nothing shows it can fail; fix \
+                 it, or list it in ALWAYS with why it names rather than asks"
+            ));
+        }
+        if always && !everywhere {
+            found.push(format!(
+                "`{key}` is listed in ALWAYS but fails on a chart of the sky; remove it"
+            ));
+        }
     }
+    for (at, key) in listed.iter().enumerate() {
+        if listed[..at].contains(key) {
+            found.push(format!("`{key}` is listed twice in FIXTURES and UNSEEN"));
+        } else if !written(sky).any(|r| r.key == *key) {
+            found.push(format!(
+                "`{key}` is listed in FIXTURES or UNSEEN but is no rule written in the condition \
+                 language; remove it"
+            ));
+        } else if sky.held.contains_key(*key) {
+            found.push(format!(
+                "`{key}` now holds in the sky, so it needs no fixture; remove it from FIXTURES or \
+                 UNSEEN"
+            ));
+        }
+    }
+    for (key, _) in ALWAYS {
+        if !written(sky).any(|r| r.key == key) {
+            found.push(format!(
+                "`{key}` is listed in ALWAYS but is no rule written in the condition language; \
+                 remove it"
+            ));
+        }
+    }
+    for (key, ..) in FIXTURES {
+        if !sky.fixed.contains(key) {
+            found.push(format!(
+                "`{key}` does not hold at its fixture's instant; find it another, or move it to \
+                 UNSEEN with why"
+            ));
+        }
+    }
+    if found.is_empty() {
+        Ok(())
+    } else {
+        Err(format!(
+            "{} finding(s) in xtask/src/cofiring.rs's FIXTURES, UNSEEN and ALWAYS:\n{}",
+            found.len(),
+            found.join("\n")
+        ))
+    }
+}
+
+/// The fixture rows, a row to a rule.
+fn fixture_rows() -> String {
     let mut out = String::new();
-    for (category, keys) in &by_category {
-        let _ = writeln!(out, "| {category} | {} |", keys.join("<br>"));
+    for (key, jd, latitude, longitude) in FIXTURES {
+        let _ = writeln!(out, "| `{key}` | {jd} | {latitude}, {longitude} |");
+    }
+    out
+}
+
+/// The rows of the rules held on every chart by design, a row to a rule
+/// with why.
+fn always_rows() -> String {
+    let mut out = String::new();
+    for (key, why) in ALWAYS {
+        let _ = writeln!(out, "| `{key}` | {why} |");
+    }
+    out
+}
+
+/// The unseen rows, a row to a rule with why.
+fn unseen_rows() -> String {
+    let mut out = String::new();
+    for (key, why) in UNSEEN {
+        let _ = writeln!(out, "| `{key}` | {why} |");
     }
     out
 }
@@ -339,6 +649,7 @@ fn page() -> Result<String, String> {
     let sky = sky()?;
     let (groups, chance) = groups(&sky);
     refusals(&groups)?;
+    unseen_refusals(&sky)?;
     let of = |keep: &dyn Fn(Why) -> bool| groups.iter().filter(|g| keep(g.why)).count();
     let charts = PER_PLACE * PLACE_COUNT;
     Ok(format!(
@@ -369,10 +680,21 @@ fn page() -> Result<String, String> {
          | charts | rules |\n|---:|---|\n{texts_rows}\n\
          ## Never held\n\n\
          A rule that holds on none of the charts is not a duplicate of anything, but it is \
-         either rare or dead, and these are the ones to read first. {computed} of the {never} \
-         are computed in code rather than written as conditions, and this evaluation does not \
-         see them; the rest follow.\n\n\
-         | category | rules |\n|---|---|\n{never_rows}",
+         either rare or dead, and every one is accounted for: it is listed with an instant and \
+         a place where it holds, which the gate evaluates, or with why none can. The instants \
+         were found by searching every two hours from 1900 to 2100 at Kathmandu's latitude, on \
+         the meridian that puts the rule's lagna on the horizon, and from 1800 to 2400, the \
+         span the built-in ephemeris covers, for a rule the two centuries lacked. {computed} \
+         rules the sky never holds are computed in code rather than written as conditions, \
+         which this evaluation does not read, and `check-doshas` measures them.\n\n\
+         ### Held at a found instant\n\n\
+         | rule | instant (JD, UT) | latitude, longitude |\n|---|---:|---|\n{fixture_rows}\n\
+         ### Held nowhere searched\n\n\
+         | rule | why |\n|---|---|\n{unseen_rows}\n\
+         ## Held on every chart\n\n\
+         A rule that holds on every chart of the sky fails the gate, unless it names grahas \
+         rather than asking whether, and these are the ones that do.\n\n\
+         | rule | why |\n|---|---|\n{always_rows}",
         rules = count(sky.rules.len()),
         charts = count(charts as usize),
         per = count(PER_PLACE as usize),
@@ -387,7 +709,9 @@ fn page() -> Result<String, String> {
         reviewed_rows = rows(&groups, |w| matches!(w, Why::Reviewed(_)), true),
         mutual_rows = rows(&groups, |w| w == Why::Mutual, false),
         texts_rows = rows(&groups, |w| w == Why::Texts, false),
-        never_rows = never(&sky),
+        fixture_rows = fixture_rows(),
+        unseen_rows = unseen_rows(),
+        always_rows = always_rows(),
         computed = sky
             .rules
             .iter()
@@ -459,5 +783,69 @@ mod tests {
         assert_eq!(why(&["A", "E"], &rules), Why::Texts);
         assert_eq!(why(&["A", "C"], &rules), Why::Unexplained);
         assert_eq!(why(&["A", "D"], &rules), Why::Unexplained);
+    }
+
+    /// A rule the sky never holds is refused unless listed, a rule held on
+    /// every chart unless it names, and a listed rule the sky holds or
+    /// lacks is stale.
+    #[test]
+    fn every_rule_is_held_somewhere_and_fails_somewhere() {
+        let rule = |key: &str| aspected(key, "Saravali", "MOON", "CANCER", "MERCURY");
+        let charts = PER_PLACE * PLACE_COUNT;
+        let mut rules: Vec<Rule> = [FIXTURES[0].0, UNSEEN[0].0, ALWAYS[0].0, "NEVER", "EVERY"]
+            .into_iter()
+            .map(rule)
+            .collect();
+        let mut held: BTreeMap<String, Vec<u32>> = BTreeMap::new();
+        held.insert(ALWAYS[0].0.to_owned(), (0..charts).collect());
+        held.insert("EVERY".to_owned(), (0..charts).collect());
+        let sky = Sky {
+            rules: rules.clone(),
+            held: held.clone(),
+            fixed: [FIXTURES[0].0.to_owned()].into_iter().collect(),
+        };
+        let found = unseen_refusals(&sky).unwrap_err();
+        assert!(found.contains("`NEVER` holds on no chart"), "{found}");
+        assert!(found.contains("`EVERY` holds on every chart"), "{found}");
+        assert!(
+            !found.contains(&format!("`{}` holds on", FIXTURES[0].0)),
+            "{found}"
+        );
+        assert!(
+            !found.contains(&format!("`{}` holds on", UNSEEN[0].0)),
+            "{found}"
+        );
+        assert!(
+            !found.contains(&format!("`{}` holds on", ALWAYS[0].0)),
+            "{found}"
+        );
+        // The other listed rules are no rules of this sky.
+        assert!(
+            found.contains(&format!("`{}` is listed", FIXTURES[1].0)),
+            "{found}"
+        );
+        // A fixture that stops holding, and listed rules the sky now holds
+        // or no longer always holds, are stale.
+        rules.retain(|r| r.key != "NEVER" && r.key != "EVERY");
+        held.insert(UNSEEN[0].0.to_owned(), vec![0]);
+        held.insert(ALWAYS[0].0.to_owned(), vec![0]);
+        let sky = Sky {
+            rules,
+            held,
+            fixed: BTreeSet::new(),
+        };
+        let found = unseen_refusals(&sky).unwrap_err();
+        assert!(
+            found.contains(&format!("`{}` now holds in the sky", UNSEEN[0].0)),
+            "{found}"
+        );
+        assert!(
+            found.contains(&format!("`{}` is listed in ALWAYS but fails", ALWAYS[0].0)),
+            "{found}"
+        );
+        assert!(
+            found.contains(&format!("`{}` does not hold at its fixture", FIXTURES[0].0)),
+            "{found}"
+        );
     }
 }

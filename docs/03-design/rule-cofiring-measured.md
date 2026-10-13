@@ -2,9 +2,9 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1527 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1481 rules hold at least once and 46 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1527 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1487 rules hold at least once and 40 never do.
 
-Rules holding on the same 5 or more charts form 109 groups, and each is explained. Below that, 4 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 109 groups, and each is explained. Below that, 5 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
 - **70 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
@@ -138,17 +138,60 @@ A group of one text that is none of these fails the gate, and so does a listed g
 
 ## Never held
 
-A rule that holds on none of the charts is not a duplicate of anything, but it is either rare or dead, and these are the ones to read first. 2 of the 46 are computed in code rather than written as conditions, and this evaluation does not see them; the rest follow.
+A rule that holds on none of the charts is not a duplicate of anything, but it is either rare or dead, and every one is accounted for: it is listed with an instant and a place where it holds, which the gate evaluates, or with why none can. The instants were found by searching every two hours from 1900 to 2100 at Kathmandu's latitude, on the meridian that puts the rule's lagna on the horizon, and from 1800 to 2400, the span the built-in ephemeris covers, for a rule the two centuries lacked. 2 rules the sky never holds are computed in code rather than written as conditions, which this evaluation does not read, and `check-doshas` measures them.
 
-| category | rules |
+### Held at a found instant
+
+| rule | instant (JD, UT) | latitude, longitude |
+|---|---:|---|
+| `ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND` | 2415023.16667 | 27.7172, 172.13 |
+| `ARISHTA_NODES_WITH_LUMINARIES_LAGNA_AFFLICTED` | 2415345.25 | 27.7172, -86.883 |
+| `ARISHTA_SATURN_LAGNA_MOON_EIGHTH_JUPITER_THIRD` | 2416294.08333 | 27.7172, 105.938 |
+| `BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH` | 2425046.83333 | 27.7172, 167.283 |
+| `BJ_SATURN_SUN_MOON_MARS_IN_ORDER` | 2416033.75 | 27.7172, 121.864 |
+| `BPHS_CANCER_RISING_WITH_JUPITER_AND_MOON_LIMITLESS` | 2404926.5 | 27.7172, 152.741 |
+| `BPHS_MOON_AND_A_BENEFIC_IN_ARUDHA_LAGNA_AND_JUPITER_SECOND` | 2436428.66667 | 27.7172, 79.059 |
+| `BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH` | 2415964.16667 | 27.7172, -95.118 |
+| `BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH` | 2524474.33333 | 27.7172, 17.863 |
+| `NABHASA_GADA` | 2430110 | 27.7172, -93.752 |
+| `NABHASA_GOLA` | 2437699.08333 | 27.7172, -37.399 |
+| `NABHASA_KAMALA` | 2420757.16667 | 27.7172, 119.593 |
+| `NABHASA_NALA` | 2420757.16667 | 27.7172, 59.593 |
+| `NABHASA_SAKATA` | 2418976.25 | 27.7172, -8.53 |
+| `NABHASA_VIHAGA` | 2418976.25 | 27.7172, 81.47 |
+| `PARASHARA_MATSYA` | 2418336 | 27.7172, 112.354 |
+| `PARIJATA_JUPITER_EIGHTH_IN_A_SIGN_OF_MARS_ASPECTED_BY_FOUR` | 2428308.91667 | 27.7172, -89.235 |
+| `PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON` | 2417139 | 27.7172, -89.502 |
+| `PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_LAGNA_LORD_EXALTED` | 2416949 | 27.7172, 48.39 |
+| `PARIJATA_SUN_SATURN_MARS_IN_LAGNA_WANING_MOON_IN_A_VENUS_SEVENTH` | 2425223.25 | 27.7172, 169.281 |
+| `PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_SATURN` | 2437699.08333 | 27.7172, -37.399 |
+| `PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN` | 2437699.08333 | 27.7172, -37.399 |
+| `PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN` | 2437699.08333 | 27.7172, -37.399 |
+| `PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN` | 2437699.08333 | 27.7172, -37.399 |
+| `PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN` | 2437699.08333 | 27.7172, -37.399 |
+| `SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS` | 2428308.91667 | 27.7172, -89.235 |
+| `SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH` | 2451702.41667 | 27.7172, -97.355 |
+
+### Held nowhere searched
+
+| rule | why |
 |---|---|
-| arishta | `ARISHTA_NODES_WITH_LUMINARIES_LAGNA_AFFLICTED`<br>`ARISHTA_SATURN_LAGNA_MOON_EIGHTH_JUPITER_THIRD`<br>`ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH`<br>`BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH`<br>`BJ_SATURN_SUN_MOON_MARS_IN_ORDER`<br>`SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS`<br>`SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH`<br>`SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA`<br>`PARIJATA_JUPITER_EIGHTH_IN_A_SIGN_OF_MARS_ASPECTED_BY_FOUR`<br>`PARIJATA_SUN_SATURN_MARS_IN_LAGNA_WANING_MOON_IN_A_VENUS_SEVENTH`<br>`PARIJATA_MOON_IN_LEO_SUN_AND_SATURN_EIGHTH_VENUS_ASPECTING`<br>`PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_LAGNA_LORD_EXALTED`<br>`PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA` |
-| arishta-bhanga | `SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA` |
-| arishta-father | `ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND` |
-| arishta-mother | `PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON` |
-| ayur | `BPHS_CANCER_RISING_WITH_JUPITER_AND_MOON_LIMITLESS`<br>`BPHS_BENEFICS_ANGULAR_OR_TRINE_MALEFICS_UPACHAYA_BENEFIC_EIGHTH_DIVINE`<br>`BPHS_MALEFICS_UPACHAYA_BENEFICS_ANGULAR_LONG`<br>`BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM`<br>`PARIJATA_MALEFICS_IN_UPACHAYAS_BENEFICS_ANGULAR_STRONG_LAGNA_LORD`<br>`PARIJATA_BENEFICS_SIXTH_TO_EIGHTH_MALEFICS_IN_UPACHAYAS` |
-| dhana | `SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON`<br>`SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY`<br>`BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH`<br>`BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH`<br>`BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH` |
-| grahas-together | `PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN`<br>`PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_SATURN`<br>`PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN`<br>`PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN`<br>`PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN` |
-| miscellaneous | `PARASHARA_MATSYA`<br>`PARASHARA_KOORMA` |
-| nabhasa | `NABHASA_NALA`<br>`NABHASA_GADA`<br>`NABHASA_SAKATA`<br>`NABHASA_VIHAGA`<br>`NABHASA_KAMALA`<br>`NABHASA_GOLA` |
-| raja | `BPHS_MOON_AND_A_BENEFIC_IN_ARUDHA_LAGNA_AND_JUPITER_SECOND`<br>`BPHS_DEBILITATED_GRAHAS_SIXTH_EIGHTH_THIRD_AND_LAGNA_LORD_DIGNIFIED`<br>`BPHS_SIX_GRAHAS_EXALTED`<br>`BPHS_EVERY_BENEFIC_ANGULAR_AND_EVERY_MALEFIC_IN_UPACHAYAS` |
+| `ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH` | It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak. |
+| `BPHS_DEBILITATED_GRAHAS_SIXTH_EIGHTH_THIRD_AND_LAGNA_LORD_DIGNIFIED` | Only Leo and Aquarius rising have a sign of debilitation in each of the third, sixth and eighth, and in both the graha debilitated in the third is the lagna lord, the Sun in Libra or Saturn in Aries, whom the verse wants exalted or in his own sign. |
+| `BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM` | No lagna lord regards the Sun as a neutral: the Moon, Mars, Mercury and Jupiter count him a friend, Venus and Saturn an enemy, and for Leo rising the lord is the Sun himself. |
+| `BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH` | It asks Mars and Jupiter together in the sign opposite Mercury in his own, so both near opposition to the Sun, with the Moon there too: no day from 1800 to 2400, the span the built-in ephemeris covers, has the slower grahas so. |
+| `BPHS_SIX_GRAHAS_EXALTED` | Mercury exalted in Virgo and Venus in Pisces would stand opposite, which the two never do, so the six are the Sun in Aries, the Moon in Taurus, Mars in Capricorn, Jupiter in Cancer, Venus in Pisces and Saturn in Libra: no day from 1800 to 2400 has the slower grahas so. |
+| `PARASHARA_KOORMA` | It asks the Sun, Mars and Saturn each in its own or exaltation sign in the lagna, third and eleventh, with a benefic in each of the fifth, sixth and seventh: no day from 1800 to 2400 has the grahas other than the Moon so. |
+| `PARIJATA_MOON_IN_LEO_SUN_AND_SATURN_EIGHTH_VENUS_ASPECTING` | Venus casts only the seventh aspect and never stands seventh from the Sun. The verse holds under the partial aspects Jataka Parijata ch. 2 counts, which the condition language does not read. |
+| `PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA` | A lagna's strength is its bhava bala, which has no required figure for it to fall short of, so no chart carries a weak lagna. |
+| `SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA` | Four days from 1800 to 2400, all in 1895, have Jupiter in Cancer, Mercury and Saturn in Libra and the Sun, Mars and Venus as the rule asks, and on them the Moon is in Libra to Sagittarius, never Cancer. |
+| `SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON` | A Moon aspecting the second while the Sun stands in it is opposite the Sun, near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there. |
+| `SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY` | Mercury casts only the seventh aspect and keeps near the Sun, so the Moon he aspects is near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there. |
+
+## Held on every chart
+
+A rule that holds on every chart of the sky fails the gate, unless it names grahas rather than asking whether, and these are the ones that do.
+
+| rule | why |
+|---|---|
+| `BPHS_NINTH_AND_FIFTH_LORDS_AND_THEIR_COMPANIONS_GIVE_WEALTH` | BPHS names every chart's wealth-givers, the lords of the ninth and fifth and the grahas joining either, and the rule says which they are in its participants. |

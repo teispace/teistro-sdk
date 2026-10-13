@@ -434,7 +434,7 @@
         "chapter": "10",
         "verse": "8-9",
         "rank": 1,
-        "note": "Venus in the twelfth, sixth or eighth when that house is owned by the Sun or the Moon, aspected by the benefics: six years. The verse says all the benefics, and this rule asks for three. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+        "note": "Venus in the twelfth, sixth or eighth when that house is owned by the Sun or the Moon, aspected by the benefics: six years. The verse says all the benefics, and only Jupiter and the Moon can ever aspect her: Mercury, like Venus, keeps near the Sun and never stands seventh from her, so the rule asks for two. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
       },
       "conditions": [
         {
@@ -458,7 +458,7 @@
           "type": "count-aspecting",
           "planets": "any-benefic",
           "target": "VENUS",
-          "atLeast": 3
+          "atLeast": 2
         }
       ],
       "cancellations": [
