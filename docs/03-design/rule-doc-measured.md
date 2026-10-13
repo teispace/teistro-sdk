@@ -7,7 +7,7 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2184 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 160 in `ARISHTAS`, 1064 in `READINGS`, 274 in `NABHASAS`, 657 in `the corpus's own`. Their 7486 conditions are written 2811 ways, which say 2807 things, and the renderer gives those 2807 sentences.
+2184 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 160 in `ARISHTAS`, 1064 in `READINGS`, 274 in `NABHASAS`, 657 in `the corpus's own`. Their 7489 conditions are written 2811 ways, which say 2807 things, and the renderer gives those 2807 sentences.
 
 The 1527 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
@@ -18,7 +18,7 @@ pack uses.
 | proposed rule | verdict | measured |
 |---|---|---|
 | no two conditions that differ in meaning read alike | **holds** | 0 of 2807 disagree |
-| every condition of every rule renders | **holds** | 0 of 7486 disagree |
+| every condition of every rule renders | **holds** | 0 of 7489 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -106,7 +106,7 @@ a change to what a rule asks changes its prose.
 | `birth-by-day` | 6 | the birth fell by day |
 | `same-sign` | 103 | MOON and KETU stand in one sign |
 | `same-body` | 95 | the body found and KETU are one body |
-| `planet-is` | 12 | the body found is a benefic |
+| `planet-is` | 15 | the body found is a benefic |
 | `natural-relation` | 4 | the lord of house 1 counts SUN a friend |
 
 2 kinds of the language occur in no pack at all: `planet-in-nakshatra`, `vipareeta-argala`. The corpus cannot falsify their prose, so the golden test in `crates/rules/src/prose.rs` is their only reader.

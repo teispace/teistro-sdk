@@ -311,6 +311,24 @@ the SDK. Miri found one in sha2 0.11.0's aarch64
 backend, already fixed upstream and not yet released, so the Miri job uses
 sha2's soft backend until a release carries the fix.
 
+**Every rule holds somewhere and fails somewhere, or says why not.**
+**Numbers:** seven rules that could never hold now can, and six of them
+hold on charts the sky computes. Five read "every malefic in the third,
+sixth or eleventh" (BPHS ch. 39 v. 48 and ch. 43 vv. 56 and 65, and two of
+Jataka Parijata's long lives) and counted the nodes among the malefics;
+the nodes stand six houses apart and no two of those houses do, so they
+are left out, as the rule of Scorpio rising already left them. Saravali
+ch. 10 vv. 8 and 9 asked three benefics to aspect Venus, when only Jupiter
+and the Moon ever can, and now asks those two. Parashara's Koorma asked
+Mercury, Jupiter and Venus for the fifth to seventh while the Sun holds the
+lagna, third or eleventh, which Mercury never allows, and now counts the
+Moon among the benefics as BPHS does. `check-cofiring` now refuses a rule
+written as conditions that holds on none of its 6 000 charts unless it is
+listed with an instant and a place where it does, which the gate
+evaluates (27 rules, found by searching every two hours from 1800 to
+2400), or with why none can (11). It refuses a rule held on every chart
+unless the rule names grahas rather than asking whether (one).
+
 **The boundary is fuzzed.** **Numbers:** none moved. Three libFuzzer
 targets drive the C ABI with a caller's JSON, a pack's bytes and a key
 (`05-testing/03-fuzzing.md`): a minute each nightly, an hour each weekly,
