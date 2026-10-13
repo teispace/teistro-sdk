@@ -311,6 +311,13 @@ the SDK. Miri found one in sha2 0.11.0's aarch64
 backend, already fixed upstream and not yet released, so the Miri job uses
 sha2's soft backend until a release carries the fix.
 
+**Every crate holds a coverage floor.** **Numbers:** none moved. Verify
+measures each library crate's line coverage and fails one that falls
+under the floor `docs/05-testing/coverage.json` keeps for it. Floors are
+whole percents, rise when a run is recorded, and never fall; a crate's
+generated tables are not counted. 36 of the 43 measured crates already
+cover 90% of their lines; the page names the seven that do not.
+
 **Every rule holds somewhere and fails somewhere, or says why not.**
 **Numbers:** seven rules that could never hold now can, and six of them
 hold on charts the sky computes. Five read "every malefic in the third,

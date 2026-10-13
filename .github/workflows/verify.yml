@@ -446,6 +446,44 @@ jobs:
           RUSTFLAGS: --cfg sha2_backend="soft"
         run: cargo +nightly miri test -p teistro-port-ephemeris -p teistro-ffi --lib
 
+  # Every library crate's tests under llvm's source coverage, each crate's
+  # share of lines held to the floor `docs/05-testing/coverage.json` keeps
+  # for it (`cargo xtask coverage --from FILE` raises them). The summary is
+  # uploaded so a run that clears its floors can be recorded.
+  coverage:
+    name: coverage floors
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: coverage
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+      - name: Every library crate's tests, measured
+        run: >-
+          cargo llvm-cov --workspace --json --summary-only --output-path coverage.json
+          --exclude xtask --exclude teistro-test-allocator --exclude teistro-test-adapter
+          --exclude teistro-node --exclude teistro-wasm
+          --exclude teistro-spike-slice --exclude teistro-spike-a-ffi --exclude teistro-spike-a-gen
+          --exclude teistro-spike-a-node --exclude teistro-spike-b-bridge --exclude teistro-spike-intl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage.json
+          if-no-files-found: ignore
+      - name: Each crate at or over its floor
+        run: cargo xtask check-coverage --from coverage.json
+
   # The same crates' unit and integration tests built with
   # AddressSanitizer, which on Linux brings LeakSanitizer: every ABI test
   # (`crates/ffi/tests`), the engine adapter loaded through the vtable,
