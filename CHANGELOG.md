@@ -323,6 +323,14 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**The Bhava bala's twilight is BPHS's own three ghatis.** **Numbers:**
+under the default `BPHS` special rules, a house in an ubhayodaya sign
+(Pisces) gains its 15 virupas for a birth between two and three ghatis
+after sunset or before sunrise, and a prishtodaya one loses them there; 2
+of the corpus's 852 houses move. The rules were read with a declared
+twilight of two ghatis because ch. 27 gives none; ch. 9 v. 14 of the same
+text gives three (crux C75).
+
 **The twilight births.** **Numbers:** two arishtas join the shipped set
 (1529 rules); no other rule's answer moved. BPHS ch. 9 v. 13, a birth in
 the twilight, in the Moon's hora and in a gandanta, and Brihat Jataka ch. 6

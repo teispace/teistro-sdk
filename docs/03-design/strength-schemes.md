@@ -249,7 +249,8 @@ recorded aspect and component within the engine's hundredths under the
 engine's reading. The three readings part at three forks, each a setting:
 the Dig's sign classes and whether it counts house steps or an arc (C73), the
 drishti as a quarter of the Dig or as the sphuta drishti on the madhya (C74),
-and vv. 30 and 31's special rules, whose twilight no source defines (C75).
+and vv. 30 and 31's special rules, whose twilight the chapter leaves to
+ch. 9 v. 14's three ghatis (C75).
 The verses as translated are the default; `BhavaBalaRules::SRIPATI`
 reproduces B.V. Raman's Example 59 house by house, once his twelfth total's
 slip of a hundred is corrected. The façade computes the Shadbala it reads when

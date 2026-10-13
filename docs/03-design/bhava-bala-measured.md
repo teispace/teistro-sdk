@@ -32,7 +32,7 @@ whose total moves by more than half a virupa.
 | Sripati's classes: Scorpio the only insect and Cancer watery, Sagittarius and Capricorn split at their halves (B.V. Raman, Arts. 126–131) | falsified | 208 of 852 disagree; worst gap 60.00 |
 | the verses' classes and arc: Cancer and Scorpio insects, the halves split, the Dig a third of the arc between madhyas (vv. 26 to 28) | falsified | 137 of 852 disagree; worst gap 60.00 |
 | Sripati's drishti: the sphuta drishti on the bhava madhya, Jupiter's and Mercury's in full and a quarter of each other graha's (Arts. 132–133) | falsified | 846 of 852 disagree; worst gap 193.86 |
-| the special rules: a rupa for each Jupiter and Mercury in the house and less one for each Sun, Mars and Saturn, and 15 for a sign rising the way the hour favours (vv. 30 and 31) | falsified | 472 of 852 disagree; worst gap 165.00 |
+| the special rules: a rupa for each Jupiter and Mercury in the house and less one for each Sun, Mars and Saturn, and 15 for a sign rising the way the hour favours (vv. 30 and 31) | falsified | 470 of 852 disagree; worst gap 165.00 |
 
 ## What it means for the module
 
@@ -42,8 +42,8 @@ it, the engine's rounding to hundredths left to the caller.
 **Every other fork moves real houses.** The verses as translated are the
 default (C73 to C75): the Dig by the madhyas' arc with Cancer an insect
 and the two halves split, a quarter of it for a one-sided drishti, and
-the special rules, whose twilight the verses leave undefined and the
-module takes as two ghatis either side of the night (C75). Sripati's
-reading is the other published one, and B.V. Raman's worked Standard
-Horoscope holds the module to it house by house
+the special rules, whose twilight the verses leave undefined and BPHS
+measures elsewhere, in ch. 9 v. 14, as three ghatis either side of the
+night (C75). Sripati's reading is the other published one, and B.V.
+Raman's worked Standard Horoscope holds the module to it house by house
 (`crates/strength/tests/sripati.rs`).

@@ -350,7 +350,7 @@ fn page(root: &Path) -> Result<String, String> {
          **Every other fork moves real houses.** The verses as translated are the default (C73 to \
          C75): the Dig by the madhyas' arc with Cancer an insect and the two halves split, a quarter \
          of it for a one-sided drishti, and the special rules, whose twilight the verses leave \
-         undefined and the module takes as two ghatis either side of the night (C75). Sripati's \
+         undefined and BPHS measures elsewhere, in ch. 9 v. 14, as three ghatis either side of the night (C75). Sripati's \
          reading is the other published one, and B.V. Raman's worked Standard Horoscope holds the \
          module to it house by house (`crates/strength/tests/sripati.rs`).\n",
         charts = count(records.len()),

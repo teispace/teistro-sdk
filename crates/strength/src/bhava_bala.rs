@@ -39,9 +39,11 @@ pub const NINE: [Graha; 9] = [
     Graha::Ketu,
 ];
 
-/// The ghatis before sunrise and after sunset a twilight birth falls in: two,
-/// a muhurta, the sandhya (crux C75).
-pub const TWILIGHT_GHATIS: f64 = 2.0;
+/// The ghatis before sunrise and after sunset a twilight birth falls in:
+/// three, as BPHS itself measures the sandhya (ch. 9 v. 14 of the modern
+/// numbering, read in the 1899 and 1923 prints: three nadis after the
+/// Sun's disc is half set and three before it is half risen; crux C75).
+pub const TWILIGHT_GHATIS: f64 = 3.0;
 
 /// One graha as the Bhava bala reads it.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -286,8 +288,8 @@ fn special(chart: &BhavaBalaChart, bhava: usize) -> f64 {
     let rising = sign_of(chart.madhya.get(bhava).copied().unwrap_or_default())
         .attributes()
         .rising;
-    // The Hindu day holds the instant: dusk is the first two ghatis after
-    // its sunset, and dawn the last two before the next sunrise.
+    // The Hindu day holds the instant: dusk is the first three ghatis after
+    // its sunset, and dawn the last three before the next sunrise.
     let in_twilight = (chart.instant >= sunset && chart.instant < sunset + twilight)
         || chart.instant >= next_sunrise - twilight;
     let by_day = !in_twilight && chart.instant < sunset;
@@ -411,7 +413,7 @@ mod tests {
 
     /// Each occupant counts by itself, and the rising rule follows the
     /// part of the day: by day a sirshodaya sign, by night a prishtodaya
-    /// one, and in either twilight (two ghatis after sunset or before the
+    /// one, and in either twilight (three ghatis after sunset or before the
     /// next sunrise) an ubhayodaya one.
     #[test]
     fn the_special_rules_follow_each_occupant_and_each_part_of_the_day() {
@@ -441,6 +443,14 @@ mod tests {
         };
         assert_eq!(rising(empty.instant), [0.0, 15.0, 0.0], "by day");
         assert_eq!(rising(sunset + 0.01), [0.0, 0.0, 15.0], "at dusk");
+        // BPHS's twilight is three ghatis, so two and a half past sunset is
+        // still dusk, where the two once declared made it night.
+        assert_eq!(rising(sunset + 2.5 / 60.0), [0.0, 0.0, 15.0], "late dusk");
+        assert_eq!(
+            rising(next_sunrise - 2.5 / 60.0),
+            [0.0, 0.0, 15.0],
+            "early dawn"
+        );
         assert_eq!(
             rising(sunset + twilight),
             [15.0, 0.0, 0.0],
