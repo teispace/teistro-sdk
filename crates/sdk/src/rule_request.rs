@@ -14,7 +14,7 @@ use teistro_rules::longevity::{
     AshtakavargaAyus, AshtakavargaAyusRules, Ayurdaya, AyurdayaRules, Chakrayus, ChakrayusRules,
     Dasayus, Marakas, Rasmi, RasmiRules, SpanChoice, ThreePairs,
 };
-use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, shipped};
+use teistro_rules::{HouseReading, Readings, Rule, RuleResult, Tables, check_references, shipped};
 
 /// A set of rules the kernel ships.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -353,6 +353,13 @@ impl RuleRequest {
         }
         check_references(&rules)
             .map_err(|reason| Error::invalid_arg(reason).with_field("rules"))?;
+        // A table no evaluator holds would leave its predicate silently
+        // false, so a rule naming one is refused here instead.
+        for rule in &rules {
+            Tables::classical()
+                .check(rule)
+                .map_err(|reason| Error::invalid_arg(reason).with_field("rules"))?;
+        }
         // A longevity choice without the longevity readings would be read
         // by nothing, so it is refused rather than ignored.
         for (field, given) in [

@@ -33,7 +33,7 @@ use teistro_dasha::{Chain, Period, Timeline};
 use teistro_rules::longevity::{Vulnerability, age_span};
 use teistro_rules::{
     Body, Eclipse, EightKarakas, Evaluator, House, LifeClass, Panchanga, Placement, PointAt,
-    Readings, RuleChart, Running, StrengthMeasure, Strengths, VargaSigns,
+    Readings, RuleChart, Running, StrengthMeasure, Strengths, Tables, VargaSigns,
 };
 use teistro_serial::Document;
 use teistro_state::GrahaState;
@@ -300,14 +300,17 @@ impl RuleInputs {
         })
     }
 
-    /// An evaluator over the chart under `readings`, given the points and the
-    /// divisions; give it the rules it reads by key with
+    /// An evaluator over the chart under `readings`, given the points, the
+    /// divisions and the tables the SDK ships ([`Tables::classical`], which
+    /// [`RuleRequest::rule_set`](crate::RuleRequest::rule_set) holds every
+    /// rule to); give it the rules it reads by key with
     /// [`Evaluator::with_rules`].
     #[must_use]
     pub fn evaluator(&self, readings: Readings) -> Evaluator<'_> {
         Evaluator::new(&self.chart, readings)
             .with_points(&self.points)
             .with_vargas(&self.vargas)
+            .with_tables(Tables::classical())
     }
 }
 

@@ -323,6 +323,15 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**Mrityu Bhaga and Dagdha Rashi answer through the SDK.** **Numbers:**
+the two shipped doshas that read a table held on no chart through the SDK,
+in Rust or any binding, because its evaluator was never given the tables
+they read; they now hold on 24 and 38 of the corpus charts the built-in
+ephemeris reaches, as the engine recorded except one chart born 34 seconds
+from a tithi's end. No other rule's answer moved. A rule naming a table
+the SDK does not ship is now refused by the request, naming the tables,
+instead of never holding.
+
 **BPHS ch. 10's last two antidotes.** **Numbers:** two rules join the
 arishta set (1531 shipped); no evil's cancellation moved on the corpus.
 A malefic in the fourth or tenth between benefics, with benefics in the

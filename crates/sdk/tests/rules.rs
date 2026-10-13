@@ -761,6 +761,21 @@ fn a_rule_request_refuses_a_set_it_cannot_evaluate_by_name() {
         .rule_set()
         .unwrap_err();
     assert_eq!(error.field(), Some("rules"));
+    // A table the SDK does not ship would leave the predicate silently
+    // false, so it is refused, naming the tables there are.
+    let untabled = RuleRequest::from_json(
+        r#"{"rules": [{"key": "MINE", "category": "dosha", "source": {"text": "BPHS"},
+            "conditions": [{"type": "planet-at-table-degree", "planet": "MOON", "table": "NO_SUCH_TABLE"}]}]}"#,
+    )
+    .unwrap()
+    .rule_set()
+    .unwrap_err();
+    assert_eq!(untabled.field(), Some("rules"));
+    assert!(
+        untabled.message.contains("NO_SUCH_TABLE") && untabled.message.contains("MRITYU_BHAGA"),
+        "{}",
+        untabled.message
+    );
 }
 
 /// A rule request chooses how the longevity readings are read, each field
@@ -811,4 +826,53 @@ fn a_rule_request_chooses_its_longevity_readings_and_refuses_a_choice_nothing_re
     )
     .unwrap_err();
     assert_eq!(unknown.field(), Some("ashtakavarga.reductions"));
+}
+
+/// The two shipped doshas that read a table — Mrityu Bhaga over
+/// `MRITYU_BHAGA`, Dagdha Rashi over `DAGDHA_RASHI` — answer through the SDK
+/// as the recording engine recorded them, chart by chart. Evaluated without
+/// the tables, a table predicate never holds, so a reading that lost them
+/// would answer neither dosha anywhere.
+#[test]
+fn the_doshas_that_read_a_table_answer_as_the_engine_recorded() {
+    use teistro::{RuleReadings, RuleRequest, ShippedRules};
+
+    const READ_A_TABLE: [&str; 2] = ["MRITYU_BHAGA_DOSHA", "DAGDHA_RASHI_DOSHA"];
+    let sdk = Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("the conformance profile and the built-in ephemeris");
+    let set = RuleRequest::shipped([ShippedRules::Doshas])
+        .with_readings(RuleReadings::RecordingEngine)
+        .rule_set()
+        .expect("a valid set");
+    let (mut held, mut differ) = ([0_usize; 2], Vec::new());
+    for (name, chart) in common::charts() {
+        let Ok(document) = common::reading_of(&sdk, &chart, |request| {
+            request.with_rule_inputs(set.rules())
+        }) else {
+            continue;
+        };
+        let inputs = RuleInputs::of(&document).expect("the rules' inputs");
+        let evaluator = inputs
+            .evaluator(Readings::RECORDING_ENGINE)
+            .with_rules(set.rules());
+        let recorded = fixture(&format!("doshas/charts/{name}"));
+        for (count, key) in held.iter_mut().zip(READ_A_TABLE) {
+            let rule = set.rules().iter().find(|rule| rule.key == key).unwrap();
+            let present = evaluator.evaluate(rule).present;
+            *count += usize::from(present);
+            if present != recorded["present"].get(key).is_some() {
+                differ.push(format!("{name} {key}"));
+            }
+        }
+    }
+    // The corpus records 25 and 41; c047 and c048 lie outside the built-in
+    // ephemeris (one Mrityu Bhaga, two Dagdha Rashi between them), and c008
+    // is born 34 seconds before Krishna Trayodashi ends by the SDK's Moon,
+    // after it by the engine's, so the engine reads the next tithi's burnt
+    // signs: a tithi edge inside any tier's accuracy.
+    assert_eq!(held, [24, 38], "{differ:?}");
+    assert_eq!(differ, ["c008-delhi-1947-08-15.json DAGDHA_RASHI_DOSHA"]);
 }
