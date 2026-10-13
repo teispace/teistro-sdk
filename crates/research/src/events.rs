@@ -29,9 +29,9 @@ const fn default_max_pairs() -> u64 {
     DEFAULT_MAX_PAIRS
 }
 
-#[expect(
+#[allow(
     clippy::trivially_copy_pass_by_ref,
-    reason = "serde's skip_serializing_if passes the field by reference"
+    reason = "serde's skip_serializing_if passes the field by reference; the lint fires only where a u64 fits a pointer"
 )]
 const fn is_default_max_pairs(cap: &u64) -> bool {
     *cap == DEFAULT_MAX_PAIRS
