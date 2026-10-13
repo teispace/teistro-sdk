@@ -589,7 +589,8 @@ mod tests {
                 .with_orbs(moieties),
         )
         .unwrap_err();
-        assert!(refused.to_string().contains("lagna"), "{refused}");
+        assert_eq!(refused.field(), Some("orbs.orbs"), "{refused}");
+        assert!(refused.to_string().contains("an angle"), "{refused}");
     }
 
     #[test]
