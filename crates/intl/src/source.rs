@@ -201,6 +201,34 @@ impl Entity {
         self.forms.get(form).map(String::as_str)
     }
 
+    /// The record as a source file writes it: the forms a reader expects
+    /// first (`short`, `name`, `prose`, `iast`), any other the locale
+    /// adds after them, then the glyph and the gender. Every writer of
+    /// `sdk.entity.json` writes through this, so a file a command
+    /// rewrites keeps the order it was written in.
+    #[must_use]
+    pub fn source_json(&self) -> serde_json::Value {
+        use serde_json::Value as Json;
+        let mut object = serde_json::Map::new();
+        for form in ["short", NAME_FORM, "prose", "iast"] {
+            if let Some(value) = self.forms.get(form) {
+                object.insert(form.to_owned(), Json::String(value.clone()));
+            }
+        }
+        for (form, value) in &self.forms {
+            object
+                .entry(form.clone())
+                .or_insert_with(|| Json::String(value.clone()));
+        }
+        if let Some(glyph) = &self.glyph {
+            object.insert(String::from("glyph"), Json::String(glyph.clone()));
+        }
+        if let Some(gender) = &self.gender {
+            object.insert(String::from("gender"), Json::String(gender.clone()));
+        }
+        Json::Object(object)
+    }
+
     /// The `name` form, which loading guarantees.
     #[must_use]
     pub fn name(&self) -> &str {

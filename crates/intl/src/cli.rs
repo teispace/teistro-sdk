@@ -329,7 +329,9 @@ fn run_derive(
     root: &Path,
     casing: crate::derive::Casing,
 ) -> Result<bool, Box<dyn std::error::Error>> {
-    let overrides = crate::derive::overrides_of(root, to)?;
+    // The corrections are sources: read from the tree, wherever the
+    // derived locale is written.
+    let overrides = crate::derive::overrides_of(&tree.root, to)?;
     let derived = crate::derive::derive(tree, from, to, &overrides, casing)?;
     for (path, text) in &derived.files {
         let path = root.join(path);
@@ -758,19 +760,7 @@ pub fn extract(
 fn entry_json(entry: &Entry) -> Json {
     match entry {
         Entry::Message(source) => Json::String(source.clone()),
-        Entry::Entity(entity) => {
-            let mut object = Map::new();
-            for (form, value) in &entity.forms {
-                object.insert(form.clone(), Json::String(value.clone()));
-            }
-            if let Some(glyph) = &entity.glyph {
-                object.insert(String::from("glyph"), Json::String(glyph.clone()));
-            }
-            if let Some(gender) = &entity.gender {
-                object.insert(String::from("gender"), Json::String(gender.clone()));
-            }
-            Json::Object(object)
-        }
+        Entry::Entity(entity) => entity.source_json(),
     }
 }
 
