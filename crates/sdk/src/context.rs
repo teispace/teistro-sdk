@@ -2,6 +2,8 @@
 //! described in, and the ephemeris it is computed with.
 
 use core::cell::{Ref, RefCell, RefMut};
+use std::collections::BTreeMap;
+use std::sync::{Arc, OnceLock};
 
 use serde::Serialize;
 use teistro_astro::DeltaTModel;
@@ -17,6 +19,7 @@ use teistro_dasha::{DashaDefinition, DashaSystems};
 use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
+use teistro_intl::source::LocaleSource;
 use teistro_port_ephemeris::{
     Astronomy, CachingProvider, EphemerisProvider, Frame, PositionRequest,
 };
@@ -553,14 +556,7 @@ impl ContextBuilder {
         };
         let settings = profile.resolve(&patch)?;
 
-        let bundles: Vec<&[u8]> = BUNDLES.iter().map(|(_, bytes)| *bytes).collect();
-        let locales = locales_from_packs(&bundles).map_err(|e| {
-            Error::new(
-                Status::Pack,
-                format!("the embedded bundles do not load: {e}"),
-            )
-        })?;
-        let mut intl = Intl::new(locales)
+        let mut intl = Intl::shared(embedded_locales()?)
             .map_err(|e| Error::internal(format!("the locale engine did not start: {e}")))?;
         // A message's `timeZone` reads an instant in a zone through the
         // same database the context's own zone resolutions use.
@@ -621,6 +617,34 @@ impl ContextBuilder {
             dashas,
         })
     }
+}
+
+/// The embedded bundles, decoded once for every context in the process.
+/// Decoding them is about 22,000 allocations and 2 MB, which each context
+/// paid before; every context's engine now shares these, and copies only
+/// a locale its own runtime packs change.
+fn embedded_locales() -> Result<BTreeMap<String, Arc<LocaleSource>>, Error> {
+    type Decoded = Result<BTreeMap<String, Arc<LocaleSource>>, String>;
+    static DECODED: OnceLock<Decoded> = OnceLock::new();
+    DECODED
+        .get_or_init(|| {
+            let bundles: Vec<&[u8]> = BUNDLES.iter().map(|(_, bytes)| *bytes).collect();
+            locales_from_packs(&bundles)
+                .map(|locales| {
+                    locales
+                        .into_iter()
+                        .map(|(tag, locale)| (tag, Arc::new(locale)))
+                        .collect()
+                })
+                .map_err(|e| e.to_string())
+        })
+        .clone()
+        .map_err(|e| {
+            Error::new(
+                Status::Pack,
+                format!("the embedded bundles do not load: {e}"),
+            )
+        })
 }
 
 /// Holds the settings' astronomy (`frame.siddhanta`) to the provider the

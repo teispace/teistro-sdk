@@ -7,6 +7,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
+use std::sync::Arc;
 
 use serde::Serialize;
 
@@ -184,16 +185,17 @@ impl Intl {
                 .insert(file.tag.clone(), plurals_for(&file.tag)?);
             self.locales.insert(
                 file.tag.clone(),
-                LocaleSource {
+                Arc::new(LocaleSource {
                     tag: file.tag.clone(),
                     meta,
                     namespaces: BTreeMap::new(),
-                },
+                }),
             );
         }
         let locale = self
             .locales
             .get_mut(&file.tag)
+            .map(Arc::make_mut)
             .ok_or_else(|| IntlError(format!("no locale {}", file.tag)))?;
         let mut entries = 0;
         let mut replaced = 0;
@@ -459,7 +461,7 @@ mod tests {
     #[test]
     fn a_pack_lays_an_entity_record_over_the_one_standing() {
         let mut intl = engine("ne-Deva-NP");
-        let nepali = intl.locales.get("ne-Deva-NP").unwrap().clone();
+        let nepali = (**intl.locales.get("ne-Deva-NP").unwrap()).clone();
         let standing = intl
             .entity_from("ne-Deva-NP", "nakshatra.ASHWINI")
             .unwrap()
@@ -521,10 +523,50 @@ mod tests {
     /// pack from a blob, a file or its own bundle hands the engine bytes
     /// either way, so the place a pack came from is not a rule; the order
     /// the consumer loaded it in is, and the report lists it.
+    /// Engines built from one shared decoding never see each other's
+    /// packs: the locale a pack changes is copied for that engine, and
+    /// the shared one and every other engine keep the build's entry.
+    #[test]
+    fn a_pack_loaded_into_one_shared_engine_stays_there() {
+        let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
+        let shared: BTreeMap<String, Arc<LocaleSource>> = tree
+            .locales
+            .into_iter()
+            .map(|(tag, locale)| (tag, Arc::new(locale)))
+            .collect();
+        let nepali = Arc::clone(&shared["ne-Deva-NP"]);
+        let open = || {
+            let mut intl = Intl::shared(shared.clone()).unwrap();
+            intl.set_locale("ne-Deva-NP").unwrap();
+            intl
+        };
+        let (mut changed, other) = (open(), open());
+        let said = |intl: &Intl| intl.render("sdk.reason.appName", &params([])).text;
+        let built = said(&other);
+        let mut patched = (*nepali).clone();
+        patched.namespaces = [(String::from("sdk.reason"), namespace(&[("appName", "मेरो")]))]
+            .into_iter()
+            .collect();
+        changed
+            .load_pack(&pack::build(&patched, "sdk.reason").unwrap())
+            .unwrap();
+        assert_eq!(said(&changed), "मेरो");
+        assert_eq!(
+            said(&other),
+            built,
+            "another engine keeps the build's entry"
+        );
+        assert_eq!(said(&open()), built, "and so does one opened after");
+        assert!(
+            Arc::ptr_eq(&other.locales["ne-Deva-NP"], &nepali),
+            "the engines that changed nothing still share the decoding"
+        );
+    }
+
     #[test]
     fn what_stands_is_the_build_then_each_pack_in_load_order_then_the_overrides() {
         let mut intl = engine("ne-Deva-NP");
-        let nepali = intl.locales.get("ne-Deva-NP").unwrap().clone();
+        let nepali = (**intl.locales.get("ne-Deva-NP").unwrap()).clone();
         let pack_saying = |text: &str| {
             let mut patched = nepali.clone();
             patched.namespaces = [(String::from("sdk.reason"), namespace(&[("appName", text)]))]
@@ -568,7 +610,7 @@ mod tests {
     #[test]
     fn a_pack_loaded_at_runtime_adds_a_namespace_and_replaces_entries() {
         let mut intl = engine("ne-Deva-NP");
-        let nepali = intl.locales.get("ne-Deva-NP").unwrap().clone();
+        let nepali = (**intl.locales.get("ne-Deva-NP").unwrap()).clone();
         // A new namespace for a known locale, in a pack with metadata.
         let mut ui = nepali.clone();
         ui.namespaces = [(

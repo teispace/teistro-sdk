@@ -311,6 +311,13 @@ the SDK. Miri found one in sha2 0.11.0's aarch64
 backend, already fixed upstream and not yet released, so the Miri job uses
 sha2's soft backend until a release carries the fix.
 
+**A context costs a hundredth of what it did.** **Numbers:** none
+moved. Each context decoded every embedded message bundle again, about
+22,400 allocations and 2 MB. The bundles are now decoded once per
+process and shared, and a context copies a locale only when it loads a
+pack into it. Building one now takes 212 allocations and 26 KB. A pack
+loaded into one context still never reaches another.
+
 **The C ABI gives back everything it hands out.** **Numbers:** none
 moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
