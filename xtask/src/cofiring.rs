@@ -70,7 +70,7 @@ const SPAN_DAYS: f64 = 73_049.0;
 const SUPPORT: usize = 5;
 
 /// One text stating one condition twice, each with where it does.
-const REVIEWED: [(&[&str], &str); 3] = [
+const REVIEWED: [(&[&str], &str); 4] = [
     (
         &[
             "BPHS_ARMY_CHIEF_BY_MALEFICS_THIRD_AND_SIXTH_FROM_ATMAKARAKA",
@@ -94,6 +94,15 @@ const REVIEWED: [(&[&str], &str); 3] = [
         ],
         "Saravali reads Mercury and Venus in the seventh in ch. 34, and again among two grahas \
          in an angle",
+    ),
+    (
+        &[
+            "PHALADEEPIKA_KETU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+            "PHALADEEPIKA_RAHU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH",
+        ],
+        "Phaladeepika ch. 14 vv. 13 and 15 give each node its own death; the nodes stand \
+         opposite and aspect by the seventh alone, so one in the eighth or the second puts both \
+         on it",
     ),
 ];
 

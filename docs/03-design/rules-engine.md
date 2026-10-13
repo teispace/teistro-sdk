@@ -547,6 +547,37 @@ antidotes answer 4, 5 and 0. The rest answer none: v. 12's clause asks
 every benefic to stay out of the kendras, and v. 9's gandanta needs
 ghatikas the corpus does not record.
 
+**Phaladeepika ch. 14's diseases, death and births, built (2026-10-14).**
+Read as ch. 13 was, as `classical-phaladeepika-marana.json`, 85 rules
+beside BPHS ch. 44's in the nabhasa set, each carrying its effect in
+words:
+- **vv. 10 and 11, `roga`:** five figures for the eyes, the ears, the
+  belly, the rectum and the private parts (C383), and eight grahas in the
+  sixth or the eighth, the waning Moon's figure among them under ch. 1
+  v. 7's watery signs.
+- **vv. 12 to 19, `marana`:** each graha in or aspecting the eighth, read
+  with what vv. 14 and 15 give it; an eighth free of them, by its sign as
+  vv. 17 to 19 give it; and v. 16's other way, the eighth lord's navamsha
+  sign (C384).
+- **vv. 20 and 21:** the malefic-owned eighth holding a malefic, two
+  malefics in kendras aspecting each other (C385), and a death with or
+  without anguish.
+- **vv. 22 to 29, `loka`:** the way upward or downward, the world each
+  graha of the twelfth leads to, and for the births before and after, from
+  the ninth and fifth lords, the land by their dignity and by their name,
+  human, beast or bird by their sign's regard for the lagna lord, and both
+  births at home when the two lords share a sign. What these verses need
+  and the chart does not say is not built (C386).
+
+Each reading and its "otherwise" is written as the condition and its
+negation, not as a rule naming another, so a rule asked alone answers as
+it does in the set. `crates/rules/tests/marana.rs` holds the partitions
+on all 93 recorded charts: either a graha names the death or the eighth's
+sign does, one navamsha sign, one of each "otherwise", and one land,
+dignity and kind for each birth. A pair the sky forces together, Rahu's
+and Ketu's death in or aspecting the eighth, is in the cofiring page's
+list of one text saying it twice.
+
 **A rule can read a transit (2026-10-14).** `{"type": "transit-in-house",
 "planet": …, "houses": […], "from": …}` holds when the graha's sign in a
 sky the evaluator is given (`with_transits`, a `TransitSky`) stands in one

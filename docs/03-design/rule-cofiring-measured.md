@@ -2,13 +2,13 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1543 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1504 rules hold at least once and 39 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1628 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1589 rules hold at least once and 39 never do.
 
-Rules holding on the same 5 or more charts form 110 groups, and each is explained. Below that, 5 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 111 groups, and each is explained. Below that, 5 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
 - **71 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
-- **3 groups: one text says it twice**, where the table below says.
+- **4 groups: one text says it twice**, where the table below says.
 
 A group of one text that is none of these fails the gate, and so does a listed group that no longer holds together.
 
@@ -19,6 +19,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 515 | `BPHS_ARMY_CHIEF_BY_MALEFICS_THIRD_AND_SIXTH_FROM_ATMAKARAKA`<br>`BPHS_KING_BY_MALEFICS_THIRD_AND_SIXTH_FROM_ATMAKARAKA` | BPHS gives malefics third and sixth from the Atmakaraka twice: ch. 39 v. 10 makes the native a king, ch. 40 v. 7 an army chief |
 | 38 | `SARAVALI_MERCURY_AND_JUPITER_IN_THE_SEVENTH`<br>`SARAVALI_MERCURY_JUPITER_IN_BHAVA_7` | Saravali reads Mercury and Jupiter in the seventh in ch. 34 v. 47 (one wife), and again among two grahas in an angle |
 | 113 | `SARAVALI_MERCURY_AND_VENUS_IN_THE_SEVENTH`<br>`SARAVALI_MERCURY_VENUS_IN_BHAVA_7` | Saravali reads Mercury and Venus in the seventh in ch. 34, and again among two grahas in an angle |
+| 1008 | `PHALADEEPIKA_KETU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH`<br>`PHALADEEPIKA_RAHU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH` | Phaladeepika ch. 14 vv. 13 and 15 give each node its own death; the nodes stand opposite and aspect by the seventh alone, so one in the eighth or the second puts both on it |
 
 ## One aspect from both grahas
 

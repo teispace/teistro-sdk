@@ -323,6 +323,16 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**Phaladeepika ch. 14's diseases, death and births.** **Numbers:** 85
+rules join the nabhasa set (1628 shipped); no other rule's answer moved.
+Thirteen diseases from vv. 10 and 11 in a new category, `roga`; the
+death each graha in or aspecting the eighth brings, the eighth's sign
+when none does, and the eighth lord's navamsha sign; v. 20's violent
+deaths; a death with or without anguish; the way after death and the
+world each graha of the twelfth leads to; and the births before and
+after, read from the ninth and fifth lords (cruxes C383 to C386). The
+nabhasa set now reads the panchanga, for v. 11's waning Moon.
+
 **A timed study reads transits.** **Numbers:** none; no shipped rule
 reads transits, and a study that names none asks no sky and hashes as
 before. A rule may now say `transit-in-house` (a graha's sign in transit,
