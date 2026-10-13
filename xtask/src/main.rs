@@ -276,6 +276,7 @@ mod cofiring;
 mod composites;
 mod conformance;
 mod consumer;
+mod coverage;
 mod dart_binding;
 mod dasha_coverage;
 mod dasha_systems;
@@ -688,6 +689,8 @@ fn main() {
         Some("vsop") => vsop::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("check-versions") => release::check(&repo_root()),
         Some(command @ ("sizes" | "check-sizes")) => sizes::command(&repo_root(), command, &args),
+        Some("coverage") => coverage::command(&repo_root(), "coverage", &args),
+        Some("check-coverage") => coverage::command(&repo_root(), "check-coverage", &args),
         Some("check-tag") => match args.as_slice() {
             [_, tag] => release::check_tag(&repo_root(), tag),
             _ => usage(),
@@ -767,7 +770,7 @@ fn usage() -> i32 {
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
          conformance --from DIR | check-conformance --from DIR | \
-         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | check-site | check-guides | check-tag TAG | version [X] | changelog-entry X | \
+         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | check-coverage [--from FILE] | check-site | check-guides | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \
