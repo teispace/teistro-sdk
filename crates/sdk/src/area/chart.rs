@@ -405,13 +405,15 @@ impl<'a> ChartArea<'a> {
         request: &ChartRequest,
         set: &'r RuleSet,
     ) -> Result<Envelope<Vec<(Document, RulesReading<'r>)>>, Error> {
+        set.refuse_transits("a natal reading")?;
         let answered = self.answered(instants, request, set)?;
         Ok(Envelope::sealing(answered.value, answered.provenance))
     }
 
     /// The readings with what they answer by rule, **not yet sealed**, as
-    /// [`ChartArea::founded`].
-    fn answered<'r>(
+    /// [`ChartArea::founded`]. A rule that reads transits answers absent
+    /// here; a timed study reads it again at its instants.
+    pub(crate) fn answered<'r>(
         self,
         instants: &[JulianDay<Utc>],
         request: &ChartRequest,

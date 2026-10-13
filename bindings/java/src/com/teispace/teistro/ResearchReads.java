@@ -94,6 +94,9 @@ final class ResearchReads {
         out.put("seed", seed(test.seed()));
         out.put("permutations", test.permutations());
         out.put("afterBirth", test.restrictPairings() ? "RESTRICT_PAIRINGS" : "REFUSE");
+        if (test.maxPairs() != null) {
+            out.put("maxPairs", test.maxPairs());
+        }
         reading(out, test.alternative(), test.level(), test.alpha(), test.threads());
         return out;
     }

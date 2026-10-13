@@ -4779,6 +4779,54 @@ void _engineTests() {
         isA<TeistroException>().having((e) => e.field, 'field', 'referents'),
       ),
     );
+    // A transit rule is read at each pairing's instant, the sky's cost
+    // chosen with maxPairs: six lives under the age shuffle need the sky at
+    // up to 36 instants.
+    const saturnReturn = RuleRequest(
+      rules: [
+        {
+          'key': 'SATURN_RETURN',
+          'category': 'transit',
+          'source': {'text': 'a test'},
+          'conditions': [
+            {
+              'type': 'transit-in-house',
+              'planet': 'SATURN',
+              'houses': [1],
+              'from': 'SATURN',
+            },
+          ],
+        },
+      ],
+    );
+    final transit = ctx.research.timed(
+      subjects: lives,
+      rules: saturnReturn,
+      dasha: DashaSystem.vimshottari,
+      shuffle: ResearchEventShuffle.agesAtEvent,
+      test: ResearchEventTest(seed: BigInt.one, permutations: 19),
+    );
+    expect(transit.rows.map((row) => row.predicate), ['SATURN_RETURN']);
+    expect(
+      () => ctx.research.timed(
+        subjects: lives,
+        rules: saturnReturn,
+        dasha: DashaSystem.vimshottari,
+        shuffle: ResearchEventShuffle.agesAtEvent,
+        test: ResearchEventTest(
+          seed: BigInt.one,
+          permutations: 19,
+          maxPairs: 2,
+        ),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'test.maxPairs',
+        ),
+      ),
+    );
     // An uncertain birth's window is read every step, and the step is
     // part of the study it pre-registers.
     final uncertain = [

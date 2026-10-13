@@ -1639,6 +1639,32 @@ class AnEngine(WithLibrary):
                     test={"seed": 1, "permutations": 19},
                 )
             self.assertEqual(refused.exception.field, "referents")
+            # A transit rule is read at each pairing's instant, the sky's
+            # cost chosen with maxPairs: six lives under the age shuffle
+            # need the sky at up to 36 instants.
+            saturn_return = {
+                "key": "SATURN_RETURN",
+                "category": "transit",
+                "source": {"text": "a test"},
+                "conditions": [{"type": "transit-in-house", "planet": "SATURN", "houses": [1], "from": "SATURN"}],
+            }
+            transit = ctx.research.timed(
+                subjects=lives,
+                rules={"rules": [saturn_return]},
+                dasha=DashaSystem.VIMSHOTTARI,
+                shuffle="AGES_AT_EVENT",
+                test={"seed": 1, "permutations": 19},
+            )
+            self.assertEqual([row.predicate for row in transit.rows], ["SATURN_RETURN"])
+            with self.assertRaises(TeistroError) as refused:
+                ctx.research.timed(
+                    subjects=lives,
+                    rules={"rules": [saturn_return]},
+                    dasha=DashaSystem.VIMSHOTTARI,
+                    shuffle="AGES_AT_EVENT",
+                    test={"seed": 1, "permutations": 19, "maxPairs": 2},
+                )
+            self.assertEqual(refused.exception.field, "test.maxPairs")
             # An uncertain birth's window is read every step, and the step
             # is part of the study it pre-registers.
             uncertain = [dataclasses.replace(one, uncertainty_minutes=30.0) for one in births]

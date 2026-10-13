@@ -103,7 +103,8 @@ public final class ResearchArea {
 
     /**
      * Whether each rule is delivered by a dasha's running periods at the subjects' own events more (or
-     * less) often than at events shuffled among them.
+     * less) often than at events shuffled among them. A rule that reads transits holds under the sky at
+     * each instant instead, and the test's {@code maxPairs} caps how many skies that is.
      *
      * @param subjects the subjects
      * @param rules the rules, as a chart request's rules

@@ -412,6 +412,24 @@ pub struct RuleSet {
 }
 
 impl RuleSet {
+    /// Refuses the set when a rule reads the sky in transit, which `reader`
+    /// reads at no instant of: a transit is read at the instants a timed
+    /// study asks for ([`ResearchArea::timed`](crate::ResearchArea::timed)),
+    /// and would never hold on a natal chart alone.
+    pub(crate) fn refuse_transits(&self, reader: &str) -> Result<(), Error> {
+        match self.rules.iter().position(Rule::reads_transits) {
+            None => Ok(()),
+            Some(at) => Err(Error::invalid_arg(format!(
+                "the rule `{}` reads the sky in transit, which {reader} reads at no instant",
+                self.rules.get(at).map_or("", |rule| rule.key.as_str())
+            ))
+            .with_field("rules")
+            .with_hint(
+                "a transit is read at an event's instant: ask for it in a timed study (research)",
+            )),
+        }
+    }
+
     /// Its rules, the shipped sets' first in the order asked, then the
     /// consumer's.
     #[must_use]

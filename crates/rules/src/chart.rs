@@ -10,6 +10,44 @@ use crate::language::{Body, House, Pada};
 use crate::table::SignDegree;
 use teistro_state::dignity;
 
+/// The signs the grahas stand in at one instant, as a `transit-in-house`
+/// condition reads them against the natal chart: the sky of gochar.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_rules::TransitSky;
+///
+/// let sky = TransitSky::new([(Graha::Saturn, Rashi::Pisces)]);
+/// assert_eq!(sky.sign(Graha::Saturn), Some(Rashi::Pisces));
+/// assert_eq!(sky.sign(Graha::Jupiter), None);
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct TransitSky {
+    signs: Vec<(Graha, Rashi)>,
+}
+
+impl TransitSky {
+    /// A sky of these grahas in these signs; a graha given twice keeps the
+    /// last.
+    #[must_use]
+    pub fn new(signs: impl IntoIterator<Item = (Graha, Rashi)>) -> TransitSky {
+        let mut sky = TransitSky::default();
+        for (graha, sign) in signs {
+            sky.signs.retain(|(held, _)| *held != graha);
+            sky.signs.push((graha, sign));
+        }
+        sky
+    }
+
+    /// The sign a graha stands in, when the sky holds it.
+    #[must_use]
+    pub fn sign(&self, graha: Graha) -> Option<Rashi> {
+        self.signs
+            .iter()
+            .find_map(|(held, sign)| (*held == graha).then_some(*sign))
+    }
+}
+
 /// One body as a rule reads it.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Placement {

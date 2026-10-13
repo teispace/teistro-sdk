@@ -1283,7 +1283,9 @@ final class ResearchArea extends _Area {
   /// than at events shuffled among them under [shuffle], which has no
   /// default because each keeps different margins. Under
   /// [ResearchEventShuffle.selfMatched] each person is read at their own
-  /// [referents] instead, which it requires, and [strata] are refused.
+  /// [referents] instead, which it requires, and [strata] are refused. A
+  /// rule that reads transits holds under the sky at each instant instead,
+  /// and the test's `maxPairs` caps how many skies that is.
   ResearchTested timed({
     required List<ResearchSubject> subjects,
     required RuleRequest rules,
@@ -19840,7 +19842,8 @@ final class ResearchGroupTest extends _Value {
 /// A test of events against the shuffled-event null. With
 /// [restrictPairings], a permutation draws only pairings that keep every
 /// event after its birth; without, a study in which any would not is
-/// refused.
+/// refused. [maxPairs] caps the instants a transit rule has the sky read
+/// at, the SDK's default when null; a study above it is refused.
 final class ResearchEventTest extends _Value {
   const ResearchEventTest({
     required this.seed,
@@ -19850,6 +19853,7 @@ final class ResearchEventTest extends _Value {
     this.level = 0.95,
     this.alpha,
     this.threads,
+    this.maxPairs,
   });
 
   final BigInt seed;
@@ -19859,6 +19863,7 @@ final class ResearchEventTest extends _Value {
   final double level;
   final double? alpha;
   final int? threads;
+  final int? maxPairs;
 
   Map<String, Object?> get _record => <String, Object?>{
     'seed': _seed(seed),
@@ -19869,6 +19874,7 @@ final class ResearchEventTest extends _Value {
     if (alpha case final alpha?) 'alpha': alpha,
     if (threads case final threads?)
       'parallelism': <String, Object?>{'THREADS': threads},
+    if (maxPairs case final maxPairs?) 'maxPairs': maxPairs,
   };
 
   @override
@@ -19880,6 +19886,7 @@ final class ResearchEventTest extends _Value {
     level,
     alpha,
     threads,
+    maxPairs,
   ];
 }
 

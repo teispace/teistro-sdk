@@ -19,9 +19,11 @@ import java.util.Objects;
  * @param level every interval's confidence level, above 0 and under 1
  * @param alpha the level each method's verdict is read at; none when null
  * @param threads how many threads count the permutations; the SDK's choice when null
+ * @param maxPairs the most instants a transit rule may have the sky read at, which a study above it
+ *     is refused for; the SDK's default when null
  */
 public record ResearchEventTest(BigInteger seed, int permutations, ResearchAlternative alternative,
-        boolean restrictPairings, double level, Double alpha, Integer threads) {
+        boolean restrictPairings, double level, Double alpha, Integer threads, Long maxPairs) {
     /** The value, its seed and alternative required. */
     public ResearchEventTest {
         Objects.requireNonNull(seed, "seed");
@@ -60,6 +62,7 @@ public record ResearchEventTest(BigInteger seed, int permutations, ResearchAlter
         private double level = 0.95;
         private Double alpha;
         private Integer threads;
+        private Long maxPairs;
 
         private Builder(BigInteger seed, int permutations) {
             this.seed = seed;
@@ -122,12 +125,24 @@ public record ResearchEventTest(BigInteger seed, int permutations, ResearchAlter
         }
 
         /**
+         * Sets {@code maxPairs}.
+         *
+         * @param maxPairs the most instants a transit rule may have the sky read at
+         * @return this builder
+         */
+        public Builder maxPairs(long maxPairs) {
+            this.maxPairs = maxPairs;
+            return this;
+        }
+
+        /**
          * The test.
          *
          * @return the test
          */
         public ResearchEventTest build() {
-            return new ResearchEventTest(seed, permutations, alternative, restrictPairings, level, alpha, threads);
+            return new ResearchEventTest(seed, permutations, alternative, restrictPairings, level, alpha, threads,
+                    maxPairs);
         }
     }
 }

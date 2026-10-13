@@ -88,6 +88,7 @@ a change to what a rule asks changes its prose.
 | `panchanga-karana` | 1 | the karana at birth is VISHTI |
 | `birth-during-eclipse` | 2 | the birth falls in an eclipse |
 | `birth-on-sankranti` | 1 | the birth falls on a sankranti |
+| `transit-in-house` | 0 | in no pack |
 | `planet-in-nakshatra` | 0 | in no pack |
 | `same-nakshatra` | 1 | MOON and KETU stand in one nakshatra |
 | `planet-strong` | 42 | SUN is strong |
@@ -109,7 +110,7 @@ a change to what a rule asks changes its prose.
 | `planet-is` | 23 | the body found is a benefic |
 | `natural-relation` | 4 | the lord of house 1 counts SUN a friend |
 
-2 kinds of the language occur in no pack at all: `planet-in-nakshatra`, `vipareeta-argala`. The corpus cannot falsify their prose, so the golden test in `crates/rules/src/prose.rs` is their only reader.
+3 kinds of the language occur in no pack at all: `transit-in-house`, `planet-in-nakshatra`, `vipareeta-argala`. The corpus cannot falsify their prose, so the golden test in `crates/rules/src/prose.rs` is their only reader.
 
 ## Where the prose is at its weakest
 

@@ -622,6 +622,14 @@ impl Rule {
         self.every_condition().any(Condition::reads_panchanga)
     }
 
+    /// Whether any of its conditions reads the sky in transit, so a caller
+    /// knows to evaluate it at an instant with that instant's sky
+    /// ([`Evaluator::with_transits`](crate::Evaluator::with_transits)).
+    #[must_use]
+    pub fn reads_transits(&self) -> bool {
+        self.every_condition().any(Condition::reads_transits)
+    }
+
     /// Whether any of its conditions reads what the instant falls in, so a
     /// caller knows to give the chart its moment.
     #[must_use]

@@ -323,6 +323,18 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**A timed study reads transits.** **Numbers:** none; no shipped rule
+reads transits, and a study that names none asks no sky and hashes as
+before. A rule may now say `transit-in-house` (a graha's sign in transit,
+counted from a natal sign, as "Saturn in the 12th, 1st or 2nd from the
+natal Moon"), and `research.timed` reads it under the sky at each event or
+referent instead of through a dasha (C382). The sky costs one reading per
+distinct instant per place, so the test's `maxPairs` (1 000 000 when left
+out) caps it, and a study above it is refused naming `test.maxPairs` and the
+count it needs; every binding carries the field. A natal reading,
+`counts`, `compare` and `expected` refuse a transit rule, which a birth
+alone cannot answer.
+
 **Phaladeepika ch. 13's evils at birth.** **Numbers:** twelve rules
 join the arishta set (1543 shipped); no other rule's answer moved. Nine
 evils from vv. 9, 10 and 12 and three antidotes from vv. 21, 23 and 24,

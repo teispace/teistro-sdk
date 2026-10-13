@@ -10,7 +10,7 @@
 use std::collections::BTreeMap;
 
 use serde::Serialize;
-use teistro_core::catalogue::DashaSystem;
+use teistro_core::catalogue::{DashaSystem, Graha};
 use teistro_core::envelope::{Envelope, Hash, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::key::KeyId;
@@ -22,7 +22,7 @@ use teistro_research::{
     Matrix, PairMatrix, Parallelism, ReplicateTest, SplitMix64, Tested, compare, counts, matched,
     replicated, timed,
 };
-use teistro_rules::{Evaluator, NetStatus, Rule, RuleResult};
+use teistro_rules::{Evaluator, NetStatus, Rule, RuleResult, TransitSky};
 use teistro_serial::Document;
 
 use crate::context::Context;
@@ -255,6 +255,9 @@ impl<'a> ResearchArea<'a> {
     /// Every rule on every chart, the births read a place at a time.
     fn matrix(self, study: Study<'_>) -> Result<(Matrix, Read), Error> {
         check(study)?;
+        study
+            .rules
+            .refuse_transits("a study of births without events")?;
         let rules = study.rules.rules();
         let mut columns = vec![vec![Cell::Absent; study.births.len()]; rules.len()];
         let mut read: Option<Read> = None;
@@ -343,7 +346,8 @@ impl ResearchArea<'_> {
         let chart = self.context.chart();
         let alone = |k: usize, instant: &JulianDay<Utc>| {
             chart
-                .readings_with_rules(std::slice::from_ref(instant), request, set)
+                .answered(std::slice::from_ref(instant), request, set)
+                .map(|answered| Envelope::sealing(answered.value, answered.provenance))
                 .map_err(|error| {
                     let owner = owners.get(k).map_or("a birth", String::as_str);
                     let hint = match error.hint() {
@@ -353,7 +357,10 @@ impl ResearchArea<'_> {
                     error.with_hint(hint)
                 })
         };
-        let batch = match chart.readings_with_rules(instants, request, set) {
+        let batch = match chart
+            .answered(instants, request, set)
+            .map(|answered| Envelope::sealing(answered.value, answered.provenance))
+        {
             Ok(batch) => batch,
             Err(error) => {
                 // The chart that refuses refuses alone; if none does, the
@@ -537,6 +544,7 @@ impl Registered for EventTest {
     fn registered(&self) -> EventTest {
         EventTest {
             parallelism: Parallelism::One,
+            max_pairs: teistro_research::DEFAULT_MAX_PAIRS,
             ..self.clone()
         }
     }
@@ -822,14 +830,19 @@ pub struct Recombine {
 
 impl ResearchArea<'_> {
     /// Whether each rule is delivered at the subjects' own events more
-    /// (or less) often than at events shuffled among them.
+    /// (or less) often than at events shuffled among them. A rule that
+    /// [reads transits](Rule::reads_transits) is read instead under the sky
+    /// at each instant, founded once per place and instant, and its timing
+    /// is the transit's own, so no period delivers it (crux C382).
     ///
     /// # Errors
     ///
     /// `INVALID_ARG` naming its field: an event before its own birth
     /// (`subjects[i].event`); a rule the language cannot evaluate
-    /// (`rules[i]`); whatever reading the births or the dasha refuses; and
-    /// whatever [`teistro_research::timed`] refuses.
+    /// (`rules[i]`); more instants of the sky than `test.max_pairs`
+    /// allows (`maxPairs`, with the count it would need); whatever reading
+    /// the births or the dasha refuses; and whatever
+    /// [`teistro_research::timed`] refuses.
     pub fn timed(
         self,
         study: EventStudy<'_>,
@@ -847,6 +860,19 @@ impl ResearchArea<'_> {
         }
         check(Study::new(&births, study.request, study.rules))?;
         let plan = Plan::of(study, strata)?;
+        // Every instant each subject is read at: each pairing's, or its own
+        // referents.
+        let wanted: Vec<Vec<JulianDay<Utc>>> = match &plan {
+            Plan::Paired(_) => (0..study.subjects.len())
+                .map(|i| {
+                    (0..study.subjects.len())
+                        .filter_map(|j| event_instant(study, i, j))
+                        .collect()
+                })
+                .collect(),
+            Plan::Matched(referents) => study.subjects.iter().map(|s| referents.of(s)).collect(),
+        };
+        let skies = self.skies(study, &births, &wanted, test.max_pairs)?;
         let (charts, read, provenance) = self.lives(study, &births)?;
         let readings = study.rules.readings().readings();
         let evaluators: Vec<Option<(Evaluator<'_>, &Lived)>> = charts
@@ -855,7 +881,13 @@ impl ResearchArea<'_> {
             .collect();
         let cell =
             |r: usize, rule: &Rule, i: usize, at: Option<JulianDay<Utc>>| match evaluators.get(i) {
-                Some(Some((evaluator, lived))) => delivered(study, (r, rule), evaluator, lived, at),
+                Some(Some((evaluator, lived))) => match &skies {
+                    Some(skies) if rule.reads_transits() => {
+                        let sky = at.and_then(|at| skies.get(i, at));
+                        in_transit(study, (r, rule), evaluator, lived, sky)
+                    }
+                    _ => delivered(study, (r, rule), evaluator, lived, at),
+                },
                 _ => Cell::Unreadable,
             };
         let value = match plan {
@@ -867,9 +899,8 @@ impl ResearchArea<'_> {
                 }
                 timed(&pairs, strata, test)?
             }
-            Plan::Matched(referents) => {
-                let instants: Vec<Vec<JulianDay<Utc>>> =
-                    study.subjects.iter().map(|s| referents.of(s)).collect();
+            Plan::Matched(_) => {
+                let instants = &wanted;
                 let counts: Vec<u16> = instants
                     .iter()
                     .map(|own| u16::try_from(own.len()).unwrap_or(u16::MAX))
@@ -911,6 +942,83 @@ impl ResearchArea<'_> {
             read,
         });
         Ok(Envelope::sealing(value, provenance))
+    }
+
+    /// The sky in transit at every instant a subject is read at, founded a
+    /// place at a time, when a rule reads transits; none otherwise, so a
+    /// study of natal rules alone pays for no sky. Refused above
+    /// `max_pairs` instants, naming how many the study would need.
+    fn skies(
+        self,
+        study: EventStudy<'_>,
+        births: &[Birth],
+        wanted: &[Vec<JulianDay<Utc>>],
+        max_pairs: u64,
+    ) -> Result<Option<Skies>, Error> {
+        if !study.rules.rules().iter().any(Rule::reads_transits) {
+            return Ok(None);
+        }
+        let groups = by_place(births);
+        // Each place's distinct instants, earliest first.
+        let instants: Vec<Vec<JulianDay<Utc>>> = groups
+            .iter()
+            .map(|members| {
+                let mut at: Vec<JulianDay<Utc>> = members
+                    .iter()
+                    .filter_map(|&i| wanted.get(i))
+                    .flatten()
+                    .copied()
+                    .collect();
+                at.sort_by(|a, b| a.get().total_cmp(&b.get()));
+                at.dedup_by(|a, b| a.get().to_bits() == b.get().to_bits());
+                at
+            })
+            .collect();
+        let needed: u64 = instants.iter().map(|at| at.len() as u64).sum();
+        if needed > max_pairs {
+            return Err(Error::invalid_arg(format!(
+                "a rule reads transits, and this study reads the sky at {needed} instants, above `maxPairs`, {max_pairs}"
+            ))
+            .with_field("test.maxPairs")
+            .with_hint(format!(
+                "raise `maxPairs` to {needed} to pay for it, or study fewer subjects; the age shuffle reads the sky at every pairing, the event-date shuffle at each event a place at a time"
+            )));
+        }
+        let mut subject_place = vec![0; births.len()];
+        let mut skies = Vec::with_capacity(groups.len());
+        for (g, (members, at)) in groups.iter().zip(&instants).enumerate() {
+            for &i in members {
+                if let Some(slot) = subject_place.get_mut(i) {
+                    *slot = g;
+                }
+            }
+            let Some(place) = members
+                .first()
+                .and_then(|&i| births.get(i))
+                .map(|b| b.place)
+            else {
+                continue;
+            };
+            let read = self
+                .context
+                .chart()
+                .founding(UtcOffset::UTC, |founder| founder.longitudes(at, &place))?;
+            let sky: BTreeMap<u64, TransitSky> =
+                at.iter()
+                    .zip(read.value)
+                    .map(|(instant, longitudes)| {
+                        let signs = Graha::ALL.into_iter().zip(longitudes).map(|(graha, l)| {
+                            (graha, teistro_gochar::Transit::at_longitude(l).sign)
+                        });
+                        (instant.get().to_bits(), TransitSky::new(signs))
+                    })
+                    .collect();
+            skies.push(sky);
+        }
+        Ok(Some(Skies {
+            subject_place,
+            skies,
+        }))
     }
 
     /// Every subject's chart, rule results and dasha, read a place at a
@@ -1119,6 +1227,47 @@ fn pairings(study: EventStudy<'_>) -> Result<PairMatrix, Error> {
         }
     }
     Ok(pairs)
+}
+
+/// The sky in transit at each instant a study reads, by subject.
+struct Skies {
+    /// Each subject's place, an index into `skies`.
+    subject_place: Vec<usize>,
+    /// Each place's skies, by the instant's bits.
+    skies: Vec<BTreeMap<u64, TransitSky>>,
+}
+
+impl Skies {
+    fn get(&self, subject: usize, at: JulianDay<Utc>) -> Option<&TransitSky> {
+        let place = *self.subject_place.get(subject)?;
+        self.skies.get(place)?.get(&at.get().to_bits())
+    }
+}
+
+/// Whether rule `r`, which reads transits, holds of a subject's chart
+/// under the sky at an instant. Its timing is the transit's own, so no
+/// period is asked to deliver it (crux C382); `holds` still decides
+/// whether its cancellations undo it.
+fn in_transit(
+    study: EventStudy<'_>,
+    (r, rule): (usize, &Rule),
+    evaluator: &Evaluator<'_>,
+    lived: &Lived,
+    sky: Option<&TransitSky>,
+) -> Cell {
+    if lived.unreadable.get(r).copied().unwrap_or(true) {
+        return Cell::Unreadable;
+    }
+    let Some(sky) = sky else {
+        return Cell::Unreadable;
+    };
+    let result = evaluator.with_transits(sky).evaluate(rule);
+    let held = result.present
+        && match study.holds {
+            Holds::Formed => true,
+            Holds::Standing => result.status != Some(NetStatus::FullyCancelled),
+        };
+    if held { Cell::Present } else { Cell::Absent }
 }
 
 /// Whether rule `r` of a subject's chart is delivered at `at`: formed on

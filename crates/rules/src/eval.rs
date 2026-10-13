@@ -10,7 +10,7 @@ use teistro_points::arudha;
 use crate::chart::{
     AspectGathering, Benefics, Conjunction, DignityMatch, Eclipse, Gathering, Houses,
     NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, PointAt,
-    Readings, RuleChart, Strengths, Upapada, VargaSigns,
+    Readings, RuleChart, Strengths, TransitSky, Upapada, VargaSigns,
 };
 use crate::language::{
     Body, Condition, EclipseKind, Edge, House, KarakaScheme, NodeSide, Relation,
@@ -179,6 +179,8 @@ pub struct Evaluator<'a> {
     points: &'a [PointAt],
     /// The rules a `{"type": "rule"}` condition can name.
     rules: &'a [Rule],
+    /// The sky a `transit-in-house` condition reads, when given one.
+    transits: Option<&'a TransitSky>,
     /// The lord each sign's pada counts to, Aries to Pisces, when the caller
     /// names them; the catalogue's lords otherwise (crux C135).
     pada_lords: Option<&'a [Graha; 12]>,
@@ -240,6 +242,7 @@ impl<'a> Evaluator<'a> {
             vargas: &[],
             points: &[],
             rules: &[],
+            transits: None,
             pada_lords: None,
             bound: None,
             benefic,
@@ -280,6 +283,18 @@ impl<'a> Evaluator<'a> {
     #[must_use]
     pub const fn with_tables(self, tables: &'a Tables) -> Evaluator<'a> {
         Evaluator { tables, ..self }
+    }
+
+    /// The same evaluator, reading the sky in transit at one instant against
+    /// the natal chart; without one, a `transit-in-house` condition never
+    /// holds. Evaluate a rule that [reads transits](Rule::reads_transits)
+    /// with the sky of each instant it is asked at.
+    #[must_use]
+    pub const fn with_transits(self, sky: &'a TransitSky) -> Evaluator<'a> {
+        Evaluator {
+            transits: Some(sky),
+            ..self
+        }
     }
 
     /// The same evaluator, able to read `in-varga` conditions in these
@@ -1175,6 +1190,21 @@ impl<'a> Evaluator<'a> {
                 }),
             Condition::BirthByDay => self.panchanga().is_some_and(|p| p.by_day == Some(true)),
             Condition::BirthOnSankranti { .. } => self.panchanga().is_some_and(|p| p.on_sankranti),
+            Condition::TransitInHouse {
+                planet,
+                houses,
+                from,
+            } => {
+                let sign = self.transits.and_then(|sky| sky.sign(*planet));
+                rec.resolved(|| Resolved::Transit {
+                    graha: *planet,
+                    sign,
+                });
+                match (sign, self.spot(from, rec)) {
+                    (Some(sign), Some(from)) => houses.contains(&House::between(from.sign, sign)),
+                    _ => false,
+                }
+            }
             Condition::AtLimbEdge {
                 limb,
                 edge,
@@ -2254,6 +2284,52 @@ mod tests {
             explanation.to_string(),
             "EXAMPLE: not present\n  fails: SUN stands in the 7th house\n    SUN stands in ARIES, house 1\n"
         );
+    }
+
+    #[test]
+    fn a_transit_is_counted_from_the_natal_sign_and_needs_a_sky() {
+        use crate::chart::TransitSky;
+
+        // Sade sati: Saturn in transit in the twelfth, first or second from
+        // the natal Moon, here in Cancer.
+        let mut c = chart();
+        place(&mut c, MOON, Rashi::Cancer);
+        let sade_sati = written(
+            r#"{"type": "transit-in-house", "planet": "SATURN", "houses": [12, 1, 2], "from": "MOON"}"#,
+        );
+        let at = |sign| {
+            let sky = TransitSky::new([(Graha::Saturn, sign)]);
+            let mut into = Participants::default();
+            let held = Evaluator::new(&c, ENGINE)
+                .with_transits(&sky)
+                .holds(&sade_sati, &mut into);
+            (held, into.iter().collect::<Vec<Body>>())
+        };
+        assert_eq!(at(Rashi::Gemini), (true, Vec::new()));
+        assert_eq!(at(Rashi::Cancer), (true, Vec::new()));
+        assert_eq!(at(Rashi::Leo), (true, Vec::new()));
+        assert_eq!(at(Rashi::Virgo), (false, Vec::new()));
+        // Natal Saturn does not stand in for the sky: without one, or with
+        // one lacking him, the condition is false.
+        place(&mut c, SATURN, Rashi::Cancer);
+        assert!(!holds(&c, ENGINE, &sade_sati).0);
+        let empty = TransitSky::new([(Graha::Jupiter, Rashi::Cancer)]);
+        let mut into = Participants::default();
+        assert!(
+            !Evaluator::new(&c, ENGINE)
+                .with_transits(&empty)
+                .holds(&sade_sati, &mut into)
+        );
+        assert!(sade_sati.reads_transits());
+        assert_eq!(
+            sade_sati.to_string(),
+            "SATURN in transit stands in the 12th, 1st or 2nd from the natal MOON"
+        );
+        // No divisional chart holds the sky, so it is refused inside one.
+        let inside = written(
+            r#"{"type": "in-varga", "varga": "D9", "condition": {"type": "transit-in-house", "planet": "SATURN", "houses": [1], "from": "MOON"}}"#,
+        );
+        assert_eq!(inside.longitude_in_varga(), Some("transit-in-house"));
     }
 
     #[test]

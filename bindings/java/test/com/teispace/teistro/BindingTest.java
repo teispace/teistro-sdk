@@ -510,6 +510,25 @@ public final class BindingTest {
                 TeistroException tight = refusal(() -> sky.research().timed(lives, yogas, DashaSystem.VIMSHOTTARI,
                         new ResearchReferents(365.25, 0.25), ResearchEventTest.builder(1, 19).build(), null));
                 same("referents.stepDays", tight.field(), "a window holds at most a thousand instants");
+                // A transit rule is read at each pairing's instant, the sky's cost chosen with maxPairs:
+                // six lives under the age shuffle need the sky at up to 36 instants.
+                com.teispace.teistro.request.RuleRequest saturnReturn = com.teispace.teistro.request.RuleRequest
+                        .builder()
+                        .rules(List.of(com.teispace.teistro.request.RuleDefinition.builder()
+                                .key("SATURN_RETURN")
+                                .category("transit")
+                                .source(com.teispace.teistro.request.RuleSource.builder().text("a test").build())
+                                .conditions(List.of(new com.teispace.teistro.request.ConditionTransitInHouse(
+                                        "SATURN", List.of(1), Graha.SATURN)))
+                                .build()))
+                        .build();
+                ResearchTested transit = sky.research().timed(lives, saturnReturn, DashaSystem.VIMSHOTTARI,
+                        ResearchEventShuffle.AGES_AT_EVENT, ResearchEventTest.builder(1, 19).build(), null);
+                same("SATURN_RETURN", transit.rows().get(0).predicate(), "the transit rule's row");
+                TeistroException capped = refusal(() -> sky.research().timed(lives, saturnReturn,
+                        DashaSystem.VIMSHOTTARI, ResearchEventShuffle.AGES_AT_EVENT,
+                        ResearchEventTest.builder(1, 19).maxPairs(2).build(), null));
+                same("test.maxPairs", capped.field(), "the sky's cost is chosen");
                 // A test the call needs is refused by name before anything crosses.
                 TeistroException untested = refusal(() -> sky.research().compare(births, yogas, design, null, null));
                 same("test", untested.field(), "no test, no study");

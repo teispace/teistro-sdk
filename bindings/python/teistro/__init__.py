@@ -2393,7 +2393,8 @@ class ResearchGroupTest(TypedDict, total=False):
 class ResearchEventTest(TypedDict, total=False):
     """A test of events against the shuffled-event null: `seed` and
     `permutations` required, `afterBirth` `"REFUSE"` (the default) or
-    `"RESTRICT_PAIRINGS"`."""
+    `"RESTRICT_PAIRINGS"`, and `maxPairs` the most instants a transit rule
+    may have the sky read at (the SDK's default when absent)."""
 
     seed: int
     permutations: int
@@ -2402,6 +2403,7 @@ class ResearchEventTest(TypedDict, total=False):
     level: float
     alpha: float
     parallelism: Union[Literal["ONE"], Mapping[str, int]]
+    maxPairs: int
 
 
 class ResearchReferents(TypedDict):
@@ -2692,7 +2694,9 @@ class ResearchArea(_Area):
         (`AGES_AT_EVENT`, each person's age at the event kept); or, under
         `SELF_MATCHED`, than at each person's own `referents`, every
         person their own control and no strata. The shuffle has no
-        default."""
+        default. A rule that reads transits holds under the sky at each
+        instant instead, and the test's `maxPairs` caps how many skies
+        that is."""
         return _research_tested(
             self._run(
                 "TIMED",
