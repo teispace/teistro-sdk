@@ -1,0 +1,93 @@
+# Mutation testing (`docs/05-testing/01-quality-bar.md`, "mutation
+# testing"): every kernel crate's mutants, weekly and on demand, in the
+# shards `cargo xtask mutants --matrix` lists, held by `check-mutants` to
+# the floors and the named survivors of `docs/05-testing/mutants.json`.
+# Too slow for every push: the kernel crates make about four thousand
+# mutants, each a build and a test run. The equivalent mutants are listed
+# in `.cargo/mutants.toml`. A run that clears the record is uploaded whole,
+# so `cargo xtask mutants --from DIR` can record it.
+name: mutants
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    name: shards
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: xtask
+      - id: matrix
+        run: echo "matrix=$(cargo xtask mutants --matrix)" >> "$GITHUB_OUTPUT"
+
+  mutants:
+    name: mutants (${{ matrix.crate }} ${{ matrix.shard }}/${{ matrix.shards }})
+    needs: matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: mutants-${{ matrix.crate }}
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants@27.1.0
+      - name: The shard's mutants
+        # cargo-mutants exits 2 when a mutant survived and 3 when one timed
+        # out, which `check-mutants` judges; anything else is the run's own
+        # failure.
+        run: |
+          code=0
+          cargo mutants --package ${{ matrix.package }} \
+            --shard ${{ matrix.shard }}/${{ matrix.shards }} \
+            --output runs/${{ matrix.crate }}/${{ matrix.shard }} \
+            --jobs 2 --no-shuffle || code=$?
+          case "$code" in
+            0|2|3) ;;
+            *) echo "cargo mutants failed with $code"; exit "$code" ;;
+          esac
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-${{ matrix.crate }}-${{ matrix.shard }}
+          path: runs
+          if-no-files-found: ignore
+
+  check:
+    name: mutants held to the record
+    needs: mutants
+    if: always() && needs.mutants.result != 'cancelled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: xtask
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mutants-*
+          path: runs
+          merge-multiple: true
+      # A shard that failed left no outcomes, and the check names it.
+      - run: cargo xtask check-mutants --from runs

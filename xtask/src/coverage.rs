@@ -21,12 +21,11 @@ use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::fs;
 use std::path::Path;
-use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::generated::{Output, check, write};
+use crate::generated::{Output, check, on_main, write};
 
 /// The record the floors are kept in.
 const RECORD: &str = "docs/05-testing/coverage.json";
@@ -151,7 +150,7 @@ fn measured(export: &Value) -> Result<BTreeMap<String, Lines>, String> {
 /// A file under a `generated/` directory belongs to none: it is a table its
 /// generator's own check holds, and its rows of constants say nothing about
 /// whether code is tested. Neither does a crate in [`NOT_MEASURED`].
-fn crate_of(path: &str) -> Option<&str> {
+pub(crate) fn crate_of(path: &str) -> Option<&str> {
     let (_, rest) = path.rsplit_once("/crates/")?;
     let (name, rest) = rest.split_once('/')?;
     (rest.starts_with("src/")
@@ -237,13 +236,7 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
         &[Output::new(PAGE, render(&record))],
         "cargo xtask coverage --from FILE",
     );
-    let main = Command::new("git")
-        .args(["show", &format!("origin/main:{RECORD}")])
-        .current_dir(root)
-        .output()
-        .ok()
-        .filter(|out| out.status.success());
-    match main.map(|out| parse_record(&String::from_utf8_lossy(&out.stdout))) {
+    match on_main(root, RECORD).map(|text| parse_record(&text)) {
         Some(Ok(main)) => {
             for (name, was) in &main.floors {
                 if let Some(now) = record.floors.get(name).filter(|now| *now < was) {

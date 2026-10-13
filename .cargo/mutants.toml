@@ -1,0 +1,47 @@
+# cargo-mutants' configuration (`docs/05-testing/01-quality-bar.md`,
+# "mutation testing"; `.github/workflows/mutants.yml` runs it).
+#
+# `exclude_re` lists the equivalent mutants: changes no test can catch
+# because they do not change what the code computes. Each is anchored to
+# its line and column, so a line that moves frees its mutant, which then
+# survives and fails `check-mutants` until the entry follows it; each says
+# why it is equivalent. A mutant that is merely hard to catch is not listed
+# here: it gets its test.
+exclude_re = [
+  # The step either side of a lattice boundary is a hundredth or a hundred
+  # times the tolerance: both put the two readings on either side of it,
+  # and the parts are degrees wide.
+  'crates/vargas/src/change\.rs:111:35: replace \* with / in by_lattice',
+  # `left <= to` loops once more at `left == to`, where `right` is `to`
+  # again and the `right >= to` break ends it with nothing found.
+  'crates/vargas/src/change\.rs:142:16: replace < with <= in by_bisection',
+  # When the occupied sign's number equals the empty one's, what is left
+  # the empty one is their difference, nothing, either way.
+  'crates/strength/src/ashtakavarga\.rs:362:65: replace < with <= in ekadhipatya',
+  # At sunset itself the instant is in twilight, which `by_day` already
+  # refuses, so `instant <= sunset` reads the same.
+  'crates/strength/src/bhava_bala\.rs:293:48: replace < with <= in special',
+  # At exactly 180° the shorter arc is 180 either way.
+  'crates/strength/src/shadbala/mod\.rs:395:13: replace > with >= in apart',
+  # Ketu is Rahu less 180° or plus 180°: the same point.
+  'crates/strength/src/shadbala/mod\.rs:444:65: replace \+ with - in is_benefic',
+  # An arc past 180° folded down by 360° or up by it puts half of it on
+  # the same point once the madhyama is reduced past 360°.
+  'crates/strength/src/shadbala/cheshta\.rs:54:13: replace -= with \+= in from_kendra',
+  # The kendra opposite an angle is the angle less 180° or plus it, and so
+  # is the point a graha is powerless at.
+  'crates/strength/src/shadbala/dig\.rs:17:48: replace \+ with - in of',
+  'crates/strength/src/shadbala/dig\.rs:18:36: replace \+ with - in of',
+  'crates/strength/src/shadbala/dig\.rs:25:54: replace \+ with - in of',
+  # A bhuja of exactly 90° is 90 folded or not.
+  'crates/strength/src/shadbala/kaala\.rs:199:31: replace > with >= in kranti',
+  # At a sayana of exactly 180° the bhuja is 0, so the kranti is zero of
+  # either sign.
+  'crates/strength/src/shadbala/kaala\.rs:216:30: replace < with <= in kranti',
+  # `skip(i * 1)` adds each graha's pair with itself, whose discs differ by
+  # nothing, which the loop skips.
+  'crates/strength/src/shadbala/yuddha\.rs:27:58: replace \+ with \* in apply',
+  # Two grahas at war are within a degree, so the arc from one to the other
+  # is never exactly 180°.
+  'crates/strength/src/shadbala/yuddha\.rs:42:56: replace < with <= in apply',
+]

@@ -88,6 +88,18 @@ pub(crate) fn prune(root: &Path, dir: &str, outputs: &[Output]) {
     }
 }
 
+/// A checked-in file as `main` has it, or `None` where git cannot read it
+/// (a shallow clone, a checkout with no `origin`).
+pub(crate) fn on_main(root: &Path, path: &str) -> Option<String> {
+    std::process::Command::new("git")
+        .args(["show", &format!("origin/main:{path}")])
+        .current_dir(root)
+        .output()
+        .ok()
+        .filter(|out| out.status.success())
+        .map(|out| String::from_utf8_lossy(&out.stdout).into_owned())
+}
+
 /// Compares every output with the checked-in file.
 pub(crate) fn check(root: &Path, outputs: &[Output], generator: &str) -> i32 {
     let mut failures = 0;

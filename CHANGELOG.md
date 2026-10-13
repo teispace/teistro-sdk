@@ -323,6 +323,16 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**The kernel crates' tests are held to their mutants.** **Numbers:**
+none moved. A weekly workflow runs `cargo mutants` over the dashas, the
+rules, the strengths and the vargas, and fails a crate whose tests catch
+fewer of its mutants than its recorded floor, or any surviving mutant the
+record does not name (`docs/05-testing/mutants-measured.md`). The first
+runs found the strengths' Ashtakavarga pindas, Kedarnath Dutt's mean
+elements, the Vimshopaka's compound friendships and the day's edges
+computed but never checked; each now has a test. Rewrites that cannot
+change an answer are listed with the reason in `.cargo/mutants.toml`.
+
 **`teistro-intl` keeps a locale as it was written.** **Numbers:** none
 moved. `import xliff` rewrote each entity's forms alphabetically, so
 importing an unchanged locale rewrote every entity in it. It now keeps the

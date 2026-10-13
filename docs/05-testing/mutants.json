@@ -1,0 +1,9 @@
+{
+  "schema": "teistro-mutants/1",
+  "crates": {
+    "vargas": {
+      "floor": 100,
+      "survivors": []
+    }
+  }
+}
