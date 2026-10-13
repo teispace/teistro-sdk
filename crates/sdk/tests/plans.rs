@@ -790,6 +790,16 @@ fn a_rule_that_reads_a_limb_is_given_one() {
         limbs.by_day,
         Some(at.get() >= day.day.sunrise.get() && at.get() < day.day.sunset.get())
     );
+    // The night is measured only for a birth in it, sunset to the next
+    // sunrise, and its two parts sum to its length.
+    match limbs.spans.night {
+        None => assert_eq!(limbs.by_day, Some(true)),
+        Some(night) => {
+            assert_eq!(limbs.by_day, Some(false));
+            let length = (day.day.next_sunrise.get() - day.day.sunset.get()) * 60.0;
+            assert!((night.elapsed + night.remaining - length).abs() < 1e-6);
+        }
+    }
 }
 
 /// How many of the limb-reading rules a real chart holds, which is the
@@ -804,7 +814,7 @@ fn the_limb_reading_rules_are_answered_rather_than_excused() {
         .filter(|rule| rule.reads_panchanga())
         .cloned()
         .collect();
-    assert_eq!(every.len(), 23, "the shipped rules that read a limb");
+    assert_eq!(every.len(), 25, "the shipped rules that read a limb");
 
     let (_, document) = common::reading("{}", |request| request.with_rule_inputs(&every));
     let inputs = teistro::RuleInputs::of(&document).expect("the rules read it");
