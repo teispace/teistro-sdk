@@ -280,6 +280,23 @@ mod tests {
         }
         let moon = DashaPhalaReading::of(&chart(vargas), ShantaSign::Friendly).grahas[1];
         assert_eq!(moon.subhankas[1..], [4.0; 6]);
+        // Each graha's own rasi seat: Mars in Taurus has the Sun in Aries in
+        // his twelfth, a temporary friend, and his natural friend too, so in
+        // the Sun's Leo he is a great friend's guest, 22 halved to 11.
+        let mut vargas = [[Rashi::Aries; 9]; 7];
+        vargas[0][1] = Rashi::Libra;
+        vargas[0][2] = Rashi::Taurus;
+        for row in vargas.iter_mut().skip(1) {
+            row[2] = Rashi::Leo;
+        }
+        let mars = DashaPhalaReading::of(&chart(vargas), ShantaSign::Friendly).grahas[2];
+        assert_eq!(mars.subhankas[1..], [11.0; 6]);
+    }
+
+    #[test]
+    fn a_phase_s_key_is_its_word() {
+        let keys = DashaPhase::ALL.map(DashaPhase::key);
+        assert_eq!(keys, ["commencement", "middle", "end"]);
     }
 
     #[test]
@@ -306,6 +323,7 @@ mod tests {
         chart.grahas[2].house = 8; // Exalted in the eighth.
         chart.grahas[2].dignity = Dignity::Exalted;
         chart.grahas[3].dignity = Dignity::GreatFriend;
+        chart.grahas[5].dignity = Dignity::Friend;
         let reading = DashaPhalaReading::of(&chart, ShantaSign::Friendly);
         let flags = |i: usize| (reading.grahas[i].favourable, reading.grahas[i].unfavourable);
         assert_eq!(flags(0), (true, false));
@@ -313,9 +331,11 @@ mod tests {
         assert_eq!(flags(2), (true, true));
         assert_eq!(flags(3), (true, false));
         assert_eq!(flags(4), (false, false));
+        assert_eq!(flags(5), (true, false));
         // A friend's sign alone is Shant under the literal reading.
         let literal = DashaPhalaReading::of(&chart, ShantaSign::Friend);
         assert!(!literal.grahas[3].favourable);
+        assert!(literal.grahas[5].favourable);
     }
 
     #[test]

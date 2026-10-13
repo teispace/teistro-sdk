@@ -89,3 +89,37 @@ pub(crate) fn of(graha: Graha, chart: &ShadbalaChart, rules: &ShadbalaRules) -> 
         from_kendra(seeghrochcha, mean, true_longitude)
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dutt_s_elements_move_and_correct_by_the_century() {
+        // A Julian century after the epoch, t = 100 years: each epoch, plus
+        // the daily motion times 36,525 days, plus the century's correction,
+        // worked by hand and reduced past 360°.
+        for (graha, expected) in [
+            (Graha::Mars, 330.013_975),
+            (Graha::Jupiter, 11.146_967_5),
+            (Graha::Saturn, 23.199_475),
+            (Graha::Mercury, 242.451_95),
+            (Graha::Venus, 161.829_175),
+            (Graha::Sun, 256.593_591_25),
+        ] {
+            let found = dutt(graha, 36_525.0);
+            assert!((found - expected).abs() < 1e-6, "{graha:?}: {found}");
+        }
+    }
+
+    #[test]
+    fn the_kendra_folds_an_arc_past_half_the_circle() {
+        // The true longitude 20° behind the mean: the madhyama is 10° behind,
+        // not 170° ahead.
+        assert_eq!(from_kendra(0.0, 10.0, 350.0), 0.0);
+        assert_eq!(from_kendra(180.0, 10.0, 350.0), 60.0);
+        // Exactly half the circle is not folded: the madhyama is 90° ahead.
+        assert_eq!(from_kendra(100.0, 10.0, 190.0), 0.0);
+        assert_eq!(from_kendra(280.0, 10.0, 190.0), 60.0);
+    }
+}
