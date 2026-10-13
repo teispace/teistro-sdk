@@ -245,6 +245,8 @@ jobs:
         run: cargo xtask check-sizes
       - name: Coverage page (each crate's floor, rendered from the record, none lowered against main)
         run: cargo xtask check-coverage
+      - name: Mutants page (each kernel crate's floor and named survivors, rendered from the record, no floor lowered against main)
+        run: cargo xtask check-mutants
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read, every gate run and every composer reaching every binding)
         run: cargo xtask check-lints
 

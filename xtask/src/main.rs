@@ -322,6 +322,7 @@ mod mobile;
 mod moon;
 mod muhurta;
 mod muntha;
+mod mutants;
 mod nepal_day;
 mod nepal_month;
 mod nepal_sambat;
@@ -693,6 +694,8 @@ fn main() {
         Some("check-abi") => abi_stability::check(&repo_root(), &args),
         Some("coverage") => coverage::command(&repo_root(), "coverage", &args),
         Some("check-coverage") => coverage::command(&repo_root(), "check-coverage", &args),
+        Some("mutants") => mutants::command(&repo_root(), "mutants", &args),
+        Some("check-mutants") => mutants::command(&repo_root(), "check-mutants", &args),
         Some("check-tag") => match args.as_slice() {
             [_, tag] => release::check_tag(&repo_root(), tag),
             _ => usage(),
@@ -772,7 +775,7 @@ fn usage() -> i32 {
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
          conformance --from DIR | check-conformance --from DIR | \
-         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | check-coverage [--from FILE] | check-abi [--against REF] | check-site | check-guides | check-tag TAG | version [X] | changelog-entry X | \
+         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | check-coverage [--from FILE] | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \
