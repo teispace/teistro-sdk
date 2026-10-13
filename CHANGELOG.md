@@ -311,6 +311,12 @@ the SDK. Miri found one in sha2 0.11.0's aarch64
 backend, already fixed upstream and not yet released, so the Miri job uses
 sha2's soft backend until a release carries the fix.
 
+**`teistro-intl` keeps a locale as it was written.** **Numbers:** none
+moved. `import xliff` rewrote each entity's forms alphabetically, so
+importing an unchanged locale rewrote every entity in it. It now keeps the
+order every other writer uses. `derive --out` read the hand corrections
+from the output directory and not the tree, which dropped all of them.
+
 **A release keeps the API the last one shipped.** **Numbers:** none moved.
 The release gate compares the C ABI's description with the last
 release's, and fails a removal or a change a binding generated for the
