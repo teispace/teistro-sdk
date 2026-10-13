@@ -409,20 +409,123 @@ mod tests {
         assert_eq!(special(&chart, 11), 15.0);
     }
 
+    /// Each occupant counts by itself, and the rising rule follows the
+    /// part of the day: by day a sirshodaya sign, by night a prishtodaya
+    /// one, and in either twilight (two ghatis after sunset or before the
+    /// next sunrise) an ubhayodaya one.
+    #[test]
+    fn the_special_rules_follow_each_occupant_and_each_part_of_the_day() {
+        let mut empty = chart();
+        for at in &mut empty.grahas {
+            at.house = 2;
+        }
+        let alone = |seat: usize| {
+            let mut chart = empty;
+            chart.grahas[seat].house = 1;
+            special(&chart, 0)
+        };
+        // Aries by day: the occupant alone.
+        assert_eq!(alone(4), 60.0, "Jupiter");
+        assert_eq!(alone(3), 60.0, "Mercury");
+        assert_eq!(alone(0), -60.0, "the Sun");
+        assert_eq!(alone(5), 0.0, "Venus");
+
+        let (_, sunset, next_sunrise) = empty.day;
+        let twilight = TWILIGHT_GHATIS / 60.0;
+        // Bhavas: Aries (prishtodaya), Gemini (sirshodaya), Pisces
+        // (ubhayodaya), each with nothing in it but the third.
+        let rising = |instant: f64| {
+            let mut chart = empty;
+            chart.instant = instant;
+            [special(&chart, 0), special(&chart, 2), special(&chart, 11)]
+        };
+        assert_eq!(rising(empty.instant), [0.0, 15.0, 0.0], "by day");
+        assert_eq!(rising(sunset + 0.01), [0.0, 0.0, 15.0], "at dusk");
+        assert_eq!(
+            rising(sunset + twilight),
+            [15.0, 0.0, 0.0],
+            "dusk's end is night"
+        );
+        assert_eq!(rising(sunset + 0.2), [15.0, 0.0, 0.0], "by night");
+        assert_eq!(rising(next_sunrise - 0.01), [0.0, 0.0, 15.0], "at dawn");
+    }
+
+    /// Capricorn is a quadruped in its first half and watery in its
+    /// second, except for the engine, whose whole sign is a quadruped.
+    #[test]
+    fn capricorn_s_class_follows_its_half() {
+        let mut chart = chart();
+        // The tenth bhava: watery's weakest house is the tenth itself.
+        assert_eq!(
+            dig(&chart, 9, BhavaDig::Sripati),
+            0.0,
+            "15°, the second half"
+        );
+        assert_eq!(dig(&chart, 9, BhavaDig::WholeSign), 60.0);
+        chart.madhya[9] = 275.0;
+        assert_eq!(
+            dig(&chart, 9, BhavaDig::Sripati),
+            60.0,
+            "5°, the first half"
+        );
+    }
+
+    /// The Moon's drishti is a benefic's from the eighth day of the bright
+    /// half to the eighth of the dark, read as her distance ahead of the
+    /// Sun; under fixed benefics, always.
+    #[test]
+    fn the_moon_is_a_benefic_in_her_bright_half() {
+        let mut chart = chart();
+        let at = |chart: &mut BhavaBalaChart, sun: f64, moon: f64| {
+            chart.grahas[0].longitude = sun;
+            chart.grahas[1].longitude = moon;
+        };
+        let rules = BhavaBalaRules::SRIPATI;
+        at(&mut chart, 100.0, 250.0);
+        assert!(benefic(Graha::Moon, &chart, rules), "150° ahead");
+        at(&mut chart, 100.0, 120.0);
+        assert!(!benefic(Graha::Moon, &chart, rules), "20° ahead");
+        let fixed = BhavaBalaRules {
+            benefics: Benefics::Fixed,
+            ..rules
+        };
+        assert!(
+            benefic(Graha::Moon, &chart, fixed),
+            "always, under fixed benefics"
+        );
+    }
+
+    /// A bhava's total is its four components, none of which reads as a
+    /// negative zero, over a chart where each is something.
     #[test]
     fn every_bhava_s_total_is_its_components() {
-        for rules in [
-            BhavaBalaRules::BPHS,
-            BhavaBalaRules::SRIPATI,
-            BhavaBalaRules::RECORDING_ENGINE,
-        ] {
-            let reading = BhavaBalaReading::of(&chart(), rules);
-            assert_eq!(reading.bhavas.len(), 12);
-            for bhava in reading.bhavas {
-                assert_eq!(
-                    bhava.virupas,
-                    bhava.adhipati + bhava.dig + bhava.drishti + bhava.special
-                );
+        let mut busy = chart();
+        for at in &mut busy.grahas {
+            at.house = 2;
+        }
+        busy.grahas[4].house = 1;
+        busy.shadbala[4].1 = 12.0;
+        busy.grahas[6].house = 7;
+        for chart in [chart(), busy] {
+            for rules in [
+                BhavaBalaRules::BPHS,
+                BhavaBalaRules::SRIPATI,
+                BhavaBalaRules::RECORDING_ENGINE,
+            ] {
+                let reading = BhavaBalaReading::of(&chart, rules);
+                let numbered: Vec<u8> = reading.bhavas.iter().map(|b| b.bhava).collect();
+                assert_eq!(numbered, (1..=12).collect::<Vec<u8>>());
+                for bhava in reading.bhavas {
+                    assert_eq!(
+                        bhava.virupas,
+                        bhava.adhipati + bhava.dig + bhava.drishti + bhava.special
+                    );
+                    assert!(
+                        !bhava.drishti.is_sign_negative() || bhava.drishti < 0.0,
+                        "a drishti of nothing reads as a negative zero in bhava {}",
+                        bhava.bhava
+                    );
+                }
             }
         }
     }

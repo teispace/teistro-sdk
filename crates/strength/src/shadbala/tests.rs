@@ -187,6 +187,68 @@ fn the_hindu_table_gives_raman_s_krantis() {
     assert_eq!(ayana(Graha::Jupiter, &chart, Kranti::HinduTable), 60.0);
 }
 
+/// The Yuddha bala weighs the Kaala bala's first seven components, not
+/// the Ayana or the Yuddha itself: each component is a distinct power of
+/// two, so a sign or a component wrong shows in the sum.
+#[test]
+fn the_kaala_bala_to_the_hora_is_its_first_seven_components() {
+    let kaala = KaalaBala {
+        nathonnatha: 1.0,
+        paksha: 2.0,
+        tribhaga: 4.0,
+        abda: 8.0,
+        masa: 16.0,
+        vara: 32.0,
+        hora: 64.0,
+        ayana: 128.0,
+        yuddha: 256.0,
+    };
+    assert_eq!(kaala.to_hora(), 127.0);
+    assert_eq!(kaala.total(), 511.0);
+}
+
+/// Mercury is a malefic beside each malefic in turn (the Sun, Mars,
+/// Saturn, a waning Moon, Rahu or Ketu) and a benefic beside a benefic,
+/// a waxing Moon or nothing.
+#[test]
+fn mercury_is_a_malefic_beside_each_malefic_and_a_benefic_otherwise() {
+    let mut alone = chart();
+    for graha in &mut alone.grahas {
+        graha.longitude = 200.0;
+    }
+    // Mercury alone in Taurus; the Moon new beside the Sun in Libra.
+    alone.grahas[3].longitude = 45.0;
+    let benefic = |chart: &ShadbalaChart| is_benefic(Graha::Mercury, chart, Benefics::Conditional);
+    assert!(benefic(&alone), "alone, and the waning Moon elsewhere");
+    for (seat, name) in [(0, "the Sun"), (2, "Mars"), (6, "Saturn")] {
+        let mut beside = alone;
+        beside.grahas[seat].longitude = 40.0;
+        assert!(!benefic(&beside), "beside {name}");
+    }
+    for (seat, name) in [(4, "Jupiter"), (5, "Venus")] {
+        let mut beside = alone;
+        beside.grahas[seat].longitude = 40.0;
+        assert!(benefic(&beside), "beside {name}");
+    }
+    let mut waxing = alone;
+    waxing.grahas[1].longitude = 40.0;
+    assert!(
+        benefic(&waxing),
+        "beside a waxing Moon, 200° ahead of the Sun"
+    );
+    let mut dark = waxing;
+    dark.grahas[0].longitude = 330.0;
+    assert!(
+        !benefic(&dark),
+        "beside a waning Moon, 70° ahead of the Sun"
+    );
+    for (rahu, name) in [(40.0, "Rahu"), (220.0, "Ketu")] {
+        let mut node = alone;
+        node.rahu = Some(rahu);
+        assert!(!benefic(&node), "beside {name}");
+    }
+}
+
 #[test]
 fn the_benefics_are_conditional_under_sripati() {
     let mut chart = chart();
@@ -196,6 +258,19 @@ fn the_benefics_are_conditional_under_sripati() {
     assert!(is_benefic(Graha::Moon, &chart, Benefics::Fixed));
     chart.grahas[1].longitude = 150.0;
     assert!(is_benefic(Graha::Moon, &chart, Benefics::Conditional));
+    // Her distance is read ahead of the Sun, wherever the Sun is.
+    let mut away = chart;
+    away.grahas[0].longitude = 100.0;
+    away.grahas[1].longitude = 120.0;
+    assert!(
+        !is_benefic(Graha::Moon, &away, Benefics::Conditional),
+        "20° ahead"
+    );
+    away.grahas[1].longitude = 250.0;
+    assert!(
+        is_benefic(Graha::Moon, &away, Benefics::Conditional),
+        "150° ahead"
+    );
     // Mercury beside the Sun is a malefic; alone it is a benefic.
     assert!(!is_benefic(Graha::Mercury, &chart, Benefics::Conditional));
     chart.grahas[3].longitude = 45.0;
@@ -368,4 +443,21 @@ fn the_phalas_are_each_reading_s_means() {
     assert!((sun.ishta - (sun.sthana.uchcha * 30.0).sqrt()).abs() < 1e-12);
     let engine = of(&chart, ShadbalaRules::RECORDING_ENGINE, Graha::Sun);
     assert!((engine.ishta - (engine.sthana.uchcha * engine.cheshta).sqrt()).abs() < 1e-12);
+}
+
+/// The Bhava bala reads each lord's virupas and Drik bala, Sun to
+/// Saturn, from the Shadbala reading itself.
+#[test]
+fn the_bhava_bala_reads_each_graha_s_own_shadbala() {
+    let mut chart = chart();
+    chart.grahas[4].longitude = 100.0;
+    chart.grahas[4].house = 4;
+    let reading = ShadbalaReading::of(&chart, ShadbalaRules::BPHS);
+    let strengths = crate::bhava_bala::BhavaBalaChart::strengths(&reading);
+    let expected: Vec<(f64, f64)> = reading.grahas.iter().map(|g| (g.virupas, g.drik)).collect();
+    assert_eq!(strengths.to_vec(), expected);
+    assert!(
+        strengths.iter().any(|&(_, drik)| drik != 0.0),
+        "a reading with a drishti, so the Drik column is read"
+    );
 }
