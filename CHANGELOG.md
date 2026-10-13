@@ -323,6 +323,13 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**BPHS ch. 10's last two antidotes.** **Numbers:** two rules join the
+arishta set (1531 shipped); no evil's cancellation moved on the corpus.
+A malefic in the fourth or tenth between benefics, with benefics in the
+kendras and trikonas, is the father's (v. 8), named by his evils only; a
+malefic in the fourth with Jupiter in a kendra or trikona gives long life
+(the prints' v. 51), named by every evil.
+
 **The Bhava bala's twilight is BPHS's own three ghatis.** **Numbers:**
 under the default `BPHS` special rules, a house in an ubhayodaya sign
 (Pisces) gains its 15 virupas for a birth between two and three ghatis

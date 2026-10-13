@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2186 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 162 in `ARISHTAS`, 1064 in `READINGS`, 274 in `NABHASAS`, 657 in `the corpus's own`. Their 7532 conditions are written 2819 ways, which say 2815 things, and the renderer gives those 2815 sentences.
+2188 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 164 in `ARISHTAS`, 1064 in `READINGS`, 274 in `NABHASAS`, 657 in `the corpus's own`. Their 7594 conditions are written 2826 ways, which say 2822 things, and the renderer gives those 2822 sentences.
 
-The 1529 shipped rules are what a consumer evaluates; the corpus's own
+The 1531 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 2815 disagree |
-| every condition of every rule renders | **holds** | 0 of 7532 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 2822 disagree |
+| every condition of every rule renders | **holds** | 0 of 7594 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -44,10 +44,10 @@ a change to what a rule asks changes its prose.
 
 | kind | occurrences | as it reads |
 |---|---|---|
-| `and` | 581 | MOON aspects VENUS and VENUS aspects MOON |
+| `and` | 582 | MOON aspects VENUS and VENUS aspects MOON |
 | `or` | 333 | MARS is combust or MARS is retrograde |
 | `not` | 200 | it is not the case that JUPITER is combust |
-| `planet-in-house` | 757 | SUN stands in the 1st house |
+| `planet-in-house` | 759 | SUN stands in the 1st house |
 | `planet-in-sign` | 845 | SUN stands in LEO |
 | `planet-dignity` | 221 | the dignity of SUN is exalted |
 | `planet-in-kendra` | 98 | SUN stands in a kendra |
@@ -96,17 +96,17 @@ a change to what a rule asks changes its prose.
 | `rashi-aspects` | 2 | the AK aspects the PK by rashi drishti |
 | `argala` | 16 | an intervention from the 5th, unobstructed from the 9th, stands on the pada of house 1 |
 | `vipareeta-argala` | 0 | in no pack |
-| `for-any` | 90 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
+| `for-any` | 91 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
 | `count-of` | 12 | at least 4 of the nine grahas meet: the body found aspects MOON |
 | `in-varga` | 17 | in the D2, the lagna rises in CANCER |
-| `count-in-houses` | 304 | at least 1 malefic stands in the 7th from SUN |
+| `count-in-houses` | 307 | at least 1 malefic stands in the 7th from SUN |
 | `count-aspecting` | 13 | at least 1 malefic aspects SUN |
-| `rule` | 1179 | the rule NABHASA_GADA holds |
+| `rule` | 1233 | the rule NABHASA_GADA holds |
 | `at-limb-edge` | 18 | the birth falls within the last 2 ghatikas of the tithi |
 | `birth-by-day` | 6 | the birth fell by day |
 | `same-sign` | 103 | MOON and KETU stand in one sign |
 | `same-body` | 95 | the body found and KETU are one body |
-| `planet-is` | 16 | the body found is a benefic |
+| `planet-is` | 17 | the body found is a benefic |
 | `natural-relation` | 4 | the lord of house 1 counts SUN a friend |
 
 2 kinds of the language occur in no pack at all: `planet-in-nakshatra`, `vipareeta-argala`. The corpus cannot falsify their prose, so the golden test in `crates/rules/src/prose.rs` is their only reader.

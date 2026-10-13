@@ -617,10 +617,11 @@ prose, and each waits on a module rather than on a key. What is left of the list
 still a sourcing question.
 
 **What is left of it needs the source translations to hand, and is
-therefore a sourcing question rather than a coding one.** The rest of the
-arishta corpus is thirty-six of about 120 rules built, over BPHS chs. 9
-and 10 (ch. 9 vv. 12 to 20, 23, 26 and 34 and most of ch. 10 are the gap),
-Brihat Jataka ch. 6 and Saravali chs. 10 to 12; and the readings want
+therefore a sourcing question rather than a coding one.** The arishta
+corpus covers BPHS chs. 9 and 10 (the twilight births and the chapter's
+last two antidotes were built on 2026-10-13), Brihat Jataka ch. 6 and
+Saravali chs. 10 to 12; Phaladeepika chs. 13 and 14 are left, against the
+1965 print's Sanskrit; and the readings want
 Saravali chs. 22 to 31 and 49 to 51, which no rule cites yet. Each rule
 carries a note paraphrasing what its verse says, so writing one without
 the verse in front of you invents scripture in a product whose worth is

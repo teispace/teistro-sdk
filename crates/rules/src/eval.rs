@@ -3099,7 +3099,9 @@ mod tests {
         else {
             panic!("shipped")
         };
-        assert_eq!(evil.references().count(), 7);
+        // The eight antidotes every evil names; an evil to the father names
+        // v. 8's ninth as well.
+        assert_eq!(evil.references().count(), 8);
 
         let mut c = chart();
         // Malefics in the sixth and the twelfth: Saturn in Virgo, Mars in
