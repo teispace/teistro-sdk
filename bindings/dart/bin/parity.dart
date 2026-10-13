@@ -19,10 +19,11 @@ final Map<String, String> report = {};
 
 /// A number as every binding spells it: nine decimals, never an exponent,
 /// and an integer value written plainly.
-/// A natal point as every runner prints it: `LAGNA`, or the graha's full
-/// key.
+/// A natal point as every runner prints it: `LAGNA`, `MIDHEAVEN`, or the
+/// graha's full key.
 String natalKey(NatalPoint point) => switch (point) {
   NatalLagna() => 'LAGNA',
+  NatalMidheaven() => 'MIDHEAVEN',
   NatalGraha(:final graha) => graha.fullKey,
 };
 
@@ -1205,7 +1206,12 @@ void main() {
         from: 2462000.5,
         to: 2465652.5,
         grahas: [Graha.moon, Graha.sun],
-        points: [NatalLagna(), NatalGraha(Graha.mars), NatalGraha(Graha.venus)],
+        points: [
+          NatalLagna(),
+          NatalMidheaven(),
+          NatalGraha(Graha.mars),
+          NatalGraha(Graha.venus),
+        ],
         aspects: [0, 45, 90, 135, 180],
       ),
     ),

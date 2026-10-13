@@ -113,9 +113,9 @@ report: dict[str, str] = {}
 
 
 def natal_key(point: NatalPoint) -> str:
-    """A natal point as every runner prints it: `LAGNA`, or the graha's
-    full key."""
-    return "LAGNA" if point.graha is None else point.graha.full_key
+    """A natal point as every runner prints it: `LAGNA`, `MIDHEAVEN`, or the
+    graha's full key."""
+    return point.point if point.graha is None else point.graha.full_key
 
 
 def harmonic_key(point: HarmonicPoint) -> str:
@@ -1286,7 +1286,7 @@ def main() -> None:
                     "from": 2462000.5,
                     "to": 2465652.5,
                     "grahas": ["MOON", "SUN"],
-                    "points": ["LAGNA", "MARS", "VENUS"],
+                    "points": ["LAGNA", "MIDHEAVEN", "MARS", "VENUS"],
                     "aspects": [0, 45, 90, 135, 180],
                 },
             },

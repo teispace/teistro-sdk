@@ -2844,7 +2844,7 @@ fn dashed(items: impl Iterator<Item = String>) -> String {
 /// The progressions every runner asks for: a life in 2050 under the noon
 /// sidereal year, the angles by the solar arc in longitude and Naibod's
 /// direction, and ten years of the Moon's and the Sun's contacts.
-const PROGRESSIONS_JSON: &str = r#"{"at":2470000.5,"year":"NOON_SIDEREAL_TIME","angles":"SOLAR_ARC_LONGITUDE","direction":"NAIBOD","contacts":{"from":2462000.5,"to":2465652.5,"grahas":["MOON","SUN"],"points":["LAGNA","MARS","VENUS"],"aspects":[0,45,90,135,180]}}"#;
+const PROGRESSIONS_JSON: &str = r#"{"at":2470000.5,"year":"NOON_SIDEREAL_TIME","angles":"SOLAR_ARC_LONGITUDE","direction":"NAIBOD","contacts":{"from":2462000.5,"to":2465652.5,"grahas":["MOON","SUN"],"points":["LAGNA","MIDHEAVEN","MARS","VENUS"],"aspects":[0,45,90,135,180]}}"#;
 
 /// The progressions as the other three print them: the progressed chart's
 /// instants and angles, each of its grahas, the direction, and each
@@ -3218,11 +3218,12 @@ fn put_antiscion_rows(report: &mut Report, key: &str, rows: &[teistro::Antiscion
     }
 }
 
-/// A natal point as every runner prints it: `LAGNA`, or the graha's full
-/// key.
+/// A natal point as every runner prints it: `LAGNA`, `MIDHEAVEN`, or the
+/// graha's full key.
 fn natal_key(point: teistro::NatalPoint) -> &'static str {
     match point {
         teistro::NatalPoint::Lagna => "LAGNA",
+        teistro::NatalPoint::Midheaven => "MIDHEAVEN",
         teistro::NatalPoint::Graha { graha } => graha.full_key(),
     }
 }

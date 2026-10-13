@@ -24,7 +24,8 @@
 //! let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
 //! let sky = PrashnaSky {
 //!     lagna_deg: 40.0,
-//!     lagna_navamsha: Rashi::Leo,
+//!     // The lagna's six vargas, D1 to D30; its navāṁśa Leo.
+//!     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
 //!     // Sun to Ketu: every graha from Virgo on.
 //!     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
 //!     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
@@ -43,7 +44,7 @@ use std::cmp::Ordering;
 use serde::{Deserialize, Serialize};
 use teistro_aspect::drishti;
 use teistro_core::Error;
-use teistro_core::catalogue::{Graha, Modality, Parity, Rashi, Rising};
+use teistro_core::catalogue::{Graha, Modality, Parity, Rashi, Rising, Varga};
 use teistro_core::house::House;
 use teistro_tajika::{
     AnnualSky, AnnualStates, GrahaWeakness, MoonRules, MoonWeakness, OfficeRules, WeaknessRules,
@@ -116,8 +117,9 @@ impl Placed {
 pub struct PrashnaSky {
     /// The lagna's sidereal longitude, in degrees.
     pub lagna_deg: f64,
-    /// The sign of the lagna's navāṁśa.
-    pub lagna_navamsha: Rashi,
+    /// The lagna's sign in each of the [`SHADVARGA`], the rasi first and
+    /// the navāṁśa fourth.
+    pub lagna_vargas: [Rashi; 6],
     /// The nine grahas, in the order of [`GRAHAS`].
     pub grahas: [Placed; 9],
     /// The seven grahas' Shadbala totals in rupas, the Sun first.
@@ -139,6 +141,13 @@ impl PrashnaSky {
     #[must_use]
     pub fn lagna(&self) -> Rashi {
         sign_at(self.lagna_deg)
+    }
+
+    /// The sign of the lagna's navāṁśa, the rising varga by default.
+    #[must_use]
+    pub const fn lagna_navamsha(&self) -> Rashi {
+        let [_, _, _, navamsha, _, _] = self.lagna_vargas;
+        navamsha
     }
 
     /// The house `graha` stands in, counted from the lagna by whole
@@ -282,6 +291,32 @@ pub enum PiscesRising {
     Shirshodaya,
 }
 
+/// The six vargas the 1941 gloss to *Shatpanchashika* I.4 names for the
+/// rising varga, in the order a [`PrashnaSky`] holds the lagna's signs.
+pub const SHADVARGA: [Varga; 6] = [
+    Varga::D1,
+    Varga::D2,
+    Varga::D3,
+    Varga::D9,
+    Varga::D12,
+    Varga::D30,
+];
+
+/// Whose the rising varga is (C336).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum RisingVarga {
+    /// The rising navāṁśa's lord, as the verse's *aṁśa* reads alone.
+    #[default]
+    Navamsha,
+    /// The [`SHADVARGA`]: the gloss names six vargas and not how many
+    /// must be a benefic's, so a clause for when four or more of the
+    /// six lords are benefics, against when four or more are malefics,
+    /// and both ways otherwise.
+    Shadvarga,
+}
+
 /// Which rule times the matter.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -330,6 +365,8 @@ pub enum MookRule {
 pub struct PrashnaRules {
     /// How Pisces rises.
     pub pisces: PiscesRising,
+    /// Whose the rising varga is.
+    pub rising_varga: RisingVarga,
     /// Which rule times the matter.
     pub timing: TimingRule,
     /// Which rule reads an unspoken question.
@@ -356,6 +393,7 @@ impl PrashnaRules {
     pub const fn baseline() -> PrashnaRules {
         PrashnaRules {
             pisces: PiscesRising::BothWays,
+            rising_varga: RisingVarga::Navamsha,
             timing: TimingRule::Baseline,
             mook: MookRule::Baseline,
             score: ScoreRule::Baseline,
@@ -436,6 +474,9 @@ pub enum ClauseKind {
     InLagna,
     /// I.4: the rising navāṁśa belongs to a benefic or a malefic.
     RisingNavamsha,
+    /// I.4 under the gloss's six vargas: most of the rising degree's six
+    /// varga lords are benefics or malefics, or neither has four.
+    RisingShadvarga,
     /// II.2: a benefic or a malefic aspects the lagna fully.
     AspectsLagna,
     /// II.2: a benefic or a malefic aspects the Moon fully.
@@ -453,6 +494,7 @@ impl ClauseKind {
             ClauseKind::LagnaRising | ClauseKind::InLagna | ClauseKind::RisingNavamsha => {
                 "Shatpanchashika I.4"
             }
+            ClauseKind::RisingShadvarga => "Shatpanchashika I.4, the 1941 gloss",
             ClauseKind::AspectsLagna | ClauseKind::AspectsMoon => "Shatpanchashika II.2",
             ClauseKind::KaryaHouse => "Shatpanchashika I.3",
         }
@@ -769,6 +811,28 @@ fn by(sky: &PrashnaSky, kind: ClauseKind, graha: Graha) -> Option<Clause> {
     })
 }
 
+/// The rising varga read over the [`SHADVARGA`]: four of the six lords
+/// make a majority.
+fn shadvarga(sky: &PrashnaSky) -> Clause {
+    let count = |wanted: Disposition| {
+        sky.lagna_vargas
+            .iter()
+            .filter(|sign| disposition(sky, sign.attributes().lord) == Some(wanted))
+            .count()
+    };
+    Clause {
+        kind: ClauseKind::RisingShadvarga,
+        graha: None,
+        favour: if count(Disposition::Benefic) >= 4 {
+            Favour::For
+        } else if count(Disposition::Malefic) >= 4 {
+            Favour::Against
+        } else {
+            Favour::Both
+        },
+    }
+}
+
 /// Every graha that aspects `sign` fully, in the order of [`GRAHAS`].
 fn aspecting(sky: &PrashnaSky, sign: Rashi) -> impl Iterator<Item = Graha> + '_ {
     GRAHAS
@@ -796,11 +860,14 @@ fn verdict(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Verdict
         sky.in_sign(lagna)
             .filter_map(|graha| by(sky, ClauseKind::InLagna, graha)),
     );
-    clauses.extend(by(
-        sky,
-        ClauseKind::RisingNavamsha,
-        sky.lagna_navamsha.attributes().lord,
-    ));
+    clauses.extend(match rules.rising_varga {
+        RisingVarga::Navamsha => by(
+            sky,
+            ClauseKind::RisingNavamsha,
+            sky.lagna_navamsha().attributes().lord,
+        ),
+        RisingVarga::Shadvarga => Some(shadvarga(sky)),
+    });
     clauses
         .extend(aspecting(sky, lagna).filter_map(|graha| by(sky, ClauseKind::AspectsLagna, graha)));
     if let Some(moon) = sky.of(Graha::Moon) {
@@ -941,7 +1008,7 @@ fn timing(sky: &PrashnaSky, rule: TimingRule) -> Result<Timing, Error> {
 fn person(sky: &PrashnaSky, graha: Graha, house: u8) -> Person {
     match house {
         1 => {
-            let lord = sky.lagna_navamsha.attributes().lord;
+            let lord = sky.lagna_navamsha().attributes().lord;
             let held = lord.attributes();
             if graha == lord {
                 Person::Querent

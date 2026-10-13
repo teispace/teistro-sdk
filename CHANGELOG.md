@@ -323,6 +323,24 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**The radical midheaven is a natal point.** **Numbers:** a request for
+progressed contacts that names no points now also finds the contacts to
+the lagna and the midheaven, so Leo's lunar year reads his trine to the
+midheaven in September 1907 (*The Progressed Horoscope*, p. 41). A hit
+request may name `"MIDHEAVEN"`, the hits and the progressed contacts
+carry a `to_midheaven` column at the C boundary, and every binding reads
+it as its own natal point. Synastry is unchanged.
+
+**A prashna's rising varga can be read over the six vargas.**
+**Numbers:** none moved; the default is unchanged. `rules.risingVarga:
+SHADVARGA` reads *Shatpanchashika* I.4's "a benefic's varga" as the 1941
+gloss's six (C336): the lords of the lagna's rasi, hora, drekkana,
+navamsha, dvadashamsha and trimshamsha, a clause for when four or more
+are benefics, against when four or more are malefics, and both ways
+otherwise. The verdict names it `RISING_SHADVARGA`. Every binding takes
+the knob. The prashna sky now carries the lagna's six varga signs in
+place of its navamsha alone.
+
 **The kernel crates' tests are held to their mutants.** **Numbers:**
 none moved. A weekly workflow runs `cargo mutants` over the dashas, the
 rules, the strengths and the vargas, and fails a crate whose tests catch

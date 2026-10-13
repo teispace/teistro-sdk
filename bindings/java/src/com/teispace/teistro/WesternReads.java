@@ -219,11 +219,6 @@ final class WesternReads {
 
     // The batch readers: each decodes every chart's entry once.
 
-    /** A natal point from a {@code to_lagna} and a {@code to_graha} column's cells. */
-    private static NatalPoint pointAt(int toLagna, int toGraha) {
-        return toLagna != 0 ? new NatalPoint("LAGNA", null) : new NatalPoint("GRAHA", Graha.of(toGraha));
-    }
-
     /**
      * Every chart's essential dignities; empty when none were asked for.
      * {@code dignities} holds a row a chart, {@code dignity_planets} seven a
@@ -577,7 +572,7 @@ final class WesternReads {
             List<ProgressedContact> contacts = null;
             if (p.contactsAsked(k) == 1) {
                 contacts = Reads.rows(contact, contact + count, at -> new ProgressedContact(
-                        c.life(at), c.sky(at), Graha.of(c.graha(at)), pointAt(c.toLagna(at), c.toGraha(at)),
+                        c.life(at), c.sky(at), Graha.of(c.graha(at)), VedicReads.pointAt(c.toLagna(at), c.toGraha(at), c.toMidheaven(at)),
                         c.angle(at), Motion.of(c.motion(at))));
             }
             contact += count;
@@ -625,8 +620,8 @@ final class WesternReads {
         Charts.Synastry s = decoded.synastry();
         Charts.SynastryRows r = decoded.synastryRows();
         return Reads.ragged(Reads.charts(decoded), s.length(), s::count, r.length(), "synastry and synastry_rows",
-                at -> new SynastryRow(pointAt(r.firstLagna(at), r.firstGraha(at)),
-                        pointAt(r.secondLagna(at), r.secondGraha(at)), WesternAspect.of(r.aspect(at)),
+                at -> new SynastryRow(VedicReads.pointAt(r.firstLagna(at), r.firstGraha(at), 0),
+                        VedicReads.pointAt(r.secondLagna(at), r.secondGraha(at), 0), WesternAspect.of(r.aspect(at)),
                         r.apartDeg(at), r.fromExactDeg(at), r.orbDeg(at)));
     }
 
@@ -809,8 +804,8 @@ final class WesternReads {
         Charts.SynastryParallelRows r = decoded.synastryParallelRows();
         return Reads.ragged(Reads.charts(decoded), s.length(), s::count, r.length(),
                 "synastry_parallels and synastry_parallel_rows",
-                at -> new SynastryParallelRow(pointAt(r.firstLagna(at), r.firstGraha(at)),
-                        pointAt(r.secondLagna(at), r.secondGraha(at)), r.contrary(at) == 1, r.apartDeg(at),
+                at -> new SynastryParallelRow(VedicReads.pointAt(r.firstLagna(at), r.firstGraha(at), 0),
+                        VedicReads.pointAt(r.secondLagna(at), r.secondGraha(at), 0), r.contrary(at) == 1, r.apartDeg(at),
                         r.orbDeg(at)));
     }
 

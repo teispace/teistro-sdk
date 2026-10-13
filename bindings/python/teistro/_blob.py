@@ -1912,6 +1912,9 @@ class ChartsHits:
     to_graha: memoryview[int]
     """For an aspect to a natal graha, which (a `Graha` id); 0 otherwise."""
 
+    to_midheaven: memoryview[int]
+    """For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise."""
+
     angle: memoryview[int]
     """For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind."""
 
@@ -2876,7 +2879,10 @@ class ChartsProgressedContacts:
     """1 when the radical point is the lagna, 0 when it is a radical graha."""
 
     to_graha: memoryview[int]
-    """The radical graha aspected (a `Graha` id); 0 for the lagna."""
+    """The radical graha aspected (a `Graha` id); 0 for the lagna or the midheaven."""
+
+    to_midheaven: memoryview[int]
+    """1 when the radical point is the midheaven, 0 otherwise."""
 
     angle: memoryview[int]
     """The aspect's angle, a whole degree 0 to 180, either side of the radical point."""
@@ -5746,8 +5752,9 @@ def decode_charts(raw: bytes) -> Charts:
             motion=blob.column(at_hits, 4, 1, at_hits.count).cast("B"),
             to_lagna=blob.column(at_hits, 5, 1, at_hits.count).cast("B"),
             to_graha=blob.column(at_hits, 6, 2, at_hits.count).cast("H"),
-            angle=blob.column(at_hits, 7, 2, at_hits.count).cast("H"),
-            phase=blob.column(at_hits, 8, 1, at_hits.count).cast("B"),
+            to_midheaven=blob.column(at_hits, 7, 1, at_hits.count).cast("B"),
+            angle=blob.column(at_hits, 8, 2, at_hits.count).cast("H"),
+            phase=blob.column(at_hits, 9, 1, at_hits.count).cast("B"),
             length=at_hits.count,
         ),
         sade_sati=ChartsSadeSati(
@@ -6488,11 +6495,14 @@ def decode_charts(raw: bytes) -> Charts:
             to_graha=blob.column(
                 at_progressed_contacts, 4, 2, at_progressed_contacts.count
             ).cast("H"),
+            to_midheaven=blob.column(
+                at_progressed_contacts, 5, 1, at_progressed_contacts.count
+            ).cast("B"),
             angle=blob.column(
-                at_progressed_contacts, 5, 2, at_progressed_contacts.count
+                at_progressed_contacts, 6, 2, at_progressed_contacts.count
             ).cast("H"),
             motion=blob.column(
-                at_progressed_contacts, 6, 1, at_progressed_contacts.count
+                at_progressed_contacts, 7, 1, at_progressed_contacts.count
             ).cast("B"),
             length=at_progressed_contacts.count,
         ),

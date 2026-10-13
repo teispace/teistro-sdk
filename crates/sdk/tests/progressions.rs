@@ -311,22 +311,25 @@ fn leos_lunar_year_is_found_month_by_month() {
         .chart()
         .progressed_contacts(&born, jd(first_of(1906, 10)), jd(first_of(1908, 1)), &moon)
         .unwrap();
-    // His lunar list (p. 41), the contacts to the seven planets. He dates
-    // them by counting a month for each degree the Moon passes, which runs
-    // up to a month late: the exact contact falls in his month or in the
-    // month before (Saturn on 23 May, the Sun on 28 July).
+    // His lunar list (p. 41), the contacts to the seven planets and the
+    // midheaven. He dates them by counting a month for each degree the
+    // Moon passes, which runs up to a month late: the exact contact falls
+    // in his month or in the month before (Saturn on 23 May, the Sun on
+    // 28 July).
+    let planet = |graha| NatalPoint::Graha { graha };
     let printed = [
-        (Graha::Mercury, 135, (1906, 10)),
-        (Graha::Jupiter, 150, (1907, 1)),
-        (Graha::Saturn, 135, (1907, 6)),
-        (Graha::Sun, 150, (1907, 8)),
-        (Graha::Venus, 180, (1907, 11)),
+        (planet(Graha::Mercury), 135, (1906, 10)),
+        (planet(Graha::Jupiter), 150, (1907, 1)),
+        (planet(Graha::Saturn), 135, (1907, 6)),
+        (planet(Graha::Sun), 150, (1907, 8)),
+        (NatalPoint::Midheaven, 120, (1907, 9)),
+        (planet(Graha::Venus), 180, (1907, 11)),
     ];
-    for (graha, angle, (year, month)) in printed {
+    for (point, angle, (year, month)) in printed {
         let contact = found
             .iter()
-            .find(|c| c.to == NatalPoint::Graha { graha } && c.angle == angle)
-            .unwrap_or_else(|| panic!("{graha:?} {angle} in {found:?}"));
+            .find(|c| c.to == point && c.angle == angle)
+            .unwrap_or_else(|| panic!("{point:?} {angle} in {found:?}"));
         let next = if month == 12 {
             (year + 1, 1)
         } else {
@@ -339,7 +342,7 @@ fn leos_lunar_year_is_found_month_by_month() {
         };
         assert!(
             (first_of(before.0, before.1)..first_of(next.0, next.1)).contains(&contact.life.get()),
-            "{graha:?} {angle} at {}",
+            "{point:?} {angle} at {}",
             contact.life.get()
         );
     }
@@ -348,6 +351,41 @@ fn leos_lunar_year_is_found_month_by_month() {
         [a, b] => a.life.get() <= b.life.get(),
         _ => true,
     }));
+}
+
+/// The radical midheaven is one of Leo's points: each contact the Moon
+/// makes to it is exact at its instant of sky against the birth's own
+/// midheaven, and the default request reaches it.
+#[test]
+fn the_progressed_moon_reaches_the_radical_midheaven() {
+    let sdk = context();
+    let born = birth(&sdk);
+    assert!(
+        ContactRequest::default()
+            .points
+            .contains(&NatalPoint::Midheaven)
+    );
+    let moon = ContactRequest::default()
+        .with_grahas([Graha::Moon])
+        .with_points([NatalPoint::Midheaven]);
+    let found = sdk
+        .chart()
+        .progressed_contacts(&born, jd(first_of(1900, 1)), jd(first_of(1910, 1)), &moon)
+        .unwrap();
+    assert_ne!(found.len(), 0);
+    let midheaven = sdk.chart().angles(&born).unwrap().midheaven_deg;
+    for contact in &found {
+        assert_eq!(contact.to, NatalPoint::Midheaven);
+        let sky = sdk.chart().reading(contact.sky, &request()).unwrap().value;
+        let apart = (tropical(&sky, Graha::Moon) - midheaven).rem_euclid(360.0);
+        let apart = apart.min(360.0 - apart);
+        assert!(
+            (apart - f64::from(contact.angle)).abs() < 1e-4,
+            "{} apart for a {}° contact",
+            apart,
+            contact.angle
+        );
+    }
 }
 
 #[test]

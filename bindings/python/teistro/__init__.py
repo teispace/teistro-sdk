@@ -721,6 +721,7 @@ __all__ = [
     "EnemySign",
     "HuddaTable",
     "PiscesRising",
+    "RisingVarga",
     "TimingRule",
     "MookRule",
     "ScoreRule",
@@ -3425,8 +3426,8 @@ HitRequest.__doc__ = """The transit hit list to search against every chart of a
 request (`03-design/transit-hit-list.md`): the window `from` and `to`, UTC
 Julian days, and optionally `grahas` (the nine by default; members or keys,
 bare or full), `kinds` (all four by default), `points` (the natal points
-aspected: a graha, `"LAGNA"` or a `NatalPoint`; the nine and the lagna by
-default), `aspects` (whole degrees to 180; 0 and 180 by default, C145) and
+aspected: a graha, `"LAGNA"`, `"MIDHEAVEN"` or a `NatalPoint`; the nine and
+the lagna by default), `aspects` (whole degrees to 180; 0 and 180 by default, C145) and
 `orbDeg` (more than 0, under 15 and under half the step between the aspects'
 lines; exact only by default, C146). A
 functional `TypedDict` because `from` is a keyword, and the record is spelt as
@@ -3463,12 +3464,13 @@ def returns_request(
 
 @dataclass(frozen=True)
 class NatalPoint:
-    """A natal point a transit aspects: a natal graha, or the lagna. It goes
-    into `HitRequest["points"]` as it comes back in an aspect's `to`."""
+    """A natal point a transit aspects: a natal graha, the lagna or the
+    midheaven. It goes into `HitRequest["points"]` as it comes back in an
+    aspect's `to`."""
 
-    point: Literal["GRAHA", "LAGNA"]
+    point: Literal["GRAHA", "LAGNA", "MIDHEAVEN"]
     graha: Optional[Graha] = None
-    """Which graha, for a `"GRAHA"` point; `None` for the lagna."""
+    """Which graha, for a `"GRAHA"` point; `None` for the angles."""
 
 
 @dataclass(frozen=True)
@@ -4702,8 +4704,8 @@ ProgressionContacts = TypedDict(
 )
 ProgressionContacts.__doc__ = """A window of life to find a birth's
 progressed contacts in: `from` and `to`, UTC Julian days, and optionally the
-progressed `grahas` (the seven by default), the radical `points` (the seven
-and the lagna) and the `aspects` (whole degrees to 180; Leo's table, p. 48),
+progressed `grahas` (the seven by default), the radical `points` (the seven,
+the lagna and the midheaven) and the `aspects` (whole degrees to 180; Leo's table, p. 48),
 spelled as a `HitRequest` spells them. A functional `TypedDict` because
 `from` is a keyword.
 """
@@ -8409,6 +8411,10 @@ class OfficeRules(TypedDict, total=False):
 PiscesRising = Literal["BOTH_WAYS", "SHIRSHODAYA"]
 """How Pisces rises, a `PrashnaRules` `pisces`."""
 
+RisingVarga = Literal["NAVAMSHA", "SHADVARGA"]
+"""Whose the rising varga is (C336), a `PrashnaRules` `risingVarga`: the
+rising navamsha's lord, or the majority of the lagna's six vargas."""
+
 TimingRule = Literal["STRONGEST_GRAHA", "FIRST_OCCUPIED", "MOON_DAYS", "BASELINE"]
 """Which rule times the matter, a `PrashnaRules` `timing`."""
 
@@ -8444,7 +8450,8 @@ GradedRule = Literal["OFF", "PARASHARI", "TAJIKA"]
 
 class PrashnaRules(TypedDict, total=False):
     """The readings a prashna is given under, one knob per crux, the texts'
-    own by default: `pisces` (`BOTH_WAYS` or `SHIRSHODAYA`), `timing`
+    own by default: `pisces` (`BOTH_WAYS` or `SHIRSHODAYA`), `risingVarga`
+    (`NAVAMSHA` or `SHADVARGA`), `timing`
     (`STRONGEST_GRAHA`, `FIRST_OCCUPIED`, `MOON_DAYS` or the unsourced
     `BASELINE`), `mook` (`SHATPANCHASHIKA`, `MOON_HOUSE` or `BASELINE`),
     `moon`, `offices`, `weakness`, `moonScope` (`EVERY` or `GAIN`),
@@ -8452,6 +8459,7 @@ class PrashnaRules(TypedDict, total=False):
     `BASELINE`)."""
 
     pisces: PiscesRising
+    risingVarga: RisingVarga
     timing: TimingRule
     mook: MookRule
     moon: PrashnaMoonRules
@@ -8477,8 +8485,8 @@ class PrashnaRequest(TypedDict, total=False):
 @dataclass(frozen=True)
 class PrashnaClause:
     """One clause of the verdict, naming its verse by `kind` (`LAGNA_RISING`,
-    `IN_LAGNA`, `RISING_NAVAMSHA`, `ASPECTS_LAGNA`, `ASPECTS_MOON` or
-    `KARYA_HOUSE`) and telling `FOR`, `AGAINST` or `BOTH`."""
+    `IN_LAGNA`, `RISING_NAVAMSHA`, `RISING_SHADVARGA`, `ASPECTS_LAGNA`,
+    `ASPECTS_MOON` or `KARYA_HOUSE`) and telling `FOR`, `AGAINST` or `BOTH`."""
 
     kind: str
     graha: Optional[Graha]
@@ -10788,9 +10796,14 @@ def _poruthams_in(p: Poruthams, r: PoruthamRows, charts: int) -> list[Porutham]:
     return matched
 
 
-def _point_at(to_lagna: int, to_graha: int) -> NatalPoint:
-    """A natal point from a `to_lagna` and a `to_graha` column's cells."""
-    return NatalPoint("LAGNA") if to_lagna else NatalPoint("GRAHA", Graha(to_graha))
+def _point_at(to_lagna: int, to_graha: int, to_midheaven: int = 0) -> NatalPoint:
+    """A natal point from a `to_lagna`, a `to_graha` and a `to_midheaven`
+    column's cells; a synastry's columns carry no midheaven."""
+    if to_lagna:
+        return NatalPoint("LAGNA")
+    if to_midheaven:
+        return NatalPoint("MIDHEAVEN")
+    return NatalPoint("GRAHA", Graha(to_graha))
 
 
 def _hit_at(columns: Any, row: int) -> Hit:
@@ -10805,7 +10818,7 @@ def _hit_at(columns: Any, row: int) -> Hit:
     elif kind is HitKind.STATION:
         event = Station(turns=motion)
     else:
-        to = _point_at(columns.to_lagna[row], columns.to_graha[row])
+        to = _point_at(columns.to_lagna[row], columns.to_graha[row], columns.to_midheaven[row])
         event = AspectHit(to=to, angle=columns.angle[row], phase=AspectPhase(columns.phase[row]), motion=motion)
     return Hit(instant=columns.instant[row], graha=Graha(columns.graha[row]), event=event)
 
@@ -14323,7 +14336,7 @@ class ChartBatch:
                         life=c.life[at],
                         sky=c.sky[at],
                         graha=Graha(c.graha[at]),
-                        to=_point_at(c.to_lagna[at], c.to_graha[at]),
+                        to=_point_at(c.to_lagna[at], c.to_graha[at], c.to_midheaven[at]),
                         angle=c.angle[at],
                         motion=Motion(c.motion[at]),
                     )

@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param aspects The {@code aspects} field. Null leaves the SDK's default.
  * @param from The {@code from} field.
  * @param grahas The {@code grahas} field. Null leaves the SDK's default.
- * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna. Null leaves the SDK's default.
+ * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
  * @param to The {@code to} field.
  */
 public record ContactsAsked(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, List<NatalPoint> points, double to) implements RequestJson {
@@ -87,7 +87,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
         /**
          * Sets {@code points}.
          *
-         * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna. Null leaves the SDK's default.
+         * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder points(List<NatalPoint> points) {

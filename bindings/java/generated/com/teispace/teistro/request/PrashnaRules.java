@@ -17,11 +17,12 @@ import java.util.Objects;
  * @param moonScope Which questions v. 96's Moon governs. Null leaves the SDK's default.
  * @param offices How a Kamboola's offices are read (Samjna Tantra vv. 36–46). Null leaves the SDK's default.
  * @param pisces How Pisces rises. Null leaves the SDK's default.
+ * @param risingVarga Whose the rising varga is. Null leaves the SDK's default.
  * @param score Whether the baseline engine's points come beside the clauses. Null leaves the SDK's default.
  * @param timing Which rule times the matter. Null leaves the SDK's default.
  * @param weakness How v. 72's weaknesses are read. Null leaves the SDK's default.
  */
-public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, MoonScope moonScope, OfficeRules offices, PiscesRising pisces, ScoreRule score, TimingRule timing, WeaknessRules weakness) implements RequestJson {
+public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, MoonScope moonScope, OfficeRules offices, PiscesRising pisces, RisingVarga risingVarga, ScoreRule score, TimingRule timing, WeaknessRules weakness) implements RequestJson {
     /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
@@ -40,6 +41,7 @@ public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, Moo
         private MoonScope moonScope;
         private OfficeRules offices;
         private PiscesRising pisces;
+        private RisingVarga risingVarga;
         private ScoreRule score;
         private TimingRule timing;
         private WeaknessRules weakness;
@@ -113,6 +115,17 @@ public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, Moo
         }
 
         /**
+         * Sets {@code risingVarga}.
+         *
+         * @param risingVarga Whose the rising varga is. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder risingVarga(RisingVarga risingVarga) {
+            this.risingVarga = risingVarga;
+            return this;
+        }
+
+        /**
          * Sets {@code score}.
          *
          * @param score Whether the baseline engine's points come beside the clauses. Null leaves the SDK's default.
@@ -152,7 +165,7 @@ public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, Moo
          * @throws NullPointerException naming a required field left unset
          */
         public PrashnaRules build() {
-            return new PrashnaRules(graded, mook, moon, moonScope, offices, pisces, score, timing, weakness);
+            return new PrashnaRules(graded, mook, moon, moonScope, offices, pisces, risingVarga, score, timing, weakness);
         }
     }
 
@@ -172,6 +185,7 @@ public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, Moo
             Read.orNull(json.get("moonScope"), present -> Read.member(present, "PrashnaRules.moonScope", MoonScope::byKey)),
             Read.orNull(json.get("offices"), present -> OfficeRules.of(present)),
             Read.orNull(json.get("pisces"), present -> Read.member(present, "PrashnaRules.pisces", PiscesRising::byKey)),
+            Read.orNull(json.get("risingVarga"), present -> Read.member(present, "PrashnaRules.risingVarga", RisingVarga::byKey)),
             Read.orNull(json.get("score"), present -> Read.member(present, "PrashnaRules.score", ScoreRule::byKey)),
             Read.orNull(json.get("timing"), present -> Read.member(present, "PrashnaRules.timing", TimingRule::byKey)),
             Read.orNull(json.get("weakness"), present -> WeaknessRules.of(present)));
@@ -197,6 +211,9 @@ public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, Moo
         }
         if (pisces != null) {
             json.put("pisces", pisces.toJson());
+        }
+        if (risingVarga != null) {
+            json.put("risingVarga", risingVarga.toJson());
         }
         if (score != null) {
             json.put("score", score.toJson());

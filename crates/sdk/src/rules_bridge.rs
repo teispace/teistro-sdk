@@ -499,7 +499,7 @@ pub(crate) fn navamsha_of(longitude: f64) -> Result<Rashi, Error> {
 
 /// The sign of a sidereal longitude in a division, under the SDK's classical
 /// scheme for it.
-fn varga_sign(varga: Varga, longitude: f64) -> Result<Rashi, Error> {
+pub(crate) fn varga_sign(varga: Varga, longitude: f64) -> Result<Rashi, Error> {
     let degrees = Degrees::try_new(longitude.rem_euclid(360.0)).map_err(|invalid| {
         Error::invalid_arg(format!(
             "a longitude of {longitude} cannot be placed: {invalid}"

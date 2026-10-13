@@ -3293,17 +3293,19 @@ function sadeSatisOf(batch) {
 }
 
 /**
- * A natal point as the Rust `NatalPoint` spells it, from a `to_lagna` and a
- * `to_graha` column's cells: `{ point: 'LAGNA' }` or `{ point: 'GRAHA', graha }`.
+ * A natal point as the Rust `NatalPoint` spells it, from a `to_lagna`, a
+ * `to_graha` and a `to_midheaven` column's cells: `{ point: 'LAGNA' }`,
+ * `{ point: 'MIDHEAVEN' }` or `{ point: 'GRAHA', graha }`.
  *
  * @param {number} toLagna
  * @param {number} toGraha
+ * @param {number} [toMidheaven] absent for a synastry, whose columns carry no midheaven
  * @returns {object}
  */
-function pointOf(toLagna, toGraha) {
-  return Object.freeze(
-    toLagna !== 0 ? { point: 'LAGNA' } : { point: 'GRAHA', graha: GrahaById.get(toGraha) ?? 'unknown' },
-  );
+function pointOf(toLagna, toGraha, toMidheaven = 0) {
+  if (toLagna !== 0) return Object.freeze({ point: 'LAGNA' });
+  if (toMidheaven !== 0) return Object.freeze({ point: 'MIDHEAVEN' });
+  return Object.freeze({ point: 'GRAHA', graha: GrahaById.get(toGraha) ?? 'unknown' });
 }
 
 /**
@@ -3331,7 +3333,7 @@ function hitOf(h, row) {
     case 'ASPECT':
       event = {
         kind,
-        to: pointOf(h.toLagna[row], h.toGraha[row]),
+        to: pointOf(h.toLagna[row], h.toGraha[row], h.toMidheaven[row]),
         angle: h.angle[row],
         phase: AspectPhaseById.get(h.phase[row]) ?? 'unknown',
         motion,
@@ -4678,7 +4680,7 @@ function progressionsOf(batch) {
                     life: c.life[row],
                     sky: c.sky[row],
                     graha: graha(c.graha[row]),
-                    to: pointOf(c.toLagna[row], c.toGraha[row]),
+                    to: pointOf(c.toLagna[row], c.toGraha[row], c.toMidheaven[row]),
                     angle: c.angle[row],
                     motion: MotionById.get(c.motion[row]) ?? 'unknown',
                   }),

@@ -213,9 +213,9 @@ impl OrbModel {
             OrbModel::Moieties { orbs } => {
                 let of = |point: NatalPoint| {
                     let NatalPoint::Graha { graha } = point else {
-                        return Err(Error::invalid_arg("the moieties give the lagna no orb")
+                        return Err(Error::invalid_arg("the moieties give an angle no orb")
                             .with_field("orbs.orbs")
-                            .with_hint("leave the lagna out, or read it under Leo's orbs"));
+                            .with_hint("leave the angles out, or read them under Leo's orbs"));
                     };
                     orbs.iter()
                         .find(|one| one.graha == graha)

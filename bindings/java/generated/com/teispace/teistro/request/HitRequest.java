@@ -16,7 +16,7 @@ import java.util.Objects;
  * @param grahas The {@code grahas} field. Null leaves the SDK's default.
  * @param kinds A kind of event a hit list reports, spelled as the event's own `kind`. Null leaves the SDK's default.
  * @param orbDeg The {@code orbDeg} field. Null leaves the SDK's default.
- * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna. Null leaves the SDK's default.
+ * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
  * @param to The {@code to} field.
  */
 public record HitRequest(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, List<com.teispace.teistro.HitKind> kinds, Double orbDeg, List<NatalPoint> points, double to) implements RequestJson {
@@ -114,7 +114,7 @@ public record HitRequest(List<Integer> aspects, double from, List<com.teispace.t
         /**
          * Sets {@code points}.
          *
-         * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna. Null leaves the SDK's default.
+         * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder points(List<NatalPoint> points) {

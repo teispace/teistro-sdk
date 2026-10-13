@@ -2212,6 +2212,10 @@ export interface ChartsHits {
    */
   readonly toGraha: Uint16Array;
   /**
+   * For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise.
+   */
+  readonly toMidheaven: Uint8Array;
+  /**
    * For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind.
    */
   readonly angle: Uint16Array;
@@ -3429,9 +3433,13 @@ export interface ChartsProgressedContacts {
    */
   readonly toLagna: Uint8Array;
   /**
-   * The radical graha aspected (a `Graha` id); 0 for the lagna.
+   * The radical graha aspected (a `Graha` id); 0 for the lagna or the midheaven.
    */
   readonly toGraha: Uint16Array;
+  /**
+   * 1 when the radical point is the midheaven, 0 otherwise.
+   */
+  readonly toMidheaven: Uint8Array;
   /**
    * The aspect's angle, a whole degree 0 to 180, either side of the radical point.
    */

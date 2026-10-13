@@ -6,7 +6,7 @@ the façade and every binding), step 2 partly built (the Tajika links,
 what they say of the matter with Kamboola's grades and the tri-kāla, and
 the Moon, 2026-10-12; the Bhuvanapradīpa's grades built off, C373; the
 akṣara-lagna and the six points open, C353). The
-`SHADVARGA` rising varga is designed, not built (C336).
+`SHADVARGA` rising varga is built (C336, 2026-10-13).
 
 A prashna is a chart cast for the moment a question is asked. Casting it
 is already done: the chart kind `PRASHNA` exists, and the chart is an
@@ -203,8 +203,11 @@ let reading = sdk.prashna().read(&chart, &PrashnaQuestion {
 `PrashnaRules` holds one knob per crux:
 
 - `pisces`: `BOTH_WAYS` (default) or `SHIRSHODAYA`;
-- `rising_varga`: `NAVAMSHA` (default) or `SHADVARGA` (C336): designed,
-  not built; the rising varga is the navāṁśa's lord;
+- `rising_varga`: `NAVAMSHA` (default) or `SHADVARGA` (C336): the
+  rising navāṁśa's lord, or the lords of the lagna's six vargas (D1, D2,
+  D3, D9, D12, D30 under the SDK's classical schemes), a clause for when
+  four or more are benefics, against when four or more are malefics, and
+  both ways otherwise (`RISING_SHADVARGA`);
 - `timing`: `STRONGEST_GRAHA` (default), `FIRST_OCCUPIED`, `MOON_DAYS`
   or `BASELINE`;
 - `mook`: `SHATPANCHASHIKA` (default), `MOON_HOUSE` or `BASELINE`;
@@ -265,9 +268,13 @@ Each names its field under `prashna`.
    - An aspect is a full aspect under `crates/aspect`'s graded drishti,
      a special aspect included. The test that found Mars aspecting a
      Gemini lagna's 7th from Taurus holds this.
-   - The rising varga is the navāṁśa's lord. The `SHADVARGA` knob, the
-     baseline's score and Tajika's Moon knob came with steps 2 and 3;
-     the `SHADVARGA` knob did not, and is open under C336.
+   - The rising varga is the navāṁśa's lord. The baseline's score and
+     Tajika's Moon knob came with steps 2 and 3, and the `SHADVARGA`
+     knob on 2026-10-13: the gloss names the six vargas and not how many
+     must be a benefic's, so a majority decides (four of six), and three
+     of each leave the clause both ways, as Pisces rising does. The sky
+     carries the lagna's six signs, the navāṁśa fourth, so the clause can
+     be checked against them.
 2. **The Tajika links**, partly built. When a house is asked,
    `Prashna::links` holds `crates/tajika`'s sixteen yogas judged between
    the lagna lord and the lord of that house, with each graha's

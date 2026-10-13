@@ -285,6 +285,7 @@ fn separation(sdk: &Context, natal: &Document, hit: &Hit, to: NatalPoint) -> f64
     let natal_deg = match to {
         NatalPoint::Graha { graha } => natal.foundation.graha(graha).unwrap().longitude_deg,
         NatalPoint::Lagna => natal.foundation.lagna_deg,
+        NatalPoint::Midheaven => sdk.chart().angles(natal).unwrap().midheaven_deg,
     };
     (transit - natal_deg).rem_euclid(360.0)
 }
@@ -308,17 +309,28 @@ fn at_angle(separation: f64, angle: u16, off: f64) -> bool {
 }
 
 /// Every exact aspect is exact in a chart founded at its instant, and every
-/// orb's edge stands the orb from it; no window opens twice before it closes.
+/// orb's edge stands the orb from it, the midheaven's read from the natal
+/// chart's angles; no window opens twice before it closes.
 #[test]
 fn every_aspect_is_at_its_angle_in_a_founded_chart() {
     let sdk = context(None);
     let natal = natal(&sdk);
+    let mut points = year().points().to_vec();
+    points.push(NatalPoint::Midheaven);
     let asked = year()
+        .with_points(points)
         .with_kinds([HitKind::Aspect])
         .with_grahas([Graha::Sun, Graha::Mars, Graha::Jupiter, Graha::Saturn])
         .with_aspects([0, 90, 180])
         .with_orb(3.0);
     let hits = sdk.chart().hits(&natal, &asked).unwrap().value;
+    assert!(hits.iter().any(|hit| matches!(
+        hit.event,
+        HitEvent::Aspect {
+            to: NatalPoint::Midheaven,
+            ..
+        }
+    )));
     let mut phases = [0_usize; 3];
     let mut open = std::collections::BTreeSet::new();
     for hit in &hits {
@@ -339,6 +351,7 @@ fn every_aspect_is_at_its_angle_in_a_founded_chart() {
         let point = match to {
             NatalPoint::Graha { graha } => graha as u8,
             NatalPoint::Lagna => u8::MAX,
+            NatalPoint::Midheaven => u8::MAX - 1,
         };
         let key = (hit.graha as u8, point, angle);
         match phase {

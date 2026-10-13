@@ -2357,6 +2357,7 @@ final class ChartsHits {
     required this.motion,
     required this.toLagna,
     required this.toGraha,
+    required this.toMidheaven,
     required this.angle,
     required this.phase,
     required this.length,
@@ -2382,6 +2383,9 @@ final class ChartsHits {
 
   /// For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.
   final Uint16List toGraha;
+
+  /// For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise.
+  final Uint8List toMidheaven;
 
   /// For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind.
   final Uint16List angle;
@@ -3578,6 +3582,7 @@ final class ChartsProgressedContacts {
     required this.graha,
     required this.toLagna,
     required this.toGraha,
+    required this.toMidheaven,
     required this.angle,
     required this.motion,
     required this.length,
@@ -3595,8 +3600,11 @@ final class ChartsProgressedContacts {
   /// 1 when the radical point is the lagna, 0 when it is a radical graha.
   final Uint8List toLagna;
 
-  /// The radical graha aspected (a `Graha` id); 0 for the lagna.
+  /// The radical graha aspected (a `Graha` id); 0 for the lagna or the midheaven.
   final Uint16List toGraha;
+
+  /// 1 when the radical point is the midheaven, 0 otherwise.
+  final Uint8List toMidheaven;
 
   /// The aspect's angle, a whole degree 0 to 180, either side of the radical point.
   final Uint16List angle;
@@ -7865,15 +7873,20 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atHits, 6),
         blob.columnOffset(atHits, 6) + atHits.count * 2,
       ),
-      angle: Uint16List.sublistView(
+      toMidheaven: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atHits, 7),
-        blob.columnOffset(atHits, 7) + atHits.count * 2,
+        blob.columnOffset(atHits, 7) + atHits.count * 1,
+      ),
+      angle: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 8),
+        blob.columnOffset(atHits, 8) + atHits.count * 2,
       ),
       phase: Uint8List.sublistView(
         blob.bytes,
-        blob.columnOffset(atHits, 8),
-        blob.columnOffset(atHits, 8) + atHits.count * 1,
+        blob.columnOffset(atHits, 9),
+        blob.columnOffset(atHits, 9) + atHits.count * 1,
       ),
       length: atHits.count,
     ),
@@ -9075,15 +9088,20 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atProgressedContacts, 4),
         blob.columnOffset(atProgressedContacts, 4) + atProgressedContacts.count * 2,
       ),
-      angle: Uint16List.sublistView(
+      toMidheaven: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atProgressedContacts, 5),
-        blob.columnOffset(atProgressedContacts, 5) + atProgressedContacts.count * 2,
+        blob.columnOffset(atProgressedContacts, 5) + atProgressedContacts.count * 1,
+      ),
+      angle: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedContacts, 6),
+        blob.columnOffset(atProgressedContacts, 6) + atProgressedContacts.count * 2,
       ),
       motion: Uint8List.sublistView(
         blob.bytes,
-        blob.columnOffset(atProgressedContacts, 6),
-        blob.columnOffset(atProgressedContacts, 6) + atProgressedContacts.count * 1,
+        blob.columnOffset(atProgressedContacts, 7),
+        blob.columnOffset(atProgressedContacts, 7) + atProgressedContacts.count * 1,
       ),
       length: atProgressedContacts.count,
     ),

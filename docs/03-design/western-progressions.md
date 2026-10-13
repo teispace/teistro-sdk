@@ -81,9 +81,10 @@ His sidereal time at birth, 2h 52m 54s, and at Greenwich noon that day,
    - trine the midheaven, September;
    - opposition Venus, November.
 
-   Five of these are to the seven planets, so the contacts must find
-   them in their months. The midheaven is not a natal point of the hit
-   list yet; Uranus is, where the birth places it
+   Five of these are to the seven planets and one to the midheaven, so
+   the contacts must find them in their months. The midheaven is a
+   natal point of the hit list, `NatalPoint::Midheaven`, spelled
+   `"MIDHEAVEN"`; Uranus is one where the birth places it
    (`western-outer-planets.md`), and the April contact is a test.
 6. **The Naibod measure** (p. 261). 20° 15′ is 20 years, 198 days and
    16 hours: 0.985647° a year, and 365.2422 days to the year.
@@ -147,10 +148,11 @@ The calls:
   is the condition that no two windows meet. Every request valid before
   is valid now.
 
-  Two of Leo's contacts are not covered: those to the radical midheaven,
-  which is not yet a natal point of the hit list, and the parallels of
-  declination. Contacts between two progressed planets are not covered
-  either.
+  The radical midheaven is a natal point of the hit list and in the
+  default request, so the September trine is found with the planets'
+  contacts (`leos_lunar_year_is_found_month_by_month`). One of Leo's
+  kinds of contact is not covered: the parallels of declination.
+  Contacts between two progressed planets are not covered either.
 
 The arithmetic goes in its own functions, so a consumer can use one
 without the others:

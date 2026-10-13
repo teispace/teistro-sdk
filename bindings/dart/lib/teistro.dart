@@ -4624,9 +4624,14 @@ List<DashaPhalaReading> _decodeDashaPhalas(Charts batch) {
 }
 
 /// Each batch's transits, decoded once however many charts read them.
-/// A natal point from a `to_lagna` and a `to_graha` column's cells.
-NatalPoint _pointAt(int toLagna, int toGraha) =>
-    toLagna != 0 ? const NatalLagna() : NatalGraha(Graha.byId(toGraha));
+/// A natal point from a `to_lagna`, a `to_graha` and a `to_midheaven`
+/// column's cells; a synastry's columns carry no midheaven.
+NatalPoint _pointAt(int toLagna, int toGraha, [int toMidheaven = 0]) =>
+    toLagna != 0
+        ? const NatalLagna()
+        : toMidheaven != 0
+        ? const NatalMidheaven()
+        : NatalGraha(Graha.byId(toGraha));
 
 /// One row of the `hits` section as the Rust `Hit` spells it.
 Hit _hitAt(ChartsHits h, int row) {
@@ -4642,7 +4647,7 @@ Hit _hitAt(ChartsHits h, int row) {
     ),
     HitKind.station => Station(turns: motion),
     HitKind.aspect => AspectHit(
-      to: _pointAt(h.toLagna[row], h.toGraha[row]),
+      to: _pointAt(h.toLagna[row], h.toGraha[row], h.toMidheaven[row]),
       angle: h.angle[row],
       phase: AspectPhase.byId(h.phase[row]),
       motion: motion,
@@ -4996,7 +5001,11 @@ List<Progressions> _decodeProgressions(Charts batch) {
                         life: c.life[at],
                         sky: c.sky[at],
                         graha: Graha.byId(c.graha[at]),
-                        to: _pointAt(c.toLagna[at], c.toGraha[at]),
+                        to: _pointAt(
+                          c.toLagna[at],
+                          c.toGraha[at],
+                          c.toMidheaven[at],
+                        ),
                         angle: c.angle[at],
                         motion: Motion.byId(c.motion[at]),
                       ),
@@ -8375,7 +8384,8 @@ final class ProgressionContacts {
   /// The progressed planets; the seven by default.
   final List<Graha>? grahas;
 
-  /// The radical points; the seven and the lagna by default.
+  /// The radical points; the seven, the lagna and the midheaven by
+  /// default.
   final List<NatalPoint>? points;
 
   /// The aspects' angles, whole degrees to 180; Leo's table (p. 48) by
@@ -14338,6 +14348,7 @@ Prashna _prashna(Map<String, Object?> raw) {
   return Prashna(
     rules: PrashnaRules(
       pisces: _keyedIn(PiscesRising.values, rules['pisces']),
+      risingVarga: _keyedIn(RisingVarga.values, rules['risingVarga']),
       timing: _keyedIn(TimingRule.values, rules['timing']),
       mook: _keyedIn(MookRule.values, rules['mook']),
       moon: moonRules(rules['moon']),
@@ -15348,13 +15359,13 @@ final class HitRequest {
   });
 }
 
-/// A natal point a transit aspects: a natal graha ([NatalGraha]) or the
-/// lagna ([NatalLagna]). It goes into [HitRequest.points] as it comes back
-/// in an aspect's [AspectHit.to].
+/// A natal point a transit aspects: a natal graha ([NatalGraha]), the
+/// lagna ([NatalLagna]) or the midheaven ([NatalMidheaven]). It goes into
+/// [HitRequest.points] as it comes back in an aspect's [AspectHit.to].
 sealed class NatalPoint {
   const NatalPoint();
 
-  /// `'GRAHA'` or `'LAGNA'`, as every binding spells it.
+  /// `'GRAHA'`, `'LAGNA'` or `'MIDHEAVEN'`, as every binding spells it.
   String get point;
 
   Map<String, Object?> get _json;
@@ -15392,6 +15403,23 @@ final class NatalLagna extends NatalPoint {
 
   @override
   bool operator ==(Object other) => other is NatalLagna;
+
+  @override
+  int get hashCode => point.hashCode;
+}
+
+/// The natal midheaven, as a point a transit or a progression aspects.
+final class NatalMidheaven extends NatalPoint {
+  const NatalMidheaven();
+
+  @override
+  String get point => 'MIDHEAVEN';
+
+  @override
+  Map<String, Object?> get _json => {'point': point};
+
+  @override
+  bool operator ==(Object other) => other is NatalMidheaven;
 
   @override
   int get hashCode => point.hashCode;
@@ -16503,6 +16531,21 @@ enum PiscesRising implements _Keyed {
   final String key;
 }
 
+/// Whose the rising varga is (C336).
+enum RisingVarga implements _Keyed {
+  /// The rising navamsha's lord; the default.
+  navamsha('NAVAMSHA'),
+
+  /// The majority of the lagna's six vargas: four lords of one kind
+  /// decide it, three of each leave it both ways.
+  shadvarga('SHADVARGA');
+
+  const RisingVarga(this.key);
+
+  @override
+  final String key;
+}
+
 /// How a matter is timed (C338).
 enum TimingRule implements _Keyed {
   /// By the strongest graha; the default.
@@ -16837,6 +16880,7 @@ final class PrashnaGraded extends _Value {
 final class PrashnaRules extends _Value {
   const PrashnaRules({
     this.pisces = PiscesRising.bothWays,
+    this.risingVarga = RisingVarga.navamsha,
     this.timing = TimingRule.strongestGraha,
     this.mook = MookRule.shatpanchashika,
     this.moon = const PrashnaMoonRules(),
@@ -16848,6 +16892,9 @@ final class PrashnaRules extends _Value {
   });
 
   final PiscesRising pisces;
+
+  /// Whose the rising varga is (C336).
+  final RisingVarga risingVarga;
   final TimingRule timing;
   final MookRule mook;
   final PrashnaMoonRules moon;
@@ -16867,6 +16914,7 @@ final class PrashnaRules extends _Value {
 
   Map<String, Object?> get _record => {
     'pisces': pisces.key,
+    'risingVarga': risingVarga.key,
     'timing': timing.key,
     'mook': mook.key,
     'moon': moon._record,
@@ -16880,6 +16928,7 @@ final class PrashnaRules extends _Value {
   @override
   List<Object?> get _fields => [
     pisces,
+    risingVarga,
     timing,
     mook,
     moon,
@@ -16961,6 +17010,9 @@ enum PrashnaClauseKind implements _Keyed {
 
   /// The lagna's navamsha.
   risingNavamsha('RISING_NAVAMSHA'),
+
+  /// The majority of the lagna's six vargas (C336).
+  risingShadvarga('RISING_SHADVARGA'),
 
   /// A graha aspecting the lagna.
   aspectsLagna('ASPECTS_LAGNA'),

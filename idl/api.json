@@ -18622,6 +18622,11 @@
               "doc": "For an aspect to a natal graha, which (a `Graha` id); 0 otherwise."
             },
             {
+              "name": "to_midheaven",
+              "scalar": "u8",
+              "doc": "For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise."
+            },
+            {
               "name": "angle",
               "scalar": "u16",
               "doc": "For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind."
@@ -20002,7 +20007,12 @@
             {
               "name": "to_graha",
               "scalar": "u16",
-              "doc": "The radical graha aspected (a `Graha` id); 0 for the lagna."
+              "doc": "The radical graha aspected (a `Graha` id); 0 for the lagna or the midheaven."
+            },
+            {
+              "name": "to_midheaven",
+              "scalar": "u8",
+              "doc": "1 when the radical point is the midheaven, 0 otherwise."
             },
             {
               "name": "angle",

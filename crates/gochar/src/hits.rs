@@ -33,7 +33,8 @@ pub enum Motion {
 }
 
 /// A natal point a transit can aspect, ordered as a tie between hits is
-/// broken: the grahas in the catalogue's order, then the lagna.
+/// broken: the grahas in the catalogue's order, then the lagna, then the
+/// midheaven.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "point", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -45,14 +46,19 @@ pub enum NatalPoint {
     },
     /// The natal lagna.
     Lagna,
+    /// The natal midheaven, in the chart's own zodiac: one of the points
+    /// Leo's progressed contacts reach (`03-design/western-progressions.md`).
+    Midheaven,
 }
 
 impl NatalPoint {
-    /// Its place in a tie's order: the grahas by id, then the lagna.
+    /// Its place in a tie's order: the grahas by id, then the lagna, then
+    /// the midheaven.
     const fn rank(self) -> u8 {
         match self {
             NatalPoint::Graha { graha } => graha as u8,
-            NatalPoint::Lagna => u8::MAX,
+            NatalPoint::Lagna => u8::MAX - 1,
+            NatalPoint::Midheaven => u8::MAX,
         }
     }
 }

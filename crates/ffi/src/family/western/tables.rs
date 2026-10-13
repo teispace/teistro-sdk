@@ -58,6 +58,7 @@ struct ProgressionColumns {
     contact_graha: Vec<u16>,
     contact_to_lagna: Vec<u8>,
     contact_to_graha: Vec<u16>,
+    contact_to_midheaven: Vec<u8>,
     contact_angle: Vec<u16>,
     contact_motion: Vec<u8>,
 }
@@ -903,7 +904,9 @@ struct PointCells {
 
 impl PointCells {
     fn push(&mut self, point: teistro::NatalPoint) {
-        let (lagna, graha) = point_cells(Some(point));
+        // A synastry's points are the grahas and the lagna; its columns
+        // carry no midheaven.
+        let (lagna, graha, _) = point_cells(Some(point));
         self.lagna.push(lagna);
         self.graha.push(graha);
     }
@@ -970,9 +973,10 @@ impl ProgressionColumns {
                 columns.contact_life.push(contact.life.get());
                 columns.contact_sky.push(contact.sky.get());
                 columns.contact_graha.push(contact.graha.id());
-                let (to_lagna, to_graha) = point_cells(Some(contact.to));
+                let (to_lagna, to_graha, to_midheaven) = point_cells(Some(contact.to));
                 columns.contact_to_lagna.push(to_lagna);
                 columns.contact_to_graha.push(to_graha);
+                columns.contact_to_midheaven.push(to_midheaven);
                 columns.contact_angle.push(contact.angle);
                 columns
                     .contact_motion
@@ -1026,6 +1030,7 @@ impl ProgressionColumns {
                 ColumnData::U16(&self.contact_graha),
                 ColumnData::U8(&self.contact_to_lagna),
                 ColumnData::U16(&self.contact_to_graha),
+                ColumnData::U8(&self.contact_to_midheaven),
                 ColumnData::U16(&self.contact_angle),
                 ColumnData::U8(&self.contact_motion),
             ],
