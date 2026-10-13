@@ -32,6 +32,11 @@ final class Reads {
         return new TeistroException(Status.INVALID_ARG, message, "", field, "", "");
     }
 
+    /** A number a column carries, or null where it carries NaN for none. */
+    static Double numberOrNull(double value) {
+        return Double.isNaN(value) ? null : value;
+    }
+
     /** How many charts a decoded blob holds, as its {@code cast} section counts them. */
     static int charts(com.teispace.teistro.blob.Charts decoded) {
         return decoded.cast().length();

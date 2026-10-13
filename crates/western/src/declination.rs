@@ -204,17 +204,28 @@ pub(crate) fn paired<K: Copy>(
 ) -> Vec<Paired<K>> {
     let mut rows: Vec<Paired<K>> = pairs
         .filter_map(|((first, a), (second, b))| {
-            let apart_deg = (a.abs() - b.abs()).abs();
+            let apart_deg = gap_deg(a, b).abs();
             (apart_deg <= orb_deg).then_some(Paired {
                 first,
                 second,
-                contrary: a * b < 0.0,
+                contrary: contrary(a, b),
                 apart_deg,
             })
         })
         .collect();
     rows.sort_by(|a, b| a.apart_deg.total_cmp(&b.apart_deg));
     rows
+}
+
+/// The signed difference of two distances from the equator: positive when
+/// `a` stands farther from it.
+pub(crate) fn gap_deg(a: f64, b: f64) -> f64 {
+    a.abs() - b.abs()
+}
+
+/// Whether two declinations stand on opposite sides of the equator.
+pub(crate) fn contrary(a: f64, b: f64) -> bool {
+    a * b < 0.0
 }
 
 /// Refuses a declination that is not a finite number of degrees between

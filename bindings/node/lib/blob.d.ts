@@ -3356,6 +3356,14 @@ export interface ChartsProgressions {
    * 1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none.
    */
   readonly contactsAsked: Uint8Array;
+  /**
+   * How many rows of the `progressed_parallels` section belong to this chart; 0 when the record's `contacts` named no `parallels`.
+   */
+  readonly parallelCount: Uint32Array;
+  /**
+   * 1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none.
+   */
+  readonly parallelsAsked: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -3429,7 +3437,7 @@ export interface ChartsProgressedContacts {
    */
   readonly graha: Uint16Array;
   /**
-   * 1 when the radical point is the lagna, 0 when it is a radical graha.
+   * 1 when the radical point is the lagna, 0 otherwise.
    */
   readonly toLagna: Uint8Array;
   /**
@@ -4530,6 +4538,54 @@ export interface ChartsMoment {
 }
 
 /**
+ * The `progressed_parallels` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
+ */
+export interface ChartsProgressedParallels {
+  /**
+   * The first instant of life the two distances stood closest, a Julian day (UTC): the exact parallel, when the span reaches it.
+   */
+  readonly closest: Float64Array;
+  /**
+   * The instant of life it came within the orb, a Julian day (UTC); NaN when it already stood within the orb at the window's start.
+   */
+  readonly enters: Float64Array;
+  /**
+   * The instant of life it left the orb, a Julian day (UTC); NaN when it still stood within it at the window's end.
+   */
+  readonly leaves: Float64Array;
+  /**
+   * The progressed planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * 1 when the radical point is the lagna, 0 otherwise.
+   */
+  readonly toLagna: Uint8Array;
+  /**
+   * The radical graha (a `Graha` id); 0 for the lagna or the midheaven.
+   */
+  readonly toGraha: Uint16Array;
+  /**
+   * 1 when the radical point is the midheaven, 0 otherwise.
+   */
+  readonly toMidheaven: Uint8Array;
+  /**
+   * How far apart the two distances from the equator stood at `closest`, degrees.
+   */
+  readonly closestDeg: Float64Array;
+  /**
+   * 1 when the two stood on opposite sides of the equator at `closest`: the contra-parallel, which Leo counts a parallel.
+   */
+  readonly contrary: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5482,6 +5538,10 @@ export interface Charts {
    * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
    */
   readonly moment: ChartsMoment;
+  /**
+   * Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
+   */
+  readonly progressedParallels: ChartsProgressedParallels;
 }
 
 /**

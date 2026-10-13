@@ -2812,6 +2812,12 @@ class ChartsProgressions:
     contacts_asked: memoryview[int]
     """1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none."""
 
+    parallel_count: memoryview[int]
+    """How many rows of the `progressed_parallels` section belong to this chart; 0 when the record's `contacts` named no `parallels`."""
+
+    parallels_asked: memoryview[int]
+    """1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -2876,7 +2882,7 @@ class ChartsProgressedContacts:
     """The progressed planet."""
 
     to_lagna: memoryview[int]
-    """1 when the radical point is the lagna, 0 when it is a radical graha."""
+    """1 when the radical point is the lagna, 0 otherwise."""
 
     to_graha: memoryview[int]
     """The radical graha aspected (a `Graha` id); 0 for the lagna or the midheaven."""
@@ -3801,6 +3807,45 @@ class ChartsMoment:
 
 
 @dataclass(frozen=True)
+class ChartsProgressedParallels:
+    """The `progressed_parallels` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
+    """
+
+    closest: memoryview[float]
+    """The first instant of life the two distances stood closest, a Julian day (UTC): the exact parallel, when the span reaches it."""
+
+    enters: memoryview[float]
+    """The instant of life it came within the orb, a Julian day (UTC); NaN when it already stood within the orb at the window's start."""
+
+    leaves: memoryview[float]
+    """The instant of life it left the orb, a Julian day (UTC); NaN when it still stood within it at the window's end."""
+
+    graha: memoryview[int]
+    """The progressed planet."""
+
+    to_lagna: memoryview[int]
+    """1 when the radical point is the lagna, 0 otherwise."""
+
+    to_graha: memoryview[int]
+    """The radical graha (a `Graha` id); 0 for the lagna or the midheaven."""
+
+    to_midheaven: memoryview[int]
+    """1 when the radical point is the midheaven, 0 otherwise."""
+
+    closest_deg: memoryview[float]
+    """How far apart the two distances from the equator stood at `closest`, degrees."""
+
+    contrary: memoryview[int]
+    """1 when the two stood on opposite sides of the equator at `closest`: the contra-parallel, which Leo counts a parallel."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4518,6 +4563,9 @@ class Charts:
     moment: ChartsMoment
     """What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for."""
 
+    progressed_parallels: ChartsProgressedParallels
+    """Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4651,6 +4699,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_rectification = blob.section(122, "rectification")
     at_lalkitab = blob.section(123, "lalkitab")
     at_moment = blob.section(124, "moment")
+    at_progressed_parallels = blob.section(125, "progressed_parallels")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -6453,6 +6502,12 @@ def decode_charts(raw: bytes) -> Charts:
             contacts_asked=blob.column(
                 at_progressions, 9, 1, at_progressions.count
             ).cast("B"),
+            parallel_count=blob.column(
+                at_progressions, 10, 4, at_progressions.count
+            ).cast("I"),
+            parallels_asked=blob.column(
+                at_progressions, 11, 1, at_progressions.count
+            ).cast("B"),
             length=at_progressions.count,
         ),
         progressed_grahas=ChartsProgressedGrahas(
@@ -7245,6 +7300,36 @@ def decode_charts(raw: bytes) -> Charts:
             eclipse=blob.column(at_moment, 3, 1, at_moment.count).cast("B"),
             greatest=blob.column(at_moment, 4, 8, at_moment.count).cast("d"),
             length=at_moment.count,
+        ),
+        progressed_parallels=ChartsProgressedParallels(
+            closest=blob.column(
+                at_progressed_parallels, 0, 8, at_progressed_parallels.count
+            ).cast("d"),
+            enters=blob.column(
+                at_progressed_parallels, 1, 8, at_progressed_parallels.count
+            ).cast("d"),
+            leaves=blob.column(
+                at_progressed_parallels, 2, 8, at_progressed_parallels.count
+            ).cast("d"),
+            graha=blob.column(
+                at_progressed_parallels, 3, 2, at_progressed_parallels.count
+            ).cast("H"),
+            to_lagna=blob.column(
+                at_progressed_parallels, 4, 1, at_progressed_parallels.count
+            ).cast("B"),
+            to_graha=blob.column(
+                at_progressed_parallels, 5, 2, at_progressed_parallels.count
+            ).cast("H"),
+            to_midheaven=blob.column(
+                at_progressed_parallels, 6, 1, at_progressed_parallels.count
+            ).cast("B"),
+            closest_deg=blob.column(
+                at_progressed_parallels, 7, 8, at_progressed_parallels.count
+            ).cast("d"),
+            contrary=blob.column(
+                at_progressed_parallels, 8, 1, at_progressed_parallels.count
+            ).cast("B"),
+            length=at_progressed_parallels.count,
         ),
     )
 

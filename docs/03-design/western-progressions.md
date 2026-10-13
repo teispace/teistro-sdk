@@ -88,6 +88,17 @@ His sidereal time at birth, 2h 52m 54s, and at Greenwich noon that day,
    (`western-outer-planets.md`), and the April contact is a test.
 6. **The Naibod measure** (p. 261). 20° 15′ is 20 years, 198 days and
    16 hours: 0.985647° a year, and 365.2422 days to the year.
+7. **The parallels of declination** (pp. 33–34). Leo compares the
+   radical and progressed declinations "to the nearest degree", with no
+   need "to add N. or S.", and considers a parallel only "within one
+   degree of completion"; parallels "remain in force for a period of
+   several years". His map for 1907 reads three: Jupiter "has moved to
+   the parallel of the radical Sun", Mercury to that of Neptune, and the
+   Moon "is moving to the parallel of Uranus". Recast, Jupiter and
+   Mercury stand within the degree as his year opens and are
+   separating, and the Moon, falling from 25° south towards Uranus's 22°
+   north, comes within it just after the year ends: his tenses, read
+   exactly.
 
 ## The design
 
@@ -150,9 +161,33 @@ The calls:
 
   The radical midheaven is a natal point of the hit list and in the
   default request, so the September trine is found with the planets'
-  contacts (`leos_lunar_year_is_found_month_by_month`). One of Leo's
-  kinds of contact is not covered: the parallels of declination.
-  Contacts between two progressed planets are not covered either.
+  contacts (`leos_lunar_year_is_found_month_by_month`). Contacts
+  between two progressed planets are not covered.
+
+- **The parallels of declination are stretches of life, not instants.**
+  A row is a progressed planet within the orb of a radical point's
+  distance from the equator, on either side of it: when it came within
+  the orb and when it left (none where the window cuts the stretch), the
+  first instant the two stood closest, how far apart they stood then,
+  and whether on opposite sides. `ContactRequest::parallels` names the
+  orb (`ParallelRequest`, Leo's 1° by default, at most 10°) and
+  `ChartArea::progressed_parallels` reads them over the same planets,
+  points and window as the contacts; the aspects play no part.
+
+  The search samples life, not sky: Leo's sidereal-time year sends two
+  instants of life to one of sky near each noon, and a function of life
+  needs no inverse. The samples fall close enough that no planet's
+  declination moves half the orb between two (the Moon's at most 8° a
+  day of sky), with one provider request for every sample
+  (`Founder::declinations_at`). Each edge is then narrowed by bisection
+  to a ten-thousandth of a day of life, the closest instant to the first
+  crossing or, where the distances never meet, by golden section, its
+  ends included. A stretch that falls wholly between two samples is
+  found by its crossing; one that only grazes the orb inside a step is
+  missed, and the step makes that impossible for the orbs a request may
+  ask. The radical declinations are the birth's own
+  (`ChartArea::declinations`), the nodes' read from their places; a
+  point the birth does not place is refused under `contacts.points`.
 
 The arithmetic goes in its own functions, so a consumer can use one
 without the others:
@@ -177,17 +212,19 @@ is optional, and a section the record does not ask for costs nothing.
   method (C237), spelled as their Rust members, with Leo's defaults;
 - `direction`: `"SOLAR"` or an arc measure (`"NAIBOD"`, `"PTOLEMY"`, or
   `{"PER_YEAR": degrees}`);
-- `contacts`: `{from, to, grahas, points, aspects}`, spelled as the hit
-  list spells them.
+- `contacts`: `{from, to, grahas, points, aspects, parallels}`, spelled
+  as the hit list spells them, `parallels` an orb (`{}` for Leo's)
+  asking the parallels of declination too.
 
 A record with neither `at` nor `contacts` is refused under
 `progressions.at`, and every refusal is named from the record's root
 (`progressions.contacts.points[0]`, `progressions.direction`).
 
-Four sections answer it:
+Five sections answer it:
 - `progressions`, a row a chart: the instants of life and sky, the
   progressed meridian, ascendant and midheaven, the direction's arc and
-  directed angles, the contact count and whether contacts were asked.
+  directed angles, the contact and parallel counts, and whether each was
+  asked.
   A chart read without `at` writes NaN in the instants and angles.
 - `progressed_grahas`, a row a progressed graha: the longitude in the
   chart's zodiac, the tropical longitude and the speed. The nine, and
@@ -199,6 +236,9 @@ Four sections answer it:
 - `progressed_contacts`, ragged by the chart's contact count: the
   instants of life and sky, the planet, the point, the angle and the
   motion, as the hit list's columns spell them.
+- `progressed_parallels`, ragged by the chart's parallel count: the
+  closest instant, the edges (NaN where the window cuts the stretch),
+  the planet, the point, the distance apart and whether contrary.
 
 The boundary founds a progressed chart on the batch's foundation alone
 (its place, clock and kind). It writes the grahas and angles and nothing
@@ -207,11 +247,13 @@ asks every section and still matches the façade's bare request cell for
 cell.
 
 Node, wasm, Python and Dart read these as one value, `chart.progressions`
-(`{progressed, directed, contacts}`, each null when not asked). The
+(`{progressed, directed, contacts, parallels}`, each null when not
+asked). The
 parity runners ask the same record of both their charts: a life in 2050
 under the noon sidereal year, the solar arc in longitude, Naibod's
-direction, and ten years of the Moon's and the Sun's contacts to the
-lagna, Mars and Venus.
+direction, and ten years of the Moon's and the Sun's contacts and
+parallels (under a 1.5° orb) to the lagna, the midheaven, Mars and
+Venus.
 
 ## What building it found
 

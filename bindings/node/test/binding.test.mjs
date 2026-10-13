@@ -2361,6 +2361,19 @@ test('a chart carries its progressions', () => {
   }
   const none = ctx.chart.found({ instant: birth, ...london, progressions: { contacts: { ...october, aspects: [90] } } });
   assert.deepEqual(none.progressions.contacts, [], 'a window asked holding none is empty, not null');
+  assert.equal(none.progressions.parallels, null, 'no parallels unless the window asks them');
+
+  // Jupiter "has moved to the parallel of the radical Sun" (p. 33): within
+  // Leo's degree as his year opens, and separating.
+  const fortySeventh = { from: 2417523.5, to: 2417888.5, grahas: ['JUPITER'], points: ['SUN'], parallels: {} };
+  const leo = ctx.chart.found({ instant: birth, ...london, progressions: { contacts: fortySeventh } }).progressions;
+  assert.equal(leo.parallels.length, 1);
+  const [parallel] = leo.parallels;
+  assert.deepEqual(
+    [parallel.graha, parallel.to, parallel.enters, parallel.closest, parallel.contrary],
+    ['graha.JUPITER', { point: 'GRAHA', graha: 'graha.SUN' }, null, 2417523.5, false],
+  );
+  assert.ok(parallel.closestDeg < 1);
 
   const instants = [birth, birth + 3000.25, birth + 9000.5];
   const asked = { at: 2430000.5, angles: 'SOLAR_ARC_LONGITUDE', direction: 'NAIBOD' };
@@ -2373,6 +2386,7 @@ test('a chart carries its progressions', () => {
     [{ at, year: 'SIDEREAL' }, 'progressions.year'],
     [{ at, direction: { PER_YEAR: 0 } }, 'progressions.direction'],
     [{ contacts: { from: 2, to: 1 } }, 'progressions.contacts.to'],
+    [{ contacts: { from: 1, to: 2, parallels: { orbDeg: 11 } } }, 'progressions.contacts.parallels.orbDeg'],
   ]) {
     assert.throws(
       () => ctx.chart.found({ instant: birth, ...london, progressions: request }),

@@ -1476,7 +1476,7 @@ public final class ParityRunner {
                         "direction", "NAIBOD", "contacts", map("from", 2462000.5, "to", 2465652.5,
                                 "grahas", List.of("MOON", "SUN"), "points", List.of(map("point", "LAGNA"), map("point", "MIDHEAVEN"), map("point", "GRAHA", "graha", "MARS"),
                                         map("point", "GRAHA", "graha", "VENUS")),
-                                "aspects", List.of(0, 45, 90, 135, 180)))))
+                                "aspects", List.of(0, 45, 90, 135, 180), "parallels", map("orbDeg", 1.5)))))
                 .shadbala(true)
                 .bhavaBala(true)
                 .state(true)
@@ -2330,6 +2330,14 @@ public final class ParityRunner {
             ProgressedContact ct = contacts.get(n);
             put(c + "-progressed-contact-" + n, number(ct.life()) + " " + number(ct.sky()) + " " + ct.graha().fullKey()
                     + " " + natalKey(ct.to()) + " " + ct.angle() + " " + ct.motion().key());
+        }
+        List<ProgressedParallel> parallels = Objects.requireNonNull(pr.parallels(), "no progressed parallels");
+        put(c + "-progressed-parallel-count", String.valueOf(parallels.size()));
+        for (int n = 0; n < parallels.size(); n += 1) {
+            ProgressedParallel pl = parallels.get(n);
+            put(c + "-progressed-parallel-" + n, number(pl.closest()) + " " + bound(pl.enters()) + " "
+                    + bound(pl.leaves()) + " " + pl.graha().fullKey() + " " + natalKey(pl.to()) + " "
+                    + number(pl.closestDeg()) + " " + (pl.contrary() ? 1 : 0));
         }
     }
 

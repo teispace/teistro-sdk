@@ -2281,6 +2281,25 @@ class AnEngine(WithLibrary):
             ).progressions
             assert none is not None
             self.assertEqual(none.contacts, (), "a window asked holding none is empty, not None")
+            self.assertIsNone(none.parallels, "no parallels unless the window asks them")
+
+            # Jupiter "has moved to the parallel of the radical Sun" (p. 33):
+            # within Leo's degree as his year opens, and separating.
+            forty_seventh: ProgressionContacts = {
+                "from": 2417523.5,
+                "to": 2417888.5,
+                "grahas": ["JUPITER"],
+                "points": [Graha.SUN],
+                "parallels": {},
+            }
+            leo = ctx.chart.found(instant=birth, progressions={"contacts": forty_seventh}, **london).progressions
+            assert leo is not None and leo.parallels is not None
+            (parallel,) = leo.parallels
+            self.assertEqual(
+                (parallel.graha, parallel.to, parallel.enters, parallel.closest, parallel.contrary),
+                (Graha.JUPITER, NatalPoint("GRAHA", Graha.SUN), None, 2417523.5, False),
+            )
+            self.assertLess(parallel.closest_deg, 1)
 
             instants = [birth, birth + 3000.25, birth + 9000.5]
             many: ProgressionsRequest = {"at": 2430000.5, "angles": "SOLAR_ARC_LONGITUDE", "direction": "NAIBOD"}
@@ -2294,6 +2313,10 @@ class AnEngine(WithLibrary):
                 ({"at": at, "year": "SIDEREAL"}, "progressions.year"),
                 ({"at": at, "direction": {"PER_YEAR": 0}}, "progressions.direction"),
                 ({"contacts": {"from": 2, "to": 1}}, "progressions.contacts.to"),
+                (
+                    {"contacts": {"from": 1, "to": 2, "parallels": {"orbDeg": 11}}},
+                    "progressions.contacts.parallels.orbDeg",
+                ),
             ]
             for request, field in refusals:
                 with self.assertRaises(TeistroError) as caught:

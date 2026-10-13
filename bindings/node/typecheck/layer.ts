@@ -96,6 +96,7 @@ import type {
   ProgressionsRequest,
   Progressions,
   ProgressedContact,
+  ProgressedParallel,
   NatalPoint,
   Motion,
   Application,
@@ -1383,7 +1384,14 @@ function theProgressions(ctx: Context): string {
     year: 'NOON_SIDEREAL_TIME',
     angles: 'SOLAR_ARC_LONGITUDE',
     direction: { PER_YEAR: 1 },
-    contacts: { from: 2417484.5, to: 2417941.5, grahas: ['MOON'], points: ['LAGNA', 'MERCURY'], aspects: [135] },
+    contacts: {
+      from: 2417484.5,
+      to: 2417941.5,
+      grahas: ['MOON'],
+      points: ['LAGNA', 'MERCURY'],
+      aspects: [135],
+      parallels: { orbDeg: 1 },
+    },
   };
   const read: Progressions | null = ctx.chart.found({
     instant: 2400629.742361111,
@@ -1396,7 +1404,13 @@ function theProgressions(ctx: Context): string {
   const misread: ProgressionsRequest = { year: 365.25 };
   const contact: ProgressedContact | undefined = read.contacts?.[0];
   const to: NatalPoint | undefined = contact?.to;
+  const parallel: ProgressedParallel | undefined = read.parallels?.[0];
+  const enters: number | null | undefined = parallel?.enters;
   return [
+    enters ?? Number.NaN,
+    parallel?.closestDeg ?? Number.NaN,
+    parallel?.contrary satisfies boolean | undefined,
+    parallel?.to.point ?? 'none',
     read.progressed?.armcDeg ?? Number.NaN,
     read.progressed?.angles.midheavenDeg ?? Number.NaN,
     read.progressed?.grahas[0]?.speedDegPerDay ?? Number.NaN,

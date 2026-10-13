@@ -3256,7 +3256,6 @@ function sadeSatisOf(batch) {
           "it is every chart's visits, concatenated",
       );
     }
-    const bound = (jd) => (Number.isNaN(jd) ? null : jd);
     decoded = Object.freeze(
       Array.from({ length: charts.length }, (_, chart) => {
         // A period's rows are adjacent and share `period`; a spell's are
@@ -3269,7 +3268,7 @@ function sadeSatisOf(batch) {
           if (spells === undefined) throw new Error(`sade_sati_visits row ${row} skips to period ${period}`);
           const house = v.house[row];
           if (spells.length === 0 || spells[spells.length - 1].house !== house) spells.push({ house, visits: [] });
-          spells[spells.length - 1].visits.push(Object.freeze({ from: bound(v.from[row]), to: bound(v.to[row]) }));
+          spells[spells.length - 1].visits.push(Object.freeze({ from: numberOrNull(v.from[row]), to: numberOrNull(v.to[row]) }));
         }
         const spell = ({ house, visits }) => Object.freeze({ house, visits: Object.freeze(visits) });
         // The Sade Sati's houses are 12, 1 and 2; a smaller spell is 3 to 11.
@@ -3302,6 +3301,11 @@ function sadeSatisOf(batch) {
  * @param {number} [toMidheaven] absent for a synastry, whose columns carry no midheaven
  * @returns {object}
  */
+/** A number a column carries, or `null` where it carries NaN for none. */
+function numberOrNull(value) {
+  return Number.isNaN(value) ? null : value;
+}
+
 function pointOf(toLagna, toGraha, toMidheaven = 0) {
   if (toLagna !== 0) return Object.freeze({ point: 'LAGNA' });
   if (toMidheaven !== 0) return Object.freeze({ point: 'MIDHEAVEN' });
@@ -4624,21 +4628,25 @@ function progressionsOf(batch) {
   const g = d.progressedGrahas;
   const m = d.directedGrahas;
   const c = d.progressedContacts;
+  const r = d.progressedParallels;
   if (p.life.length === 0) {
     decoded = Object.freeze(Array.from({ length: charts }, () => null));
   } else {
     const asked = !Number.isNaN(p.life[0]);
     const perChart = asked ? g.graha.length / charts : 0;
     const starts = startsOf(p.contactCount);
+    const parallelStarts = startsOf(p.parallelCount);
     if (
       p.life.length !== charts ||
       m.graha.length !== g.graha.length ||
       (asked && !Number.isInteger(perChart)) ||
-      starts[charts] !== c.life.length
+      starts[charts] !== c.life.length ||
+      parallelStarts[charts] !== r.closest.length
     ) {
       throw new Error(
         `progressions has ${p.life.length} rows, progressed_grahas ${g.graha.length}, ` +
-          `directed_grahas ${m.graha.length} and progressed_contacts ${c.life.length} for ${charts} charts`,
+          `directed_grahas ${m.graha.length}, progressed_contacts ${c.life.length} and ` +
+          `progressed_parallels ${r.closest.length} for ${charts} charts`,
       );
     }
     const graha = (id) => GrahaById.get(id) ?? 'unknown';
@@ -4683,6 +4691,20 @@ function progressionsOf(batch) {
                     to: pointOf(c.toLagna[row], c.toGraha[row], c.toMidheaven[row]),
                     angle: c.angle[row],
                     motion: MotionById.get(c.motion[row]) ?? 'unknown',
+                  }),
+                )
+              : null,
+          parallels:
+            p.parallelsAsked[k] === 1
+              ? rows(p.parallelCount[k], parallelStarts[k], (row) =>
+                  Object.freeze({
+                    graha: graha(r.graha[row]),
+                    to: pointOf(r.toLagna[row], r.toGraha[row], r.toMidheaven[row]),
+                    enters: numberOrNull(r.enters[row]),
+                    leaves: numberOrNull(r.leaves[row]),
+                    closest: r.closest[row],
+                    closestDeg: r.closestDeg[row],
+                    contrary: r.contrary[row] === 1,
                   }),
                 )
               : null,
@@ -5897,17 +5919,16 @@ function momentsOf(batch) {
   let decoded = MOMENTS.get(batch);
   if (decoded === undefined) {
     const c = batch.decoded.moment;
-    const jd = (value) => (Number.isNaN(value) ? null : value);
     decoded = Array.from({ length: c.length }, (_, chart) =>
       Object.freeze({
         rising: Object.freeze({
           sign: RashiById.get(c.sign[chart]) ?? 'unknown',
-          rose: jd(c.rose[chart]),
-          sets: jd(c.sets[chart]),
+          rose: numberOrNull(c.rose[chart]),
+          sets: numberOrNull(c.sets[chart]),
         }),
         eclipse: Object.freeze({
           kind: BirthEclipseById.get(c.eclipse[chart]) ?? 'unknown',
-          greatest: jd(c.greatest[chart]),
+          greatest: numberOrNull(c.greatest[chart]),
         }),
       }),
     );

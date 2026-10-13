@@ -2844,7 +2844,7 @@ fn dashed(items: impl Iterator<Item = String>) -> String {
 /// The progressions every runner asks for: a life in 2050 under the noon
 /// sidereal year, the angles by the solar arc in longitude and Naibod's
 /// direction, and ten years of the Moon's and the Sun's contacts.
-const PROGRESSIONS_JSON: &str = r#"{"at":2470000.5,"year":"NOON_SIDEREAL_TIME","angles":"SOLAR_ARC_LONGITUDE","direction":"NAIBOD","contacts":{"from":2462000.5,"to":2465652.5,"grahas":["MOON","SUN"],"points":["LAGNA","MIDHEAVEN","MARS","VENUS"],"aspects":[0,45,90,135,180]}}"#;
+const PROGRESSIONS_JSON: &str = r#"{"at":2470000.5,"year":"NOON_SIDEREAL_TIME","angles":"SOLAR_ARC_LONGITUDE","direction":"NAIBOD","contacts":{"from":2462000.5,"to":2465652.5,"grahas":["MOON","SUN"],"points":["LAGNA","MIDHEAVEN","MARS","VENUS"],"aspects":[0,45,90,135,180],"parallels":{"orbDeg":1.5}}}"#;
 
 /// The progressions as the other three print them: the progressed chart's
 /// instants and angles, each of its grahas, the direction, and each
@@ -2929,6 +2929,33 @@ fn the_progressions(
             ),
         );
     }
+    let parallels = read.parallels.expect("asked over the window");
+    put(
+        report,
+        &key("progressed-parallel-count"),
+        parallels.len().to_string(),
+    );
+    for (n, at) in parallels.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("progressed-parallel-{n}")),
+            format!(
+                "{} {} {} {} {} {} {}",
+                number(at.closest.get()),
+                number_or_dash(at.enters.map(JulianDay::get)),
+                number_or_dash(at.leaves.map(JulianDay::get)),
+                at.graha.full_key(),
+                natal_key(at.to),
+                number(at.closest_deg),
+                u8::from(at.contrary)
+            ),
+        );
+    }
+}
+
+/// A number, or `-` where there is none, as every runner prints it.
+fn number_or_dash(value: Option<f64>) -> String {
+    value.map_or_else(|| "-".to_owned(), number)
 }
 
 /// The Western aspects every runner asks for: six of the nine under
@@ -5199,7 +5226,6 @@ fn the_moment(report: &mut Report, index: usize, document: &teistro::Document) {
     let Some(moment) = document.moment.as_ref() else {
         return;
     };
-    let at = |jd: Option<f64>| jd.map_or_else(|| "-".to_owned(), number);
     let (kind, greatest) = match moment.eclipse {
         teistro::BirthEclipse::None => ("NONE", None),
         teistro::BirthEclipse::Lunar { greatest } => ("LUNAR", Some(greatest.get())),
@@ -5212,9 +5238,9 @@ fn the_moment(report: &mut Report, index: usize, document: &teistro::Document) {
         format!(
             "{} {} {} {kind} {}",
             moment.rising.sign.full_key(),
-            at(moment.rising.rose.map(JulianDay::get)),
-            at(moment.rising.sets.map(JulianDay::get)),
-            at(greatest)
+            number_or_dash(moment.rising.rose.map(JulianDay::get)),
+            number_or_dash(moment.rising.sets.map(JulianDay::get)),
+            number_or_dash(greatest)
         ),
     );
 }

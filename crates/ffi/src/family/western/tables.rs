@@ -47,6 +47,17 @@ struct ProgressionColumns {
     directed_midheaven_deg: Vec<f64>,
     contact_count: Vec<u32>,
     contacts_asked: Vec<u8>,
+    parallel_count: Vec<u32>,
+    parallels_asked: Vec<u8>,
+    parallel_closest: Vec<f64>,
+    parallel_enters: Vec<f64>,
+    parallel_leaves: Vec<f64>,
+    parallel_graha: Vec<u16>,
+    parallel_to_lagna: Vec<u8>,
+    parallel_to_graha: Vec<u16>,
+    parallel_to_midheaven: Vec<u8>,
+    parallel_closest_deg: Vec<f64>,
+    parallel_contrary: Vec<u8>,
     progressed_graha: Vec<u16>,
     progressed_longitude_deg: Vec<f64>,
     progressed_tropical_deg: Vec<f64>,
@@ -951,10 +962,32 @@ impl ProgressionColumns {
                 .contacts_asked
                 .push(u8::from(one.contacts.is_some()));
             let contacts = one.contacts.as_deref().unwrap_or_default();
-            columns.contact_count.push(
-                u32::try_from(contacts.len())
-                    .map_err(|_| Error::internal("more contacts than a section can count"))?,
-            );
+            columns.contact_count.push(row_count(contacts.len())?);
+            columns
+                .parallels_asked
+                .push(u8::from(one.parallels.is_some()));
+            let parallels = one.parallels.as_deref().unwrap_or_default();
+            columns.parallel_count.push(row_count(parallels.len())?);
+            for parallel in parallels {
+                columns.parallel_closest.push(parallel.closest.get());
+                columns.parallel_enters.push(
+                    parallel
+                        .enters
+                        .map_or(f64::NAN, teistro::quantity::JulianDay::get),
+                );
+                columns.parallel_leaves.push(
+                    parallel
+                        .leaves
+                        .map_or(f64::NAN, teistro::quantity::JulianDay::get),
+                );
+                columns.parallel_graha.push(parallel.graha.id());
+                let (to_lagna, to_graha, to_midheaven) = point_cells(Some(parallel.to));
+                columns.parallel_to_lagna.push(to_lagna);
+                columns.parallel_to_graha.push(to_graha);
+                columns.parallel_to_midheaven.push(to_midheaven);
+                columns.parallel_closest_deg.push(parallel.closest_deg);
+                columns.parallel_contrary.push(u8::from(parallel.contrary));
+            }
             let placed = progressed.map(|p| &p.chart.value.foundation);
             for at in placed
                 .into_iter()
@@ -1001,6 +1034,8 @@ impl ProgressionColumns {
                 ColumnData::F64(&self.directed_midheaven_deg),
                 ColumnData::U32(&self.contact_count),
                 ColumnData::U8(&self.contacts_asked),
+                ColumnData::U32(&self.parallel_count),
+                ColumnData::U8(&self.parallels_asked),
             ],
         )?;
         writer.columns(
@@ -1033,6 +1068,21 @@ impl ProgressionColumns {
                 ColumnData::U8(&self.contact_to_midheaven),
                 ColumnData::U16(&self.contact_angle),
                 ColumnData::U8(&self.contact_motion),
+            ],
+        )?;
+        writer.columns(
+            "progressed_parallels",
+            self.parallel_closest.len(),
+            &[
+                ColumnData::F64(&self.parallel_closest),
+                ColumnData::F64(&self.parallel_enters),
+                ColumnData::F64(&self.parallel_leaves),
+                ColumnData::U16(&self.parallel_graha),
+                ColumnData::U8(&self.parallel_to_lagna),
+                ColumnData::U16(&self.parallel_to_graha),
+                ColumnData::U8(&self.parallel_to_midheaven),
+                ColumnData::F64(&self.parallel_closest_deg),
+                ColumnData::U8(&self.parallel_contrary),
             ],
         )
     }

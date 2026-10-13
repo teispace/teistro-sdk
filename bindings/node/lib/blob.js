@@ -1249,6 +1249,8 @@ export function decodeCharts(bytes) {
       directedMidheavenDeg: column(blob, at, 7, 'f64', at.count),
       contactCount: column(blob, at, 8, 'u32', at.count),
       contactsAsked: column(blob, at, 9, 'u8', at.count),
+      parallelCount: column(blob, at, 10, 'u32', at.count),
+      parallelsAsked: column(blob, at, 11, 'u8', at.count),
       length: at.count,
     };
   }
@@ -1755,6 +1757,21 @@ export function decodeCharts(bytes) {
       sets: column(blob, at, 2, 'f64', at.count),
       eclipse: column(blob, at, 3, 'u8', at.count),
       greatest: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 125, 'progressed_parallels');
+    out.progressedParallels = {
+      closest: column(blob, at, 0, 'f64', at.count),
+      enters: column(blob, at, 1, 'f64', at.count),
+      leaves: column(blob, at, 2, 'f64', at.count),
+      graha: column(blob, at, 3, 'u16', at.count),
+      toLagna: column(blob, at, 4, 'u8', at.count),
+      toGraha: column(blob, at, 5, 'u16', at.count),
+      toMidheaven: column(blob, at, 6, 'u8', at.count),
+      closestDeg: column(blob, at, 7, 'f64', at.count),
+      contrary: column(blob, at, 8, 'u8', at.count),
       length: at.count,
     };
   }

@@ -550,6 +550,7 @@ final class WesternReads {
         Charts.ProgressedGrahas g = decoded.progressedGrahas();
         Charts.DirectedGrahas d = decoded.directedGrahas();
         Charts.ProgressedContacts c = decoded.progressedContacts();
+        Charts.ProgressedParallels r = decoded.progressedParallels();
         int charts = Reads.charts(decoded);
         if (p.length() == 0) {
             return List.of();
@@ -557,13 +558,15 @@ final class WesternReads {
         boolean asked = !Double.isNaN(p.life(0));
         int perChart = asked ? g.length() / charts : 0;
         if (p.length() != charts || d.length() != g.length() || g.length() != perChart * charts
-                || c.length() != Reads.sum(p.length(), p::contactCount)) {
+                || c.length() != Reads.sum(p.length(), p::contactCount)
+                || r.length() != Reads.sum(p.length(), p::parallelCount)) {
             throw Reads.internal("progressions has " + p.length() + " rows, progressed_grahas " + g.length()
-                    + ", directed_grahas " + d.length() + " and progressed_contacts " + c.length() + " for "
-                    + charts + " charts");
+                    + ", directed_grahas " + d.length() + ", progressed_contacts " + c.length()
+                    + " and progressed_parallels " + r.length() + " for " + charts + " charts");
         }
         List<Progressions> out = new ArrayList<>(charts);
         int contact = 0;
+        int parallel = 0;
         for (int chart = 0; chart < charts; chart += 1) {
             int k = chart;
             int from = k * perChart;
@@ -576,6 +579,16 @@ final class WesternReads {
                         c.angle(at), Motion.of(c.motion(at))));
             }
             contact += count;
+            int parallelCount = Math.toIntExact(p.parallelCount(k));
+            List<ProgressedParallel> parallels = null;
+            if (p.parallelsAsked(k) == 1) {
+                parallels = Reads.rows(parallel, parallel + parallelCount, at -> new ProgressedParallel(
+                        Graha.of(r.graha(at)),
+                        VedicReads.pointAt(r.toLagna(at), r.toGraha(at), r.toMidheaven(at)),
+                        Reads.numberOrNull(r.enters(at)), Reads.numberOrNull(r.leaves(at)),
+                        r.closest(at), r.closestDeg(at), r.contrary(at) == 1));
+            }
+            parallel += parallelCount;
             out.add(new Progressions(
                     asked ? new Progressed(
                             p.life(k),
@@ -592,7 +605,8 @@ final class WesternReads {
                             p.directedMidheavenDeg(k),
                             Reads.rows(from, to, at -> new DirectedPlanet(Graha.of(d.graha(at)), d.longitudeDeg(at))))
                             : null,
-                    contacts));
+                    contacts,
+                    parallels));
         }
         return Collections.unmodifiableList(out);
     }

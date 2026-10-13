@@ -1213,6 +1213,7 @@ void main() {
           NatalGraha(Graha.venus),
         ],
         aspects: [0, 45, 90, 135, 180],
+        parallels: ParallelRequest(orbDeg: 1.5),
       ),
     ),
     shadbala: true,
@@ -1981,6 +1982,16 @@ void main() {
         'chart-$i-progressed-contact-$n',
         '${number(c.life)} ${number(c.sky)} ${c.graha.fullKey} ${natalKey(c.to)} '
             '${c.angle} ${c.motion.key}',
+      );
+    }
+    final progressedParallels = pr.parallels!;
+    put('chart-$i-progressed-parallel-count', '${progressedParallels.length}');
+    for (final (n, p) in progressedParallels.indexed) {
+      put(
+        'chart-$i-progressed-parallel-$n',
+        '${number(p.closest)} ${numberOrDash(p.enters)} '
+            '${numberOrDash(p.leaves)} ${p.graha.fullKey} ${natalKey(p.to)} '
+            '${number(p.closestDeg)} ${p.contrary ? 1 : 0}',
       );
     }
     final western = chart.westernAspects!;

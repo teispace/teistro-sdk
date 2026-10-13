@@ -6,12 +6,13 @@ use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_serial::Document;
-use teistro_western::{AngleMethod, ArcMeasure, Progression, Rate, YearMeasure};
+use teistro_western::{AngleMethod, ArcMeasure, ParallelRequest, Progression, Rate, YearMeasure};
 
 use crate::area::ChartArea;
 use crate::hit_request::PointAsked;
 use crate::progressed::{
-    ContactRequest, Directed, DirectionArc, Progressed, ProgressedContact, ProgressionRequest,
+    ContactRequest, Directed, DirectionArc, Progressed, ProgressedContact, ProgressedParallel,
+    ProgressionRequest,
 };
 use crate::reading::ChartRequest;
 
@@ -72,6 +73,9 @@ pub struct Progressions {
     pub directed: Option<Directed>,
     /// The contacts in the request's window.
     pub contacts: Option<Vec<ProgressedContact>>,
+    /// The parallels of declination in the request's window, when its
+    /// contacts asked them.
+    pub parallels: Option<Vec<ProgressedParallel>>,
 }
 
 impl ProgressionsRequest {
@@ -80,8 +84,10 @@ impl ProgressionsRequest {
     /// `contacts`. The measures are spelled as their members
     /// (`"NOON_SIDEREAL_TIME"`, `{"sky": "DAY", "life": "YEAR"}`), the
     /// direction `"SOLAR"`, `"NAIBOD"`, `"PTOLEMY"` or `{"PER_YEAR": 1}`,
-    /// and the contacts `{"from", "to", "grahas", "points", "aspects"}` as
-    /// the hit list spells them.
+    /// and the contacts `{"from", "to", "grahas", "points", "aspects",
+    /// "parallels"}` as the hit list spells them, `parallels` an orb
+    /// (`{"orbDeg": 1}`, or `{}` for Leo's) asking the parallels of
+    /// declination too.
     ///
     /// # Errors
     ///
@@ -116,16 +122,26 @@ impl ChartArea<'_> {
             ),
             None => (None, None),
         };
-        let contacts = match &asked.contacts {
-            Some(window) => {
-                Some(self.progressed_contacts(birth, window.from, window.to, &window.asked)?)
-            }
-            None => None,
+        let (contacts, parallels) = match &asked.contacts {
+            Some(window) => (
+                Some(self.progressed_contacts(birth, window.from, window.to, &window.asked)?),
+                match window.asked.parallels {
+                    Some(_) => Some(self.progressed_parallels(
+                        birth,
+                        window.from,
+                        window.to,
+                        &window.asked,
+                    )?),
+                    None => None,
+                },
+            ),
+            None => (None, None),
         };
         Ok(Progressions {
             progressed,
             directed,
             contacts,
+            parallels,
         })
     }
 }
@@ -175,6 +191,8 @@ struct ContactsAsked {
     points: Option<Vec<PointAsked>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     aspects: Option<Vec<u16>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    parallels: Option<ParallelRequest>,
 }
 
 impl Asked {
@@ -247,6 +265,10 @@ impl ContactsAsked {
         if let Some(aspects) = self.aspects {
             asked = asked.with_aspects(aspects);
         }
+        if let Some(parallels) = self.parallels {
+            parallels.check().map_err(|why| why.under("parallels"))?;
+            asked = asked.with_parallels(parallels);
+        }
         // The planets, points and aspects are the hit list's, refused as
         // it refuses them; the window of sky it searches comes later.
         asked.hits_between(from, to).check()?;
@@ -286,7 +308,8 @@ mod tests {
         let asked = ProgressionsRequest::from_json(
             r#"{"at": 2417505.5, "rate": {"sky": "DAY", "life": {"DAYS": 30}},
                 "angles": "QUOTIDIAN", "direction": {"PER_YEAR": 1.5},
-                "contacts": {"from": 1e6, "to": 2e6, "points": ["LAGNA", "graha.SUN"], "aspects": [45]}}"#,
+                "contacts": {"from": 1e6, "to": 2e6, "points": ["LAGNA", "graha.SUN"], "aspects": [45],
+                             "parallels": {}}}"#,
         )
         .unwrap();
         assert_eq!(
@@ -300,6 +323,7 @@ mod tests {
         );
         let window = asked.contacts.unwrap();
         assert_eq!(window.asked.aspects, [45]);
+        assert_eq!(window.asked.parallels, Some(ParallelRequest::default()));
         assert_eq!(window.asked.points.len(), 2);
         assert_eq!(window.asked.progression, asked.progressed.progression);
     }
@@ -332,6 +356,14 @@ mod tests {
             (
                 r#"{"contacts": {"from": 1e6, "to": 2e6, "aspects": [200]}}"#,
                 "progressions.contacts.aspects",
+            ),
+            (
+                r#"{"contacts": {"from": 1e6, "to": 2e6, "parallels": {"orbDeg": 11}}}"#,
+                "progressions.contacts.parallels.orbDeg",
+            ),
+            (
+                r#"{"contacts": {"from": 1e6, "to": 2e6, "parallels": {"orb": 1}}}"#,
+                "progressions.contacts.parallels.orb",
             ),
             (
                 r#"{"contacts": {"from": 1e6, "to": 2e6, "grahas": ["MOON", "MOON"]}}"#,

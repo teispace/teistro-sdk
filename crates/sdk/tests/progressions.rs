@@ -9,7 +9,8 @@ use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::western::{Rate, YearMeasure};
 use teistro::{
     AngleMethod, ArcMeasure, ChartRequest, ContactRequest, Context, DirectionArc, Document,
-    Ephemeris, NatalPoint, Progression, ProgressionRequest, ProgressionsRequest, UtcOffset,
+    Ephemeris, NatalPoint, ParallelRequest, Progression, ProgressionRequest, ProgressionsRequest,
+    UtcOffset,
 };
 
 /// 7 August 1860, 5.49 a.m. at London (p. 305). Leo reckons it as
@@ -576,5 +577,120 @@ fn leos_moon_reaches_uranus_when_the_birth_places_it() {
                 &moon
             )
             .is_err()
+    );
+}
+
+/// Leo's map for his forty-seventh year (p. 33) reads three parallels of
+/// declination: Jupiter "has moved to the parallel of the radical Sun",
+/// Mercury to that of Neptune, and the Moon "is moving to the parallel of
+/// Uranus". He reads them within a degree, north or south alike (p. 34).
+/// The first two are in force as the year opens and separating; the
+/// Moon, falling from 25° south towards Uranus's 22° north, comes within
+/// the degree just after the year ends.
+#[test]
+fn leos_parallels_of_declination_are_in_force_in_his_forty_seventh_year() {
+    let sdk = context();
+    let born = sdk
+        .chart()
+        .reading(jd(BIRTH), &request().with_outer_planets())
+        .unwrap()
+        .value;
+    let planet = |graha| NatalPoint::Graha { graha };
+    let points = [Graha::Sun, Graha::Uranus, Graha::Neptune].map(planet);
+    let asked = ContactRequest::default()
+        .with_grahas([Graha::Moon, Graha::Mercury, Graha::Jupiter])
+        .with_points(points)
+        .with_parallels(ParallelRequest::default());
+    // His year, 9 November 1906 to 9 November 1907, and the winter after.
+    let (from, to) = (jd(first_of(1906, 11) + 8.0), jd(first_of(1908, 3)));
+    let year_ends = first_of(1907, 11) + 8.0;
+    let found = sdk
+        .chart()
+        .progressed_parallels(&born, from, to, &asked)
+        .unwrap();
+    let span = |graha, to_point| {
+        found
+            .iter()
+            .find(|row| row.graha == graha && row.to == planet(to_point))
+            .unwrap_or_else(|| panic!("{graha:?} to {to_point:?} in {found:?}"))
+    };
+    for (graha, to_point) in [
+        (Graha::Jupiter, Graha::Sun),
+        (Graha::Mercury, Graha::Neptune),
+    ] {
+        let row = span(graha, to_point);
+        assert_eq!((row.enters, row.closest), (None, from), "{row:?}");
+    }
+    assert!(span(Graha::Mercury, Graha::Neptune).contrary);
+    let moon = span(Graha::Moon, Graha::Uranus);
+    let enters = moon.enters.unwrap().get();
+    assert!((year_ends..year_ends + 30.0).contains(&enters), "{moon:?}");
+    assert!(moon.contrary);
+    assert_eq!(found.len(), 3, "{found:?}");
+    // Each closest instant read back through the progressed chart's own
+    // declinations, against the birth's.
+    let radical = sdk.chart().declinations(&born).unwrap();
+    let progression = Progression::SECONDARY;
+    for row in &found {
+        assert!(row.closest_deg <= 1.0, "{row:?}");
+        let sky = progression.sky_at(jd(BIRTH), row.closest).unwrap();
+        let chart = sdk
+            .chart()
+            .reading(sky, &request().with_outer_planets())
+            .unwrap()
+            .value;
+        let moving = sdk
+            .chart()
+            .declinations(&chart)
+            .unwrap()
+            .graha(row.graha)
+            .unwrap();
+        let NatalPoint::Graha { graha } = row.to else {
+            panic!("{row:?}")
+        };
+        let fixed = radical.graha(graha).unwrap();
+        assert!(
+            ((moving.abs() - fixed.abs()).abs() - row.closest_deg).abs() < 1e-9,
+            "{row:?}: {moving} against {fixed}"
+        );
+        assert_eq!(row.contrary, moving * fixed < 0.0);
+        for edge in [row.enters, row.leaves].into_iter().flatten() {
+            assert!((from.get()..=to.get()).contains(&edge.get()), "{row:?}");
+        }
+    }
+    // In order of their closest instants.
+    assert!(found.windows(2).all(|pair| match pair {
+        [a, b] => a.closest.get() <= b.closest.get(),
+        _ => true,
+    }));
+}
+
+#[test]
+fn a_parallels_request_is_refused_by_the_field_it_names() {
+    let sdk = context();
+    let born = birth(&sdk);
+    let (from, to) = (jd(first_of(1906, 11)), jd(first_of(1907, 11)));
+    let refused = |asked: &ContactRequest, from, to| {
+        sdk.chart()
+            .progressed_parallels(&born, from, to, asked)
+            .unwrap_err()
+            .field()
+            .map(str::to_owned)
+    };
+    let wide =
+        ContactRequest::default().with_parallels(ParallelRequest::default().with_orb_deg(11.0));
+    assert_eq!(
+        refused(&wide, from, to).as_deref(),
+        Some("contacts.parallels.orbDeg")
+    );
+    let plain = ContactRequest::default();
+    assert_eq!(refused(&plain, to, from).as_deref(), Some("contacts.to"));
+    // The birth was founded without the outer planets.
+    let uranus = plain.with_points([NatalPoint::Graha {
+        graha: Graha::Uranus,
+    }]);
+    assert_eq!(
+        refused(&uranus, from, to).as_deref(),
+        Some("contacts.points")
     );
 }

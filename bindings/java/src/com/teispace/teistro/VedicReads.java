@@ -441,10 +441,6 @@ final class VedicReads {
         }
     }
 
-    private static Double bound(double jd) {
-        return Double.isNaN(jd) ? null : jd;
-    }
-
     /**
      * Every chart's Sade Sati report, decoded once; empty when none was asked
      * for. {@code sade_sati} holds a row a chart and {@code sade_sati_visits}
@@ -480,7 +476,7 @@ final class VedicReads {
                 if (spells.isEmpty() || spells.get(spells.size() - 1).house() != v.house(row)) {
                     spells.add(new Run(v.house(row), new ArrayList<>()));
                 }
-                spells.get(spells.size() - 1).visits().add(new SadeSatiVisit(bound(v.from(row)), bound(v.to(row))));
+                spells.get(spells.size() - 1).visits().add(new SadeSatiVisit(Reads.numberOrNull(v.from(row)), Reads.numberOrNull(v.to(row))));
             }
             List<SadeSati> sadeSati = new ArrayList<>();
             List<SadeSatiSpell> smaller = new ArrayList<>();
@@ -660,8 +656,8 @@ final class VedicReads {
         List<Moment> out = new ArrayList<>(c.length());
         for (int chart = 0; chart < c.length(); chart += 1) {
             out.add(new Moment(
-                    new RisingSign(Rashi.of(c.sign(chart)), bound(c.rose(chart)), bound(c.sets(chart))),
-                    new MomentEclipse(BirthEclipse.of(c.eclipse(chart)), bound(c.greatest(chart)))));
+                    new RisingSign(Rashi.of(c.sign(chart)), Reads.numberOrNull(c.rose(chart)), Reads.numberOrNull(c.sets(chart))),
+                    new MomentEclipse(BirthEclipse.of(c.eclipse(chart)), Reads.numberOrNull(c.greatest(chart)))));
         }
         return List.copyOf(out);
     }

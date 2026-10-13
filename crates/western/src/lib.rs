@@ -39,6 +39,7 @@ mod declination;
 mod harmonic;
 mod houses;
 mod midpoint;
+mod parallel_span;
 mod progression;
 mod synastry;
 
@@ -68,6 +69,7 @@ pub use midpoint::{
     DEFAULT_MIDPOINT_ORB_DEG, MAX_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow,
     SynastryMidpointRow, midpoints, synastry_midpoints,
 };
+pub use parallel_span::{ParallelSpan, SpanSearch, parallel_spans};
 pub use progression::{
     Progression, Rate, SIDEREAL_MONTH_DAYS, SYNODIC_MONTH_DAYS, Span, TROPICAL_YEAR_DAYS,
     YearMeasure,

@@ -4626,6 +4626,9 @@ List<DashaPhalaReading> _decodeDashaPhalas(Charts batch) {
 /// Each batch's transits, decoded once however many charts read them.
 /// A natal point from a `to_lagna`, a `to_graha` and a `to_midheaven`
 /// column's cells; a synastry's columns carry no midheaven.
+/// A number a column carries, or null where it carries NaN for none.
+double? _numberOrNull(double value) => value.isNaN ? null : value;
+
 NatalPoint _pointAt(int toLagna, int toGraha, [int toMidheaven = 0]) =>
     toLagna != 0
         ? const NatalLagna()
@@ -4931,27 +4934,33 @@ List<Progressions> _decodeProgressions(Charts batch) {
   final g = batch.progressedGrahas;
   final d = batch.directedGrahas;
   final c = batch.progressedContacts;
+  final r = batch.progressedParallels;
   final charts = batch.cast.instant.length;
   if (p.length == 0) return const <Progressions>[];
   final asked = !p.life[0].isNaN;
   final perChart = asked ? g.length ~/ charts : 0;
   final contacts = p.contactCount.fold<int>(0, (sum, n) => sum + n);
+  final parallels = p.parallelCount.fold<int>(0, (sum, n) => sum + n);
   if (p.length != charts ||
       d.length != g.length ||
       g.length != perChart * charts ||
-      c.length != contacts) {
+      c.length != contacts ||
+      r.length != parallels) {
     throw StateError(
       'progressions has ${p.length} rows, progressed_grahas ${g.length}, '
-      'directed_grahas ${d.length} and progressed_contacts ${c.length} for '
-      '$charts charts',
+      'directed_grahas ${d.length}, progressed_contacts ${c.length} and '
+      'progressed_parallels ${r.length} for $charts charts',
     );
   }
   var contact = 0;
+  var parallel = 0;
   return List<Progressions>.unmodifiable([
     for (var k = 0; k < charts; k++)
       () {
         final first = contact;
         contact += p.contactCount[k];
+        final firstParallel = parallel;
+        parallel += p.parallelCount[k];
         final planets = [
           for (var at = k * perChart; at < (k + 1) * perChart; at++) at,
         ];
@@ -5008,6 +5017,25 @@ List<Progressions> _decodeProgressions(Charts batch) {
                         ),
                         angle: c.angle[at],
                         motion: Motion.byId(c.motion[at]),
+                      ),
+                  ])
+                  : null,
+          parallels:
+              p.parallelsAsked[k] == 1
+                  ? List<ProgressedParallel>.unmodifiable([
+                    for (var at = firstParallel; at < parallel; at++)
+                      ProgressedParallel(
+                        graha: Graha.byId(r.graha[at]),
+                        to: _pointAt(
+                          r.toLagna[at],
+                          r.toGraha[at],
+                          r.toMidheaven[at],
+                        ),
+                        enters: _numberOrNull(r.enters[at]),
+                        leaves: _numberOrNull(r.leaves[at]),
+                        closest: r.closest[at],
+                        closestDeg: r.closestDeg[at],
+                        contrary: r.contrary[at] == 1,
                       ),
                   ])
                   : null,
@@ -6159,7 +6187,6 @@ List<SadeSatiReport> _decodeSadeSatis(Charts batch) {
       "chart and every chart's visits",
     );
   }
-  double? bound(double jd) => jd.isNaN ? null : jd;
   // The Sade Sati's houses are 12, 1 and 2; a smaller spell is 3 to 11.
   bool isSadeSati(List<SadeSatiSpell> spells) =>
       spells.first.house == 12 || spells.first.house <= 2;
@@ -6175,7 +6202,10 @@ List<SadeSatiReport> _decodeSadeSatis(Charts batch) {
         spells.add((v.house[row], <SadeSatiVisit>[]));
       }
       spells.last.$2.add(
-        SadeSatiVisit(from: bound(v.from[row]), to: bound(v.to[row])),
+        SadeSatiVisit(
+          from: _numberOrNull(v.from[row]),
+          to: _numberOrNull(v.to[row]),
+        ),
       );
     }
     start += counts[chart];
@@ -6344,18 +6374,17 @@ List<Moment> _momentsOf(Charts batch) =>
 
 List<Moment> _decodeMoments(Charts batch) {
   final c = batch.moment;
-  double? jd(double value) => value.isNaN ? null : value;
   return List<Moment>.generate(
     c.length,
     (chart) => Moment(
       rising: RisingSign(
         sign: Rashi.byId(c.sign[chart]),
-        rose: jd(c.rose[chart]),
-        sets: jd(c.sets[chart]),
+        rose: _numberOrNull(c.rose[chart]),
+        sets: _numberOrNull(c.sets[chart]),
       ),
       eclipse: MomentEclipse(
         kind: BirthEclipse.byId(c.eclipse[chart]),
-        greatest: jd(c.greatest[chart]),
+        greatest: _numberOrNull(c.greatest[chart]),
       ),
     ),
     growable: false,
@@ -8373,6 +8402,7 @@ final class ProgressionContacts {
     this.grahas,
     this.points,
     this.aspects,
+    this.parallels,
   });
 
   /// The window's start, an instant of life, a UTC Julian day.
@@ -8392,12 +8422,17 @@ final class ProgressionContacts {
   /// default.
   final List<int>? aspects;
 
+  /// Asks the parallels of declination over the window too, under this
+  /// orb; none unless asked.
+  final ParallelRequest? parallels;
+
   Map<String, Object?> get _record => {
     'from': from,
     'to': to,
     if (grahas case final grahas?) 'grahas': [for (final g in grahas) g.key],
     if (points case final points?) 'points': [for (final p in points) p._json],
     if (aspects case final aspects?) 'aspects': aspects,
+    if (parallels case final parallels?) 'parallels': parallels._record,
   };
 }
 
@@ -11057,21 +11092,74 @@ final class ProgressedContact extends _Value {
   List<Object?> get _fields => [life, sky, graha, to, angle, motion];
 }
 
+/// A stretch of life a progressed planet stands within the orb of a
+/// radical point's distance from the equator, on either side of it (Leo,
+/// *The Progressed Horoscope*, p. 34).
+final class ProgressedParallel extends _Value {
+  const ProgressedParallel({
+    required this.graha,
+    required this.to,
+    required this.enters,
+    required this.leaves,
+    required this.closest,
+    required this.closestDeg,
+    required this.contrary,
+  });
+
+  /// The progressed planet.
+  final Graha graha;
+
+  /// The radical point.
+  final NatalPoint to;
+
+  /// The instant of life it came within the orb, a UTC Julian day; null
+  /// when it already stood within it at the window's start.
+  final double? enters;
+
+  /// The instant of life it left the orb; null when it still stood within
+  /// it at the window's end.
+  final double? leaves;
+
+  /// The first instant of life the two distances stood closest: the exact
+  /// parallel, when the span reaches it.
+  final double closest;
+
+  /// How far apart the two distances stood then, degrees.
+  final double closestDeg;
+
+  /// Whether the two stood on opposite sides of the equator then.
+  final bool contrary;
+
+  @override
+  List<Object?> get _fields => [
+    graha,
+    to,
+    enters,
+    leaves,
+    closest,
+    closestDeg,
+    contrary,
+  ];
+}
+
 /// A birth read through its progressions: [progressed] and [directed] are
-/// null without [ProgressionsRequest.at], [contacts] null without a window.
+/// null without [ProgressionsRequest.at], [contacts] null without a window,
+/// and [parallels] null unless the window asked for them.
 final class Progressions extends _Value {
   const Progressions({
     required this.progressed,
     required this.directed,
     required this.contacts,
+    this.parallels,
   });
 
   final Progressed? progressed;
   final Directed? directed;
   final List<ProgressedContact>? contacts;
+  final List<ProgressedParallel>? parallels;
 
   @override
-  List<Object?> get _fields => [progressed, directed, contacts];
+  List<Object?> get _fields => [progressed, directed, contacts, parallels];
 }
 
 /// Whether a horary matter is brought to pass (Lilly, *Christian

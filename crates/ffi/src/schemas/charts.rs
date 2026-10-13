@@ -380,6 +380,7 @@ pub fn charts() -> BlobSchema {
             chart_rectification_section(122),
             chart_lalkitab_section(123),
             chart_moment_section(124),
+            progressed_parallels_section(125),
         ])
         .collect(),
     }
@@ -2469,6 +2470,72 @@ fn progressions_section(id: u32, empty: &str) -> SectionSchema {
                 Scalar::U8,
                 "1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none.",
             ),
+            ColumnDef::new(
+                "parallel_count",
+                Scalar::U32,
+                "How many rows of the `progressed_parallels` section belong to this chart; 0 when the record's `contacts` named no `parallels`.",
+            ),
+            ColumnDef::new(
+                "parallels_asked",
+                Scalar::U8,
+                "1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none.",
+            ),
+        ],
+    )
+}
+
+/// The `progressed_parallels` section: every parallel of declination,
+/// ragged under the `progressions` row.
+fn progressed_parallels_section(id: u32) -> SectionSchema {
+    let none = "NaN when it already stood within the orb";
+    SectionSchema::columns(
+        id,
+        "progressed_parallels",
+        "Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.",
+        vec![
+            ColumnDef::new(
+                "closest",
+                Scalar::F64,
+                "The first instant of life the two distances stood closest, a Julian day (UTC): the exact parallel, when the span reaches it.",
+            ),
+            ColumnDef::new(
+                "enters",
+                Scalar::F64,
+                &format!(
+                    "The instant of life it came within the orb, a Julian day (UTC); {none} at the window's start."
+                ),
+            ),
+            ColumnDef::new(
+                "leaves",
+                Scalar::F64,
+                "The instant of life it left the orb, a Julian day (UTC); NaN when it still stood within it at the window's end.",
+            ),
+            graha_column("graha", "The progressed planet."),
+            ColumnDef::new(
+                "to_lagna",
+                Scalar::U8,
+                "1 when the radical point is the lagna, 0 otherwise.",
+            ),
+            ColumnDef::new(
+                "to_graha",
+                Scalar::U16,
+                "The radical graha (a `Graha` id); 0 for the lagna or the midheaven.",
+            ),
+            ColumnDef::new(
+                "to_midheaven",
+                Scalar::U8,
+                "1 when the radical point is the midheaven, 0 otherwise.",
+            ),
+            ColumnDef::new(
+                "closest_deg",
+                Scalar::F64,
+                "How far apart the two distances from the equator stood at `closest`, degrees.",
+            ),
+            ColumnDef::new(
+                "contrary",
+                Scalar::U8,
+                "1 when the two stood on opposite sides of the equator at `closest`: the contra-parallel, which Leo counts a parallel.",
+            ),
         ],
     )
 }
@@ -2497,7 +2564,7 @@ fn progressed_contacts_section(id: u32, empty: &str) -> SectionSchema {
             ColumnDef::new(
                 "to_lagna",
                 Scalar::U8,
-                "1 when the radical point is the lagna, 0 when it is a radical graha.",
+                "1 when the radical point is the lagna, 0 otherwise.",
             ),
             ColumnDef::new(
                 "to_graha",
