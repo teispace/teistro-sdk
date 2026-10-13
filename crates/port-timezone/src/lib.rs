@@ -175,4 +175,83 @@ mod tests {
         .unwrap();
         assert_eq!(json, "{\"kind\":\"UNAMBIGUOUS\",\"offset\":20700}");
     }
+
+    /// One zone at a fixed offset, refusing every other.
+    struct Kathmandu;
+
+    impl Kathmandu {
+        const OFFSET: UtcOffset = UtcOffset::literal(5, 45, 0);
+
+        fn known(&self, zone: &str) -> Result<UtcOffset, Error> {
+            if self.has_zone(zone) {
+                Ok(Self::OFFSET)
+            } else {
+                Err(unknown_zone(zone, &self.zones()))
+            }
+        }
+    }
+
+    impl TimeZoneProvider for Kathmandu {
+        #[allow(
+            clippy::unnecessary_literal_bound,
+            reason = "the trait's signature, which a real provider borrows from itself"
+        )]
+        fn version(&self) -> &str {
+            "test"
+        }
+
+        fn has_zone(&self, zone: &str) -> bool {
+            zone == "Asia/Kathmandu"
+        }
+
+        fn zones(&self) -> Vec<String> {
+            vec![String::from("Asia/Kathmandu")]
+        }
+
+        fn offset_at(&self, zone: &str, _: JulianDay<Utc>) -> Result<OffsetInfo, Error> {
+            self.known(zone).map(|offset| OffsetInfo {
+                offset,
+                abbreviation: String::from("+0545"),
+                is_dst: false,
+                before_rules: false,
+            })
+        }
+
+        fn candidates(&self, zone: &str, _: LocalSeconds) -> Result<LocalCandidates, Error> {
+            self.known(zone)
+                .map(|offset| LocalCandidates::Unambiguous { offset })
+        }
+
+        fn current_offsets(&self, zone: &str) -> Result<Vec<UtcOffset>, Error> {
+            self.known(zone).map(|offset| vec![offset])
+        }
+    }
+
+    /// A borrowed provider answers every question as the provider does,
+    /// refusals included, so the blanket impl forwards each method; one
+    /// given a default later and left out of the impl would answer the
+    /// default through a borrow and fail here.
+    #[test]
+    fn a_borrowed_provider_answers_as_the_provider() {
+        fn answers<P: TimeZoneProvider>(provider: &P, zone: &str) -> String {
+            let instant = JulianDay::<Utc>::try_new(2_451_544.5).unwrap();
+            let local = LocalSeconds {
+                seconds: 946_684_800,
+                nanos: 0,
+            };
+            format!(
+                "{} {} {:?} {:?} {:?} {:?}",
+                provider.version(),
+                provider.has_zone(zone),
+                provider.zones(),
+                provider.offset_at(zone, instant),
+                provider.candidates(zone, local),
+                provider.current_offsets(zone)
+            )
+        }
+        for zone in ["Asia/Kathmandu", "Asia/Kathmandoo"] {
+            assert_eq!(answers(&&Kathmandu, zone), answers(&Kathmandu, zone));
+        }
+        assert!(answers(&&Kathmandu, "Asia/Kathmandoo").contains("did you mean"));
+    }
 }
