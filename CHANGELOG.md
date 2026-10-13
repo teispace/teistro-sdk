@@ -311,6 +311,11 @@ the SDK. Miri found one in sha2 0.11.0's aarch64
 backend, already fixed upstream and not yet released, so the Miri job uses
 sha2's soft backend until a release carries the fix.
 
+**The C ABI gives back everything it hands out.** **Numbers:** none
+moved. A test runs each family of entry points a hundred times under an
+allocator that counts frees as well as allocations, and requires every
+byte back. No family keeps any.
+
 **`teistro-intl` keeps a locale as it was written.** **Numbers:** none
 moved. `import xliff` rewrote each entity's forms alphabetically, so
 importing an unchanged locale rewrote every entity in it. It now keeps the
