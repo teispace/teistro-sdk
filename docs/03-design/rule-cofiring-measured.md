@@ -2,11 +2,11 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1527 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1487 rules hold at least once and 40 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1543 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1504 rules hold at least once and 39 never do.
 
-Rules holding on the same 5 or more charts form 109 groups, and each is explained. Below that, 5 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 110 groups, and each is explained. Below that, 5 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
-- **70 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
+- **71 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
 - **3 groups: one text says it twice**, where the table below says.
 
@@ -95,6 +95,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 488 | `DWIGRAHA_SUN_MOON`<br>`PARIJATA_TOGETHER_SUN_MOON` |
 | 485 | `BPHS_MOON_IN_EIGHTH_DEATH_BY_WATER`<br>`SARAVALI_MOON_IN_BHAVA_8` |
 | 482 | `DWIGRAHA_MOON_JUPITER`<br>`PARIJATA_TOGETHER_MOON_JUPITER` |
+| 284 | `PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY`<br>`PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS` |
 | 160 | `CHANDRA_IN_ARIES_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_ARIES_ASPECTED_BY_JUPITER` |
 | 145 | `CHANDRA_IN_CAPRICORN_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_CAPRICORN_ASPECTED_BY_JUPITER` |
 | 143 | `CHANDRA_IN_GEMINI_ASPECTED_BY_SATURN`<br>`SARAVALI_MOON_IN_GEMINI_ASPECTED_BY_SATURN` |
@@ -138,7 +139,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 
 ## Never held
 
-A rule that holds on none of the charts is not a duplicate of anything, but it is either rare or dead, and every one is accounted for: it is listed with an instant and a place where it holds, which the gate evaluates, or with why none can. The instants were found by searching every two hours from 1900 to 2100 at Kathmandu's latitude, on the meridian that puts the rule's lagna on the horizon, and from 1800 to 2400, the span the built-in ephemeris covers, for a rule the two centuries lacked. 2 rules the sky never holds are computed in code rather than written as conditions, which this evaluation does not read, and `check-doshas` measures them.
+A rule that holds on none of the charts is not a duplicate of anything, but it is either rare or dead, and every one is accounted for: it is listed with an instant and a place where it holds, which the gate evaluates, or with why none can. The instants were found by searching every two hours from 1900 to 2100 at Kathmandu's latitude, on the meridian that puts the rule's lagna on the horizon, and from 1800 to 2400, the span the built-in ephemeris covers, for a rule the two centuries lacked. 0 rules the sky never holds are computed in code rather than written as conditions, which this evaluation does not read, and `check-doshas` measures them.
 
 ### Held at a found instant
 
@@ -169,6 +170,7 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN` | 2437699.08333 | 27.7172, -37.399 |
 | `PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN` | 2437699.08333 | 27.7172, -37.399 |
 | `PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN` | 2437699.08333 | 27.7172, -37.399 |
+| `PHALADEEPIKA_WEAK_MOON_IN_A_DUSTHANA` | 2450123.74913 | 27.7172, 85.324 |
 | `SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS` | 2428308.91667 | 27.7172, -89.235 |
 | `SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH` | 2451702.41667 | 27.7172, -97.355 |
 
