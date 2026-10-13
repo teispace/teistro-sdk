@@ -551,6 +551,7 @@ final class WesternReads {
         Charts.DirectedGrahas d = decoded.directedGrahas();
         Charts.ProgressedContacts c = decoded.progressedContacts();
         Charts.ProgressedParallels r = decoded.progressedParallels();
+        Charts.ProgressedMutualContacts u = decoded.progressedMutualContacts();
         int charts = Reads.charts(decoded);
         if (p.length() == 0) {
             return List.of();
@@ -559,14 +560,17 @@ final class WesternReads {
         int perChart = asked ? g.length() / charts : 0;
         if (p.length() != charts || d.length() != g.length() || g.length() != perChart * charts
                 || c.length() != Reads.sum(p.length(), p::contactCount)
-                || r.length() != Reads.sum(p.length(), p::parallelCount)) {
+                || r.length() != Reads.sum(p.length(), p::parallelCount)
+                || u.length() != Reads.sum(p.length(), p::mutualCount)) {
             throw Reads.internal("progressions has " + p.length() + " rows, progressed_grahas " + g.length()
                     + ", directed_grahas " + d.length() + ", progressed_contacts " + c.length()
-                    + " and progressed_parallels " + r.length() + " for " + charts + " charts");
+                    + ", progressed_parallels " + r.length() + " and progressed_mutual_contacts " + u.length()
+                    + " for " + charts + " charts");
         }
         List<Progressions> out = new ArrayList<>(charts);
         int contact = 0;
         int parallel = 0;
+        int mutualAt = 0;
         for (int chart = 0; chart < charts; chart += 1) {
             int k = chart;
             int from = k * perChart;
@@ -589,6 +593,13 @@ final class WesternReads {
                         r.closest(at), r.closestDeg(at), r.contrary(at) == 1));
             }
             parallel += parallelCount;
+            int mutualCount = Math.toIntExact(p.mutualCount(k));
+            List<MutualContact> mutual = null;
+            if (p.mutualAsked(k) == 1) {
+                mutual = Reads.rows(mutualAt, mutualAt + mutualCount, at -> new MutualContact(
+                        u.life(at), u.sky(at), Graha.of(u.first(at)), Graha.of(u.second(at)), u.angle(at)));
+            }
+            mutualAt += mutualCount;
             out.add(new Progressions(
                     asked ? new Progressed(
                             p.life(k),
@@ -606,7 +617,8 @@ final class WesternReads {
                             Reads.rows(from, to, at -> new DirectedPlanet(Graha.of(d.graha(at)), d.longitudeDeg(at))))
                             : null,
                     contacts,
-                    parallels));
+                    parallels,
+                    mutual));
         }
         return Collections.unmodifiableList(out);
     }

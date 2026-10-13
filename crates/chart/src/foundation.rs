@@ -1026,24 +1026,22 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             JulianDay::<Ut1>::literal(from.get()),
             JulianDay::<Ut1>::literal(to.get()),
         );
-        let thirty = Lattice {
-            origin_deg: 0.0,
-            step_deg: 30.0,
-        };
+        let pairs: Vec<[(Graha, Body, f64); 2]> = planets
+            .iter()
+            .enumerate()
+            .flat_map(|(k, &first)| {
+                planets
+                    .iter()
+                    .skip(k + 1)
+                    .map(move |&second| (first, second))
+            })
+            .map(|(first, second)| Ok([(first, body(first)?, 0.0), (second, body(second)?, 0.0)]))
+            .collect::<Result<_, Error>>()?;
         let (found, frame) = self.searching(place, from, |source| {
-            let mut found = ContactEvents::default();
-            for (k, &first) in planets.iter().enumerate() {
-                for &second in planets.iter().skip(k + 1) {
-                    let quantity = Quantity::separation(body(first)?, body(second)?);
-                    for event in Search::new(source, quantity, thirty).between(start, end)? {
-                        found.contacts.push(ContactEvent {
-                            planets: [first, second],
-                            instant: JulianDay::<Utc>::literal(event.instant.get()),
-                            separation_deg: event.boundary_deg.rem_euclid(360.0),
-                        });
-                    }
-                }
-            }
+            let mut found = ContactEvents {
+                contacts: pair_crossings(source, &pairs, 30.0, (start, end))?,
+                stations: Vec::new(),
+            };
             for &graha in stations_of {
                 for station in
                     teistro_astro::events::stations(source, body(graha)?, start, end, 1e-6)?
@@ -1059,14 +1057,64 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 }
             }
             found
-                .contacts
-                .sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
-            found
                 .stations
                 .sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
             Ok(found)
         })?;
         Ok(self.searched(found, place, (from, to), "CONTACT_EVENTS", frame))
+    }
+
+    /// Every instant each of `pairs` stands a multiple of `step_deg` apart
+    /// between two instants, in time order: the contacts two moving
+    /// planets make with each other, a progressed chart's planets among
+    /// themselves (`03-design/western-progressions.md`). Any graha the
+    /// settings place may stand in a pair, the outer planets and the nodes
+    /// among them; Ketu is Rahu's search with its lattice turned half a
+    /// circle.
+    ///
+    /// Read in the chart's zodiac, as [`Founder::transit_events`] reads
+    /// it; a separation is the same in any zodiac.
+    ///
+    /// # Errors
+    ///
+    /// A graha the settings do not place, named `grahas`; a step that is
+    /// not a positive number of degrees dividing 360 a whole number of
+    /// times, named `step`; and the search's own, as
+    /// [`Founder::transit_events`].
+    pub fn separation_events(
+        &self,
+        place: &Place,
+        pairs: &[[Graha; 2]],
+        step_deg: f64,
+        (from, to): (JulianDay<Utc>, JulianDay<Utc>),
+    ) -> Result<Envelope<Vec<ContactEvent>>, Error> {
+        let whole = 360.0 / step_deg;
+        if !(step_deg > 0.0 && whole.is_finite() && (whole - whole.round()).abs() < 1e-9) {
+            return Err(Error::invalid_arg(format!(
+                "a lattice's step divides 360° a whole number of times, and {step_deg}° does not"
+            ))
+            .with_field("step"));
+        }
+        let placed = |graha: Graha| {
+            body_of(graha, self.settings())
+                .map(|(body, turn)| (graha, body, turn))
+                .ok_or_else(|| {
+                    Error::unsupported(format!("the settings place no {}", graha.key()))
+                        .with_field("grahas")
+                })
+        };
+        let pairs: Vec<[(Graha, Body, f64); 2]> = pairs
+            .iter()
+            .map(|&[first, second]| Ok([placed(first)?, placed(second)?]))
+            .collect::<Result<_, Error>>()?;
+        let window = (
+            JulianDay::<Ut1>::literal(from.get()),
+            JulianDay::<Ut1>::literal(to.get()),
+        );
+        let (found, frame) = self.searching(place, from, |source| {
+            pair_crossings(source, &pairs, step_deg, window)
+        })?;
+        Ok(self.searched(found, place, (from, to), "SEPARATION_EVENTS", frame))
     }
 
     /// Runs a search over the longitudes a chart founded at `place` would
@@ -1463,6 +1511,42 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             house: houses.place(longitude_deg),
         }
     }
+}
+
+/// Every instant each pair's separation crosses a multiple of `step_deg`,
+/// in time order, each pair a graha, its body and how far that body is
+/// turned (Ketu's half circle). The separation of the turned points is the
+/// bodies' plus the first's turn less the second's, so the bodies' lattice
+/// is the asked one moved back by that difference.
+fn pair_crossings(
+    source: &dyn Longitudes,
+    pairs: &[[(Graha, Body, f64); 2]],
+    step_deg: f64,
+    (start, end): (JulianDay<Ut1>, JulianDay<Ut1>),
+) -> Result<Vec<ContactEvent>, Error> {
+    let mut found = Vec::new();
+    for &[
+        (first, first_body, first_turn),
+        (second, second_body, second_turn),
+    ] in pairs
+    {
+        let turn = first_turn - second_turn;
+        let lattice = Lattice {
+            origin_deg: (-turn).rem_euclid(step_deg),
+            step_deg,
+        };
+        let quantity = Quantity::separation(first_body, second_body);
+        for event in Search::new(source, quantity, lattice).between(start, end)? {
+            found.push(ContactEvent {
+                planets: [first, second],
+                instant: JulianDay::<Utc>::literal(event.instant.get()),
+                separation_deg: (event.boundary_deg + turn).rem_euclid(360.0),
+            });
+        }
+    }
+    // Stable, so contacts at one instant keep the pairs' order.
+    found.sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
+    Ok(found)
 }
 
 /// The `index`th body's cell in the `row`th instant's row of a grid, when

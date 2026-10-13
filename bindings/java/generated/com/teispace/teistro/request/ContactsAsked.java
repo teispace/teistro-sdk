@@ -14,11 +14,12 @@ import java.util.Objects;
  * @param aspects The {@code aspects} field. Null leaves the SDK's default.
  * @param from The {@code from} field.
  * @param grahas The {@code grahas} field. Null leaves the SDK's default.
+ * @param mutual The {@code mutual} field. Null leaves the SDK's default.
  * @param parallels What the parallels are asked: how close two distances from the equator must stand. Null leaves the SDK's default.
  * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
  * @param to The {@code to} field.
  */
-public record ContactsAsked(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, ParallelRequest parallels, List<NatalPoint> points, double to) implements RequestJson {
+public record ContactsAsked(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, Boolean mutual, ParallelRequest parallels, List<NatalPoint> points, double to) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -47,6 +48,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
         private List<Integer> aspects;
         private Double from;
         private List<com.teispace.teistro.Graha> grahas;
+        private Boolean mutual;
         private ParallelRequest parallels;
         private List<NatalPoint> points;
         private Double to;
@@ -83,6 +85,17 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
          */
         public Builder grahas(List<com.teispace.teistro.Graha> grahas) {
             this.grahas = grahas;
+            return this;
+        }
+
+        /**
+         * Sets {@code mutual}.
+         *
+         * @param mutual The {@code mutual} field. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder mutual(boolean mutual) {
+            this.mutual = mutual;
             return this;
         }
 
@@ -126,7 +139,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
          * @throws NullPointerException naming a required field left unset
          */
         public ContactsAsked build() {
-            return new ContactsAsked(aspects, Objects.requireNonNull(from, "`ContactsAsked.from` is required"), grahas, parallels, points, Objects.requireNonNull(to, "`ContactsAsked.to` is required"));
+            return new ContactsAsked(aspects, Objects.requireNonNull(from, "`ContactsAsked.from` is required"), grahas, mutual, parallels, points, Objects.requireNonNull(to, "`ContactsAsked.to` is required"));
         }
     }
 
@@ -143,6 +156,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
             Read.orNull(json.get("aspects"), present -> Read.list(present, "ContactsAsked.aspects", item0 -> Read.int32(item0, "ContactsAsked.aspects"))),
             Read.number(Read.required(json.get("from"), "ContactsAsked.from"), "ContactsAsked.from"),
             Read.orNull(json.get("grahas"), present -> Read.list(present, "ContactsAsked.grahas", item0 -> Read.member(item0, "ContactsAsked.grahas", com.teispace.teistro.Graha::byKey))),
+            Read.orNull(json.get("mutual"), present -> Read.bool(present, "ContactsAsked.mutual")),
             Read.orNull(json.get("parallels"), present -> ParallelRequest.of(present)),
             Read.orNull(json.get("points"), present -> Read.list(present, "ContactsAsked.points", item0 -> NatalPoint.of(item0))),
             Read.number(Read.required(json.get("to"), "ContactsAsked.to"), "ContactsAsked.to"));
@@ -157,6 +171,9 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
         json.put("from", from);
         if (grahas != null) {
             json.put("grahas", grahas.stream().map(item0 -> item0.fullKey()).toList());
+        }
+        if (mutual != null) {
+            json.put("mutual", mutual);
         }
         if (parallels != null) {
             json.put("parallels", parallels.toJson());

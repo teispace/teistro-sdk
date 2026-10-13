@@ -1214,6 +1214,7 @@ void main() {
         ],
         aspects: [0, 45, 90, 135, 180],
         parallels: ParallelRequest(orbDeg: 1.5),
+        mutual: true,
       ),
     ),
     shadbala: true,
@@ -1992,6 +1993,15 @@ void main() {
         '${number(p.closest)} ${numberOrDash(p.enters)} '
             '${numberOrDash(p.leaves)} ${p.graha.fullKey} ${natalKey(p.to)} '
             '${number(p.closestDeg)} ${p.contrary ? 1 : 0}',
+      );
+    }
+    final progressedMutual = pr.mutual!;
+    put('chart-$i-progressed-mutual-count', '${progressedMutual.length}');
+    for (final (n, m) in progressedMutual.indexed) {
+      put(
+        'chart-$i-progressed-mutual-$n',
+        '${number(m.life)} ${number(m.sky)} ${m.first.fullKey} '
+            '${m.second.fullKey} ${m.angle}',
       );
     }
     final western = chart.westernAspects!;

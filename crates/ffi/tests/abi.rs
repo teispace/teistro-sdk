@@ -6630,7 +6630,7 @@ fn a_chart_request_answers_the_progressions() {
     let base = chart_request(&instants, (51.5, -0.12), 0);
     let asked_text = r#"{"at": 2430000.5, "year": "NOON_SIDEREAL_TIME", "angles": "SOLAR_ARC_LONGITUDE",
         "contacts": {"from": 2425000.5, "to": 2428000.5, "grahas": ["MOON", "SUN"], "points": ["LAGNA", "MARS", "VENUS"],
-                     "parallels": {"orbDeg": 1.5}}}"#;
+                     "parallels": {"orbDeg": 1.5}, "mutual": true}}"#;
     let asked_json = CString::new(asked_text).unwrap();
     let bytes = chart_blob(
         &ctx,
@@ -6815,6 +6815,55 @@ fn a_chart_request_answers_the_progressions() {
         ints("progressed_parallels", "contrary"),
         parallel_ints(&|row| i64::from(row.contrary))
     );
+
+    // The progressed planets among themselves, ragged the same way.
+    assert_eq!(
+        ints("progressions", "mutual_asked"),
+        vec![1; instants.len()]
+    );
+    assert_eq!(
+        ints("progressions", "mutual_count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.mutual.as_ref().unwrap().len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let mutual: Vec<&teistro::MutualContact> = expected
+        .iter()
+        .flat_map(|one| one.mutual.as_deref().unwrap())
+        .collect();
+    assert!(!mutual.is_empty(), "the window holds mutual contacts");
+    assert_eq!(
+        bits("progressed_mutual_contacts", "life"),
+        mutual
+            .iter()
+            .map(|c| c.life.get().to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("progressed_mutual_contacts", "sky"),
+        mutual
+            .iter()
+            .map(|c| c.sky.get().to_bits())
+            .collect::<Vec<_>>()
+    );
+    for (name, read) in [
+        (
+            "first",
+            &(|c: &teistro::MutualContact| i64::from(c.first.id()))
+                as &dyn Fn(&teistro::MutualContact) -> i64,
+        ),
+        ("second", &|c: &teistro::MutualContact| {
+            i64::from(c.second.id())
+        }),
+        ("angle", &|c: &teistro::MutualContact| i64::from(c.angle)),
+    ] {
+        assert_eq!(
+            ints("progressed_mutual_contacts", name),
+            mutual.iter().map(|c| read(c)).collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
 
     // The planets, the same number a chart: every section asked, so the
     // nine and then the outer three.

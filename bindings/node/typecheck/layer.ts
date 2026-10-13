@@ -97,6 +97,7 @@ import type {
   Progressions,
   ProgressedContact,
   ProgressedParallel,
+  MutualContact,
   NatalPoint,
   Motion,
   Application,
@@ -1391,6 +1392,7 @@ function theProgressions(ctx: Context): string {
       points: ['LAGNA', 'MERCURY'],
       aspects: [135],
       parallels: { orbDeg: 1 },
+      mutual: true,
     },
   };
   const read: Progressions | null = ctx.chart.found({
@@ -1406,7 +1408,10 @@ function theProgressions(ctx: Context): string {
   const to: NatalPoint | undefined = contact?.to;
   const parallel: ProgressedParallel | undefined = read.parallels?.[0];
   const enters: number | null | undefined = parallel?.enters;
+  const mutual: MutualContact | undefined = read.mutual?.[0];
   return [
+    mutual?.angle ?? Number.NaN,
+    mutual?.second ?? 'none',
     enters ?? Number.NaN,
     parallel?.closestDeg ?? Number.NaN,
     parallel?.contrary satisfies boolean | undefined,

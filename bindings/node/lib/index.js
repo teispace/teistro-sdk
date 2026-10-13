@@ -4629,6 +4629,7 @@ function progressionsOf(batch) {
   const m = d.directedGrahas;
   const c = d.progressedContacts;
   const r = d.progressedParallels;
+  const u = d.progressedMutualContacts;
   if (p.life.length === 0) {
     decoded = Object.freeze(Array.from({ length: charts }, () => null));
   } else {
@@ -4636,17 +4637,20 @@ function progressionsOf(batch) {
     const perChart = asked ? g.graha.length / charts : 0;
     const starts = startsOf(p.contactCount);
     const parallelStarts = startsOf(p.parallelCount);
+    const mutualStarts = startsOf(p.mutualCount);
     if (
       p.life.length !== charts ||
       m.graha.length !== g.graha.length ||
       (asked && !Number.isInteger(perChart)) ||
       starts[charts] !== c.life.length ||
-      parallelStarts[charts] !== r.closest.length
+      parallelStarts[charts] !== r.closest.length ||
+      mutualStarts[charts] !== u.life.length
     ) {
       throw new Error(
         `progressions has ${p.life.length} rows, progressed_grahas ${g.graha.length}, ` +
-          `directed_grahas ${m.graha.length}, progressed_contacts ${c.life.length} and ` +
-          `progressed_parallels ${r.closest.length} for ${charts} charts`,
+          `directed_grahas ${m.graha.length}, progressed_contacts ${c.life.length}, ` +
+          `progressed_parallels ${r.closest.length} and progressed_mutual_contacts ${u.life.length} ` +
+          `for ${charts} charts`,
       );
     }
     const graha = (id) => GrahaById.get(id) ?? 'unknown';
@@ -4705,6 +4709,18 @@ function progressionsOf(batch) {
                     closest: r.closest[row],
                     closestDeg: r.closestDeg[row],
                     contrary: r.contrary[row] === 1,
+                  }),
+                )
+              : null,
+          mutual:
+            p.mutualAsked[k] === 1
+              ? rows(p.mutualCount[k], mutualStarts[k], (row) =>
+                  Object.freeze({
+                    life: u.life[row],
+                    sky: u.sky[row],
+                    first: graha(u.first[row]),
+                    second: graha(u.second[row]),
+                    angle: u.angle[row],
                   }),
                 )
               : null,

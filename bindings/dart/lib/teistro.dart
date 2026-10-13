@@ -4935,25 +4935,30 @@ List<Progressions> _decodeProgressions(Charts batch) {
   final d = batch.directedGrahas;
   final c = batch.progressedContacts;
   final r = batch.progressedParallels;
+  final u = batch.progressedMutualContacts;
   final charts = batch.cast.instant.length;
   if (p.length == 0) return const <Progressions>[];
   final asked = !p.life[0].isNaN;
   final perChart = asked ? g.length ~/ charts : 0;
   final contacts = p.contactCount.fold<int>(0, (sum, n) => sum + n);
   final parallels = p.parallelCount.fold<int>(0, (sum, n) => sum + n);
+  final mutuals = p.mutualCount.fold<int>(0, (sum, n) => sum + n);
   if (p.length != charts ||
       d.length != g.length ||
       g.length != perChart * charts ||
       c.length != contacts ||
-      r.length != parallels) {
+      r.length != parallels ||
+      u.length != mutuals) {
     throw StateError(
       'progressions has ${p.length} rows, progressed_grahas ${g.length}, '
-      'directed_grahas ${d.length}, progressed_contacts ${c.length} and '
-      'progressed_parallels ${r.length} for $charts charts',
+      'directed_grahas ${d.length}, progressed_contacts ${c.length}, '
+      'progressed_parallels ${r.length} and progressed_mutual_contacts '
+      '${u.length} for $charts charts',
     );
   }
   var contact = 0;
   var parallel = 0;
+  var mutual = 0;
   return List<Progressions>.unmodifiable([
     for (var k = 0; k < charts; k++)
       () {
@@ -4961,6 +4966,8 @@ List<Progressions> _decodeProgressions(Charts batch) {
         contact += p.contactCount[k];
         final firstParallel = parallel;
         parallel += p.parallelCount[k];
+        final firstMutual = mutual;
+        mutual += p.mutualCount[k];
         final planets = [
           for (var at = k * perChart; at < (k + 1) * perChart; at++) at,
         ];
@@ -5036,6 +5043,19 @@ List<Progressions> _decodeProgressions(Charts batch) {
                         closest: r.closest[at],
                         closestDeg: r.closestDeg[at],
                         contrary: r.contrary[at] == 1,
+                      ),
+                  ])
+                  : null,
+          mutual:
+              p.mutualAsked[k] == 1
+                  ? List<MutualContact>.unmodifiable([
+                    for (var at = firstMutual; at < mutual; at++)
+                      MutualContact(
+                        life: u.life[at],
+                        sky: u.sky[at],
+                        first: Graha.byId(u.first[at]),
+                        second: Graha.byId(u.second[at]),
+                        angle: u.angle[at],
                       ),
                   ])
                   : null,
@@ -8403,6 +8423,7 @@ final class ProgressionContacts {
     this.points,
     this.aspects,
     this.parallels,
+    this.mutual = false,
   });
 
   /// The window's start, an instant of life, a UTC Julian day.
@@ -8426,6 +8447,10 @@ final class ProgressionContacts {
   /// orb; none unless asked.
   final ParallelRequest? parallels;
 
+  /// Whether the progressed planets' contacts among themselves are asked
+  /// too (Leo's "P. to P.", p. 41).
+  final bool mutual;
+
   Map<String, Object?> get _record => {
     'from': from,
     'to': to,
@@ -8433,6 +8458,7 @@ final class ProgressionContacts {
     if (points case final points?) 'points': [for (final p in points) p._json],
     if (aspects case final aspects?) 'aspects': aspects,
     if (parallels case final parallels?) 'parallels': parallels._record,
+    if (mutual) 'mutual': true,
   };
 }
 
@@ -11092,6 +11118,34 @@ final class ProgressedContact extends _Value {
   List<Object?> get _fields => [life, sky, graha, to, angle, motion];
 }
 
+/// Two progressed planets exactly in aspect with each other: a line of
+/// Leo's "P. to P." list (*The Progressed Horoscope*, p. 41).
+final class MutualContact extends _Value {
+  const MutualContact({
+    required this.life,
+    required this.sky,
+    required this.first,
+    required this.second,
+    required this.angle,
+  });
+
+  /// The instant of life it falls due, a UTC Julian day.
+  final double life;
+
+  /// The instant of sky it is exact at.
+  final double sky;
+
+  /// The first planet, in the request's order.
+  final Graha first;
+  final Graha second;
+
+  /// A whole degree 0 to 180.
+  final int angle;
+
+  @override
+  List<Object?> get _fields => [life, sky, first, second, angle];
+}
+
 /// A stretch of life a progressed planet stands within the orb of a
 /// radical point's distance from the equator, on either side of it (Leo,
 /// *The Progressed Horoscope*, p. 34).
@@ -11144,22 +11198,30 @@ final class ProgressedParallel extends _Value {
 
 /// A birth read through its progressions: [progressed] and [directed] are
 /// null without [ProgressionsRequest.at], [contacts] null without a window,
-/// and [parallels] null unless the window asked for them.
+/// and [parallels] and [mutual] null unless the window asked for them.
 final class Progressions extends _Value {
   const Progressions({
     required this.progressed,
     required this.directed,
     required this.contacts,
     this.parallels,
+    this.mutual,
   });
 
   final Progressed? progressed;
   final Directed? directed;
   final List<ProgressedContact>? contacts;
   final List<ProgressedParallel>? parallels;
+  final List<MutualContact>? mutual;
 
   @override
-  List<Object?> get _fields => [progressed, directed, contacts, parallels];
+  List<Object?> get _fields => [
+    progressed,
+    directed,
+    contacts,
+    parallels,
+    mutual,
+  ];
 }
 
 /// Whether a horary matter is brought to pass (Lilly, *Christian

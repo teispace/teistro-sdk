@@ -1591,6 +1591,8 @@ export interface ProgressionsRequest {
     readonly aspects?: HitRequest['aspects'];
     /** Asks the parallels of declination over the window too, under this orb; `{}` for Leo's 1°. */
     readonly parallels?: ParallelRequest;
+    /** Asks the progressed planets' contacts among themselves too (Leo's "P. to P.", p. 41). */
+    readonly mutual?: boolean;
   };
 }
 
@@ -2462,6 +2464,19 @@ export interface ProgressedContact {
   readonly motion: Motion | 'unknown';
 }
 
+/** Two progressed planets exactly in aspect with each other: a line of Leo's "P. to P." list (p. 41). */
+export interface MutualContact {
+  /** The instant of life it falls due, a UTC Julian day. */
+  readonly life: number;
+  /** The instant of sky it is exact at, a UTC Julian day. */
+  readonly sky: number;
+  /** The first planet, in the request's order. */
+  readonly first: Graha | 'unknown';
+  readonly second: Graha | 'unknown';
+  /** The aspect's angle, a whole degree 0 to 180. */
+  readonly angle: number;
+}
+
 /**
  * A stretch of life a progressed planet stands within the orb of a radical
  * point's distance from the equator, on either side of it (Leo, *The
@@ -2519,6 +2534,8 @@ export interface Progressions {
   readonly contacts: readonly ProgressedContact[] | null;
   /** The parallels of declination in the window, by their closest instant; `null` unless `contacts` asked `parallels`. */
   readonly parallels: readonly ProgressedParallel[] | null;
+  /** The progressed planets' contacts among themselves, as they fall due; `null` unless `contacts` asked `mutual`. */
+  readonly mutual: readonly MutualContact[] | null;
 }
 
 /**

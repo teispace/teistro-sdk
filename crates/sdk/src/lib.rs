@@ -346,8 +346,8 @@ pub use teistro_hellenistic::{
 // *The Progressed Horoscope* (`03-design/western-progressions.md`).
 #[cfg(feature = "western")]
 pub use crate::progressed::{
-    ContactRequest, Directed, DirectedPlanet, DirectionArc, Progressed, ProgressedContact,
-    ProgressedParallel, ProgressionRequest,
+    ContactRequest, Directed, DirectedPlanet, DirectionArc, MutualContact, Progressed,
+    ProgressedContact, ProgressedParallel, ProgressionRequest,
 };
 #[cfg(feature = "western")]
 pub use crate::progressions_request::{ContactWindow, Progressions, ProgressionsRequest};

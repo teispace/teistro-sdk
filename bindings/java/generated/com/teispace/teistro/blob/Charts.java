@@ -155,6 +155,7 @@ public final class Charts {
     private final String lalkitab;
     private final Moment moment;
     private final ProgressedParallels progressedParallels;
+    private final ProgressedMutualContacts progressedMutualContacts;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -300,6 +301,7 @@ public final class Charts {
         this.lalkitab = blob.text(123, "lalkitab");
         this.moment = new Moment(blob, 124, "moment");
         this.progressedParallels = new ProgressedParallels(blob, 125, "progressed_parallels");
+        this.progressedMutualContacts = new ProgressedMutualContacts(blob, 126, "progressed_mutual_contacts");
     }
 
     /**
@@ -1580,6 +1582,15 @@ public final class Charts {
      */
     public ProgressedParallels progressedParallels() {
         return progressedParallels;
+    }
+
+    /**
+     * Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+     *
+     * @return the progressedMutualContacts
+     */
+    public ProgressedMutualContacts progressedMutualContacts() {
+        return progressedMutualContacts;
     }
 
 
@@ -10916,6 +10927,8 @@ public final class Charts {
         private final int contactsAskedAt;
         private final int parallelCountAt;
         private final int parallelsAskedAt;
+        private final int mutualCountAt;
+        private final int mutualAskedAt;
 
         Progressions(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -10933,6 +10946,8 @@ public final class Charts {
             this.contactsAskedAt = blob.column(at, 9, 1);
             this.parallelCountAt = blob.column(at, 10, 4);
             this.parallelsAskedAt = blob.column(at, 11, 1);
+            this.mutualCountAt = blob.column(at, 12, 4);
+            this.mutualAskedAt = blob.column(at, 13, 1);
         }
 
         /**
@@ -11074,6 +11089,28 @@ public final class Charts {
          */
         public int parallelsAsked(int row) {
             return Byte.toUnsignedInt(bytes.get(parallelsAskedAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * How many rows of the `progressed_mutual_contacts` section belong to this chart; 0 when the record's `contacts` did not ask `mutual`.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public long mutualCount(int row) {
+            return Integer.toUnsignedLong(bytes.getInt(mutualCountAt + Objects.checkIndex(row, length) * 4));
+        }
+
+        /**
+         * 1 when the record's `contacts` asked `mutual`, so a count of 0 is a window holding none; 0 when they did not.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int mutualAsked(int row) {
+            return Byte.toUnsignedInt(bytes.get(mutualAskedAt + Objects.checkIndex(row, length) * 1));
         }
     }
 
@@ -14550,6 +14587,100 @@ public final class Charts {
          */
         public int contrary(int row) {
             return Byte.toUnsignedInt(bytes.get(contraryAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `progressed_mutual_contacts` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+     */
+    public static final class ProgressedMutualContacts {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int lifeAt;
+        private final int skyAt;
+        private final int firstAt;
+        private final int secondAt;
+        private final int angleAt;
+
+        ProgressedMutualContacts(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.lifeAt = blob.column(at, 0, 8);
+            this.skyAt = blob.column(at, 1, 8);
+            this.firstAt = blob.column(at, 2, 2);
+            this.secondAt = blob.column(at, 3, 2);
+            this.angleAt = blob.column(at, 4, 2);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The instant of life it falls due, a Julian day (UTC).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double life(int row) {
+            return bytes.getDouble(lifeAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The instant of sky the aspect is exact at, a Julian day (UTC).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double sky(int row) {
+            return bytes.getDouble(skyAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The first planet, in the record's order.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int first(int row) {
+            return Short.toUnsignedInt(bytes.getShort(firstAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The second.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int second(int row) {
+            return Short.toUnsignedInt(bytes.getShort(secondAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The aspect's angle, a whole degree 0 to 180.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int angle(int row) {
+            return Short.toUnsignedInt(bytes.getShort(angleAt + Objects.checkIndex(row, length) * 2));
         }
     }
 }

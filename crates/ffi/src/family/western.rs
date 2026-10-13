@@ -29,12 +29,13 @@ answer!("western", HarmonicChart, teistro::HarmonicChart);
 /// name missing here is a section `Writer::finish` refuses as never
 /// written, so a chart call in such a build checks the list.
 #[cfg(not(feature = "western"))]
-const SECTIONS: [&str; 34] = [
+const SECTIONS: [&str; 35] = [
     "progressions",
     "progressed_grahas",
     "directed_grahas",
     "progressed_contacts",
     "progressed_parallels",
+    "progressed_mutual_contacts",
     "western_aspects",
     "western_aspect_rows",
     "synastry",

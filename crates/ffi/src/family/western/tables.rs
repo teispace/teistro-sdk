@@ -58,6 +58,13 @@ struct ProgressionColumns {
     parallel_to_midheaven: Vec<u8>,
     parallel_closest_deg: Vec<f64>,
     parallel_contrary: Vec<u8>,
+    mutual_count: Vec<u32>,
+    mutual_asked: Vec<u8>,
+    mutual_life: Vec<f64>,
+    mutual_sky: Vec<f64>,
+    mutual_first: Vec<u16>,
+    mutual_second: Vec<u16>,
+    mutual_angle: Vec<u16>,
     progressed_graha: Vec<u16>,
     progressed_longitude_deg: Vec<f64>,
     progressed_tropical_deg: Vec<f64>,
@@ -988,6 +995,16 @@ impl ProgressionColumns {
                 columns.parallel_closest_deg.push(parallel.closest_deg);
                 columns.parallel_contrary.push(u8::from(parallel.contrary));
             }
+            columns.mutual_asked.push(u8::from(one.mutual.is_some()));
+            let mutual = one.mutual.as_deref().unwrap_or_default();
+            columns.mutual_count.push(row_count(mutual.len())?);
+            for contact in mutual {
+                columns.mutual_life.push(contact.life.get());
+                columns.mutual_sky.push(contact.sky.get());
+                columns.mutual_first.push(contact.first.id());
+                columns.mutual_second.push(contact.second.id());
+                columns.mutual_angle.push(contact.angle);
+            }
             let placed = progressed.map(|p| &p.chart.value.foundation);
             for at in placed
                 .into_iter()
@@ -1036,6 +1053,8 @@ impl ProgressionColumns {
                 ColumnData::U8(&self.contacts_asked),
                 ColumnData::U32(&self.parallel_count),
                 ColumnData::U8(&self.parallels_asked),
+                ColumnData::U32(&self.mutual_count),
+                ColumnData::U8(&self.mutual_asked),
             ],
         )?;
         writer.columns(
@@ -1083,6 +1102,17 @@ impl ProgressionColumns {
                 ColumnData::U8(&self.parallel_to_midheaven),
                 ColumnData::F64(&self.parallel_closest_deg),
                 ColumnData::U8(&self.parallel_contrary),
+            ],
+        )?;
+        writer.columns(
+            "progressed_mutual_contacts",
+            self.mutual_life.len(),
+            &[
+                ColumnData::F64(&self.mutual_life),
+                ColumnData::F64(&self.mutual_sky),
+                ColumnData::U16(&self.mutual_first),
+                ColumnData::U16(&self.mutual_second),
+                ColumnData::U16(&self.mutual_angle),
             ],
         )
     }

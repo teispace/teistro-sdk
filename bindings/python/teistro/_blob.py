@@ -2818,6 +2818,12 @@ class ChartsProgressions:
     parallels_asked: memoryview[int]
     """1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none."""
 
+    mutual_count: memoryview[int]
+    """How many rows of the `progressed_mutual_contacts` section belong to this chart; 0 when the record's `contacts` did not ask `mutual`."""
+
+    mutual_asked: memoryview[int]
+    """1 when the record's `contacts` asked `mutual`, so a count of 0 is a window holding none; 0 when they did not."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -3846,6 +3852,33 @@ class ChartsProgressedParallels:
 
 
 @dataclass(frozen=True)
+class ChartsProgressedMutualContacts:
+    """The `progressed_mutual_contacts` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+    """
+
+    life: memoryview[float]
+    """The instant of life it falls due, a Julian day (UTC)."""
+
+    sky: memoryview[float]
+    """The instant of sky the aspect is exact at, a Julian day (UTC)."""
+
+    first: memoryview[int]
+    """The first planet, in the record's order."""
+
+    second: memoryview[int]
+    """The second."""
+
+    angle: memoryview[int]
+    """The aspect's angle, a whole degree 0 to 180."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4566,6 +4599,9 @@ class Charts:
     progressed_parallels: ChartsProgressedParallels
     """Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none."""
 
+    progressed_mutual_contacts: ChartsProgressedMutualContacts
+    """Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4700,6 +4736,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_lalkitab = blob.section(123, "lalkitab")
     at_moment = blob.section(124, "moment")
     at_progressed_parallels = blob.section(125, "progressed_parallels")
+    at_progressed_mutual_contacts = blob.section(126, "progressed_mutual_contacts")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -6508,6 +6545,12 @@ def decode_charts(raw: bytes) -> Charts:
             parallels_asked=blob.column(
                 at_progressions, 11, 1, at_progressions.count
             ).cast("B"),
+            mutual_count=blob.column(
+                at_progressions, 12, 4, at_progressions.count
+            ).cast("I"),
+            mutual_asked=blob.column(
+                at_progressions, 13, 1, at_progressions.count
+            ).cast("B"),
             length=at_progressions.count,
         ),
         progressed_grahas=ChartsProgressedGrahas(
@@ -7330,6 +7373,24 @@ def decode_charts(raw: bytes) -> Charts:
                 at_progressed_parallels, 8, 1, at_progressed_parallels.count
             ).cast("B"),
             length=at_progressed_parallels.count,
+        ),
+        progressed_mutual_contacts=ChartsProgressedMutualContacts(
+            life=blob.column(
+                at_progressed_mutual_contacts, 0, 8, at_progressed_mutual_contacts.count
+            ).cast("d"),
+            sky=blob.column(
+                at_progressed_mutual_contacts, 1, 8, at_progressed_mutual_contacts.count
+            ).cast("d"),
+            first=blob.column(
+                at_progressed_mutual_contacts, 2, 2, at_progressed_mutual_contacts.count
+            ).cast("H"),
+            second=blob.column(
+                at_progressed_mutual_contacts, 3, 2, at_progressed_mutual_contacts.count
+            ).cast("H"),
+            angle=blob.column(
+                at_progressed_mutual_contacts, 4, 2, at_progressed_mutual_contacts.count
+            ).cast("H"),
+            length=at_progressed_mutual_contacts.count,
         ),
     )
 

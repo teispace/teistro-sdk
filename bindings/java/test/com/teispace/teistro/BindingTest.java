@@ -672,6 +672,20 @@ public final class BindingTest {
                 check(parallel.enters() == null, "in force as the window opens");
                 same(2_417_523.5, parallel.closest(), "closest as the window opens");
                 check(!parallel.contrary() && parallel.closestDeg() < 1, "within the degree, the same side");
+                check(read.mutual() == null, "no mutual contacts unless asked");
+                // The progressed Moon quincunx the progressed Venus (p. 41,
+                // "P. to P."), July 1907 by Leo's month for each degree.
+                Progressions pp = leo.chart().found(birth, london, 0, ChartOptions.builder()
+                        .progressions(ProgressionsRequest.of(Map.of("contacts", Map.of("from", 2_417_484.5,
+                                "to", 2_417_941.5, "grahas", List.of("MOON", "VENUS"), "aspects", List.of(150),
+                                "mutual", true)))).build())
+                        .progressions().orElseThrow();
+                same(1, pp.mutual().size(), "one mutual contact");
+                MutualContact venus = pp.mutual().get(0);
+                same(Graha.MOON, venus.first(), "the Moon first");
+                same(Graha.VENUS, venus.second(), "Venus second");
+                same(150, venus.angle(), "the quincunx");
+                check(venus.life() >= 2_417_712.5 && venus.life() < 2_417_773.5, "in Leo's July");
             }
         });
 

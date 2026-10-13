@@ -19936,6 +19936,16 @@
               "name": "parallels_asked",
               "scalar": "u8",
               "doc": "1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none."
+            },
+            {
+              "name": "mutual_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `progressed_mutual_contacts` section belong to this chart; 0 when the record's `contacts` did not ask `mutual`."
+            },
+            {
+              "name": "mutual_asked",
+              "scalar": "u8",
+              "doc": "1 when the record's `contacts` asked `mutual`, so a count of 0 is a window holding none; 0 when they did not."
             }
           ]
         },
@@ -21607,6 +21617,41 @@
               "name": "contrary",
               "scalar": "u8",
               "doc": "1 when the two stood on opposite sides of the equator at `closest`: the contra-parallel, which Leo counts a parallel."
+            }
+          ]
+        },
+        {
+          "id": 126,
+          "name": "progressed_mutual_contacts",
+          "doc": "Every exact aspect two progressed planets make to each other in the record's window (Leo's \"P. to P.\" list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "life",
+              "scalar": "f64",
+              "doc": "The instant of life it falls due, a Julian day (UTC)."
+            },
+            {
+              "name": "sky",
+              "scalar": "f64",
+              "doc": "The instant of sky the aspect is exact at, a Julian day (UTC)."
+            },
+            {
+              "name": "first",
+              "scalar": "u16",
+              "doc": "The first planet, in the record's order.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second",
+              "scalar": "u16",
+              "doc": "The second.",
+              "enum": "Graha"
+            },
+            {
+              "name": "angle",
+              "scalar": "u16",
+              "doc": "The aspect's angle, a whole degree 0 to 180."
             }
           ]
         }

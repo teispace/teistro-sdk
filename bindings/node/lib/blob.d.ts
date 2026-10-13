@@ -3364,6 +3364,14 @@ export interface ChartsProgressions {
    * 1 when the record's `contacts` named `parallels`, so a count of 0 is a window holding none; 0 when they named none.
    */
   readonly parallelsAsked: Uint8Array;
+  /**
+   * How many rows of the `progressed_mutual_contacts` section belong to this chart; 0 when the record's `contacts` did not ask `mutual`.
+   */
+  readonly mutualCount: Uint32Array;
+  /**
+   * 1 when the record's `contacts` asked `mutual`, so a count of 0 is a window holding none; 0 when they did not.
+   */
+  readonly mutualAsked: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -4586,6 +4594,39 @@ export interface ChartsProgressedParallels {
 }
 
 /**
+ * The `progressed_mutual_contacts` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+ */
+export interface ChartsProgressedMutualContacts {
+  /**
+   * The instant of life it falls due, a Julian day (UTC).
+   */
+  readonly life: Float64Array;
+  /**
+   * The instant of sky the aspect is exact at, a Julian day (UTC).
+   */
+  readonly sky: Float64Array;
+  /**
+   * The first planet, in the record's order.
+   * The values are `Graha` ids.
+   */
+  readonly first: Uint16Array;
+  /**
+   * The second.
+   * The values are `Graha` ids.
+   */
+  readonly second: Uint16Array;
+  /**
+   * The aspect's angle, a whole degree 0 to 180.
+   */
+  readonly angle: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5542,6 +5583,10 @@ export interface Charts {
    * Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
    */
   readonly progressedParallels: ChartsProgressedParallels;
+  /**
+   * Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+   */
+  readonly progressedMutualContacts: ChartsProgressedMutualContacts;
 }
 
 /**

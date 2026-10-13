@@ -1251,6 +1251,8 @@ export function decodeCharts(bytes) {
       contactsAsked: column(blob, at, 9, 'u8', at.count),
       parallelCount: column(blob, at, 10, 'u32', at.count),
       parallelsAsked: column(blob, at, 11, 'u8', at.count),
+      mutualCount: column(blob, at, 12, 'u32', at.count),
+      mutualAsked: column(blob, at, 13, 'u8', at.count),
       length: at.count,
     };
   }
@@ -1772,6 +1774,17 @@ export function decodeCharts(bytes) {
       toMidheaven: column(blob, at, 6, 'u8', at.count),
       closestDeg: column(blob, at, 7, 'f64', at.count),
       contrary: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 126, 'progressed_mutual_contacts');
+    out.progressedMutualContacts = {
+      life: column(blob, at, 0, 'f64', at.count),
+      sky: column(blob, at, 1, 'f64', at.count),
+      first: column(blob, at, 2, 'u16', at.count),
+      second: column(blob, at, 3, 'u16', at.count),
+      angle: column(blob, at, 4, 'u16', at.count),
       length: at.count,
     };
   }
