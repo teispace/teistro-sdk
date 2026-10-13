@@ -38,6 +38,7 @@ use teistro_rules::{
 use teistro_serial::Document;
 use teistro_state::GrahaState;
 use teistro_strength::ShadbalaReading;
+use teistro_time::{DayState, LocalDay};
 use teistro_vargas::{Scheme, sign};
 
 /// Ghatikas in a day: sixty, which is what a limb's elapsed and remaining
@@ -88,6 +89,7 @@ fn birth_limbs(
             tithi: ghatikas(tithi.whole, instant),
             nakshatra: ghatikas(nakshatra.whole, instant),
             lagna: moment.and_then(|moment| lagna_span(&moment.rising, instant)),
+            night: night_span(&day.day, instant),
         },
         by_day: Some(
             instant.get() >= day.day.sunrise.get() && instant.get() < day.day.sunset.get(),
@@ -117,6 +119,19 @@ fn lagna_span(rising: &RisingSign, instant: JulianDay<Utc>) -> Option<teistro_ru
         .sets
         .map_or(f64::INFINITY, |sets| (sets.get() - at) * GHATIKAS_PER_DAY);
     (elapsed >= 0.0 && remaining >= 0.0).then_some(teistro_rules::Span { elapsed, remaining })
+}
+
+/// How much of the night had passed at an instant and how much was left, in
+/// ghatikas: sunset to the next sunrise, under the day's own convention,
+/// which the Indian profiles place at the disc's centre, where BPHS ch. 9
+/// v. 14 measures the twilights from. Nothing by day, or on a day whose
+/// Sun did not both rise and set.
+fn night_span(day: &LocalDay, instant: JulianDay<Utc>) -> Option<teistro_rules::Span> {
+    if !matches!(day.state, DayState::Normal) {
+        return None;
+    }
+    let night = Interval::new(day.sunset, day.next_sunrise).ok()?;
+    ghatikas(night, instant)
 }
 
 /// The pada of the nakshatra the Moon stands in, one to four.

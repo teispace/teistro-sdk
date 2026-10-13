@@ -1,6 +1,65 @@
 {
   "rules": [
     {
+      "key": "BJ_TWILIGHT_LUNAR_HORA_MALEFIC_IN_LAST_NAVAMSA",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "1",
+        "rank": 1,
+        "note": "A birth in the twilight with the lunar hora rising and malefics in the last navamsas of signs: the child dies soon after. The translator's notes define the lunar hora as the second half of an odd sign and the first of an even one, which is the Moon's hora of the chart's D2, and the twilight from the Brihat Samhita as the time before the Sun is half risen and after it is half set while the stars are not seen; that gives no length, so the rule takes BPHS ch. 9 v. 14's three ghatikas either side of the night. One malefic in a last navamsa is enough. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "at-limb-edge",
+              "limb": "night",
+              "edge": "first",
+              "ghatikas": 3.0
+            },
+            {
+              "type": "at-limb-edge",
+              "limb": "night",
+              "edge": "last",
+              "ghatikas": 3.0
+            }
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D2",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "CANCER"
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-degrees",
+                "planet": "SELF",
+                "from": 26.666666666666668,
+                "to": 30.0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "key": "BJ_MOON_AND_THREE_MALEFICS_IN_THE_KENDRAS",
       "category": "arishta",
       "source": {
@@ -8,7 +67,7 @@
         "chapter": "6",
         "verse": "1",
         "rank": 1,
-        "note": "The Moon and three malefics holding the four kendras, one in each: the child dies. The verse's first figure, a birth in the twilight with the lunar hora rising and malefics in the last navamsas of signs, needs the twilight and is not built. Read from N. Chidambaram Iyer's 1905 translation."
+        "note": "The Moon and three malefics holding the four kendras, one in each: the child dies. The verse's first figure is BJ_TWILIGHT_LUNAR_HORA_MALEFIC_IN_LAST_NAVAMSA. Read from N. Chidambaram Iyer's 1905 translation."
       },
       "conditions": [
         {

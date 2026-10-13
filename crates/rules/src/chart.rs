@@ -162,6 +162,12 @@ pub struct Spans {
     pub nakshatra: Option<Span>,
     /// The rising sign's.
     pub lagna: Option<Span>,
+    /// The night's, from sunset to the next sunrise, by the day's sunrise
+    /// convention; none for a birth by day or a day the Sun does not both
+    /// rise and set. BPHS ch. 9 v. 14 measures each twilight from it: the
+    /// first three ghatikas after the disc is half set, the last three
+    /// before it is half risen.
+    pub night: Option<Span>,
 }
 
 impl Spans {
@@ -172,6 +178,7 @@ impl Spans {
             Limb::Tithi => self.tithi,
             Limb::Nakshatra => self.nakshatra,
             Limb::Lagna => self.lagna,
+            Limb::Night => self.night,
         }
     }
 }
@@ -197,6 +204,9 @@ pub enum Limb {
     Nakshatra,
     /// The rising sign.
     Lagna,
+    /// The night, sunset to sunrise, whose first and last ghatikas are the
+    /// twilights.
+    Night,
 }
 
 /// An eclipse a birth falls in.

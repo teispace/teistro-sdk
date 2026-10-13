@@ -466,9 +466,32 @@ answer no chart, and each zero was probed and is the corpus's:
   never both.
 
 The rest answer 1 to 8 charts, and the corpus's cancelled evils rose from
-433 to 446. V. 13, which needs the twilight and the Moon's hora, is not
-built, and v. 34 is v. 39 again: Saturn, Mars and the Moon in the lagna,
-the seventh and the sixth.
+433 to 446. V. 34 is v. 39 again: Saturn, Mars and the Moon in the
+lagna, the seventh and the sixth.
+
+**The twilight births, built (2026-10-13).** BPHS ch. 9 v. 13 (the
+prints' 12) puts a birth in the twilight, in the Moon's hora and in a
+gandanta among the evils, and v. 14 measures each twilight: three ghatikas
+after the Sun's disc is half set, and three before it is half risen. The
+verse restates Brihat Jataka ch. 6 v. 1, whose first figure is the same
+twilight and lunar hora with malefics in the signs' last navamsas, and
+whose second, the Moon and three malefics holding the kendras one in each,
+already shipped; Iyer's notes make the lunar hora the rising half-sign (the
+second half of an odd sign, the first of an even one), so both rules read
+the lagna's sign in the D2. What they needed was the night as a span:
+`Spans::night`, the ghatikas since sunset and until the next sunrise under
+the day's own sunrise convention (the Indian profiles place it at the
+disc's centre, which is where the verse measures from), so a twilight is
+`at-limb-edge` on `night` and no new condition. Varahamihira gives the
+twilight no length, so his rule takes Parashara's.
+
+BPHS's gandanta is ch. 92's, which ships as its own set, and a set naming
+a rule it lacks is refused. So the arishtas are **linked** when they are
+read: a `rule` condition naming a gandanta is written as that rule's
+conditions (`shipped::link`), and the arishta set still stands alone
+rather than carrying a second copy of ch. 92 in its data. Neither rule
+answers a corpus chart, which records no night; both hold on real skies
+(`crates/sdk/tests/twilight.rs`).
 
 **A rule can name another (2026-09-16).** `{"type": "rule", "key": …}` holds
 when the rule it names holds, read from the set an evaluator is given

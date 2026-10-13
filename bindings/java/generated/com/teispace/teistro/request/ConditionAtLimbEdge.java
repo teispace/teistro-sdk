@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The birth stands within so many ghatikas of a limb's edge: the first ghatikas of it, or the last. BPHS ch. 92 measures every gandanta this way, and a limb the chart does not measure never holds.
+ * The birth stands within so many ghatikas of a limb's edge: the first ghatikas of it, or the last. BPHS ch. 92 measures every gandanta this way, and ch. 9 v. 14 each twilight as the night's edge; a limb the chart does not measure never holds.
  *
  * @param edge Which end of it.
  * @param ghatikas How many ghatikas of 24 minutes.

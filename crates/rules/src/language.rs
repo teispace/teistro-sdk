@@ -769,7 +769,8 @@ pub enum Condition {
     },
     /// The birth stands within so many ghatikas of a limb's edge: the first
     /// ghatikas of it, or the last. BPHS ch. 92 measures every gandanta this
-    /// way, and a limb the chart does not measure never holds.
+    /// way, and ch. 9 v. 14 each twilight as the night's edge; a limb the
+    /// chart does not measure never holds.
     AtLimbEdge {
         /// Which limb.
         limb: Limb,
@@ -1114,6 +1115,22 @@ impl Condition {
             }
             | Condition::InVarga { condition, .. } => core::slice::from_ref(condition),
             _ => &[],
+        }
+    }
+
+    /// The conditions a combinator combines, to change in place.
+    pub fn children_mut(&mut self) -> &mut [Condition] {
+        match self {
+            Condition::And { conditions } | Condition::Or { conditions } => conditions,
+            Condition::Not { condition }
+            | Condition::ForAny {
+                then: condition, ..
+            }
+            | Condition::CountOf {
+                then: condition, ..
+            }
+            | Condition::InVarga { condition, .. } => core::slice::from_mut(condition),
+            _ => &mut [],
         }
     }
 

@@ -758,6 +758,94 @@
       "fullCancellationThreshold": 1
     },
     {
+      "key": "ARISHTA_TWILIGHT_MOONS_HORA_AND_GANDANTA",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "13",
+        "rank": 1,
+        "note": "A birth in the twilight, in the Moon's hora and in a gandanta is for death. V. 14 measures each twilight as three ghatikas: after the Sun's disc is half set, and before it is half risen. The Moon's hora is the rising one, the second half of an odd sign or the first of an even one, as Brihat Jataka ch. 6 v. 1 has it, which this verse restates with the gandanta where Varahamihira has malefics at the signs' ends; the gandanta is the birth's, any of ch. 92's three. The verse's second half, the Moon and malefics holding the kendras one in each, is Brihat Jataka's second figure, BJ_MOON_AND_THREE_MALEFICS_IN_THE_KENDRAS. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verses 12 and 13 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "at-limb-edge",
+              "limb": "night",
+              "edge": "first",
+              "ghatikas": 3.0
+            },
+            {
+              "type": "at-limb-edge",
+              "limb": "night",
+              "edge": "last",
+              "ghatikas": 3.0
+            }
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D2",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "CANCER"
+            ]
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "rule",
+              "key": "TITHI_GANDANTA"
+            },
+            {
+              "type": "rule",
+              "key": "NAKSHATRA_GANDANTA"
+            },
+            {
+              "type": "rule",
+              "key": "LAGNA_GANDANTA"
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
       "key": "ARISHTA_MALEFICS_EAST_BENEFICS_WEST_SCORPIO_LAGNA",
       "category": "arishta",
       "source": {
