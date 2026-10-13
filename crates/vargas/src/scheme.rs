@@ -582,6 +582,31 @@ mod tests {
         Nas::from_degrees(Degrees::try_new(degrees).expect("a finite angle"))
     }
 
+    /// A written scheme reads back as this build's row, and one whose
+    /// divisions or classifier disagree with the row it names is refused
+    /// rather than silently replaced.
+    #[test]
+    fn a_written_scheme_must_agree_with_this_builds_row() {
+        let written = serde_json::to_value(Scheme::of(Varga::D9)).unwrap();
+        let read: Scheme = serde_json::from_value(written.clone()).unwrap();
+        assert_eq!(read, Scheme::of(Varga::D9));
+
+        let mut divisions = written.clone();
+        divisions["divisions"] = serde_json::json!(10);
+        let refused = serde_json::from_value::<Scheme>(divisions).unwrap_err();
+        assert!(refused.to_string().contains("divides a sign"), "{refused}");
+
+        let other = Varga::ALL
+            .into_iter()
+            .map(|varga| serde_json::to_value(Scheme::of(varga)).unwrap())
+            .find(|value| value["classifier"] != written["classifier"])
+            .expect("two charts sort their signs differently");
+        let mut classifier = written;
+        classifier["classifier"] = other["classifier"].clone();
+        let refused = serde_json::from_value::<Scheme>(classifier).unwrap_err();
+        assert!(refused.to_string().contains("sorts"), "{refused}");
+    }
+
     #[test]
     fn every_catalogued_chart_has_exactly_one_row() {
         assert_eq!(SCHEMES.len(), Varga::ALL.len());
