@@ -115,6 +115,7 @@ required-features = ["full"]
 [dev-dependencies]
 teistro-idl = { path = "../idl" }
 teistro-test-adapter = { path = "../test-adapter" }
+teistro-test-allocator = { path = "../test-allocator" }
 
 # The one crate that may hold unsafe code: the C boundary. The workspace
 # forbids it everywhere else; here it is `deny` so that each module that

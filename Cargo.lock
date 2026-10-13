@@ -1780,6 +1780,7 @@ dependencies = [
  "teistro-serial",
  "teistro-state",
  "teistro-test-adapter",
+ "teistro-test-allocator",
  "teistro-time",
  "teistro-vargas",
 ]

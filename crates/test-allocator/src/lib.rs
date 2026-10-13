@@ -19,6 +19,10 @@
 //! let (text, counts) = measure(|| String::from("one allocation"));
 //! assert_eq!(text.len(), 14);
 //! assert_eq!(counts.allocations, 1);
+//!
+//! // Created and dropped inside: nothing retained.
+//! let ((), counts) = measure(|| drop(vec![0_u8; 64]));
+//! assert_eq!((counts.bytes, counts.retained()), (64, 0));
 //! ```
 
 use std::alloc::{GlobalAlloc, Layout, System};
@@ -30,6 +34,7 @@ thread_local! {
     /// would allocate inside the allocator.
     static ALLOCATIONS: Cell<u64> = const { Cell::new(0) };
     static BYTES: Cell<u64> = const { Cell::new(0) };
+    static FREED: Cell<u64> = const { Cell::new(0) };
     static MEASURING: Cell<bool> = const { Cell::new(false) };
 }
 
@@ -41,6 +46,22 @@ pub struct Counts {
     pub allocations: u64,
     /// How many bytes those requests asked for.
     pub bytes: u64,
+    /// How many bytes the thread gave back, a reallocation's old block
+    /// included. Memory allocated before the measurement and freed in it
+    /// counts here too, so a measurement meant to find a leak runs its
+    /// work once untimed first.
+    pub freed: u64,
+}
+
+impl Counts {
+    /// The bytes still held of what the measurement allocated: what it
+    /// allocated less what it freed. Zero over repeated create-use-free
+    /// cycles is the absence of a leak; negative when it freed memory
+    /// allocated before it began.
+    #[must_use]
+    pub const fn retained(&self) -> i128 {
+        self.bytes as i128 - self.freed as i128
+    }
 }
 
 /// A global allocator that counts the calling thread's allocations while
@@ -67,6 +88,13 @@ impl<A> Counting<A> {
     }
 }
 
+/// Records one release, when a measurement is running.
+fn release(size: usize) {
+    if MEASURING.with(Cell::get) {
+        FREED.with(|freed| freed.set(freed.get().saturating_add(size as u64)));
+    }
+}
+
 /// Records one request, when a measurement is running.
 fn record(size: usize) {
     if MEASURING.with(Cell::get) {
@@ -90,6 +118,7 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for Counting<A> {
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        release(layout.size());
         // SAFETY: the caller's contract, forwarded.
         unsafe { self.inner.dealloc(ptr, layout) }
     }
@@ -102,6 +131,7 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for Counting<A> {
 
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
         record(new_size);
+        release(layout.size());
         // SAFETY: the caller's contract, forwarded.
         unsafe { self.inner.realloc(ptr, layout, new_size) }
     }
@@ -117,17 +147,21 @@ pub fn measure<T>(f: impl FnOnce() -> T) -> (T, Counts) {
         MEASURING.with(Cell::get),
         ALLOCATIONS.with(Cell::get),
         BYTES.with(Cell::get),
+        FREED.with(Cell::get),
     );
     ALLOCATIONS.with(|count| count.set(0));
     BYTES.with(|bytes| bytes.set(0));
+    FREED.with(|freed| freed.set(0));
     MEASURING.with(|on| on.set(true));
     let value = f();
     let counts = Counts {
         allocations: ALLOCATIONS.with(Cell::get),
         bytes: BYTES.with(Cell::get),
+        freed: FREED.with(Cell::get),
     };
     MEASURING.with(|on| on.set(outer.0));
     ALLOCATIONS.with(|count| count.set(outer.1.saturating_add(counts.allocations)));
     BYTES.with(|bytes| bytes.set(outer.2.saturating_add(counts.bytes)));
+    FREED.with(|freed| freed.set(outer.3.saturating_add(counts.freed)));
     (value, counts)
 }
