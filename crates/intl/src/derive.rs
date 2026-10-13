@@ -163,7 +163,7 @@ pub fn derive(
             .entry(kind.to_string())
             .or_insert_with(|| Json::Object(Map::new()));
         if let Json::Object(group) = group {
-            group.insert(member.to_string(), entity_json(&derived));
+            group.insert(member.to_string(), derived.source_json());
         }
         out.entities += 1;
     }
@@ -252,29 +252,6 @@ fn sentence_cased(text: &str) -> String {
 /// The script half of a locale tag (`sa-Latn` is `Latn`), lowercased.
 fn script_of(tag: &str) -> &str {
     tag.split('-').nth(1).unwrap_or("")
-}
-
-/// The entity as its source file writes it: the named forms first, in the
-/// order a reader expects, then the glyph and the gender.
-fn entity_json(entity: &Entity) -> Json {
-    let mut object = Map::new();
-    for form in ["short", "name", "prose", "iast"] {
-        if let Some(value) = entity.forms.get(form) {
-            object.insert(form.to_string(), Json::String(value.clone()));
-        }
-    }
-    for (form, value) in &entity.forms {
-        object
-            .entry(form.clone())
-            .or_insert_with(|| Json::String(value.clone()));
-    }
-    if let Some(glyph) = &entity.glyph {
-        object.insert(String::from("glyph"), Json::String(glyph.clone()));
-    }
-    if let Some(gender) = &entity.gender {
-        object.insert(String::from("gender"), Json::String(gender.clone()));
-    }
-    Json::Object(object)
 }
 
 fn pretty(value: &Json) -> Result<String, String> {

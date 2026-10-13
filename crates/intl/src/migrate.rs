@@ -369,27 +369,6 @@ fn new_locale_meta(tag: &str, overlay: bool) -> Json {
     })
 }
 
-fn entity_json(entity: &Entity) -> Json {
-    let mut object = Map::new();
-    for form in ["short", "name", "prose", "iast"] {
-        if let Some(value) = entity.forms.get(form) {
-            object.insert(form.to_string(), Json::String(value.clone()));
-        }
-    }
-    for (form, value) in &entity.forms {
-        if !object.contains_key(form) {
-            object.insert(form.clone(), Json::String(value.clone()));
-        }
-    }
-    if let Some(glyph) = &entity.glyph {
-        object.insert(String::from("glyph"), Json::String(glyph.clone()));
-    }
-    if let Some(gender) = &entity.gender {
-        object.insert(String::from("gender"), Json::String(gender.clone()));
-    }
-    Json::Object(object)
-}
-
 /// Applies a planned migration to an `i18n/` root: every locale's
 /// `sdk.entity.json` gains the records (an existing record kept unless
 /// `overwrite`), a locale the root lacks is created with its metadata.
@@ -441,7 +420,7 @@ pub fn apply(
                 kept += 1;
                 continue;
             }
-            group.insert(key.to_string(), entity_json(entity));
+            group.insert(key.to_string(), entity.source_json());
             written += 1;
         }
         std::fs::write(
