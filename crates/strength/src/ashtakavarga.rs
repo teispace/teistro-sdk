@@ -639,4 +639,50 @@ mod tests {
         // The Sun's graha pinda is its 48 bindus times its measure, 5.
         assert_eq!(sarva.grahas[0].graha_pinda, 240);
     }
+
+    /// Each graha's pindas and the trine sums, refolded here from the rows
+    /// the reading reports: the rashi pinda weighs every sign of the reduced
+    /// row by its measure, the graha pinda weighs the sign each graha stands
+    /// in by the graha's own.
+    #[test]
+    fn the_pindas_weigh_each_reduced_sign_by_its_measure() {
+        let chart = chart();
+        let each = AshtakavargaReading::of(
+            &chart,
+            AshtakavargaRules {
+                shodhana: Shodhana::EachGraha,
+                ekadhipatya: Ekadhipatya::Bphs,
+                moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
+            },
+        );
+        let mut trikona_sum = [0_u16; SIGNS];
+        for graha in &each.grahas {
+            let reduced = graha.reduced.unwrap();
+            let rashi: u32 = (0..SIGNS)
+                .map(|i| u32::from(reduced[i]) * u32::from(RASHI_MEASURES[i]))
+                .sum();
+            let by_graha: u32 = (0..7)
+                .map(|g| {
+                    u32::from(reduced[sign_index(chart.signs[g])]) * u32::from(GRAHA_MEASURES[g])
+                })
+                .sum();
+            assert_ne!(rashi, 0, "{:?}", graha.graha);
+            assert_eq!(graha.rashi_pinda, rashi, "{:?}", graha.graha);
+            assert_eq!(graha.graha_pinda, by_graha, "{:?}", graha.graha);
+            for (sum, value) in trikona_sum.iter_mut().zip(trikona(graha.bindus)) {
+                *sum += u16::from(value);
+            }
+        }
+        assert_eq!(each.trikona, trikona_sum);
+    }
+
+    /// The lagna's bindus carry its own bit in the prastara, in each row.
+    #[test]
+    fn the_lagna_marks_its_own_bindus() {
+        let table = prastara(&chart(), MoonBinduFromJupiter::Twelfth);
+        for row in &table {
+            assert!(row.iter().any(|cell| cell & LAGNA_BIT != 0));
+        }
+        assert_eq!(LAGNA_BIT, 0x80);
+    }
 }

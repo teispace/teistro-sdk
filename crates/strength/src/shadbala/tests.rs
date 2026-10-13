@@ -103,6 +103,56 @@ fn the_ahargana_s_lords_are_the_chapter_s_and_raman_s() {
     assert_eq!(engine.kaala.abda, 15.0);
 }
 
+/// The month turns on the day whose ahargana, counted to and including it,
+/// is a whole number of months: 1 October 1918, fifteen days before Raman's,
+/// counts 714,404,130,030 days, 23,813,471,001 months exactly.
+#[test]
+fn the_ahargana_s_month_turns_on_its_thirtieth_day() {
+    let masa = |civil_day| {
+        let day = ShadbalaChart {
+            civil_day,
+            ..chart()
+        };
+        let reading = ShadbalaReading::of(&day, ShadbalaRules::BPHS);
+        let lords: Vec<Graha> = reading
+            .grahas
+            .iter()
+            .filter(|g| g.kaala.masa == 30.0)
+            .map(|g| g.graha)
+            .collect();
+        lords
+    };
+    assert_eq!(masa(2_421_868), [weekday_lord(23_813_471_001 * 2)]);
+    assert_eq!(masa(2_421_867), [weekday_lord(23_813_471_000 * 2)]);
+}
+
+/// An instant on an edge of the day belongs to what begins there: sunset
+/// to the night, a third's end to the next third.
+#[test]
+fn the_day_s_edges_belong_to_what_begins_there() {
+    let tribhaga = |instant| {
+        let at = ShadbalaChart {
+            instant,
+            sunrise: 2_451_544.5,
+            sunset: 2_451_545.25,
+            next_sunrise: 2_451_546.0,
+            ..chart()
+        };
+        let reading = ShadbalaReading::of(&at, ShadbalaRules::BPHS);
+        let lords: Vec<Graha> = reading
+            .grahas
+            .iter()
+            .filter(|g| g.graha != Graha::Jupiter && g.kaala.tribhaga == 60.0)
+            .map(|g| g.graha)
+            .collect();
+        lords
+    };
+    assert_eq!(tribhaga(2_451_544.5), [Graha::Mercury]);
+    assert_eq!(tribhaga(2_451_544.75), [Graha::Sun]);
+    assert_eq!(tribhaga(2_451_545.0), [Graha::Saturn]);
+    assert_eq!(tribhaga(2_451_545.25), [Graha::Moon]);
+}
+
 #[test]
 fn nathonnatha_runs_from_midnight_under_the_text() {
     let rules = ShadbalaRules::BPHS;
@@ -365,6 +415,12 @@ fn the_drekkana_order_is_each_reading_s() {
     assert_eq!(at(Drekkana::MaleNeuterFemale, Graha::Moon), 15.0);
     assert_eq!(at(Drekkana::MaleFemaleNeuter, Graha::Mercury), 0.0);
     assert_eq!(at(Drekkana::MaleFemaleNeuter, Graha::Moon), 0.0);
+    // A decanate begins at its first degree.
+    chart.grahas[3].longitude = 10.0;
+    chart.grahas[1].longitude = 20.0;
+    let at = |rule, graha| of(&chart, rules(rule), graha).sthana.drekkana;
+    assert_eq!(at(Drekkana::MaleNeuterFemale, Graha::Mercury), 15.0);
+    assert_eq!(at(Drekkana::MaleNeuterFemale, Graha::Moon), 15.0);
 }
 
 #[test]
@@ -388,6 +444,12 @@ fn a_war_moves_its_difference_from_the_vanquished_to_the_victor() {
     let expected = (weight(&peace.grahas[2]) - weight(&peace.grahas[6])).abs() / (158.0 - 9.4);
     assert!((mars.kaala.yuddha - expected).abs() < 1e-12);
     assert_eq!(peace.grahas[2].kaala.yuddha, 0.0);
+    // Saturn of the lesser longitude wins, though Mars is weighed first.
+    chart.grahas[2].longitude = 50.7;
+    chart.grahas[6].longitude = 50.2;
+    let at_war = ShadbalaReading::of(&chart, ShadbalaRules::BPHS);
+    assert!(at_war.grahas[6].kaala.yuddha > 0.0);
+    assert!(at_war.grahas[2].kaala.yuddha < 0.0);
 }
 
 #[test]

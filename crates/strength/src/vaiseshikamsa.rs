@@ -236,6 +236,17 @@ mod tests {
     }
 
     #[test]
+    fn exaltation_moolatrikona_and_own_sign_are_each_good_alone() {
+        // Saturn's signs lord no sign below: none is good by a kendra.
+        let lords = [Graha::Saturn; 4];
+        // The Sun's exaltation, which is neither his moolatrikona nor his own.
+        assert!(good(Graha::Sun, Rashi::Aries, lords));
+        // Mars's Scorpio, his own sign and not his moolatrikona.
+        assert!(good(Graha::Mars, Rashi::Scorpio, lords));
+        assert!(!good(Graha::Sun, Rashi::Libra, lords));
+    }
+
+    #[test]
     fn one_good_varga_earns_no_name() {
         // The Moon at home in Cancer in the rasi chart alone, in Gemini
         // elsewhere, under Aries's kendras (Mars, the Moon, Venus, Saturn).

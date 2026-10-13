@@ -261,4 +261,31 @@ mod tests {
         assert_eq!(engine_fraction(Graha::Sun, Rashi::Libra), 0.0);
         assert!(text_points(Graha::Sun, Rashi::Libra, &rasi) > 0.0);
     }
+
+    /// Mars in Taurus, every compound relationship to a varga sign's lord,
+    /// the temporary half counted from Mars's own rasi seat to the lord's.
+    #[test]
+    fn the_text_s_points_climb_the_compound_ladder() {
+        let rasi = |sun: Rashi, venus: Rashi, mercury: Rashi| {
+            let mut rasi = [Rashi::Aries; 7];
+            rasi[0] = sun;
+            rasi[2] = Rashi::Taurus;
+            rasi[3] = mercury;
+            rasi[5] = venus;
+            // The Moon apart from Mars's seat, so another graha's seat read
+            // as Mars's would show.
+            rasi[1] = Rashi::Capricorn;
+            rasi
+        };
+        let at = rasi(Rashi::Cancer, Rashi::Cancer, Rashi::Virgo);
+        // The Sun a natural friend in Mars's third: a great friend.
+        assert_eq!(text_points(Graha::Mars, Rashi::Leo, &at), 18.0);
+        // Venus a natural neutral in his third: a friend.
+        assert_eq!(text_points(Graha::Mars, Rashi::Libra, &at), 15.0);
+        // Mercury a natural enemy in his fifth: a great enemy.
+        assert_eq!(text_points(Graha::Mars, Rashi::Gemini, &at), 5.0);
+        // Venus in his fifth: an enemy.
+        let at = rasi(Rashi::Cancer, Rashi::Virgo, Rashi::Virgo);
+        assert_eq!(text_points(Graha::Mars, Rashi::Libra, &at), 7.0);
+    }
 }
