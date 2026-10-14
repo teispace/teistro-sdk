@@ -2,9 +2,9 @@
   "schema": "teistro-sizes/1",
   "why": "A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fails, and so does more than 5% under it. Each budget is 2% over the module measured on CI's Linux runner, to the next ten kilobytes, and moves only through `cargo xtask sizes --from DIR --why SENTENCE`, which adds a row here saying what moved it; the figures before this record began are in the history of `bindings/wasm/size.json`.",
   "recorded": {
-    "run": "38274307021",
-    "commit": "8e51918eeb2efcb3b8b64ab24a81be96af749656",
-    "date": "2026-10-12",
+    "run": "38557986388",
+    "commit": "1e3eee7c5d7193c6c68bfabb7a91079433e5d270",
+    "date": "2026-10-14",
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
     "flate2": "1.1.10"
   },
@@ -12,224 +12,224 @@
     {
       "subject": "linux-x64",
       "artefact": "library",
-      "raw": 14919584,
-      "gzip": 5062515
+      "raw": 15777208,
+      "gzip": 5231072
     },
     {
       "subject": "linux-x64",
       "artefact": "c-bundle",
-      "gzip": 24616978
+      "gzip": 25046636
     },
     {
       "subject": "linux-x64",
       "artefact": "addon",
-      "raw": 15370032,
-      "gzip": 5223988
+      "raw": 16227592,
+      "gzip": 5394162
     },
     {
       "subject": "linux-x64",
       "artefact": "wheel",
-      "raw": 5395589
+      "raw": 5567922
     },
     {
       "subject": "linux-x64",
       "artefact": "jar",
-      "raw": 7152086
+      "raw": 7345857
     },
     {
       "subject": "linux-arm64",
       "artefact": "library",
-      "raw": 13536416,
-      "gzip": 4730105
+      "raw": 14326144,
+      "gzip": 4882135
     },
     {
       "subject": "linux-arm64",
       "artefact": "c-bundle",
-      "gzip": 24201649
+      "gzip": 24596745
     },
     {
       "subject": "linux-arm64",
       "artefact": "addon",
-      "raw": 13912376,
-      "gzip": 4882830
+      "raw": 14702104,
+      "gzip": 5034788
     },
     {
       "subject": "linux-arm64",
       "artefact": "wheel",
-      "raw": 5063183
+      "raw": 5218989
     },
     {
       "subject": "linux-arm64",
       "artefact": "jar",
-      "raw": 6819767
+      "raw": 6997010
     },
     {
       "subject": "darwin-arm64",
       "artefact": "library",
-      "raw": 18243952,
-      "gzip": 5280637
+      "raw": 19180624,
+      "gzip": 5450987
     },
     {
       "subject": "darwin-arm64",
       "artefact": "c-bundle",
-      "gzip": 23337001
+      "gzip": 23747669
     },
     {
       "subject": "darwin-arm64",
       "artefact": "addon",
-      "raw": 18727456,
-      "gzip": 5450353
+      "raw": 19664112,
+      "gzip": 5630011
     },
     {
       "subject": "darwin-arm64",
       "artefact": "wheel",
-      "raw": 5613721
+      "raw": 5787845
     },
     {
       "subject": "darwin-arm64",
       "artefact": "jar",
-      "raw": 7370311
+      "raw": 7565873
     },
     {
       "subject": "darwin-x64",
       "artefact": "library",
-      "raw": 18565520,
-      "gzip": 5405543
+      "raw": 19533952,
+      "gzip": 5586672
     },
     {
       "subject": "darwin-x64",
       "artefact": "c-bundle",
-      "gzip": 23136944
+      "gzip": 23548702
     },
     {
       "subject": "darwin-x64",
       "artefact": "addon",
-      "raw": 19131600,
-      "gzip": 5593342
+      "raw": 20095928,
+      "gzip": 5775499
     },
     {
       "subject": "darwin-x64",
       "artefact": "wheel",
-      "raw": 5738626
+      "raw": 5923530
     },
     {
       "subject": "darwin-x64",
       "artefact": "jar",
-      "raw": 7495126
+      "raw": 7701467
     },
     {
       "subject": "win32-x64",
       "artefact": "library",
-      "raw": 16325632,
-      "gzip": 5115364
+      "raw": 17204224,
+      "gzip": 5280214
     },
     {
       "subject": "win32-x64",
       "artefact": "c-bundle",
-      "gzip": 26563090
+      "gzip": 27062333
     },
     {
       "subject": "win32-x64",
       "artefact": "addon",
-      "raw": 16923136,
-      "gzip": 5302712
+      "raw": 17799680,
+      "gzip": 5471516
     },
     {
       "subject": "win32-x64",
       "artefact": "wheel",
-      "raw": 5448430
+      "raw": 5617056
     },
     {
       "subject": "win32-x64",
       "artefact": "jar",
-      "raw": 7205022
+      "raw": 7395084
     },
     {
       "subject": "win32-arm64",
       "artefact": "library",
-      "raw": 14100992,
-      "gzip": 4740988
+      "raw": 14727168,
+      "gzip": 4868578
     },
     {
       "subject": "win32-arm64",
       "artefact": "c-bundle",
-      "gzip": 25365614
+      "gzip": 25760727
     },
     {
       "subject": "win32-arm64",
       "artefact": "addon",
-      "raw": 14596608,
-      "gzip": 4918073
+      "raw": 15223296,
+      "gzip": 5047177
     },
     {
       "subject": "win32-arm64",
       "artefact": "wheel",
-      "raw": 5074053
+      "raw": 5205416
     },
     {
       "subject": "win32-arm64",
       "artefact": "jar",
-      "raw": 6830655
+      "raw": 6983456
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "library",
-      "raw": 20336928,
-      "gzip": 6018355
+      "raw": 21333680,
+      "gzip": 6220292
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "c-bundle",
-      "gzip": 25575955
+      "gzip": 26028271
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "addon",
-      "raw": 20914456,
-      "gzip": 6217089
+      "raw": 21911208,
+      "gzip": 6414763
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "wheel",
-      "raw": 6351431
+      "raw": 6557150
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "jar",
-      "raw": 8107847
+      "raw": 8335000
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "library",
-      "raw": 20179720,
-      "gzip": 5840921
+      "raw": 21116688,
+      "gzip": 6023956
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "c-bundle",
-      "gzip": 25303546
+      "gzip": 25736423
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "addon",
-      "raw": 20744664,
-      "gzip": 6027148
+      "raw": 21681440,
+      "gzip": 6213991
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "wheel",
-      "raw": 6174002
+      "raw": 6360811
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "jar",
-      "raw": 7930513
+      "raw": 8138762
     },
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 8060987,
-      "gzip": 2107140
+      "raw": 8762707,
+      "gzip": 2190371
     },
     {
       "subject": "full",
@@ -240,8 +240,8 @@
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 3371601,
-      "gzip": 1073182
+      "raw": 3402768,
+      "gzip": 1079507
     },
     {
       "subject": "panchanga",
@@ -257,12 +257,12 @@
     {
       "subject": "esbuild everything",
       "artefact": "bundle",
-      "raw": 202276
+      "raw": 204926
     },
     {
       "subject": "esbuild panchanga",
       "artefact": "bundle",
-      "raw": 202286
+      "raw": 204936
     },
     {
       "subject": "vite catalogue",
@@ -272,12 +272,12 @@
     {
       "subject": "vite everything",
       "artefact": "bundle",
-      "raw": 201131
+      "raw": 203781
     },
     {
       "subject": "vite panchanga",
       "artefact": "bundle",
-      "raw": 201131
+      "raw": 203781
     },
     {
       "subject": "webpack catalogue",
@@ -287,20 +287,20 @@
     {
       "subject": "webpack everything",
       "artefact": "bundle",
-      "raw": 206189
+      "raw": 208900
     },
     {
       "subject": "webpack panchanga",
       "artefact": "bundle",
-      "raw": 206185
+      "raw": 208896
     }
   ],
   "budgets": [
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 8230000,
-      "gzip": 2150000
+      "raw": 8940000,
+      "gzip": 2240000
     },
     {
       "subject": "panchanga",
@@ -336,6 +336,15 @@
       "raw": 8060987,
       "gzip": 2107140,
       "why": "Saravali's 432 readings of a graha under an aspect went into the full module, which grew past the budget it was measured under."
+    },
+    {
+      "run": "38557986388",
+      "date": "2026-10-14",
+      "subject": "full",
+      "artefact": "module",
+      "raw": 8762707,
+      "gzip": 2190371,
+      "why": "The rule packs and readings added on 2026-10-14 (Saravali, BPHS, Phaladeepika and Jataka Parijata) and the day's varjyam went into the full module, which grew past the budget it was measured under."
     }
   ]
 }
