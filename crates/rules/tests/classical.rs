@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 184);
+    assert_eq!(rules.len(), 187);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -101,7 +101,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         }
     }
     assert_eq!(charts, 93);
-    assert_eq!((cancelled, saravali_cancelled), (448, 8));
+    assert_eq!((cancelled, saravali_cancelled), (477, 8));
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
     assert_eq!(
         counts.as_slice(),
@@ -275,7 +275,7 @@ const GRADED: [&str; 46] = [
 ];
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 80] = [
+const SILENT: [&str; 81] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
     "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA",
@@ -307,6 +307,7 @@ const SILENT: [&str; 80] = [
     "LAGNA_GANDANTA",
     "NAKSHATRA_GANDANTA",
     "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS",
+    "PARIJATA_BHANGA_STRONG_LAGNA_LORD_WITH_BENEFICS_IN_A_KENDRA",
     "PARIJATA_JUPITER_EIGHTH_IN_A_SIGN_OF_MARS_ASPECTED_BY_FOUR",
     "PARIJATA_LAGNA_LORD_DEBILITATED_SATURN_FIFTH_OR_SEVENTH",
     "PARIJATA_LORDS_OF_ONE_AND_EIGHT_EXCHANGED_NOT_BENEFIC",
@@ -359,7 +360,7 @@ const SILENT: [&str; 80] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 184] = [
+const ANSWERED: [(&str, usize); 187] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
@@ -454,10 +455,15 @@ const ANSWERED: [(&str, usize); 184] = [
     ("PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS", 0),
     ("PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED", 2),
     (
+        "PARIJATA_BHANGA_FULL_MOON_IN_A_BENEFICS_SIGN_OR_NAVAMSHA",
+        25,
+    ),
+    (
         "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS",
         3,
     ),
     ("PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA", 1),
+    ("PARIJATA_BHANGA_STRONG_BENEFIC_IN_A_KENDRA_UNAFFLICTED", 11),
     ("PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA", 17),
     (
         "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY",
@@ -466,6 +472,10 @@ const ANSWERED: [(&str, usize); 184] = [
     (
         "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA",
         29,
+    ),
+    (
+        "PARIJATA_BHANGA_STRONG_LAGNA_LORD_WITH_BENEFICS_IN_A_KENDRA",
+        0,
     ),
     ("PARIJATA_EIGHTH_LORD_IN_A_KENDRA_LAGNA_LORD_WEAK", 4),
     ("PARIJATA_FOUR_TOGETHER_WITH_THE_MOON_AND_MARS", 2),
