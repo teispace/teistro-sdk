@@ -1113,7 +1113,7 @@ provider's DUT1).
       (built, handed to readers of Tamil and Urdu), Ibn Ezra's weights
       (no open scan) and Jaimini's Rudra, Maheshwara and Sudasa (no
       legible text); Saravali's readings, Phaladeepika chs. 13 and 14,
-      BPHS ch. 83's curses and ch. 85's inauspicious births are built. Pick the next item from
+      BPHS ch. 83's curses, ch. 85's inauspicious births and Phaladeepika ch. 13 v. 8's are built. Pick the next item from
       `04-yogas-doshas.md` and the roadmap, and research it first.
    5. **The hardening pass**: every gate, the parity checklist, sizes and
       the bench read against their budgets, every module's design page
@@ -1166,13 +1166,15 @@ provider's DUT1).
    over one loader in the port with `--plugin` and a tool per engine
    operation). §7's P1 is built: every record tool states its schemas,
    a lean list by default with `schema.describe` answering the rest.
-   P2 to P6, P8 and most of P9 are built: resources, completions,
-   prompts, the limits, cancellation and progress, the revision's
-   required rules, Streamable HTTP, packs and a program's own tools.
-   Left: a registered dasha system or layout named in a request (the
-   registration readers move from the boundary into the façade first),
-   and packaging the binary with the release; P7's tasks wait on a study
-   measured to outlast a client's timeout.
+   P2 to P6, P8 and P9 are built: resources, completions, prompts, the
+   limits, cancellation and progress, the revision's required rules,
+   Streamable HTTP, packs, a program's own tools, and a registered dasha
+   system or layout named in `chart.found` (`--dashas`, `--layouts`);
+   §6 step 5 packages the binary with the release (archives, npm, the
+   bundle and the registry entry, rehearsed with nothing published).
+   Left: a research request's `dasha` (`ResearchRequest`, `ts_research`)
+   takes catalogue members only, not a registered system; P7's tasks wait on a study measured to outlast a
+   client's timeout.
    A question that is **decided** may not be named in this step or in
    `## Next` — the same lint refuses it — because a settled question on
    a list of what remains is work someone will go looking for.
@@ -4260,3 +4262,4 @@ kept here: the session log records them.
 | 2026-10-14 | **Phaladeepika ch. 14's diseases, death and births** (`rules-engine.md`, C383 to C386). `classical-phaladeepika-marana.json`, 85 rules in the nabhasa set, read in Sastri with the Sanskrit checked in Ojha: vv. 10–11's thirteen diseases (`roga`, a new category), vv. 12–19's death by each graha in or aspecting the eighth, by the free eighth's sign and by the eighth lord's navamsha sign, v. 20's two violent deaths, v. 21's death with or without anguish, v. 22's way after death, v. 23's eight worlds, and vv. 25, 26, 28 and 29's births before and after. Every "otherwise" is a negated condition, not a rule reference, so a rule asked alone answers as in the set; the partitions hold on all 93 charts (`crates/rules/tests/marana.rs`). The nabhasa set now reads the panchanga (v. 11's waning Moon), so the plan tests that need a pack reading no limb filter on `Rule::reads_panchanga`. The cofiring pass found Rahu's and Ketu's eighth-house deaths always together, the nodes opposite under the seventh aspect alone, and lists them as one text saying it twice. Not built: v. 12's later ways, which v. 13's branches never leave to, v. 22's benefic varga and its *kecit* reading, v. 23's navamsha of the twelfth, and vv. 24 and 27 (C386). Also fixed: the golden sentences' array kept length 64 after `transit-in-house` joined it, so `teistro-rules`' tests did not compile on e75f8029 (aed629d8). |
 | 2026-10-14 | **BPHS ch. 83's curses** (`rules-engine.md`, C387 to C390). `classical-bphs-shapa.json`, 76 rules in the nabhasa set under a new category, `shapa`, read in Santhanam with the Sanskrit checked in the 1899 and 1923 prints: vv. 7 and 8's two figures for no son, and 74 figures for the eight curses of vv. 8 to 106, each note carrying its curse's remedy in paraphrase (not `remedyKeys`, which name the remedy catalogue). The Sanskrit wins at fifteen verses (C387); vv. 41 and 96's thin Moon is the print's own commentary's, Krishna Dashami to Shukla Panchami, since v. 96's Moon two signs past the Sun never wanes (C388); v. 89's Sun stays in its quarter-verse, in the fifth (C389); v. 98, given twice, asks Mercury five signs from the Sun, and v. 67's lord is under every lagna one of the three it puts in the fifth, so both ship as written (C390); under C388 v. 41 cannot hold either. Three figures hold on the 93 charts (`crates/rules/tests/shapa.rs`); of the 32 the cofiring pass's skies miss, 24 have a FIXTURES instant found by a 12-hourly sign dump from 1800 to 2398 and confirmed by the evaluator, and 8 are UNSEEN with why. |
 | 2026-10-14 | **BPHS ch. 85's inauspicious births** (`rules-engine.md`, C391 and C392). `classical-bphs-janma.json`, 22 rules in the nabhasa set under a new category, `ashubha-janma`, read in Santhanam (the Sanskrit prints read do not carry chs. 85 to 96): Amavasya (ch. 86), Krishna Chaturdashi's six parts (ch. 87, by a new condition `limb-part` that refuses a part the limb lacks), Bhadra and Vyatipata, Parigha and Vajra (ch. 88), the seven weekday sankrantis Ghora to Rakshasi (ch. 90), solar and lunar eclipses (ch. 91), and ch. 94 vv. 10 to 13's in-law nakshatras, each note with its remedy. **Found:** `on_sankranti` was set false by every chart maker, so `birth-on-sankranti` never held; the chart now carries `sankranti_hours` and the condition reads its `windowHours`. `crates/sdk/tests/janma.rs` reads the pack hourly for twenty days from 2000-01-01: Chaturdashi's parts in order, Friday's Mishra sankranti, Amavasya. Not built, the chart not holding them: ch. 89's family nakshatras, tithi-kshaya, Yamaghanta and Dagdha yoga (named, never defined), and chs. 95 and 96. |
+| 2026-10-14 | **Phaladeepika ch. 13 v. 8's births** (`rules-engine.md`, C393 to C395). Dinamrityu, Dinaroga and Vishaghati join the arishta set with the chapter's antidotes: the first two by Kalaprakasika's padas as Sastri's footnote and Ojha give them, by day only; the third by Ojha's table, four sixtieths of the star's own span (`limb-part` of 60). `classical-phaladeepika-janma.json`, 12 rules in the nabhasa set: Pushya, Purva Ashadha and Chitra's padas and Mula's and Ashlesha's under a lagna no benefic touches, Ashlesha's reversed as Ojha tabulates. `crates/sdk/tests/janma.rs` reads them hourly over twenty days. 1741 rules shipped. |

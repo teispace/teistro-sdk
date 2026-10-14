@@ -323,6 +323,13 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**Phaladeepika ch. 13 v. 8's births.** **Numbers:** 3 rules join the
+arishta set and 12 the nabhasa set (1741 shipped); no other rule's answer
+moved. A birth by day in Dinamrityu or Dinaroga, and in a star's
+vishaghati, as the commentaries define them (cruxes C393 and C394), and
+the Moon's padas of Pushya, Purva Ashadha, Chitra, Mula and Ashlesha that
+the verse gives to a parent, the native or the line (C395).
+
 **BPHS ch. 85's inauspicious births.** **Numbers:** 22 rules join the
 nabhasa set (1726 shipped); no other rule's answer moved. Births on
 Amavasya, in each sixth of Krishna Chaturdashi, in Bhadra and in Vyatipata,

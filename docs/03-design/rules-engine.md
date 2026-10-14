@@ -642,6 +642,27 @@ when the rule gives one. `crates/sdk/tests/janma.rs` reads the pack at each
 hour of twenty days from 2000 January 1 and holds Chaturdashi's six parts in
 order, the Makara sankranti named by its Friday, and Amavasya.
 
+**Phaladeepika ch. 13 v. 8's births, built (2026-10-14).** The verse names
+three births that kill the child and gives the Moon's padas that harm a
+parent; it defines none of the three, so the commentaries do:
+- **Dinamrityu and Dinaroga** (C393): the Moon in eight named padas each,
+  by Kalaprakasika's table as Sastri's footnote and Ojha's commentary both
+  give it, and by day only (`birth-by-day`).
+- **Vishaghati** (C394): each star's four ghatis of poison, from Ojha's
+  table, as sixtieths of the star's own span (`limb-part` of 60). The table
+  takes the common value in the five stars where Raman's differs (C165).
+- **The padas**: Pushya, Purva Ashadha and Chitra's four, the father, the
+  mother, the native and the maternal uncle in turn; Mula's and Ashlesha's,
+  reversed for Ashlesha, under a lagna no benefic is in or aspects (C395).
+
+The three join the arishta set beside the chapter's other evils, with the
+chapter's antidotes; the twelve padas join the nabhasa set as
+`classical-phaladeepika-janma.json`, under `ashubha-janma`.
+`crates/sdk/tests/janma.rs` holds the twenty days' windows: twenty
+vishaghatis of at most two hours, Dinamrityu and Dinaroga by day alone, and
+the padas in order. Ch. 25 v. 17's Gulika joined with *tyājya*, which Ojha
+reads as the vishaghati, asks an overlap of two periods and is not built.
+
 **A rule can read a transit (2026-10-14).** `{"type": "transit-in-house",
 "planet": …, "houses": […], "from": …}` holds when the graha's sign in a
 sky the evaluator is given (`with_transits`, a `TransitSky`) stands in one

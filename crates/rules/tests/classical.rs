@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 180);
+    assert_eq!(rules.len(), 183);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -205,7 +205,7 @@ fn phaladeepika_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
             .collect()
     };
     let (evils, antidotes) = (of_text("arishta"), of_text("arishta-bhanga"));
-    assert_eq!((evils.len(), antidotes.len()), (9, 3));
+    assert_eq!((evils.len(), antidotes.len()), (12, 3));
     let mut expected: Vec<&str> = antidotes.iter().map(|rule| rule.key.as_str()).collect();
     expected.insert(1, "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA");
     for rule in evils {
@@ -275,7 +275,7 @@ const GRADED: [&str; 46] = [
 ];
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 77] = [
+const SILENT: [&str; 80] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
     "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA",
@@ -337,6 +337,9 @@ const SILENT: [&str; 77] = [
     "PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA",
     "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR",
     "PHALADEEPIKA_BIRTH_IN_A_GANDANTA",
+    "PHALADEEPIKA_BIRTH_IN_DINAMRITYU",
+    "PHALADEEPIKA_BIRTH_IN_DINAROGA",
+    "PHALADEEPIKA_BIRTH_IN_VISHAGHATI",
     "PHALADEEPIKA_LAGNA_OR_MOON_BETWEEN_MALEFICS",
     "PHALADEEPIKA_MALEFICS_IN_THE_EIGHTH_AND_THE_KENDRAS",
     "PHALADEEPIKA_MALEFICS_IN_THE_LAGNA_AND_THE_EIGHTH",
@@ -356,7 +359,7 @@ const SILENT: [&str; 77] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 180] = [
+const ANSWERED: [(&str, usize); 183] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
@@ -592,6 +595,9 @@ const ANSWERED: [(&str, usize); 180] = [
         5,
     ),
     ("PHALADEEPIKA_BIRTH_IN_A_GANDANTA", 0),
+    ("PHALADEEPIKA_BIRTH_IN_DINAMRITYU", 0),
+    ("PHALADEEPIKA_BIRTH_IN_DINAROGA", 0),
+    ("PHALADEEPIKA_BIRTH_IN_VISHAGHATI", 0),
     ("PHALADEEPIKA_LAGNA_OR_MOON_BETWEEN_MALEFICS", 0),
     ("PHALADEEPIKA_MALEFICS_IN_THE_EIGHTH_AND_THE_KENDRAS", 0),
     ("PHALADEEPIKA_MALEFICS_IN_THE_LAGNA_AND_THE_EIGHTH", 0),
