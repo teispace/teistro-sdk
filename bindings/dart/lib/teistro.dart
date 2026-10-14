@@ -12957,6 +12957,27 @@ final class UnwantedPlacementClause extends MuhurtaClauseKind {
   };
 }
 
+/// A nakshatra's varjyam, its four ghatis of poison, placed by
+/// `panchanga.varjyam` (C165).
+final class VarjyamClause extends MuhurtaClauseKind {
+  const VarjyamClause({required this.nakshatra});
+
+  /// Whose varjyam.
+  final Nakshatra nakshatra;
+
+  @override
+  String get clause => 'VARJYAM';
+
+  @override
+  List<Object?> get _fields => [nakshatra];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'nakshatra': nakshatra.fullKey,
+  };
+}
+
 /// A clause kind from its tagged JSON: a switch over every tag, so a tag
 /// this build does not know is refused by name rather than guessed.
 MuhurtaClauseKind _clauseKind(
@@ -13054,6 +13075,9 @@ MuhurtaClauseKind _clauseKind(
   'UNWANTED_PLACEMENT' => UnwantedPlacementClause(
     house: raw['house']! as int,
     by: _keys(raw['by'], Graha.byKey, Graha.unknown),
+  ),
+  'VARJYAM' => VarjyamClause(
+    nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
   ),
   final tag =>
     throw StateError(
@@ -24697,6 +24721,7 @@ final class Almanac {
       'muhurtas': counts.muhurtas,
       'moonEvents': counts.moonEvents,
       'muhurtaYogas': counts.muhurtaYogas,
+      'varjyam': counts.varjyam,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -24856,6 +24881,24 @@ final class AlmanacDay {
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Panchaka.byId,
+    );
+  }
+
+  /// The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165).
+  ///
+  /// A span's `whole` is the window itself and `inside` the part of it in
+  /// the day; empty under `NONE`.
+  List<Span<Nakshatra>> get varjyam {
+    final c = batch.decoded.varjyam;
+    return _spans(
+      'varjyam',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Nakshatra.byId,
     );
   }
 

@@ -3569,6 +3569,37 @@ test('an almanac carries the lunar years it was asked for', () => {
  * §5): asked by name, frozen, their kinds bare keys, each with how the
  * almanac's place sees it, and the shadow knob moving the umbra.
  */
+test('a day carries each star\'s varjyam, four sixtieths of it, unless the settings name none', () => {
+  const days = {
+    from: date(Calendar.Gregorian, 2024, 6, 15),
+    to: date(Calendar.Gregorian, 2024, 6, 21),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const of = (settings) => {
+    const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', settings });
+    const week = ctx.almanac.of(days);
+    const read = Array.from({ length: week.length }, (_, i) => {
+      const day = week.at(i);
+      return { varjyam: day.varjyam, nakshatra: day.nakshatra };
+    });
+    ctx.dispose();
+    return read;
+  };
+  let seen = 0;
+  for (const day of of(undefined)) {
+    for (const window of day.varjyam) {
+      const star = day.nakshatra.find((span) => span.member === window.member);
+      const length = (span) => span.whole.to - span.whole.from;
+      assert.ok(Math.abs(length(window) * 15 - length(star)) < 1e-6, window.member);
+      assert.ok(window.whole.from >= star.whole.from);
+      seen += 1;
+    }
+  }
+  assert.ok(seen >= 5 && seen <= 9, `${seen}`);
+  assert.deepEqual(of({ panchanga: { varjyam: 'NONE' } }).map((day) => day.varjyam.length), [0, 0, 0, 0, 0, 0, 0]);
+});
+
 test('an almanac carries the eclipses it was asked for', () => {
   // September 2025 at Kathmandu: the total lunar eclipse of the 7th, seen
   // whole near midnight, and the partial solar eclipse of the 21st over

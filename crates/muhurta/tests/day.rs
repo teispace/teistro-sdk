@@ -220,6 +220,41 @@ fn every_day_clause_and_kaala_holds_whole_windows() {
 }
 
 #[test]
+fn each_star_s_varjyam_is_a_clause_against_the_time_inside_its_star() {
+    let mut seen = 0;
+    for d in 15..=21 {
+        let day = day(2024, 6, d);
+        for clause in clauses(&day, None, &DayRules::raman()) {
+            let ClauseKind::Varjyam { nakshatra } = clause.kind else {
+                continue;
+            };
+            seen += 1;
+            assert!(!clause.favourable(), "{d}: {clause:?}");
+            let star = day
+                .limbs
+                .nakshatra
+                .iter()
+                .find(|span| span.member == nakshatra)
+                .unwrap();
+            let window = day
+                .omens
+                .varjyam
+                .iter()
+                .find(|span| span.member == nakshatra)
+                .unwrap();
+            // Four sixtieths of the star's own span, inside it, to the
+            // rounding of a Julian day's last bits (under a millisecond).
+            assert!((window.whole.days() * 15.0 - star.whole.days()).abs() < 1e-7);
+            assert!(window.whole.from.get() >= star.whole.from.get());
+            assert!(window.whole.to.get() <= star.whole.to.get());
+            assert_eq!(clause.at, window.inside, "{d}");
+        }
+    }
+    // A star lasts about a day, so a week holds about seven windows.
+    assert!((5..=9).contains(&seen), "{seen}");
+}
+
+#[test]
 fn the_month_clause_grades_the_days_month_over_the_whole_window() {
     use teistro_calendar::lunisolar::MonthKind;
     use teistro_muhurta::activity::{MonthRule, MonthWithSun};

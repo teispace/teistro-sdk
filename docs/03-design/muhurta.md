@@ -128,7 +128,7 @@ the answer (C162).
 | C161 | the month a rite is permitted in | **the lunar month** where the source names one (Raman) | the Sun's sign (the baseline, after the published almanacs), named per activity |
 | C162 | how candidates are ordered | **fewest uncancelled doshas, then most favourable clauses**, the sources' own *dosha swalpa, gunabahulya*, no number invented | `BASELINE`, the engine's weights, which the roadmap's regression is stated in |
 | C163 | the marriage yogas to reject | Raman's list as printed (p. 102, read off the page image): Vyatipata, Dhruva, Ganda, Vajra, Shula, Vishkambha, Atiganda, Vyaghata, Parigha | — ; the printed list also names **Mrityu**, which is not one of the 27 yogas but one of the 28 Anandadi yogas the SDK does not compute, so it is reported as unjudged rather than dropped; *Dhruva* is printed, though other lists count it auspicious |
-| C165 | where each nakshatra's tyajya kala (varjyam) begins | a table the caller names, as `panchanga.muhurta_tables` is; none shipped as the default until a rank-1 table is read | Raman p. 15 as printed differs from the commonly published table in five stars (Bharani 4 against 24, Uttara Phalguni 1 against 18, Mula 20 against 56, Purva Ashadha 20 against 24, Uttara Bhadrapada 30 against 24); some look like dropped digits, which is a guess and not a reading |
+| C165 | where each nakshatra's tyajya kala (varjyam) begins | **decided 2026-10-14**: `panchanga.varjyam`, default `MUHURTA_CHINTAMANI` (Vivaha Prakarana vv. 49–51, rank 1), `RAMAN` as printed and `NONE`; the start and the four ghatis scaled to the star's own span (v. 51) | Raman p. 15 as printed differs from Muhurta Chintamani in five stars (Bharani 4 against 24, Uttara Phalguni 1 against 18, Mula 20 against 56, Purva Ashadha 20 against 24, Uttara Bhadrapada 30 against 24); the commonly published table is Muhurta Chintamani's, Kashyapa's verse (quoted in the Piyushadhara) gives the same 27, so Raman is the outlier and two of his look like dropped digits |
 | C164 | where a graha's asta is seen | **the place of the search**, by the caller's visibility criterion | a fixed observer the caller names (the baseline's Kathmandu: one window for a country, as its almanac prints) |
 | C189 | the eclipse's star | **the Moon's sidereal nakshatra at the greatest eclipse**, the *grahana nakshatra* | the Sun's, which at a solar eclipse is the Moon's but for an eclipse at a star's edge |
 | C190 | which eclipses bar | **those the place sees**, a lunar one by its umbral phase (*Dharmasindhu*: an eclipse's time lasts while it can be seen) | every eclipse anywhere on the Earth |
@@ -386,9 +386,10 @@ Built (`window.rs`), three findings from building it:
 - **Every tithi end is a karana end**, so dropping the tithi's cuts
   alone left the whole-window test green; dropping both turned it red. The
   tithi's are kept, since a karana convention that is not a half tithi
-  would otherwise lose them silently. The varjyam and the gandantas are
-  not in an almanac day yet; when they are, they become cuts the same
-  way. The other grahas' ingresses need the provider and are added by
+  would otherwise lose them silently. The varjyam is in the almanac day
+  (`omens.varjyam`, C165) and is cut and judged the same way, a
+  `VARJYAM` clause against the time; dropping its cuts turns the
+  whole-window test red. The gandantas are not in an almanac day yet. The other grahas' ingresses need the provider and are added by
   the search.
 
 ### 4.4 The search

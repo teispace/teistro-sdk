@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public sealed interface MuhurtaClauseKind {
     /** Every kind's tag, in the order the kinds are declared. */
-    List<String> CLAUSES = List.of("TITHI", "NAKSHATRA", "YOGA", "KARANA", "VARA", "MONTH", "SOLAR_MONTH", "LAGNA", "PADA", "KAALA", "CHOGHADIYA", "ABHIJIT", "MUHURTA_YOGA", "TARABALA", "CHANDRABALA", "KARTARI", "MOON_IN_DUSTHANA", "MOON_JOINED", "VENUS_IN_SIXTH", "MARS_IN_EIGHTH", "ASHTAMA_LAGNA", "KUNAVAMSA", "PANCHAKA_REMAINDER", "LAGNA_TYAJYA", "SEVENTH_OCCUPIED", "MALEFIC_IN_LAGNA", "BENEFIC_IN_LAGNA", "EXALTED_IN_LAGNA", "LUMINARY_IN_ELEVENTH", "KENDRA_BENEFICS", "UNWANTED_PLACEMENT");
+    List<String> CLAUSES = List.of("TITHI", "NAKSHATRA", "YOGA", "KARANA", "VARA", "MONTH", "SOLAR_MONTH", "LAGNA", "PADA", "KAALA", "CHOGHADIYA", "ABHIJIT", "MUHURTA_YOGA", "TARABALA", "CHANDRABALA", "KARTARI", "MOON_IN_DUSTHANA", "MOON_JOINED", "VENUS_IN_SIXTH", "MARS_IN_EIGHTH", "ASHTAMA_LAGNA", "KUNAVAMSA", "PANCHAKA_REMAINDER", "LAGNA_TYAJYA", "SEVENTH_OCCUPIED", "MALEFIC_IN_LAGNA", "BENEFIC_IN_LAGNA", "EXALTED_IN_LAGNA", "LUMINARY_IN_ELEVENTH", "KENDRA_BENEFICS", "UNWANTED_PLACEMENT", "VARJYAM");
 
     /**
      * The kind's tag, as the answer and a request spell it.
@@ -92,6 +92,7 @@ public sealed interface MuhurtaClauseKind {
             case "LUMINARY_IN_ELEVENTH" -> new LuminaryInEleventhClause(grahas(o, "grahas"));
             case "KENDRA_BENEFICS" -> new KendraBeneficsClause(grahas(o, "grahas"));
             case "UNWANTED_PLACEMENT" -> new UnwantedPlacementClause(Reads.integer(o, "house"), grahas(o, "by"));
+            case "VARJYAM" -> new VarjyamClause(Reads.member(Nakshatra.byKey(Reads.string(o, "nakshatra")), "Nakshatra", o.get("nakshatra")));
             default -> throw Reads.internal("the library drew a clause this build does not know: " + tag);
         };
     }
@@ -674,6 +675,23 @@ public sealed interface MuhurtaClauseKind {
         @Override
         public String clause() {
             return "UNWANTED_PLACEMENT";
+        }
+    }
+
+    /**
+     * A nakshatra's varjyam, its four ghatis of poison, placed by {@code panchanga.varjyam} (C165).
+     *
+     * @param nakshatra whose varjyam
+     */
+    record VarjyamClause(Nakshatra nakshatra) implements MuhurtaClauseKind {
+        /**
+         * The kind's tag.
+         *
+         * @return {@code "VARJYAM"}
+         */
+        @Override
+        public String clause() {
+            return "VARJYAM";
         }
     }
 }

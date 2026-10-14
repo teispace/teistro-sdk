@@ -5684,6 +5684,7 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("moon-sign", day.moon.signs.len()),
         ("sun-sign", day.sun.signs.len()),
         ("muhurta-yoga", day.omens.yogas.len()),
+        ("varjyam", day.omens.varjyam.len()),
     ] {
         put(
             report,
@@ -5823,7 +5824,7 @@ fn limb_span<T>(
 /// One day's limb spans, which are the bulk of its rows.
 fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
     // And every span of every moving limb, member and bounds.
-    let limbs: [(&str, Vec<LimbSpan>); 4] = [
+    let limbs: [(&str, Vec<LimbSpan>); 5] = [
         (
             "tithi",
             day.limbs
@@ -5852,6 +5853,14 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
             "karana",
             day.limbs
                 .karana
+                .iter()
+                .map(|span| limb_span(day, span, span.member.full_key()))
+                .collect(),
+        ),
+        (
+            "varjyam",
+            day.omens
+                .varjyam
                 .iter()
                 .map(|span| limb_span(day, span, span.member.full_key()))
                 .collect(),

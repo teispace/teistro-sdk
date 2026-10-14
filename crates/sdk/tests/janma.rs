@@ -239,3 +239,81 @@ fn phaladeepika_s_eighth_verse_reads_the_moon_s_pada_and_the_star_s_poison() {
         ]
     );
 }
+
+/// The almanac's varjyam and the arishta pack's vishaghati are one table:
+/// Muhurta Chintamani's, which Ojha repeats (C165, C394). Each of the
+/// pack's 27 windows is that star's start plus one to four sixtieths.
+#[test]
+fn the_packs_vishaghati_is_the_almanacs_varjyam() {
+    use teistro::catalogue::Nakshatra;
+    use teistro::omen::varjyam_start;
+    use teistro::settings::Varjyam;
+
+    let rule = shipped::arishtas()
+        .iter()
+        .find(|rule| rule.key == "PHALADEEPIKA_BIRTH_IN_VISHAGHATI")
+        .unwrap();
+    let json = serde_json::to_value(&rule.conditions).unwrap();
+    let windows = json[0]["conditions"].as_array().unwrap();
+    assert_eq!(windows.len(), 27);
+    for window in windows {
+        let star = window["conditions"][0]["nakshatras"][0].as_str().unwrap();
+        let nakshatra = Nakshatra::ALL
+            .iter()
+            .copied()
+            .find(|n| serde_json::to_value(n).unwrap() == star)
+            .unwrap();
+        let start = u64::from(varjyam_start(Varjyam::MuhurtaChintamani, nakshatra).unwrap());
+        assert_eq!(
+            window["conditions"][1]["parts"],
+            serde_json::json!([start + 1, start + 2, start + 3, start + 4]),
+            "{star}"
+        );
+    }
+}
+
+/// Every hour the pack finds a birth in the vishaghati falls in a varjyam
+/// the almanac reports for the same days, and every hour inside one is
+/// such a birth: the rule language's sixtieths and the almanac's windows
+/// agree on the sky.
+#[test]
+fn every_vishaghati_hour_is_inside_an_almanac_varjyam() {
+    use teistro::CalendarDate;
+    use teistro::catalogue::Calendar;
+
+    let hours = hours();
+    let visha = held(&hours, "PHALADEEPIKA_BIRTH_IN_VISHAGHATI");
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = Place::new(
+        Latitude::try_new(27.7172).unwrap(),
+        Longitude::try_new(85.324).unwrap(),
+        Altitude::try_new(0.0).unwrap(),
+    );
+    let days = sdk
+        .almanac()
+        .of(
+            &CalendarDate::defined(Calendar::Gregorian, 1999, 12, 31),
+            &CalendarDate::defined(Calendar::Gregorian, 2000, 1, 22),
+            &place,
+            UtcOffset::UTC,
+        )
+        .unwrap()
+        .value;
+    let windows: Vec<_> = days
+        .iter()
+        .flat_map(|day| day.omens.varjyam.iter().map(|span| span.whole))
+        .collect();
+    assert!(windows.len() >= 20, "{}", windows.len());
+    for hour in 0..20 * 24 {
+        let at = JulianDay::literal(2_451_545.0 + f64::from(hour) / 24.0);
+        let inside = windows.iter().any(|window| window.contains(at));
+        assert_eq!(
+            inside,
+            visha.contains(&usize::try_from(hour).unwrap()),
+            "hour {hour}"
+        );
+    }
+}

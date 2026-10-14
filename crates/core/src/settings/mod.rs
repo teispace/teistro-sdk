@@ -44,7 +44,7 @@ pub use knobs::{
     ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
     SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
     Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -519,6 +519,8 @@ group!(
         /// Where panchaka begins: Dhanishtha's third quarter or the
         /// whole of it (crux C158).
         panchaka_start: PanchakaStart,
+        /// Which table places each nakshatra's varjyam (crux C165).
+        varjyam: Varjyam,
         /// Which season a day falls in: the sidereal solar months', the
         /// lunar month's or the tropical Sun's (crux C178).
         ritu: RituReckoning,

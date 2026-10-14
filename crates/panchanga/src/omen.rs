@@ -31,7 +31,7 @@ use teistro_core::catalogue::{
 };
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
-use teistro_core::settings::PanchakaStart;
+use teistro_core::settings::{PanchakaStart, Varjyam};
 
 use crate::span::Span;
 
@@ -82,6 +82,10 @@ pub struct Omens {
     pub panchaka: Vec<Span<Panchaka>>,
     /// The muhurta yogas that held.
     pub yogas: Vec<MuhurtaYoga>,
+    /// The varjyam: each nakshatra's four ghatis of poison, the window
+    /// itself in `whole` and the part inside the day in `inside`, placed
+    /// by `panchanga.varjyam` (crux C165).
+    pub varjyam: Vec<Span<Nakshatra>>,
     /// The direction not to travel in, which is the vara's.
     pub disha_shool: Direction,
 }
@@ -99,6 +103,75 @@ pub const fn disha_shool(vara: Vara) -> Direction {
         Vara::Guruvara => Direction::South,
         _ => Direction::West,
     }
+}
+
+/// The ghati, of a star sixty ghatis long, each nakshatra's varjyam
+/// begins after, Ashwini first: Muhurta Chintamani's (Vivaha Prakarana
+/// vv. 49 to 51), read off Mahidhara Sharma's print and its table and
+/// checked against the Piyushadhara's quotation of Kashyapa.
+const VARJYAM_MUHURTA_CHINTAMANI: [u8; 27] = [
+    50, 24, 30, 40, 14, 21, 30, 20, 32, 30, 20, 18, 21, 20, 14, 14, 10, 14, 56, 24, 20, 10, 10, 18,
+    16, 24, 30,
+];
+
+/// Raman's *Muhurtha* (ch. II, p. 15) as printed: Muhurta Chintamani's
+/// but for Bharani 4, Uttara Phalguni 1, Mula 20, Purva Ashadha 20 and
+/// Uttara Bhadrapada 30 (crux C165).
+const VARJYAM_RAMAN: [u8; 27] = [
+    50, 4, 30, 40, 14, 21, 30, 20, 32, 30, 20, 1, 21, 20, 14, 14, 10, 14, 20, 20, 20, 10, 10, 18,
+    16, 30, 30,
+];
+
+/// How many ghatis a varjyam lasts, of a star sixty long (*kṛta*, v. 51).
+const VARJYAM_GHATIS: f64 = 4.0;
+
+/// The ghati a nakshatra's varjyam begins after under a table, of a star
+/// sixty ghatis long, or `None` under `NONE`.
+#[must_use]
+pub fn varjyam_start(table: Varjyam, nakshatra: Nakshatra) -> Option<u8> {
+    let starts = match table {
+        Varjyam::MuhurtaChintamani => &VARJYAM_MUHURTA_CHINTAMANI,
+        Varjyam::Raman => &VARJYAM_RAMAN,
+        // `NONE`, and any table a later version adds that this one
+        // cannot know.
+        _ => return None,
+    };
+    Nakshatra::ALL
+        .iter()
+        .zip(starts)
+        .find_map(|(member, start)| (*member == nakshatra).then_some(*start))
+}
+
+/// The varjyam windows of a day, from its nakshatra spans.
+///
+/// Verse 51 scales the table to the star's own span ("multiplied by the
+/// star's extent and divided by sixty they become the true ones"), and
+/// the four ghatis are scaled with the start, as Ojha counts them (crux
+/// C394), so a window is the sixtieths `start` to `start + 4` of the
+/// star. A window is reported when any of it falls in the day; one
+/// cannot fall outside its star, so clipping to the star's part of the
+/// day clips it to the day.
+///
+/// # Errors
+///
+/// None in practice: a window is a fraction of an interval that exists.
+pub fn varjyam(
+    nakshatras: &[Span<Nakshatra>],
+    table: Varjyam,
+) -> Result<Vec<Span<Nakshatra>>, Error> {
+    let mut found = Vec::new();
+    for span in nakshatras {
+        let Some(start) = varjyam_start(table, span.member) else {
+            continue;
+        };
+        let start = f64::from(start);
+        let whole = Interval::new(
+            span.whole.at_fraction(start / 60.0)?,
+            span.whole.at_fraction((start + VARJYAM_GHATIS) / 60.0)?,
+        )?;
+        found.extend(Span::new(span.member, whole, span.inside));
+    }
+    Ok(found)
 }
 
 /// The panchaka a nakshatra carries, if it is one of the last five.
@@ -373,13 +446,16 @@ mod tests {
         reason = "tests fail by panicking and index their own fixtures"
     )]
 
-    use super::{CLASSICAL, disha_shool, panchaka, panchaka_of, panchaka_remainder, yogas};
+    use super::{
+        CLASSICAL, disha_shool, panchaka, panchaka_of, panchaka_remainder, varjyam, varjyam_start,
+        yogas,
+    };
     use teistro_core::catalogue::{
         Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, Vara,
     };
     use teistro_core::error::Error;
     use teistro_core::interval::Interval;
-    use teistro_core::settings::PanchakaStart;
+    use teistro_core::settings::{PanchakaStart, Varjyam};
 
     use crate::span::Span;
 
@@ -654,5 +730,62 @@ mod tests {
             "{:?}",
             yogas(CLASSICAL, Vara::Somavara, &[], &[]).expect("a table")
         );
+    }
+
+    #[test]
+    fn raman_differs_from_muhurta_chintamani_in_five_stars() {
+        let differing: Vec<(Nakshatra, Option<u8>, Option<u8>)> = Nakshatra::ALL
+            .iter()
+            .map(|n| {
+                (
+                    *n,
+                    varjyam_start(Varjyam::MuhurtaChintamani, *n),
+                    varjyam_start(Varjyam::Raman, *n),
+                )
+            })
+            .filter(|(_, ours, his)| ours != his)
+            .collect();
+        assert_eq!(
+            differing,
+            [
+                (Nakshatra::Bharani, Some(24), Some(4)),
+                (Nakshatra::UttaraPhalguni, Some(18), Some(1)),
+                (Nakshatra::Mula, Some(56), Some(20)),
+                (Nakshatra::PurvaAshadha, Some(24), Some(20)),
+                (Nakshatra::UttaraBhadrapada, Some(24), Some(30)),
+            ]
+        );
+        assert_eq!(varjyam_start(Varjyam::None, Nakshatra::Ashwini), None);
+    }
+
+    #[test]
+    fn a_varjyam_is_four_sixtieths_of_its_own_star() {
+        // Ashwini, sixty hours long from day 100: its window is the
+        // star's hours 50 to 54, whatever part of it the day holds.
+        let star = Interval::literal(100.0, 102.5);
+        let day = Interval::literal(102.1, 103.0);
+        let spans = [Span::new(Nakshatra::Ashwini, star, day).unwrap()];
+        let found = varjyam(&spans, Varjyam::MuhurtaChintamani).unwrap();
+        assert_eq!(found.len(), 1);
+        let [window] = found.as_slice() else {
+            unreachable!()
+        };
+        assert_eq!(window.member, Nakshatra::Ashwini);
+        assert!((window.whole.from.get() - (100.0 + 50.0 / 24.0)).abs() < 1e-9);
+        assert!((window.whole.to.get() - (100.0 + 54.0 / 24.0)).abs() < 1e-9);
+        assert_eq!(window.inside.from.get(), 102.1, "clipped to the day");
+        assert!(window.began_before());
+    }
+
+    #[test]
+    fn a_varjyam_outside_the_day_and_none_are_not_reported() {
+        // Mula's window is its last four sixtieths but one; a day
+        // holding only the star's first half holds none of it.
+        let star = Interval::literal(100.0, 101.0);
+        let spans = [Span::new(Nakshatra::Mula, star, Interval::literal(99.5, 100.5)).unwrap()];
+        let outside = varjyam(&spans, Varjyam::MuhurtaChintamani).unwrap();
+        assert!(outside.is_empty(), "{outside:?}");
+        let none = varjyam(&[span(Nakshatra::Ashwini)], Varjyam::None).unwrap();
+        assert!(none.is_empty(), "{none:?}");
     }
 }

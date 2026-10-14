@@ -1851,6 +1851,7 @@ export function decodePanchanga(bytes) {
       muhurtas: column(blob, at, 10, 'u32', at.count),
       moonEvents: column(blob, at, 11, 'u32', at.count),
       muhurtaYogas: column(blob, at, 12, 'u32', at.count),
+      varjyam: column(blob, at, 13, 'u32', at.count),
       length: at.count,
     };
   }
@@ -2076,6 +2077,21 @@ export function decodePanchanga(bytes) {
   {
     const at = section(blob, 25, 'nepal_sambat');
     out.nepalSambat = text(blob, at);
+  }
+  {
+    const at = section(blob, 26, 'varjyam');
+    out.varjyam = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      sunrises: column(blob, at, 5, 'u8', at.count),
+      endsGhati: column(blob, at, 6, 'u8', at.count),
+      endsPala: column(blob, at, 7, 'u8', at.count),
+      endsVipala: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
   }
   return out;
 }

@@ -205,6 +205,15 @@ pub enum ClauseKind {
         /// The grahas in it the rules name, in the catalogue's order.
         by: Vec<Graha>,
     },
+    /// A nakshatra's varjyam, its four ghatis of poison, "to be shunned
+    /// in auspicious works" (Muhurta Chintamani, Vivaha Prakarana v. 51;
+    /// Raman's *tyajya kala*, ch. II), placed by `panchanga.varjyam`
+    /// (crux C165). Against the time; a rite that will not have it at
+    /// all names it among its bars.
+    Varjyam {
+        /// Whose varjyam.
+        nakshatra: Nakshatra,
+    },
 }
 
 /// Which clause, without what it found: the name a rule uses to point at
@@ -277,13 +286,15 @@ pub enum ClauseKey {
     KendraBenefics,
     /// [`ClauseKind::UnwantedPlacement`].
     UnwantedPlacement,
+    /// [`ClauseKind::Varjyam`].
+    Varjyam,
 }
 
 impl ClauseKey {
     /// Every key, in declaration order, so a caller can say which kinds a
     /// search reached and which it did not. A key added is appended here
     /// too: the test below holds each entry to its declared position.
-    pub const ALL: [ClauseKey; 31] = [
+    pub const ALL: [ClauseKey; 32] = [
         ClauseKey::Tithi,
         ClauseKey::Nakshatra,
         ClauseKey::Yoga,
@@ -315,6 +326,7 @@ impl ClauseKey {
         ClauseKey::LuminaryInEleventh,
         ClauseKey::KendraBenefics,
         ClauseKey::UnwantedPlacement,
+        ClauseKey::Varjyam,
     ];
 }
 
@@ -354,6 +366,7 @@ impl ClauseKind {
             ClauseKind::LuminaryInEleventh { .. } => ClauseKey::LuminaryInEleventh,
             ClauseKind::KendraBenefics { .. } => ClauseKey::KendraBenefics,
             ClauseKind::UnwantedPlacement { .. } => ClauseKey::UnwantedPlacement,
+            ClauseKind::Varjyam { .. } => ClauseKey::Varjyam,
         }
     }
 

@@ -1533,11 +1533,13 @@ for (const day of week) {
   put(`day-${i}-moon-sign-count`, day.moonSigns.length);
   put(`day-${i}-sun-sign-count`, day.sunSigns.length);
   put(`day-${i}-muhurta-yoga-count`, day.muhurtaYogas.length);
+  put(`day-${i}-varjyam-count`, day.varjyam.length);
   for (const [limb, spans] of [
     ['tithi', day.tithi],
     ['nakshatra', day.nakshatra],
     ['yoga', day.yoga],
     ['karana', day.karana],
+    ['varjyam', day.varjyam],
   ]) {
     spans.forEach((span, j) => {
       put(`day-${i}-${limb}-${j}`, span.member);

@@ -815,6 +815,18 @@ public final class BindingTest {
                         sky.calendar().dateOf(first.calendar(), sky.calendar().fixedOf(first) + 6), kathmandu, 20_700);
                 same(7, week.size(), "a day per date");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
+                int varjyam = 0;
+                for (AlmanacDay day : week) {
+                    for (Span<Nakshatra> window : day.varjyam()) {
+                        Span<Nakshatra> star = day.nakshatra().stream()
+                                .filter(span -> span.member() == window.member()).findFirst().orElseThrow();
+                        double length = window.whole().toJd() - window.whole().fromJd();
+                        check(Math.abs(length * 15 - (star.whole().toJd() - star.whole().fromJd())) < 1e-6,
+                                "a varjyam is four sixtieths of its star");
+                        varjyam += 1;
+                    }
+                }
+                check(varjyam >= 5 && varjyam <= 9, "about a varjyam a day: " + varjyam);
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
                 check(sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)

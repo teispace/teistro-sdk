@@ -2486,10 +2486,12 @@ public final class ParityRunner {
             put(d + "-moon-sign-count", almanacDay.moonSigns().size());
             put(d + "-sun-sign-count", almanacDay.sunSigns().size());
             put(d + "-muhurta-yoga-count", almanacDay.muhurtaYogas().size());
+            put(d + "-varjyam-count", almanacDay.varjyam().size());
             putSpans(d + "-tithi", almanacDay.tithi(), Tithi::fullKey);
             putSpans(d + "-nakshatra", almanacDay.nakshatra(), Nakshatra::fullKey);
             putSpans(d + "-yoga", almanacDay.yoga(), Yoga::fullKey);
             putSpans(d + "-karana", almanacDay.karana(), Karana::fullKey);
+            putSpans(d + "-varjyam", almanacDay.varjyam(), Nakshatra::fullKey);
             for (int j = 0; j < almanacDay.kaalas().size(); j += 1) {
                 KaalaPeriod kaala = almanacDay.kaalas().get(j);
                 put(d + "-kaala-" + j, kaala.kaala().fullKey());

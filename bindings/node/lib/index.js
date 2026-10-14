@@ -1991,6 +1991,11 @@ export class AlmanacDay {
     return this.#spans('panchaka', PanchakaById);
   }
 
+  /** The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). */
+  get varjyam() {
+    return this.#spans('varjyam', NakshatraById);
+  }
+
   /** The signs the Moon stood in. */
   get moonSigns() {
     return this.#spans('moonSigns', RashiById);

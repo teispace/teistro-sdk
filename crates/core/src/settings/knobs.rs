@@ -221,6 +221,22 @@ knob!(
         Dhanishtha = "DHANISHTHA" }
 );
 knob!(
+    /// Which table places each nakshatra's varjyam, its four ghatis of
+    /// poison (*vishaghati*, *tyajya kala*; crux C165).
+    ///
+    /// Each table gives the ghati, of a star sixty ghatis long, that its
+    /// four begin after, and the window is scaled to the star's own span.
+    /// Muhurta Chintamani (Vivaha Prakarana vv. 49 to 51) and Raman's
+    /// *Muhurtha* (ch. II, p. 15) differ in five stars: Bharani 24 against
+    /// 4, Uttara Phalguni 18 against 1, Mula 56 against 20, Purva Ashadha
+    /// 24 against 20 and Uttara Bhadrapada 24 against 30.
+    Varjyam { /// Muhurta Chintamani's, which Kashyapa's verse and Ojha's
+        /// commentary on Phaladeepika repeat.
+        MuhurtaChintamani = "MUHURTA_CHINTAMANI", /// Raman's, as printed.
+        Raman = "RAMAN", /// None: the day carries no varjyam.
+        None = "NONE" }
+);
+knob!(
     /// Which season a day falls in (crux C178).
     ///
     /// The Surya Siddhanta (XIV.10) counts the six seasons from the Sun's

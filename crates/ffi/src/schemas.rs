@@ -414,6 +414,7 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("muhurtas", "muhurtas"),
             count("moon_events", "moon_events"),
             count("muhurta_yogas", "muhurta_yogas"),
+            count("varjyam", "varjyam"),
         ],
     )
 }
@@ -679,6 +680,7 @@ pub fn panchanga() -> BlobSchema {
                 "nepal_sambat",
                 "UTF-8 JSON, canonical: each day's Nepal Sambat date when `sections` asked for `TS_PANCHANGA_NEPAL_SAMBAT`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §11). `value` is a list in the days' order, each `{year, month, kind, paksha}`: the year, which opens at Kachhala's first day (1146 from 2025-10-22); the month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta Ashwina), an adhika month keeping the number of the month it repeats; the month's kind (`NIJA`, `ADHIKA`, which is Anala, or `KSHAYA`); and the half as a full key, `paksha.SHUKLA` (thwa) or `paksha.KRISHNA` (ga). The provenance is the days' own. Empty when `sections` did not ask for them.",
             ),
+            span_section(26, "varjyam", "The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). `whole` is the window itself, four sixtieths of the star from the table's ghati, and `inside` the part of it in the day; empty under `NONE`.", "Whose varjyam it is.", "Nakshatra"),
         ],
     }
 }

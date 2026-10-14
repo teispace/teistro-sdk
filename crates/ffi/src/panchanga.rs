@@ -347,6 +347,7 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.muhurtas.daylight.len() + day.muhurtas.night.len(),
         day.moon.rises.len() + day.moon.sets.len(),
         day.omens.yogas.len(),
+        day.omens.varjyam.len(),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -555,6 +556,7 @@ struct RaggedRows {
     muhurtas: Vec<Vec<FixedValue>>,
     moon_events: Vec<Vec<FixedValue>>,
     muhurta_yogas: Vec<Vec<FixedValue>>,
+    varjyam: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -575,6 +577,7 @@ impl RaggedRows {
             muhurtas,
             moon_events,
             muhurta_yogas,
+            varjyam: span_rows(days, |day| &day.omens.varjyam, |m| m.id())?,
         })
     }
 }
@@ -672,6 +675,7 @@ pub fn encode(
         writer.bytes("years", beside.years.as_bytes())?;
         writer.bytes("eclipses", beside.eclipses.as_bytes())?;
         writer.bytes("nepal_sambat", beside.nepal_sambat.as_bytes())?;
+        writer.rows("varjyam", &ragged.varjyam)?;
         writer.finish()
     };
     write().map_err(|error| {

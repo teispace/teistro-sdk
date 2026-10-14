@@ -29,7 +29,7 @@ impl ClauseKey {
     pub const fn members(self) -> &'static [(&'static str, Kind)] {
         match self {
             ClauseKey::Tithi => &[("tithi", Kind::Tithi)],
-            ClauseKey::Nakshatra => &[("nakshatra", Kind::Nakshatra)],
+            ClauseKey::Nakshatra | ClauseKey::Varjyam => &[("nakshatra", Kind::Nakshatra)],
             ClauseKey::Yoga => &[("yoga", Kind::Yoga)],
             ClauseKey::Karana => &[("karana", Kind::Karana)],
             ClauseKey::Vara => &[("vara", Kind::Vara)],
@@ -246,6 +246,9 @@ mod tests {
             ClauseKey::UnwantedPlacement => ClauseKind::UnwantedPlacement {
                 house: 8,
                 by: two(),
+            },
+            ClauseKey::Varjyam => ClauseKind::Varjyam {
+                nakshatra: Nakshatra::Mula,
             },
         }
     }

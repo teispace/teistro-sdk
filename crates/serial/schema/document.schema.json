@@ -4909,6 +4909,13 @@
           },
           "type": "array"
         },
+        "varjyam": {
+          "description": "The varjyam: each nakshatra's four ghatis of poison, the window itself in `whole` and the part inside the day in `inside`, placed by `panchanga.varjyam` (crux C165).",
+          "items": {
+            "$ref": "#/$defs/NakshatraSpan"
+          },
+          "type": "array"
+        },
         "yogas": {
           "description": "The muhurta yogas that held.",
           "items": {
@@ -4920,6 +4927,7 @@
       "required": [
         "panchaka",
         "yogas",
+        "varjyam",
         "disha_shool"
       ],
       "type": "object"

@@ -21,7 +21,7 @@ use super::knobs::{
     ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
     SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
     Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -142,6 +142,8 @@ fn root_panchanga() -> Panchanga {
         moon_events: MoonEvents::Window,
         muhurta_tables: String::from("CLASSICAL"),
         panchaka_start: PanchakaStart::Aquarius,
+        // Muhurta Chintamani's table, the rank-1 text (crux C165).
+        varjyam: Varjyam::MuhurtaChintamani,
         ritu: RituReckoning::Solar,
         solar_month_start: SolarMonthStart::Punyakala,
         eclipse_shadow: EclipseShadow::Danjon,
