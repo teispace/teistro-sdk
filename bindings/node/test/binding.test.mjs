@@ -1405,6 +1405,36 @@ test('a consumer system counted over the wheel with Abhijit reads as the text ro
 });
 
 /**
+ * A study's dasha may be a consumer's own: its periods deliver as its twin's
+ * do, and only the registration the input hash seals differs.
+ */
+test('an event study reads a dasha system the context registered', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', dashaSystems: [VIMSHOTTARI_TWIN] });
+  const place = { latitude: 27.7172, longitude: 85.324 };
+  const subjects = [0, 1, 2, 3, 4, 5].map((i) => ({
+    birth: { instant: 2447000.25 + 977.3 * i, place, utcOffsetSeconds: 20700 },
+    event: 2447000.25 + 977.3 * i + 9000.5,
+  }));
+  const timed = (dasha) =>
+    ctx.research.timed({
+      subjects,
+      rules: { shipped: ['YOGAS'] },
+      dasha,
+      shuffle: 'AGES_AT_EVENT',
+      test: { seed: 1, permutations: 19 },
+    });
+  const own = timed('dasha_system.ACME_VIMSHOTTARI');
+  const shipped = timed(DashaSystem.Vimshottari);
+  assert.deepEqual(own.rows, shipped.rows);
+  assert.notEqual(own.provenance.inputHash, shipped.provenance.inputHash);
+  assert.throws(
+    () => timed('dasha_system.ACME_OTHER'),
+    (error) => error instanceof TeistroError && error.field === 'dasha',
+  );
+  ctx.dispose();
+});
+
+/**
  * A consumer's own dasha system crosses: registered on the context, asked for
  * by its key, named by it in the answer, and every period its catalogued
  * twin's; a definition the checks refuse is named by its place and field.

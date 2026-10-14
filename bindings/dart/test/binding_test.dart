@@ -5747,6 +5747,66 @@ void _engineTests() {
     }
   });
 
+  test('an event study reads a dasha system the context registered', () {
+    // Vimshottari's table under a consumer's key: its periods deliver as
+    // the catalogue's do, and only the registration the hash seals differs.
+    final twin = UduDashaDefinition(
+      key: 'ACME_VIMSHOTTARI',
+      lords: [
+        const DashaLord(Graha.ketu, 7),
+        const DashaLord(Graha.venus, 20),
+        const DashaLord(Graha.sun, 6),
+        const DashaLord(Graha.moon, 10),
+        const DashaLord(Graha.mars, 7),
+        const DashaLord(Graha.rahu, 18),
+        const DashaLord(Graha.jupiter, 16),
+        const DashaLord(Graha.saturn, 19),
+        const DashaLord(Graha.mercury, 17),
+      ],
+      reference: Nakshatra.ashwini,
+    );
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      dashaSystems: [twin],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(0),
+    );
+    final lives = [
+      for (var i = 0; i < 6; i++)
+        ResearchSubject(
+          birth: ResearchBirth(
+            instant: 2447000.25 + 977.3 * i,
+            place: kathmandu,
+            utcOffsetSeconds: 20700,
+          ),
+          event: 2447000.25 + 977.3 * i + 9000.5,
+        ),
+    ];
+    ResearchTested timed(KeyOf<DashaSystem> dasha) => ctx.research.timed(
+      subjects: lives,
+      rules: const RuleRequest(shipped: [ShippedRules.yogas]),
+      dasha: dasha,
+      shuffle: ResearchEventShuffle.agesAtEvent,
+      test: ResearchEventTest(seed: BigInt.one, permutations: 19),
+    );
+    final own = timed(DashaSystem.registered('ACME_VIMSHOTTARI'));
+    final shipped = timed(DashaSystem.vimshottari);
+    expect(own.rows, hasLength(shipped.rows.length));
+    for (var i = 0; i < shipped.rows.length; i++) {
+      final (a, b) = (own.rows[i], shipped.rows[i]);
+      expect((a.predicate, a.p.value), (b.predicate, b.p.value));
+    }
+    expect(own.provenance.inputHash, isNot(shipped.provenance.inputHash));
+    expect(
+      () => timed(DashaSystem.registered('ACME_OTHER')),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'dasha')),
+    );
+    ctx.dispose();
+  });
+
   test('a consumer dasha system registers and reads as its twin', () {
     final twin = UduDashaDefinition(
       key: 'ACME_VIMSHOTTARI',

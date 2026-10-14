@@ -10,13 +10,13 @@
 use std::collections::BTreeMap;
 
 use serde::Serialize;
-use teistro_core::catalogue::{DashaSystem, Graha};
+use teistro_core::catalogue::Graha;
 use teistro_core::envelope::{Envelope, Hash, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{Depth, JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
-use teistro_dasha::{DashaCursor, Timeline};
+use teistro_dasha::{DashaCursor, DashaName, Timeline};
 use teistro_research::{
     Cell, Counts, Design, EventTest, GroupTest, MAX_INSTANTS, MAX_REPLICATES, MatchedMatrix,
     Matrix, PairMatrix, Parallelism, ReplicateTest, SplitMix64, Tested, compare, counts, matched,
@@ -711,7 +711,7 @@ impl Referents {
 
 /// An event study: its subjects, how each chart is read, the rules whose
 /// delivery is tested, the dasha that delivers them and the shuffle.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct EventStudy<'s> {
     /// The subjects.
     pub subjects: &'s [Subject],
@@ -722,8 +722,9 @@ pub struct EventStudy<'s> {
     /// standing, as `holds` says) and a running period delivers it
     /// ([`teistro_rules::Evaluator::delivery`]).
     pub rules: &'s RuleSet,
-    /// The dasha whose periods deliver.
-    pub dasha: DashaSystem,
+    /// The dasha whose periods deliver: a catalogued system, or one the
+    /// context registered.
+    pub dasha: DashaName,
     /// How deep the delivering periods are read: 1 is the mahadasha alone,
     /// 2 adds the antardasha, and a rule holds when any of them delivers.
     pub depth: Depth,
@@ -746,14 +747,14 @@ impl<'s> EventStudy<'s> {
         subjects: &'s [Subject],
         request: &'s ChartRequest,
         rules: &'s RuleSet,
-        dasha: DashaSystem,
+        dasha: impl Into<DashaName>,
         shuffle: EventShuffle,
     ) -> EventStudy<'s> {
         EventStudy {
             subjects,
             request,
             rules,
-            dasha,
+            dasha: dasha.into(),
             depth: Depth::try_new(2).unwrap_or(Depth::MIN),
             shuffle,
             holds: Holds::Standing,
@@ -840,12 +841,13 @@ impl ResearchArea<'_> {
     /// `INVALID_ARG` naming its field: an event before its own birth
     /// (`subjects[i].event`); a rule the language cannot evaluate
     /// (`rules[i]`); more instants of the sky than `test.max_pairs`
-    /// allows (`maxPairs`, with the count it would need); whatever reading
+    /// allows (`maxPairs`, with the count it would need); a registered
+    /// dasha this context has no system for (`dasha`); whatever reading
     /// the births or the dasha refuses; and whatever
     /// [`teistro_research::timed`] refuses.
     pub fn timed(
         self,
-        study: EventStudy<'_>,
+        study: &EventStudy<'_>,
         strata: Option<&[u32]>,
         test: &EventTest,
     ) -> Result<Envelope<Tested>, Error> {
@@ -932,7 +934,7 @@ impl ResearchArea<'_> {
                 .iter()
                 .map(|rule| rule.key.as_str())
                 .collect(),
-            dasha: KeyId::from(study.dasha),
+            dasha: self.dasha_id(&study.dasha)?,
             depth: study.depth.get(),
             shuffle: study.shuffle,
             referents: study.referents,
@@ -950,7 +952,7 @@ impl ResearchArea<'_> {
     /// `max_pairs` instants, naming how many the study would need.
     fn skies(
         self,
-        study: EventStudy<'_>,
+        study: &EventStudy<'_>,
         births: &[Birth],
         wanted: &[Vec<JulianDay<Utc>>],
         max_pairs: u64,
@@ -1023,11 +1025,25 @@ impl ResearchArea<'_> {
 
     /// Every subject's chart, rule results and dasha, read a place at a
     /// time, with every crossing's input hash and the first's provenance.
-    fn lives(self, study: EventStudy<'_>, births: &[Birth]) -> Result<Lives, Error> {
+    /// The id a study's dasha is read under: a catalogued system's own, or
+    /// the one this context registered the key under, refused at `dasha`
+    /// when it registered none.
+    fn dasha_id(self, dasha: &DashaName) -> Result<KeyId, Error> {
+        match dasha {
+            DashaName::Catalogued(system) => Ok(KeyId::from(*system)),
+            DashaName::Registered(_) => self
+                .context
+                .keys()
+                .id(&dasha.full_key())
+                .map_err(|refusal| refusal.with_field("dasha")),
+        }
+    }
+
+    fn lives(self, study: &EventStudy<'_>, births: &[Birth]) -> Result<Lives, Error> {
         let mut charts: Vec<Option<Lived>> = (0..births.len()).map(|_| None).collect();
         let mut read = Vec::new();
         let mut provenance = None;
-        let wanted = KeyId::from(study.dasha);
+        let wanted = self.dasha_id(&study.dasha)?;
         let mut dashas: Vec<KeyId> = study.request.dashas().to_vec();
         if !dashas.contains(&wanted) {
             dashas.push(wanted);
@@ -1062,7 +1078,7 @@ impl ResearchArea<'_> {
     /// One subject's chart as an event study reads it.
     fn lived(
         self,
-        study: EventStudy<'_>,
+        study: &EventStudy<'_>,
         document: &Document,
         reading: &RulesReading<'_>,
     ) -> Result<Lived, Error> {
@@ -1084,7 +1100,7 @@ impl ResearchArea<'_> {
             .collect();
         Ok(Lived {
             inputs: RuleInputs::of(document)?,
-            cursor: self.context.chart().dasha(document, study.dasha)?,
+            cursor: self.context.chart().dasha(document, &study.dasha)?,
             results,
             unreadable: standing.iter().map(Option::is_none).collect(),
         })
@@ -1161,7 +1177,7 @@ enum Plan {
 impl Plan {
     /// The study's null, its referents and strata checked against its
     /// shuffle.
-    fn of(study: EventStudy<'_>, strata: Option<&[u32]>) -> Result<Plan, Error> {
+    fn of(study: &EventStudy<'_>, strata: Option<&[u32]>) -> Result<Plan, Error> {
         match (study.shuffle, study.referents) {
             (EventShuffle::SelfMatched, None) => Err(Error::invalid_arg(
                 "a self-matched study reads each person at referent instants; give `referents`",
@@ -1200,7 +1216,7 @@ type Lives = (Vec<Option<Lived>>, Vec<Hash>, Option<Provenance>);
 
 /// The instant subject `i` is read at under subject `j`'s event, as the
 /// study's shuffle pairs them.
-fn event_instant(study: EventStudy<'_>, i: usize, j: usize) -> Option<JulianDay<Utc>> {
+fn event_instant(study: &EventStudy<'_>, i: usize, j: usize) -> Option<JulianDay<Utc>> {
     let (own, other) = (study.subjects.get(i)?, study.subjects.get(j)?);
     match study.shuffle {
         EventShuffle::EventDates => Some(other.event),
@@ -1215,7 +1231,7 @@ fn event_instant(study: EventStudy<'_>, i: usize, j: usize) -> Option<JulianDay<
 
 /// The study's pairings, each that would read a subject before its own
 /// birth forbidden.
-fn pairings(study: EventStudy<'_>) -> Result<PairMatrix, Error> {
+fn pairings(study: &EventStudy<'_>) -> Result<PairMatrix, Error> {
     let n = study.subjects.len();
     let mut pairs = PairMatrix::new(n).map_err(|error| error.under("subjects"))?;
     for (i, subject) in study.subjects.iter().enumerate() {
@@ -1249,7 +1265,7 @@ impl Skies {
 /// period is asked to deliver it (crux C382); `holds` still decides
 /// whether its cancellations undo it.
 fn in_transit(
-    study: EventStudy<'_>,
+    study: &EventStudy<'_>,
     (r, rule): (usize, &Rule),
     evaluator: &Evaluator<'_>,
     lived: &Lived,
@@ -1273,7 +1289,7 @@ fn in_transit(
 /// Whether rule `r` of a subject's chart is delivered at `at`: formed on
 /// the chart, and a period running then delivers it.
 fn delivered(
-    study: EventStudy<'_>,
+    study: &EventStudy<'_>,
     (r, rule): (usize, &Rule),
     evaluator: &Evaluator<'_>,
     lived: &Lived,

@@ -533,9 +533,11 @@ The JSON readers of both registrations moved from the C boundary into
 the façade (`teistro::registrations`), where the boundary and the
 binary read them alike. Gated in `tests/registered.rs`, a registered
 system checked period for period against its catalogued twin.
-`ResearchRequest`'s dasha stays catalogue-only until the research area
-takes a key id, and a varsha's dashas are Tajika systems with kernels of
-their own.
+A study's dasha takes a registered system too (2026-10-14): `EventStudy`
+holds a `DashaName`, `ResearchRequest` keeps a key no catalogue has, and
+the area resolves it through the context's keys, refusing at `dasha` a key
+nobody registered; each binding's `research.timed` takes it. A varsha's
+dashas are Tajika systems with kernels of their own.
 
 **P10. Quick by construction.** A context is built once per profile,
 settings and locale, the settings keyed by their canonical JSON so two

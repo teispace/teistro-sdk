@@ -1289,7 +1289,7 @@ final class ResearchArea extends _Area {
   ResearchTested timed({
     required List<ResearchSubject> subjects,
     required RuleRequest rules,
-    required DashaSystem dasha,
+    required KeyOf<DashaSystem> dasha,
     required ResearchEventShuffle shuffle,
     required ResearchEventTest test,
     int depth = 2,
