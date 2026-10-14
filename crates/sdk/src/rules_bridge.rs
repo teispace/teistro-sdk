@@ -44,6 +44,8 @@ use teistro_vargas::{Scheme, sign};
 /// Ghatikas in a day: sixty, which is what a limb's elapsed and remaining
 /// are counted in (BPHS ch. 92 measures a gandanta this way).
 const GHATIKAS_PER_DAY: f64 = 60.0;
+/// Hours in a day.
+const HOURS_PER_DAY: f64 = 24.0;
 
 /// The limbs **at the birth**, from the almanac of the birth's day.
 ///
@@ -94,10 +96,12 @@ fn birth_limbs(
         by_day: Some(
             instant.get() >= day.day.sunrise.get() && instant.get() < day.day.sunset.get(),
         ),
-        // Whether a birth "falls on a sankranti" is a window the chart's
-        // maker reads, not a fact the almanac settles: `SunDay::sankranti`
-        // says the day had one and says nothing about how near is near.
-        on_sankranti: false,
+        // How near is near is the rule's window (`birth-on-sankranti`'s
+        // `windowHours`), so the chart carries the distance and not a verdict.
+        sankranti_hours: day
+            .sun
+            .sankranti
+            .map(|at| (instant.get() - at.get()) * HOURS_PER_DAY),
         eclipse: moment.and_then(|moment| match moment.eclipse {
             BirthEclipse::Lunar { .. } => Some(Eclipse::Lunar),
             BirthEclipse::Solar { .. } => Some(Eclipse::Solar),

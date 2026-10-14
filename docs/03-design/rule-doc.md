@@ -159,8 +159,8 @@ the prose belongs wherever the consumer puts it — a page, a tooltip, a diff.
 The full text of 1527 rules is **not** checked in: it is some 550 KB of
 derived words, and a generated page the size of the pack it derives from
 buys a reviewer nothing that the command does not. What is checked in is the
-measurement, which carries one rendered sentence for each of the 65 kinds —
-so a change in phrasing shows up as a diff of 65 lines, in review, where it
+measurement, which carries one rendered sentence for each of the 66 kinds —
+so a change in phrasing shows up as a diff of 66 lines, in review, where it
 can be argued about.
 
 ## 5. The measurement, and the gate
@@ -179,7 +179,7 @@ regenerates and diffs it, as every other measured page is held. It reports:
    karaka's house — are named in the pass and nowhere else. A dropped field
    shows here as soon as two rules differ only in that field, which over 1095
    rules is the usual case rather than the lucky one.
-2. **Coverage.** Each of the 65 kinds with how often it occurs, and one
+2. **Coverage.** Each of the 66 kinds with how often it occurs, and one
    rendered example for each: the table a reviewer reads to argue about the
    words themselves.
 3. **Size.** The longest and the shortest passage, and the rules whose
@@ -187,7 +187,7 @@ regenerates and diffs it, as every other measured page is held. It reports:
    a reader should look first.
 
 Beside the pass, in the crate: a golden test asserting the exact sentence for
-**every** one of the 65 kinds, written by hand rather than captured, so a
+**every** one of the 66 kinds, written by hand rather than captured, so a
 phrasing cannot change silently; a test that each field a rule may leave out
 changes the sentence when it is there, for the twelve fields rare enough that
 no two rules might differ in exactly one of them; the `Display` of a whole
@@ -205,7 +205,7 @@ simply not be reported.
 ## 6. Order of work
 
 1. `crates/rules/src/prose.rs`: the vocabulary, `Display for Condition`, and
-   the golden test over all 65 kinds.
+   the golden test over all 66 kinds.
 2. `Display for Rule`, its golden tests, and the trace reading the sentence
    in place of the type tag.
 3. The `rule-doc` command and the pass, the measured page, `check-rule-doc`

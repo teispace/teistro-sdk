@@ -132,9 +132,10 @@ per chart in the order asked for.
   elapsed and remaining come from the limb's own interval, the rising
   sign's span does not, because the lagna moves at its own rate and no
   limb list holds it; whether the birth fell **by day** is the day's arc;
-  and `on_sankranti` stays false, because "falls on a sankranti" is a
-  window the chart's maker reads and `SunDay::sankranti` only says the day
-  had one.
+  and the sankranti is carried as a distance, `sankranti_hours` from the
+  day's `SunDay::sankranti` to the birth, because how near "on a sankranti"
+  is near is the rule's own `windowHours`. Until 2026-10-14 it was a flag
+  left false, which kept every sankranti rule from holding on any chart.
 
 - **A chart that cannot be read for a rule's inputs is not refused for the
   rules alone.** Where a rule set names a point and the birth has no sunrise,

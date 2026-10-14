@@ -455,7 +455,7 @@ cost and the native review sees nothing it has not seen
 (`03-design/interpret-composers.md` §4).
 
 The scope was drawn where the *shape* changes rather than where interest
-runs out: `spans`, `on_sankranti` and the eclipse are on the same record
+runs out: `spans`, `sankranti_hours` and the eclipse are on the same record
 and are **not** said, because a span is a pair of ghatikas a consumer
 formats with — the `exactLongitude` line — and a sankranti and an eclipse
 are conditions of the day rather than limbs of it. The section table on

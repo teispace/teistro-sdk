@@ -42,6 +42,9 @@ const COMPUTED_DOSHAS: &str = include_str!("../rules/computed-doshas.json");
 const COMPUTED_YOGAS: &str = include_str!("../rules/computed-yogas.json");
 /// The gandantas, read from BPHS ch. 92 rather than from any engine.
 const GANDANTA: &str = include_str!("../rules/classical-gandanta.json");
+/// The other inauspicious births of BPHS ch. 85, with what chs. 86 to 94
+/// say of each and their remedies.
+const JANMA: &str = include_str!("../rules/classical-bphs-janma.json");
 /// The evils at birth of BPHS ch. 9 and the antidotes of ch. 10.
 const ARISHTA: &str = include_str!("../rules/classical-arishta.json");
 /// Varahamihira's Balarishta, Brihat Jataka ch. 6.
@@ -133,6 +136,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(MARANA));
     rules.append(&mut read(PHALADEEPIKA_MARANA));
     rules.append(&mut read(SHAPA));
+    rules.append(&mut read(JANMA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -190,7 +194,9 @@ pub fn computed_doshas() -> &'static [Rule] {
 /// verse, each measured in ghatikas as the verses measure them, so a chart
 /// must carry the ghatikas of the limb a rule reads
 /// ([`Panchanga::spans`](crate::Panchanga)). These are the SDK's own rules,
-/// read from the text rather than from any implementation.
+/// read from the text rather than from any implementation. Ch. 85's other
+/// inauspicious births, which say what follows in words, are in
+/// [`nabhasas`].
 #[must_use]
 pub fn gandantas() -> &'static [Rule] {
     &GANDANTAS
@@ -228,7 +234,8 @@ pub fn readings() -> &'static [Rule] {
 /// Mahapurusha yogas as Saravali ch. 37 gives them, and the named yogas of
 /// ch. 36 the language can say, and beside BPHS ch. 44's manner of death,
 /// Phaladeepika ch. 14's diseases, death and the births before and after,
-/// and BPHS ch. 83's curses in a former birth that deny a son.
+/// BPHS ch. 83's curses in a former birth that deny a son, and ch. 85's
+/// inauspicious births with what chs. 86 to 94 say of each.
 /// Each carries what its verse says and nothing the SDK invented: a
 /// description, a span of life, or both.
 #[must_use]
@@ -359,7 +366,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1704);
+        assert_eq!(rules.len(), 1726);
         for rule in &rules {
             let rank = rule
                 .source
@@ -483,11 +490,12 @@ mod tests {
     }
 
     /// Every category the shipped rules use.
-    const CATEGORIES: [&str; 34] = [
+    const CATEGORIES: [&str; 35] = [
         "arishta",
         "arishta-bhanga",
         "arishta-father",
         "arishta-mother",
+        "ashubha-janma",
         "ayur",
         "chandra",
         "chandra-drishti",

@@ -175,7 +175,7 @@ mod tests {
             karana: Karana::Bava,
             spans: Spans::default(),
             by_day: None,
-            on_sankranti: false,
+            sankranti_hours: None,
             eclipse: None,
         }
     }

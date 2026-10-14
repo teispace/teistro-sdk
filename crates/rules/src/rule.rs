@@ -741,6 +741,9 @@ impl TryFrom<Written> for Rule {
                 rule.key
             ));
         }
+        if let Some(wrong) = rule.top_conditions().find_map(Condition::malformed_part) {
+            return Err(format!("rule `{}`: {wrong}", rule.key));
+        }
         // A divisional chart moves signs, not degrees.
         if let Some(kind) = rule
             .top_conditions()
@@ -1083,5 +1086,28 @@ mod tests {
         assert_eq!(r.net_status(3, 3), NetStatus::FullyCancelled);
         r.full_cancellation_threshold = Some(3);
         assert_eq!(r.net_status(2, 1), NetStatus::PartiallyCancelled);
+    }
+
+    #[test]
+    fn a_limb_part_the_limb_does_not_have_is_refused() {
+        let rule = |condition: &str| {
+            serde_json::from_str::<Rule>(&format!(
+                r#"{{"key": "K", "category": "panchanga", "source": {{"text": "BPHS"}},
+                    "conditions": [{{"type": "not", "condition": {condition}}}]}}"#
+            ))
+            .map_err(|e| e.to_string())
+        };
+        let seventh = rule(r#"{"type": "limb-part", "limb": "tithi", "of": 6, "parts": [7]}"#);
+        assert!(
+            seventh
+                .as_ref()
+                .is_err_and(|e| e.contains("names part 7 of 6; the parts are 1 to 6")),
+            "{seventh:?}"
+        );
+        let whole = rule(r#"{"type": "limb-part", "limb": "tithi", "of": 1, "parts": [1]}"#);
+        assert!(whole.is_err_and(|e| e.contains("needs at least 2")));
+        let none = rule(r#"{"type": "limb-part", "limb": "tithi", "of": 6, "parts": []}"#);
+        assert!(none.is_err_and(|e| e.contains("names no part")));
+        assert!(rule(r#"{"type": "limb-part", "limb": "tithi", "of": 6, "parts": [6]}"#).is_ok());
     }
 }

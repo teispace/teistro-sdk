@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The birth falls on a sankranti, as the chart's panchanga says.
+ * The birth falls on a sankranti: on the day, sunrise to sunrise, the Sun enters a sign, or within so many hours of the entry when the rule says. BPHS ch. 90 names each sankranti by its day of the week.
  *
- * @param windowHours The window, hours either side, that the chart's flag was computed under; kept with the rule, read by whoever builds the chart. Null leaves the SDK's default.
+ * @param windowHours How many hours either side of the entry; the whole day when unset. Null leaves the SDK's default.
  */
 public record ConditionBirthOnSankranti(Double windowHours) implements RequestJson, Condition {
     /** The `type` this variant is written under. */
@@ -36,7 +36,7 @@ public record ConditionBirthOnSankranti(Double windowHours) implements RequestJs
         /**
          * Sets {@code windowHours}.
          *
-         * @param windowHours The window, hours either side, that the chart's flag was computed under; kept with the rule, read by whoever builds the chart. Null leaves the SDK's default.
+         * @param windowHours How many hours either side of the entry; the whole day when unset. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder windowHours(double windowHours) {

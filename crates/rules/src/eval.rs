@@ -1189,7 +1189,10 @@ impl<'a> Evaluator<'a> {
                     | (Some(EclipseKind::Lunar), Eclipse::Solar) => false,
                 }),
             Condition::BirthByDay => self.panchanga().is_some_and(|p| p.by_day == Some(true)),
-            Condition::BirthOnSankranti { .. } => self.panchanga().is_some_and(|p| p.on_sankranti),
+            Condition::BirthOnSankranti { window_hours } => self
+                .panchanga()
+                .and_then(|p| p.sankranti_hours)
+                .is_some_and(|hours| window_hours.is_none_or(|window| hours.abs() <= window)),
             Condition::TransitInHouse {
                 planet,
                 houses,
@@ -1219,6 +1222,11 @@ impl<'a> Evaluator<'a> {
                     };
                     stood >= 0.0 && stood <= *ghatikas
                 }),
+            Condition::LimbPart { limb, of, parts } => self
+                .panchanga()
+                .and_then(|p| p.spans.of(*limb))
+                .and_then(|span| span.part(*of))
+                .is_some_and(|part| parts.contains(&part)),
             Condition::ForAny { planets, then } => {
                 let met = self.meeting(planets, then, rec);
                 into.extend(met);
@@ -2184,7 +2192,7 @@ mod tests {
             karana: Karana::Bava,
             spans: crate::chart::Spans::default(),
             by_day: None,
-            on_sankranti: false,
+            sankranti_hours: None,
             eclipse: None,
         }
     }
@@ -2578,10 +2586,30 @@ mod tests {
                 false,
             ),
             (r#"{"type": "birth-during-eclipse", "kind": "lunar"}"#, true),
+            (r#"{"type": "birth-on-sankranti"}"#, false),
             (r#"{"type": "birth-on-sankranti", "windowHours": 6}"#, false),
         ] {
             assert_eq!(holds(&c, ENGINE, &written(json)).0, expected, "{json}");
         }
+        // A day with a sankranti 5 hours before the birth: the day holds it,
+        // and a window holds it only as wide as the five hours.
+        c.panchanga.as_mut().unwrap().sankranti_hours = Some(5.0);
+        for (json, expected) in [
+            (r#"{"type": "birth-on-sankranti"}"#, true),
+            (r#"{"type": "birth-on-sankranti", "windowHours": 6}"#, true),
+            (r#"{"type": "birth-on-sankranti", "windowHours": 4}"#, false),
+        ] {
+            assert_eq!(holds(&c, ENGINE, &written(json)).0, expected, "{json}");
+        }
+        c.panchanga.as_mut().unwrap().sankranti_hours = Some(-5.0);
+        assert!(
+            holds(
+                &c,
+                ENGINE,
+                &written(r#"{"type": "birth-on-sankranti", "windowHours": 6}"#)
+            )
+            .0
+        );
         for (json, reason) in [
             (
                 r#"{"type": "panchanga-paksha", "paksha": "waxing"}"#,
@@ -3015,6 +3043,39 @@ mod tests {
             refused.contains("`NOT_A_POINT` is not a point"),
             "{refused}"
         );
+    }
+
+    #[test]
+    fn a_limb_part_is_a_share_of_the_limb_s_own_span() {
+        use teistro_core::catalogue::Tithi;
+
+        use crate::chart::{Span, Spans};
+
+        let second = written(r#"{"type": "limb-part", "limb": "tithi", "of": 6, "parts": [2]}"#);
+        let mut c = chart();
+        let at = |c: &mut RuleChart, elapsed, remaining| {
+            let mut p = panchanga(Tithi::KrishnaChaturdashi);
+            p.spans = Spans {
+                tithi: Some(Span { elapsed, remaining }),
+                ..Spans::default()
+            };
+            c.panchanga = Some(p);
+        };
+        // A sixth of a 60-ghatika tithi is 10 ghatikas: the second runs from
+        // 10 to 20, its start included and its end not.
+        at(&mut c, 10.0, 50.0);
+        assert!(holds(&c, ENGINE, &second).0);
+        at(&mut c, 19.9, 40.1);
+        assert!(holds(&c, ENGINE, &second).0);
+        at(&mut c, 20.0, 40.0);
+        assert!(!holds(&c, ENGINE, &second).0, "the third part");
+        // The parts are the limb's own: a 48-ghatika tithi's second sixth
+        // ends at 16.
+        at(&mut c, 17.0, 31.0);
+        assert!(!holds(&c, ENGINE, &second).0);
+        // A chart without the tithi's span holds no part of it.
+        c.panchanga = Some(panchanga(Tithi::KrishnaChaturdashi));
+        assert!(!holds(&c, ENGINE, &second).0);
     }
 
     #[test]
