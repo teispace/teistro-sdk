@@ -263,6 +263,16 @@ fn over(f: &mut Formatter<'_>, condition: &Condition) -> fmt::Result {
             whichever(f, planets)?;
             f.write_str(" meet")
         }
+        Condition::NOf {
+            at_least, at_most, ..
+        } => {
+            match at_most {
+                Some(most) if most == at_least => write!(f, "exactly {at_least}")?,
+                Some(most) => write!(f, "at least {at_least} and at most {most}")?,
+                None => write!(f, "at least {at_least}")?,
+            }
+            f.write_str(" of these hold")
+        }
         Condition::InVarga { varga, .. } => write!(f, "in the {}", varga.key()),
         other => write!(f, "{other}"),
     }
@@ -311,6 +321,7 @@ impl Display for Opening<'_> {
                 over(f, condition)?;
                 f.write_str(", this")
             }
+            condition @ Condition::NOf { .. } => over(f, condition),
             leaf => write!(f, "{leaf}"),
         }
     }
@@ -350,6 +361,13 @@ impl Display for Condition {
             }),
             Condition::Not { condition } => {
                 write!(f, "it is not the case that {}", Inner(condition))
+            }
+            Condition::NOf { conditions, .. } => {
+                over(f, self)?;
+                f.write_str(": ")?;
+                joined(f, conditions, AND, |f, condition| {
+                    write!(f, "{}", Inner(condition))
+                })
             }
             Condition::PlanetInHouse { planet, houses } => {
                 write!(f, "{planet} stands in ")?;
@@ -1181,6 +1199,10 @@ mod tests {
             "at least 4 of the nine grahas meet: the body found stands in a kendra",
         ),
         (
+            r#"{"type": "n-of", "conditions": [{"type": "planet-in-kendra", "planet": "MARS"}, {"type": "birth-by-day"}], "atLeast": 1}"#,
+            "at least 1 of these hold: MARS stands in a kendra and the birth fell by day",
+        ),
+        (
             r#"{"type": "in-varga", "varga": "D9", "condition": {"type": "planet-in-kendra", "planet": "MARS"}}"#,
             "in the D9, MARS stands in a kendra",
         ),
@@ -1299,6 +1321,11 @@ mod tests {
                 r#"{"type": "count-of", "then": {"type": "birth-by-day"}, "atLeast": 1}"#,
                 r#"{"type": "count-of", "then": {"type": "birth-by-day"}, "atLeast": 1, "atMost": 3}"#,
                 "at least 1 and at most 3 of the nine grahas meet: the birth fell by day",
+            ),
+            (
+                r#"{"type": "n-of", "conditions": [{"type": "birth-by-day"}], "atLeast": 1}"#,
+                r#"{"type": "n-of", "conditions": [{"type": "birth-by-day"}], "atLeast": 1, "atMost": 1}"#,
+                "exactly 1 of these hold: the birth fell by day",
             ),
             (
                 r#"{"type": "count-in-houses", "planets": "any-malefic", "houses": [2], "atLeast": 1}"#,

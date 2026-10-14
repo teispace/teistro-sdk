@@ -110,7 +110,7 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// and a place, its latitude and longitude, where it does: rare rules,
 /// shown alive. Each was found at Kathmandu's latitude, on the meridian
 /// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 53] = [
+const FIXTURES: [(&str, f64, f64, f64); 55] = [
     (
         "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
         2_415_023.166_67,
@@ -208,10 +208,22 @@ const FIXTURES: [(&str, f64, f64, f64); 53] = [
         -89.235,
     ),
     (
+        "PARIJATA_ARIES_END_RISING_WITH_JUPITER_OR_VENUS_MOON_MID_TAURUS_MARS_SIMHASANA",
+        2_379_731.991_82,
+        27.7172,
+        -107.86,
+    ),
+    (
         "PARIJATA_JUPITER_SATURN_ONE_NAVAMSHA_IN_THE_NINTH_OR_TENTH_SUN_RISING",
         2_429_878.5,
         27.7172,
         82.5,
+    ),
+    (
+        "PARIJATA_JUPITER_GOPURA_IN_A_KENDRA_VENUS_PARAVATA_IN_A_TRINE_CANCER_RISING",
+        2_473_202.25,
+        27.7172,
+        -68.985,
     ),
     (
         "PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON",
@@ -282,7 +294,7 @@ const FIXTURES: [(&str, f64, f64, f64); 53] = [
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 19] = [
+const UNSEEN: [(&str, &str); 20] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -342,6 +354,10 @@ const UNSEEN: [(&str, &str); 19] = [
     (
         "PARIJATA_MOON_IN_LEO_SUN_AND_SATURN_EIGHTH_VENUS_ASPECTING",
         "Venus casts only the seventh aspect and never stands seventh from the Sun. The verse holds under the partial aspects Jataka Parijata ch. 2 counts, which the condition language does not read.",
+    ),
+    (
+        "PARIJATA_SATURN_DEVALOKA_MARS_PARAVATA_JUPITER_SIMHASANA_RISING",
+        "Saturn in seven or eight of his own vargas of the ten and Mars in six meet on about thirty days from 1800 to 2398 (the half-daily sky), and Jupiter then holds at most four of his, never the five the verse asks.",
     ),
     (
         "PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA",

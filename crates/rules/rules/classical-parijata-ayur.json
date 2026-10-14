@@ -932,7 +932,7 @@
         "chapter": "4",
         "verse": "100",
         "rank": 1,
-        "note": "No malefic in the trines (the fifth and ninth, by the commentary), no benefic in a kendra and no malefic in the eighth: the native is like an immortal, which the section's heading calls likeness to the gods. vv. 101 to 104 read the vaiseshikamshas and are not built (C396). Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+        "note": "No malefic in the trines (the fifth and ninth, by the commentary), no benefic in a kendra and no malefic in the eighth: the native is like an immortal, which the section's heading calls likeness to the gods. v. 101 names its grahas \"from Saturn to Mars\", three in the order of the spheres or four in the weekdays', and is not built (C396). Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
       },
       "conditions": [
         {
@@ -977,6 +977,1062 @@
         {
           "type": "life-class",
           "class": "divine"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_ARIES_END_RISING_WITH_JUPITER_OR_VENUS_MOON_MID_TAURUS_MARS_SIMHASANA",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "102",
+        "rank": 1,
+        "note": "The last part of Aries rising with Jupiter or Venus in it, the Moon in Taurus's middle (fifth) navamsha and Mars in his Simhasana amsha: countless years through mantras, the heading's asankhya ayu. \"The last part\" is read as the last navamsha, the measure the verse gives the Moon. Each name is the commentary's count of the graha's own vargas of the ten (Gopura four, Simhasana five, Paravata six, Devaloka seven, and eight by ch. 1's ladder, which names nine Airavata), a varga its own when it holds the graha's exaltation, moolatrikona or own sign, or in the navamsha its rasi sign, as ch. 1 vv. 44 to 46 count them without BPHS ch. 6's arudha-kendra lords (C396). Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "LAGNA",
+          "from": 26.666666666666668,
+          "to": 30.0
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "MOON",
+          "from": 13.333333333333334,
+          "to": 16.666666666666668
+        },
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "MARS",
+              "dignities": [
+                "EXALTED",
+                "DEEP_EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D2",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D3",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D7",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D9",
+                  "condition": {
+                    "type": "planet-dignity",
+                    "planet": "MARS",
+                    "dignities": [
+                      "EXALTED",
+                      "DEEP_EXALTED",
+                      "MOOLTRIKONA",
+                      "OWN_SIGN"
+                    ]
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "MARS"
+                  },
+                  "as": "MARS"
+                }
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D10",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D12",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D16",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D30",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D60",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            }
+          ],
+          "atLeast": 5,
+          "atMost": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "unlimited"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SATURN_DEVALOKA_MARS_PARAVATA_JUPITER_SIMHASANA_RISING",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "103",
+        "rank": 1,
+        "note": "Saturn in his Devaloka amsha, Mars in his Paravata amsha and Jupiter in his Simhasana amsha in the lagna: the native is like a sage, the heading's muni-samatva, read as the divine life BPHS ch. 43 gives the ascetic. Only Jupiter is asked in the lagna, as both glosses read it. Each name is the commentary's count of the graha's own vargas of the ten (Gopura four, Simhasana five, Paravata six, Devaloka seven, and eight by ch. 1's ladder, which names nine Airavata), a varga its own when it holds the graha's exaltation, moolatrikona or own sign, or in the navamsha its rasi sign, as ch. 1 vv. 44 to 46 count them without BPHS ch. 6's arudha-kendra lords (C396). Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "SATURN",
+              "dignities": [
+                "EXALTED",
+                "DEEP_EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D2",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "SATURN",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D3",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "SATURN",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D7",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "SATURN",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D9",
+                  "condition": {
+                    "type": "planet-dignity",
+                    "planet": "SATURN",
+                    "dignities": [
+                      "EXALTED",
+                      "DEEP_EXALTED",
+                      "MOOLTRIKONA",
+                      "OWN_SIGN"
+                    ]
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "SATURN"
+                  },
+                  "as": "SATURN"
+                }
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D10",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "SATURN",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D12",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "SATURN",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D16",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "SATURN",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D30",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "SATURN",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D60",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "SATURN",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            }
+          ],
+          "atLeast": 7,
+          "atMost": 8
+        },
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "MARS",
+              "dignities": [
+                "EXALTED",
+                "DEEP_EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D2",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D3",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D7",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D9",
+                  "condition": {
+                    "type": "planet-dignity",
+                    "planet": "MARS",
+                    "dignities": [
+                      "EXALTED",
+                      "DEEP_EXALTED",
+                      "MOOLTRIKONA",
+                      "OWN_SIGN"
+                    ]
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "MARS"
+                  },
+                  "as": "MARS"
+                }
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D10",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D12",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D16",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D30",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D60",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "MARS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            }
+          ],
+          "atLeast": 6,
+          "atMost": 6
+        },
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "JUPITER",
+              "dignities": [
+                "EXALTED",
+                "DEEP_EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D2",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D3",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D7",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D9",
+                  "condition": {
+                    "type": "planet-dignity",
+                    "planet": "JUPITER",
+                    "dignities": [
+                      "EXALTED",
+                      "DEEP_EXALTED",
+                      "MOOLTRIKONA",
+                      "OWN_SIGN"
+                    ]
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "JUPITER"
+                  },
+                  "as": "JUPITER"
+                }
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D10",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D12",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D16",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D30",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D60",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            }
+          ],
+          "atLeast": 5,
+          "atMost": 5
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "divine"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JUPITER_GOPURA_IN_A_KENDRA_VENUS_PARAVATA_IN_A_TRINE_CANCER_RISING",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "104",
+        "rank": 1,
+        "note": "Jupiter in a kendra in his Gopura amsha, Venus in a trine (the fifth or ninth, by the commentary) in his Paravata amsha, and Cancer rising: life to the yuga's end. Each name is the commentary's count of the graha's own vargas of the ten (Gopura four, Simhasana five, Paravata six, Devaloka seven, and eight by ch. 1's ladder, which names nine Airavata), a varga its own when it holds the graha's exaltation, moolatrikona or own sign, or in the navamsha its rasi sign, as ch. 1 vv. 44 to 46 count them without BPHS ch. 6's arudha-kendra lords (C396). Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "JUPITER",
+              "dignities": [
+                "EXALTED",
+                "DEEP_EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D2",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D3",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D7",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D9",
+                  "condition": {
+                    "type": "planet-dignity",
+                    "planet": "JUPITER",
+                    "dignities": [
+                      "EXALTED",
+                      "DEEP_EXALTED",
+                      "MOOLTRIKONA",
+                      "OWN_SIGN"
+                    ]
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "JUPITER"
+                  },
+                  "as": "JUPITER"
+                }
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D10",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D12",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D16",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D30",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D60",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "JUPITER",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            }
+          ],
+          "atLeast": 4,
+          "atMost": 4
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "VENUS",
+              "dignities": [
+                "EXALTED",
+                "DEEP_EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D2",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "VENUS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D3",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "VENUS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D7",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "VENUS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D9",
+                  "condition": {
+                    "type": "planet-dignity",
+                    "planet": "VENUS",
+                    "dignities": [
+                      "EXALTED",
+                      "DEEP_EXALTED",
+                      "MOOLTRIKONA",
+                      "OWN_SIGN"
+                    ]
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "VENUS"
+                  },
+                  "as": "VENUS"
+                }
+              ]
+            },
+            {
+              "type": "in-varga",
+              "varga": "D10",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "VENUS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D12",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "VENUS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D16",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "VENUS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D30",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "VENUS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            },
+            {
+              "type": "in-varga",
+              "varga": "D60",
+              "condition": {
+                "type": "planet-dignity",
+                "planet": "VENUS",
+                "dignities": [
+                  "EXALTED",
+                  "DEEP_EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            }
+          ],
+          "atLeast": 6,
+          "atMost": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "unlimited"
         }
       ]
     }

@@ -707,6 +707,19 @@ impl<'a> Evaluator<'a> {
             Condition::Or { conditions } => {
                 conditions.iter().any(|c| self.branch(c, into, true, rec))
             }
+            Condition::NOf {
+                conditions,
+                at_least,
+                at_most,
+            } => {
+                // Every condition is tried, since a count needs them all.
+                let held = conditions
+                    .iter()
+                    .filter(|c| self.branch(c, into, true, rec))
+                    .count();
+                held >= usize::from(*at_least)
+                    && at_most.is_none_or(|most| held <= usize::from(most))
+            }
             Condition::Not { condition } => {
                 let mut own = Participants::default();
                 let held = self.check(condition, &mut own, rec);
@@ -1802,6 +1815,43 @@ mod tests {
         assert_eq!(
             serde_json::from_value::<Condition>(serde_json::to_value(&five).unwrap()).unwrap(),
             five
+        );
+    }
+
+    #[test]
+    fn a_count_of_conditions_holds_between_its_bounds_jataka_parijata_4_102() {
+        let mut c = chart();
+        place(&mut c, JUPITER, Rashi::Cancer); // exalted
+        place(&mut c, SATURN, Rashi::Libra); // exalted
+        place(&mut c, MOON, Rashi::Leo);
+        let exalted = |graha: &str, sign: &str| {
+            format!(r#"{{"type": "planet-in-sign", "planet": "{graha}", "signs": ["{sign}"]}}"#)
+        };
+        let of = |bounds: &str| {
+            written(&format!(
+                r#"{{"type": "n-of", {bounds}, "conditions": [{}, {}, {}]}}"#,
+                exalted("JUPITER", "CANCER"),
+                exalted("MOON", "TAURUS"),
+                exalted("SATURN", "LIBRA")
+            ))
+        };
+        // Two of the three hold, and only they take part.
+        assert_eq!(
+            holds(&c, ENGINE, &of(r#""atLeast": 2, "atMost": 2"#)),
+            (true, vec![JUPITER, SATURN])
+        );
+        assert!(holds(&c, ENGINE, &of(r#""atLeast": 1"#)).0);
+        assert!(!holds(&c, ENGINE, &of(r#""atLeast": 3"#)).0);
+        assert!(!holds(&c, ENGINE, &of(r#""atLeast": 0, "atMost": 1"#)).0);
+        let exactly = of(r#""atLeast": 2, "atMost": 2"#);
+        assert_eq!(
+            exactly.to_string(),
+            "exactly 2 of these hold: JUPITER stands in CANCER, MOON stands in TAURUS \
+             and SATURN stands in LIBRA"
+        );
+        assert_eq!(
+            serde_json::from_value::<Condition>(serde_json::to_value(&exactly).unwrap()).unwrap(),
+            exactly
         );
     }
 

@@ -141,6 +141,9 @@ cancellations held.
 - **A count over a condition.** `count-of` binds each graha to `SELF` and
   holds when so many meet the condition, at least and at most: "four or more
   planets aspect the Moon", "one or two or three exalted" (BPHS ch. 39).
+- **A count over conditions.** `n-of` holds when so many of its conditions
+  do, at least and at most: a graha in five of its own vargas of the ten
+  (Jataka Parijata ch. 4 vv. 102 to 104), each varga an `in-varga`.
 - **The marakas are a class.** `any-maraka` stands for BPHS ch. 44 vv. 3 to
   5's lords of the second and seventh with the malefics in or joining them;
   `planet-is` asks a body's class, and `count-in-houses`'s `except` keeps "the
