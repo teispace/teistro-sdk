@@ -82,6 +82,15 @@ fn plainly(condition: &Condition) -> Condition {
         Condition::Or { conditions } => Condition::Or {
             conditions: conditions.iter().map(plainly).collect(),
         },
+        Condition::NOf {
+            conditions,
+            at_least,
+            at_most,
+        } => Condition::NOf {
+            conditions: conditions.iter().map(plainly).collect(),
+            at_least: *at_least,
+            at_most: *at_most,
+        },
         Condition::Not { condition } => Condition::Not {
             condition: Box::new(plainly(condition)),
         },

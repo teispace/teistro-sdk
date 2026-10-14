@@ -275,10 +275,10 @@ fn is_lagna(from: &SignRef) -> bool {
 /// ```
 /// use teistro_rules::language::KINDS;
 ///
-/// assert_eq!(KINDS.len(), 66);
+/// assert_eq!(KINDS.len(), 67);
 /// assert!(KINDS.contains(&"planet-in-kendra"));
 /// ```
-pub const KINDS: [&str; 66] = [
+pub const KINDS: [&str; 67] = [
     "and",
     "or",
     "not",
@@ -334,6 +334,7 @@ pub const KINDS: [&str; 66] = [
     "vipareeta-argala",
     "for-any",
     "count-of",
+    "n-of",
     "in-varga",
     "count-in-houses",
     "count-aspecting",
@@ -682,6 +683,21 @@ pub enum Condition {
         /// How many there must be at least.
         at_least: u8,
         /// How many there may be at most.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        at_most: Option<u8>,
+    },
+    /// So many of the conditions hold: at least `atLeast`, and at most
+    /// `atMost` when the rule gives one. A graha "in five of its own vargas"
+    /// (Jataka Parijata ch. 4 vv. 102 to 104, the Vaiseshikamsha names) is a
+    /// count over ten divisions no single predicate reads. `or` is this with
+    /// at least one and `and` with every one. Every condition tried gives its
+    /// bodies as `or`'s do: the held ones, or all under `EVERY_HELD`.
+    NOf {
+        /// The conditions counted.
+        conditions: Vec<Condition>,
+        /// How many must hold at least.
+        at_least: u8,
+        /// How many may hold at most.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         at_most: Option<u8>,
     },
@@ -1119,6 +1135,7 @@ impl Condition {
             Condition::VipareetaArgala { .. } => "vipareeta-argala",
             Condition::ForAny { .. } => "for-any",
             Condition::CountOf { .. } => "count-of",
+            Condition::NOf { .. } => "n-of",
             Condition::InVarga { .. } => "in-varga",
             Condition::CountInHouses { .. } => "count-in-houses",
             Condition::CountAspecting { .. } => "count-aspecting",
@@ -1137,7 +1154,9 @@ impl Condition {
     #[must_use]
     pub fn children(&self) -> &[Condition] {
         match self {
-            Condition::And { conditions } | Condition::Or { conditions } => conditions,
+            Condition::And { conditions }
+            | Condition::Or { conditions }
+            | Condition::NOf { conditions, .. } => conditions,
             Condition::Not { condition }
             | Condition::ForAny {
                 then: condition, ..
@@ -1153,7 +1172,9 @@ impl Condition {
     /// The conditions a combinator combines, to change in place.
     pub fn children_mut(&mut self) -> &mut [Condition] {
         match self {
-            Condition::And { conditions } | Condition::Or { conditions } => conditions,
+            Condition::And { conditions }
+            | Condition::Or { conditions }
+            | Condition::NOf { conditions, .. } => conditions,
             Condition::Not { condition }
             | Condition::ForAny {
                 then: condition, ..

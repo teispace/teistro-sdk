@@ -2,7 +2,7 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1904 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1832 rules hold at least once and 72 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1907 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1832 rules hold at least once and 75 never do.
 
 Rules holding on the same 5 or more charts form 113 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
@@ -189,7 +189,9 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `NABHASA_VIHAGA` | 2418976.25 | 27.7172, 81.47 |
 | `PARASHARA_MATSYA` | 2418336 | 27.7172, 112.354 |
 | `PARIJATA_JUPITER_EIGHTH_IN_A_SIGN_OF_MARS_ASPECTED_BY_FOUR` | 2428308.91667 | 27.7172, -89.235 |
+| `PARIJATA_ARIES_END_RISING_WITH_JUPITER_OR_VENUS_MOON_MID_TAURUS_MARS_SIMHASANA` | 2379731.99182 | 27.7172, -107.86 |
 | `PARIJATA_JUPITER_SATURN_ONE_NAVAMSHA_IN_THE_NINTH_OR_TENTH_SUN_RISING` | 2429878.5 | 27.7172, 82.5 |
+| `PARIJATA_JUPITER_GOPURA_IN_A_KENDRA_VENUS_PARAVATA_IN_A_TRINE_CANCER_RISING` | 2473202.25 | 27.7172, -68.985 |
 | `PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON` | 2417139 | 27.7172, -89.502 |
 | `PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_LAGNA_LORD_EXALTED` | 2416949 | 27.7172, 48.39 |
 | `PARIJATA_SUN_SATURN_MARS_IN_LAGNA_WANING_MOON_IN_A_VENUS_SEVENTH` | 2425223.25 | 27.7172, 169.281 |
@@ -221,6 +223,7 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `BPHS_SPIRIT_CURSE_5` | The lagna lord in the eighth is none of the five in the lagna, and the Sun or Mercury there would stand five signs from Venus, so it is Mars, with Aries or Scorpio rising: no half-day from 1800 to 2398 has Jupiter, Saturn and Rahu together in either. |
 | `PARASHARA_KOORMA` | It asks the Sun, Mars and Saturn each in its own or exaltation sign in the lagna, third and eleventh, with a benefic in each of the fifth, sixth and seventh: no day from 1800 to 2400 has the grahas other than the Moon so. |
 | `PARIJATA_MOON_IN_LEO_SUN_AND_SATURN_EIGHTH_VENUS_ASPECTING` | Venus casts only the seventh aspect and never stands seventh from the Sun. The verse holds under the partial aspects Jataka Parijata ch. 2 counts, which the condition language does not read. |
+| `PARIJATA_SATURN_DEVALOKA_MARS_PARAVATA_JUPITER_SIMHASANA_RISING` | Saturn in seven or eight of his own vargas of the ten and Mars in six meet on about thirty days from 1800 to 2398 (the half-daily sky), and Jupiter then holds at most four of his, never the five the verse asks. |
 | `PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA` | A lagna's strength is its bhava bala, which has no required figure for it to fall short of, so no chart carries a weak lagna. |
 | `SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA` | Four days from 1800 to 2400, all in 1895, have Jupiter in Cancer, Mercury and Saturn in Libra and the Sun, Mars and Venus as the rule asks, and on them the Moon is in Libra to Sagittarius, never Cancer. |
 | `SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON` | A Moon aspecting the second while the Sun stands in it is opposite the Sun, near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there. |

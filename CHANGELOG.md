@@ -323,6 +323,14 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**The Vaiseshikamsha names, and a count over conditions.** **Numbers:** 3
+more long lives join the ayur set (1907 shipped), and the rule language gains
+`n-of`, which holds when between `atLeast` and `atMost` of its conditions do.
+Jataka Parijata ch. 4 vv. 102 to 104 place a graha in its Gopura, Simhasana,
+Paravata or Devaloka amsha, which is a count of its own vargas of the ten,
+now written as an `n-of` over `in-varga` conditions. A reading that asks the
+shipped rules now computes the D7, D10, D16 and D60 too (crux C396).
+
 **Jataka Parijata's missing pages.** **Numbers:** 3 antidotes join the
 arishta set and 3 long lives the ayur set (1904 shipped), and 29 more
 firings of the chapter's evils over the corpus are now cancelled. Sastri's

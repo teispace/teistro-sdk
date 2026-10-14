@@ -288,7 +288,17 @@ mod tests {
         vargas.dedup();
         assert_eq!(
             vargas,
-            [Varga::D2, Varga::D3, Varga::D9, Varga::D12, Varga::D30]
+            [
+                Varga::D2,
+                Varga::D3,
+                Varga::D7,
+                Varga::D9,
+                Varga::D10,
+                Varga::D12,
+                Varga::D16,
+                Varga::D30,
+                Varga::D60
+            ]
         );
         // One rule names a division once however many times it steps in.
         for rule in &rules {
@@ -370,7 +380,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1904);
+        assert_eq!(rules.len(), 1907);
         for rule in &rules {
             let rank = rule
                 .source

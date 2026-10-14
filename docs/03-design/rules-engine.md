@@ -436,7 +436,7 @@ Saravali), all of which ship. What it asks and the language
 cannot say is recorded in the notes: the month lord of the pregnancy (v. 12),
 the twilight (v. 30), the named decanates (v. 45), a cruel shashtyamsha
 (vv. 69 and 70), a count of dignified grahas (v. 78), a chain of lords
-(v. 93), the vaiseshikamshas (vv. 101 to 104), and the relations that have
+(v. 93), v. 101's grahas "from Saturn to Mars", and the relations that have
 no category (the brother, the uncle).
 
 **The pages the scan lacks (2026-10-14, C396).** Sastri's pp. 214, 215, 230
@@ -453,6 +453,27 @@ the corpus's firings (477), v. 72's answering 25 charts and v. 73's 11; v. 71
 answers none. Three long lives join the ayur pack: v. 97 (to the yuga's end),
 v. 98 (a long-lived ascetic, held by a 1940 fixture, since the sweep's sky
 has none) and v. 100 (likeness to the gods).
+
+**The Vaiseshikamsha names, and `n-of` (2026-10-14, C396).** Verses 102 to
+104 place a graha "in its Simhasana amsha", and the commentary glosses each
+name as a count of the graha's own vargas of the dashavarga (Gopura four,
+Simhasana five, Paravata six, Devaloka seven; ch. 1's ladder gives Devaloka
+eight as well). A count over ten divisions is no predicate's, so the
+language gains **`n-of`**: so many of its conditions hold, between `atLeast`
+and an optional `atMost`, where `or` is one or more and `and` all. A varga is
+the graha's own when it holds its exaltation, moolatrikona or own sign, read
+by `in-varga`'s dignity, or in the navamsha its rasi sign (vargottama, the
+only division ch. 1 vv. 44 to 46 add it to). That is JP's own reckoning;
+BPHS ch. 6 adds the lords of the arudha lagna's kendras, which the strength
+crate's Vaiseshikamsa reading keeps and these rules do not. The rules ask the
+names exactly, since each is its own rank. The shipped rules now step into
+the D7, D10, D16 and D60 as well, which a chart reading computes when they are
+asked. v. 102 (countless years) and v. 104 (to the yuga's end) never hold on
+the sweep's sky and are held by fixtures (1803 and 2059); v. 103 (like a
+sage, the divine class) never holds from 1800 to 2398. Saturn's seven or eight
+and Mars's six meet on about thirty days, and Jupiter then has at most four
+of his five. v. 101 is not built: its grahas "from Saturn to Mars" are three
+in the order of the spheres or four in the weekdays'.
 
 Over the corpus, 31 of the 59 evils answer 1 to 27 charts and 28 answer none,
 and the new evils add 83 cancellations to the corpus's 350 (433), all their
