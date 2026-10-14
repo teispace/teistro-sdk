@@ -2,7 +2,7 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1704 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1633 rules hold at least once and 71 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1726 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1655 rules hold at least once and 71 never do.
 
 Rules holding on the same 5 or more charts form 111 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 

@@ -189,7 +189,7 @@ fn panchanga(recorded: &Value) -> Option<Panchanga> {
         // The yogas' and doshas' inputs record no ghatikas of any limb.
         spans: Spans::default(),
         by_day: None,
-        on_sankranti: false,
+        sankranti_hours: None,
         eclipse: None,
     })
 }

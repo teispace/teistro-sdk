@@ -1,0 +1,638 @@
+{
+  "rules": [
+    {
+      "key": "BPHS_BIRTH_ON_AMAVASYA",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "86",
+        "verse": "1-9",
+        "rank": 1,
+        "note": "A birth on Amavasya, the dark half's last tithi, which ch. 85 v. 2 lists first among the inauspicious births and ch. 86 v. 1 says leaves the native always poor. The remedy, ch. 86 vv. 2 to 9: a kalasha of five trees' leaves set in the south-west, the Sun and the Moon worshipped in gold and silver, a homa, the child and parents sprinkled, and gold, silver and a black cow given. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "AMAVASYA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "always poor"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KRISHNA_CHATURDASHI_PART_1",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "87",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A birth in the first of the six equal parts the chapter divides Krishna Chaturdashi into, each part a sixth of that tithi's own span. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "KRISHNA_CHATURDASHI"
+          ]
+        },
+        {
+          "type": "limb-part",
+          "limb": "tithi",
+          "of": 6,
+          "parts": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "auspicious"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KRISHNA_CHATURDASHI_PART_2",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "87",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A birth in the second of the six equal parts the chapter divides Krishna Chaturdashi into, each part a sixth of that tithi's own span. The remedy, ch. 87 vv. 4 to 13: a golden image of Shiva worshipped, the nine grahas' homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "KRISHNA_CHATURDASHI"
+          ]
+        },
+        {
+          "type": "limb-part",
+          "limb": "tithi",
+          "of": 6,
+          "parts": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the father's death or ruin"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KRISHNA_CHATURDASHI_PART_3",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "87",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A birth in the third of the six equal parts the chapter divides Krishna Chaturdashi into, each part a sixth of that tithi's own span. The remedy, ch. 87 vv. 4 to 13: a golden image of Shiva worshipped, the nine grahas' homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "KRISHNA_CHATURDASHI"
+          ]
+        },
+        {
+          "type": "limb-part",
+          "limb": "tithi",
+          "of": 6,
+          "parts": [
+            3
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the mother's death"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KRISHNA_CHATURDASHI_PART_4",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "87",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A birth in the fourth of the six equal parts the chapter divides Krishna Chaturdashi into, each part a sixth of that tithi's own span. The remedy, ch. 87 vv. 4 to 13: a golden image of Shiva worshipped, the nine grahas' homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "KRISHNA_CHATURDASHI"
+          ]
+        },
+        {
+          "type": "limb-part",
+          "limb": "tithi",
+          "of": 6,
+          "parts": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the maternal uncle's loss"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KRISHNA_CHATURDASHI_PART_5",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "87",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A birth in the fifth of the six equal parts the chapter divides Krishna Chaturdashi into, each part a sixth of that tithi's own span. The remedy, ch. 87 vv. 4 to 13: a golden image of Shiva worshipped, the nine grahas' homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "KRISHNA_CHATURDASHI"
+          ]
+        },
+        {
+          "type": "limb-part",
+          "limb": "tithi",
+          "of": 6,
+          "parts": [
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the ruin of the whole line"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KRISHNA_CHATURDASHI_PART_6",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "87",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A birth in the sixth of the six equal parts the chapter divides Krishna Chaturdashi into, each part a sixth of that tithi's own span. The remedy, ch. 87 vv. 4 to 13: a golden image of Shiva worshipped, the nine grahas' homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "KRISHNA_CHATURDASHI"
+          ]
+        },
+        {
+          "type": "limb-part",
+          "limb": "tithi",
+          "of": 6,
+          "parts": [
+            6
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "loss of wealth, or the native's own death"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_IN_BHADRA",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "85",
+        "verse": "1-4",
+        "rank": 1,
+        "note": "A birth in the karana Bhadra, which is Vishti, among ch. 85 v. 2's inauspicious births; the chapter gives it no effect of its own. The remedy, ch. 88 vv. 3 to 5, performed when the same yoga next returns: Vishnu's worship, a ghee lamp and abhisheka at a Shiva temple, 108 rounds of a pipal, a homa of 108 and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-karana",
+          "karanas": [
+            "VISHTI"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an inauspicious birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_IN_AN_INAUSPICIOUS_YOGA",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "88",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A birth in Vyatipata, which ch. 85 names, or in Parigha or Vajra, which ch. 88 v. 1 adds; its \"etc.\" names no others, and they are not guessed (C391). The remedy, ch. 88 vv. 3 to 5, performed when the same yoga next returns: Vishnu's worship, a ghee lamp and abhisheka at a Shiva temple, 108 rounds of a pipal, a homa of 108 and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-yoga",
+          "yogas": [
+            "VYATIPATA",
+            "PARIGHA",
+            "VAJRA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an inauspicious birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_ON_THE_GHORA_SANKRANTI",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "90",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A birth on the day the Sun enters a sign, that day a Ravivara, whose sankranti the chapter names Ghora; the day runs sunrise to sunrise, as the weekday that names it does (C392). The remedy, ch. 90 vv. 3 to 18: the nine grahas' yajna over three heaps of grain, the sankranti's image with the Sun and the Moon beside it, the Mrityunjaya japa, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-on-sankranti"
+        },
+        {
+          "type": "panchanga-vara",
+          "varas": [
+            "RAVIVARA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor and unhappy, born on the Ghora sankranti"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_ON_THE_DHVANKSHI_SANKRANTI",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "90",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A birth on the day the Sun enters a sign, that day a Somavara, whose sankranti the chapter names Dhvankshi; the day runs sunrise to sunrise, as the weekday that names it does (C392). The remedy, ch. 90 vv. 3 to 18: the nine grahas' yajna over three heaps of grain, the sankranti's image with the Sun and the Moon beside it, the Mrityunjaya japa, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-on-sankranti"
+        },
+        {
+          "type": "panchanga-vara",
+          "varas": [
+            "SOMAVARA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor and unhappy, born on the Dhvankshi sankranti"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_ON_THE_MAHODARI_SANKRANTI",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "90",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A birth on the day the Sun enters a sign, that day a Mangalavara, whose sankranti the chapter names Mahodari; the day runs sunrise to sunrise, as the weekday that names it does (C392). The remedy, ch. 90 vv. 3 to 18: the nine grahas' yajna over three heaps of grain, the sankranti's image with the Sun and the Moon beside it, the Mrityunjaya japa, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-on-sankranti"
+        },
+        {
+          "type": "panchanga-vara",
+          "varas": [
+            "MANGALAVARA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor and unhappy, born on the Mahodari sankranti"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_ON_THE_MANDA_SANKRANTI",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "90",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A birth on the day the Sun enters a sign, that day a Budhavara, whose sankranti the chapter names Manda; the day runs sunrise to sunrise, as the weekday that names it does (C392). The remedy, ch. 90 vv. 3 to 18: the nine grahas' yajna over three heaps of grain, the sankranti's image with the Sun and the Moon beside it, the Mrityunjaya japa, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-on-sankranti"
+        },
+        {
+          "type": "panchanga-vara",
+          "varas": [
+            "BUDHAVARA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor and unhappy, born on the Manda sankranti"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_ON_THE_MANDAKINI_SANKRANTI",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "90",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A birth on the day the Sun enters a sign, that day a Guruvara, whose sankranti the chapter names Mandakini; the day runs sunrise to sunrise, as the weekday that names it does (C392). The remedy, ch. 90 vv. 3 to 18: the nine grahas' yajna over three heaps of grain, the sankranti's image with the Sun and the Moon beside it, the Mrityunjaya japa, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-on-sankranti"
+        },
+        {
+          "type": "panchanga-vara",
+          "varas": [
+            "GURUVARA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor and unhappy, born on the Mandakini sankranti"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_ON_THE_MISHRA_SANKRANTI",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "90",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A birth on the day the Sun enters a sign, that day a Shukravara, whose sankranti the chapter names Mishra; the day runs sunrise to sunrise, as the weekday that names it does (C392). The remedy, ch. 90 vv. 3 to 18: the nine grahas' yajna over three heaps of grain, the sankranti's image with the Sun and the Moon beside it, the Mrityunjaya japa, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-on-sankranti"
+        },
+        {
+          "type": "panchanga-vara",
+          "varas": [
+            "SHUKRAVARA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor and unhappy, born on the Mishra sankranti"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_ON_THE_RAKSHASI_SANKRANTI",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "90",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A birth on the day the Sun enters a sign, that day a Shanivara, whose sankranti the chapter names Rakshasi; the day runs sunrise to sunrise, as the weekday that names it does (C392). The remedy, ch. 90 vv. 3 to 18: the nine grahas' yajna over three heaps of grain, the sankranti's image with the Sun and the Moon beside it, the Mrityunjaya japa, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-on-sankranti"
+        },
+        {
+          "type": "panchanga-vara",
+          "varas": [
+            "SHANIVARA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor and unhappy, born on the Rakshasi sankranti"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_IN_A_SOLAR_ECLIPSE",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "91",
+        "verse": "1-14",
+        "rank": 1,
+        "note": "A birth during an eclipse of the Sun. The remedy, ch. 91 vv. 1 to 14: golden images of the eclipse nakshatra's deity and of the Sun, or a silver one of the Moon, worshipped with what each is fond of, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-during-eclipse",
+          "kind": "solar"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "ailments, distress and poverty, and danger"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_IN_A_LUNAR_ECLIPSE",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "91",
+        "verse": "1-14",
+        "rank": 1,
+        "note": "A birth during an eclipse of the Moon. The remedy, ch. 91 vv. 1 to 14: golden images of the eclipse nakshatra's deity and of the Sun, or a silver one of the Moon, worshipped with what each is fond of, a homa, the child and parents sprinkled and brahmins fed. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "birth-during-eclipse",
+          "kind": "lunar"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "ailments, distress and poverty, and danger"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_GIRL_BORN_IN_JYESHTHA",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "94",
+        "verse": "10",
+        "rank": 1,
+        "note": "A girl born with the Moon in Jyeshtha; the verse speaks of a girl, which the chart does not say, so the rule holds for any birth there and its effect names whom it is for. The remedy, ch. 94 v. 10: a cow given at her marriage. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "JYESHTHA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "for a girl, the death of her husband's elder brother; none when he has no elder brother"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_GIRL_BORN_IN_THE_FOURTH_PADA_OF_VISHAKHA",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "94",
+        "verse": "10",
+        "rank": 1,
+        "note": "A girl born with the Moon in Vishakha's fourth pada; as for Jyeshtha, the verse's girl is named in the effect. The remedy, ch. 94 v. 10: a cow given at her marriage. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "VISHAKHA"
+          ],
+          "padas": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "for a girl, the death of her husband's younger brother"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BORN_IN_ASHLESHA_PADAS_TWO_TO_FOUR",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "94",
+        "verse": "11-13",
+        "rank": 1,
+        "note": "A boy or a girl born with the Moon in Ashlesha's second, third or fourth pada. The remedy, ch. 94 vv. 11 to 13: what one's means allow, at the marriage. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "ASHLESHA"
+          ],
+          "padas": [
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the death of the spouse's mother"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BORN_IN_MULA_PADAS_ONE_TO_THREE",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "94",
+        "verse": "11-13",
+        "rank": 1,
+        "note": "A boy or a girl born with the Moon in Mula's first, second or third pada. The remedy, ch. 94 vv. 11 to 13: what one's means allow, at the marriage. Read in R. Santhanam's translation; neither the 1899 nor the 1923 print read for chs. 44 and 83 carries these chapters, as ch. 92's gandantas were read from the translation too."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "MULA"
+          ],
+          "padas": [
+            1,
+            2,
+            3
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the death of the spouse's father"
+        }
+      ]
+    }
+  ]
+}

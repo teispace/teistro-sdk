@@ -275,10 +275,10 @@ fn is_lagna(from: &SignRef) -> bool {
 /// ```
 /// use teistro_rules::language::KINDS;
 ///
-/// assert_eq!(KINDS.len(), 65);
+/// assert_eq!(KINDS.len(), 66);
 /// assert!(KINDS.contains(&"planet-in-kendra"));
 /// ```
-pub const KINDS: [&str; 65] = [
+pub const KINDS: [&str; 66] = [
     "and",
     "or",
     "not",
@@ -339,6 +339,7 @@ pub const KINDS: [&str; 65] = [
     "count-aspecting",
     "rule",
     "at-limb-edge",
+    "limb-part",
     "birth-by-day",
     "same-sign",
     "same-body",
@@ -780,6 +781,18 @@ pub enum Condition {
         /// How many ghatikas of 24 minutes.
         ghatikas: f64,
     },
+    /// The birth falls in one of a limb's equal parts, counted from its
+    /// start: BPHS ch. 87 divides Krishna Chaturdashi into six and reads
+    /// each part apart. The parts are of the limb's own span, so a long
+    /// tithi has long parts; a limb the chart does not measure never holds.
+    LimbPart {
+        /// Which limb.
+        limb: Limb,
+        /// Into how many equal parts it is divided, at least two.
+        of: u8,
+        /// Which of them, the first being 1.
+        parts: Vec<u8>,
+    },
     /// The birth fell by day, between sunrise and sunset; a chart that does
     /// not say never holds it, and `not` of it is not "by night" there.
     BirthByDay,
@@ -856,10 +869,11 @@ pub enum Condition {
         /// What is intervened on.
         on: SignRef,
     },
-    /// The birth falls on a sankranti, as the chart's panchanga says.
+    /// The birth falls on a sankranti: on the day, sunrise to sunrise, the Sun
+    /// enters a sign, or within so many hours of the entry when the rule
+    /// says. BPHS ch. 90 names each sankranti by its day of the week.
     BirthOnSankranti {
-        /// The window, hours either side, that the chart's flag was computed
-        /// under; kept with the rule, read by whoever builds the chart.
+        /// How many hours either side of the entry; the whole day when unset.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         window_hours: Option<f64>,
     },
@@ -1110,6 +1124,7 @@ impl Condition {
             Condition::CountAspecting { .. } => "count-aspecting",
             Condition::RuleHolds { .. } => "rule",
             Condition::AtLimbEdge { .. } => "at-limb-edge",
+            Condition::LimbPart { .. } => "limb-part",
             Condition::BirthByDay => "birth-by-day",
             Condition::SameSign { .. } => "same-sign",
             Condition::SameBody { .. } => "same-body",
@@ -1213,6 +1228,29 @@ impl Condition {
         walk(self, false)
     }
 
+    /// The first `limb-part` inside it, itself included, that divides a
+    /// limb into fewer than two parts or names a part it does not have,
+    /// with what is wrong.
+    #[must_use]
+    pub fn malformed_part(&self) -> Option<String> {
+        if let Condition::LimbPart { of, parts, .. } = self {
+            if *of < 2 {
+                return Some(format!(
+                    "`limb-part` divides into {of} parts, and needs at least 2"
+                ));
+            }
+            if parts.is_empty() {
+                return Some("`limb-part` names no part".to_owned());
+            }
+            if let Some(part) = parts.iter().find(|part| **part == 0 || **part > *of) {
+                return Some(format!(
+                    "`limb-part` names part {part} of {of}; the parts are 1 to {of}"
+                ));
+            }
+        }
+        self.children().iter().find_map(Condition::malformed_part)
+    }
+
     /// Whether it asks a question of strength, so a caller knows to give the
     /// chart [`Strengths`](crate::Strengths); without them it answers false.
     #[must_use]
@@ -1248,6 +1286,7 @@ impl Condition {
                 | Condition::BirthDuringEclipse { .. }
                 | Condition::BirthOnSankranti { .. }
                 | Condition::AtLimbEdge { .. }
+                | Condition::LimbPart { .. }
                 | Condition::BirthByDay
         )
     }
@@ -1261,6 +1300,10 @@ impl Condition {
             self,
             Condition::BirthDuringEclipse { .. }
                 | Condition::AtLimbEdge {
+                    limb: Limb::Lagna,
+                    ..
+                }
+                | Condition::LimbPart {
                     limb: Limb::Lagna,
                     ..
                 }

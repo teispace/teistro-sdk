@@ -129,10 +129,11 @@ ch. 9, Saravali chs. 10 and 11, Brihat Jataka VI, Jataka Parijata IV) — and
 about **49 arishta-bhanga cancellations** (BPHS ch. 10, Saravali ch. 12,
 Phaladeepika XIII, Jataka Parijata IV), all of which the SDK now ships
 (`rules-engine.md`). The curses of BPHS ch. 83 and the Gandanta of ch. 92
-in its three kinds are built too. The inauspicious births of ch. 85 and
-their eleven remedial chapters, and Phaladeepika XIII's Vishaghatika,
-Thyajya and Dinamrityu births, are rank 1 and unbuilt; the muhurta
-module's lagna tyajya is the electional rule, not these.
+in its three kinds are built too, and so are the inauspicious births of
+ch. 85 with what its remedial chapters say, all but those the chart does
+not hold (`rules-engine.md`). Phaladeepika XIII's Vishaghatika, Thyajya and
+Dinamrityu births are rank 1 and unbuilt; the muhurta module's lagna
+tyajya is the electional rule, not these.
 
 ### What the texts do not say
 

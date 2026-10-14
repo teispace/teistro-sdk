@@ -577,13 +577,10 @@ impl Display for Condition {
                     Some(EclipseKind::Any) => "an eclipse of either kind",
                 })
             }
-            Condition::BirthOnSankranti { window_hours } => {
-                f.write_str("the birth falls on a sankranti")?;
-                match window_hours {
-                    None => Ok(()),
-                    Some(hours) => write!(f, ", within {hours} hours of it"),
-                }
-            }
+            Condition::BirthOnSankranti { window_hours } => match window_hours {
+                None => f.write_str("the birth falls on a sankranti's day"),
+                Some(hours) => write!(f, "the birth falls within {hours} hours of a sankranti"),
+            },
             Condition::TransitInHouse {
                 planet,
                 houses,
@@ -694,6 +691,11 @@ impl Display for Condition {
                     Edge::Last => "last",
                 }
             ),
+            Condition::LimbPart { limb, of, parts } => {
+                f.write_str("the birth falls in the ")?;
+                joined(f, parts, OR, |f, part| write!(f, "{}", Ordinal(*part)))?;
+                write!(f, " of {of} equal parts of {limb}")
+            }
             Condition::BirthByDay => f.write_str("the birth fell by day"),
             Condition::SameSign { of, as_sign } => {
                 write!(f, "{of} and {as_sign} stand in one sign")
@@ -960,7 +962,7 @@ mod tests {
     /// One written condition for each kind of the language, with the sentence
     /// it must read as. Hand-written rather than captured: a phrasing that
     /// changes is a phrasing a reviewer agreed to change.
-    const SENTENCES: [(&str, &str); 65] = [
+    const SENTENCES: [(&str, &str); 66] = [
         (
             r#"{"type": "and", "conditions": [{"type": "birth-by-day"}, {"type": "planet-combust", "planet": "MOON"}]}"#,
             "the birth fell by day and MOON is combust",
@@ -1135,7 +1137,7 @@ mod tests {
         ),
         (
             r#"{"type": "birth-on-sankranti"}"#,
-            "the birth falls on a sankranti",
+            "the birth falls on a sankranti's day",
         ),
         (
             r#"{"type": "transit-in-house", "planet": "SATURN", "houses": [12, 1, 2], "from": "MOON"}"#,
@@ -1197,6 +1199,10 @@ mod tests {
         (
             r#"{"type": "at-limb-edge", "limb": "nakshatra", "edge": "last", "ghatikas": 2}"#,
             "the birth falls within the last 2 ghatikas of the nakshatra",
+        ),
+        (
+            r#"{"type": "limb-part", "limb": "tithi", "of": 6, "parts": [2, 3]}"#,
+            "the birth falls in the 2nd or 3rd of 6 equal parts of the tithi",
         ),
         (r#"{"type": "birth-by-day"}"#, "the birth fell by day"),
         (
@@ -1282,7 +1288,7 @@ mod tests {
             (
                 r#"{"type": "birth-on-sankranti"}"#,
                 r#"{"type": "birth-on-sankranti", "windowHours": 12}"#,
-                "the birth falls on a sankranti, within 12 hours of it",
+                "the birth falls within 12 hours of a sankranti",
             ),
             (
                 r#"{"type": "birth-during-eclipse"}"#,

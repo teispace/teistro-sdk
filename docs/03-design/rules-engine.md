@@ -608,6 +608,40 @@ holds, and five are listed as unseen from 1800 to 2398, with why. `crates/rules/
 the 93 charts: three hold at all, on 8, 3 and 1, as stacked placings
 would.
 
+**BPHS ch. 85's inauspicious births, built (2026-10-14).** Ch. 85 lists
+the births that are inauspicious however well the lagna is placed, and
+chs. 86 to 96 give each its remedy. As `classical-bphs-janma.json`, 22
+rules join the nabhasa set under a new category, `ashubha-janma`, read in
+R. Santhanam's translation (the two Sanskrit prints read for chs. 44 and 83
+do not carry these chapters, as they did not ch. 92):
+- **Amavasya** (ch. 86): always poor.
+- **Krishna Chaturdashi in six parts** (ch. 87 vv. 1 to 3): the first
+  auspicious, then the father, the mother, the maternal uncle, the whole
+  line, and the native's wealth or life. A new condition, `limb-part`,
+  reads which of `of` equal parts of a limb's own span the birth falls in,
+  and a rule naming a part the limb does not have is refused.
+- **Bhadra and the inauspicious yogas** (ch. 88): Vishti, and the three
+  yogas the chapters name, Vyatipata, Parigha and Vajra (C391).
+- **The sankranti** (ch. 90 vv. 1 and 2): seven rules, each the
+  sankranti its weekday names, Ghora to Rakshasi: poor and unhappy (C392).
+- **Eclipses** (ch. 91): of the Sun and of the Moon.
+- **Ch. 94 vv. 10 to 13**: the Moon's nakshatra and pada that harm the
+  in-laws, the verse's girl named in the effect since the chart cannot say.
+
+The gandantas and Abhukta Moola of chs. 92 to 94 were built before, in their
+own set. The birth in a parent's or brother's nakshatra (ch. 89), the
+tithi-kshaya, Yamaghanta and Dagdha yoga (ch. 85 names them and no chapter
+defines them), and chs. 95 and 96's birth order and unusual deliveries are
+not built: the chart does not hold them.
+
+**Found building it:** the chart's `on_sankranti` flag was set false by
+every maker, so `birth-on-sankranti` could never hold. The chart now carries
+`sankranti_hours`, the hours from the sankranti inside the birth's day to
+the birth, and the condition holds on that day, or within its `windowHours`
+when the rule gives one. `crates/sdk/tests/janma.rs` reads the pack at each
+hour of twenty days from 2000 January 1 and holds Chaturdashi's six parts in
+order, the Makara sankranti named by its Friday, and Amavasya.
+
 **A rule can read a transit (2026-10-14).** `{"type": "transit-in-house",
 "planet": …, "houses": […], "from": …}` holds when the graha's sign in a
 sky the evaluator is given (`with_transits`, a `TransitSky`) stands in one

@@ -323,6 +323,17 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**BPHS ch. 85's inauspicious births.** **Numbers:** 22 rules join the
+nabhasa set (1726 shipped); no other rule's answer moved. Births on
+Amavasya, in each sixth of Krishna Chaturdashi, in Bhadra and in Vyatipata,
+Parigha or Vajra, on each weekday's named sankranti and in an eclipse, and
+ch. 94's nakshatras that harm the in-laws, in a new category,
+`ashubha-janma`, each with its chapter's remedy (cruxes C391 and C392). A
+rule may say `limb-part`, which of a limb's equal parts the birth falls
+in. **Fixed:** `birth-on-sankranti` held on no chart, because every chart
+maker set the sankranti flag false; the chart now carries the hours to the
+day's sankranti and the condition reads its own window.
+
 **BPHS ch. 83's curses.** **Numbers:** 76 rules join the nabhasa set
 (1704 shipped); no other rule's answer moved. The chapter's curses in a
 former birth that deny a son, in a new category, `shapa`: a serpent's,

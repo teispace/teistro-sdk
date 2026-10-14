@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2361 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 176 in `ARISHTAS`, 1064 in `READINGS`, 435 in `NABHASAS`, 657 in `the corpus's own`. Their 8798 conditions are written 3357 ways, which say 3353 things, and the renderer gives those 3353 sentences.
+2383 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 176 in `ARISHTAS`, 1064 in `READINGS`, 457 in `NABHASAS`, 657 in `the corpus's own`. Their 8833 conditions are written 3374 ways, which say 3370 things, and the renderer gives those 3370 sentences.
 
-The 1704 shipped rules are what a consumer evaluates; the corpus's own
+The 1726 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 3353 disagree |
-| every condition of every rule renders | **holds** | 0 of 8798 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 3370 disagree |
+| every condition of every rule renders | **holds** | 0 of 8833 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -80,16 +80,16 @@ a change to what a rule asks changes its prose.
 | `planet-in-house-and-sign` | 26 | SUN stands in the 1st house and in LEO |
 | `planet-at-gandanta` | 4 | SUN stands at a gandanta junction, within the usual 3°20′ |
 | `planet-in-degrees` | 190 | LAGNA stands between 0° and 10° of its sign |
-| `panchanga-tithi` | 12 | the birth tithi is AMAVASYA |
+| `panchanga-tithi` | 19 | the birth tithi is AMAVASYA |
 | `panchanga-paksha` | 22 | the birth falls in the SHUKLA paksha |
-| `panchanga-vara` | 3 | the birth weekday is RAVIVARA |
+| `panchanga-vara` | 10 | the birth weekday is GURUVARA |
 | `panchanga-nakshatra` | 15 | the Moon's birth nakshatra is MULA |
-| `panchanga-yoga` | 2 | the panchanga yoga at birth is VAIDHRITI |
-| `panchanga-karana` | 1 | the karana at birth is VISHTI |
-| `birth-during-eclipse` | 2 | the birth falls in an eclipse |
-| `birth-on-sankranti` | 1 | the birth falls on a sankranti |
+| `panchanga-yoga` | 3 | the panchanga yoga at birth is VAIDHRITI |
+| `panchanga-karana` | 2 | the karana at birth is VISHTI |
+| `birth-during-eclipse` | 4 | the birth falls in an eclipse |
+| `birth-on-sankranti` | 8 | the birth falls on a sankranti's day |
 | `transit-in-house` | 0 | in no pack |
-| `planet-in-nakshatra` | 0 | in no pack |
+| `planet-in-nakshatra` | 4 | MOON stands in the nakshatra JYESHTHA |
 | `same-nakshatra` | 1 | MOON and KETU stand in one nakshatra |
 | `planet-strong` | 45 | SUN is strong |
 | `planet-weak` | 25 | MOON is weak |
@@ -104,13 +104,14 @@ a change to what a rule asks changes its prose.
 | `count-aspecting` | 27 | at least 1 malefic aspects SUN |
 | `rule` | 1269 | the rule NABHASA_GADA holds |
 | `at-limb-edge` | 22 | the birth falls within the last 2 ghatikas of the tithi |
+| `limb-part` | 6 | the birth falls in the 1st of 6 equal parts of the tithi |
 | `birth-by-day` | 6 | the birth fell by day |
 | `same-sign` | 135 | MOON and KETU stand in one sign |
 | `same-body` | 176 | MARS and MOON are one body |
 | `planet-is` | 73 | SUN is a malefic |
 | `natural-relation` | 21 | the lord of house 1 counts SUN a friend |
 
-3 kinds of the language occur in no pack at all: `transit-in-house`, `planet-in-nakshatra`, `vipareeta-argala`. The corpus cannot falsify their prose, so the golden test in `crates/rules/src/prose.rs` is their only reader.
+2 kinds of the language occur in no pack at all: `transit-in-house`, `vipareeta-argala`. The corpus cannot falsify their prose, so the golden test in `crates/rules/src/prose.rs` is their only reader.
 
 ## Where the prose is at its weakest
 

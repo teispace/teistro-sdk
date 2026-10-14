@@ -182,9 +182,10 @@ pub struct Panchanga {
     /// Whether the birth fell between sunrise and sunset, which BPHS ch. 10
     /// v. 5 reads beside the paksha; none when the chart does not say.
     pub by_day: Option<bool>,
-    /// Whether the birth falls on a sankranti, under whatever window the
-    /// chart's maker reads.
-    pub on_sankranti: bool,
+    /// The hours from the sankranti inside the birth's day, sunrise to
+    /// sunrise, to the birth: negative for a birth before it. None when the
+    /// day has no sankranti, or the chart does not say.
+    pub sankranti_hours: Option<f64>,
     /// The eclipse the birth falls in, if any.
     pub eclipse: Option<Eclipse>,
 }
@@ -229,6 +230,39 @@ pub struct Span {
     pub elapsed: f64,
     /// Ghatikas until it ends.
     pub remaining: f64,
+}
+
+impl Span {
+    /// Which of `of` equal parts of the limb the birth falls in, the first
+    /// being 1; none for a span that is empty or measured backwards, or for
+    /// no parts at all. The birth at a boundary falls in the later part, and
+    /// the limb's last instant in the last.
+    ///
+    /// ```
+    /// use teistro_rules::Span;
+    ///
+    /// let span = Span { elapsed: 10.0, remaining: 50.0 };
+    /// assert_eq!(span.part(6), Some(2));
+    /// assert_eq!(Span { elapsed: 0.0, remaining: 60.0 }.part(6), Some(1));
+    /// assert_eq!(Span { elapsed: 60.0, remaining: 0.0 }.part(6), Some(6));
+    /// assert_eq!(span.part(0), None);
+    /// ```
+    #[must_use]
+    pub fn part(&self, of: u8) -> Option<u8> {
+        let whole = self.elapsed + self.remaining;
+        if of == 0 || self.elapsed < 0.0 || self.remaining < 0.0 || whole <= 0.0 {
+            return None;
+        }
+        let at = (self.elapsed / whole * f64::from(of)).floor();
+        // `at` is in 0..=of, so the cast is exact.
+        #[allow(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "a whole number from 0 to `of`, a u8"
+        )]
+        let at = at as u8;
+        Some(at.min(of - 1) + 1)
+    }
 }
 
 /// Which limb a condition measures.
