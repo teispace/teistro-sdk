@@ -1112,8 +1112,9 @@ provider's DUT1).
       akṣara-lagna (C353, no gloss), the pakshi and Lal Kitab tables
       (built, handed to readers of Tamil and Urdu), Ibn Ezra's weights
       (no open scan) and Jaimini's Rudra, Maheshwara and Sudasa (no
-      legible text); Saravali's readings, Phaladeepika chs. 13 and 14,
-      BPHS ch. 83's curses, ch. 85's inauspicious births and Phaladeepika ch. 13 v. 8's are built. Pick the next item from
+      legible text); Saravali's readings (ch. 48 and ch. 51 v. 110's
+      dwadasamsas included), Phaladeepika chs. 13 and 14, BPHS ch. 83's
+      curses and ch. 85's inauspicious births are built. Pick the next item from
       `04-yogas-doshas.md` and the roadmap, and research it first.
    5. **The hardening pass**: every gate, the parity checklist, sizes and
       the bench read against their budgets, every module's design page
@@ -1151,8 +1152,6 @@ provider's DUT1).
      legitimately open; C208 waits on the Greek.
    - The outer planets' wheel (`western-outer-planets.md` step 5) waits
      on vetted names for the three in every strict locale.
-   - Progressions do not cover contacts to the radical midheaven or the
-     parallels.
    - Lilly's collection and frustration are untested in his own figures,
      C235 is open, and C230 rests on recast figures.
 
