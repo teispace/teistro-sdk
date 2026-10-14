@@ -107,20 +107,33 @@ IN_USE = _reader()
 
 @unittest.skipIf(IN_USE is None, "the allocator's bytes in use cannot be read here")
 class NothingIsKept(WithLibrary):
-    def least_growth(self, cycle: Callable[[], None]) -> int:
-        """The least the bytes in use grew over one of `RUNS` runs."""
+    def assert_gives_back(self, cycle: Callable[[], None]) -> None:
+        """At least one of `RUNS` runs grows the bytes in use within `BUDGET`.
+
+        A failure names every run's growth and one run's over four times the
+        cycles: a leak grows with the cycles, and what the allocator keeps
+        for itself does not.
+        """
         assert IN_USE is not None
 
-        def run() -> int:
+        def run(cycles: int) -> int:
             gc.collect()
             before = IN_USE()
-            for _ in range(CYCLES):
+            for _ in range(cycles):
                 cycle()
             gc.collect()
             return IN_USE() - before
 
-        run()
-        return min(run() for _ in range(RUNS))
+        run(CYCLES)
+        grown = [run(CYCLES) for _ in range(RUNS)]
+        if min(grown) <= BUDGET:
+            return
+        longer = run(4 * CYCLES)
+        self.fail(
+            f"the bytes in use grew {grown} over {RUNS} runs of {CYCLES} cycles "
+            f"({min(grown) / CYCLES:.0f} a cycle at least), and {longer} over "
+            f"{4 * CYCLES}; the budget is {BUDGET}"
+        )
 
     def test_a_context_closed_or_dropped_gives_back_its_memory(self) -> None:
         def closed() -> None:
@@ -133,7 +146,7 @@ class NothingIsKept(WithLibrary):
 
         for cycle in (closed, dropped):
             with self.subTest(cycle=cycle.__name__):
-                self.assertLessEqual(self.least_growth(cycle), BUDGET)
+                self.assert_gives_back(cycle)
 
     def test_charts_and_positions_give_back_their_answers(self) -> None:
         place = Observer(
@@ -145,7 +158,7 @@ class NothingIsKept(WithLibrary):
                 ctx.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700)
                 ctx.positions(instants=[2451545.0, 2451546.0], bodies=[Body.SUN, Body.MOON])
 
-            self.assertLessEqual(self.least_growth(answered), BUDGET)
+            self.assert_gives_back(answered)
 
 
 if __name__ == "__main__":
