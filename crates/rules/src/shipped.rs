@@ -55,6 +55,9 @@ const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
 const PARIJATA: &str = include_str!("../rules/classical-parijata.json");
 /// Phaladeepika ch. 13's evils at birth and their antidotes.
 const PHALADEEPIKA: &str = include_str!("../rules/classical-phaladeepika-arishta.json");
+/// The rest of Phaladeepika ch. 13 v. 8: the padas of the Moon that
+/// harm a parent, the native or the line.
+const PHALADEEPIKA_JANMA: &str = include_str!("../rules/classical-phaladeepika-janma.json");
 /// The Nabhasa yogas of BPHS ch. 35.
 const NABHASA: &str = include_str!("../rules/classical-nabhasa.json");
 /// The lunar yogas of BPHS ch. 37 and the solar yogas of ch. 38.
@@ -137,6 +140,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PHALADEEPIKA_MARANA));
     rules.append(&mut read(SHAPA));
     rules.append(&mut read(JANMA));
+    rules.append(&mut read(PHALADEEPIKA_JANMA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -366,7 +370,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1726);
+        assert_eq!(rules.len(), 1741);
         for rule in &rules {
             let rank = rule
                 .source

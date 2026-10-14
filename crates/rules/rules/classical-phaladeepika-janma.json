@@ -1,0 +1,512 @@
+{
+  "rules": [
+    {
+      "key": "PHALADEEPIKA_PUSHYA_PURVA_ASHADHA_CHITRA_PADA_1",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in the first pada of Pushya, Purva Ashadha or Chitra, whose four padas the verse gives to the father, the mother, the native and the maternal uncle in turn. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "PUSHYA",
+            "PURVA_ASHADHA",
+            "CHITRA"
+          ],
+          "padas": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the father's death"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUSHYA_PURVA_ASHADHA_CHITRA_PADA_2",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in the second pada of Pushya, Purva Ashadha or Chitra, whose four padas the verse gives to the father, the mother, the native and the maternal uncle in turn. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "PUSHYA",
+            "PURVA_ASHADHA",
+            "CHITRA"
+          ],
+          "padas": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the mother's death"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUSHYA_PURVA_ASHADHA_CHITRA_PADA_3",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in the third pada of Pushya, Purva Ashadha or Chitra, whose four padas the verse gives to the father, the mother, the native and the maternal uncle in turn. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "PUSHYA",
+            "PURVA_ASHADHA",
+            "CHITRA"
+          ],
+          "padas": [
+            3
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the native's own death"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUSHYA_PURVA_ASHADHA_CHITRA_PADA_4",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in the fourth pada of Pushya, Purva Ashadha or Chitra, whose four padas the verse gives to the father, the mother, the native and the maternal uncle in turn. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "PUSHYA",
+            "PURVA_ASHADHA",
+            "CHITRA"
+          ],
+          "padas": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the maternal uncle's death"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MULA_PADA_1_FATHER",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Mula's first pada, the lagna with no benefic in it or aspecting it. Ashlesha's padas take Mula's results reversed (the Sanskrit's vyastam), its fourth pada Mula's first, as Ojha tabulates them. The verse's closing \"if the lagna has no tie to a benefic\" is read, as Ojha tabulates it, as binding all eight figures of Mula and Ashlesha, the prosperous ones too, and as no benefic in or aspecting the lagna, Sastri's \"by occupation or by aspect\" (C395). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "MULA"
+          ],
+          "padas": [
+            1
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the father's ruin"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ASHLESHA_PADA_4_FATHER",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Ashlesha's fourth pada, the lagna with no benefic in it or aspecting it. Ashlesha's padas take Mula's results reversed (the Sanskrit's vyastam), its fourth pada Mula's first, as Ojha tabulates them. The verse's closing \"if the lagna has no tie to a benefic\" is read, as Ojha tabulates it, as binding all eight figures of Mula and Ashlesha, the prosperous ones too, and as no benefic in or aspecting the lagna, Sastri's \"by occupation or by aspect\" (C395). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "ASHLESHA"
+          ],
+          "padas": [
+            4
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the father's ruin"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MULA_PADA_2_MOTHER",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Mula's second pada, the lagna with no benefic in it or aspecting it. Ashlesha's padas take Mula's results reversed (the Sanskrit's vyastam), its fourth pada Mula's first, as Ojha tabulates them. The verse's closing \"if the lagna has no tie to a benefic\" is read, as Ojha tabulates it, as binding all eight figures of Mula and Ashlesha, the prosperous ones too, and as no benefic in or aspecting the lagna, Sastri's \"by occupation or by aspect\" (C395). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "MULA"
+          ],
+          "padas": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the mother's ruin"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ASHLESHA_PADA_3_MOTHER",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Ashlesha's third pada, the lagna with no benefic in it or aspecting it. Ashlesha's padas take Mula's results reversed (the Sanskrit's vyastam), its fourth pada Mula's first, as Ojha tabulates them. The verse's closing \"if the lagna has no tie to a benefic\" is read, as Ojha tabulates it, as binding all eight figures of Mula and Ashlesha, the prosperous ones too, and as no benefic in or aspecting the lagna, Sastri's \"by occupation or by aspect\" (C395). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "ASHLESHA"
+          ],
+          "padas": [
+            3
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the mother's ruin"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MULA_PADA_3_LINE",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Mula's third pada, the lagna with no benefic in it or aspecting it. Ashlesha's padas take Mula's results reversed (the Sanskrit's vyastam), its fourth pada Mula's first, as Ojha tabulates them. The verse's closing \"if the lagna has no tie to a benefic\" is read, as Ojha tabulates it, as binding all eight figures of Mula and Ashlesha, the prosperous ones too, and as no benefic in or aspecting the lagna, Sastri's \"by occupation or by aspect\" (C395). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "MULA"
+          ],
+          "padas": [
+            3
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the ruin of the family line"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ASHLESHA_PADA_2_LINE",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Ashlesha's second pada, the lagna with no benefic in it or aspecting it. Ashlesha's padas take Mula's results reversed (the Sanskrit's vyastam), its fourth pada Mula's first, as Ojha tabulates them. The verse's closing \"if the lagna has no tie to a benefic\" is read, as Ojha tabulates it, as binding all eight figures of Mula and Ashlesha, the prosperous ones too, and as no benefic in or aspecting the lagna, Sastri's \"by occupation or by aspect\" (C395). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "ASHLESHA"
+          ],
+          "padas": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the ruin of the family line"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MULA_PADA_4_PROSPERITY",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Mula's fourth pada, the lagna with no benefic in it or aspecting it. Ashlesha's padas take Mula's results reversed (the Sanskrit's vyastam), its fourth pada Mula's first, as Ojha tabulates them. The verse's closing \"if the lagna has no tie to a benefic\" is read, as Ojha tabulates it, as binding all eight figures of Mula and Ashlesha, the prosperous ones too, and as no benefic in or aspecting the lagna, Sastri's \"by occupation or by aspect\" (C395). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "MULA"
+          ],
+          "padas": [
+            4
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "prosperity and wealth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ASHLESHA_PADA_1_PROSPERITY",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Ashlesha's first pada, the lagna with no benefic in it or aspecting it. Ashlesha's padas take Mula's results reversed (the Sanskrit's vyastam), its fourth pada Mula's first, as Ojha tabulates them. The verse's closing \"if the lagna has no tie to a benefic\" is read, as Ojha tabulates it, as binding all eight figures of Mula and Ashlesha, the prosperous ones too, and as no benefic in or aspecting the lagna, Sastri's \"by occupation or by aspect\" (C395). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "MOON",
+          "nakshatras": [
+            "ASHLESHA"
+          ],
+          "padas": [
+            1
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "prosperity and wealth"
+        }
+      ]
+    }
+  ]
+}

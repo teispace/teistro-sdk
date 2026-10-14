@@ -131,9 +131,10 @@ Phaladeepika XIII, Jataka Parijata IV), all of which the SDK now ships
 (`rules-engine.md`). The curses of BPHS ch. 83 and the Gandanta of ch. 92
 in its three kinds are built too, and so are the inauspicious births of
 ch. 85 with what its remedial chapters say, all but those the chart does
-not hold (`rules-engine.md`). Phaladeepika XIII's Vishaghatika, Thyajya and
-Dinamrityu births are rank 1 and unbuilt; the muhurta module's lagna
-tyajya is the electional rule, not these.
+not hold (`rules-engine.md`). Phaladeepika XIII v. 8's Dinamrityu, Dinaroga and Vishaghati births are
+built too (C393, C394); its "Thyajya" is ch. 25 v. 17's Gulika joined with
+the vishaghati, an overlap of periods, and is not. The muhurta module's
+lagna tyajya is the electional rule, not these.
 
 ### What the texts do not say
 

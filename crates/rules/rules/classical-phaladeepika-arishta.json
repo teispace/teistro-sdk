@@ -1,6 +1,805 @@
 {
   "rules": [
     {
+      "key": "PHALADEEPIKA_BIRTH_IN_DINAMRITYU",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "A birth by day in Dinamrityu: the Moon in the first pada of Dhanishtha or Hasta, the second of Vishakha or Ardra, the third of Uttara Bhadrapada or Ashlesha, or the fourth of Bharani or Mula; the child dies very soon. Phaladeepika names it without defining it; Sastri's footnote quotes Kalaprakasika for its padas, Ojha's commentary gives the same, and both say it counts only by day, a night birth bearing no fault (C393). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "birth-by-day"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-nakshatra",
+              "planet": "MOON",
+              "nakshatras": [
+                "DHANISHTHA",
+                "HASTA"
+              ],
+              "padas": [
+                1
+              ]
+            },
+            {
+              "type": "planet-in-nakshatra",
+              "planet": "MOON",
+              "nakshatras": [
+                "VISHAKHA",
+                "ARDRA"
+              ],
+              "padas": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-nakshatra",
+              "planet": "MOON",
+              "nakshatras": [
+                "UTTARA_BHADRAPADA",
+                "ASHLESHA"
+              ],
+              "padas": [
+                3
+              ]
+            },
+            {
+              "type": "planet-in-nakshatra",
+              "planet": "MOON",
+              "nakshatras": [
+                "BHARANI",
+                "MULA"
+              ],
+              "padas": [
+                4
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_BIRTH_IN_DINAROGA",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "A birth by day in Dinaroga (the verse's ruk): the Moon in the first pada of Ashlesha or Uttara Bhadrapada, the second of Bharani or Mula, the third of Uttara Phalguni or Shravana, or the fourth of Swati or Mrigashira; the child dies very soon. Phaladeepika names it without defining it; Sastri's footnote quotes Kalaprakasika for its padas, Ojha's commentary gives the same, and both say it counts only by day, a night birth bearing no fault (C393). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "birth-by-day"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-nakshatra",
+              "planet": "MOON",
+              "nakshatras": [
+                "ASHLESHA",
+                "UTTARA_BHADRAPADA"
+              ],
+              "padas": [
+                1
+              ]
+            },
+            {
+              "type": "planet-in-nakshatra",
+              "planet": "MOON",
+              "nakshatras": [
+                "BHARANI",
+                "MULA"
+              ],
+              "padas": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-nakshatra",
+              "planet": "MOON",
+              "nakshatras": [
+                "UTTARA_PHALGUNI",
+                "SHRAVANA"
+              ],
+              "padas": [
+                3
+              ]
+            },
+            {
+              "type": "planet-in-nakshatra",
+              "planet": "MOON",
+              "nakshatras": [
+                "SWATI",
+                "MRIGASHIRA"
+              ],
+              "padas": [
+                4
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_BIRTH_IN_VISHAGHATI",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "A birth in the nakshatra's four ghatis of poison (vishaghati); the child dies very soon. The verse gives no table and Sastri none; Ojha's commentary gives each star's, from Ashwini's 50th ghati to its 54th, and counts them as sixtieths of the star's own span, so each window is parts s+1 to s+4 of 60. His table takes the common value in the five stars where Raman's Muhurtha differs (C165), and the muhurta module ships neither (C394). Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "ASHWINI"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    51,
+                    52,
+                    53,
+                    54
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "BHARANI"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    25,
+                    26,
+                    27,
+                    28
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "KRITTIKA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    31,
+                    32,
+                    33,
+                    34
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "ROHINI"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    41,
+                    42,
+                    43,
+                    44
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "MRIGASHIRA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    15,
+                    16,
+                    17,
+                    18
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "ARDRA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    22,
+                    23,
+                    24,
+                    25
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "PUNARVASU"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    31,
+                    32,
+                    33,
+                    34
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "PUSHYA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    21,
+                    22,
+                    23,
+                    24
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "ASHLESHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    33,
+                    34,
+                    35,
+                    36
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "MAGHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    31,
+                    32,
+                    33,
+                    34
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "PURVA_PHALGUNI"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    21,
+                    22,
+                    23,
+                    24
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "UTTARA_PHALGUNI"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    19,
+                    20,
+                    21,
+                    22
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "HASTA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    22,
+                    23,
+                    24,
+                    25
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "CHITRA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    21,
+                    22,
+                    23,
+                    24
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "SWATI"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    15,
+                    16,
+                    17,
+                    18
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "VISHAKHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    15,
+                    16,
+                    17,
+                    18
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "ANURADHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    11,
+                    12,
+                    13,
+                    14
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "JYESHTHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    15,
+                    16,
+                    17,
+                    18
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "MULA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    57,
+                    58,
+                    59,
+                    60
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "PURVA_ASHADHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    25,
+                    26,
+                    27,
+                    28
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "UTTARA_ASHADHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    21,
+                    22,
+                    23,
+                    24
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "SHRAVANA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    11,
+                    12,
+                    13,
+                    14
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "DHANISHTHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    11,
+                    12,
+                    13,
+                    14
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "SHATABHISHA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    19,
+                    20,
+                    21,
+                    22
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "PURVA_BHADRAPADA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    17,
+                    18,
+                    19,
+                    20
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "UTTARA_BHADRAPADA"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    25,
+                    26,
+                    27,
+                    28
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "REVATI"
+                  ]
+                },
+                {
+                  "type": "limb-part",
+                  "limb": "nakshatra",
+                  "of": 60,
+                  "parts": [
+                    31,
+                    32,
+                    33,
+                    34
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
       "key": "PHALADEEPIKA_BIRTH_IN_A_GANDANTA",
       "category": "arishta",
       "source": {
