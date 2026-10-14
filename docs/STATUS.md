@@ -1152,8 +1152,10 @@ provider's DUT1).
      legitimately open; C208 waits on the Greek.
    - The outer planets' wheel (`western-outer-planets.md` step 5) waits
      on vetted names for the three in every strict locale.
-   - Lilly's collection and frustration are untested in his own figures,
-     C235 is open, and C230 rests on recast figures.
+   - Lilly's dated figures name frustration only to deny it (pp. 220,
+     387, 402) and collection only as a wish (p. 239); p. 219 is tested
+     for both. C235 and C397 (a co-significator's contact read as help,
+     not prohibition) are open, and C230 rests on recast figures.
 
 1. Read this file, then [`QUESTIONS.md`](QUESTIONS.md), which is the
    authority on what is open — this step names the open questions and

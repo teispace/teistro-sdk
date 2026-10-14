@@ -294,6 +294,13 @@ question, and need no ephemeris.
   recast it is also 8′ past the sextile, where the printed places leave
   it 13′ short. One figure does not make a rule, so nothing reports a
   relay; each of the two contacts stands in the timeline.
+- **C397: a co-significator's contact.** On p. 219 the Moon squares
+  Saturn and the Sun trines him before Venus perfects her trine, and
+  Lilly finds "no abscission or frustration": he reads the Moon as
+  translating Mars's influence and the Sun, the seller's significator,
+  as "in perfect △ with ♄", both for the purchase. p. 111 counts each
+  as a prohibition, and the report still does; two figures (this and
+  p. 385's Moon) do not yet make the exception a rule.
 
 ## Order of work
 
@@ -310,4 +317,10 @@ question, and need no ephemeris.
    the void Moon prohibiting nothing, C234), p. 437 (nothing perfects)
    p. 177 (the Moon translating, the seventh way held), p. 452 (the
    Moon translating by trine, received, on the printed places) and
-   p. 389 (to a retrograde significator, on the printed places).
+   p. 389 (to a retrograde significator, on the printed places) and
+   p. 219 (against a retrograde, nothing frustrating; the Moon's and the
+   Sun's contacts reported as prohibitions he reads as help, C397).
+   Frustration and collection appear in his dated figures only by their
+   absence: the scan's text (archive.org `ca-william-lilly`) names
+   frustration in a judgement on pp. 220, 387 and 402, each time to say
+   there was none, and collection only on p. 239, wishing for one.

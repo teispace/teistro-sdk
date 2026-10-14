@@ -1915,6 +1915,81 @@ mod tests {
         assert_eq!(matter.ways.held, []);
     }
 
+    /// Lilly's "If I should purchase Master B. his houses" (*Christian
+    /// Astrology* p. 219), "31 Mar. 1634, 6 Hor. P.M." in London, recast
+    /// by pyswisseph (Moshier) at the printed Ascendant, Libra 13°45′: two
+    /// minutes from the printed time, Saturn, Jupiter and Mercury within
+    /// 5′ of the figure and the Moon 16′. Venus, the Ascendant's lady, "was applying to a △ of ♄
+    /// Lord of the fourth" with "no abscission or frustration ere the
+    /// perfect aspect", and "both Significators strongly applyed", "for
+    /// ♄ is Retrograde" (p. 220): p. 107's third kind, and nothing
+    /// frustrates. He reads the Sun "in perfect △ with ♄" and the Moon
+    /// "translating the influence of ♂" to Saturn by square as arguments
+    /// for, where p. 111's prohibition counts both; that disagreement is
+    /// recorded, not settled (C397). Venus is in detriment, so no way
+    /// holds on her dignity, and he bought the houses by reception.
+    #[test]
+    fn lillys_houses_figure_applies_against_a_retrograde_and_nothing_frustrates() {
+        let places = [
+            261.4667, 85.6172, 161.1513, 20.8026, 14.4446, 33.7214, 169.37,
+        ];
+        let speeds = [-0.0174, 0.1509, -0.1381, 0.9775, 1.2362, 1.9397, 12.0412];
+        let house = |n| House::try_new(n).unwrap();
+        let standing = Standing {
+            houses: [3, 9, 11, 7, 7, 7, 11].map(house),
+            sect: Sect::Day,
+            dignities: &DignityRules::LILLY,
+        };
+        let rules = PerfectionRules::LILLY;
+        let horizon = rules.horizon_for(&places, &speeds, Venus, Saturn).unwrap();
+        let timeline = AspectTimeline::projected(places, speeds, horizon).unwrap();
+        let matter = perfection(&timeline, Venus, Saturn, &standing, &rules).unwrap();
+        let application = matter.application.unwrap();
+        assert_eq!(
+            (application.aspect, application.applying, application.kind),
+            (
+                PtolemaicAspect::Trine,
+                Venus,
+                ApplicationKind::AgainstRetrograde
+            )
+        );
+        assert!(
+            (application.days - 5.60).abs() < 0.01,
+            "{}",
+            application.days
+        );
+        assert!(
+            matter
+                .impediments
+                .iter()
+                .all(|impediment| impediment.kind != ImpedimentKind::Frustration)
+        );
+        // The two contacts he reads as help (C397).
+        let thirds: Vec<_> = matter
+            .impediments
+            .iter()
+            .map(|impediment| (impediment.kind, impediment.third, impediment.aspect))
+            .collect();
+        assert_eq!(
+            thirds,
+            [
+                (
+                    ImpedimentKind::Prohibition,
+                    Some(Moon),
+                    PtolemaicAspect::Square
+                ),
+                (
+                    ImpedimentKind::Prohibition,
+                    Some(Sun),
+                    PtolemaicAspect::Trine
+                ),
+            ]
+        );
+        assert_eq!(matter.translations, []);
+        assert_eq!(matter.collections, []);
+        assert_eq!(matter.ways.held, []);
+    }
+
     /// Lilly's "A Lady, if marry the Gentleman desired?" (*Christian
     /// Astrology* p. 385), recast as the considerations' figure is: the
     /// Sun, lord of the Ascendant, and Saturn, the seventh's lord, apply
