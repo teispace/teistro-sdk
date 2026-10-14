@@ -115,8 +115,11 @@ jobs:
         run: cargo xtask check-parity
       - name: The packages installed into throwaway projects and run
         run: cargo xtask check-package
-      # What the row built and measured, for `SIZES.md` (the `sizes` job).
-      - uses: actions/upload-artifact@v4
+      # What the row built and measured, for `SIZES.md` (the `sizes` job),
+      # kept when a later step fails, as the wasm row's is: a test failing
+      # on one platform must not leave the record unable to move.
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
         with:
           name: sizes-${{ matrix.platform }}
           path: target/sizes/
@@ -153,7 +156,8 @@ jobs:
           docker run --rm -v "$PWD:/w" -w /w -e TEISTRO_STRICT -e GITHUB_SHA -e GITHUB_RUN_ID
           ${{ matrix.container }}
           sh xtask/alpine.sh check-c check-node check-python check-java check-package
-      - uses: actions/upload-artifact@v4
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
         with:
           name: sizes-${{ matrix.platform }}
           path: target/sizes/
