@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 183);
+    assert_eq!(rules.len(), 184);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -101,7 +101,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         }
     }
     assert_eq!(charts, 93);
-    assert_eq!((cancelled, saravali_cancelled), (446, 8));
+    assert_eq!((cancelled, saravali_cancelled), (448, 8));
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
     assert_eq!(
         counts.as_slice(),
@@ -205,7 +205,7 @@ fn phaladeepika_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
             .collect()
     };
     let (evils, antidotes) = (of_text("arishta"), of_text("arishta-bhanga"));
-    assert_eq!((evils.len(), antidotes.len()), (12, 3));
+    assert_eq!((evils.len(), antidotes.len()), (13, 3));
     let mut expected: Vec<&str> = antidotes.iter().map(|rule| rule.key.as_str()).collect();
     expected.insert(1, "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA");
     for rule in evils {
@@ -359,7 +359,7 @@ const SILENT: [&str; 80] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 183] = [
+const ANSWERED: [(&str, usize); 184] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
@@ -598,6 +598,7 @@ const ANSWERED: [(&str, usize); 183] = [
     ("PHALADEEPIKA_BIRTH_IN_DINAMRITYU", 0),
     ("PHALADEEPIKA_BIRTH_IN_DINAROGA", 0),
     ("PHALADEEPIKA_BIRTH_IN_VISHAGHATI", 0),
+    ("PHALADEEPIKA_LAGNA_AT_A_MRITYU_BHAGA", 6),
     ("PHALADEEPIKA_LAGNA_OR_MOON_BETWEEN_MALEFICS", 0),
     ("PHALADEEPIKA_MALEFICS_IN_THE_EIGHTH_AND_THE_KENDRAS", 0),
     ("PHALADEEPIKA_MALEFICS_IN_THE_LAGNA_AND_THE_EIGHTH", 0),
@@ -661,8 +662,9 @@ const ANSWERED: [(&str, usize); 183] = [
 #[test]
 fn the_generator_makes_one_rule_a_reading() {
     let rules = shipped::readings();
-    assert_eq!(rules.len(), 1064);
+    assert_eq!(rules.len(), 1220);
     every_family_is_whole(rules);
+    dwadasamsas_carry_their_signs(rules);
     // What the generator builds is a rule like any other: it writes out in the
     // language and reads back the same, outcome and all.
     let written = serde_json::to_value(rules).unwrap();
@@ -716,13 +718,15 @@ fn the_generator_makes_one_rule_a_reading() {
     // each wants one graha in one sign and another aspecting it, which 93
     // charts cannot reach for every pair.
     let silent = counts.iter().filter(|(_, count)| *count == 0).count();
-    assert_eq!(silent, 453);
+    // A twelfth of a sign is narrower still: 96 of the 144 dwadasamsas
+    // rise in none of the 93.
+    assert_eq!(silent, 549);
     // A graha stands in exactly one sign in every chart, so each of Saravali's
     // chapters answers 93 times over the 93.
     // One part of one sign rises in every chart, so each of Saravali's two
     // divisions answers 93 times over the 93 — which says the bands tile a
     // sign with no gap and no overlap.
-    for division in ["HORA", "DECANATE", "NAVAMSA"] {
+    for division in ["LAGNA", "HORA", "DECANATE", "NAVAMSA", "DWADASAMSA"] {
         let total: usize = counts
             .iter()
             .filter(|(key, _)| key.starts_with(&format!("SARAVALI_{division}_")))
@@ -779,7 +783,7 @@ fn the_generator_makes_one_rule_a_reading() {
 }
 
 /// What each reading answers over the 93 recorded charts.
-static READINGS: [(&str, usize); 1064] = [
+static READINGS: [(&str, usize); 1220] = [
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
@@ -1031,6 +1035,150 @@ static READINGS: [(&str, usize); 1064] = [
     ("SARAVALI_DECANATE_3_OF_SCORPIO", 2),
     ("SARAVALI_DECANATE_3_OF_TAURUS", 2),
     ("SARAVALI_DECANATE_3_OF_VIRGO", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_LEO", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_LIBRA", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_PISCES", 2),
+    ("SARAVALI_DWADASAMSA_10_OF_SAGITTARIUS", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_SCORPIO", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_TAURUS", 0),
+    ("SARAVALI_DWADASAMSA_10_OF_VIRGO", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_LEO", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_LIBRA", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_PISCES", 9),
+    ("SARAVALI_DWADASAMSA_11_OF_SAGITTARIUS", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_SCORPIO", 0),
+    ("SARAVALI_DWADASAMSA_11_OF_TAURUS", 1),
+    ("SARAVALI_DWADASAMSA_11_OF_VIRGO", 0),
+    ("SARAVALI_DWADASAMSA_12_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_12_OF_ARIES", 2),
+    ("SARAVALI_DWADASAMSA_12_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_12_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_12_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_12_OF_LEO", 0),
+    ("SARAVALI_DWADASAMSA_12_OF_LIBRA", 5),
+    ("SARAVALI_DWADASAMSA_12_OF_PISCES", 0),
+    ("SARAVALI_DWADASAMSA_12_OF_SAGITTARIUS", 0),
+    ("SARAVALI_DWADASAMSA_12_OF_SCORPIO", 1),
+    ("SARAVALI_DWADASAMSA_12_OF_TAURUS", 1),
+    ("SARAVALI_DWADASAMSA_12_OF_VIRGO", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_LEO", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_LIBRA", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_PISCES", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_SAGITTARIUS", 1),
+    ("SARAVALI_DWADASAMSA_1_OF_SCORPIO", 0),
+    ("SARAVALI_DWADASAMSA_1_OF_TAURUS", 1),
+    ("SARAVALI_DWADASAMSA_1_OF_VIRGO", 1),
+    ("SARAVALI_DWADASAMSA_2_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_2_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_2_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_2_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_2_OF_GEMINI", 3),
+    ("SARAVALI_DWADASAMSA_2_OF_LEO", 0),
+    ("SARAVALI_DWADASAMSA_2_OF_LIBRA", 1),
+    ("SARAVALI_DWADASAMSA_2_OF_PISCES", 2),
+    ("SARAVALI_DWADASAMSA_2_OF_SAGITTARIUS", 0),
+    ("SARAVALI_DWADASAMSA_2_OF_SCORPIO", 1),
+    ("SARAVALI_DWADASAMSA_2_OF_TAURUS", 0),
+    ("SARAVALI_DWADASAMSA_2_OF_VIRGO", 0),
+    ("SARAVALI_DWADASAMSA_3_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_3_OF_ARIES", 1),
+    ("SARAVALI_DWADASAMSA_3_OF_CANCER", 2),
+    ("SARAVALI_DWADASAMSA_3_OF_CAPRICORN", 1),
+    ("SARAVALI_DWADASAMSA_3_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_3_OF_LEO", 0),
+    ("SARAVALI_DWADASAMSA_3_OF_LIBRA", 1),
+    ("SARAVALI_DWADASAMSA_3_OF_PISCES", 0),
+    ("SARAVALI_DWADASAMSA_3_OF_SAGITTARIUS", 0),
+    ("SARAVALI_DWADASAMSA_3_OF_SCORPIO", 5),
+    ("SARAVALI_DWADASAMSA_3_OF_TAURUS", 1),
+    ("SARAVALI_DWADASAMSA_3_OF_VIRGO", 0),
+    ("SARAVALI_DWADASAMSA_4_OF_AQUARIUS", 8),
+    ("SARAVALI_DWADASAMSA_4_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_4_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_4_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_4_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_4_OF_LEO", 1),
+    ("SARAVALI_DWADASAMSA_4_OF_LIBRA", 0),
+    ("SARAVALI_DWADASAMSA_4_OF_PISCES", 0),
+    ("SARAVALI_DWADASAMSA_4_OF_SAGITTARIUS", 1),
+    ("SARAVALI_DWADASAMSA_4_OF_SCORPIO", 2),
+    ("SARAVALI_DWADASAMSA_4_OF_TAURUS", 1),
+    ("SARAVALI_DWADASAMSA_4_OF_VIRGO", 1),
+    ("SARAVALI_DWADASAMSA_5_OF_AQUARIUS", 2),
+    ("SARAVALI_DWADASAMSA_5_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_5_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_5_OF_CAPRICORN", 1),
+    ("SARAVALI_DWADASAMSA_5_OF_GEMINI", 1),
+    ("SARAVALI_DWADASAMSA_5_OF_LEO", 2),
+    ("SARAVALI_DWADASAMSA_5_OF_LIBRA", 0),
+    ("SARAVALI_DWADASAMSA_5_OF_PISCES", 1),
+    ("SARAVALI_DWADASAMSA_5_OF_SAGITTARIUS", 0),
+    ("SARAVALI_DWADASAMSA_5_OF_SCORPIO", 2),
+    ("SARAVALI_DWADASAMSA_5_OF_TAURUS", 0),
+    ("SARAVALI_DWADASAMSA_5_OF_VIRGO", 1),
+    ("SARAVALI_DWADASAMSA_6_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_6_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_6_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_6_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_6_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_6_OF_LEO", 0),
+    ("SARAVALI_DWADASAMSA_6_OF_LIBRA", 0),
+    ("SARAVALI_DWADASAMSA_6_OF_PISCES", 2),
+    ("SARAVALI_DWADASAMSA_6_OF_SAGITTARIUS", 2),
+    ("SARAVALI_DWADASAMSA_6_OF_SCORPIO", 0),
+    ("SARAVALI_DWADASAMSA_6_OF_TAURUS", 1),
+    ("SARAVALI_DWADASAMSA_6_OF_VIRGO", 4),
+    ("SARAVALI_DWADASAMSA_7_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_7_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_7_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_7_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_7_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_7_OF_LEO", 2),
+    ("SARAVALI_DWADASAMSA_7_OF_LIBRA", 1),
+    ("SARAVALI_DWADASAMSA_7_OF_PISCES", 6),
+    ("SARAVALI_DWADASAMSA_7_OF_SAGITTARIUS", 1),
+    ("SARAVALI_DWADASAMSA_7_OF_SCORPIO", 0),
+    ("SARAVALI_DWADASAMSA_7_OF_TAURUS", 0),
+    ("SARAVALI_DWADASAMSA_7_OF_VIRGO", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_CANCER", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_GEMINI", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_LEO", 1),
+    ("SARAVALI_DWADASAMSA_8_OF_LIBRA", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_PISCES", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_SAGITTARIUS", 2),
+    ("SARAVALI_DWADASAMSA_8_OF_SCORPIO", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_TAURUS", 0),
+    ("SARAVALI_DWADASAMSA_8_OF_VIRGO", 1),
+    ("SARAVALI_DWADASAMSA_9_OF_AQUARIUS", 0),
+    ("SARAVALI_DWADASAMSA_9_OF_ARIES", 0),
+    ("SARAVALI_DWADASAMSA_9_OF_CANCER", 1),
+    ("SARAVALI_DWADASAMSA_9_OF_CAPRICORN", 0),
+    ("SARAVALI_DWADASAMSA_9_OF_GEMINI", 1),
+    ("SARAVALI_DWADASAMSA_9_OF_LEO", 1),
+    ("SARAVALI_DWADASAMSA_9_OF_LIBRA", 0),
+    ("SARAVALI_DWADASAMSA_9_OF_PISCES", 0),
+    ("SARAVALI_DWADASAMSA_9_OF_SAGITTARIUS", 0),
+    ("SARAVALI_DWADASAMSA_9_OF_SCORPIO", 1),
+    ("SARAVALI_DWADASAMSA_9_OF_TAURUS", 0),
+    ("SARAVALI_DWADASAMSA_9_OF_VIRGO", 0),
     ("SARAVALI_HORA_1_OF_AQUARIUS", 10),
     ("SARAVALI_HORA_1_OF_ARIES", 1),
     ("SARAVALI_HORA_1_OF_CANCER", 2),
@@ -1159,6 +1307,18 @@ static READINGS: [(&str, usize); 1064] = [
     ("SARAVALI_JUPITER_VENUS_IN_BHAVA_10", 0),
     ("SARAVALI_JUPITER_VENUS_IN_BHAVA_4", 1),
     ("SARAVALI_JUPITER_VENUS_IN_BHAVA_7", 0),
+    ("SARAVALI_LAGNA_AQUARIUS", 10),
+    ("SARAVALI_LAGNA_ARIES", 3),
+    ("SARAVALI_LAGNA_CANCER", 3),
+    ("SARAVALI_LAGNA_CAPRICORN", 2),
+    ("SARAVALI_LAGNA_GEMINI", 5),
+    ("SARAVALI_LAGNA_LEO", 7),
+    ("SARAVALI_LAGNA_LIBRA", 8),
+    ("SARAVALI_LAGNA_PISCES", 22),
+    ("SARAVALI_LAGNA_SAGITTARIUS", 7),
+    ("SARAVALI_LAGNA_SCORPIO", 12),
+    ("SARAVALI_LAGNA_TAURUS", 6),
+    ("SARAVALI_LAGNA_VIRGO", 8),
     ("SARAVALI_MARS_IN_AQUARIUS", 16),
     ("SARAVALI_MARS_IN_AQUARIUS_ASPECTED_BY_JUPITER", 9),
     ("SARAVALI_MARS_IN_AQUARIUS_ASPECTED_BY_MERCURY", 0),
@@ -1957,11 +2117,54 @@ fn every_family_is_whole(rules: &[Rule]) {
         in_angle.into_iter().collect::<Vec<_>>(),
         [("1", 21), ("10", 21), ("4", 21), ("7", 21)]
     );
-    // Two halves and three thirds of each of the twelve signs.
-    assert_eq!(
-        rising.into_iter().collect::<Vec<_>>(),
-        [("DECANATE", 36), ("HORA", 24), ("NAVAMSA", 108)]
-    );
+    assert_eq!(rising.into_iter().collect::<Vec<_>>(), RISING);
+}
+
+/// Saravali's rising divisions: each of the twelve signs whole, and its two
+/// halves, three thirds, nine ninths and twelve twelfths.
+const RISING: [(&str, usize); 5] = [
+    ("DECANATE", 36),
+    ("DWADASAMSA", 144),
+    ("HORA", 24),
+    ("LAGNA", 12),
+    ("NAVAMSA", 108),
+];
+
+/// Ch. 51 v. 110: a dwadasamsa says what its sign says, counted from the
+/// sign it divides, so the first of each is the sign's own reading and the
+/// twelfth of Aries is Pisces rising.
+fn dwadasamsas_carry_their_signs(rules: &[Rule]) {
+    let said = |key: &str| {
+        rules
+            .iter()
+            .find(|rule| rule.key == key)
+            .and_then(Rule::effect)
+            .unwrap()
+    };
+    let signs = [
+        "ARIES",
+        "TAURUS",
+        "GEMINI",
+        "CANCER",
+        "LEO",
+        "VIRGO",
+        "LIBRA",
+        "SCORPIO",
+        "SAGITTARIUS",
+        "CAPRICORN",
+        "AQUARIUS",
+        "PISCES",
+    ];
+    for (from, sign) in signs.iter().enumerate() {
+        for nth in 1..=12 {
+            let counted = signs[(from + nth - 1) % 12];
+            assert_eq!(
+                said(&format!("SARAVALI_DWADASAMSA_{nth}_OF_{sign}")),
+                said(&format!("SARAVALI_LAGNA_{counted}")),
+                "{nth} of {sign}"
+            );
+        }
+    }
 }
 
 /// Saravali's aspect verses, whole: each of the seven in each of the twelve

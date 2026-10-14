@@ -17,6 +17,7 @@
 //! | key | source |
 //! |---|---|
 //! | `MRITYU_BHAGA` | Jataka Parijata ch. 1 v. 57 and its translator's statement of the other grahas' and the lagna's |
+//! | `MRITYU_BHAGA_LAGNA_PHALADEEPIKA` | the lagna's row of Phaladeepika ch. 13 v. 11 (C380) |
 //! | `MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA` | the Moon's row in Brihat Prajapatya, as that translator quotes it |
 //! | `PUSHKARA_BHAGA_MOON` | Jataka Parijata ch. 1 v. 58 |
 //! | `DAGDHA_RASHI` | Muhurta Chintamani, not read at rank 1; the engine's table and two secondary sources agree |
@@ -363,6 +364,7 @@ mod tests {
             [
                 "DAGDHA_RASHI",
                 "MRITYU_BHAGA",
+                "MRITYU_BHAGA_LAGNA_PHALADEEPIKA",
                 "MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA",
                 "PUSHKARA_BHAGA_MOON"
             ]
@@ -390,6 +392,18 @@ mod tests {
             Some(5)
         );
         assert_eq!(moon("PUSHKARA_BHAGA_MOON").map(SignDegree::get), Some(19));
+        // Phaladeepika's v. 11 row is the lagna's, and has no Moon.
+        let phaladeepika = tables.get("MRITYU_BHAGA_LAGNA_PHALADEEPIKA").unwrap();
+        assert_eq!(
+            phaladeepika
+                .degree(Body::Lagna, Rashi::Aquarius)
+                .map(SignDegree::get),
+            Some(21)
+        );
+        assert_eq!(
+            phaladeepika.degree(Body::Graha(Graha::Moon), Rashi::Aries),
+            None
+        );
         assert_eq!(
             tables
                 .get("MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA")

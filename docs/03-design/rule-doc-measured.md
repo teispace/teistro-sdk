@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2398 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 179 in `ARISHTAS`, 1064 in `READINGS`, 469 in `NABHASAS`, 657 in `the corpus's own`. Their 8983 conditions are written 3458 ways, which say 3454 things, and the renderer gives those 3454 sentences.
+2555 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 180 in `ARISHTAS`, 1220 in `READINGS`, 469 in `NABHASAS`, 657 in `the corpus's own`. Their 9300 conditions are written 3472 ways, which say 3468 things, and the renderer gives those 3468 sentences.
 
-The 1741 shipped rules are what a consumer evaluates; the corpus's own
+The 1898 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 3454 disagree |
-| every condition of every rule renders | **holds** | 0 of 8983 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 3468 disagree |
+| every condition of every rule renders | **holds** | 0 of 9300 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -48,7 +48,7 @@ a change to what a rule asks changes its prose.
 | `or` | 428 | MARS is combust or MARS is retrograde |
 | `not` | 326 | it is not the case that JUPITER is combust |
 | `planet-in-house` | 1026 | SUN stands in the 1st house |
-| `planet-in-sign` | 861 | SUN stands in LEO |
+| `planet-in-sign` | 1017 | SUN stands in LEO |
 | `planet-dignity` | 221 | the dignity of SUN is exalted |
 | `planet-in-kendra` | 138 | SUN stands in a kendra |
 | `planet-in-trikona` | 15 | SUN stands in a trikona |
@@ -69,7 +69,7 @@ a change to what a rule asks changes its prose.
 | `planet-retrograde` | 22 | MARS is retrograde |
 | `planet-aspects-planet` | 784 | KETU aspects SUN |
 | `planet-aspects-house` | 100 | SUN aspects the 8th house |
-| `planet-at-table-degree` | 11 | SUN stands at the degree MRITYU_BHAGA gives it in its sign |
+| `planet-at-table-degree` | 12 | SUN stands at the degree MRITYU_BHAGA gives it in its sign |
 | `planet-in-table-sign` | 7 | SUN stands in a sign DAGDHA_RASHI gives the birth tithi |
 | `lord-of-house-debilitated` | 5 | the lord of the 1st house is debilitated |
 | `lord-of-house-combust` | 3 | the lord of the 5th house is combust |
@@ -79,7 +79,7 @@ a change to what a rule asks changes its prose.
 | `lagna-in-sign` | 31 | the lagna rises in LEO |
 | `planet-in-house-and-sign` | 26 | SUN stands in the 1st house and in LEO |
 | `planet-at-gandanta` | 4 | SUN stands at a gandanta junction, within the usual 3°20′ |
-| `planet-in-degrees` | 190 | LAGNA stands between 0° and 10° of its sign |
+| `planet-in-degrees` | 346 | LAGNA stands between 0° and 10° of its sign |
 | `panchanga-tithi` | 19 | the birth tithi is AMAVASYA |
 | `panchanga-paksha` | 22 | the birth falls in the SHUKLA paksha |
 | `panchanga-vara` | 10 | the birth weekday is GURUVARA |
@@ -102,7 +102,7 @@ a change to what a rule asks changes its prose.
 | `in-varga` | 18 | in the D2, the lagna rises in CANCER |
 | `count-in-houses` | 412 | at least 1 malefic stands in the 7th from SUN |
 | `count-aspecting` | 27 | at least 1 malefic aspects SUN |
-| `rule` | 1281 | the rule NABHASA_GADA holds |
+| `rule` | 1285 | the rule NABHASA_GADA holds |
 | `at-limb-edge` | 22 | the birth falls within the last 2 ghatikas of the tithi |
 | `limb-part` | 33 | the birth falls in the 1st of 6 equal parts of the tithi |
 | `birth-by-day` | 8 | the birth fell by day |

@@ -895,12 +895,26 @@ Saravali chs. 49, 50 and 51 add a fifth shape and a hundred and sixty-eight
 more readings: the part of a sign that rises — two halves, three thirds and
 nine ninths of each of the twelve. They need no division chart,
 `planet-in-degrees` on the lagna saying it, and the count of parts is data, so
-the chapter that does cut a sign nine ways needed no code at all. Chapter 49
-v. 25, ch. 50 v. 37 and ch. 51 v. 1 make these effects mature in full only
-where the sign, its lord, or the stronger of the navamsa lagna's lord and the
-Moon's navamsa dispositor is strong, and ch. 51 v. 110 carries the sign
-readings over to the dwadasamsas and the rest to the saptamsas; none of that is
-built.
+the chapter that does cut a sign nine ways needed no code at all.
+
+Ch. 48, the sign that rises whole, and ch. 51 v. 110 followed (2026-10-14):
+twelve readings of the lagna in each sign (`SARAVALI_LAGNA_ARIES`, a part
+whose count is one), and a hundred and forty-four of the lagna in each
+dwadasamsa, which v. 110 says read as the signs do. The dwadasamsas count
+from the sign itself (ch. 3 v. 13), so the n-th of a sign carries ch. 48's
+reading of the sign n − 1 on; the table names the division it carries from
+rather than copying the words, and a test holds every one of the 144 to the
+sign it counts to. The 1907 Nirnaya Sagar print reads the navamsa's result
+there for the sign's, which gives no rule from nine readings to twelve
+parts, and Chaturvedi's edition and Santhanam read the sign's. The verse's
+second half reads the remaining divisions as the saptamsa is read, and
+Saravali gives no saptamsa reading, so nothing follows from it. Each chapter
+says when its effects come in full, and none says what follows otherwise:
+ch. 48 where the rising sign or its lord is strong, ch. 49 v. 25 where a
+luminary is strong and aspected by the hora's lord or that lord is in a
+kendra, ch. 50 v. 37 where the decanate's sign is strong or aspected by its
+lord, and ch. 51 v. 1 by the stronger of the navamsa lagna's lord and the
+Moon's navamsa dispositor; none is built.
 
 A test holds the generator to its table — twenty-one distinct pairs, twelve
 signs of six aspects each, every combination of each size once, each of the
