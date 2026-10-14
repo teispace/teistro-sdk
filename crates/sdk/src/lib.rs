@@ -194,6 +194,10 @@ pub use teistro_panchanga::almanac::Panchanga;
 // `sdk.calendar.lunarMonth` says it (`03-design/calendar-indian-lunisolar.md` §9).
 pub use teistro_calendar::lunisolar::MonthKind;
 pub use teistro_panchanga::festival;
+// What a day is said to be: the panchaka, the muhurta yogas, the disha
+// shool and the varjyam, with the tables that place them, so a consumer
+// can read the varjyam's start for a star without computing a day.
+pub use teistro_panchanga::omen;
 // Which of its day's two sunrises a limb's member held, which is how a
 // patro marks vriddhi and kshaya, and the ghati-pala a day's instants
 // read as: both answered by every almanac day.

@@ -146,6 +146,12 @@ pub fn clauses(day: &Panchanga, native: Option<&Native>, rules: &DayRules) -> Ve
         kind: ClauseKind::MuhurtaYoga { yoga: yoga.yoga },
         at: yoga.at,
     }));
+    found.extend(day.omens.varjyam.iter().map(|span| Clause {
+        kind: ClauseKind::Varjyam {
+            nakshatra: span.member,
+        },
+        at: span.inside,
+    }));
     if let Some(native) = native {
         found.extend(day.limbs.nakshatra.iter().map(|span| Clause {
             kind: ClauseKind::Tarabala {

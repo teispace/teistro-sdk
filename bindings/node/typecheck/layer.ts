@@ -1952,6 +1952,8 @@ function theMuhurta(almanac: Almanac): string {
           return clause.grahas.join();
         case 'UNWANTED_PLACEMENT':
           return `${clause.house} ${clause.by.join()}`;
+        case 'VARJYAM':
+          return clause.nakshatra;
         default:
           return clause.clause;
       }

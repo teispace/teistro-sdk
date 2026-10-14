@@ -175,7 +175,7 @@ pub fn tyajya(cuts: &[LagnaCut], day: Interval) -> Vec<Clause> {
 }
 
 /// Every instant an almanac day's own clauses can change at: the ends of
-/// its four limbs, of its panchaka, of its kaalas, choghadiya, horas and
+/// its four limbs, of its panchaka and varjyam, of its kaalas, choghadiya, horas and
 /// muhurtas, its sunrise, midday and sunset, and the Sun's and the Moon's
 /// ingresses.
 ///
@@ -197,6 +197,7 @@ pub fn day_cuts(day: &Panchanga) -> Vec<JulianDay<Utc>> {
     edges_of(&limbs.yoga, &mut cuts);
     edges_of(&limbs.karana, &mut cuts);
     edges_of(&day.omens.panchaka, &mut cuts);
+    edges_of(&day.omens.varjyam, &mut cuts);
     edges_of(&day.sun.signs, &mut cuts);
     edges_of(&day.moon.signs, &mut cuts);
     let intervals = day

@@ -323,6 +323,19 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**A day's varjyam.** **Numbers:** every almanac day gains its stars'
+varjyam windows, and a muhurta search's windows are cut at each one's
+ends and carry a `VARJYAM` clause against the time. So under the texts'
+ranking a window inside a varjyam counts one more clause against it and
+rankings can move; the `BASELINE` score reads no varjyam and does not
+move, though its windows may be cut finer. No chart number moved. The
+table is Muhurta Chintamani's (Vivaha Prakarana vv. 49 to 51), which
+decides crux C165: `panchanga.varjyam` names it by default, Raman's as
+printed, or `NONE` for the old answer. Each window is four sixtieths of
+its star from the table's ghati, and it reaches every binding as a day's
+`varjyam` spans and a muhurta's `VARJYAM` clause. Phaladeepika's
+vishaghati rule reads the same table, and a test holds the two equal.
+
 **Saravali ch. 48's rising signs, carried to the dwadasamsas, and
 Phaladeepika's lagna row.** **Numbers:** 156 readings join the readings
 set and 1 rule the arishta set (1898 shipped); no other rule's answer

@@ -5698,6 +5698,11 @@ export declare class AlmanacDay {
   readonly karana: readonly Span<Karana>[];
   /** Panchaka, while the Moon is in the last five nakshatras. */
   readonly panchaka: readonly Span<Panchaka>[];
+  /**
+   * The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). A span's `whole` is the window itself and `inside` the part of it
+   * in the day; empty under `NONE`.
+   */
+  readonly varjyam: readonly Span<Nakshatra>[];
   /** The signs the Moon stood in. */
   readonly moonSigns: readonly Span<Rashi>[];
   /** The signs the Sun stood in. */
@@ -6323,7 +6328,8 @@ export type MuhurtaClauseKind =
   | { readonly clause: 'EXALTED_IN_LAGNA'; readonly grahas: readonly Graha[] }
   | { readonly clause: 'LUMINARY_IN_ELEVENTH'; readonly grahas: readonly Graha[] }
   | { readonly clause: 'KENDRA_BENEFICS'; readonly grahas: readonly Graha[] }
-  | { readonly clause: 'UNWANTED_PLACEMENT'; readonly house: number; readonly by: readonly Graha[] };
+  | { readonly clause: 'UNWANTED_PLACEMENT'; readonly house: number; readonly by: readonly Graha[] }
+  | { readonly clause: 'VARJYAM'; readonly nakshatra: Nakshatra };
 
 /** A clause and the interval it held over. */
 export type MuhurtaClause = MuhurtaClauseKind & { readonly at: Interval };

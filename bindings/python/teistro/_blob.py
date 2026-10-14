@@ -7517,6 +7517,9 @@ class PanchangaCounts:
     muhurta_yogas: memoryview[int]
     """How many rows of `muhurta_yogas` belong to this day."""
 
+    varjyam: memoryview[int]
+    """How many rows of `varjyam` belong to this day."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -7939,6 +7942,45 @@ class PanchangaMuhurtaYogas:
 
 
 @dataclass(frozen=True)
+class PanchangaVarjyam:
+    """The `varjyam` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). `whole` is the window itself, four sixtieths of the star from the table's ghati, and `inside` the part of it in the day; empty under `NONE`.
+    """
+
+    member: memoryview[int]
+    """Whose varjyam it is."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Panchanga:
     """A decoded Panchanga blob.
 
@@ -8035,6 +8077,9 @@ class Panchanga:
     nepal_sambat: str
     """UTF-8 JSON, canonical: each day's Nepal Sambat date when `sections` asked for `TS_PANCHANGA_NEPAL_SAMBAT`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §11). `value` is a list in the days' order, each `{year, month, kind, paksha}`: the year, which opens at Kachhala's first day (1146 from 2025-10-22); the month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta Ashwina), an adhika month keeping the number of the month it repeats; the month's kind (`NIJA`, `ADHIKA`, which is Anala, or `KSHAYA`); and the half as a full key, `paksha.SHUKLA` (thwa) or `paksha.KRISHNA` (ga). The provenance is the days' own. Empty when `sections` did not ask for them."""
 
+    varjyam: PanchangaVarjyam
+    """The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). `whole` is the window itself, four sixtieths of the star from the table's ghati, and `inside` the part of it in the day; empty under `NONE`."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -8069,6 +8114,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_years = blob.section(23, "years")
     at_eclipses = blob.section(24, "eclipses")
     at_nepal_sambat = blob.section(25, "nepal_sambat")
+    at_varjyam = blob.section(26, "varjyam")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -8124,6 +8170,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             muhurta_yogas=blob.column(
                 at_counts, 12, 4, at_counts.count
             ).cast("I"),
+            varjyam=blob.column(at_counts, 13, 4, at_counts.count).cast("I"),
             length=at_counts.count,
         ),
         day=Day(
@@ -8395,6 +8442,30 @@ def decode_panchanga(raw: bytes) -> Panchanga:
         years=blob.text(at_years),
         eclipses=blob.text(at_eclipses),
         nepal_sambat=blob.text(at_nepal_sambat),
+        varjyam=PanchangaVarjyam(
+            member=blob.column(at_varjyam, 0, 2, at_varjyam.count).cast("H"),
+            whole_from=blob.column(
+                at_varjyam, 1, 8, at_varjyam.count
+            ).cast("d"),
+            whole_to=blob.column(at_varjyam, 2, 8, at_varjyam.count).cast("d"),
+            inside_from=blob.column(
+                at_varjyam, 3, 8, at_varjyam.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_varjyam, 4, 8, at_varjyam.count
+            ).cast("d"),
+            sunrises=blob.column(at_varjyam, 5, 1, at_varjyam.count).cast("B"),
+            ends_ghati=blob.column(
+                at_varjyam, 6, 1, at_varjyam.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_varjyam, 7, 1, at_varjyam.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_varjyam, 8, 1, at_varjyam.count
+            ).cast("B"),
+            length=at_varjyam.count,
+        ),
     )
 
 

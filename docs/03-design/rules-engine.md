@@ -650,7 +650,8 @@ parent; it defines none of the three, so the commentaries do:
   give it, and by day only (`birth-by-day`).
 - **Vishaghati** (C394): each star's four ghatis of poison, from Ojha's
   table, as sixtieths of the star's own span (`limb-part` of 60). The table
-  takes the common value in the five stars where Raman's differs (C165).
+  is Muhurta Chintamani's in all 27 stars (C165), the one the almanac's
+  varjyam reads; an SDK test holds the two equal.
 - **The padas**: Pushya, Purva Ashadha and Chitra's four, the father, the
   mother, the native and the maternal uncle in turn; Mula's and Ashlesha's,
   reversed for Ashlesha, under a lagna no benefic is in or aspects (C395).

@@ -687,6 +687,7 @@ __all__ = [
     "LuminaryInEleventhClause",
     "KendraBeneficsClause",
     "UnwantedPlacementClause",
+    "VarjyamClause",
     "MuhurtaActivity",
     "KpChart",
     "KpCusp",
@@ -6502,6 +6503,15 @@ class UnwantedPlacementClause(MuhurtaClauseKind):
     CLAUSE: ClassVar[str] = "UNWANTED_PLACEMENT"
     house: int
     by: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class VarjyamClause(MuhurtaClauseKind):
+    """A nakshatra's varjyam, its four ghatis of poison, placed by
+    `panchanga.varjyam` (C165)."""
+
+    CLAUSE: ClassVar[str] = "VARJYAM"
+    nakshatra: Nakshatra
 
 
 MUHURTA_CLAUSES: Mapping[str, type] = MappingProxyType(
@@ -15741,6 +15751,15 @@ class AlmanacDay:
         return self._spans("panchaka", self.batch.decoded.panchaka, Panchaka)
 
     @property
+    def varjyam(self) -> list[Span[Nakshatra]]:
+        """The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165).
+
+        A span's ``whole`` is the window itself and ``inside`` the part of it
+        in the day; empty under ``NONE``.
+        """
+        return self._spans("varjyam", self.batch.decoded.varjyam, Nakshatra)
+
+    @property
     def moon_signs(self) -> list[Span[Rashi]]:
         """The signs the Moon stood in."""
         return self._spans("moon_signs", self.batch.decoded.moon_signs, Rashi)
@@ -15881,6 +15900,7 @@ class Almanac:
             "muhurtas",
             "moon_events",
             "muhurta_yogas",
+            "varjyam",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

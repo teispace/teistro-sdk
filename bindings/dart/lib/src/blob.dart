@@ -10650,6 +10650,7 @@ final class PanchangaCounts {
     required this.muhurtas,
     required this.moonEvents,
     required this.muhurtaYogas,
+    required this.varjyam,
     required this.length,
   });
 
@@ -10691,6 +10692,9 @@ final class PanchangaCounts {
 
   /// How many rows of `muhurta_yogas` belong to this day.
   final Uint32List muhurtaYogas;
+
+  /// How many rows of `varjyam` belong to this day.
+  final Uint32List varjyam;
 
   /// The number of rows every column holds.
   final int length;
@@ -11213,6 +11217,55 @@ final class PanchangaMuhurtaYogas {
   final int length;
 }
 
+/// The `varjyam` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). `whole` is the window itself, four sixtieths of the star from the table's ghati, and `inside` the part of it in the day; empty under `NONE`.
+final class PanchangaVarjyam {
+  const PanchangaVarjyam({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// Whose varjyam it is.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -11248,6 +11301,7 @@ final class Panchanga {
     required this.years,
     required this.eclipses,
     required this.nepalSambat,
+    required this.varjyam,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -11340,6 +11394,9 @@ final class Panchanga {
   /// UTF-8 JSON, canonical: each day's Nepal Sambat date when `sections` asked for `TS_PANCHANGA_NEPAL_SAMBAT`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §11). `value` is a list in the days' order, each `{year, month, kind, paksha}`: the year, which opens at Kachhala's first day (1146 from 2025-10-22); the month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta Ashwina), an adhika month keeping the number of the month it repeats; the month's kind (`NIJA`, `ADHIKA`, which is Anala, or `KSHAYA`); and the half as a full key, `paksha.SHUKLA` (thwa) or `paksha.KRISHNA` (ga). The provenance is the days' own. Empty when `sections` did not ask for them.
   final String nepalSambat;
 
+  /// The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). `whole` is the window itself, four sixtieths of the star from the table's ghati, and `inside` the part of it in the day; empty under `NONE`.
+  final PanchangaVarjyam varjyam;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -11372,6 +11429,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atYears = blob.section(23, 'years');
   final atEclipses = blob.section(24, 'eclipses');
   final atNepalSambat = blob.section(25, 'nepal_sambat');
+  final atVarjyam = blob.section(26, 'varjyam');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -11552,6 +11610,11 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atCounts, 12),
         blob.columnOffset(atCounts, 12) + atCounts.count * 4,
+      ),
+      varjyam: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 13),
+        blob.columnOffset(atCounts, 13) + atCounts.count * 4,
       ),
       length: atCounts.count,
     ),
@@ -12140,6 +12203,54 @@ Panchanga decodePanchanga(Uint8List bytes) {
     years: blob.text(atYears),
     eclipses: blob.text(atEclipses),
     nepalSambat: blob.text(atNepalSambat),
+    varjyam: PanchangaVarjyam(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 0),
+        blob.columnOffset(atVarjyam, 0) + atVarjyam.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 1),
+        blob.columnOffset(atVarjyam, 1) + atVarjyam.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 2),
+        blob.columnOffset(atVarjyam, 2) + atVarjyam.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 3),
+        blob.columnOffset(atVarjyam, 3) + atVarjyam.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 4),
+        blob.columnOffset(atVarjyam, 4) + atVarjyam.count * 8,
+      ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 5),
+        blob.columnOffset(atVarjyam, 5) + atVarjyam.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 6),
+        blob.columnOffset(atVarjyam, 6) + atVarjyam.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 7),
+        blob.columnOffset(atVarjyam, 7) + atVarjyam.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVarjyam, 8),
+        blob.columnOffset(atVarjyam, 8) + atVarjyam.count * 1,
+      ),
+      length: atVarjyam.count,
+    ),
   );
 }
 

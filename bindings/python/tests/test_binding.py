@@ -4624,6 +4624,46 @@ class ADaysSeason(WithLibrary):
         )
 
 
+class ADaysVarjyam(WithLibrary):
+    """Each star's four ghatis of poison, placed by Muhurta Chintamani's
+    table unless `panchanga.varjyam` names another (C165)."""
+
+    def days(self, settings: Optional[dict[str, object]] = None) -> list[Any]:
+        with self.teistro.context(
+            profile=PROFILE, ephemeris=Ephemeris.BUILTIN, settings=settings
+        ) as ctx:
+            return list(
+                ctx.almanac.of(
+                    from_date=date(Calendar.GREGORIAN, 2024, 6, 15),
+                    to_date=date(Calendar.GREGORIAN, 2024, 6, 21),
+                    place=Observer(
+                        latitude_deg=Latitude(27.7172),
+                        longitude_deg=Longitude(85.324),
+                        altitude_m=Altitude(1400),
+                    ),
+                    utc_offset_seconds=20_700,
+                )
+            )
+
+    def test_a_varjyam_is_four_sixtieths_of_its_own_star(self) -> None:
+        seen = 0
+        for day in self.days():
+            for window in day.varjyam:
+                star = next(s for s in day.nakshatra if s.member is window.member)
+                whole = window.whole.to_jd - window.whole.from_jd
+                self.assertAlmostEqual(
+                    whole * 15, star.whole.to_jd - star.whole.from_jd, places=6
+                )
+                self.assertGreaterEqual(window.whole.from_jd, star.whole.from_jd)
+                self.assertLessEqual(window.inside.to_jd, day.window.to_jd)
+                seen += 1
+        self.assertIn(seen, range(5, 10))
+
+    def test_none_leaves_the_day_without_one(self) -> None:
+        days = self.days({"panchanga": {"varjyam": "NONE"}})
+        self.assertEqual([len(day.varjyam) for day in days], [0] * len(days))
+
+
 class AnAlmanacDay(WithLibrary):
     """The day's own columns, read through the accessors that decode them.
 

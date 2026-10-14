@@ -1880,6 +1880,52 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a day carries each star\'s varjyam unless the settings name none', () {
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    List<(List<Span<Nakshatra>>, List<Span<Nakshatra>>)> week([
+      Map<String, Object?>? settings,
+    ]) {
+      final ctx = teistro.context(
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+        settings: settings,
+      );
+      final days = ctx.almanac.of(
+        from: gregorian(2024, 6, 15),
+        to: gregorian(2024, 6, 21),
+        place: place,
+        utcOffsetSeconds: 20700,
+      );
+      final read = [
+        for (var i = 0; i < days.length; i += 1)
+          (days.at(i).varjyam, days.at(i).nakshatra),
+      ];
+      ctx.dispose();
+      return read;
+    }
+
+    var seen = 0;
+    for (final (varjyam, stars) in week()) {
+      for (final window in varjyam) {
+        final star = stars.firstWhere((span) => span.member == window.member);
+        double length(Span<Nakshatra> span) => span.whole.to - span.whole.from;
+        expect(length(window) * 15, closeTo(length(star), 1e-6));
+        expect(window.whole.from, greaterThanOrEqualTo(star.whole.from));
+        seen += 1;
+      }
+    }
+    expect(seen, inInclusiveRange(5, 9));
+    expect([
+      for (final (varjyam, _) in week({
+        'panchanga': {'varjyam': 'NONE'},
+      }))
+        varjyam.length,
+    ], List.filled(7, 0));
+  });
+
   test('an almanac carries the eclipses it was asked for', () {
     final place = Observer(
       latitudeDeg: Latitude(27.7172),

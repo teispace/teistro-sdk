@@ -1055,7 +1055,7 @@ pub const STATE_REFUSALS: [(&str, &str, &str); 3] = [
     (
         "inauspicious-kaal",
         "varjyam",
-        "the SDK computes no varjyam window, and no kind names one",
+        "the SDK computes each star's varjyam window (a day's `omens.varjyam`, a muhurta's `VARJYAM` clause), but no catalogue kind names it, so a reading has no key to hang on",
     ),
     (
         "planet-condition",

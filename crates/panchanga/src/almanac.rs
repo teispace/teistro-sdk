@@ -624,6 +624,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 &limbs.nakshatra,
                 &limbs.tithi,
             )?,
+            varjyam: omen::varjyam(&limbs.nakshatra, settings.panchanga.varjyam)?,
             disha_shool: omen::disha_shool(day.vara),
         };
         Ok((

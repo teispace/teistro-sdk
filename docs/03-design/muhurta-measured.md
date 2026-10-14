@@ -14,8 +14,8 @@ measured.
 
 The baseline engine's marriage (`ActivityRules::baseline_marriage`)
 under its own ranking (`Ranking::Baseline`). 80 days are closed and
-11 judged; the judged days are cut into 2062 windows, 821 of them open
-and 351 of those in a choghadiya the engine offers. 8 windows fell
+11 judged; the judged days are cut into 2086 windows, 831 of them open
+and 353 of those in a choghadiya the engine offers. 8 windows fell
 inside a blackout that did not cover their day, and were left out.
 The best window opens on 2026-11-25, scored 100.
 
@@ -25,7 +25,7 @@ The best window opens on 2026-11-25, scored 100.
 | nothing is open before Devuthani Ekadashi, 2026-11-20 | **holds** | 0 of 80 disagree |
 | every day closed is closed by Chaturmas, and says so | **holds** | 0 of 80 disagree |
 | 2026-11-25 is kept | **holds** | 0 of 1 disagree |
-| an open window is scored exactly when the engine would offer it (Amrita, Shubha or Labha) | **holds** | 0 of 821 disagree |
+| an open window is scored exactly when the engine would offer it (Amrita, Shubha or Labha) | **holds** | 0 of 831 disagree |
 
 ## 2. The asta against the published almanac
 
@@ -72,15 +72,15 @@ matter is the rules' to say.
 
 | search | windows | unsteady | clauses over part of a window | neighbours judged alike | shortest | under six minutes |
 |---|---:|---:|---:|---:|---:|---:|
-| the baseline's | 2062 | 0 | 0 | 706 | 0.79 s | 855 |
-| Raman's | 13 411 | 0 | 0 | 4516 | 0.01 s | 5485 |
+| the baseline's | 2086 | 0 | 0 | 706 | 0.79 s | 883 |
+| Raman's | 13 555 | 0 | 0 | 4516 | 0.01 s | 5642 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every window of the baseline's search reads the same sky a moment inside either end | **holds** | 0 of 2062 disagree |
-| every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10115 disagree |
-| every window of Raman's search reads the same sky a moment inside either end | **holds** | 0 of 13411 disagree |
-| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 121022 disagree |
+| every window of the baseline's search reads the same sky a moment inside either end | **holds** | 0 of 2086 disagree |
+| every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10360 disagree |
+| every window of Raman's search reads the same sky a moment inside either end | **holds** | 0 of 13555 disagree |
+| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 123248 disagree |
 
 ## 4. Where the engine's sampling parts from the SDK
 
@@ -89,7 +89,7 @@ sunrise**; the SDK bars the windows in a star the rite does not
 take and keeps the rest. A day the engine keeps the SDK keeps too,
 since the star at sunrise runs in the day; the parting is one way.
 Of the 11 days the baseline search judged, the engine drops 3 days that the
-SDK keeps for an allowed star rising after sunrise. And 149 open
+SDK keeps for an allowed star rising after sunrise. And 151 open
 windows the SDK scores are shorter than the six minutes under which
 the engine drops a fragment.
 
@@ -97,8 +97,8 @@ the engine drops a fragment.
 
 Raman makes a panchaka's kind the remainder by nine of the tithi,
 vara, star and lagna numbers; the baseline engine makes it one kind
-per star of the last five. Of Raman's search's windows, 1573 lie in a
-panchaka star; the remainder names a panchaka in 851 of them, and
+per star of the last five. Of Raman's search's windows, 1589 lie in a
+panchaka star; the remainder names a panchaka in 856 of them, and
 the star's kind in 167. The remainder is the SDK's reading and this
 is how far the engine's would part from it.
 
@@ -123,12 +123,12 @@ context's cache, over Raman's search:
 
 | asked | provider calls |
 |---|---:|
-| the search alone | 116 290 |
+| the search alone | 117 452 |
 | the almanac alone | 5718 |
-| the two apart | 122 008 |
-| the two together | 117 335 |
+| the two apart | 123 170 |
+| the two together | 118 505 |
 
-Together they are spared 4673 calls, 3.8% of the two apart: the
+Together they are spared 4665 calls, 3.8% of the two apart: the
 almanac beside the search adds 0.9% to the search's own.
 
 | proposed rule | verdict | measured |

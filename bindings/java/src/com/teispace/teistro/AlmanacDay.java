@@ -208,6 +208,18 @@ public final class AlmanacDay {
     }
 
     /**
+     * The varjyam: each nakshatra's four ghatis of poison, placed by {@code panchanga.varjyam} (crux C165). A span's whole is the window itself and its inside the part of it
+     * in the day; empty under {@code NONE}.
+     *
+     * @return the spans
+     */
+    public List<Span<Nakshatra>> varjyam() {
+        Panchanga.Varjyam c = batch.decoded().varjyam();
+        return spans("varjyam", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Nakshatra::of);
+    }
+
+    /**
      * The signs the Moon stood in.
      *
      * @return the spans
