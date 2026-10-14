@@ -980,7 +980,7 @@ mod tests {
     /// One written condition for each kind of the language, with the sentence
     /// it must read as. Hand-written rather than captured: a phrasing that
     /// changes is a phrasing a reviewer agreed to change.
-    const SENTENCES: [(&str, &str); 66] = [
+    const SENTENCES: [(&str, &str); 67] = [
         (
             r#"{"type": "and", "conditions": [{"type": "birth-by-day"}, {"type": "planet-combust", "planet": "MOON"}]}"#,
             "the birth fell by day and MOON is combust",
