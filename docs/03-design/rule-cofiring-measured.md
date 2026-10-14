@@ -2,9 +2,9 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1628 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1589 rules hold at least once and 39 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1704 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1633 rules hold at least once and 71 never do.
 
-Rules holding on the same 5 or more charts form 111 groups, and each is explained. Below that, 5 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 111 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
 - **71 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
@@ -151,10 +151,34 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `ARISHTA_SATURN_LAGNA_MOON_EIGHTH_JUPITER_THIRD` | 2416294.08333 | 27.7172, 105.938 |
 | `BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH` | 2425046.83333 | 27.7172, 167.283 |
 | `BJ_SATURN_SUN_MOON_MARS_IN_ORDER` | 2416033.75 | 27.7172, 121.864 |
+| `BPHS_BRAHMIN_CURSE_2` | 2431221 | 27.7172, 153.649 |
+| `BPHS_BRAHMIN_CURSE_6` | 2386282.5 | 27.7172, 59.955 |
+| `BPHS_BROTHER_CURSE_1` | 2382500.5 | 27.7172, -124.453 |
+| `BPHS_BROTHER_CURSE_10` | 2500859 | 27.7172, 40.202 |
+| `BPHS_BROTHER_CURSE_2` | 2403064 | 27.7172, 13.969 |
+| `BPHS_BROTHER_CURSE_3` | 2385689.5 | 27.7172, 176.183 |
+| `BPHS_BROTHER_CURSE_4` | 2381655.5 | 27.7172, -59.659 |
+| `BPHS_BROTHER_CURSE_7` | 2431492 | 27.7172, -60.936 |
+| `BPHS_BROTHER_CURSE_9` | 2399106.75 | 27.7172, -166.358 |
 | `BPHS_CANCER_RISING_WITH_JUPITER_AND_MOON_LIMITLESS` | 2404926.5 | 27.7172, 152.741 |
+| `BPHS_MATERNAL_UNCLE_CURSE_2` | 2380555 | 27.7172, 173.046 |
 | `BPHS_MOON_AND_A_BENEFIC_IN_ARUDHA_LAGNA_AND_JUPITER_SECOND` | 2436428.66667 | 27.7172, 79.059 |
+| `BPHS_MOTHER_CURSE_12` | 2434156 | 27.7172, 72.443 |
+| `BPHS_MOTHER_CURSE_13` | 2584735.5 | 27.7172, -9.26 |
+| `BPHS_MOTHER_CURSE_5` | 2410500.5 | 27.7172, -49.856 |
+| `BPHS_MOTHER_CURSE_6` | 2385569 | 27.7172, 177.583 |
+| `BPHS_MOTHER_CURSE_8` | 2477457 | 27.7172, -90.153 |
+| `BPHS_NO_SON_STRONG_MALEFICS_IN_THE_FIFTH` | 2514807.5 | 27.7172, -2.923 |
 | `BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH` | 2415964.16667 | 27.7172, -95.118 |
+| `BPHS_SERPENT_CURSE_5` | 2379840.5 | 27.7172, -84.943 |
+| `BPHS_SPIRIT_CURSE_1` | 2383249.5 | 27.7172, -42.061 |
+| `BPHS_SPIRIT_CURSE_8` | 2417856.5 | 27.7172, -121.56 |
+| `BPHS_SPIRIT_CURSE_9` | 2380791 | 27.7172, 109.151 |
 | `BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH` | 2524474.33333 | 27.7172, 17.863 |
+| `BPHS_WIFE_CURSE_10` | 2451130.5 | 27.7172, -113.242 |
+| `BPHS_WIFE_CURSE_11` | 2420394.5 | 27.7172, -103.057 |
+| `BPHS_WIFE_CURSE_7` | 2384731.5 | 27.7172, 103.036 |
+| `BPHS_WIFE_CURSE_8` | 2400560 | 27.7172, 162.235 |
 | `NABHASA_GADA` | 2430110 | 27.7172, -93.752 |
 | `NABHASA_GOLA` | 2437699.08333 | 27.7172, -37.399 |
 | `NABHASA_KAMALA` | 2420757.16667 | 27.7172, 119.593 |
@@ -180,10 +204,18 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | rule | why |
 |---|---|
 | `ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH` | It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak. |
+| `BPHS_BRAHMIN_CURSE_1` | Of the 529 half-days from 1800 to 2398 with Jupiter, Mars and Saturn together and Rahu in a sign of Jupiter, the ninth lord, counted from a lagna four signs behind them, stands in the fifth itself or in the third or fourth, never the eighth. |
 | `BPHS_DEBILITATED_GRAHAS_SIXTH_EIGHTH_THIRD_AND_LAGNA_LORD_DIGNIFIED` | Only Leo and Aquarius rising have a sign of debilitation in each of the third, sixth and eighth, and in both the graha debilitated in the third is the lagna lord, the Sun in Libra or Saturn in Aries, whom the verse wants exalted or in his own sign. |
 | `BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM` | No lagna lord regards the Sun as a neutral: the Moon, Mars, Mercury and Jupiter count him a friend, Venus and Saturn an enemy, and for Leo rising the lord is the Sun himself. |
+| `BPHS_MATERNAL_UNCLE_CURSE_1` | It asks Mercury, Jupiter, Mars and Rahu in one sign with Saturn four signs behind them: of the 361 half-days from 1800 to 2398 with the four together, none has Saturn so. |
+| `BPHS_MATERNAL_UNCLE_CURSE_4` | With the Moon, Mercury and Mars in the fifth, the sixth or the twelfth lord is one of them under ten lagnas, and under Virgo and Pisces the Sun in the lagna would stand four signs from Mercury; the translation's fourth lord fails the same way (C390). |
 | `BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH` | It asks Mars and Jupiter together in the sign opposite Mercury in his own, so both near opposition to the Sun, with the Moon there too: no day from 1800 to 2400, the span the built-in ephemeris covers, has the slower grahas so. |
+| `BPHS_MOTHER_CURSE_7` | Only Cancer and Scorpio rising leave its five lords' places consistent: of the 78 half-days from 1800 to 2398 with Jupiter and Saturn in Cancer and Mars in Sagittarius, none has Venus in Aquarius, and of the 54 with Mars and Jupiter in Aries and Saturn in Gemini, none has Mercury in Scorpio. |
+| `BPHS_MOTHER_CURSE_9` | The thin Moon in the seventh keeps the Sun and Mercury between the fourth and the tenth, and Saturn, Rahu and Ketu stand in the fifth, the fourth and the tenth, so Mars alone is left to hem the lagna, which needs a malefic on each side (C388). |
+| `BPHS_SERPENT_CURSE_7` | It asks six grahas in the fifth, Rahu, Jupiter, Saturn and Mars among them: no half-day from 1800 to 2398, the span the built-in ephemeris covers, has even the Sun, Mars, Jupiter, Saturn and Rahu in one sign. |
 | `BPHS_SIX_GRAHAS_EXALTED` | Mercury exalted in Virgo and Venus in Pisces would stand opposite, which the two never do, so the six are the Sun in Aries, the Moon in Taurus, Mars in Capricorn, Jupiter in Cancer, Venus in Pisces and Saturn in Libra: no day from 1800 to 2400 has the slower grahas so. |
+| `BPHS_SPIRIT_CURSE_3` | It asks the Sun in the twelfth and Mercury in the fifth, five signs apart, and Mercury keeps within a sign of the Sun (C390). |
+| `BPHS_SPIRIT_CURSE_5` | The lagna lord in the eighth is none of the five in the lagna, and the Sun or Mercury there would stand five signs from Venus, so it is Mars, with Aries or Scorpio rising: no half-day from 1800 to 2398 has Jupiter, Saturn and Rahu together in either. |
 | `PARASHARA_KOORMA` | It asks the Sun, Mars and Saturn each in its own or exaltation sign in the lagna, third and eleventh, with a benefic in each of the fifth, sixth and seventh: no day from 1800 to 2400 has the grahas other than the Moon so. |
 | `PARIJATA_MOON_IN_LEO_SUN_AND_SATURN_EIGHTH_VENUS_ASPECTING` | Venus casts only the seventh aspect and never stands seventh from the Sun. The verse holds under the partial aspects Jataka Parijata ch. 2 counts, which the condition language does not read. |
 | `PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA` | A lagna's strength is its bhava bala, which has no required figure for it to fall short of, so no chart carries a weak lagna. |

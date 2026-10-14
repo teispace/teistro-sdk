@@ -127,11 +127,12 @@ The dosha side is thinner than its reputation. What the texts actually carry
 is the **arishta corpus** — about 70 short-life and parental-evil rules (BPHS
 ch. 9, Saravali chs. 10 and 11, Brihat Jataka VI, Jataka Parijata IV) — and
 about **49 arishta-bhanga cancellations** (BPHS ch. 10, Saravali ch. 12,
-Phaladeepika XIII, Jataka Parijata IV), none of which the SDK has yet. The
-curses of BPHS ch. 83, the inauspicious births of ch. 85 and their eleven
-remedial chapters, the Gandanta of ch. 92 in its three kinds, and
-Phaladeepika XIII's Vishaghatika, Thyajya and Dinamrityu are all rank 1 and
-all unbuilt.
+Phaladeepika XIII, Jataka Parijata IV), all of which the SDK now ships
+(`rules-engine.md`). The curses of BPHS ch. 83 and the Gandanta of ch. 92
+in its three kinds are built too. The inauspicious births of ch. 85 and
+their eleven remedial chapters, and Phaladeepika XIII's Vishaghatika,
+Thyajya and Dinamrityu births, are rank 1 and unbuilt; the muhurta
+module's lagna tyajya is the electional rule, not these.
 
 ### What the texts do not say
 

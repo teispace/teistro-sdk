@@ -76,6 +76,9 @@ const RAJA: &str = include_str!("../rules/classical-raja.json");
 const MARANA: &str = include_str!("../rules/classical-marana.json");
 /// Phaladeepika ch. 14's diseases, death and the births before and after.
 const PHALADEEPIKA_MARANA: &str = include_str!("../rules/classical-phaladeepika-marana.json");
+/// BPHS ch. 83's curses in a former birth that deny a son, and its two
+/// figures for no son at all.
+const SHAPA: &str = include_str!("../rules/classical-bphs-shapa.json");
 /// BPHS ch. 43's combinations for the class of life.
 const AYUR: &str = include_str!("../rules/classical-ayur.json");
 /// Jataka Parijata ch. 4's middle and long lives.
@@ -129,6 +132,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PARIJATA_AYUR));
     rules.append(&mut read(MARANA));
     rules.append(&mut read(PHALADEEPIKA_MARANA));
+    rules.append(&mut read(SHAPA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -223,7 +227,8 @@ pub fn readings() -> &'static [Rule] {
 /// ch. 37's lunar and ch. 38's solar yogas beside them, the five Pancha
 /// Mahapurusha yogas as Saravali ch. 37 gives them, and the named yogas of
 /// ch. 36 the language can say, and beside BPHS ch. 44's manner of death,
-/// Phaladeepika ch. 14's diseases, death and the births before and after.
+/// Phaladeepika ch. 14's diseases, death and the births before and after,
+/// and BPHS ch. 83's curses in a former birth that deny a son.
 /// Each carries what its verse says and nothing the SDK invented: a
 /// description, a span of life, or both.
 #[must_use]
@@ -283,7 +288,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (59, 3));
+        assert_eq!((strength, points), (64, 6));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -354,7 +359,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1628);
+        assert_eq!(rules.len(), 1704);
         for rule in &rules {
             let rank = rule
                 .source
@@ -478,7 +483,7 @@ mod tests {
     }
 
     /// Every category the shipped rules use.
-    const CATEGORIES: [&str; 33] = [
+    const CATEGORIES: [&str; 34] = [
         "arishta",
         "arishta-bhanga",
         "arishta-father",
@@ -511,6 +516,7 @@ mod tests {
         "raja",
         "rising-part",
         "roga",
+        "shapa",
         "surya",
     ];
 }
