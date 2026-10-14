@@ -323,6 +323,13 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**The cruel shashtyamsha and liberation.** **Numbers:** 1 more evil
+joins the arishta set and 2 liberations the `loka` readings (1910 shipped).
+Jataka Parijata ch. 4 v. 69 reads the eighth lord or Saturn in a cruel
+sixtieth of its sign, by the commentary's own table of which of the sixty
+are cruel, and vv. 105 and 106 close the chapter with two figures of
+liberation (crux C396).
+
 **The Vaiseshikamsha names, and a count over conditions.** **Numbers:** 3
 more long lives join the ayur set (1907 shipped), and the rule language gains
 `n-of`, which holds when between `atLeast` and `atMost` of its conditions do.

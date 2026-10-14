@@ -435,7 +435,7 @@ BPHS ch. 9 v. 23 and v. 99 is BPHS ch. 43 v. 55 (the print quotes it from
 Saravali), all of which ship. What it asks and the language
 cannot say is recorded in the notes: the month lord of the pregnancy (v. 12),
 the twilight (v. 30), the named decanates (v. 45), a cruel shashtyamsha
-(vv. 69 and 70), a count of dignified grahas (v. 78), a chain of lords
+(v. 70's houses), a count of dignified grahas (v. 78), a chain of lords
 (v. 93), v. 101's grahas "from Saturn to Mars", and the relations that have
 no category (the brother, the uncle).
 
@@ -474,6 +474,23 @@ sage, the divine class) never holds from 1800 to 2398. Saturn's seven or eight
 and Mars's six meet on about thirty days, and Jupiter then has at most four
 of his five. v. 101 is not built: its grahas "from Saturn to Mars" are three
 in the order of the spheres or four in the weekdays'.
+
+**The cruel shashtyamsha and liberation (2026-10-14, C396).** v. 69 puts
+the eighth lord or Saturn in a cruel shashtyamsha with the eighth lord
+joined by a malefic: short life. Which of the sixty half-degrees are cruel
+is the commentary's own table for ch. 1 vv. 38 to 43, read off the page
+image: 27 of an odd sign's sixty lords are ashubha, and an even sign counts
+them from its end. That is a set of degree spans (thirteen on each parity),
+so the rule writes it with `planet-in-degrees` and needs no new condition.
+It answers 31 of the corpus's 93 charts, and the chapter's antidotes cancel
+15 of those firings (492). v. 70 asks the twelfth and second houses
+themselves in cruel parts, which a whole-sign house has no degree for, and
+is not built. vv. 105 and 106 close the chapter with two figures of
+liberation, filed under `loka`: Cancer rising in its Sagittarius navamsha
+with Jupiter there and three or four of the seven grahas in the kendras,
+which the sweep's sky holds; and Sagittarius rising in its Aries navamsha
+with Jupiter, Venus in the seventh and the Moon in Virgo, which a 1806
+fixture holds.
 
 Over the corpus, 31 of the 59 evils answer 1 to 27 charts and 28 answer none,
 and the new evils add 83 cancellations to the corpus's 350 (433), all their

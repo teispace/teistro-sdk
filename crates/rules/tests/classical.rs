@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 187);
+    assert_eq!(rules.len(), 188);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -101,7 +101,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         }
     }
     assert_eq!(charts, 93);
-    assert_eq!((cancelled, saravali_cancelled), (477, 8));
+    assert_eq!((cancelled, saravali_cancelled), (492, 8));
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
     assert_eq!(
         counts.as_slice(),
@@ -360,7 +360,7 @@ const SILENT: [&str; 81] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 187] = [
+const ANSWERED: [(&str, usize); 188] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
@@ -478,6 +478,10 @@ const ANSWERED: [(&str, usize); 187] = [
         0,
     ),
     ("PARIJATA_EIGHTH_LORD_IN_A_KENDRA_LAGNA_LORD_WEAK", 4),
+    (
+        "PARIJATA_EIGHTH_LORD_OR_SATURN_IN_A_CRUEL_SHASHTYAMSHA_EIGHTH_LORD_WITH_A_MALEFIC",
+        31,
+    ),
     ("PARIJATA_FOUR_TOGETHER_WITH_THE_MOON_AND_MARS", 2),
     (
         "PARIJATA_JUPITER_EIGHTH_IN_A_SIGN_OF_MARS_ASPECTED_BY_FOUR",

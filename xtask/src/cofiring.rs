@@ -110,7 +110,7 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// and a place, its latitude and longitude, where it does: rare rules,
 /// shown alive. Each was found at Kathmandu's latitude, on the meridian
 /// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 55] = [
+const FIXTURES: [(&str, f64, f64, f64); 56] = [
     (
         "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
         2_415_023.166_67,
@@ -224,6 +224,12 @@ const FIXTURES: [(&str, f64, f64, f64); 55] = [
         2_473_202.25,
         27.7172,
         -68.985,
+    ),
+    (
+        "PARIJATA_SAGITTARIUS_RISING_IN_ARIES_NAVAMSHA_WITH_JUPITER_VENUS_SEVENTH_MOON_IN_VIRGO",
+        2_380_915.0,
+        27.7172,
+        41.087,
     ),
     (
         "PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON",
