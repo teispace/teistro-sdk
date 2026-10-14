@@ -2,7 +2,7 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1907 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1832 rules hold at least once and 75 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1910 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1834 rules hold at least once and 76 never do.
 
 Rules holding on the same 5 or more charts form 113 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
@@ -192,6 +192,7 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `PARIJATA_ARIES_END_RISING_WITH_JUPITER_OR_VENUS_MOON_MID_TAURUS_MARS_SIMHASANA` | 2379731.99182 | 27.7172, -107.86 |
 | `PARIJATA_JUPITER_SATURN_ONE_NAVAMSHA_IN_THE_NINTH_OR_TENTH_SUN_RISING` | 2429878.5 | 27.7172, 82.5 |
 | `PARIJATA_JUPITER_GOPURA_IN_A_KENDRA_VENUS_PARAVATA_IN_A_TRINE_CANCER_RISING` | 2473202.25 | 27.7172, -68.985 |
+| `PARIJATA_SAGITTARIUS_RISING_IN_ARIES_NAVAMSHA_WITH_JUPITER_VENUS_SEVENTH_MOON_IN_VIRGO` | 2380915 | 27.7172, 41.087 |
 | `PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON` | 2417139 | 27.7172, -89.502 |
 | `PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_LAGNA_LORD_EXALTED` | 2416949 | 27.7172, 48.39 |
 | `PARIJATA_SUN_SATURN_MARS_IN_LAGNA_WANING_MOON_IN_A_VENUS_SEVENTH` | 2425223.25 | 27.7172, 169.281 |

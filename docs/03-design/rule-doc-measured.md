@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2564 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 183 in `ARISHTAS`, 1220 in `READINGS`, 475 in `NABHASAS`, 657 in `the corpus's own`. Their 9689 conditions are written 3566 ways, which say 3562 things, and the renderer gives those 3562 sentences.
+2567 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1220 in `READINGS`, 477 in `NABHASAS`, 657 in `the corpus's own`. Their 9780 conditions are written 3627 ways, which say 3623 things, and the renderer gives those 3623 sentences.
 
-The 1907 shipped rules are what a consumer evaluates; the corpus's own
+The 1910 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 3562 disagree |
-| every condition of every rule renders | **holds** | 0 of 9689 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 3623 disagree |
+| every condition of every rule renders | **holds** | 0 of 9780 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -44,13 +44,13 @@ a change to what a rule asks changes its prose.
 
 | kind | occurrences | as it reads |
 |---|---|---|
-| `and` | 736 | MOON aspects VENUS and VENUS aspects MOON |
-| `or` | 441 | MARS is combust or MARS is retrograde |
+| `and` | 740 | MOON aspects VENUS and VENUS aspects MOON |
+| `or` | 448 | MARS is combust or MARS is retrograde |
 | `not` | 336 | it is not the case that JUPITER is combust |
-| `planet-in-house` | 1039 | SUN stands in the 1st house |
-| `planet-in-sign` | 1023 | SUN stands in LEO |
+| `planet-in-house` | 1042 | SUN stands in the 1st house |
+| `planet-in-sign` | 1028 | SUN stands in LEO |
 | `planet-dignity` | 281 | the dignity of SUN is exalted |
-| `planet-in-kendra` | 142 | SUN stands in a kendra |
+| `planet-in-kendra` | 143 | SUN stands in a kendra |
 | `planet-in-trikona` | 15 | SUN stands in a trikona |
 | `planet-in-kendra-from` | 19 | MARS stands in a kendra from MOON |
 | `lord-of-house-in-kendra` | 67 | the lord of the 1st house stands in a kendra |
@@ -76,10 +76,10 @@ a change to what a rule asks changes its prose.
 | `lord-of-house-strong` | 8 | the lord of the 4th house is exalted, in its own sign or in its mooltrikona |
 | `lord-of-house-is` | 15 | the lord of the 5th house is SUN |
 | `lord-of-house-conjunct-planet` | 2 | the lord of the 5th house shares a sign with KETU |
-| `lagna-in-sign` | 33 | the lagna rises in LEO |
+| `lagna-in-sign` | 35 | the lagna rises in LEO |
 | `planet-in-house-and-sign` | 26 | SUN stands in the 1st house and in LEO |
 | `planet-at-gandanta` | 4 | SUN stands at a gandanta junction, within the usual 3°20′ |
-| `planet-in-degrees` | 348 | LAGNA stands between 0° and 10° of its sign |
+| `planet-in-degrees` | 402 | LAGNA stands between 0° and 10° of its sign |
 | `panchanga-tithi` | 20 | the birth tithi is AMAVASYA |
 | `panchanga-paksha` | 22 | the birth falls in the SHUKLA paksha |
 | `panchanga-vara` | 10 | the birth weekday is GURUVARA |
@@ -98,12 +98,12 @@ a change to what a rule asks changes its prose.
 | `argala` | 16 | an intervention from the 5th, unobstructed from the 9th, stands on the pada of house 1 |
 | `vipareeta-argala` | 0 | in no pack |
 | `for-any` | 111 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
-| `count-of` | 12 | at least 4 of the nine grahas meet: the body found aspects MOON |
+| `count-of` | 13 | at least 4 of the nine grahas meet: the body found aspects MOON |
 | `n-of` | 6 | exactly 5 of these hold: the dignity of MARS is exalted, deep exalted, mooltrikona or own sign, (in the D2, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign), (in the D3, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign), (in the D7, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign), ((in the D9, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign) or the navamsha of MARS and MARS stand in one sign), (in the D10, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign), (in the D12, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign), (in the D16, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign), (in the D30, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign) and (in the D60, the dignity of MARS is exalted, deep exalted, mooltrikona or own sign) |
 | `in-varga` | 72 | in the D2, the lagna rises in CANCER |
-| `count-in-houses` | 419 | at least 1 malefic stands in the 7th from SUN |
+| `count-in-houses` | 420 | at least 1 malefic stands in the 7th from SUN |
 | `count-aspecting` | 27 | at least 1 malefic aspects SUN |
-| `rule` | 1462 | the rule NABHASA_GADA holds |
+| `rule` | 1475 | the rule NABHASA_GADA holds |
 | `at-limb-edge` | 22 | the birth falls within the last 2 ghatikas of the tithi |
 | `limb-part` | 33 | the birth falls in the 1st of 6 equal parts of the tithi |
 | `birth-by-day` | 8 | the birth fell by day |

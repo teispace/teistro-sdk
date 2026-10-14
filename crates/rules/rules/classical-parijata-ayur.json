@@ -2035,6 +2035,114 @@
           "class": "unlimited"
         }
       ]
+    },
+    {
+      "key": "PARIJATA_CANCER_RISING_IN_SAGITTARIUS_NAVAMSHA_WITH_JUPITER_THREE_IN_KENDRAS",
+      "category": "loka",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "105",
+        "rank": 1,
+        "note": "Cancer rising in the navamsha of Sagittarius (16 deg 40 min to 20 deg, as the Hindi gloss gives it), Jupiter in it, and three or four grahas in the kendras: the native reaches Brahma's state, wise and free of merit and sin, as the commentary glosses brahmapada. The grahas counted are the seven, Jupiter among them (C396). Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "LAGNA",
+          "from": 16.666666666666668,
+          "to": 20.0
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-kendra",
+            "planet": "SELF"
+          },
+          "atLeast": 3,
+          "atMost": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "liberation: the native reaches Brahma's state"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SAGITTARIUS_RISING_IN_ARIES_NAVAMSHA_WITH_JUPITER_VENUS_SEVENTH_MOON_IN_VIRGO",
+      "category": "loka",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "106",
+        "rank": 1,
+        "note": "Sagittarius rising in the navamsha of Aries, its first, with Jupiter in it, Venus in the seventh and the Moon in Virgo: the native reaches the highest state, liberation, as the commentary and the Hindi gloss read param padam. Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "LAGNA",
+          "from": 0.0,
+          "to": 3.3333333333333335
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "VIRGO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "liberation: the native reaches the highest state"
+        }
+      ]
     }
   ]
 }

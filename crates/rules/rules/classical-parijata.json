@@ -5951,7 +5951,7 @@
         "chapter": "4",
         "verse": "68",
         "rank": 1,
-        "note": "A malefic in the sixth, eighth or twelfth, and the lagna lord weak and neither joined with nor aspected by a benefic: short-lived or childless. vv. 69 and 70 read a cruel shashtyamsha (krura-shashtyamsha, ch. 1's table), which no condition reads, and are not built (C396); vv. 71 to 73, on the pages the scan lacks, are built from the Sanskrit. Read from V. Subrahmanya Sastri's 1932 translation."
+        "note": "A malefic in the sixth, eighth or twelfth, and the lagna lord weak and neither joined with nor aspected by a benefic: short-lived or childless. v. 69 follows; v. 70 asks a house in a cruel shashtyamsha and is not built (C396); vv. 71 to 73, on the pages the scan lacks, are built from the Sanskrit. Read from V. Subrahmanya Sastri's 1932 translation."
       },
       "conditions": [
         {
@@ -5998,6 +5998,561 @@
               "lordOf": 1
             }
           }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_WITH_BENEFICS_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_IN_A_BENEFICS_SIGN_OR_NAVAMSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_BENEFIC_IN_A_KENDRA_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_EIGHTH_LORD_OR_SATURN_IN_A_CRUEL_SHASHTYAMSHA_EIGHTH_LORD_WITH_A_MALEFIC",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "69",
+        "rank": 1,
+        "note": "The eighth lord or Saturn in a cruel shashtyamsha, and the eighth lord joined by a malefic: short life, as the commentary reads the verse. The cruel parts are the commentary's own shashtyamsha table for ch. 1 vv. 38 to 43, which names each of an odd sign's sixty half-degrees benefic or malefic by its lord's name and counts an even sign's from its end (C396). v. 70 asks the twelfth and second houses themselves in cruel parts, which a whole-sign house has no degree for, and is not built. Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-sign",
+                      "planet": {
+                        "lordOf": 8
+                      },
+                      "signs": [
+                        "ARIES",
+                        "GEMINI",
+                        "LEO",
+                        "LIBRA",
+                        "SAGITTARIUS",
+                        "AQUARIUS"
+                      ]
+                    },
+                    {
+                      "type": "or",
+                      "conditions": [
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 0.0,
+                          "to": 1.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 2.0,
+                          "to": 2.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 3.0,
+                          "to": 5.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 5.5,
+                          "to": 6.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 7.5,
+                          "to": 8.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 11.5,
+                          "to": 12.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 14.5,
+                          "to": 18.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 19.5,
+                          "to": 20.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 21.0,
+                          "to": 22.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 24.0,
+                          "to": 24.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 25.5,
+                          "to": 26.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 27.5,
+                          "to": 28.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 29.0,
+                          "to": 29.5
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-sign",
+                      "planet": {
+                        "lordOf": 8
+                      },
+                      "signs": [
+                        "TAURUS",
+                        "CANCER",
+                        "VIRGO",
+                        "SCORPIO",
+                        "CAPRICORN",
+                        "PISCES"
+                      ]
+                    },
+                    {
+                      "type": "or",
+                      "conditions": [
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 0.5,
+                          "to": 1.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 2.0,
+                          "to": 2.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 3.5,
+                          "to": 4.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 5.5,
+                          "to": 6.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 7.5,
+                          "to": 9.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 9.5,
+                          "to": 10.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 12.0,
+                          "to": 15.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 18.0,
+                          "to": 18.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 22.0,
+                          "to": 22.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 24.0,
+                          "to": 24.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 25.0,
+                          "to": 27.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 27.5,
+                          "to": 28.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": {
+                            "lordOf": 8
+                          },
+                          "from": 29.0,
+                          "to": 30.0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-sign",
+                      "planet": "SATURN",
+                      "signs": [
+                        "ARIES",
+                        "GEMINI",
+                        "LEO",
+                        "LIBRA",
+                        "SAGITTARIUS",
+                        "AQUARIUS"
+                      ]
+                    },
+                    {
+                      "type": "or",
+                      "conditions": [
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 0.0,
+                          "to": 1.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 2.0,
+                          "to": 2.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 3.0,
+                          "to": 5.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 5.5,
+                          "to": 6.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 7.5,
+                          "to": 8.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 11.5,
+                          "to": 12.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 14.5,
+                          "to": 18.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 19.5,
+                          "to": 20.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 21.0,
+                          "to": 22.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 24.0,
+                          "to": 24.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 25.5,
+                          "to": 26.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 27.5,
+                          "to": 28.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 29.0,
+                          "to": 29.5
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-sign",
+                      "planet": "SATURN",
+                      "signs": [
+                        "TAURUS",
+                        "CANCER",
+                        "VIRGO",
+                        "SCORPIO",
+                        "CAPRICORN",
+                        "PISCES"
+                      ]
+                    },
+                    {
+                      "type": "or",
+                      "conditions": [
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 0.5,
+                          "to": 1.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 2.0,
+                          "to": 2.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 3.5,
+                          "to": 4.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 5.5,
+                          "to": 6.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 7.5,
+                          "to": 9.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 9.5,
+                          "to": 10.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 12.0,
+                          "to": 15.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 18.0,
+                          "to": 18.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 22.0,
+                          "to": 22.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 24.0,
+                          "to": 24.5
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 25.0,
+                          "to": 27.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 27.5,
+                          "to": 28.0
+                        },
+                        {
+                          "type": "planet-in-degrees",
+                          "planet": "SATURN",
+                          "from": 29.0,
+                          "to": 30.0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": {
+            "lordOf": 8
+          },
+          "except": [
+            {
+              "lordOf": 8
+            }
+          ]
         }
       ],
       "cancellations": [
