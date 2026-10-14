@@ -425,18 +425,34 @@ and the corpus's cancelled evils rose from 324 to 350.
 V. Subrahmanya Sastri's 1932 translation (vol. I pp. 173 to 232), each verse
 against its page, the printed Sanskrit followed where the translation parts
 from it (C319). It ships as two packs: `classical-parijata.json`, 59 evils
-(the child, the mother and the father) and 8 antidotes, each evil naming the
-eight and Saravali's two Rahu antidotes, which the chapter repeats; and
-`classical-parijata-ayur.json`, eleven middle and long lives, each with its
+(the child, the mother and the father) and 11 antidotes, each evil naming the
+eleven and Saravali's two Rahu antidotes, which the chapter repeats; and
+`classical-parijata-ayur.json`, fourteen middle and long lives, each with its
 `life-class`. Twenty-eight evils carry a `life-span`: a month, two months, or
 the year the death falls in (C319). The chapter's own copies of other texts
-are not written twice: vv. 17, 18, 32 to 39 and 99 are Brihat Jataka's, and
-v. 27 is BPHS ch. 9 v. 23, all of which ship. What it asks and the language
+are not written twice: vv. 17, 18 and 32 to 39 are Brihat Jataka's, v. 27 is
+BPHS ch. 9 v. 23 and v. 99 is BPHS ch. 43 v. 55 (the print quotes it from
+Saravali), all of which ship. What it asks and the language
 cannot say is recorded in the notes: the month lord of the pregnancy (v. 12),
-the twilight (v. 30), the named decanates (v. 45), the shadvargas (vv. 69 and
-70), a count of dignified grahas (v. 78), a chain of lords (v. 93), and the
-relations that have no category (the brother, the uncle). The scan lacks
-pp. 214, 215, 230 and 231, so vv. 71 to 73 and 100 to 104 are unread.
+the twilight (v. 30), the named decanates (v. 45), a cruel shashtyamsha
+(vv. 69 and 70), a count of dignified grahas (v. 78), a chain of lords
+(v. 93), the vaiseshikamshas (vv. 101 to 104), and the relations that have
+no category (the brother, the uncle).
+
+**The pages the scan lacks (2026-10-14, C396).** Sastri's pp. 214, 215, 230
+and 231 are missing from every scan, so vv. 69 to 73 and 97 to 104 were read
+in the Sanskrit, in the Chowkhamba print with Kapileshvara Shastri's
+commentary and a Hindi gloss, off the page images. Three antidotes join the
+eight: v. 71's strong lagna lord in a kendra, joined with benefics and
+aspected by them; v. 72's full Moon in a benefic's sign or navamsha, read as
+one figure as the Svalpa Jataka verse the commentary quotes reads it, and
+"full" as Phaladeepika ch. 19 v. 8's middle ten days, since the commentary's
+wider reading (any Moon there) holds on most births; and v. 73's strong
+Jupiter, Venus or Mercury in a kendra, unafflicted. They cancel 29 more of
+the corpus's firings (477), v. 72's answering 25 charts and v. 73's 11; v. 71
+answers none. Three long lives join the ayur pack: v. 97 (to the yuga's end),
+v. 98 (a long-lived ascetic, held by a 1940 fixture, since the sweep's sky
+has none) and v. 100 (likeness to the gods).
 
 Over the corpus, 31 of the 59 evils answer 1 to 27 charts and 28 answer none,
 and the new evils add 83 cancellations to the corpus's 350 (433), all their

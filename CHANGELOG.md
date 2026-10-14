@@ -323,6 +323,16 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**Jataka Parijata's missing pages.** **Numbers:** 3 antidotes join the
+arishta set and 3 long lives the ayur set (1904 shipped), and 29 more
+firings of the chapter's evils over the corpus are now cancelled. Sastri's
+translation lacks four pages of ch. 4, so vv. 71 to 73, 97, 98 and 100 were
+read in the Sanskrit commentary instead (crux C396). They give a strong
+lagna lord with benefics in a kendra, the full Moon in a benefic's sign or
+navamsha, a strong unafflicted benefic in a kendra, and three figures of
+very long life. The note on v. 68 now says what vv. 69 and 70 ask, a cruel
+shashtyamsha, which is not built.
+
 **A day's varjyam.** **Numbers:** every almanac day gains its stars'
 varjyam windows, and a muhurta search's windows are cut at each one's
 ends and carry a `VARJYAM` clause against the time. So under the texts'

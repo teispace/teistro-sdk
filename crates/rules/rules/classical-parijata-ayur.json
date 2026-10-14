@@ -691,6 +691,294 @@
           "class": "long"
         }
       ]
+    },
+    {
+      "key": "PARIJATA_SUN_JUPITER_MARS_IN_SATURNS_NAVAMSHAS_MOON_IN_LAGNA",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "97",
+        "rank": 1,
+        "note": "The Sun, Jupiter and Mars each in a navamsha of Saturn's, or in the ninth and its own navamsha, and strong, with the strong Moon in the lagna: life to the end of the yuga, and wealth. The commentary quotes the same figure from the Hora Prakasha. Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "SUN"
+              },
+              "signs": [
+                "CAPRICORN",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SUN",
+                  "houses": [
+                    9
+                  ]
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "SUN"
+                  },
+                  "as": "SUN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "JUPITER"
+              },
+              "signs": [
+                "CAPRICORN",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "JUPITER",
+                  "houses": [
+                    9
+                  ]
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "JUPITER"
+                  },
+                  "as": "JUPITER"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "MARS"
+              },
+              "signs": [
+                "CAPRICORN",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MARS",
+                  "houses": [
+                    9
+                  ]
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "navamsha": "MARS"
+                  },
+                  "as": "MARS"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SUN"
+        },
+        {
+          "type": "planet-strong",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MARS"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "unlimited"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JUPITER_SATURN_ONE_NAVAMSHA_IN_THE_NINTH_OR_TENTH_SUN_RISING",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "98",
+        "rank": 1,
+        "note": "Jupiter and Saturn in one navamsha, both in the ninth or both in the tenth, aspected by benefics, and the Sun rising, which the commentary reads as the Sun in the lagna: a long-lived ascetic. Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": {
+            "navamsha": "JUPITER"
+          },
+          "as": {
+            "navamsha": "SATURN"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "JUPITER",
+                  "houses": [
+                    9
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SATURN",
+                  "houses": [
+                    9
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "JUPITER",
+                  "houses": [
+                    10
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SATURN",
+                  "houses": [
+                    10
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "SATURN"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_TRINES_FREE_OF_MALEFICS_KENDRAS_OF_BENEFICS_EIGHTH_CLEAN",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "100",
+        "rank": 1,
+        "note": "No malefic in the trines (the fifth and ninth, by the commentary), no benefic in a kendra and no malefic in the eighth: the native is like an immortal, which the section's heading calls likeness to the gods. vv. 101 to 104 read the vaiseshikamshas and are not built (C396). Read in the Sanskrit with Kapileshvara Shastri's commentary (Chowkhamba), the pages V. Subrahmanya Sastri's 1932 scan lacks."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              5,
+              9
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              8
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "divine"
+        }
+      ]
     }
   ]
 }
