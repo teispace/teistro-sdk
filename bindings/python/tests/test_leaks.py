@@ -18,12 +18,20 @@ then once. A context is about two megabytes, so one kept a cycle
 overruns the budget at once; a leak of 150 bytes a cycle overruns it
 over the cycles of one run. Where the allocator cannot be read
 (Windows, musl), the test is skipped.
+
+It is skipped on Intel macOS too, where the zones' `size_in_use` is not
+the bytes live. There it climbed about 1.5 MB every 2000 positions calls
+with the nano zone on or off and the memo off, while `heap(1)` counted
+the same 34 241 blocks after 500 calls and after 4500, and the library's
+own counting-allocator test (`crates/ffi/tests/leaks.rs`) got every byte
+back on the same runner. The same build reads flat on Apple silicon.
 """
 
 from __future__ import annotations
 
 import ctypes
 import gc
+import platform
 import sys
 import unittest
 from typing import Callable, Optional
@@ -78,6 +86,8 @@ def _reader() -> Optional[Callable[[], int]]:
         return None
     libc = ctypes.CDLL(None)
     if sys.platform == "darwin":
+        if platform.machine() == "x86_64":
+            return None
         statistics = libc.malloc_zone_statistics
         statistics.argtypes = [ctypes.c_void_p, ctypes.POINTER(_ZoneStatistics)]
         statistics.restype = None
@@ -105,7 +115,7 @@ def _reader() -> Optional[Callable[[], int]]:
 IN_USE = _reader()
 
 
-@unittest.skipIf(IN_USE is None, "the allocator's bytes in use cannot be read here")
+@unittest.skipIf(IN_USE is None, "the allocator's bytes in use cannot be read faithfully here")
 class NothingIsKept(WithLibrary):
     def assert_gives_back(self, cycle: Callable[[], None]) -> None:
         """At least one of `RUNS` runs grows the bytes in use within `BUDGET`.
