@@ -621,9 +621,10 @@ therefore a sourcing question rather than a coding one.** The arishta
 corpus covers BPHS chs. 9 and 10 (the twilight births and the chapter's
 last two antidotes were built on 2026-10-13), Brihat Jataka ch. 6 and
 Saravali chs. 10 to 12, and Phaladeepika chs. 13 and 14 (built on
-2026-10-14, the Sanskrit checked in Ojha's 1975 commentary); and the
-readings want
-Saravali chs. 22 to 31 and 49 to 51, which no rule cites yet. Each rule
+2026-10-14, the Sanskrit checked in Ojha's 1975 commentary); and
+Saravali's readings, chs. 22 to 31 and 49 to 51, are the readings table
+(`shipped::readings`, built 2026-09-16 to 2026-10-12), ch. 51 v. 110's
+carrying of them to the dwadasamsas and saptamsas not built. Each rule
 carries a note paraphrasing what its verse says, so writing one without
 the verse in front of you invents scripture in a product whose worth is
 fidelity to cited sources — and the survey's own downloads are not in the
@@ -1034,8 +1035,8 @@ each difference counted on a generated page (the C89 and C289 precedent).
 - **The arishta corpus.** Built through Phaladeepika chs. 13 and 14
   (2026-10-14); what their verses leave undefined is in cruxes C379 to
   C386.
-- **Saravali's readings**, chs. 22 to 31 and 49 to 51: Santhanam's
-  edition is in hand in print, with its Sanskrit.
+- **Saravali's readings**, chs. 22 to 31 and 49 to 51: built, as the
+  readings table (2026-09-16 to 2026-10-12).
 - **Ibn Ezra's weights.**
 - **Rudra, Maheshwara and the Sudasa** wait on a legible Jaimini.
 

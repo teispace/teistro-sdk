@@ -578,6 +578,36 @@ dignity and kind for each birth. A pair the sky forces together, Rahu's
 and Ketu's death in or aspecting the eighth, is in the cofiring page's
 list of one text saying it twice.
 
+**BPHS ch. 83's curses, built (2026-10-14).** The chapter reads, from the
+fifth house, the curse in a former birth that denies a son, and gives each
+curse its remedy. As `classical-bphs-shapa.json`, 76 rules join the
+nabhasa set under a new category, `shapa`, read in R. Santhanam's
+translation with the Sanskrit checked in the 1899 and 1923 prints (their
+purva khanda ch. 16), which agree with each other:
+- **vv. 7 and 8:** no son when Jupiter and the lagna, seventh and fifth
+  lords are all without strength, or when the Sun, Mars and Saturn are
+  strong in the fifth with Rahu while Jupiter and the fifth lord are weak.
+- **vv. 8 to 106:** 74 figures for eight curses: a serpent's, the
+  father's, the mother's, a brother's, the maternal uncle's, a brahmin's,
+  the wife's and a departed spirit's. Each rule's note carries the remedy
+  its curse is given (vv. 16 to 18, 30 and 31, 46 to 49, 61 to 63, 69 and
+  70, 79 to 81, 93 to 95, 107 and 108), in paraphrase. The remedies are
+  not `remedyKeys`, which name a catalogue of remedies, and this chapter's
+  remedies are not in it.
+
+Where the translation and the prints part, the Sanskrit is followed and
+the note says so (C387). The thin Moon of vv. 41 and 96 is the print's own
+commentary's, from the dark tenth to the bright fifth: v. 96's Moon, two
+signs past the Sun, never wanes, though under that reading v. 41 can never
+hold (C388). V. 89's Sun stays in its quarter-verse, in the fifth (C389).
+V. 98, which the prints give twice, asks Mercury five signs from the Sun,
+and v. 67's lord is under every lagna one of the three it puts in the
+fifth; both ship as written, held by no sky (C390). Of the rest, 24 that
+the cofiring pass's 6000 skies miss have an instant listed where each
+holds, and five are listed as unseen from 1800 to 2398, with why. `crates/rules/tests/shapa.rs` counts what each figure answers over
+the 93 charts: three hold at all, on 8, 3 and 1, as stacked placings
+would.
+
 **A rule can read a transit (2026-10-14).** `{"type": "transit-in-house",
 "planet": …, "houses": […], "from": …}` holds when the graha's sign in a
 sky the evaluator is given (`with_transits`, a `TransitSky`) stands in one

@@ -323,6 +323,14 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**BPHS ch. 83's curses.** **Numbers:** 76 rules join the nabhasa set
+(1704 shipped); no other rule's answer moved. The chapter's curses in a
+former birth that deny a son, in a new category, `shapa`: a serpent's,
+the father's, the mother's, a brother's, the maternal uncle's, a
+brahmin's, the wife's and a departed spirit's, each figure's note naming
+its remedy, and vv. 7 and 8's two figures for no son. The Sanskrit is
+followed where the translation parts from it (cruxes C387 to C390).
+
 **Phaladeepika ch. 14's diseases, death and births.** **Numbers:** 85
 rules join the nabhasa set (1628 shipped); no other rule's answer moved.
 Thirteen diseases from vv. 10 and 11 in a new category, `roga`; the

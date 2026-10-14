@@ -110,7 +110,7 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// and a place, its latitude and longitude, where it does: rare rules,
 /// shown alive. Each was found at Kathmandu's latitude, on the meridian
 /// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 28] = [
+const FIXTURES: [(&str, f64, f64, f64); 52] = [
     (
         "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
         2_415_023.166_67,
@@ -141,17 +141,38 @@ const FIXTURES: [(&str, f64, f64, f64); 28] = [
         27.7172,
         121.864,
     ),
+    ("BPHS_BRAHMIN_CURSE_2", 2_431_221.0, 27.7172, 153.649),
+    ("BPHS_BRAHMIN_CURSE_6", 2_386_282.5, 27.7172, 59.955),
+    ("BPHS_BROTHER_CURSE_1", 2_382_500.5, 27.7172, -124.453),
+    ("BPHS_BROTHER_CURSE_10", 2_500_859.0, 27.7172, 40.202),
+    ("BPHS_BROTHER_CURSE_2", 2_403_064.0, 27.7172, 13.969),
+    ("BPHS_BROTHER_CURSE_3", 2_385_689.5, 27.7172, 176.183),
+    ("BPHS_BROTHER_CURSE_4", 2_381_655.5, 27.7172, -59.659),
+    ("BPHS_BROTHER_CURSE_7", 2_431_492.0, 27.7172, -60.936),
+    ("BPHS_BROTHER_CURSE_9", 2_399_106.75, 27.7172, -166.358),
     (
         "BPHS_CANCER_RISING_WITH_JUPITER_AND_MOON_LIMITLESS",
         2_404_926.5,
         27.7172,
         152.741,
     ),
+    ("BPHS_MATERNAL_UNCLE_CURSE_2", 2_380_555.0, 27.7172, 173.046),
     (
         "BPHS_MOON_AND_A_BENEFIC_IN_ARUDHA_LAGNA_AND_JUPITER_SECOND",
         2_436_428.666_67,
         27.7172,
         79.059,
+    ),
+    ("BPHS_MOTHER_CURSE_12", 2_434_156.0, 27.7172, 72.443),
+    ("BPHS_MOTHER_CURSE_13", 2_584_735.5, 27.7172, -9.26),
+    ("BPHS_MOTHER_CURSE_5", 2_410_500.5, 27.7172, -49.856),
+    ("BPHS_MOTHER_CURSE_6", 2_385_569.0, 27.7172, 177.583),
+    ("BPHS_MOTHER_CURSE_8", 2_477_457.0, 27.7172, -90.153),
+    (
+        "BPHS_NO_SON_STRONG_MALEFICS_IN_THE_FIFTH",
+        2_514_807.5,
+        27.7172,
+        -2.923,
     ),
     (
         "BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH",
@@ -159,12 +180,20 @@ const FIXTURES: [(&str, f64, f64, f64); 28] = [
         27.7172,
         -95.118,
     ),
+    ("BPHS_SERPENT_CURSE_5", 2_379_840.5, 27.7172, -84.943),
+    ("BPHS_SPIRIT_CURSE_1", 2_383_249.5, 27.7172, -42.061),
+    ("BPHS_SPIRIT_CURSE_8", 2_417_856.5, 27.7172, -121.56),
+    ("BPHS_SPIRIT_CURSE_9", 2_380_791.0, 27.7172, 109.151),
     (
         "BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH",
         2_524_474.333_33,
         27.7172,
         17.863,
     ),
+    ("BPHS_WIFE_CURSE_10", 2_451_130.5, 27.7172, -113.242),
+    ("BPHS_WIFE_CURSE_11", 2_420_394.5, 27.7172, -103.057),
+    ("BPHS_WIFE_CURSE_7", 2_384_731.5, 27.7172, 103.036),
+    ("BPHS_WIFE_CURSE_8", 2_400_560.0, 27.7172, 162.235),
     ("NABHASA_GADA", 2_430_110.0, 27.7172, -93.752),
     ("NABHASA_GOLA", 2_437_699.083_33, 27.7172, -37.399),
     ("NABHASA_KAMALA", 2_420_757.166_67, 27.7172, 119.593),
@@ -247,10 +276,14 @@ const FIXTURES: [(&str, f64, f64, f64); 28] = [
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 11] = [
+const UNSEEN: [(&str, &str); 19] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
+    ),
+    (
+        "BPHS_BRAHMIN_CURSE_1",
+        "Of the 529 half-days from 1800 to 2398 with Jupiter, Mars and Saturn together and Rahu in a sign of Jupiter, the ninth lord, counted from a lagna four signs behind them, stands in the fifth itself or in the third or fourth, never the eighth.",
     ),
     (
         "BPHS_DEBILITATED_GRAHAS_SIXTH_EIGHTH_THIRD_AND_LAGNA_LORD_DIGNIFIED",
@@ -261,12 +294,40 @@ const UNSEEN: [(&str, &str); 11] = [
         "No lagna lord regards the Sun as a neutral: the Moon, Mars, Mercury and Jupiter count him a friend, Venus and Saturn an enemy, and for Leo rising the lord is the Sun himself.",
     ),
     (
+        "BPHS_MATERNAL_UNCLE_CURSE_1",
+        "It asks Mercury, Jupiter, Mars and Rahu in one sign with Saturn four signs behind them: of the 361 half-days from 1800 to 2398 with the four together, none has Saturn so.",
+    ),
+    (
+        "BPHS_MATERNAL_UNCLE_CURSE_4",
+        "With the Moon, Mercury and Mars in the fifth, the sixth or the twelfth lord is one of them under ten lagnas, and under Virgo and Pisces the Sun in the lagna would stand four signs from Mercury; the translation's fourth lord fails the same way (C390).",
+    ),
+    (
         "BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH",
         "It asks Mars and Jupiter together in the sign opposite Mercury in his own, so both near opposition to the Sun, with the Moon there too: no day from 1800 to 2400, the span the built-in ephemeris covers, has the slower grahas so.",
     ),
     (
+        "BPHS_MOTHER_CURSE_7",
+        "Only Cancer and Scorpio rising leave its five lords' places consistent: of the 78 half-days from 1800 to 2398 with Jupiter and Saturn in Cancer and Mars in Sagittarius, none has Venus in Aquarius, and of the 54 with Mars and Jupiter in Aries and Saturn in Gemini, none has Mercury in Scorpio.",
+    ),
+    (
+        "BPHS_MOTHER_CURSE_9",
+        "The thin Moon in the seventh keeps the Sun and Mercury between the fourth and the tenth, and Saturn, Rahu and Ketu stand in the fifth, the fourth and the tenth, so Mars alone is left to hem the lagna, which needs a malefic on each side (C388).",
+    ),
+    (
+        "BPHS_SERPENT_CURSE_7",
+        "It asks six grahas in the fifth, Rahu, Jupiter, Saturn and Mars among them: no half-day from 1800 to 2398, the span the built-in ephemeris covers, has even the Sun, Mars, Jupiter, Saturn and Rahu in one sign.",
+    ),
+    (
         "BPHS_SIX_GRAHAS_EXALTED",
         "Mercury exalted in Virgo and Venus in Pisces would stand opposite, which the two never do, so the six are the Sun in Aries, the Moon in Taurus, Mars in Capricorn, Jupiter in Cancer, Venus in Pisces and Saturn in Libra: no day from 1800 to 2400 has the slower grahas so.",
+    ),
+    (
+        "BPHS_SPIRIT_CURSE_3",
+        "It asks the Sun in the twelfth and Mercury in the fifth, five signs apart, and Mercury keeps within a sign of the Sun (C390).",
+    ),
+    (
+        "BPHS_SPIRIT_CURSE_5",
+        "The lagna lord in the eighth is none of the five in the lagna, and the Sun or Mercury there would stand five signs from Venus, so it is Mars, with Aries or Scorpio rising: no half-day from 1800 to 2398 has Jupiter, Saturn and Rahu together in either.",
     ),
     (
         "PARASHARA_KOORMA",

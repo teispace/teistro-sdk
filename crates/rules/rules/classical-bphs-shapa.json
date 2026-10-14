@@ -1,0 +1,5055 @@
+{
+  "rules": [
+    {
+      "key": "BPHS_SERPENT_CURSE_1",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "8",
+        "rank": 1,
+        "note": "The 1st of the chapter's figures for a serpent's curse: Rahu in the fifth, aspected by Mars or in a sign of Mars; the translation leaves out the sign. The remedy it gives, vv. 16-18: worship of the serpent king through a golden image of him, made and installed by the household rite; gifts of a cow, land, sesame and gold, as one's means allow. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": "RAHU"
+            },
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": "RAHU"
+              },
+              "as": "MARS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a serpent's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SERPENT_CURSE_2",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "9",
+        "rank": 1,
+        "note": "The 2nd of the chapter's figures for a serpent's curse: the fifth lord with Rahu, and Saturn in the fifth joined or aspected by the Moon; the translation puts the Moon in the fifth under Saturn's aspect. The remedy it gives, vv. 16-18: worship of the serpent king through a golden image of him, made and installed by the household rite; gifts of a cow, land, sesame and gold, as one's means allow. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 5
+              },
+              "reference": "RAHU",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 5
+                },
+                "as": "RAHU"
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MOON",
+                  "reference": "SATURN",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "MOON",
+                    "as": "SATURN"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MOON",
+              "target": "SATURN"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a serpent's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SERPENT_CURSE_3",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "10",
+        "rank": 1,
+        "note": "The 3rd of the chapter's figures for a serpent's curse: Jupiter with Rahu, the fifth lord without strength, and the lagna lord with Mars. The remedy it gives, vv. 16-18: worship of the serpent king through a golden image of him, made and installed by the household rite; gifts of a cow, land, sesame and gold, as one's means allow. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "RAHU",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "JUPITER",
+                "as": "RAHU"
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 5
+          }
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 1
+              },
+              "reference": "MARS",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 1
+                },
+                "as": "MARS"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a serpent's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SERPENT_CURSE_4",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "11",
+        "rank": 1,
+        "note": "The 4th of the chapter's figures for a serpent's curse: Jupiter with Mars, Rahu in the lagna, and the fifth lord in the sixth, eighth or twelfth. The remedy it gives, vv. 16-18: worship of the serpent king through a golden image of him, made and installed by the household rite; gifts of a cow, land, sesame and gold, as one's means allow. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "MARS",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "JUPITER",
+                "as": "MARS"
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a serpent's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SERPENT_CURSE_5",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "12",
+        "rank": 1,
+        "note": "The 5th of the chapter's figures for a serpent's curse: Mercury as the fifth lord, in a navamsha of Mars and joined by Mars, and Rahu and Gulika in the lagna. The remedy it gives, vv. 16-18: worship of the serpent king through a golden image of him, made and installed by the household rite; gifts of a cow, land, sesame and gold, as one's means allow. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 5
+          },
+          "as": "MERCURY"
+        },
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": {
+              "navamsha": "MERCURY"
+            }
+          },
+          "as": "MARS"
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "MERCURY",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "MARS",
+                "as": "MERCURY"
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "point": "GULIKA"
+          },
+          "as": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a serpent's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SERPENT_CURSE_6",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "13",
+        "rank": 1,
+        "note": "The 6th of the chapter's figures for a serpent's curse: the fifth a sign of Mars, and the fifth lord with Rahu, joined or aspected by Mercury. The remedy it gives, vv. 16-18: worship of the serpent king through a golden image of him, made and installed by the household rite; gifts of a cow, land, sesame and gold, as one's means allow. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 5
+          },
+          "as": "MARS"
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 5
+              },
+              "reference": "RAHU",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 5
+                },
+                "as": "RAHU"
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": {
+                    "lordOf": 5
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "MERCURY",
+                    "as": {
+                      "lordOf": 5
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MERCURY",
+              "target": {
+                "lordOf": 5
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a serpent's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SERPENT_CURSE_7",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "14",
+        "rank": 1,
+        "note": "The 7th of the chapter's figures for a serpent's curse: the Sun, Saturn, Mars, Rahu, Mercury and Jupiter in the fifth, and the fifth and lagna lords without strength. The remedy it gives, vv. 16-18: worship of the serpent king through a golden image of him, made and installed by the household rite; gifts of a cow, land, sesame and gold, as one's means allow. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 5
+          }
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a serpent's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SERPENT_CURSE_8",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "15",
+        "rank": 1,
+        "note": "The 8th of the chapter's figures for a serpent's curse: the lagna lord with Rahu, the fifth lord with Mars, and Jupiter aspected by Rahu. The remedy it gives, vv. 16-18: worship of the serpent king through a golden image of him, made and installed by the household rite; gifts of a cow, land, sesame and gold, as one's means allow. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 1
+              },
+              "reference": "RAHU",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 1
+                },
+                "as": "RAHU"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 5
+              },
+              "reference": "MARS",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 5
+                },
+                "as": "MARS"
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "RAHU",
+          "target": "JUPITER"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a serpent's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_1",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "19",
+        "rank": 1,
+        "note": "The 1st of the chapter's figures for the father's curse: the Sun debilitated in the fifth, in a navamsha of Saturn, hemmed by malefics. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": "SUN",
+          "as": {
+            "debilitationOf": "SUN"
+          }
+        },
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": {
+              "navamsha": "SUN"
+            }
+          },
+          "as": "SATURN"
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "from": "SUN",
+              "atLeast": 1,
+              "except": [
+                "SUN"
+              ]
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "from": "SUN",
+              "atLeast": 1,
+              "except": [
+                "SUN"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_2",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "20",
+        "rank": 1,
+        "note": "The 2nd of the chapter's figures for the father's curse: the Sun as the fifth lord in a trikona with a malefic, hemmed by malefics and aspected by one. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 5
+          },
+          "as": "SUN"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1,
+            5,
+            9
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": "SUN",
+          "atLeast": 1,
+          "except": [
+            "SUN"
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "from": "SUN",
+              "atLeast": 1,
+              "except": [
+                "SUN"
+              ]
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "from": "SUN",
+              "atLeast": 1,
+              "except": [
+                "SUN"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "count-aspecting",
+          "planets": "any-malefic",
+          "target": "SUN",
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_3",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "21",
+        "rank": 1,
+        "note": "The 3rd of the chapter's figures for the father's curse: Jupiter in the Sun's sign, the fifth lord with the Sun, and malefics in the fifth and the lagna. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": "JUPITER"
+          },
+          "as": "SUN"
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 5
+              },
+              "reference": "SUN",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 5
+                },
+                "as": "SUN"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_4",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "22",
+        "rank": 1,
+        "note": "The 4th of the chapter's figures for the father's curse: a weak lagna lord in the fifth, the fifth lord with the Sun, and malefics in the fifth and the lagna. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 5
+              },
+              "reference": "SUN",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 5
+                },
+                "as": "SUN"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_5",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "23",
+        "rank": 1,
+        "note": "The 5th of the chapter's figures for the father's curse: the ninth lord in the fifth and the fifth lord in the ninth, and malefics in the lagna and the fifth. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "mutual-exchange",
+          "house1": 5,
+          "house2": 9
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_6",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "24",
+        "rank": 1,
+        "note": "The 6th of the chapter's figures for the father's curse: Mars as the ninth lord with the fifth lord, and malefics in the lagna, the fifth and the ninth. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 9
+          },
+          "as": "MARS"
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": {
+                "lordOf": 5
+              },
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "MARS",
+                "as": {
+                  "lordOf": 5
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                9
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_7",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "25",
+        "rank": 1,
+        "note": "The 7th of the chapter's figures for the father's curse: the ninth lord in the sixth, eighth or twelfth, Jupiter in a malefic's sign, a malefic in the fifth and one with the lagna lord. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 9
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": "JUPITER"
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "lordOf": 1
+          },
+          "atLeast": 1,
+          "except": [
+            {
+              "lordOf": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_8",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "26",
+        "rank": 1,
+        "note": "The 8th of the chapter's figures for the father's curse: the Sun, Mars and Saturn in the lagna or the fifth, and Rahu and Jupiter in the eighth or the twelfth; the verse does not say which in which. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1,
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1,
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1,
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_9",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "27",
+        "rank": 1,
+        "note": "The 9th of the chapter's figures for the father's curse: the Sun in the eighth, Saturn in the fifth, the fifth lord with Rahu, and a malefic in the lagna. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 5
+              },
+              "reference": "RAHU",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 5
+                },
+                "as": "RAHU"
+              }
+            }
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_10",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "28",
+        "rank": 1,
+        "note": "The 10th of the chapter's figures for the father's curse: the twelfth lord in the lagna, the eighth lord in the fifth, and the ninth lord in the eighth. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 12
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 8
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 9
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FATHER_CURSE_11",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "29",
+        "rank": 1,
+        "note": "The 11th of the chapter's figures for the father's curse: the sixth lord in the fifth and the ninth lord likewise, and Jupiter with Rahu; the translation sends the lord of the father's house to the sixth. The remedy it gives, vv. 30-31: a shraddha at Gaya; feeding brahmins, ten thousand or a thousand; giving a girl in marriage; the gift of a cow with her calf. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 6
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 9
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "RAHU",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "JUPITER",
+                "as": "RAHU"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the father's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_1",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "33",
+        "rank": 1,
+        "note": "The 1st of the chapter's figures for the mother's curse: the Moon as the fifth lord, debilitated or hemmed by malefics, and malefics in the fourth and the fifth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 5
+          },
+          "as": "MOON"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": "MOON",
+              "as": {
+                "debilitationOf": "MOON"
+              }
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    2
+                  ],
+                  "from": "MOON",
+                  "atLeast": 1,
+                  "except": [
+                    "MOON"
+                  ]
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    12
+                  ],
+                  "from": "MOON",
+                  "atLeast": 1,
+                  "except": [
+                    "MOON"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                4
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_2",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "34",
+        "rank": 1,
+        "note": "The 2nd of the chapter's figures for the mother's curse: Saturn in the eleventh, a malefic in the fourth, and the Moon debilitated in the fifth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "debilitationOf": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_3",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "35",
+        "rank": 1,
+        "note": "The 3rd of the chapter's figures for the mother's curse: the fifth lord in the sixth, eighth or twelfth, the lagna lord debilitated, and the Moon with a malefic. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 1
+          },
+          "as": {
+            "debilitationOf": {
+              "lordOf": 1
+            }
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": "MOON",
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_4",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "36",
+        "rank": 1,
+        "note": "The 4th of the chapter's figures for the mother's curse: the fifth lord in the sixth, eighth or twelfth, the Moon in a malefic's navamsha, and malefics in the lagna and the fifth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": {
+              "navamsha": "MOON"
+            }
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_5",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "37",
+        "rank": 1,
+        "note": "The 5th of the chapter's figures for the mother's curse: the Moon as the fifth lord, joined by Saturn, Rahu and Mars, in the ninth or the fifth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 5
+          },
+          "as": "MOON"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "MOON",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "SATURN",
+                "as": "MOON"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "RAHU",
+              "reference": "MOON",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "RAHU",
+                "as": "MOON"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "MOON",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "MARS",
+                "as": "MOON"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_6",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "38",
+        "rank": 1,
+        "note": "The 6th of the chapter's figures for the mother's curse: Mars as the fourth lord with Saturn and Rahu, the Sun in the fifth and the Moon in the lagna. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 4
+          },
+          "as": "MARS"
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "MARS",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "SATURN",
+                "as": "MARS"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "RAHU",
+              "reference": "MARS",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "RAHU",
+                "as": "MARS"
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_7",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "39",
+        "rank": 1,
+        "note": "The 7th of the chapter's figures for the mother's curse: the lagna and fifth lords in the sixth, the fourth lord in the eighth, and the ninth and eighth lords in the lagna; the translation reads the tenth for the ninth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 4
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 9
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 8
+          },
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_8",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "40",
+        "rank": 1,
+        "note": "The 8th of the chapter's figures for the mother's curse: the sixth and eighth lords in the lagna, the fourth lord in the twelfth, and the Moon and Jupiter in the fifth with a malefic. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 6
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 8
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 4
+          },
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": "MOON",
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_9",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "41",
+        "rank": 1,
+        "note": "The 9th of the chapter's figures for the mother's curse: the lagna hemmed by malefics, the thin Moon in the seventh, Rahu in the fourth and Saturn in the fifth; the thin Moon is the print's own commentary's, the dark tenth to the bright fifth, and under it no sky meets the figure, the Sun and Mercury then standing too near the seventh for both sides of the lagna to hold a malefic (C388). The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "from": 1,
+              "atLeast": 1,
+              "except": []
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "from": 1,
+              "atLeast": 1,
+              "except": []
+            }
+          ]
+        },
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "KRISHNA_DASHAMI",
+            "KRISHNA_EKADASHI",
+            "KRISHNA_DWADASHI",
+            "KRISHNA_TRAYODASHI",
+            "KRISHNA_CHATURDASHI",
+            "AMAVASYA",
+            "SHUKLA_PRATIPADA",
+            "SHUKLA_DVITIYA",
+            "SHUKLA_TRITIYA",
+            "SHUKLA_CHATURTHI",
+            "SHUKLA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_10",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "42",
+        "rank": 1,
+        "note": "The 10th of the chapter's figures for the mother's curse: the eighth lord in the fifth and the fifth lord in the eighth, and the Moon and the fourth lord in the sixth, eighth or twelfth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "mutual-exchange",
+          "house1": 5,
+          "house2": 8
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 4
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_11",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "43",
+        "rank": 1,
+        "note": "The 11th of the chapter's figures for the mother's curse: Cancer rising with Mars and Rahu in it, and the Moon and Saturn in the fifth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_12",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "44",
+        "rank": 1,
+        "note": "The 12th of the chapter's figures for the mother's curse: Mars in the lagna, Rahu in the fifth, the Sun in the eighth and Saturn in the twelfth, and the fourth and lagna lords in the sixth, eighth or twelfth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 4
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOTHER_CURSE_13",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "45",
+        "rank": 1,
+        "note": "The 13th of the chapter's figures for the mother's curse: Jupiter in the eighth with Mars and Rahu, and Saturn and the Moon in the fifth. The remedy it gives, vv. 46-49: bathing at the Setu; a hundred thousand Gayatris; gifts for the grahas, and milk in a silver vessel; feeding brahmins; walking round a pipal tree twenty-eight thousand times. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "JUPITER",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "MARS",
+                "as": "JUPITER"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "RAHU",
+              "reference": "JUPITER",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "RAHU",
+                "as": "JUPITER"
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the mother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_1",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "51",
+        "rank": 1,
+        "note": "The 1st of the chapter's figures for a brother's curse: the third lord in the fifth with Mars and Rahu, and the fifth and lagna lords in the eighth. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 3
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": {
+                "lordOf": 3
+              },
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "MARS",
+                "as": {
+                  "lordOf": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "RAHU",
+              "reference": {
+                "lordOf": 3
+              },
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "RAHU",
+                "as": {
+                  "lordOf": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_2",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "52",
+        "rank": 1,
+        "note": "The 2nd of the chapter's figures for a brother's curse: Mars in the lagna and Saturn in the fifth, the third lord in the ninth, and Jupiter, the significator, in the eighth; the translation takes Mars for the significator, who cannot be in the lagna and the eighth at once. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 3
+          },
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_3",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "53",
+        "rank": 1,
+        "note": "The 3rd of the chapter's figures for a brother's curse: Jupiter debilitated in the third, Saturn in the fifth, and the Moon and Mars in the eighth. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": "JUPITER",
+          "as": {
+            "debilitationOf": "JUPITER"
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_4",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "54",
+        "rank": 1,
+        "note": "The 4th of the chapter's figures for a brother's curse: the lagna lord in the twelfth, Mars in the fifth, and the fifth lord in the eighth with a malefic. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "lordOf": 5
+          },
+          "atLeast": 1,
+          "except": [
+            {
+              "lordOf": 5
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_5",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "55",
+        "rank": 1,
+        "note": "The 5th of the chapter's figures for a brother's curse: the lagna and the fifth hemmed by malefics, and their lords in the sixth, eighth or twelfth; the prints add the significator in a phrase whose grammar does not hold, which is not built. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "from": 1,
+              "atLeast": 1,
+              "except": []
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "from": 1,
+              "atLeast": 1,
+              "except": []
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "from": 5,
+              "atLeast": 1,
+              "except": []
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "from": 5,
+              "atLeast": 1,
+              "except": []
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_6",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "56",
+        "rank": 1,
+        "note": "The 6th of the chapter's figures for a brother's curse: the tenth lord in the third with a malefic, and a benefic in the fifth joined by Mars. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 10
+          },
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "lordOf": 10
+          },
+          "atLeast": 1,
+          "except": [
+            {
+              "lordOf": 10
+            }
+          ]
+        },
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  5
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house-from",
+                    "planet": "MARS",
+                    "reference": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "same-body",
+                      "of": "MARS",
+                      "as": "SELF"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_7",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "57",
+        "rank": 1,
+        "note": "The 7th of the chapter's figures for a brother's curse: the fifth a sign of Mercury holding Saturn and Rahu, and Mercury and Mars in the twelfth. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 5
+          },
+          "as": "MERCURY"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_8",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "58",
+        "rank": 1,
+        "note": "The 8th of the chapter's figures for a brother's curse: the lagna lord in the third, the third lord in the fifth, and malefics in the lagna, the third and the fifth. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 3
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                3
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_9",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "59",
+        "rank": 1,
+        "note": "The 9th of the chapter's figures for a brother's curse: the third lord in the eighth and Jupiter in the fifth, joined by Rahu and Gulika; the translation reads Saturn for Gulika. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 3
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "RAHU",
+              "reference": "JUPITER",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "RAHU",
+                "as": "JUPITER"
+              }
+            }
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "point": "GULIKA"
+          },
+          "as": "JUPITER"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BROTHER_CURSE_10",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "60",
+        "rank": 1,
+        "note": "The 10th of the chapter's figures for a brother's curse: the eighth lord in the fifth with the third lord, and Mars and Saturn in the eighth. The remedy it gives, vv. 61-63: hearing the Harivamsha; the Chandrayana fast before Vishnu; planting a pipal; the gift of ten cows; the Prajapatya penance; the gift of land with fruit trees. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 8
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 3
+              },
+              "reference": {
+                "lordOf": 8
+              },
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 3
+                },
+                "as": {
+                  "lordOf": 8
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brother's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MATERNAL_UNCLE_CURSE_1",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "64",
+        "rank": 1,
+        "note": "The 1st of the chapter's figures for the maternal uncle's curse: Mercury and Jupiter in the fifth with Mars and Rahu, and Saturn in the lagna. The remedy it gives, vv. 69-70: installing an image of Vishnu; building a well, a tank or a dam, and seeing the Setu. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the maternal uncle's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MATERNAL_UNCLE_CURSE_2",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "65",
+        "rank": 1,
+        "note": "The 2nd of the chapter's figures for the maternal uncle's curse: the lagna and fifth lords in the fifth with Mercury, Mars and Saturn. The remedy it gives, vv. 69-70: installing an image of Vishnu; building a well, a tank or a dam, and seeing the Setu. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the maternal uncle's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MATERNAL_UNCLE_CURSE_3",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "66",
+        "rank": 1,
+        "note": "The 3rd of the chapter's figures for the maternal uncle's curse: a combust fifth lord in the lagna, Saturn in the seventh, and the lagna lord with Mercury; the translation reads the sixth lord, which neither print has. The remedy it gives, vv. 69-70: installing an image of Vishnu; building a well, a tank or a dam, and seeing the Setu. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-combust",
+          "planet": {
+            "lordOf": 5
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 1
+              },
+              "reference": "MERCURY",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 1
+                },
+                "as": "MERCURY"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the maternal uncle's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MATERNAL_UNCLE_CURSE_4",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "67",
+        "rank": 1,
+        "note": "The 4th of the chapter's figures for the maternal uncle's curse: the sixth lord, the house of kin, in the lagna with the twelfth lord, and the Moon, Mercury and Mars in the fifth; the translation reads the fourth, and under neither does any sky meet it, since the lord is one of the three in the fifth or the Sun stands four signs from Mercury (C390). The remedy it gives, vv. 69-70: installing an image of Vishnu; building a well, a tank or a dam, and seeing the Setu. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 6
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 12
+              },
+              "reference": {
+                "lordOf": 6
+              },
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "lordOf": 12
+                },
+                "as": {
+                  "lordOf": 6
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the maternal uncle's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BRAHMIN_CURSE_1",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "71",
+        "rank": 1,
+        "note": "The 1st of the chapter's figures for a brahmin's curse: Rahu in a sign of Jupiter, Jupiter, Mars and Saturn in the fifth, and the ninth lord in the eighth; the translation leaves out all but Jupiter. The remedy it gives, vv. 79-81: the Chandrayana fast; the brahmakurcha penance three times; the gift of a cow with her fee; five gems with gold; feeding ten thousand or a thousand. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": "RAHU"
+          },
+          "as": "JUPITER"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 9
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brahmin's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BRAHMIN_CURSE_2",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "73",
+        "rank": 1,
+        "note": "The 2nd of the chapter's figures for a brahmin's curse: the ninth lord in the fifth, the fifth lord in the eighth, and Jupiter, Mars and Rahu in the eighth. The remedy it gives, vv. 79-81: the Chandrayana fast; the brahmakurcha penance three times; the gift of a cow with her fee; five gems with gold; feeding ten thousand or a thousand. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 9
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brahmin's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BRAHMIN_CURSE_3",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "74",
+        "rank": 1,
+        "note": "The 3rd of the chapter's figures for a brahmin's curse: the ninth lord debilitated, and the twelfth lord in the fifth joined or aspected by Rahu. The remedy it gives, vv. 79-81: the Chandrayana fast; the brahmakurcha penance three times; the gift of a cow with her fee; five gems with gold; feeding ten thousand or a thousand. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 9
+          },
+          "as": {
+            "debilitationOf": {
+              "lordOf": 9
+            }
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 12
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "RAHU",
+                  "reference": {
+                    "lordOf": 12
+                  },
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "RAHU",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "RAHU",
+              "target": {
+                "lordOf": 12
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brahmin's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BRAHMIN_CURSE_4",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "75",
+        "rank": 1,
+        "note": "The 4th of the chapter's figures for a brahmin's curse: Jupiter debilitated, Rahu in the lagna or the fifth, and the fifth lord in the sixth, eighth or twelfth. The remedy it gives, vv. 79-81: the Chandrayana fast; the brahmakurcha penance three times; the gift of a cow with her fee; five gems with gold; feeding ten thousand or a thousand. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "JUPITER",
+          "as": {
+            "debilitationOf": "JUPITER"
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1,
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brahmin's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BRAHMIN_CURSE_5",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "76",
+        "rank": 1,
+        "note": "The 5th of the chapter's figures for a brahmin's curse: the fifth lord and Jupiter in the eighth with a malefic, or the fifth lord there with the Sun and the Moon. The remedy it gives, vv. 79-81: the Chandrayana fast; the brahmakurcha penance three times; the gift of a cow with her fee; five gems with gold; feeding ten thousand or a thousand. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "lordOf": 5
+                  },
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "JUPITER",
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    1
+                  ],
+                  "from": {
+                    "lordOf": 5
+                  },
+                  "atLeast": 1,
+                  "except": [
+                    {
+                      "lordOf": 5
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "lordOf": 5
+                  },
+                  "houses": [
+                    8
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "SUN",
+                      "reference": {
+                        "lordOf": 5
+                      },
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": "SUN",
+                        "as": {
+                          "lordOf": 5
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house-from",
+                      "planet": "MOON",
+                      "reference": {
+                        "lordOf": 5
+                      },
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": "MOON",
+                        "as": {
+                          "lordOf": 5
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brahmin's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BRAHMIN_CURSE_6",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "77",
+        "rank": 1,
+        "note": "The 6th of the chapter's figures for a brahmin's curse: Jupiter in a navamsha of Saturn, with Saturn and Mars, and the fifth lord in the twelfth. The remedy it gives, vv. 79-81: the Chandrayana fast; the brahmakurcha penance three times; the gift of a cow with her fee; five gems with gold; feeding ten thousand or a thousand. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": {
+              "navamsha": "JUPITER"
+            }
+          },
+          "as": "SATURN"
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "JUPITER",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "SATURN",
+                "as": "JUPITER"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "JUPITER",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "MARS",
+                "as": "JUPITER"
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brahmin's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BRAHMIN_CURSE_7",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "78",
+        "rank": 1,
+        "note": "The 7th of the chapter's figures for a brahmin's curse: Saturn with Jupiter in the lagna and Rahu in the ninth, or Rahu with Jupiter in the twelfth. The remedy it gives, vv. 79-81: the Chandrayana fast; the brahmakurcha penance three times; the gift of a cow with her fee; five gems with gold; feeding ten thousand or a thousand. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SATURN",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "JUPITER",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "RAHU",
+                  "houses": [
+                    9
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "RAHU",
+                  "houses": [
+                    12
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "JUPITER",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a brahmin's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_1",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "82",
+        "rank": 1,
+        "note": "The 1st of the chapter's figures for the wife's curse: the seventh lord in the fifth, Saturn ruling the navamsha the seventh lord holds, and the fifth lord in the eighth; the translation puts the lagna lord in the fifth. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": {
+              "navamsha": {
+                "lordOf": 7
+              }
+            }
+          },
+          "as": "SATURN"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_2",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "83",
+        "rank": 1,
+        "note": "The 2nd of the chapter's figures for the wife's curse: the seventh lord in the eighth, the twelfth lord in the fifth, and Jupiter with a malefic. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 12
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": "JUPITER",
+          "atLeast": 1,
+          "except": [
+            "JUPITER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_3",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "84",
+        "rank": 1,
+        "note": "The 3rd of the chapter's figures for the wife's curse: Venus in the fifth, the seventh lord in the eighth, and Jupiter with a malefic; the translation reads a malefic in the fifth. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": "JUPITER",
+          "atLeast": 1,
+          "except": [
+            "JUPITER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_4",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "85",
+        "rank": 1,
+        "note": "The 4th of the chapter's figures for the wife's curse: a malefic in the second, the seventh lord in the eighth, and a malefic in the fifth. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_5",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "86",
+        "rank": 1,
+        "note": "The 5th of the chapter's figures for the wife's curse: Venus in the ninth, the seventh lord in the eighth, and malefics in the lagna and the fifth. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_6",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "87",
+        "rank": 1,
+        "note": "The 6th of the chapter's figures for the wife's curse: Venus as the ninth lord, the fifth lord in an enemy's sign, and Jupiter and the lagna and seventh lords in the sixth, eighth or twelfth. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 9
+          },
+          "as": "VENUS"
+        },
+        {
+          "type": "natural-relation",
+          "of": {
+            "lordOf": 5
+          },
+          "to": {
+            "lordOf": {
+              "lordOf": 5
+            }
+          },
+          "relations": [
+            "enemy"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_7",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "88",
+        "rank": 1,
+        "note": "The 7th of the chapter's figures for the wife's curse: the fifth a sign of Venus holding Rahu and the Moon, and malefics in the twelfth, the lagna and the second; the translation reads the Sun for Rahu. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 5
+          },
+          "as": "VENUS"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_8",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "89",
+        "rank": 1,
+        "note": "The 8th of the chapter's figures for the wife's curse: Saturn and Venus in the seventh, the eighth lord and the Sun in the fifth, and Rahu in the lagna; the translation takes the Sun across the quarter-verse into the lagna, where Venus in the seventh could never stand with him (C389). The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 8
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_9",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "90",
+        "rank": 1,
+        "note": "The 9th of the chapter's figures for the wife's curse: Mars in the second, Jupiter in the twelfth, and Venus in the fifth joined or aspected by Rahu. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "RAHU",
+                  "reference": "VENUS",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "RAHU",
+                    "as": "VENUS"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "RAHU",
+              "target": "VENUS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_10",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "91",
+        "rank": 1,
+        "note": "The 10th of the chapter's figures for the wife's curse: the second and seventh lords in the eighth, Mars in the fifth, Saturn in the lagna, and Jupiter with a malefic. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 2
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": "JUPITER",
+          "atLeast": 1,
+          "except": [
+            "JUPITER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WIFE_CURSE_11",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "92",
+        "rank": 1,
+        "note": "The 11th of the chapter's figures for the wife's curse: Rahu in the lagna, Saturn in the fifth and Mars in the ninth, and the fifth and seventh lords in the eighth. The remedy it gives, vv. 93-95: giving a girl in marriage; a golden image of Lakshmi-Narayana, adorned; the gift of ten cows; a bed and ornaments for a couple. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through the wife's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_1",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "96",
+        "rank": 1,
+        "note": "The 1st of the chapter's figures for a departed spirit's curse: Saturn and the Sun in the fifth, the thin Moon in the seventh, Rahu in the lagna and Jupiter in the twelfth; the translation puts both Rahu and Jupiter in the twelfth, and its waning Moon, two signs past the Sun, never wanes, so the thin Moon of the print's own commentary is read (C388). The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "KRISHNA_DASHAMI",
+            "KRISHNA_EKADASHI",
+            "KRISHNA_DWADASHI",
+            "KRISHNA_TRAYODASHI",
+            "KRISHNA_CHATURDASHI",
+            "AMAVASYA",
+            "SHUKLA_PRATIPADA",
+            "SHUKLA_DVITIYA",
+            "SHUKLA_TRITIYA",
+            "SHUKLA_CHATURTHI",
+            "SHUKLA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_2",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "97",
+        "rank": 1,
+        "note": "The 2nd of the chapter's figures for a departed spirit's curse: Saturn as the fifth lord in the eighth, Mars in the lagna, and Jupiter in the eighth. The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 5
+          },
+          "as": "SATURN"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_3",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "98",
+        "rank": 1,
+        "note": "The 3rd of the chapter's figures for a departed spirit's curse: a malefic in the lagna, the Sun in the twelfth, Mars, Saturn and Mercury in the fifth, and the fifth lord in the eighth; the prints give the verse twice, as vv. 98 and 99, and the translation reads it so too, though Mercury never stands five signs from the Sun, so no sky meets it (C390). The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_4",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "100",
+        "rank": 1,
+        "note": "The 4th of the chapter's figures for a departed spirit's curse: Rahu in the lagna, Saturn in the fifth, and Jupiter in the eighth. The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_5",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "101",
+        "rank": 1,
+        "note": "The 5th of the chapter's figures for a departed spirit's curse: Rahu, Venus and Jupiter in the lagna, and the Moon with Saturn there too, and the lagna lord in the eighth. The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_6",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "102",
+        "rank": 1,
+        "note": "The 6th of the chapter's figures for a departed spirit's curse: Rahu in the lagna and Saturn in the fifth, joined or aspected by Mars; the translation's list does not carry it. The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "SATURN",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "MARS",
+                    "as": "SATURN"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": "SATURN"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_7",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "103",
+        "rank": 1,
+        "note": "The 7th of the chapter's figures for a departed spirit's curse: Jupiter and the fifth lord debilitated, and joined or aspected by a debilitated graha. The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "JUPITER",
+          "as": {
+            "debilitationOf": "JUPITER"
+          }
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 5
+          },
+          "as": {
+            "debilitationOf": {
+              "lordOf": 5
+            }
+          }
+        },
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "debilitationOf": "SELF"
+                }
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": "JUPITER"
+                }
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 5
+                  }
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "and",
+                        "conditions": [
+                          {
+                            "type": "planet-in-house-from",
+                            "planet": "SELF",
+                            "reference": "JUPITER",
+                            "houses": [
+                              1
+                            ]
+                          },
+                          {
+                            "type": "not",
+                            "condition": {
+                              "type": "same-body",
+                              "of": "SELF",
+                              "as": "JUPITER"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "JUPITER"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "and",
+                        "conditions": [
+                          {
+                            "type": "planet-in-house-from",
+                            "planet": "SELF",
+                            "reference": {
+                              "lordOf": 5
+                            },
+                            "houses": [
+                              1
+                            ]
+                          },
+                          {
+                            "type": "not",
+                            "condition": {
+                              "type": "same-body",
+                              "of": "SELF",
+                              "as": {
+                                "lordOf": 5
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "lordOf": 5
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_8",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "104",
+        "rank": 1,
+        "note": "The 8th of the chapter's figures for a departed spirit's curse: Saturn in the lagna, Rahu in the fifth, the Sun in the eighth, and Mars in the twelfth. The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_9",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "105",
+        "rank": 1,
+        "note": "The 9th of the chapter's figures for a departed spirit's curse: the seventh lord in the sixth, eighth or twelfth, the Moon in the fifth, and Saturn and Gulika in the lagna. The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "point": "GULIKA"
+          },
+          "as": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SPIRIT_CURSE_10",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "106",
+        "rank": 1,
+        "note": "The 10th of the chapter's figures for a departed spirit's curse: the badhaka lord in the fifth with Saturn and Venus, and Jupiter in the eighth; the translation reads the eighth lord and a debilitated Jupiter, where both prints name the badhaka and the eighth. The remedy it gives, vv. 107-108: a shraddha to Vishnu; the Rudra bath; a golden image of Brahma; a cow, a silver vessel and a sapphire; fees to brahmins. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "badhakaOf": 1
+            }
+          },
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": {
+                "lordOf": {
+                  "badhakaOf": 1
+                }
+              },
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "SATURN",
+                "as": {
+                  "lordOf": {
+                    "badhakaOf": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": {
+                "lordOf": {
+                  "badhakaOf": 1
+                }
+              },
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": "VENUS",
+                "as": {
+                  "lordOf": {
+                    "badhakaOf": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son, through a departed spirit's curse in a former birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_NO_SON_SIGNIFICATORS_WITHOUT_STRENGTH",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "7",
+        "rank": 1,
+        "note": "Jupiter, the lagna lord, the seventh lord and the fifth lord all without strength: no son. The prints name the seventh lord, which the translation leaves out. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-weak",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 7
+          }
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 5
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_NO_SON_STRONG_MALEFICS_IN_THE_FIFTH",
+      "category": "shapa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "83",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Sun, Mars, Rahu and Saturn in the fifth with strength, and Jupiter and the fifth lord without it: no son. Strength is read for the three the chart measures; Rahu is only placed. Read in R. Santhanam's translation, ch. 83, the Sanskrit checked in the 1899 and 1923 prints (their purva khanda ch. 16), which agree, and followed where the translation differs."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SUN"
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MARS"
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SATURN"
+        },
+        {
+          "type": "planet-weak",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 5
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son"
+        }
+      ]
+    }
+  ]
+}
