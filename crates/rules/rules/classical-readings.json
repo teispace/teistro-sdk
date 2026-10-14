@@ -3126,8 +3126,87 @@
   "risingPart": {
     "text": "Saravali",
     "rank": 1,
-    "note": "The part of a sign that rises, and what the chapter says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, the signs in order from Aries and the parts in order from the beginning of each sign. Ch. 49 v. 25, ch. 50 v. 37 and ch. 51 v. 1 make these effects mature in full only where the sign, its lord, or the stronger of the navamsa lagna's lord and the Moon's navamsa dispositor is strong, which the kernel cannot measure; ch. 51 v. 110 carries the sign readings over to the dwadasamsas and the rest to the saptamsas, which is not built; the second decanates of Gemini and of Cancer are printed with one reading between them in the translation read, and both ship as printed.",
+    "note": "The sign that rises, and the part of it, and what the chapter says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, the signs in order from Aries and the parts in order from the beginning of each sign; the Sanskrit prints number the chapters on the parts one lower, the horas ch. 48, and their verses alike. Each chapter says when its effects come in full, and none says what follows otherwise, so none is built: ch. 48 where the rising sign or its lord is strong; ch. 49 v. 25 where a luminary is strong and aspected by the lord of the hora (the lagna's lord, as the translations read it) or that lord is in a kendra; ch. 50 v. 37 where the decanate's sign is strong or aspected by its lord (\"and\" in the Hindi commentary); ch. 51 v. 1 by the stronger of the navamsa lagna's lord and the Moon's navamsa dispositor. The second decanates of Gemini and of Cancer are printed with one reading between them in the translation read, and both ship as printed.",
     "parts": [
+      {
+        "name": "LAGNA",
+        "chapter": "48",
+        "count": 1,
+        "signs": [
+          {
+            "verse": "3-6",
+            "effects": [
+              "prone to fire and to fevers of bile and wind, fond of travel abroad, miserly, lean, jealous, halting of speech, quick of gait, skilled, timid, religious yet slow of mind, fickle, famous and pleasure-loving, of poor nails, without brothers, slighted by his father, with children of little fortune and wealth of many kinds; his wife of humble family, virtuous yet blamed by her own; and his happiness and gains won in ways not to be wished"
+            ]
+          },
+          {
+            "verse": "7-9",
+            "effects": [
+              "brave, enduring, happy, a destroyer of enemies, gathering wealth from boyhood, broad and strong of forehead, nose, cheek and lip, industrious, fortunate, devoted to his parents, liberal and a heavy spender, very quick-tempered, of phlegm and wind, a father of daughters, scornful of his own people, irreligious, given to women, fickle, fond of food and drink, and rich in clothes and ornaments"
+            ]
+          },
+          {
+            "verse": "10-13",
+            "effects": [
+              "dear to his wife, fond of ornaments, charitable, respected, with two mothers, kind even to enemies, devoted to music, the arts, the Vedas and the shastras, play and poetry, gentle, vain, truthful, impatient and crafty, with ill-behaved sons and few kin, of uneven limbs and round eyes, fierce to look at, a destroyer of dreaded enemies, and possessed of land, gems and gold"
+            ]
+          },
+          {
+            "verse": "14-17",
+            "effects": [
+              "timid, fickle, learned, intelligent and enduring, with many homes, troubled in the anus, a destroyer of enemies, crooked, sensual, honouring brahmins and the gods, religious, very phlegmatic, womanly of build, honoured for his virtues, born after sisters, without kin and with few children, of a blamed family and a bad wife, enjoying others' wealth, obstinate, living abroad, bold in deed, earning by water, and possessed of a wife, ornaments, clothes and happiness"
+            ]
+          },
+          {
+            "verse": "18-21",
+            "effects": [
+              "fond of meat, earning wealth and honour through the king, irreligious yet dutiful to his family, lion-faced, high in office, majestic, strong and bold, sparing of speech, miserly, troubling others, eager for pleasure, roaming hills and forests, irascible, firm in friendship, careless, hard to approach, a destroyer of enemies with famous sons, honouring the virtuous, rich by farming and trade, spending much on courtesans, dancers and his wife, and suffering in the teeth"
+            ]
+          },
+          {
+            "verse": "22-25",
+            "effects": [
+              "gentle, skilled in teaching, music, poetry and the arts, sweet of speech, affectionate, charitable and serving others, sporting with maidens, good, merciful, enjoying others' wealth, a wanderer of womanly temper, modest yet untruthful, adding to his lands, fortunate, sensual, famous, virtuous and handsome, honouring elders, sinful, at odds with his brothers, a father of daughters, of phlegm and wind, and keeping away from the base and the hostile"
+            ]
+          },
+          {
+            "verse": "26-29",
+            "effects": [
+              "crooked of body, fickle, of rising and falling wealth and little bodily ease, of phlegm and wind, a maker of quarrels, long of face and frame, learned, very intelligent and very unhappy, injuring others' honour, of fine dark eyes, honouring guests, gods and brahmins, performing sacrifices and respecting elders, helping the helpless, truthful, handsome, fond of his brothers, eminent and chaste, yet helping sinners, of a mean calling, charitable and religious, and base of mind"
+            ]
+          },
+          {
+            "verse": "30-33",
+            "effects": [
+              "fleshy and broad of limb as if trained, clever, crooked by nature, valorous, devoted to his mother, quarrelsome, generous, of majestic tawny eyes, a broad chest, a sunken belly and a flat nose, adventurous, firm, fierce, trusted and amusing, troubled by bile, of a large family, betraying elders and friends, seeking other women, handsome of face, serving a king, with enemies, pious, giving his money away, with an amiable wife, religious, affectionate and base"
+            ]
+          },
+          {
+            "verse": "34-37",
+            "effects": [
+              "big-toothed and high of forehead, supporting his dependants, courageous, strong and just, very stout of thigh and belly, skilled in the shastras, very intelligent, irascible even with the mighty, foremost of his race, a destroyer of enemies famed in battle, finding fault with his kin, fond of the arts, following his own calling, good to his people, splendid, suffering in the face and eyes, earning by royal favour, and virtuous"
+            ]
+          },
+          {
+            "verse": "38-41",
+            "effects": [
+              "lean, timid and deer-faced, troubled by wind, of a bright high nose, not mighty, with many sons, hairy, broad of foot and hand, without conduct or virtue, tormented by thirst, dear to women, roaming hills and forests, valorous, learned in the shastras, the Vedas, the arts and music, of little strength, a householder, hostile, wicked and ill-disposed to his kin, splendid, with a wicked wife, no talebearer, wealthy, virtuous, serving a king, very liberal, happy and fortunate"
+            ]
+          },
+          {
+            "verse": "42-45",
+            "effects": [
+              "doing mean deeds yet foremost of his race, foolish, sharp-nosed, base, irascible, idle, hostile, discontented and harsh, fond of gambling and low women, unhelpful to his kin, restless, of chequered fortune, a talebearer and crafty, poor at times and rich at others, losing his kin, shunned and disagreeable, gaining great wealth and honouring elders; Satyacharya holds this lagna never auspicious, the Yavanas even its divisions, and Chanakya does not"
+            ]
+          },
+          {
+            "verse": "46-49",
+            "effects": [
+              "fortunate, of a prominent nose and narrow eyes, fond of worldly learning and poetry, respected and famous, of exposed lips and teeth, afflicted by leprosy and in the face, courteous, trusted, rich in goats, pure of conduct, learned in the Vedas, courageous, a father of daughters, modest, gentle and mighty, versed in music and the arts of love, virtuous and liberal, gaining through his brothers, and with good kin"
+            ]
+          }
+        ]
+      },
       {
         "name": "HORA",
         "chapter": "49",
@@ -3496,6 +3575,16 @@
             ]
           }
         ]
+      }
+    ],
+    "carried": [
+      {
+        "name": "DWADASAMSA",
+        "chapter": "51",
+        "verse": "110",
+        "count": 12,
+        "from": "LAGNA",
+        "note": "The lagna in a dwadasamsa of its sign: ch. 51 v. 110 says what was said of each rising sign is to be said of the dwadasamsa too, and the dwadasamsas count from the sign itself (ch. 3 v. 13), so the n-th of a sign reads as ch. 48's lagna in the sign n \u2212 1 on. Read in R. Santhanam's translation and Chaturvedi's 1967 edition (r\u0101\u015biphala\u1e43); the 1907 Nirnaya Sagar print reads a\u1e43\u015b\u0101diphala\u1e43, the navamsa's, which gives no rule from nine readings to twelve parts. The verse's second half reads the remaining divisions as the saptamsa is read, and Saravali gives no saptamsa reading, so nothing is built of it."
       }
     ]
   },

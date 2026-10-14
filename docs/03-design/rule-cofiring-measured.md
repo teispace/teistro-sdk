@@ -2,11 +2,11 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1741 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1670 rules hold at least once and 71 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1898 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1827 rules hold at least once and 71 never do.
 
-Rules holding on the same 5 or more charts form 111 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 113 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
-- **71 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
+- **73 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
 - **4 groups: one text says it twice**, where the table below says.
 
@@ -78,6 +78,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 555 | `DWIGRAHA_SUN_SATURN`<br>`PARIJATA_TOGETHER_SUN_SATURN` |
 | 545 | `DWIGRAHA_MERCURY_SATURN`<br>`PARIJATA_TOGETHER_MERCURY_SATURN` |
 | 530 | `DWIGRAHA_VENUS_SATURN`<br>`PARIJATA_TOGETHER_VENUS_SATURN` |
+| 523 | `PHALADEEPIKA_PAST_BIRTH_LORD_SUN_LAND`<br>`SARAVALI_LAGNA_SAGITTARIUS` |
 | 513 | `BPHS_VENUS_IN_EIGHTH_DEATH_BY_HUNGER`<br>`SARAVALI_VENUS_IN_BHAVA_8` |
 | 512 | `BPHS_MARS_IN_THIRD_DEATH_BY_WOUNDS`<br>`SARAVALI_MARS_IN_BHAVA_3` |
 | 512 | `DWIGRAHA_MARS_SATURN`<br>`PARIJATA_TOGETHER_MARS_SATURN` |
@@ -96,6 +97,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 488 | `DWIGRAHA_SUN_MOON`<br>`PARIJATA_TOGETHER_SUN_MOON` |
 | 485 | `BPHS_MOON_IN_EIGHTH_DEATH_BY_WATER`<br>`SARAVALI_MOON_IN_BHAVA_8` |
 | 482 | `DWIGRAHA_MOON_JUPITER`<br>`PARIJATA_TOGETHER_MOON_JUPITER` |
+| 405 | `PHALADEEPIKA_NEXT_BIRTH_LORD_SUN_LAND`<br>`SARAVALI_LAGNA_ARIES` |
 | 284 | `PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY`<br>`PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS` |
 | 160 | `CHANDRA_IN_ARIES_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_ARIES_ASPECTED_BY_JUPITER` |
 | 145 | `CHANDRA_IN_CAPRICORN_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_CAPRICORN_ASPECTED_BY_JUPITER` |

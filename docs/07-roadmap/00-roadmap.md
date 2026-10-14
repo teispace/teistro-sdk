@@ -623,8 +623,9 @@ last two antidotes were built on 2026-10-13), Brihat Jataka ch. 6 and
 Saravali chs. 10 to 12, and Phaladeepika chs. 13 and 14 (built on
 2026-10-14, the Sanskrit checked in Ojha's 1975 commentary); and
 Saravali's readings, chs. 22 to 31 and 49 to 51, are the readings table
-(`shipped::readings`, built 2026-09-16 to 2026-10-12), ch. 51 v. 110's
-carrying of them to the dwadasamsas and saptamsas not built. Each rule
+(`shipped::readings`, built 2026-09-16 to 2026-10-12), with ch. 48's rising
+signs and ch. 51 v. 110's dwadasamsas built on 2026-10-14; the saptamsas
+the verse names have no readings in Saravali to carry. Each rule
 carries a note paraphrasing what its verse says, so writing one without
 the verse in front of you invents scripture in a product whose worth is
 fidelity to cited sources — and the survey's own downloads are not in the

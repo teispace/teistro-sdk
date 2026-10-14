@@ -852,7 +852,7 @@
         "chapter": "13",
         "verse": "9-10",
         "rank": 1,
-        "note": "The Moon at her mrityu bhaga in a kendra or the eighth: death. v. 10 gives her degree in each sign, the row MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA holds; v. 11's other row is \"by some\" and does not say whose degrees they are (C380), so it is not built. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+        "note": "The Moon at her mrityu bhaga in a kendra or the eighth: death. v. 10 gives her degree in each sign, the row MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA holds; v. 11's other row is the lagna's (C380), PHALADEEPIKA_LAGNA_AT_A_MRITYU_BHAGA. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
       },
       "conditions": [
         {
@@ -870,6 +870,43 @@
             8,
             10
           ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_WAXING_MOON_ANGULAR_IN_A_SIGN_OF_THE_LUMINARIES_OR_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_BHANGA_NO_MALEFIC_IN_THE_SEVEN_LAGNA_LORD_AND_JUPITER_ANGULAR"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_LAGNA_AT_A_MRITYU_BHAGA",
+      "category": "arishta",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "11",
+        "rank": 1,
+        "note": "A birth with the lagna at its mrityu bhaga: the native is short-lived. The verse gives a row of degrees \"held by some\" and says one born in them has lived his span, naming no body where v. 10 names the Moon; Ojha tabulates it as the lagna's, and Jataka Parijata's translator's lagna row agrees in nine cells (C380), so it reads the lagna in MRITYU_BHAGA_LAGNA_PHALADEEPIKA, in any house. Read from V. Subrahmanya Sastri's 1937 translation, the Sanskrit checked in Gopesh Kumar Ojha's 1975 commentary."
+      },
+      "conditions": [
+        {
+          "type": "planet-at-table-degree",
+          "planet": "LAGNA",
+          "table": "MRITYU_BHAGA_LAGNA_PHALADEEPIKA"
         }
       ],
       "cancellations": [

@@ -179,6 +179,33 @@
       }
     },
     {
+      "key": "MRITYU_BHAGA_LAGNA_PHALADEEPIKA",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "13",
+        "verse": "11",
+        "note": "The lagna's Mrityubhagas, v. 11's row, decoded from its katapayadi words to V. Subrahmanya Sastri's figures (1937). The verse names no body where v. 10 names the Moon; Gopesh Kumar Ojha's commentary (1975) tabulates the row as the lagna's, and Jataka Parijata's translator's lagna row agrees in nine cells of twelve, Aries, Virgo and Aquarius differing (C380).",
+        "rank": 1
+      },
+      "kind": "degrees-by-sign",
+      "rows": {
+        "LAGNA": [
+          8,
+          9,
+          22,
+          22,
+          25,
+          14,
+          4,
+          23,
+          18,
+          20,
+          21,
+          10
+        ]
+      }
+    },
+    {
       "key": "PUSHKARA_BHAGA_MOON",
       "source": {
         "text": "Jataka Parijata",

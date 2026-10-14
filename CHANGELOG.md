@@ -323,6 +323,14 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**Saravali ch. 48's rising signs, carried to the dwadasamsas, and
+Phaladeepika's lagna row.** **Numbers:** 156 readings join the readings
+set and 1 rule the arishta set (1898 shipped); no other rule's answer
+moved. The lagna in each of the twelve signs (ch. 48), and in each
+dwadasamsa of each sign, which ch. 51 v. 110 reads as the sign it counts
+to. Phaladeepika ch. 13 v. 11's second mrityu-bhaga row is decided as the
+lagna's (crux C380) and ships as a table with the rule that reads it.
+
 **A study's dasha may be a registered system.** An event study
 (`EventStudy`, a `TIMED` research request and each binding's
 `research.timed`) takes a dasha system the context registered, by its key,

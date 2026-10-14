@@ -152,13 +152,34 @@ struct InBhava {
     grahas: Vec<BhavaRows>,
 }
 
-/// Saravali chs. 49 and 50: the part of a sign that rises.
+/// Saravali chs. 48 to 51: the sign that rises and the part of it.
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RisingPart {
     #[serde(flatten)]
     family: Family,
     parts: Vec<PartRows>,
+    /// Divisions that read another division's readings rather than their
+    /// own: ch. 51 v. 110's dwadasamsas, which say the signs'.
+    carried: Vec<Carried>,
+}
+
+/// A division of each sign whose parts take the readings of a whole-sign
+/// division (`count` 1), the n-th part the reading of the sign n − 1 on
+/// from the sign it divides, as the dwadasamsas count (Saravali ch. 3 v. 13).
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Carried {
+    /// What the division is called, which names the rules.
+    name: String,
+    chapter: String,
+    verse: String,
+    /// How many parts a sign is cut into.
+    count: u8,
+    /// The name of the whole-sign division whose readings it takes.
+    from: String,
+    /// How the carrying was read, in place of the family's note.
+    note: String,
 }
 
 /// Saravali ch. 31: two grahas sharing a named house.
@@ -432,11 +453,12 @@ impl Table {
 }
 
 impl Table {
-    /// Saravali chs. 49 and 50: the lagna in a part of its sign, the signs in
-    /// the catalogue's order and the parts in order from each sign's start.
+    /// Saravali chs. 48 to 51: the lagna in a sign, or in a part of it, the
+    /// signs in the catalogue's order and the parts in order from each
+    /// sign's start; then the divisions that carry a whole sign's readings.
     fn rising_part(&self) -> impl Iterator<Item = Rule> {
         let family = &self.rising_part.family;
-        self.rising_part.parts.iter().flat_map(move |part| {
+        let own = self.rising_part.parts.iter().flat_map(move |part| {
             let width = 30.0 / f64::from(part.count);
             Rashi::ALL
                 .into_iter()
@@ -451,8 +473,15 @@ impl Table {
                             u8::try_from(at).unwrap_or(0),
                             u8::try_from(nth).unwrap_or(0),
                         );
+                        // A whole sign is not a part of one, and is named
+                        // as the sign alone.
+                        let key = if part.count == 1 {
+                            format!("SARAVALI_{}_{}", part.name, sign.key())
+                        } else {
+                            format!("SARAVALI_{}_{nth}_OF_{}", part.name, sign.key())
+                        };
                         stating(
-                            format!("SARAVALI_{}_{nth}_OF_{}", part.name, sign.key()),
+                            key,
                             "rising-part",
                             family.in_chapter(Some(part.chapter.clone()), &row.verse),
                             vec![
@@ -468,6 +497,54 @@ impl Table {
                             ],
                             effect,
                         )
+                    })
+                })
+        });
+        own.chain(self.carried())
+    }
+
+    /// Ch. 51 v. 110: each dwadasamsa of a sign reads as the lagna in the
+    /// sign it counts to, so the twelfth of Aries says what Pisces rising
+    /// says. A division whose source is missing carries nothing, which the
+    /// generator's test refuses.
+    fn carried(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.rising_part.family;
+        self.rising_part.carried.iter().flat_map(move |carried| {
+            let whole = self
+                .rising_part
+                .parts
+                .iter()
+                .find(|part| part.name == carried.from && part.count == 1);
+            let width = 30.0 / f64::from(carried.count);
+            Rashi::ALL
+                .into_iter()
+                .enumerate()
+                .flat_map(move |(from, sign)| {
+                    (0..carried.count).filter_map(move |at| {
+                        let read = (from + usize::from(at)) % Rashi::ALL.len();
+                        let row = whole?.signs.get(read)?;
+                        let effect = row.effects.first()?;
+                        let nth = at + 1;
+                        Some(stating(
+                            format!("SARAVALI_{}_{nth}_OF_{}", carried.name, sign.key()),
+                            "rising-part",
+                            Source {
+                                note: Some(carried.note.clone()),
+                                ..family.in_chapter(Some(carried.chapter.clone()), &carried.verse)
+                            },
+                            vec![
+                                Condition::PlanetInSign {
+                                    planet: SignRef::Of(BodyRef::Body(Body::Lagna)),
+                                    signs: vec![sign],
+                                },
+                                Condition::PlanetInDegrees {
+                                    planet: BodyRef::Body(Body::Lagna),
+                                    from: width * f64::from(at),
+                                    to: width * f64::from(nth),
+                                },
+                            ],
+                            effect,
+                        ))
                     })
                 })
         })
