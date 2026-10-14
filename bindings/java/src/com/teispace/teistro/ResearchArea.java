@@ -117,14 +117,31 @@ public final class ResearchArea {
      */
     public ResearchTested timed(List<ResearchSubject> subjects, RuleRequest rules, DashaSystem dasha,
             ResearchEventShuffle shuffle, ResearchEventTest test, ResearchOptions options) {
+        return timed(subjects, rules, dashaKey(dasha), shuffle, test, options);
+    }
+
+    /**
+     * The same study under a dasha system the context registered, by its full key.
+     *
+     * @param subjects the subjects
+     * @param rules the rules, as a chart request's rules
+     * @param dasha the full key of a system the context registered, as {@code dasha_system.ACME_SAPTAKA}
+     * @param shuffle what the null keeps; there is no default
+     * @param test the seed, the permutations and whether pairings are restricted
+     * @param options {@code holds}, {@code depth} (2 when left out) and {@code strata}; may be null
+     * @return the rows
+     * @throws TeistroException naming the field, as {@code dasha} for a key the context did not register
+     */
+    public ResearchTested timed(List<ResearchSubject> subjects, RuleRequest rules, String dasha,
+            ResearchEventShuffle shuffle, ResearchEventTest test, ResearchOptions options) {
         if (dasha == null) {
-            throw Reads.invalid("dasha is a DashaSystem, such as DashaSystem.VIMSHOTTARI", "dasha");
+            throw Reads.invalid(DASHA, "dasha");
         }
         if (shuffle == null) {
             throw Reads.invalid("shuffle is a ResearchEventShuffle, such as AGES_AT_EVENT", "shuffle");
         }
         return ResearchReads.tested(ResearchReads.run(context, "TIMED", rules,
-                fields("subjects", ResearchReads.subjects(subjects), "dasha", dasha.fullKey(), "shuffle",
+                fields("subjects", ResearchReads.subjects(subjects), "dasha", dasha, "shuffle",
                         shuffle.key(), "test", ResearchReads.test(test)),
                 options));
     }
@@ -151,13 +168,42 @@ public final class ResearchArea {
      */
     public ResearchTested timed(List<ResearchSubject> subjects, RuleRequest rules, DashaSystem dasha,
             ResearchReferents referents, ResearchEventTest test, ResearchOptions options) {
+        return timed(subjects, rules, dashaKey(dasha), referents, test, options);
+    }
+
+    /**
+     * The same self-matched study under a dasha system the context registered, by its full key.
+     *
+     * @param subjects the subjects
+     * @param rules the rules, as a chart request's rules
+     * @param dasha the full key of a system the context registered, as {@code dasha_system.ACME_SAPTAKA}
+     * @param referents where each person is read besides their event
+     * @param test the seed and the permutations
+     * @param options {@code holds} and {@code depth} (2 when left out); {@code strata} is refused
+     * @return the rows
+     * @throws TeistroException naming the field, as {@code dasha} for a key the context did not register
+     */
+    public ResearchTested timed(List<ResearchSubject> subjects, RuleRequest rules, String dasha,
+            ResearchReferents referents, ResearchEventTest test, ResearchOptions options) {
         if (dasha == null) {
-            throw Reads.invalid("dasha is a DashaSystem, such as DashaSystem.VIMSHOTTARI", "dasha");
+            throw Reads.invalid(DASHA, "dasha");
         }
         return ResearchReads.tested(ResearchReads.run(context, "TIMED", rules,
-                fields("subjects", ResearchReads.subjects(subjects), "dasha", dasha.fullKey(), "shuffle",
+                fields("subjects", ResearchReads.subjects(subjects), "dasha", dasha, "shuffle",
                         ResearchEventShuffle.SELF_MATCHED.key(), "referents", ResearchReads.referents(referents),
                         "test", ResearchReads.test(test)),
                 options));
+    }
+
+    /** What a study's dasha is, as a refusal says it. */
+    private static final String DASHA =
+            "dasha is a DashaSystem, such as DashaSystem.VIMSHOTTARI, or the dasha_system.* key of a system this context registered";
+
+    /** A catalogued system's full key, refused when there is none. */
+    private static String dashaKey(DashaSystem dasha) {
+        if (dasha == null) {
+            throw Reads.invalid(DASHA, "dasha");
+        }
+        return dasha.fullKey();
     }
 }

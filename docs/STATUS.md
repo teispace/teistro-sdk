@@ -1172,9 +1172,8 @@ provider's DUT1).
    system or layout named in `chart.found` (`--dashas`, `--layouts`);
    §6 step 5 packages the binary with the release (archives, npm, the
    bundle and the registry entry, rehearsed with nothing published).
-   Left: a research request's `dasha` (`ResearchRequest`, `ts_research`)
-   takes catalogue members only, not a registered system; P7's tasks wait on a study measured to outlast a
-   client's timeout.
+   A research study's `dasha` takes a registered system too. Left: P7's
+   tasks wait on a study measured to outlast a client's timeout.
    A question that is **decided** may not be named in this step or in
    `## Next` — the same lint refuses it — because a settled question on
    a list of what remains is work someone will go looking for.

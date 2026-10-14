@@ -315,7 +315,7 @@ impl<'a> ResearchArea<'a> {
     pub fn timed(
         self,
         batch: &EventBatch,
-        study: EventStudy<'_>,                // built name; `EventPredicates` was the sketch's
+        study: &EventStudy<'_>,               // built name; `EventPredicates` was the sketch's
         strata: Option<&[u32]>,
         test: &EventTest,
     ) -> Result<Envelope<Tested>, Error>;
@@ -391,8 +391,10 @@ cancellations), so a study uses the shipped sets (`ShippedRules::Yogas`, …)
 or writes its own in the same language, and `RuleRequest::rule_set`
 validates it as it does for a reading. An event study (`EventStudy`,
 `crates/sdk/src/area/research.rs`) reads its rule set through its delivery
-in the running periods of the dasha the study names; a gochar condition at
-the event's instant is designed, not built.
+in the running periods of the dasha the study names, a catalogued system
+or one the context registered (`DashaName`; a key no registration has is
+refused at `dasha` when the study runs); a gochar condition at the event's
+instant is designed, not built.
 
 ### 2.5 The knobs
 

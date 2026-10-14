@@ -802,7 +802,7 @@ fn event_nulls(sdk: &Context, shuffle: EventShuffle) -> Result<EventNull, String
         };
         let tested = sdk
             .research()
-            .timed(study, None, &test)
+            .timed(&study, None, &test)
             .map_err(|why| why.to_string())?
             .value;
         for row in &tested.rows {

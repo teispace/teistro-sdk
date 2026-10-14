@@ -13,7 +13,8 @@
 
 use std::num::NonZeroU16;
 
-use teistro::catalogue::DashaSystem;
+use teistro::catalogue::{DashaSystem, Nakshatra};
+use teistro::dasha::VIMSHOTTARI;
 use teistro::quantity::{Altitude, Depth, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::research::{
     AfterBirth, Birth, Contrast, Design, EventShuffle, EventStudy, EventTest, GroupTest, Holds,
@@ -21,7 +22,7 @@ use teistro::research::{
 };
 use teistro::{
     ChartRequest, Context, Ephemeris, ResearchAnswer, ResearchRequest, RuleRequest, ShippedRules,
-    UtcOffset,
+    UduDefinition, UtcOffset,
 };
 
 fn sdk() -> Context {
@@ -463,7 +464,7 @@ fn an_event_study_shuffles_ages_or_dates_and_refuses_a_pairing_before_a_birth() 
         EventShuffle::AgesAtEvent,
     );
     let mut test = EventTest::new(3, 199);
-    let one = sdk.research().timed(study, None, &test).unwrap();
+    let one = sdk.research().timed(&study, None, &test).unwrap();
     assert_eq!(one.value.rows.len(), set.rules().len());
     for row in &one.value.rows {
         let expected = row.expected.unwrap();
@@ -475,12 +476,12 @@ fn an_event_study_shuffles_ages_or_dates_and_refuses_a_pairing_before_a_birth() 
         assert_eq!(row.counts.len(), 1);
     }
     test.parallelism = Parallelism::Threads(NonZeroU16::new(3).unwrap());
-    let three = sdk.research().timed(study, None, &test).unwrap();
+    let three = sdk.research().timed(&study, None, &test).unwrap();
     assert_eq!(one.value, three.value);
     assert_eq!(one.provenance.input_hash, three.provenance.input_hash);
     // Read to the mahadasha alone, the study is another registration.
-    let shallow = study.to_depth(Depth::MIN);
-    let mahadashas = sdk.research().timed(shallow, None, &test).unwrap();
+    let shallow = study.clone().to_depth(Depth::MIN);
+    let mahadashas = sdk.research().timed(&shallow, None, &test).unwrap();
     assert_ne!(mahadashas.provenance.input_hash, one.provenance.input_hash);
     // Births up to thirty years apart and events at 5 to 15: some date
     // shuffles put an event before a birth, which is refused unless
@@ -495,14 +496,14 @@ fn an_event_study_shuffles_ages_or_dates_and_refuses_a_pairing_before_a_birth() 
         .filter(|&crossed| crossed)
         .count();
     assert!(crossing > 0, "the premise: some pairing crosses a birth");
-    let dated = study.shuffled(EventShuffle::EventDates);
-    let refused = sdk.research().timed(dated, None, &EventTest::new(3, 199));
+    let dated = study.clone().shuffled(EventShuffle::EventDates);
+    let refused = sdk.research().timed(&dated, None, &EventTest::new(3, 199));
     assert_eq!(refused.unwrap_err().field(), Some("afterBirth"));
     let restricted = EventTest {
         after_birth: AfterBirth::RestrictPairings,
         ..EventTest::new(3, 199)
     };
-    let answered = sdk.research().timed(dated, None, &restricted).unwrap();
+    let answered = sdk.research().timed(&dated, None, &restricted).unwrap();
     assert_ne!(answered.provenance.input_hash, one.provenance.input_hash);
     // An event before its own birth is refused by its subject.
     let mut early = subjects.clone();
@@ -514,7 +515,7 @@ fn an_event_study_shuffles_ages_or_dates_and_refuses_a_pairing_before_a_birth() 
         DashaSystem::Vimshottari,
         EventShuffle::AgesAtEvent,
     );
-    let error = sdk.research().timed(study, None, &test).unwrap_err();
+    let error = sdk.research().timed(&study, None, &test).unwrap_err();
     assert_eq!(error.field(), Some("subjects[4].event"));
 }
 
@@ -537,7 +538,7 @@ fn a_self_matched_study_reads_each_person_against_their_own_life() {
     .self_matched(year);
     assert_eq!(study.shuffle, EventShuffle::SelfMatched);
     let mut test = EventTest::new(3, 199);
-    let one = sdk.research().timed(study, None, &test).unwrap();
+    let one = sdk.research().timed(&study, None, &test).unwrap();
     assert_eq!(one.value.rows.len(), set.rules().len());
     for row in &one.value.rows {
         assert_eq!(row.counts.len(), 1);
@@ -551,37 +552,37 @@ fn a_self_matched_study_reads_each_person_against_their_own_life() {
         );
     }
     test.parallelism = Parallelism::Threads(NonZeroU16::new(3).unwrap());
-    let three = sdk.research().timed(study, None, &test).unwrap();
+    let three = sdk.research().timed(&study, None, &test).unwrap();
     assert_eq!(one.value, three.value);
     assert_eq!(one.provenance.input_hash, three.provenance.input_hash);
     // Other referents are another registration.
-    let weekly = study.self_matched(Referents::new(365.25, 7.0));
-    let other = sdk.research().timed(weekly, None, &test).unwrap();
+    let weekly = study.clone().self_matched(Referents::new(365.25, 7.0));
+    let other = sdk.research().timed(&weekly, None, &test).unwrap();
     assert_ne!(other.provenance.input_hash, one.provenance.input_hash);
     // Without referents, with strata, or referents under another shuffle:
     // each refused by its field.
     let bare = EventStudy {
         referents: None,
-        ..study
+        ..study.clone()
     };
-    let refused = |study: EventStudy<'_>, strata: Option<&[u32]>| {
+    let refused = |study: &EventStudy<'_>, strata: Option<&[u32]>| {
         sdk.research()
             .timed(study, strata, &test)
             .unwrap_err()
             .field()
             .map(str::to_owned)
     };
-    assert_eq!(refused(bare, None).as_deref(), Some("referents"));
-    assert_eq!(refused(study, Some(&[0; 12])).as_deref(), Some("strata"));
-    let aged = study.shuffled(EventShuffle::AgesAtEvent);
-    assert_eq!(refused(aged, None).as_deref(), Some("referents"));
-    let tight = study.self_matched(Referents::new(365.25, 0.25));
-    assert_eq!(refused(tight, None).as_deref(), Some("referents.stepDays"));
+    assert_eq!(refused(&bare, None).as_deref(), Some("referents"));
+    assert_eq!(refused(&study, Some(&[0; 12])).as_deref(), Some("strata"));
+    let aged = study.clone().shuffled(EventShuffle::AgesAtEvent);
+    assert_eq!(refused(&aged, None).as_deref(), Some("referents"));
+    let tight = study.clone().self_matched(Referents::new(365.25, 0.25));
+    assert_eq!(refused(&tight, None).as_deref(), Some("referents.stepDays"));
     let restricted = EventTest {
         after_birth: AfterBirth::RestrictPairings,
         ..EventTest::new(3, 199)
     };
-    let error = sdk.research().timed(study, None, &restricted).unwrap_err();
+    let error = sdk.research().timed(&study, None, &restricted).unwrap_err();
     assert_eq!(error.field(), Some("afterBirth"));
 }
 
@@ -760,7 +761,7 @@ fn an_event_study_sent_as_a_record_answers_as_the_call_does() {
     .to_depth(Depth::MIN);
     let direct = sdk
         .research()
-        .timed(study, None, &EventTest::new(3, 99))
+        .timed(&study, None, &EventTest::new(3, 99))
         .unwrap();
     assert_eq!(timed, ResearchAnswer::Tested(direct));
     let matched = sent(
@@ -781,9 +782,78 @@ fn an_event_study_sent_as_a_record_answers_as_the_call_does() {
     .self_matched(Referents::new(365.25, 30.0));
     let direct = sdk
         .research()
-        .timed(study, None, &EventTest::new(3, 99))
+        .timed(&study, None, &EventTest::new(3, 99))
         .unwrap();
     assert_eq!(matched, ResearchAnswer::Tested(direct));
+}
+
+/// A context's own dasha system delivers as the catalogue's does: here
+/// Vimshottari's table under the consumer's key, so every row agrees with
+/// the catalogued study's and only the registration the hash seals differs.
+#[test]
+fn an_event_study_reads_a_dasha_the_context_registered() {
+    let twin = UduDefinition {
+        lords: VIMSHOTTARI.lords.to_vec(),
+        sources: vec![String::from("Vimshottari's table, for the test")],
+        ..UduDefinition::of("ACME_VIMSHOTTARI", Nakshatra::Ashwini)
+    };
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .dasha_system(twin)
+        .build()
+        .unwrap();
+    let rules = serde_json::json!({"shipped": ["YOGAS"]});
+    let lives = subjects(8, 11, 10, 20, 30);
+    let events: Vec<serde_json::Value> = lives
+        .iter()
+        .map(|s| serde_json::json!({"birth": birth_json(&s.birth), "event": s.event.get()}))
+        .collect();
+    let timed = |sdk: &Context, dasha: &str| {
+        sent(
+            sdk,
+            &serde_json::json!({"study": "TIMED", "rules": rules, "subjects": events,
+                "dasha": dasha, "shuffle": "AGES_AT_EVENT",
+                "test": {"seed": 5, "permutations": 99}}),
+        )
+    };
+    let Ok(ResearchAnswer::Tested(catalogued)) = timed(&sdk, "VIMSHOTTARI") else {
+        panic!("the catalogue's system reads");
+    };
+    for key in ["ACME_VIMSHOTTARI", "dasha_system.ACME_VIMSHOTTARI"] {
+        let Ok(ResearchAnswer::Tested(registered)) = timed(&sdk, key) else {
+            panic!("{key} reads");
+        };
+        assert_eq!(registered.value, catalogued.value, "{key}");
+        assert_ne!(
+            registered.provenance.input_hash,
+            catalogued.provenance.input_hash
+        );
+    }
+    // The same call as the record makes.
+    let set = yogas();
+    let request = template();
+    let direct = sdk
+        .research()
+        .timed(
+            &EventStudy::new(
+                &lives,
+                &request,
+                &set,
+                "ACME_VIMSHOTTARI",
+                EventShuffle::AgesAtEvent,
+            ),
+            None,
+            &EventTest::new(5, 99),
+        )
+        .unwrap();
+    assert_eq!(direct.value, catalogued.value);
+
+    // A context without it refuses the key where it was asked, and a key
+    // of another kind is refused before any context reads it.
+    let unknown = timed(&self::sdk(), "ACME_VIMSHOTTARI").unwrap_err();
+    assert_eq!(unknown.field(), Some("dasha"), "{unknown:?}");
+    let other = timed(&sdk, "graha.SUN").unwrap_err();
+    assert_eq!(other.field(), Some("research.dasha"), "{other:?}");
 }
 
 #[test]
@@ -955,7 +1025,7 @@ fn a_transit_is_read_at_each_event_and_its_cost_is_chosen() {
         after_birth: AfterBirth::RestrictPairings,
         ..EventTest::new(5, 999)
     };
-    let dated = sdk.research().timed(study, None, &test).unwrap().value;
+    let dated = sdk.research().timed(&study, None, &test).unwrap().value;
     let row = &dated.rows[0];
     let seen = row.expected.unwrap();
     // Most, not all: a natal Saturn near a sign's edge can stand a sign
@@ -965,7 +1035,11 @@ fn a_transit_is_read_at_each_event_and_its_cost_is_chosen() {
     assert!(row.p.value < 0.01, "{row:?}");
     let aged = sdk
         .research()
-        .timed(study.shuffled(EventShuffle::AgesAtEvent), None, &test)
+        .timed(
+            &study.clone().shuffled(EventShuffle::AgesAtEvent),
+            None,
+            &test,
+        )
         .unwrap()
         .value;
     let kept = aged.rows[0].expected.unwrap();
@@ -981,7 +1055,11 @@ fn a_transit_is_read_at_each_event_and_its_cost_is_chosen() {
     };
     let refused = sdk
         .research()
-        .timed(study.shuffled(EventShuffle::AgesAtEvent), None, &capped)
+        .timed(
+            &study.clone().shuffled(EventShuffle::AgesAtEvent),
+            None,
+            &capped,
+        )
         .unwrap_err();
     assert_eq!(refused.field(), Some("test.maxPairs"));
     let needed: u64 = refused
@@ -993,10 +1071,10 @@ fn a_transit_is_read_at_each_event_and_its_cost_is_chosen() {
     assert!((1_001..=1_600).contains(&needed), "{}", refused.message);
     // The date shuffle reads it at each event a place at a time: 40 events
     // at each of three places at most.
-    sdk.research().timed(study, None, &capped).unwrap();
+    sdk.research().timed(&study, None, &capped).unwrap();
     // The cap does not change an answer, so it is not registered.
-    let again = sdk.research().timed(study, None, &capped).unwrap();
-    let first = sdk.research().timed(study, None, &test).unwrap();
+    let again = sdk.research().timed(&study, None, &capped).unwrap();
+    let first = sdk.research().timed(&study, None, &test).unwrap();
     assert_eq!(again.provenance.input_hash, first.provenance.input_hash);
 
     // Where no instant is read, a transit rule is refused rather than

@@ -847,6 +847,37 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an event study reads a dasha system the context registered", () -> {
+            String twin = "[{\"kernel\":\"UDU\",\"key\":\"ACME_VIMSHOTTARI\",\"lords\":["
+                    + "{\"graha\":\"KETU\",\"years\":7},{\"graha\":\"VENUS\",\"years\":20},"
+                    + "{\"graha\":\"SUN\",\"years\":6},{\"graha\":\"MOON\",\"years\":10},"
+                    + "{\"graha\":\"MARS\",\"years\":7},{\"graha\":\"RAHU\",\"years\":18},"
+                    + "{\"graha\":\"JUPITER\",\"years\":16},{\"graha\":\"SATURN\",\"years\":19},"
+                    + "{\"graha\":\"MERCURY\",\"years\":17}],\"reference\":\"ASHWINI\"}]";
+            try (Context sky = teistro.context(
+                    ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).dashasJson(twin).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(0));
+                List<ResearchSubject> lives = new java.util.ArrayList<>();
+                for (int i = 0; i < 6; i += 1) {
+                    double born = 2447000.25 + 977.3 * i;
+                    lives.add(new ResearchSubject(new ResearchBirth(born, kathmandu, 20_700), born + 9000.5));
+                }
+                com.teispace.teistro.request.RuleRequest yogas = com.teispace.teistro.request.RuleRequest.builder()
+                        .shipped(List.of(com.teispace.teistro.request.ShippedRules.YOGAS)).build();
+                ResearchTested own = sky.research().timed(lives, yogas, "dasha_system.ACME_VIMSHOTTARI",
+                        ResearchEventShuffle.AGES_AT_EVENT, ResearchEventTest.builder(1, 19).build(), null);
+                ResearchTested shipped = sky.research().timed(lives, yogas, DashaSystem.VIMSHOTTARI,
+                        ResearchEventShuffle.AGES_AT_EVENT, ResearchEventTest.builder(1, 19).build(), null);
+                same(shipped.rows(), own.rows(), "delivered as the twin's periods deliver");
+                check(!own.provenance().inputHash().equals(shipped.provenance().inputHash()),
+                        "another registration sealed");
+                TeistroException unknown = refusal(() -> sky.research().timed(lives, yogas,
+                        "dasha_system.ACME_OTHER", ResearchEventShuffle.AGES_AT_EVENT,
+                        ResearchEventTest.builder(1, 19).build(), null));
+                same("dasha", unknown.field(), "a key the context did not register");
+            }
+        });
+
         tests.put("a closed enum refuses an id that is no member", () -> {
             try {
                 Status.of(12345);

@@ -323,6 +323,13 @@ moved. A test runs each family of entry points a hundred times under an
 allocator that counts frees as well as allocations, and requires every
 byte back. No family keeps any.
 
+**A study's dasha may be a registered system.** An event study
+(`EventStudy`, a `TIMED` research request and each binding's
+`research.timed`) takes a dasha system the context registered, by its key,
+as well as a catalogued one, and refuses at `dasha` a key the context did
+not register. `ResearchArea::timed` now borrows its study, and `EventStudy`
+is `Clone` rather than `Copy`, since it holds the system's name.
+
 **Phaladeepika ch. 13 v. 8's births.** **Numbers:** 3 rules join the
 arishta set and 12 the nabhasa set (1741 shipped); no other rule's answer
 moved. A birth by day in Dinamrityu or Dinaroga, and in a star's

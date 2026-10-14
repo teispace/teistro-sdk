@@ -8,7 +8,9 @@ use serde_json::Value;
 use teistro_core::catalogue::{Catalogued as _, DashaSystem};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
+use teistro_core::key::is_key_name;
 use teistro_core::quantity::{Depth, JulianDay, Utc};
+use teistro_dasha::DashaName;
 use teistro_research::{Counts, Design, EventTest, GroupTest, ReplicateTest, Tested};
 
 use crate::area::ResearchArea;
@@ -58,8 +60,10 @@ pub enum ResearchStudy {
     Timed {
         /// The subjects.
         subjects: Vec<Subject>,
-        /// The dasha whose periods deliver.
-        dasha: DashaSystem,
+        /// The dasha whose periods deliver: a catalogued system, or one the
+        /// context registered, which the study refuses at `dasha` when the
+        /// context has none by that key.
+        dasha: DashaName,
         /// How deep its periods are read.
         depth: Depth,
         /// What the null keeps.
@@ -414,12 +418,7 @@ impl RequestAsked {
                         })
                     },
                 )?,
-                dasha: DashaSystem::from_either_key(&needed(
-                    self.dasha.clone(),
-                    "dasha",
-                    self.name(),
-                )?)
-                .map_err(|why| Error::invalid_arg(why.to_string()).with_field("dasha"))?,
+                dasha: dasha_named(&needed(self.dasha.clone(), "dasha", self.name())?)?,
                 depth: Depth::try_new(self.depth.unwrap_or(2))
                     .map_err(|why| Error::from(why).with_field("depth"))?,
                 shuffle: needed(self.shuffle, "shuffle", self.name())?,
@@ -506,14 +505,41 @@ impl ResearchArea<'_> {
                 test,
             } => {
                 let request = template(subjects.first().map(|s| &s.birth), "subjects")?;
-                let mut events =
-                    EventStudy::new(subjects, &request, &asked.rules, *dasha, *shuffle)
-                        .to_depth(*depth)
-                        .holding(asked.holds);
+                let mut events = EventStudy::new(subjects, &request, &asked.rules, dasha, *shuffle)
+                    .to_depth(*depth)
+                    .holding(asked.holds);
                 events.referents = *referents;
-                self.timed(events, strata.as_deref(), test)
+                self.timed(&events, strata.as_deref(), test)
                     .map(ResearchAnswer::Tested)
             }
         }
     }
+}
+
+/// The dasha a study names: a catalogued system, bare or full, or a key
+/// a context may have registered, bare or under `dasha_system`; which
+/// context has it is asked when the study runs.
+fn dasha_named(key: &str) -> Result<DashaName, Error> {
+    if let Ok(system) = DashaSystem::from_either_key(key) {
+        return Ok(DashaName::Catalogued(system));
+    }
+    let bare = match key.split_once('.') {
+        None => key,
+        Some(("dasha_system", bare)) => bare,
+        Some((kind, _)) => {
+            return Err(
+                Error::invalid_arg(format!("`{key}` is a `{kind}`, not a `dasha_system`"))
+                    .with_field("dasha")
+                    .with_hint("name a `dasha_system`, bare or as `dasha_system.KEY`"),
+            );
+        }
+    };
+    if !is_key_name(bare) {
+        return Err(Error::invalid_arg(format!(
+            "`{key}` is neither a catalogued dasha system nor a key name"
+        ))
+        .with_field("dasha")
+        .with_hint("a catalogued `dasha_system`, or one the context registered"));
+    }
+    Ok(DashaName::Registered(bare.to_owned()))
 }

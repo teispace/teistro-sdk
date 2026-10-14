@@ -12,7 +12,7 @@ import dataclasses
 import json
 import os
 import unittest
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from teistro import (
     Air,
@@ -3906,6 +3906,34 @@ class AnEngine(WithLibrary):
                     instant=2451545.0, place=observer, utc_offset_seconds=20700, dashas=["dasha_system.ACME_OTHER"]
                 )
             self.assertEqual(stray.exception.field, "dashas[0]")
+        # A study's dasha may be the consumer's too, and its periods deliver
+        # as the twin's do; only the registration the hash seals differs.
+        from teistro import ResearchBirth, ResearchSubject
+
+        lives = [
+            ResearchSubject(
+                birth=ResearchBirth(instant=2447000.25 + 977.3 * i, place=observer, utc_offset_seconds=20700),
+                event=2447000.25 + 977.3 * i + 9000.5,
+            )
+            for i in range(6)
+        ]
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN, dasha_systems=[twin]) as ctx:
+
+            def timed(dasha: Union[DashaSystem, str]) -> Any:
+                return ctx.research.timed(
+                    subjects=lives,
+                    rules={"shipped": ["YOGAS"]},
+                    dasha=dasha,
+                    shuffle="AGES_AT_EVENT",
+                    test={"seed": 1, "permutations": 19},
+                )
+
+            own_study, shipped_study = timed("dasha_system.ACME_VIMSHOTTARI"), timed(DashaSystem.VIMSHOTTARI)
+            self.assertEqual(own_study.rows, shipped_study.rows)
+            self.assertNotEqual(own_study.provenance.input_hash, shipped_study.provenance.input_hash)
+            with self.assertRaises(TeistroError) as unknown:
+                timed("dasha_system.ACME_OTHER")
+            self.assertEqual(unknown.exception.field, "dasha")
         too_narrow: UduDashaDefinition = {
             "kernel": "UDU",
             "key": "ACME_VIMSHOTTARI",
