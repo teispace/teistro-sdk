@@ -39,7 +39,8 @@ pub mod zodiac;
 pub use bhava::{Bhavas, Chalit, Placement, Reading};
 pub use day::{ChartDay, DayPart};
 pub use foundation::{
-    ChartAngles, ChartFoundation, Founder, GrahaPosition, OUTER, OuterPlanets, body_of,
+    Apogee, Carried, ChartAngles, ChartFoundation, Founder, GrahaPosition, LilithPosition, OUTER,
+    OuterPlanets, body_of,
 };
 pub use moment::{BirthEclipse, Moment, RisingSign};
 pub use zodiac::ChartZodiac;
