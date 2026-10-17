@@ -203,6 +203,41 @@ fn a_wheel_labels_its_houses_and_its_signs_by_glyph_as_text() {
     assert!(labels.cells.iter().all(String::is_empty));
 }
 
+/// The way round `flutter_svg` on Apple platforms, which draws a sign's
+/// glyph as colour emoji whatever selector follows it
+/// (`03-design/render-svg.md` §2): every locale's abbreviation of each
+/// sign, twelve different words and no symbol in the drawing.
+#[test]
+fn a_wheel_can_name_its_signs_in_words_in_every_locale() {
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        let sdk = context(locale);
+        let document = reading(&sdk);
+        let content = Content {
+            cell_label: CellLabel::SignShort,
+            ..Content::default()
+        };
+        let labels = sdk.chart().labels(&document, 2, &content).unwrap();
+        let mut words: Vec<&String> = labels.cells.iter().collect();
+        assert!(
+            words.iter().all(|word| !word.is_empty()),
+            "{locale}: {words:?}"
+        );
+        words.sort();
+        words.dedup();
+        assert_eq!(words.len(), 12, "{locale}: {:?}", labels.cells);
+        let theme = Theme {
+            content,
+            ..Theme::light()
+        };
+        let svg = sdk.chart().svg(&document, 2, &theme).unwrap();
+        assert!(
+            !svg.chars()
+                .any(|c| ('\u{2648}'..='\u{2653}').contains(&c) || c == '\u{FE0E}'),
+            "{locale}: a symbol is left in the drawing"
+        );
+    }
+}
+
 #[test]
 fn a_drawing_the_document_does_not_have_is_refused() {
     let sdk = context("en-Latn");
