@@ -7,7 +7,7 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2567 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1220 in `READINGS`, 477 in `NABHASAS`, 657 in `the corpus's own`. Their 9780 conditions are written 3627 ways, which say 3623 things, and the renderer gives those 3623 sentences.
+2567 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1220 in `READINGS`, 477 in `NABHASAS`, 657 in `the corpus's own`. Their 9846 conditions are written 3632 ways, which say 3628 things, and the renderer gives those 3628 sentences.
 
 The 1910 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 3623 disagree |
-| every condition of every rule renders | **holds** | 0 of 9780 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 3628 disagree |
+| every condition of every rule renders | **holds** | 0 of 9846 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -103,7 +103,7 @@ a change to what a rule asks changes its prose.
 | `in-varga` | 72 | in the D2, the lagna rises in CANCER |
 | `count-in-houses` | 420 | at least 1 malefic stands in the 7th from SUN |
 | `count-aspecting` | 27 | at least 1 malefic aspects SUN |
-| `rule` | 1475 | the rule NABHASA_GADA holds |
+| `rule` | 1541 | the rule NABHASA_GADA holds |
 | `at-limb-edge` | 22 | the birth falls within the last 2 ghatikas of the tithi |
 | `limb-part` | 33 | the birth falls in the 1st of 6 equal parts of the tithi |
 | `birth-by-day` | 8 | the birth fell by day |

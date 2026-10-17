@@ -137,6 +137,8 @@ mod rules_bridge;
 #[cfg(feature = "chart")]
 mod sade_sati_request;
 #[cfg(feature = "tajika")]
+mod tithi_pravesha;
+#[cfg(feature = "tajika")]
 mod varsha;
 #[cfg(feature = "western")]
 mod western_aspects;
@@ -167,7 +169,9 @@ pub use teistro_astro::DeltaTModel;
 pub use teistro_astro::delta_t::DeltaT;
 pub use teistro_calendar::{CalendarDate, FixedDay, Weekday};
 pub use teistro_chart::day::ChartDay;
-pub use teistro_chart::foundation::{ChartAngles, ChartFoundation, GrahaPosition};
+pub use teistro_chart::foundation::{
+    Apogee, ChartAngles, ChartFoundation, GrahaPosition, LilithPosition,
+};
 pub use teistro_chart::moment::{BirthEclipse, Moment, RisingSign};
 pub use teistro_core::catalogue;
 // `canonical_json` and `content_hash` with them: a stored chart keeps
@@ -504,6 +508,10 @@ pub use teistro_rashifal as rashifal;
 // (`03-design/western-returns.md`).
 #[cfg(feature = "chart")]
 pub use crate::returns::{BodyReturn, OffsetReturn};
+// Each year's instant the birth's tithi returns around the solar return,
+// chosen by a named rule (`03-design/tithi-pravesha.md`).
+#[cfg(feature = "tajika")]
+pub use crate::tithi_pravesha::{TITHI_WINDOW_DAYS, TithiPravesha, TithiRule};
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
 #[cfg(feature = "western")]

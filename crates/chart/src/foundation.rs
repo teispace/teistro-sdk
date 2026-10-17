@@ -147,6 +147,165 @@ impl GrahaPosition {
     }
 }
 
+/// Which of the Moon's two apogees a chart places as the Black Moon
+/// Lilith (`03-design/lilith.md`).
+///
+/// Both are the far end of the Moon's orbit, read two ways. The **mean**
+/// apogee is the lunar theory's mean perigee turned half a circle, a
+/// polynomial that advances 40.69° a year and never turns back (crux
+/// C439). The **osculating** apogee is the far end of the two-body
+/// ellipse that matches the Moon's position and velocity at the instant,
+/// which the Sun swings by tens of degrees over a month (crux C440).
+/// Later practice calls the second the "true" Lilith; the SDK keeps the
+/// astronomical name, which says what was computed.
+///
+/// ```
+/// use teistro_chart::foundation::Apogee;
+/// use teistro_port_ephemeris::Body;
+///
+/// assert_eq!(Apogee::Mean.body(), Body::MeanApogee);
+/// assert_eq!(Apogee::Osculating.body(), Body::OsculatingApogee);
+/// assert_eq!(Apogee::Osculating.key(), "OSCULATING");
+/// assert_eq!(Apogee::ALL.len(), 2);
+/// ```
+///
+/// Non-exhaustive because a third reading exists in later practice, an
+/// apogee smoothed out of the osculating one, which the SDK does not
+/// compute (crux C440); a match on this has a fallback arm.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[non_exhaustive]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Apogee {
+    /// The mean lunar apogee: ELP2000-82B's mean perigee plus 180°.
+    Mean,
+    /// The osculating lunar apogee: the apogee of the instantaneous
+    /// Keplerian ellipse.
+    Osculating,
+}
+
+impl Apogee {
+    /// Both, the mean first.
+    pub const ALL: [Apogee; 2] = [Apogee::Mean, Apogee::Osculating];
+
+    /// The body the ephemeris port computes it as.
+    #[must_use]
+    pub const fn body(self) -> Body {
+        match self {
+            Apogee::Mean => Body::MeanApogee,
+            Apogee::Osculating => Body::OsculatingApogee,
+        }
+    }
+
+    /// The key a document spells it with, as serde writes it.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Apogee::Mean => "MEAN",
+            Apogee::Osculating => "OSCULATING",
+        }
+    }
+}
+
+/// Where the Black Moon Lilith is, in the chart's own zodiac: the lunar
+/// apogee the chart was asked for (`03-design/lilith.md`).
+///
+/// The fields are a [`GrahaPosition`]'s, read the same way, because a
+/// Western reader asks the same questions of it: its sign, its house,
+/// whether it is moving backwards. It is not a graha (crux C438): the
+/// port names no graha for an apogee, and every reader of
+/// [`ChartFoundation::grahas`] counts nine.
+///
+/// ```
+/// use teistro_chart::bhava::Placement;
+/// use teistro_chart::foundation::{Apogee, LilithPosition};
+/// use teistro_core::catalogue::HouseSystem;
+///
+/// let placement = Placement {
+///     bhava: 7,
+///     method: HouseSystem::WholeSign,
+///     through: 0.3,
+///     from_madhya_deg: -6.0,
+/// };
+/// let lilith = LilithPosition {
+///     apogee: Apogee::Mean,
+///     longitude_deg: 309.14,
+///     tropical_deg: 309.14,
+///     latitude_deg: 0.0,
+///     distance_au: 0.0,
+///     speed_deg_per_day: 0.1114,
+///     placement,
+///     house: placement,
+/// };
+/// assert!((lilith.perigee_deg() - 129.14).abs() < 1e-9);
+/// assert!(!lilith.is_retrograde());
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct LilithPosition {
+    /// Which apogee.
+    pub apogee: Apogee,
+    /// Longitude in the chart's zodiac, degrees.
+    pub longitude_deg: f64,
+    /// The same longitude in the tropical zodiac of date, degrees.
+    pub tropical_deg: f64,
+    /// Ecliptic latitude, degrees: zero for the mean apogee, which the
+    /// SDK answers as a direction on the ecliptic, and the orbit's own for
+    /// the osculating one.
+    pub latitude_deg: f64,
+    /// Distance, astronomical units: zero for the mean apogee, which has
+    /// none, and the osculating ellipse's apogee distance, `a(1 + e)`,
+    /// for the osculating one.
+    pub distance_au: f64,
+    /// Motion in the chart's longitude, degrees a day; negative when
+    /// retrograde, which only the osculating apogee ever is.
+    pub speed_deg_per_day: f64,
+    /// Where it falls under the chart's chalit.
+    pub placement: Placement,
+    /// Where it falls under the chart's placement system.
+    pub house: Placement,
+}
+
+impl LilithPosition {
+    /// The lunar perigee in the chart's zodiac, degrees: the apogee turned
+    /// half a circle, which both apogees are by definition. The mean one
+    /// is the theory's mean perigee plus 180°, and the osculating one the
+    /// far end of the ellipse's line of apsides.
+    #[must_use]
+    pub fn perigee_deg(&self) -> f64 {
+        (self.longitude_deg + 180.0).rem_euclid(360.0)
+    }
+
+    /// Whether it is moving backwards through the zodiac.
+    #[must_use]
+    pub fn is_retrograde(&self) -> bool {
+        self.speed_deg_per_day < 0.0
+    }
+
+    /// A cell the provider placed, in the chart's zodiac and both
+    /// divisions, moving at the chart's rate as the grahas do.
+    fn placed(
+        apogee: Apogee,
+        cell: Cell,
+        turning: f64,
+        zodiac: &ChartZodiac,
+        (houses, chalit): (&Bhavas, &Bhavas),
+    ) -> LilithPosition {
+        let tropical_deg = cell.lon.rem_euclid(360.0);
+        let longitude_deg = zodiac.of_tropical(tropical_deg);
+        LilithPosition {
+            apogee,
+            longitude_deg,
+            tropical_deg,
+            latitude_deg: cell.lat,
+            distance_au: cell.dist,
+            speed_deg_per_day: cell.lon_speed - turning,
+            placement: chalit.place(longitude_deg),
+            house: houses.place(longitude_deg),
+        }
+    }
+}
+
 /// One moment at one place, founded.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -185,6 +344,11 @@ pub struct ChartFoundation {
     /// counts nine.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub outer: Vec<GrahaPosition>,
+    /// The Black Moon Lilith, when the chart was asked to place it
+    /// ([`Carried::lilith`]); absent, and left out of the document, when
+    /// it was not (`03-design/lilith.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub lilith: Option<LilithPosition>,
     /// What the provider and the completion did, for the stamp.
     pub steps: Vec<String>,
 }
@@ -250,6 +414,10 @@ struct Input {
     /// chart that does not ask hashes as it always did.
     #[serde(skip_serializing_if = "core::ops::Not::not")]
     outer: bool,
+    /// Which apogee was asked for as the Black Moon Lilith; left out when
+    /// none was, so a chart that does not ask hashes as it always did.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    lilith: Option<&'static str>,
 }
 
 /// The same, for a batch.
@@ -265,6 +433,10 @@ struct BatchInput {
     /// chart that does not ask hashes as it always did.
     #[serde(skip_serializing_if = "core::ops::Not::not")]
     outer: bool,
+    /// Which apogee was asked for as the Black Moon Lilith; left out when
+    /// none was, so a chart that does not ask hashes as it always did.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    lilith: Option<&'static str>,
 }
 
 /// One event of a transit search ([`Founder::transit_events`]).
@@ -323,9 +495,14 @@ pub struct ContactEvents {
     pub stations: Vec<TransitEvent>,
 }
 
-/// The nine grahas, the outer planets a chart was asked for, and the steps
-/// that placed them.
-type Placed = (Vec<GrahaPosition>, Vec<GrahaPosition>, Vec<String>);
+/// The nine grahas, the outer planets and the Lilith a chart was asked
+/// for, and the steps that placed them.
+type Placed = (
+    Vec<GrahaPosition>,
+    Vec<GrahaPosition>,
+    Option<LilithPosition>,
+    Vec<String>,
+);
 
 /// The bodies a chart asks the provider for, and the graha each answers
 /// for.
@@ -362,6 +539,30 @@ pub enum OuterPlanets {
     Left,
     /// Uranus, Neptune and Pluto as well, in [`ChartFoundation::outer`].
     Placed,
+}
+
+/// What a chart places beside the nine when asked: the outer planets and
+/// the Black Moon Lilith. The default asks for neither, which is the
+/// chart every chart was before either existed, to the byte and to the
+/// hash.
+///
+/// ```
+/// use teistro_chart::foundation::{Apogee, Carried, OuterPlanets};
+///
+/// let western = Carried {
+///     outer: OuterPlanets::Placed,
+///     lilith: Some(Apogee::Mean),
+/// };
+/// assert_ne!(western, Carried::default());
+/// assert_eq!(Carried::default().lilith, None);
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Carried {
+    /// Whether Uranus, Neptune and Pluto are placed.
+    pub outer: OuterPlanets,
+    /// Which lunar apogee is placed as the Black Moon Lilith, if any, in
+    /// [`ChartFoundation::lilith`] (`03-design/lilith.md`).
+    pub lilith: Option<Apogee>,
 }
 
 /// The body a graha is read from, and how far to turn it: Ketu is the
@@ -469,7 +670,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         place: &Place,
         kind: ChartKind,
     ) -> Result<Envelope<ChartFoundation>, Error> {
-        let chart = self.value(instant, place, kind, OuterPlanets::Left)?;
+        let chart = self.value(instant, place, kind, Carried::default())?;
         let provenance = self.provenance(&chart);
         Ok(Envelope::new(chart, provenance))
     }
@@ -480,7 +681,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         instant: JulianDay<Utc>,
         place: &Place,
         kind: ChartKind,
-        outer: OuterPlanets,
+        carried: Carried,
     ) -> Result<ChartFoundation, Error> {
         let ut1 = JulianDay::<Ut1>::literal(instant.get());
         let (tt, _) = tt_of(ut1, self.delta_t)?;
@@ -520,13 +721,13 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let day_lagna_deg = self.lagna(day_ut1, day_tt, place, &zodiac)?;
 
         let timing = self.timing(&day, instant)?;
-        let (grahas, outer, mut steps) = self.grahas(
+        let (grahas, outer, lilith, mut steps) = self.grahas(
             &completion,
             ut1,
             place,
             (&zodiac, turning),
             (&houses, &chalit),
-            outer,
+            carried,
         )?;
         steps.push(format!("zodiac:{}", zodiac_from.key()));
         let angles_from = if self.defined_angles(ut1, place)?.is_some() {
@@ -554,6 +755,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             timing,
             grahas,
             outer,
+            lilith,
             steps,
         })
     }
@@ -588,6 +790,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 altitude_m: chart.place.altitude.get(),
                 kind: chart.kind.key(),
                 outer: !chart.outer.is_empty(),
+                lilith: chart.lilith.map(|at| at.apogee.key()),
             }),
             chart.zodiac.request,
             chart.steps.clone(),
@@ -664,9 +867,35 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         kind: ChartKind,
         outer: OuterPlanets,
     ) -> Result<Envelope<Vec<ChartFoundation>>, Error> {
+        self.found_carrying(
+            instants,
+            place,
+            kind,
+            Carried {
+                outer,
+                lilith: None,
+            },
+        )
+    }
+
+    /// [`Founder::found`], placing what `carried` asks for beside the
+    /// nine — the outer planets, the Black Moon Lilith — in the same
+    /// request to the provider (`03-design/lilith.md`).
+    ///
+    /// # Errors
+    ///
+    /// As [`Founder::found_with`]; and `UNSUPPORTED` on `lilith`, naming
+    /// the apogee, when the provider cannot place the one asked for.
+    pub fn found_carrying(
+        &self,
+        instants: &[JulianDay<Utc>],
+        place: &Place,
+        kind: ChartKind,
+        carried: Carried,
+    ) -> Result<Envelope<Vec<ChartFoundation>>, Error> {
         let charts: Vec<ChartFoundation> = instants
             .iter()
-            .map(|instant| self.value(*instant, place, kind, outer))
+            .map(|instant| self.value(*instant, place, kind, carried))
             .collect::<Result<_, _>>()?;
         // One stamp over the batch: the settings, the provider and the
         // steps are the same for every chart in it, and the input hash is
@@ -681,7 +910,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             longitude_deg: place.longitude.get(),
             altitude_m: place.altitude.get(),
             kind: kind.key(),
-            outer: outer == OuterPlanets::Placed,
+            outer: carried.outer == OuterPlanets::Placed,
+            lilith: carried.lilith.map(Apogee::key),
         });
         Ok(Envelope::new(charts, provenance))
     }
@@ -726,6 +956,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             altitude_m: place.altitude.get(),
             kind: "LONGITUDES",
             outer: false,
+            lilith: None,
         });
         let Some(first) = zodiacs.first() else {
             return Ok(Envelope::new(
@@ -1211,6 +1442,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             altitude_m: place.altitude.get(),
             kind,
             outer: false,
+            lilith: None,
         });
         let steps = vec![format!("crossings:{}", Implementation::Sdk.key())];
         Envelope::new(value, self.stamp(input_hash, frame, steps))
@@ -1228,6 +1460,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 altitude_m: place.altitude.get(),
                 kind: kind.key(),
                 outer: false,
+                lilith: None,
             }),
         )
     }
@@ -1481,13 +1714,23 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         place: &Place,
         (zodiac, turning): (&ChartZodiac, f64),
         (houses, chalit): (&Bhavas, &Bhavas),
-        outer: OuterPlanets,
+        carried: Carried,
     ) -> Result<Placed, Error> {
-        // The outer planets ride in the nine's grid: three more cells, not
-        // a second request.
+        // The outer planets and the apogee ride in the nine's grid: more
+        // cells, not a second request. The apogee goes last, after every
+        // body that is a graha.
         let mut bodies = bodies_of(self.settings());
-        if outer == OuterPlanets::Placed {
+        if carried.outer == OuterPlanets::Placed {
             bodies.extend([Body::Uranus, Body::Neptune, Body::Pluto]);
+        }
+        let graha_cells = bodies.len();
+        if let Some(apogee) = carried.lilith {
+            // Refused here, by name, rather than as the provider's refusal
+            // of the whole grid, which would not say that Lilith asked.
+            if !self.provider.capabilities().has_body(apogee.body()) {
+                return Err(lilith_refused(apogee, "does not compute it"));
+            }
+            bodies.push(apogee.body());
         }
         let jds = [ut1.get()];
         let mut request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, zodiac.request);
@@ -1496,9 +1739,9 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         }
         let completed: Completed = completion.positions(&request)?;
 
-        let mut grahas = Vec::with_capacity(bodies.len() + 1);
+        let mut grahas = Vec::with_capacity(graha_cells + 1);
         let mut placed_outer = Vec::new();
-        for (index, body) in bodies.iter().enumerate() {
+        for (index, body) in bodies.iter().enumerate().take(graha_cells) {
             let cell = placed_cell(&completed, 0, index, *body)?;
             let graha = body
                 .graha()
@@ -1535,7 +1778,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 chalit,
             ));
         }
-        Ok((grahas, placed_outer, completed.step_keys()))
+        let lilith = carried
+            .lilith
+            .map(|apogee| {
+                lilith_cell(&completed, graha_cells, apogee).map(|cell| {
+                    LilithPosition::placed(apogee, cell, turning, zodiac, (houses, chalit))
+                })
+            })
+            .transpose()?;
+        Ok((grahas, placed_outer, lilith, completed.step_keys()))
     }
 
     /// One graha's position, placed in both divisions.
@@ -1620,6 +1871,36 @@ fn placed_cell(completed: &Completed, row: usize, index: usize, body: Body) -> R
         .with_field("bodies"));
     }
     Ok(cell)
+}
+
+/// The apogee's cell, the `index`th of the founding's grid, when the
+/// provider placed it; refused on `lilith`, naming the apogee, when it did
+/// not.
+fn lilith_cell(completed: &Completed, index: usize, apogee: Apogee) -> Result<Cell, Error> {
+    let cell = completed.columns.at(0, index).ok_or_else(|| {
+        Error::internal(format!("the grid has no cell for {}", apogee.body().key()))
+    })?;
+    if cell.status != CellStatus::Ok {
+        return Err(lilith_refused(
+            apogee,
+            &format!("could not place it: {:?}", cell.status),
+        ));
+    }
+    Ok(cell)
+}
+
+/// The refusal of a Lilith the provider cannot place: `UNSUPPORTED` on
+/// `lilith`, naming the apogee and what the provider did.
+fn lilith_refused(apogee: Apogee, why: &str) -> Error {
+    Error::unsupported(format!(
+        "the Black Moon Lilith asked for is {}, and the provider {why}",
+        apogee.body().key()
+    ))
+    .with_field("lilith")
+    .with_hint(
+        "found the chart over an ephemeris that computes the lunar apogees, as the built-in \
+         one does, or leave Lilith out",
+    )
 }
 
 /// The angles and the obliquity at an instant, in a chart's zodiac: the

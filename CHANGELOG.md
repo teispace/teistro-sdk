@@ -396,6 +396,23 @@ and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
 dispositor (C415), and the nodes are refused (C416). The Rust surface
 only: no blob section carries the chains yet.
 
+**The tithi pravesha** (`tithi-pravesha.md`, C443 to C447). **Numbers:**
+none moved; the solar returns and the hit list are unchanged.
+`sdk.chart().tithi_praveshas(&birth, rule, through)` answers, for each
+year `1` to `through`, the instant the Moon's elongation from the Sun
+returns to the birth's, the hit list's phase return
+(`Founder::elongation_events`, C420), chosen around that year's sidereal
+solar return. `TithiRule::NatalSign`, the default, takes the return while
+the Sun is in its natal sign (C444); of two the nearer the solar return
+(C445), and with none the nearest return, reported as
+`picked: NEAREST_RETURN` (C446). `TithiRule::NearestReturn` takes the
+nearest whatever the sign. Each answer carries the solar return, the
+elongation, the rule that picked it and how many returns the sign held.
+No classical text defining the chart was found; the rule is the
+practice's own sentence, rank 3, and no verse is cited (C443). The year's
+chart is the caller's to found where the native is. The Rust surface
+only: no blob section or binding carries it yet.
+
 **Half- and quarter-returns.** **Numbers:** none moved. `returns`,
 `BodyReturn` and the hit list are unchanged, and offset 0 of the new call
 gives `returns`' instants bit for bit. `sdk.chart().returns_at(&birth,
@@ -440,6 +457,46 @@ end, as every worked example prints it (C429); three knobs keep the
 rivals. Phaladeepika ch. 26 vv. 26–28, which `gochar.md` had named as this
 chakra, are the saptashalaka and the taras, and v. 48 is the chakra's
 verse (C428). The Rust surface only: no façade call or blob section yet.
+
+**The Black Moon Lilith in a chart** (`lilith.md`, C438 to C442).
+**Numbers:** none moved; a chart that does not ask is the same to the
+byte and to the hash. `ChartRequest::with_lilith(Apogee::Mean)` places
+the mean lunar apogee beside the nine in `ChartFoundation::lilith`, in
+the same request to the ephemeris: ELP2000-82B's mean perigee plus 180°,
+in the chart's own zodiac and houses (C439). It is held to Meeus's
+Example 47.a (*Astronomical Algorithms*, ch. 47: L′ − M′ + 180° with
+the example's nutation, 309.143959°) to a thousandth of a degree, and to
+his 40.690° a year. `Apogee::Osculating` places the apogee of the Moon's
+instantaneous ellipse, which later practice calls the "true" Lilith
+(C440). Both are read in the chart's frame and from its centre, as the
+nine are, so a topocentric chart sees the osculating apogee moved by up
+to about a degree (C441). The name is later practice; the record is the
+lunar apogee, not the asteroid (C442). Lilith is not a graha and not yet
+a catalogue point: the first reader that must name it adds the row
+(C438). A provider that cannot place the apogee is refused on `lilith`.
+The Rust surface only: no boundary section, binding or reader yet.
+**The Nabhasa yogas read against Brihat Jataka and Saravali** (cruxes C448
+to C452). **Numbers:** over the 93 recorded charts the seven window yogas
+answer 58 times fewer (Nauka 18, Koota 3, Chatra 3, Chapa 2, Ardha Chandra
+30, Chakra 1, Samudra 1, now none), the sankhya yogas stand down 17 times
+rather than 46, and 42 of the 62 figures answer as the recording engine
+does rather than 46. Each of BPHS ch. 35's thirty-two was read again
+against the Sanskrit of BPHS ch. 35, Brihat Jataka ch. 12 and Saravali
+ch. 21. Nauka, Koota, Chatra, Chapa, Ardha Chandra, Chakra and Samudra now
+ask every house of their window to hold one of the seven, where they asked
+only that the seven be confined to it: the texts word the windows as they
+word the sankhya yogas, which count the signs occupied (C449). The engine
+fills its Koota and confines the other six, so Koota now agrees with it and
+the six differ. An ashraya yoga, Rajju, Musala or Nala, now stands down
+where a dala or akriti yoga holds, as Brihat Jataka ch. 12 v. 12 and
+Saravali ch. 21 v. 7 say and BPHS does not (C448); under the filled
+windows 20,488 of the 36,864 skies the Sun, Mercury and Venus allow leave
+it standing alone, and `crates/rules/tests/classical.rs` holds that the
+cancellation falls exactly where another holds. Three readings the texts
+leave open are recorded with what each rival answers: Vajra and Yava,
+whose all-seven figure Varahamihira himself says the sky forbids (C450);
+where Vapi's seven stand (C451); and what "three angles" asks of Maala and
+Sarpa (C452).
 
 **A hit list reports the Moon's phases and phase returns.** **Numbers:**
 none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,

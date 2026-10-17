@@ -15,7 +15,7 @@
 //! it a setter and its getter want the same word, and the codebase ends
 //! up with `kind` beside `chart_kind` for no reason a reader can see.
 
-use teistro_chart::OuterPlanets;
+use teistro_chart::{Apogee, Carried, OuterPlanets};
 #[cfg(doc)]
 use teistro_core::catalogue::ChartLayout;
 use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
@@ -133,6 +133,9 @@ pub struct ChartRequest {
     dashas: Vec<KeyId>,
     lot_rules: LotRequest,
     pub(crate) sections: Sections,
+    /// Which lunar apogee the foundation places as the Black Moon Lilith,
+    /// if any: a choice between two, so not a bit of `sections`.
+    lilith: Option<Apogee>,
 }
 
 impl ChartRequest {
@@ -149,6 +152,7 @@ impl ChartRequest {
             dashas: Vec::new(),
             lot_rules: LotRequest::VALENS,
             sections: Sections::default(),
+            lilith: None,
         }
     }
 
@@ -509,6 +513,53 @@ impl ChartRequest {
             OuterPlanets::Placed
         } else {
             OuterPlanets::Left
+        }
+    }
+
+    /// The Black Moon Lilith, placed beside the nine in the foundation's
+    /// `lilith` as the lunar apogee named, and asked for in the same
+    /// request to the ephemeris (`03-design/lilith.md`). `Apogee::Mean` is
+    /// the mean apogee, 40.69° a year and never retrograde;
+    /// `Apogee::Osculating` the apogee of the Moon's instantaneous
+    /// ellipse, which later practice calls the "true" Lilith. Asking again
+    /// replaces the apogee, as every setter here does. Left out, the
+    /// foundation is what it always was, to the byte.
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{Apogee, ChartRequest, Context, Ephemeris, UtcOffset};
+    ///
+    /// let sdk = Context::builder()
+    ///     .profile("western-tropical-default")
+    ///     .ephemeris([Ephemeris::Builtin])
+    ///     .build()?;
+    /// let london = Place::new(Latitude::try_new(51.5)?, Longitude::try_new(0.0)?, Altitude::try_new(0.0)?);
+    /// let request = ChartRequest::at(london, UtcOffset::UTC).with_lilith(Apogee::Mean);
+    /// let chart = sdk.chart().reading(JulianDay::try_new(2_451_545.0)?, &request)?.value;
+    /// let lilith = chart.foundation.lilith.expect("asked for");
+    /// // ELP2000-82B's mean perigee at J2000 is 83.3532°, so the apogee
+    /// // stands half a circle on, in Sagittarius.
+    /// assert!((263.0..264.0).contains(&lilith.longitude_deg));
+    /// assert!(!lilith.is_retrograde());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_lilith(mut self, apogee: Apogee) -> ChartRequest {
+        self.lilith = Some(apogee);
+        self
+    }
+
+    /// Which apogee is asked for as the Black Moon Lilith, if any.
+    #[must_use]
+    pub const fn lilith(&self) -> Option<Apogee> {
+        self.lilith
+    }
+
+    /// What the founder places beside the nine.
+    pub(crate) const fn carried(&self) -> Carried {
+        Carried {
+            outer: self.outer_planets(),
+            lilith: self.lilith,
         }
     }
 

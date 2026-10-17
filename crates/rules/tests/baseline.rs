@@ -338,23 +338,26 @@ fn the_sdk_s_yogas_answer_what_the_engine_answered() {
 /// Which figures the SDK and the engine disagree on, and why each is a
 /// reading rather than a defect.
 fn divergences_are_the_ones_read_up_in_the_cruxes(counted: &[(&str, usize, usize, usize)]) {
-    // Forty-six of the sixty-two figures answer exactly alike — among them all
+    // Forty-two of the sixty-two figures answer exactly alike — among them all
     // five Pancha Mahapurusha yogas, on 49 answers, and BPHS ch. 39 v. 37's
     // angular lord joining a trinal lord, on 42. The two exchanges of ch. 39
     // v. 6 and ch. 40 v. 13 agree only in that no chart here holds either. The
-    // sixteen that do not are reading differences, recorded in cruxes C93 to
-    // C95, C97 and C100:
+    // twenty that do not are reading differences, recorded in cruxes C93 to
+    // C95, C97, C100 and C449:
     //
     // - The fifth and ninth lords: BPHS ch. 39 vv. 33 and 34 relate them by
     //   mutual aspect or by standing in the seventh from each other as well as
     //   by sharing a sign; the engine keeps the sign. The SDK's answers contain
     //   the engine's, five charts wider.
-    // - Ardha Chandra: the SDK takes Saravali's "seven continuous houses from
-    //   a house that is not an angle", all eight starts; the engine takes the
-    //   one window from the second. The SDK's answers contain the engine's.
-    // - Koota: the engine asks that all seven houses be occupied, where its
-    //   own Nauka, Chatra and Chapa ask only that the seven be confined to
-    //   them. The SDK reads the whole family as confinement.
+    // - Nauka, Chatra, Chapa, Ardha Chandra, Chakra and Samudra: BPHS ch. 35
+    //   and Brihat Jataka ch. 12 word the windows as they word the sankhya
+    //   yogas, which count the signs occupied, so the SDK asks every house of
+    //   the window to hold one of the seven; the engine asks only that the
+    //   seven be confined to it, except for its Koota, which it fills as the
+    //   SDK does. A filled window is rare, and no chart of the 93 holds one.
+    //   Ardha Chandra also differs in its starts: the SDK takes all eight
+    //   houses that are not angles (Saravali, Brihat Jataka v. 8), the engine
+    //   the one window from the second.
     // - Sarpa: the SDK reads "three angles occupied by malefics" as three
     //   angles, the lagna among them, each holding some malefic; the engine
     //   asks that Mars, Saturn and the Sun each stand in the fourth, seventh
@@ -379,14 +382,18 @@ fn divergences_are_the_ones_read_up_in_the_cruxes(counted: &[(&str, usize, usize
     let (agreeing, diverging): (Vec<&(&str, usize, usize, usize)>, Vec<_>) = counted
         .iter()
         .partition(|(_, _, ours, theirs)| *ours == 0 && *theirs == 0);
-    assert_eq!(agreeing.len(), 46);
+    assert_eq!(agreeing.len(), 42);
     assert_eq!(
         diverging.iter().map(|(key, ..)| *key).collect::<Vec<_>>(),
         [
             "BPHS_FIFTH_AND_NINTH_LORDS_RELATED",
             "LUNAR_KEMADRUMA",
             "NABHASA_ARDHA_CHANDRA",
-            "NABHASA_KOOTA",
+            "NABHASA_CHAKRA",
+            "NABHASA_CHAPA",
+            "NABHASA_CHATRA",
+            "NABHASA_NAUKA",
+            "NABHASA_SAMUDRA",
             "NABHASA_SARPA",
             "PARASHARA_AMALA",
             "PARASHARA_CHAMARA",
@@ -459,7 +466,10 @@ fn sankhya_yogas_stand_down_where_another_nabhasa_holds(ours: &[Rule], owned: &[
             }
         }
     }
-    assert_eq!((present, cancelled), (93, 46));
+    // One sankhya yoga holds on every chart; 17 stand down, fewer than the
+    // 46 the confined windows cancelled, since a filled window (C449) holds
+    // on none of the 93.
+    assert_eq!((present, cancelled), (93, 17));
 }
 
 /// How the SDK's reading of each Nabhasa figure stands to the engine's, over
@@ -482,10 +492,10 @@ const AGREEMENT: [(&str, usize, usize, usize); 62] = [
     ("MAHAPURUSHA_MALAVYA", 11, 0, 0),
     ("MAHAPURUSHA_RUCHAKA", 14, 0, 0),
     ("MAHAPURUSHA_SASA", 5, 0, 0),
-    ("NABHASA_ARDHA_CHANDRA", 17, 13, 0),
-    ("NABHASA_CHAKRA", 1, 0, 0),
-    ("NABHASA_CHAPA", 2, 0, 0),
-    ("NABHASA_CHATRA", 3, 0, 0),
+    ("NABHASA_ARDHA_CHANDRA", 0, 0, 17),
+    ("NABHASA_CHAKRA", 0, 0, 1),
+    ("NABHASA_CHAPA", 0, 0, 2),
+    ("NABHASA_CHATRA", 0, 0, 3),
     ("NABHASA_DAMA", 8, 0, 0),
     ("NABHASA_DANDA", 0, 0, 0),
     ("NABHASA_GADA", 0, 0, 0),
@@ -493,16 +503,16 @@ const AGREEMENT: [(&str, usize, usize, usize); 62] = [
     ("NABHASA_HALA", 0, 0, 0),
     ("NABHASA_KAMALA", 0, 0, 0),
     ("NABHASA_KEDARA", 24, 0, 0),
-    ("NABHASA_KOOTA", 0, 3, 0),
+    ("NABHASA_KOOTA", 0, 0, 0),
     ("NABHASA_MAALA", 0, 0, 0),
     ("NABHASA_MUSALA", 0, 0, 0),
     ("NABHASA_NALA", 0, 0, 0),
-    ("NABHASA_NAUKA", 18, 0, 0),
+    ("NABHASA_NAUKA", 0, 0, 18),
     ("NABHASA_PASA", 46, 0, 0),
     ("NABHASA_RAJJU", 0, 0, 0),
     ("NABHASA_SAKATA", 0, 0, 0),
     ("NABHASA_SAKTHI", 0, 0, 0),
-    ("NABHASA_SAMUDRA", 1, 0, 0),
+    ("NABHASA_SAMUDRA", 0, 0, 1),
     ("NABHASA_SARA", 1, 0, 0),
     ("NABHASA_SARPA", 0, 15, 7),
     ("NABHASA_SOOLA", 6, 0, 0),
