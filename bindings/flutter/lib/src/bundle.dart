@@ -31,7 +31,24 @@ const String prebuiltDirDefine = 'prebuilt_dir';
 
 /// The user define naming a library outright, bundled without a digest
 /// check: a contributor's own build. The handshake still runs at load.
+///
+/// One path names one file for every platform the hook is invoked for. A
+/// build for several (`flutter build ios --simulator`, an APK for several
+/// ABIs) names one per platform instead, as a map keyed by the names
+/// [platformFor] gives (`ios-sim-arm64`, `ios-sim-x64`, ...), each to its
+/// own path. See [namedLibrary].
 const String libraryDefine = 'library';
+
+/// Every release platform [platformFor] can name, the keys a per-platform
+/// [libraryDefine] map may hold.
+const List<String> mobilePlatforms = [
+  'android-arm64',
+  'android-arm',
+  'android-x64',
+  'ios-arm64',
+  'ios-sim-arm64',
+  'ios-sim-x64',
+];
 
 /// The release a hook bundles from: the library's name, the version its
 /// digests were cut from, where the archives are, and the digests.
@@ -170,16 +187,10 @@ Future<void> bundlePrebuilt(
   );
   if (platform == null) return;
   refuseFloor(code);
-  final named = input.userDefines.path(libraryDefine);
+  final named = namedLibrary(input.userDefines, platform);
   final Uri file;
   if (named != null) {
-    if (!File.fromUri(named).existsSync()) {
-      throw BuildError(
-        message:
-            'the `$libraryDefine` user define names ${named.toFilePath()}, '
-            'and there is no file there.',
-      );
-    }
+    refuseNamed(named, platform);
     stderr.writeln(
       'teistro_flutter: bundling ${named.toFilePath()} for $platform '
       'unverified, as `$libraryDefine` asks',
@@ -206,6 +217,131 @@ Future<void> bundlePrebuilt(
       file: file,
     ),
   );
+}
+
+/// The library the app names for [platform] under [libraryDefine], or
+/// null when it names none.
+///
+/// A string is one path for every platform. A map names one per platform,
+/// keyed by the names [platformFor] gives; a map that does not name
+/// [platform] is refused with the line to add, since a build for several
+/// architectures invokes the hook once for each. A relative path is read
+/// from the directory of the pubspec that declares it, in both forms, as
+/// [HookInputUserDefines.path] reads one.
+Uri? namedLibrary(HookInputUserDefines defines, String platform) {
+  final value = defines[libraryDefine];
+  if (value == null) return null;
+  if (value is String) return defines.path(libraryDefine);
+  if (value is! Map) {
+    throw BuildError(
+      message:
+          'the `$libraryDefine` user define is ${value.runtimeType} '
+          '`$value`; it takes a path, or a map of release platform to path: '
+          '`$libraryDefine: {$platform: <path>}`.',
+    );
+  }
+  final unknown = [
+    for (final key in value.keys)
+      if (!mobilePlatforms.contains(key)) '$key',
+  ];
+  if (unknown.isNotEmpty) {
+    throw BuildError(
+      message:
+          'the `$libraryDefine` user define has the key(s) '
+          '${unknown.join(', ')}, and its keys are the platforms the SDK '
+          'ships: ${mobilePlatforms.join(', ')}.',
+    );
+  }
+  final path = value[platform];
+  if (path == null) {
+    final names = [for (final key in value.keys) '$key']..sort();
+    throw BuildError(
+      message:
+          'this build is for $platform, and the `$libraryDefine` user define '
+          'names a library for '
+          '${names.isEmpty ? 'no platform' : '${names.join(', ')} only'}. '
+          'Add one for '
+          '$platform to the map in the app\'s pubspec: `hooks: user_defines: '
+          'teistro_flutter: $libraryDefine: $platform: <path>`.',
+    );
+  }
+  if (path is! String) {
+    throw BuildError(
+      message:
+          'the `$libraryDefine` user define names ${path.runtimeType} '
+          '`$path` for $platform; it takes a path.',
+    );
+  }
+  if (File(path).isAbsolute) return Uri.file(path);
+  return defines.baseUri([libraryDefine, platform])!.resolve(path);
+}
+
+/// Refuses a library named for [platform] that is not there, or that is
+/// built for another processor than [platform]'s.
+///
+/// The processor is read from the file's ELF or Mach-O header; a file whose
+/// header says neither (a universal Mach-O, or a format not read here) is
+/// let through, and the handshake still runs at load. An iOS device and an
+/// arm64 simulator library share a processor, so that mix-up is the
+/// loader's to report.
+void refuseNamed(Uri named, String platform) {
+  final file = File.fromUri(named);
+  if (!file.existsSync()) {
+    throw BuildError(
+      message:
+          'the `$libraryDefine` user define names ${named.toFilePath()} for '
+          '$platform, and there is no file there.',
+    );
+  }
+  final built = processorOf(file);
+  final wanted = platform.substring(platform.lastIndexOf('-') + 1);
+  if (built != null && built != wanted) {
+    throw BuildError(
+      message:
+          'the `$libraryDefine` user define names ${named.toFilePath()}, an '
+          '$built library, for $platform. A build for several architectures '
+          'invokes the hook once for each, so name one library per platform: '
+          '`$libraryDefine: {$platform: <path>, ...}`, keyed by '
+          '${mobilePlatforms.join(', ')}.',
+    );
+  }
+}
+
+/// The processor a library is built for, in the release's spelling
+/// (`arm64`, `arm`, `x64`), from its ELF or thin Mach-O header; null for
+/// any other file.
+String? processorOf(File file) {
+  final RandomAccessFile handle;
+  try {
+    handle = file.openSync();
+  } on FileSystemException {
+    return null;
+  }
+  final Uint8List head;
+  try {
+    head = handle.readSync(20);
+  } finally {
+    handle.closeSync();
+  }
+  if (head.length < 20) return null;
+  final bytes = ByteData.sublistView(head);
+  if (bytes.getUint32(0) == 0x7f454c46) {
+    final order = head[5] == 2 ? Endian.big : Endian.little;
+    return switch (bytes.getUint16(18, order)) {
+      183 => 'arm64',
+      40 => 'arm',
+      62 => 'x64',
+      _ => null,
+    };
+  }
+  if (bytes.getUint32(0, Endian.little) == 0xfeedfacf) {
+    return switch (bytes.getUint32(4, Endian.little)) {
+      0x0100000c => 'arm64',
+      0x01000007 => 'x64',
+      _ => null,
+    };
+  }
+  return null;
 }
 
 /// The verified library for [platform], in [cache] under the release's

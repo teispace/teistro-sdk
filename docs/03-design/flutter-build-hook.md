@@ -188,6 +188,22 @@ say so.
   - `library: <path>` names a library outright with no digest check, like
     `Teistro.open(path:)`. The handshake still applies at load, and the
     hook prints a warning that it is unverified.
+  - `library:` may instead be a map of release platform to path,
+    `library: {ios-sim-arm64: <path>, ios-sim-x64: <path>}`, for a build
+    that invokes the hook for several architectures. Added 2026-10-17: one
+    path failed `flutter build ios --simulator`, which bundles both
+    simulator slices and `lipo`s them ("same architectures (arm64)
+    found"), and `prebuilt_dir` cannot stand in because a development
+    build carries no digests. A map that does not name the platform built
+    is refused with the line to add, and a key no platform has is refused.
+    Relative paths in either form resolve against the declaring pubspec,
+    as `HookInputUserDefines.path` does. The hook reads the ELF or thin
+    Mach-O header of a named library and refuses one built for another
+    processor, so a single path given to a multi-architecture build fails
+    in the hook with the map's spelling rather than in `lipo` (or, on
+    Android, silently as the wrong ABI's library). An iOS device library
+    and an arm64 simulator one share a processor, so that mix-up is left
+    to the loader.
   - There is no "build from source in the hook". It would make cargo and
     the NDK a build requirement for Flutter apps, and `library:` covers
     contributors.
