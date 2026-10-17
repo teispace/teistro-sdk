@@ -988,6 +988,61 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         Ok(self.searched(events, place, (from, to), "TRANSIT_EVENTS", frame))
     }
 
+    /// Every instant the Moon's elongation from the Sun — the Moon's
+    /// longitude less the Sun's — reaches a line of `lattices`, between
+    /// two instants: the lunar phases and a chart's phase returns a
+    /// transit hit list reads (`03-design/transit-hit-list.md` §7), in time
+    /// order, each a [`TransitEventKind::Crossing`] of the Moon naming its
+    /// lattice.
+    ///
+    /// The quantity is the tithi's (`Quantity::ELONGATION`) and the search
+    /// the one a tithi's ends are found by, all the lattices tested against
+    /// one scan. It is read as [`Founder::transit_events`] reads a
+    /// longitude, in the chart's frame: the same in any zodiac, since the
+    /// ayanamsha cancels, and seen from `place` under a topocentric
+    /// profile, as the charts are.
+    ///
+    /// # Errors
+    ///
+    /// The search's own: a window that does not run forward, or a provider
+    /// that cannot place the Sun or the Moon inside it.
+    pub fn elongation_events(
+        &self,
+        place: &Place,
+        lattices: &[Lattice],
+        (from, to): (JulianDay<Utc>, JulianDay<Utc>),
+    ) -> Result<Envelope<Vec<TransitEvent>>, Error> {
+        let (start, end) = (
+            JulianDay::<Ut1>::literal(from.get()),
+            JulianDay::<Ut1>::literal(to.get()),
+        );
+        let (events, frame) = self.searching(place, from, |source| {
+            let mut lattices = lattices.iter().copied();
+            let Some(first) = lattices.next() else {
+                return Ok(Vec::new());
+            };
+            let crossings = Search::each(source, Quantity::ELONGATION, first, lattices)
+                .between_each(start, end)?;
+            let mut events = Vec::new();
+            for (index, found) in crossings.into_iter().enumerate() {
+                for event in found {
+                    events.push(TransitEvent {
+                        graha: Graha::Moon,
+                        instant: JulianDay::<Utc>::literal(event.instant.get()),
+                        kind: TransitEventKind::Crossing {
+                            lattice: index,
+                            boundary_deg: event.boundary_deg.rem_euclid(360.0),
+                            direction: event.direction,
+                        },
+                    });
+                }
+            }
+            events.sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
+            Ok(events)
+        })?;
+        Ok(self.searched(events, place, (from, to), "ELONGATION_EVENTS", frame))
+    }
+
     /// Every instant two of `planets` stand a multiple of 30° apart, and
     /// every station of each of `stations_of`,
     /// between two instants: what lies ahead of a horary figure
