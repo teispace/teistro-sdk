@@ -152,6 +152,41 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
   decision above now says where the lagna stands in the rule rather
   than which number it gets.
 
+## House overlays
+
+Each chart's points are counted in the other chart's houses: the first
+chart's planets and lagna in the second's houses, and the second's in
+the first's (`western::house_overlays`, `sdk.chart().synastry_houses`).
+Leo does not read two charts this way. He reads a planet "on the place
+of" the other chart's luminaries or ascendant (p. 223), and a ruler
+transiting the other's ascendant (pp. 221–222), but never a planet in the
+other chart's house. So the overlay is later practice, and nothing here
+is a source's reading (C417). It is built from what is already decided:
+
+- **The cusps are each chart's own Western houses.** They are the
+  division `HouseRequest` names, else the profile's
+  `houses.module_overrides.western`, else Placidus (C249). These are
+  the cusps `western_houses` counts that chart's own planets on. A
+  quadrant division and whole signs are both just cusps, and the answer
+  names each side's division, since a polar policy can fall back for
+  one chart and not the other.
+- **A point is counted by the cusps alone.** It is in the house whose
+  cusp it has passed and whose next cusp it has not, as a chart's own
+  planets are (`western-houses.md`, decision 2). A point exactly on a
+  cusp is in the house that cusp opens. Lilly's 5° before a cusp is not
+  applied, and Leo's hour above the ascendant is not either: both are
+  readings of one chart's own figure.
+- **The points are the synastry's.** They are the planets and the lagna
+  unless the request leaves it out, read in the request's zodiac, with
+  the cusps turned into that zodiac by the chart's own frame. Under
+  `CHARTS`, two charts founded in different zodiacs are refused, as the
+  aspects are.
+
+The overlays are on the Rust surface only. They are not a field of the
+`synastry` record, because the boundary has no section for them. A
+record field that no blob section answered would be a request that
+answers nothing.
+
 ## What this does not decide
 
 - **The composite charts.** They are read on their own page

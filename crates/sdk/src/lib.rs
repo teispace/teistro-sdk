@@ -422,8 +422,8 @@ pub use teistro_western::{
 // reaching one sidereal hour above it (`03-design/western-houses.md`).
 #[cfg(feature = "western")]
 pub use teistro_western::{
-    ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM,
-    LILLY_HOUSE_SYSTEM, WesternHouses,
+    ASCENDANT_REACH_DEG, HouseFrame, HouseOverlay, HouseOverlays, HousePlacement, HouseRequest,
+    LEO_HOUSE_SYSTEM, LILLY_HOUSE_SYSTEM, OverlayCusps, WesternHouses,
 };
 // A chart's harmonics after Addey: every point multiplied by a whole
 // number, and the points meeting in it (`03-design/western-harmonics.md`).

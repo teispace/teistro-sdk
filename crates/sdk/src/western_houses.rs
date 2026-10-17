@@ -6,13 +6,13 @@ use teistro_core::error::Error;
 use teistro_houses::system::override_of;
 use teistro_serial::Document;
 use teistro_western::{
-    HouseFrame, HouseRequest, LEO_HOUSE_SYSTEM, MODULE, PlanetAt, WesternHouses, place_in_houses,
-    rising_an_hour_before,
+    HouseFrame, HouseOverlays, HouseRequest, LEO_HOUSE_SYSTEM, MODULE, OverlayCusps, PlanetAt,
+    SynastryRequest, WesternHouses, house_overlays, place_in_houses, rising_an_hour_before,
 };
 
 use crate::area::ChartArea;
 use crate::progressed::right_ascension;
-use crate::western_aspects::planets;
+use crate::western_aspects::{angle_in, planets, points};
 
 impl ChartArea<'_> {
     /// A chart's **Western houses** (`03-design/western-houses.md`): the
@@ -73,6 +73,65 @@ impl ChartArea<'_> {
             planets: place_in_houses(&frame, &bodies)?,
             frame,
         })
+    }
+
+    /// The **house overlays** of two charts: each point of `first` counted
+    /// in the house of `second` it falls in, and each point of `second` in
+    /// `first`'s (`03-design/western-synastry.md` §House overlays, C417).
+    ///
+    /// The points are a synastry's, each chart's planets and its lagna
+    /// unless `request` leaves it out, in the request's zodiac; only its
+    /// `lagna` and `zodiac` are read. Each chart's cusps are the ones
+    /// [`ChartArea::western_houses`] counts its own planets on: the
+    /// division `houses` names, else the profile's
+    /// `houses.module_overrides.western`, else Placidus. A point on a cusp
+    /// is in the house the cusp opens.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Ephemeris, HouseRequest, SynastryRequest};
+    /// # use teistro::catalogue::HouseSystem;
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (his, hers): ((JulianDay<Utc>, ChartRequest), (JulianDay<Utc>, ChartRequest)) = todo!();
+    /// let first = sdk.chart().reading(his.0, &his.1)?.value;
+    /// let second = sdk.chart().reading(hers.0, &hers.1)?.value;
+    /// let whole = HouseRequest::default().with_system(HouseSystem::WholeSign);
+    /// let read = sdk.chart().synastry_houses(&first, &second, &SynastryRequest::default(), &whole)?;
+    /// for one in &read.first_in_second {
+    ///     println!("his {:?} in her house {}", one.point, one.house.get());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Two charts founded in different zodiacs when each chart's own is
+    /// read (`zodiac`), a chart whose angles a provider supplied, and a
+    /// place where the polar policy refuses the division.
+    pub fn synastry_houses(
+        self,
+        first: &Document,
+        second: &Document,
+        request: &SynastryRequest,
+        houses: &HouseRequest,
+    ) -> Result<HouseOverlays, Error> {
+        let (a, b) = (&first.foundation, &second.foundation);
+        crate::composites::refuse_mixed_zodiacs(a, b, request.zodiac)?;
+        let cusps = |chart: &Document| -> Result<OverlayCusps, Error> {
+            let (cusps_deg, system) = self.western_cusps(chart, *houses)?;
+            Ok(OverlayCusps {
+                system,
+                cusps_deg: cusps_deg.map(|cusp| angle_in(&chart.foundation, request.zodiac, cusp)),
+            })
+        };
+        house_overlays(
+            &points(a, request),
+            &cusps(first)?,
+            &points(b, request),
+            &cusps(second)?,
+        )
     }
 
     /// A chart's cusps in the division `request` names, else the

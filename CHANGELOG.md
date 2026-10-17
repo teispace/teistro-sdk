@@ -359,6 +359,16 @@ navamsha, a strong unafflicted benefic in a kendra, and three figures of
 very long life. The note on v. 68 now says what vv. 69 and 70 ask, a cruel
 shashtyamsha, which is not built.
 
+**Synastry house overlays.** **Numbers:** none moved.
+`ChartArea::synastry_houses` counts each chart's planets and lagna in
+the other chart's houses, both ways, on the cusps that chart's own
+Western houses use: the division the `HouseRequest` names, else the
+profile's, else Placidus. A point on a cusp is in the house it opens
+(`western::house_overlays`, C417). Leo reads no planet in another
+chart's house, so the overlay is later practice built from the single
+chart's rules. The Rust surface only: the `synastry` record gains no
+field, since no blob section would answer it.
+
 **Dispositor chains and the final dispositor.** **Numbers:** none
 moved. `Dignities` gains `dispositions`: each of the seven's dispositors
 followed until one repeats, where each chain stops (a planet in its own
