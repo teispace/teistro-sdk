@@ -380,6 +380,17 @@ the traditional rulers or the modern ones, which give Aquarius, Pisces
 and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
 dispositor (C415), and the nodes are refused (C416). The Rust surface
 only: no blob section carries the chains yet.
+**A hit list reports the Moon's phases and phase returns.** **Numbers:**
+none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,
+first quarter, full and last quarter moon, the Moon's elongation from the
+Sun crossing a multiple of 90° in the chart's frame (crux C419);
+`PHASE_RETURN` is the elongation returning to the natal chart's, the
+directed angle, once a synodic month (C420). Both are searched by the
+crossing search a tithi's ends use, over the tithi's own quantity
+(`Founder::elongation_events`), and January 2025's full and new moons
+fall within three minutes of the almanacs' times. The C boundary refuses
+both on `hits.kinds` until the `hits` section carries them.
+
 **A hit list reports varga ingresses.** **Numbers:** none moved: the
 new kind is asked for by name, `VARGA_INGRESS`, and a request naming no
 kinds asks for the four it always did (`HitKind::DEFAULT`). A graha

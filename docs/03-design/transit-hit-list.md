@@ -211,3 +211,19 @@ order among themselves.
    request naming it there is refused `UNSUPPORTED` on `hits.kinds`
    before anything is founded (`TsHitKind::carried`); the kind is in
    `TsHitKind` so a request's kinds are the boundary enum's keys.
+2. **Lunar phases and phase returns** (C419, C420): `LUNAR_PHASE`, the
+   Moon's elongation from the Sun crossing 0°, 90°, 180° and 270° (new,
+   first quarter, full, last quarter), and `PHASE_RETURN`, the elongation
+   returning to each natal chart's own, once a synodic month. No second
+   solver: the elongation is the tithi's quantity (`Quantity::ELONGATION`)
+   and `Founder::elongation_events` searches it with the crossing search
+   a tithi's ends use, the quarters and every chart's natal line tested
+   in one scan, in the chart's frame as every hit is. Both are the
+   Moon's hits whichever grahas the request names; a phase is the sky's,
+   handed to every chart of a batch, and a return its own chart's. Over a
+   year every phase and return reads back through charts founded a
+   second either side, the phases run in a lunation's order, the returns
+   fall a synodic month apart, and January 2025's full and new moons land
+   within three minutes of the almanacs' 13 January 22:27 UT and 29
+   January 12:36 UT. The C boundary refuses both as it does the varga
+   ingress.

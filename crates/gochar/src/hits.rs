@@ -1,6 +1,6 @@
 //! The transit hit list's events (`03-design/transit-hit-list.md`): when a
-//! graha enters a sign, a nakshatra or a divisional chart's sign, and when
-//! it stands still.
+//! graha enters a sign, a nakshatra or a divisional chart's sign, when it
+//! stands still, and the Moon's phases.
 //!
 //! The searches are the SDK's; this module is the vocabulary the answer is
 //! said in, and the one place a crossing becomes the sign it entered — a
@@ -61,6 +61,63 @@ impl NatalPoint {
             NatalPoint::Lagna => u8::MAX - 1,
             NatalPoint::Midheaven => u8::MAX,
         }
+    }
+}
+
+/// A principal phase of the Moon: its elongation from the Sun, the Moon's
+/// longitude less the Sun's, at a quarter of the circle (C419).
+///
+/// ```
+/// use teistro_gochar::hits::MoonPhase;
+///
+/// assert_eq!(MoonPhase::at_line(180.0), MoonPhase::Full);
+/// // A line the search reports a hair short of 360° is the new moon's.
+/// assert_eq!(MoonPhase::at_line(359.999_999_9), MoonPhase::New);
+/// assert_eq!(MoonPhase::Full.elongation_deg(), 180);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MoonPhase {
+    /// The new moon: the Moon conjoins the Sun, 0°.
+    New,
+    /// The first quarter: the waxing Moon 90° past the Sun.
+    FirstQuarter,
+    /// The full moon: the Moon opposite the Sun, 180°.
+    Full,
+    /// The last quarter: the waning Moon 270° past the Sun.
+    LastQuarter,
+}
+
+impl MoonPhase {
+    /// The four in the order a lunation passes them.
+    pub const ALL: [MoonPhase; 4] = [
+        MoonPhase::New,
+        MoonPhase::FirstQuarter,
+        MoonPhase::Full,
+        MoonPhase::LastQuarter,
+    ];
+
+    /// The elongation the phase is reached at, degrees: 0, 90, 180 or 270.
+    #[must_use]
+    pub const fn elongation_deg(self) -> u16 {
+        match self {
+            MoonPhase::New => 0,
+            MoonPhase::FirstQuarter => 90,
+            MoonPhase::Full => 180,
+            MoonPhase::LastQuarter => 270,
+        }
+    }
+
+    /// The phase whose line `line_deg` is, rounded to the nearest quarter
+    /// of the circle: a line the search reports a hair either side of its
+    /// quarter is still that quarter.
+    #[must_use]
+    pub fn at_line(line_deg: f64) -> MoonPhase {
+        MoonPhase::ALL
+            .get(entered(line_deg, Motion::Direct, 4))
+            .copied()
+            .unwrap_or(MoonPhase::New)
     }
 }
 
@@ -135,6 +192,16 @@ pub enum HitEvent {
         /// Which way it was moving.
         motion: Motion,
     },
+    /// The Moon reached a principal phase (C419). The hit's graha is the
+    /// Moon.
+    LunarPhase {
+        /// Which.
+        phase: MoonPhase,
+    },
+    /// The Moon's elongation from the Sun returned to the natal chart's:
+    /// the lunation phase the native was born in, once a synodic month
+    /// (C420). The hit's graha is the Moon.
+    PhaseReturn,
 }
 
 impl HitEvent {
@@ -148,6 +215,8 @@ impl HitEvent {
             HitEvent::Station { .. } => 2,
             HitEvent::Aspect { .. } => 3,
             HitEvent::VargaIngress { .. } => 4,
+            HitEvent::LunarPhase { .. } => 5,
+            HitEvent::PhaseReturn => 6,
         }
     }
 
@@ -267,6 +336,21 @@ pub fn varga_ingress(
         },
         motion,
     })
+}
+
+/// The phase a crossing of the Moon's elongation over the quarters'
+/// lattice reached (C419).
+///
+/// ```
+/// use teistro_gochar::hits::{HitEvent, MoonPhase, lunar_phase};
+///
+/// assert_eq!(lunar_phase(90.0), HitEvent::LunarPhase { phase: MoonPhase::FirstQuarter });
+/// ```
+#[must_use]
+pub fn lunar_phase(line_deg: f64) -> HitEvent {
+    HitEvent::LunarPhase {
+        phase: MoonPhase::at_line(line_deg),
+    }
 }
 
 /// The step of the lattice about a natal point that holds every line of the
@@ -485,6 +569,17 @@ mod tests {
         let mut hits = vec![at(Varga::D9), sign, at(Varga::D3)];
         sort(&mut hits);
         assert_eq!(hits, vec![sign, at(Varga::D3), at(Varga::D9)]);
+    }
+
+    #[test]
+    fn a_phase_is_its_quarter_of_the_circle() {
+        for phase in MoonPhase::ALL {
+            let line = f64::from(phase.elongation_deg());
+            for nudge in [-1e-7, 0.0, 1e-7] {
+                assert_eq!(MoonPhase::at_line(line + nudge), phase, "{line}");
+            }
+        }
+        assert_eq!(MoonPhase::at_line(360.0), MoonPhase::New);
     }
 
     #[test]

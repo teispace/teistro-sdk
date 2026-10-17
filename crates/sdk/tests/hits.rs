@@ -245,6 +245,7 @@ fn stations_alternate_and_bound_the_backward_ingresses() {
                 | HitEvent::Aspect { motion, .. } => {
                     assert_eq!(motion == Motion::Retrograde, backward, "{graha:?} {hit:?}");
                 }
+                HitEvent::LunarPhase { .. } | HitEvent::PhaseReturn => {}
             }
         }
     }
@@ -514,4 +515,84 @@ fn every_varga_ingress_is_where_a_founded_chart_puts_it() {
         })
         .count();
     assert!((106..=109).contains(&sun_d9), "{sun_d9}");
+}
+
+/// Every lunar phase and phase return, read back through a chart founded a
+/// second either side of it, finds the Moon's elongation from the Sun just
+/// short of its line before and just past it after (C419, C420). The
+/// phases come in a lunation's order, the returns a synodic month apart,
+/// and January 2025's full and new moons fall when almanacs print them:
+/// 13 January 22:27 UT and 29 January 12:36 UT.
+#[test]
+fn every_lunar_phase_and_phase_return_is_where_founded_charts_put_it() {
+    use teistro::gochar::hits::MoonPhase;
+    let sdk = context(None);
+    let natal = natal(&sdk);
+    let asked = year().with_kinds([HitKind::LunarPhase, HitKind::PhaseReturn]);
+    let hits = sdk.chart().hits(&natal, &asked).unwrap().value;
+    let elongation = |moon: f64, sun: f64| (moon - sun).rem_euclid(360.0);
+    let born = elongation(
+        natal.foundation.graha(Graha::Moon).unwrap().longitude_deg,
+        natal.foundation.graha(Graha::Sun).unwrap().longitude_deg,
+    );
+    let second = 1.0 / 86_400.0;
+    let either_side: Vec<JulianDay<Utc>> = hits
+        .iter()
+        .flat_map(|hit| {
+            [
+                JulianDay::<Utc>::literal(hit.instant.get() - second),
+                JulianDay::<Utc>::literal(hit.instant.get() + second),
+            ]
+        })
+        .collect();
+    let founded = sdk
+        .chart()
+        .found_many(&either_side, &place(), UtcOffset::UTC, ChartKind::Natal)
+        .unwrap()
+        .value;
+    let (mut phases, mut returns) = (Vec::new(), Vec::new());
+    for (hit, pair) in hits.iter().zip(founded.chunks(2)) {
+        assert_eq!(hit.graha, Graha::Moon, "{hit:?}");
+        let line = match hit.event {
+            HitEvent::LunarPhase { phase } => {
+                phases.push((hit.instant.get(), phase));
+                f64::from(phase.elongation_deg())
+            }
+            HitEvent::PhaseReturn => {
+                returns.push(hit.instant.get());
+                born
+            }
+            other => panic!("only phases and returns were asked for: {other:?}"),
+        };
+        // Signed, in (-180, 180]: the Moon gains about half an arcsecond on
+        // the Sun in a second.
+        let off = |at: usize| {
+            let chart = &pair[at];
+            let apart = elongation(
+                chart.graha(Graha::Moon).unwrap().longitude_deg,
+                chart.graha(Graha::Sun).unwrap().longitude_deg,
+            ) - line;
+            let apart = apart.rem_euclid(360.0);
+            if apart > 180.0 { apart - 360.0 } else { apart }
+        };
+        assert!(off(0) < 0.0 && off(0) > -0.01, "{hit:?}: {}", off(0));
+        assert!(off(1) > 0.0 && off(1) < 0.01, "{hit:?}: {}", off(1));
+    }
+    assert!((48..=51).contains(&phases.len()), "{}", phases.len());
+    for pair in phases.windows(2) {
+        let next = MoonPhase::ALL[(pair[0].1 as usize + 1) % 4];
+        assert_eq!(pair[1].1, next, "{pair:?}");
+    }
+    assert!((12..=13).contains(&returns.len()), "{returns:?}");
+    for pair in returns.windows(2) {
+        let month = pair[1] - pair[0];
+        assert!((29.2..29.9).contains(&month), "{month}");
+    }
+    let near = |jd: f64, phase: MoonPhase| {
+        phases
+            .iter()
+            .any(|(at, found)| *found == phase && (at - jd).abs() < 3.0 / 1440.0)
+    };
+    assert!(near(2_460_689.435_417, MoonPhase::Full), "{phases:?}");
+    assert!(near(2_460_705.025, MoonPhase::New), "{phases:?}");
 }

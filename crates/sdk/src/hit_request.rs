@@ -32,16 +32,26 @@ pub enum HitKind {
     /// names, the navamsha unless it names others (C418). Asked for by
     /// name only: it is not among [`HitKind::DEFAULT`].
     VargaIngress,
+    /// The Moon reaching a principal phase, its elongation from the Sun at
+    /// a multiple of 90° (C419): the Moon's, reported whichever grahas the
+    /// request names. Asked for by name only.
+    LunarPhase,
+    /// The Moon's elongation from the Sun returning to the natal chart's,
+    /// once a synodic month (C420): each chart's own, reported whichever
+    /// grahas the request names. Asked for by name only.
+    PhaseReturn,
 }
 
 impl HitKind {
     /// Every kind a hit list can report.
-    pub const ALL: [HitKind; 5] = [
+    pub const ALL: [HitKind; 7] = [
         HitKind::SignIngress,
         HitKind::NakshatraIngress,
         HitKind::Station,
         HitKind::Aspect,
         HitKind::VargaIngress,
+        HitKind::LunarPhase,
+        HitKind::PhaseReturn,
     ];
 
     /// The kinds a request asks for unless it names its own: the four the
@@ -621,6 +631,88 @@ pub(crate) fn lattices_of(
     Ok(meanings)
 }
 
+/// What a crossing of the Moon's elongation from the Sun means: a phase,
+/// which is the sky's, or one chart's phase return (by its index in the
+/// batch).
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum PhaseMeaning {
+    Phases,
+    Return(usize),
+}
+
+/// The lattices of the elongation one group's scan tests: the quarters
+/// once for the group, and each chart's natal elongation once a circle.
+///
+/// # Errors
+///
+/// A natal chart without its Sun or Moon, which a founded chart always
+/// places.
+pub(crate) fn phase_lattices_of(
+    request: &HitRequest,
+    natals: &[&Document],
+    members: &[usize],
+) -> Result<Vec<(PhaseMeaning, Lattice)>, Error> {
+    let mut meanings = Vec::new();
+    if request.asks(HitKind::LunarPhase) {
+        meanings.push((
+            PhaseMeaning::Phases,
+            Lattice {
+                origin_deg: 0.0,
+                step_deg: 90.0,
+            },
+        ));
+    }
+    if request.asks(HitKind::PhaseReturn) {
+        for chart in members {
+            let foundation = &natals
+                .get(*chart)
+                .ok_or_else(|| Error::internal("a group names a chart it was not given"))?
+                .foundation;
+            let at = |graha: Graha| {
+                foundation
+                    .graha(graha)
+                    .map(|place| place.longitude_deg)
+                    .ok_or_else(|| Error::internal(format!("natal chart {chart} has no {graha:?}")))
+            };
+            meanings.push((
+                PhaseMeaning::Return(*chart),
+                Lattice {
+                    origin_deg: natal_elongation_deg(at(Graha::Moon)?, at(Graha::Sun)?),
+                    step_deg: 360.0,
+                },
+            ));
+        }
+    }
+    Ok(meanings)
+}
+
+/// The phase a chart was born in: the Moon's longitude less the Sun's,
+/// in `[0, 360)` (C420). Any zodiac gives the same, the ayanamsha
+/// cancelling.
+pub(crate) fn natal_elongation_deg(moon_deg: f64, sun_deg: f64) -> f64 {
+    teistro_core::angle::normalise_deg(moon_deg - sun_deg)
+}
+
+/// The hit a crossing of the elongation is, and the one chart it belongs
+/// to when it is a phase return.
+pub(crate) fn phase_hit_of(
+    event: &TransitEvent,
+    meanings: &[(PhaseMeaning, Lattice)],
+) -> Option<(HitEvent, Option<usize>)> {
+    let TransitEventKind::Crossing {
+        lattice,
+        boundary_deg,
+        ..
+    } = event.kind
+    else {
+        return None;
+    };
+    match meanings.get(lattice)?.0 {
+        PhaseMeaning::Phases => Some((hits::lunar_phase(boundary_deg), None)),
+        PhaseMeaning::Return(chart) => Some((HitEvent::PhaseReturn, Some(chart))),
+    }
+}
+
 /// The motion a crossing's direction is: a falling longitude is retrograde.
 pub(crate) const fn motion(direction: Direction) -> Motion {
     match direction {
@@ -679,7 +771,11 @@ pub(crate) const fn station(kind: StationKind) -> HitEvent {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::float_cmp,
+        reason = "tests fail by panicking, and the elongations they compare are exact"
+    )]
 
     use super::*;
 
@@ -741,6 +837,20 @@ mod tests {
         assert_eq!(asked.vargas(), HitRequest::DEFAULT_VARGAS);
         // Charts named beside kinds that never read them are not checked.
         assert!(HitRequest::from_json(&format!(r#"{{{WINDOW}, "vargas": []}}"#)).is_ok());
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "kinds": ["LUNAR_PHASE", "PHASE_RETURN"]}}"#
+        ))
+        .unwrap();
+        assert!(asked.asks(HitKind::LunarPhase) && asked.asks(HitKind::PhaseReturn));
+    }
+
+    #[test]
+    fn a_natal_phase_is_the_moon_less_the_sun() {
+        assert_eq!(natal_elongation_deg(100.0, 10.0), 90.0);
+        // A waning Moon is past 180°, not the same square from the other
+        // side: the return keeps the lunation's half.
+        assert_eq!(natal_elongation_deg(10.0, 100.0), 270.0);
+        assert_eq!(natal_elongation_deg(5.0, 5.0), 0.0);
     }
 
     #[test]

@@ -1315,7 +1315,8 @@ impl<'a> ChartArea<'a> {
     /// (`03-design/transit-hit-list.md`), sorted by instant, then graha,
     /// then kind. A request naming them adds the kinds the list has gained
     /// since ([`HitKind::DEFAULT`](crate::HitKind::DEFAULT) are the four it
-    /// began with): a graha entering a new sign of a divisional chart.
+    /// began with): a graha entering a new sign of a divisional chart, and
+    /// the Moon's phases and its returns to the natal phase.
     ///
     /// Each sign and nakshatra is the one a chart founded at that instant
     /// would give — the search reads the chart's own zodiac, not a frame's
@@ -1387,7 +1388,9 @@ impl<'a> ChartArea<'a> {
         natals: impl IntoIterator<Item = &'d Document>,
         request: &crate::hit_request::HitRequest,
     ) -> Result<Envelope<Vec<Vec<teistro_gochar::hits::Hit>>>, Error> {
-        use crate::hit_request::{HitKind, groups, hit_of, lattices_of};
+        use crate::hit_request::{
+            HitKind, groups, hit_of, lattices_of, phase_hit_of, phase_lattices_of,
+        };
         use teistro_core::settings::Centre;
         use teistro_gochar::hits::{self, Hit, NatalPoint};
 
@@ -1415,26 +1418,43 @@ impl<'a> ChartArea<'a> {
         for (place, members) in groups(&natals, topocentric) {
             let meanings = lattices_of(request, &natals, &midheavens, &members)?;
             let lattices: Vec<_> = meanings.iter().map(|(_, lattice)| *lattice).collect();
-            let found = self.founding(UtcOffset::UTC, |founder| {
-                founder.transit_events(
+            // The Moon's phases and each chart's phase return are lines of
+            // its elongation from the Sun, one scan of their own.
+            let phases = phase_lattices_of(request, &natals, &members)?;
+            let phase_lattices: Vec<_> = phases.iter().map(|(_, lattice)| *lattice).collect();
+            let (found, phased) = self.founding(UtcOffset::UTC, |founder| {
+                let window = (request.from(), request.to());
+                let found = founder.transit_events(
                     &place,
                     request.grahas(),
                     &lattices,
                     request.asks(HitKind::Station),
-                    (request.from(), request.to()),
-                )
-            })?;
-            for event in &found.value {
-                let Some((happened, only)) = hit_of(event, &meanings, request) else {
-                    continue;
+                    window,
+                )?;
+                let phased = if phase_lattices.is_empty() {
+                    Vec::new()
+                } else {
+                    founder
+                        .elongation_events(&place, &phase_lattices, window)?
+                        .value
                 };
+                Ok((found, phased))
+            })?;
+            let sky = found
+                .value
+                .iter()
+                .filter_map(|event| Some((event, hit_of(event, &meanings, request)?)));
+            let moon = phased
+                .iter()
+                .filter_map(|event| Some((event, phase_hit_of(event, &phases)?)));
+            for (event, (happened, only)) in sky.chain(moon) {
                 let hit = Hit {
                     instant: event.instant,
                     graha: event.graha,
                     event: happened,
                 };
                 // An event of the sky goes to every chart of the group; an
-                // aspect to its own chart alone.
+                // aspect or a phase return to its own chart alone.
                 let to: &[usize] = match &only {
                     Some(chart) => std::slice::from_ref(chart),
                     None => &members,

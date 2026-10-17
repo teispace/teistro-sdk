@@ -356,6 +356,8 @@ fn hits(api: &Api) -> Vec<&'static str> {
         "NAKSHATRA_INGRESS" => json!({"into": "ASHWINI", "motion": "RETROGRADE"}),
         "STATION" => json!({"turns": "DIRECT"}),
         "VARGA_INGRESS" => json!({"varga": "D9", "into": "ARIES", "motion": "DIRECT"}),
+        "LUNAR_PHASE" => json!({"phase": "NEW"}),
+        "PHASE_RETURN" => json!({}),
         _ => json!({"to": {"point": "LAGNA"}, "angle": 0, "phase": "EXACT", "motion": "DIRECT"}),
     });
     vec![

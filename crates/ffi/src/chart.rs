@@ -883,6 +883,12 @@ pub enum TsHitKind {
     /// its chart yet, so a request asking for it is refused
     /// ([`TsHitKind::CARRIED`]).
     VargaIngress = 4,
+    /// The Moon reached a principal phase; not carried yet, as
+    /// [`TsHitKind::VargaIngress`].
+    LunarPhase = 5,
+    /// The Moon's elongation from the Sun returned to the natal chart's;
+    /// not carried yet, as [`TsHitKind::VargaIngress`].
+    PhaseReturn = 6,
 }
 
 impl TsHitKind {
@@ -926,6 +932,8 @@ impl From<&teistro::gochar::hits::HitEvent> for TsHitKind {
             HitEvent::Station { .. } => TsHitKind::Station,
             HitEvent::Aspect { .. } => TsHitKind::Aspect,
             HitEvent::VargaIngress { .. } => TsHitKind::VargaIngress,
+            HitEvent::LunarPhase { .. } => TsHitKind::LunarPhase,
+            HitEvent::PhaseReturn => TsHitKind::PhaseReturn,
         }
     }
 }
@@ -2458,7 +2466,9 @@ impl HitColumns {
                 } => (0, motion, Some(to), angle, TsAspectPhase::from(phase) as u8),
                 // Refused with the request (`TsHitKind::carried`); a list
                 // holding one is a request that slipped past it.
-                HitEvent::VargaIngress { .. } => {
+                HitEvent::VargaIngress { .. }
+                | HitEvent::LunarPhase { .. }
+                | HitEvent::PhaseReturn => {
                     return Err(Error::internal(
                         "a hit the `hits` section does not carry reached the encoder",
                     ));
