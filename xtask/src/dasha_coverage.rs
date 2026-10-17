@@ -104,7 +104,7 @@ impl Blocker {
 /// read from [`dasha-kernels.md`]'s own row analysis.
 ///
 /// It is a list and not a count, because a count says nothing about which
-/// and the which is the work queue. Twenty-two rows is short enough to be
+/// and the which is the work queue. The list is short enough to be
 /// exhaustive, and the pass refuses it in three directions, so it cannot
 /// quietly stop being exhaustive.
 ///
@@ -162,9 +162,12 @@ const NOT_BUILT: [(&str, Blocker, &str); 16] = [
     (
         "VARNADA",
         Blocker::Text,
-        "the Varnada lagna it starts from **is** built (`teistro_points`), so what \
-         is missing is not the point but which of five school variants of it the \
-         dasha counts from",
+        "the Varnada lagna it starts from is **not** built: no reading of the \
+         received rule reproduces the recorded values, five schools disagree \
+         (C22) and `teistro_points` ships none of them \
+         ([`points-measured.md`](points-measured.md)). `Start` has no arm for \
+         it, so a consumer cannot register the dasha either until a school is \
+         cited and the point is built",
     ),
     (
         "TARA",
@@ -193,10 +196,14 @@ const NOT_BUILT: [(&str, Blocker, &str); 16] = [
     ),
     (
         "AAYU",
-        Blocker::Module,
-        "the longevity module decides the span this divides, and that span is \
-         three methods with a reconciliation between them (`crates/rules` \
-         `longevity`). The dasha is what the module ends with",
+        Blocker::Text,
+        "the longevity module it ends with is built: all eight of *Jataka \
+         Parijata* ch. 5's spans with each giver's years, and v. 33's choice \
+         between them ([`ayurdaya-spans.md`](ayurdaya-spans.md), C305 to \
+         C318). What is missing is the dasha itself, which no source read \
+         states: which span's givers it runs, in what order and from which. \
+         Its periods would be read from the chart, the field `TARA`, `KARAKA` \
+         and `ASHTAKAVARGA` wait on",
     ),
     (
         "SUDASA",
@@ -228,24 +235,22 @@ const NOT_BUILT: [(&str, Blocker, &str); 16] = [
 /// A system is registrable exactly when its row is one of those two shapes
 /// and the only thing missing is the numbers in it.
 ///
-/// **It was three until the sign-based half was built.** `VARNADA` is a row
-/// a source states and nothing here verifies, so a consumer holding that
-/// source was shut out as firmly as this build was — a dead end in the SDK
-/// rather than a gap in the sources, which is what this page found and what
-/// closing it looked like. `STHIRA` was listed here too, stated "from the
+/// `VARNADA` was listed here as sign-based, on the belief that its lagna
+/// was built. It is not (`teistro_points` ships no Varnada, C22), and
+/// `Start` names no place to count it from, so it is not registrable and
+/// the list is two. `STHIRA` was listed here too, stated "from the
 /// lagna"; BPHS ch. 46 v. 169 starts it from the Brahma graha, which is how
 /// it came to be built (`jaimini-significators.md`).
 ///
 /// What is still unregistrable is unregistrable for a reason in its row and
-/// not for want of an arm: `SUDASA` starts from the karakamsha, which is a
-/// place `Start` does not name; the tithi, yoga and karana seeds want a
+/// not for want of an arm: `SUDASA` starts from the karakamsha and `VARNADA`
+/// from the Varnada lagna, places `Start` does not name; the tithi, yoga and karana seeds want a
 /// reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
 /// ask the chart for their periods; `SUDARSHANA_CHAKRA` is a composition of
 /// systems rather than a system.
-const REGISTRABLE: [(&str, Kernel); 3] = [
+const REGISTRABLE: [(&str, Kernel); 2] = [
     ("SHODASHOTTARI", Kernel::Udu),
     ("SHATTRIMSHA_SAMA", Kernel::Udu),
-    ("VARNADA", Kernel::Rashi),
 ];
 
 /// Which kernel a definition names.
@@ -303,7 +308,7 @@ fn a_consumer_supplies_one() -> Result<Vec<String>, String> {
         })
         .map_err(|why| format!("registering the stated Shodashottari row: {why}"))?;
     walked.push(format!(
-        "`DEMO_SHODASHOTTARI`, {} lords and {total} years from Pushya, the          {} kernel",
+        "`DEMO_SHODASHOTTARI`, {} lords and {total} years from Pushya, the {} kernel",
         lords.len(),
         Kernel::Udu.title()
     ));
@@ -320,8 +325,9 @@ fn a_consumer_supplies_one() -> Result<Vec<String>, String> {
             ..RashiDefinition::of("DEMO_RASHI")
         })
         .map_err(|why| format!("registering a sign-based row: {why}"))?;
-    walked.push(String::from(
-        "`DEMO_RASHI`, every sign from the lagna for seven, eight or nine          years by modality, the sign-based kernel",
+    walked.push(format!(
+        "`DEMO_RASHI`, every sign from the lagna for seven, eight or nine years by modality, the {} kernel",
+        Kernel::Rashi.title()
     ));
 
     Ok(walked)
@@ -557,6 +563,10 @@ fn the_queue(out: &mut String) {
             .filter(|(_, one, _)| *one == blocker)
             .map(|(key, _, why)| (key, why))
             .collect();
+        // A blocker nothing waits on any more is not a queue.
+        if rows.is_empty() {
+            continue;
+        }
         let _ = write!(
             out,
             "## {}: {}\n\n",
@@ -636,7 +646,8 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
         out,
         "**The other {} cannot be supplied by anyone**, and each for a reason \
          in its own row rather than for want of an arm: `SUDASA` starts from \
-         the karakamsha, which is a place `Start` does not name; the tithi, \
+         the karakamsha and `VARNADA` from the Varnada lagna, which are \
+         places `Start` does not name; the tithi, \
          yoga and karana seeds want a reference that is not a nakshatra; \
          `TARA`, `KARAKA` and `ASHTAKAVARGA` ask the chart for their periods; \
          `SUDARSHANA_CHAKRA` is a composition of systems rather than a \
