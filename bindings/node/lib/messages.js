@@ -775,6 +775,13 @@ export function messages(r) {
           points: (p) => r.render('sdk.reason.dasha.points', { asubhanka: p.asubhanka, graha: { '$entity': p.graha }, subhanka: p.subhanka }),
         },
         exactLongitude: (p) => r.render('sdk.reason.exactLongitude', { longitude: p.longitude }),
+        gochar: {
+          ashtakavarga: (p) => r.render('sdk.reason.gochar.ashtakavarga', { bindus: p.bindus, good: p.good, graha: { '$entity': p.graha } }),
+          from: (p) => r.render('sdk.reason.gochar.from', { from: p.from, rashi: { '$entity': p.rashi } }),
+          fruition: (p) => r.render('sdk.reason.gochar.fruition', { graha: { '$entity': p.graha }, now: p.now, part: p.part }),
+          transit: (p) => r.render('sdk.reason.gochar.transit', { graha: { '$entity': p.graha }, house: p.house, verdict: p.verdict }),
+          vedha: (p) => r.render('sdk.reason.gochar.vedha', { grahas: p.grahas, house: p.house }),
+        },
         grahaAt: (p) => r.render('sdk.reason.grahaAt', { graha: { '$entity': p.graha }, longitude: p.longitude }),
         grahaInBhava: (p) => r.render('sdk.reason.grahaInBhava', { bhava: p.bhava, graha: { '$entity': p.graha } }),
         grahaInRashi: (p) => r.render('sdk.reason.grahaInRashi', { graha: { '$entity': p.graha }, rashi: { '$entity': p.rashi } }),

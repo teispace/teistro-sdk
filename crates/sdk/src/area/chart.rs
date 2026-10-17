@@ -527,7 +527,8 @@ impl<'a> ChartArea<'a> {
 
     /// Charts founded, read and **said**, in one call: each chart's
     /// document, what it answers by rule when `inputs` names rules, its
-    /// Sade Sati report when `inputs` names a window, and the plans
+    /// Sade Sati report when `inputs` names a window, its transits when
+    /// `inputs` names a gochar request, and the plans
     /// `asked` names (`03-design/plans-at-the-boundary.md`).
     ///
     /// `inputs` is what is asked beside the charts; a rule set, or
@@ -608,8 +609,18 @@ impl<'a> ChartArea<'a> {
         .into_iter();
         let interpret = self.context.interpret();
         let mut charts = Vec::with_capacity(read.len());
-        for (document, reading, content_hash) in read {
+        for (at, (document, reading, content_hash)) in read.into_iter().enumerate() {
             let sade_sati = periods.next().flatten();
+            // One batch a chart, which places the grahas at every instant in
+            // one request; a refusal says which chart of the batch it was.
+            let gochar = inputs
+                .gochar
+                .map(|asked| {
+                    self.gochar(&document, asked)
+                        .map(|read| read.value)
+                        .map_err(|error| error.with_hint(format!("chart {at}")))
+                })
+                .transpose()?;
             let mut answers = Answers::none();
             if let Some(reading) = reading.as_ref() {
                 answers = answers.with_reading(reading);
@@ -617,11 +628,15 @@ impl<'a> ChartArea<'a> {
             if let Some(report) = sade_sati.as_ref() {
                 answers = answers.with_sade_sati(report);
             }
+            if let Some(readings) = gochar.as_deref() {
+                answers = answers.with_gochar(readings);
+            }
             let plans = interpret.plans(&document, answers, asked)?;
             charts.push(Interpreted {
                 document,
                 reading,
                 sade_sati,
+                gochar,
                 plans,
                 content_hash,
             });
@@ -2705,6 +2720,10 @@ pub struct Interpreted<'r> {
     /// `None` when no Sade Sati window was asked for. It is not part of
     /// [`Interpreted::content_hash`], which seals the chart's own value.
     pub sade_sati: Option<teistro_gochar::sade_sati::Report>,
+    /// The chart's transits, one reading an instant of the gochar request;
+    /// `None` when none was asked for. Like the Sade Sati report it is
+    /// not part of [`Interpreted::content_hash`].
+    pub gochar: Option<Vec<teistro_gochar::GocharReading>>,
     /// The plans asked for, each `None` where it was not.
     pub plans: Plans,
     /// The hash of this chart's own value — its document, with what it

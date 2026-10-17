@@ -2194,6 +2194,23 @@ final class MessagesSdkReasonDasha {
       _r.render('sdk.reason.dasha.points', {'asubhanka': asubhanka, 'graha': {r'$entity': graha.key}, 'subhanka': subhanka});
 }
 
+final class MessagesSdkReasonGochar {
+  const MessagesSdkReasonGochar(this._r);
+
+  final Renderer _r;
+
+  String ashtakavarga({required int bindus, required String good, required GrahaKey graha}) =>
+      _r.render('sdk.reason.gochar.ashtakavarga', {'bindus': bindus, 'good': good, 'graha': {r'$entity': graha.key}});
+  String from({required String from, required RashiKey rashi}) =>
+      _r.render('sdk.reason.gochar.from', {'from': from, 'rashi': {r'$entity': rashi.key}});
+  String fruition({required GrahaKey graha, required String now, required String part}) =>
+      _r.render('sdk.reason.gochar.fruition', {'graha': {r'$entity': graha.key}, 'now': now, 'part': part});
+  String transit({required GrahaKey graha, required int house, required String verdict}) =>
+      _r.render('sdk.reason.gochar.transit', {'graha': {r'$entity': graha.key}, 'house': house, 'verdict': verdict});
+  String vedha({required List<Object> grahas, required int house}) =>
+      _r.render('sdk.reason.gochar.vedha', {'grahas': grahas, 'house': house});
+}
+
 final class MessagesSdkReasonPanchanga {
   const MessagesSdkReasonPanchanga(this._r);
 
@@ -2247,6 +2264,7 @@ final class MessagesSdkReason {
   MessagesSdkReasonDasha get dasha => MessagesSdkReasonDasha(_r);
   String exactLongitude({required num longitude}) =>
       _r.render('sdk.reason.exactLongitude', {'longitude': longitude});
+  MessagesSdkReasonGochar get gochar => MessagesSdkReasonGochar(_r);
   String grahaAt({required GrahaKey graha, required num longitude}) =>
       _r.render('sdk.reason.grahaAt', {'graha': {r'$entity': graha.key}, 'longitude': longitude});
   String grahaInBhava({required int bhava, required GrahaKey graha}) =>

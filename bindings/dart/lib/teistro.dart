@@ -7100,10 +7100,6 @@ final class AshtakavargaAyusRules {
   };
 }
 
-/// The narrative plans a request asks a chart for
-/// (`03-design/plans-at-the-boundary.md`). Each composer is off by default,
-/// and [readings] needs a [RuleRequest] beside it, since it says what the
-/// rules a chart held answered.
 /// Which longitude an annual chart's Sun returns to
 /// (`03-design/annual-chart.md`).
 enum VarshaReading {
@@ -22913,6 +22909,11 @@ final class Pravesha {
   final double instant;
 }
 
+/// The narrative plans a request asks a chart for
+/// (`03-design/plans-at-the-boundary.md`). Each composer is off by default.
+/// [readings] needs a [RuleRequest] beside it, since it says what the rules
+/// a chart held answered; [sadeSati] needs a Sade Sati window, and [gochar]
+/// a gochar request, since each says what that request found.
 final class PlanRequest {
   /// A request for the composers named.
   const PlanRequest({
@@ -22933,6 +22934,7 @@ final class PlanRequest {
     this.dashaPhala = false,
     this.ashtakavarga = false,
     this.sadeSati = false,
+    this.gochar = false,
   });
 
   /// Where each of the nine grahas stands and who shares a sign.
@@ -23011,6 +23013,13 @@ final class PlanRequest {
   /// state readings is loaded.
   final bool sadeSati;
 
+  /// What the transits come to at each instant the request's `gochar`
+  /// names: the sign they are counted from, each graha's house and verdict,
+  /// who obstructs it, where in its sign it bears fruit, and its bindus when
+  /// that request asks for the Ashtakavarga. One plan an instant, as a list
+  /// of plans under `gochar`; it needs `gochar` beside it, and no corpus.
+  final bool gochar;
+
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
     'readings': readings,
@@ -23029,6 +23038,7 @@ final class PlanRequest {
     'dashaPhala': dashaPhala,
     'ashtakavarga': ashtakavarga,
     'sadeSati': sadeSati,
+    'gochar': gochar,
   });
 }
 

@@ -1000,6 +1000,11 @@ class MessagesSdkReason:
             {"longitude": longitude},
         )
 
+    @property
+    def gochar(self) -> MessagesSdkReasonGochar:
+        """The messages under `gochar`."""
+        return MessagesSdkReasonGochar(self._r)
+
     def graha_at(self, *, graha: GrahaKey, longitude: float) -> str:
         """`sdk.reason.grahaAt`"""
         return self._r.render(
@@ -1175,6 +1180,49 @@ class MessagesSdkReasonPanchanga:
         return self._r.render(
             "sdk.reason.panchanga.yoga",
             {"yoga": {"$entity": yoga.value}},
+        )
+
+
+class MessagesSdkReasonGochar:
+    """The messages under `MessagesSdkReasonGochar`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def ashtakavarga(self, *, bindus: int, good: str, graha: GrahaKey) -> str:
+        """`sdk.reason.gochar.ashtakavarga`"""
+        return self._r.render(
+            "sdk.reason.gochar.ashtakavarga",
+            {"bindus": bindus, "good": good, "graha": {"$entity": graha.value}},
+        )
+
+    def from_(self, *, from_: str, rashi: RashiKey) -> str:
+        """`sdk.reason.gochar.from`"""
+        return self._r.render(
+            "sdk.reason.gochar.from",
+            {"from": from_, "rashi": {"$entity": rashi.value}},
+        )
+
+    def fruition(self, *, graha: GrahaKey, now: str, part: str) -> str:
+        """`sdk.reason.gochar.fruition`"""
+        return self._r.render(
+            "sdk.reason.gochar.fruition",
+            {"graha": {"$entity": graha.value}, "now": now, "part": part},
+        )
+
+    def transit(self, *, graha: GrahaKey, house: int, verdict: str) -> str:
+        """`sdk.reason.gochar.transit`"""
+        return self._r.render(
+            "sdk.reason.gochar.transit",
+            {"graha": {"$entity": graha.value}, "house": house, "verdict": verdict},
+        )
+
+    def vedha(self, *, grahas: Sequence[object], house: int) -> str:
+        """`sdk.reason.gochar.vedha`"""
+        return self._r.render(
+            "sdk.reason.gochar.vedha",
+            {"grahas": grahas, "house": house},
         )
 
 

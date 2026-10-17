@@ -10650,8 +10650,10 @@ class PlanRequest(TypedDict, total=False):
     """The narrative plans a request asks a chart for
     (`03-design/plans-at-the-boundary.md`). Each composer is off by default.
     `readings` needs `rules` beside it, since it says what the rules a chart
-    held answered, and `sadeSati` needs `sade_sati` beside it, since it says
-    the periods that window found."""
+    held answered, `sadeSati` needs `sade_sati` beside it, since it says
+    the periods that window found, and `gochar` needs `gochar` beside it,
+    since it says the transits at the instants that request names, one plan
+    an instant."""
 
     placements: bool
     readings: bool
@@ -10670,6 +10672,7 @@ class PlanRequest(TypedDict, total=False):
     dashaPhala: bool
     ashtakavarga: bool
     sadeSati: bool
+    gochar: bool
 
 
 class PlanItem(TypedDict):
@@ -10702,6 +10705,7 @@ class Plans(TypedDict, total=False):
     dashaPhala: List[PlanItem]
     ashtakavarga: List[PlanItem]
     sadeSati: List[PlanItem]
+    gochar: List[List[PlanItem]]
 
 
 def _rules_json(rules: Optional[RuleRequest]) -> Optional[str]:

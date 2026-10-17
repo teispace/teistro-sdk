@@ -1200,6 +1200,24 @@ class AnEngine(WithLibrary):
         assert periods.plans is not None and periods.sade_sati is not None
         self.assertEqual(periods.plans["sadeSati"], [], "no pack, no words")
         self.assertTrue(periods.sade_sati.sade_sati, "the report is on the chart beside the plan")
+        # The transits are said one plan an instant, from the readings beside
+        # them, and need no corpus; asked without a gochar request, refused.
+        with self.assertRaises(TeistroError) as untransited:
+            found({"gochar": True})
+        self.assertEqual(untransited.exception.field, "interpret.gochar")
+        transits = self.ctx.chart.found(
+            instant=2451545.0,
+            place=observer,
+            utc_offset_seconds=20700,
+            gochar={"instants": [2461000.5, 2461365.5], "ashtakavarga": True},
+            interpret={"gochar": True},
+        )
+        assert transits.plans is not None
+        transit_plans = transits.plans["gochar"]
+        self.assertEqual(len(transit_plans), 2, "one plan an instant")
+        for plan in transit_plans:
+            self.assertEqual(plan[0]["key"], "sdk.reason.gochar.from")
+            self.assertEqual(sum(item["key"] == "sdk.reason.gochar.transit" for item in plan), 9)
         # And a composer that is not one is refused beside the ones that are.
         with self.assertRaises(TeistroError) as typo:
             found({"readigns": True})  # type: ignore[arg-type]

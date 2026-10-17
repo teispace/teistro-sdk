@@ -1024,3 +1024,88 @@ fn an_answer_names_each_pack_that_shaped_it() {
         .expect("the pack loads");
     assert_eq!(stamped[0].hash.to_string(), loaded.sha256);
 }
+
+/// The transits are said one plan an instant, from the readings the same
+/// call hands back, so a consumer pays for the transits once and gets both
+/// the numbers and the words; the plan is the composer's over those
+/// readings, the Ashtakavarga's bindus included when the request asks.
+#[test]
+fn the_transits_are_said_one_plan_an_instant() {
+    use teistro::GocharRequest;
+    use teistro::gochar::Verdict;
+
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("the built-in ephemeris");
+    let place = Place::new(
+        Latitude::try_new(28.2096).unwrap(),
+        Longitude::try_new(83.9856).unwrap(),
+        Altitude::try_new(827.0).unwrap(),
+    );
+    let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700).unwrap());
+    // Two instants a year apart, so the plans are two skies.
+    let gochar = GocharRequest::over([
+        JulianDay::<Utc>::literal(2_461_000.5),
+        JulianDay::<Utc>::literal(2_461_365.5),
+    ])
+    .with_ashtakavarga();
+    let asked = PlanRequest::default().with_gochar();
+    let refused = sdk
+        .chart()
+        .interpreted(
+            &[JulianDay::<Utc>::literal(2_451_779.15)],
+            &request,
+            PlanInputs::none(),
+            asked,
+        )
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("interpret.gochar"), "{refused}");
+
+    let read = sdk
+        .chart()
+        .interpreted(
+            &[JulianDay::<Utc>::literal(2_451_779.15)],
+            &request,
+            PlanInputs::none().with_gochar(&gochar),
+            asked,
+        )
+        .expect("a chart and its transits, said")
+        .value;
+    let chart = &read[0];
+    let readings = chart.gochar.as_ref().expect("the transits asked for");
+    let plans = chart.plans.gochar.as_ref().expect("the plans asked for");
+    assert_eq!(readings.len(), 2);
+    assert_eq!(plans.len(), 2, "one plan an instant");
+    let direct = sdk.chart().gochar(&chart.document, &gochar).unwrap().value;
+    assert_eq!(readings, &direct, "the call's transits are the area's");
+    for (plan, reading) in plans.iter().zip(readings) {
+        assert_eq!(plan, &sdk.interpret().gochar(reading));
+        assert_eq!(plan.items[0].key, "sdk.reason.gochar.from");
+        let said = |key: &str| plan.items.iter().filter(|item| item.key == key).count();
+        assert_eq!(said("sdk.reason.gochar.transit"), 9);
+        assert_eq!(said("sdk.reason.gochar.ashtakavarga"), 7);
+        let obstructed = reading
+            .grahas
+            .iter()
+            .filter(|graha| graha.verdict == Verdict::Obstructed)
+            .count();
+        assert_eq!(said("sdk.reason.gochar.vedha"), obstructed);
+    }
+    // Every item says itself in both strict locales, with no fallback and
+    // no problem met.
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        let reader = Context::builder()
+            .locale(locale)
+            .ephemeris([Ephemeris::Builtin])
+            .build()
+            .unwrap();
+        for item in plans.iter().flat_map(|plan| &plan.items) {
+            let said = reader.intl().render(&item.key, &item.params);
+            assert!(
+                !said.is_fallback && said.warnings.is_empty() && !said.text.is_empty(),
+                "{locale}: {item:?} said {said:?}"
+            );
+        }
+    }
+}

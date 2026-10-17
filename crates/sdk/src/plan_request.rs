@@ -10,6 +10,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
+use crate::gochar_request::GocharRequest;
 use crate::reading::ChartRequest;
 use crate::rule_request::RuleSet;
 use crate::sade_sati_request::SadeSatiRequest;
@@ -124,6 +125,14 @@ pub struct PlanRequest {
     /// it says nothing until a pack of state readings is loaded
     /// (`03-design/sade-sati.md` §7).
     pub sade_sati: bool,
+    /// What the transits come to at each instant a gochar request beside
+    /// this one names: the reference sign, each graha's house and verdict,
+    /// who obstructs it, where in its sign it bears fruit, and its bindus
+    /// when that request asks for the Ashtakavarga. One plan an instant.
+    /// It reads no section and **needs that request**
+    /// ([`PlanInputs::with_gochar`]); unlike `sadeSati` it needs no corpus
+    /// (`03-design/gochar.md` §7).
+    pub gochar: bool,
 }
 
 impl PlanRequest {
@@ -133,7 +142,7 @@ impl PlanRequest {
     /// holds the list against the record's own serialisation, both ways, so
     /// a composer added without a name here fails rather than going
     /// unmentioned in the refusal a typo earns.
-    pub const MEMBERS: [&'static str; 17] = [
+    pub const MEMBERS: [&'static str; 18] = [
         "placements",
         "readings",
         "strength",
@@ -151,6 +160,7 @@ impl PlanRequest {
         "dashaPhala",
         "ashtakavarga",
         "sadeSati",
+        "gochar",
     ];
 
     /// A request for each bhava's strength.
@@ -201,6 +211,14 @@ impl PlanRequest {
     #[must_use]
     pub const fn with_sade_sati(mut self) -> PlanRequest {
         self.sade_sati = true;
+        self
+    }
+
+    /// A request for what the transits come to. It needs a gochar request
+    /// beside it.
+    #[must_use]
+    pub const fn with_gochar(mut self) -> PlanRequest {
+        self.gochar = true;
         self
     }
 
@@ -295,6 +313,7 @@ impl PlanRequest {
             || self.states
             || self.dasha_phala
             || self.sade_sati
+            || self.gochar
     }
 
     /// A request read from JSON.
@@ -319,10 +338,11 @@ impl PlanRequest {
 
     /// The request checked against what else was asked for.
     ///
-    /// Two composers say what a request **beside** this one answered rather
-    /// than a section of the chart: `readings` composes what rules
-    /// answered, and `sadeSati` what a Sade Sati search found. Without
-    /// that request there is nothing for either to say, and an empty plan
+    /// Three composers say what a request **beside** this one answered
+    /// rather than a section of the chart: `readings` composes what rules
+    /// answered, `sadeSati` what a Sade Sati search found, and `gochar`
+    /// the transits at the instants a gochar request named. Without that
+    /// request there is nothing for any of them to say, and an empty plan
     /// would tell the consumer nothing about why. A set of rules none of
     /// which hold, or a window Saturn spends outside every period, is not
     /// this case: that composes to a plan with no items, which is an
@@ -343,7 +363,8 @@ impl PlanRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` on `readings` where it is asked for without rules,
-    /// and on `sadeSati` where it is asked for without a Sade Sati request.
+    /// on `sadeSati` where it is asked for without a Sade Sati request,
+    /// and on `gochar` where it is asked for without a gochar request.
     pub fn check(self, inputs: &PlanInputs<'_>) -> Result<(), Error> {
         if self.readings && inputs.rules.is_none() {
             return Err(Error::invalid_arg(
@@ -360,6 +381,14 @@ impl PlanRequest {
             )
             .with_field("sadeSati")
             .with_hint("ask for Saturn's periods with a Sade Sati request beside this one"));
+        }
+        if self.gochar && inputs.gochar.is_none() {
+            return Err(Error::invalid_arg(
+                "`gochar` says the transits at the instants a gochar request names, so it \
+                 needs one",
+            )
+            .with_field("gochar")
+            .with_hint("name the instants with a gochar request beside this one"));
         }
         Ok(())
     }
@@ -441,7 +470,8 @@ impl PlanRequest {
 
 /// What a chart reading is asked for **beside** its charts, which some
 /// composers say: the rules a `readings` plan composes the answers of, and
-/// the Sade Sati window a `sadeSati` plan says the periods of.
+/// the Sade Sati window a `sadeSati` plan says the periods of, and the
+/// instants a `gochar` plan says the transits at.
 ///
 /// Each is searched or evaluated **once for the batch**, and what it
 /// answers is handed back beside each chart as well as said, so a consumer
@@ -466,6 +496,8 @@ pub struct PlanInputs<'r> {
     pub rules: Option<&'r RuleSet>,
     /// The window Saturn's periods are searched over for each chart.
     pub sade_sati: Option<&'r SadeSatiRequest>,
+    /// The instants each chart's transits are read at.
+    pub gochar: Option<&'r GocharRequest>,
 }
 
 impl<'r> PlanInputs<'r> {
@@ -475,6 +507,7 @@ impl<'r> PlanInputs<'r> {
         PlanInputs {
             rules: None,
             sade_sati: None,
+            gochar: None,
         }
     }
 
@@ -491,6 +524,13 @@ impl<'r> PlanInputs<'r> {
         self.sade_sati = Some(window);
         self
     }
+
+    /// This gochar request beside them.
+    #[must_use]
+    pub const fn with_gochar(mut self, request: &'r GocharRequest) -> PlanInputs<'r> {
+        self.gochar = Some(request);
+        self
+    }
 }
 
 impl<'r> From<Option<&'r RuleSet>> for PlanInputs<'r> {
@@ -498,6 +538,7 @@ impl<'r> From<Option<&'r RuleSet>> for PlanInputs<'r> {
         PlanInputs {
             rules,
             sade_sati: None,
+            gochar: None,
         }
     }
 }
