@@ -268,8 +268,9 @@ has to carry.
 
 The thirty named muhurtas of a day are a catalogue addition this page
 asks for but does not ship until a rank-1 citation exists for the names
-and their order (§16). The *divisions* ship now, numbered, with Abhijit
-and Brahma muhurta named, because those two have rules and the rules
+and their order (§16); Muhurta Chintamani now gives both, and the
+durmuhurtas read them (§21.1). The *divisions* ship now, numbered, with
+Abhijit and Brahma muhurta named, because those two have rules and the rules
 measure.
 
 ## 8. The lunar month, and what belongs elsewhere
@@ -651,8 +652,11 @@ evidence in the project that is not another implementation.
   Siddha tables to ship as the default, and whether the recording
   engine's are a published variant or its own. Needs a text, not a
   measurement.
-- **The thirty muhurta names**, which the catalogue wants and no source in
-  the project yet states in order.
+- **The thirty muhurta names**, which the catalogue wants. Muhurta
+  Chintamani's *Vivaha Prakarana* vv. 50–51 now state them in order
+  (§21.1); what is left is naming them in every shipped locale.
+- **Amrita kalam, Vijaya muhurta and Godhuli's span** (C399, C400,
+  C401), each waiting on a text (§21).
 - **Whether `panchanga.centre` should default to the profile's frame in
   a profile that says nothing.** The default here is `GEOCENTRIC`
   unconditionally, which is what almanacs do; the alternative — follow
@@ -677,3 +681,103 @@ evidence in the project that is not another implementation.
   vara of a day is still the civil date's, and the horas still start at
   sunrise. Nothing measures this, because the recording engine has no
   such setting.
+
+## 21. The censured periods, and where the Moon points
+
+Added 2026-10-17 for the feature universe's P0 row "Durmuhurta, Varjyam,
+Amrita kalam, Chandrashtama" and its neighbours "Godhuli, Vijaya" and
+"Disha shool, Chandra niwas, Nakshatra shool". Written from the texts,
+each verse read off the page image: Muhurta Chintamani in the 1906
+Venkateshwar Press edition with its Hindi (the Internet Archive's
+`MuhurtaChintamaniVenkateshwarPress1906ShriKrishnaMuseumKurukshetra`;
+leaves n104, n105, n118, n127, n136), Raman's *Muhurtha* (1948, rank 2,
+cited and paraphrased only) and Kalaprakasika (Iyer 1917, public domain).
+Varjyam was already built (C165, `omen::varjyam`); of the other seven,
+four are built here and three wait on a source (C399, C400, C401).
+
+| period | what it reads | source | built as |
+|---|---|---|---|
+| durmuhurta | the vara and the thirty muhurtas | MC *Vivaha* v. 52 over vv. 50–51; Raman ch. V p. 32 | `Panchanga::durmuhurtas`, `Panchanga::is_durmuhurta`, `period::durmuhurtas`, `panchanga.durmuhurta` (C398) |
+| varjyam | each nakshatra's own span | MC *Vivaha* vishaghati verse and table; Raman ch. II p. 15 | `omens.varjyam`, `panchanga.varjyam`, already shipped (C165) |
+| amrita kalam | each nakshatra's own span | none in hand | not built (C399) |
+| Vijaya muhurta | a muhurta of the daylight | none in hand | not built (C400) |
+| Godhuli | the Sun's phase at setting, by season | MC *Vivaha* vv. 97–98 (phases, no span) | not built (C401) |
+| nakshatra shool | the nakshatra | MC *Yatra* v. 10 | `Panchanga::nakshatra_shool`, `omen::nakshatra_shool` (C402) |
+| chandra vasa | the Moon's sign | MC *Yatra* v. 34, the commentary's sign directions | `Panchanga::chandra_vasa`, `omen::chandra_vasa` (C403) |
+| chandrashtama | the Moon's sign | Kalaprakasika pp. 51, 167 | `Panchanga::chandrashtama`, `omen::chandrashtama_of` (C404) |
+
+### 21.1 Durmuhurta: a weekday names deities, not numbers
+
+Verses 50 and 51 list the fifteen muhurtas of the day and the fifteen of
+the night by their presiding deities, and v. 52 names the censured ones
+of each weekday by deity. So the table is a reading, and three of its
+names are in two places (Brahma, water, Shiva). The default is the verse
+as its own edition's Hindi reads it, and Raman's numbered list is the
+other key:
+
+| vara | Muhurta Chintamani (day *n*, night *n*) | Raman, as printed (all daylight) |
+|---|---|---|
+| Sunday | day 14 (Aryaman) | 14 |
+| Monday | day 9 (Vidhata), day 12 (Nirriti) | 8, 12 |
+| Tuesday | day 4 (Pitrya), **night 7** (Agni) | 4, 11 |
+| Wednesday | day 8 (Abhijit) | 8 (Abhijit) |
+| Thursday | day 6 (Ambu), day 12 (Nirriti) | 12, 13 |
+| Friday | day 4 (Pitrya), day 9 (Vidhata) | 4, 8 |
+| Saturday | day 1 (Girisha), day 2 (Bhujaga) | 1, 2 |
+
+Raman's differences are a different list rather than a different rule:
+his daylight muhurtas have no Abhijit, put Vidhi eighth and Vahni
+eleventh, and read Thursday's water as Varuna (13th). A muhurta is a
+fifteenth of its own arc, the daylight's from sunrise and the night's
+from sunset, which is what `period::muhurtas` already divides (§7): so
+a durmuhurta is one of those intervals, selected, and `number` counts
+from one within its half, which a test holds against the zero-based
+index it is read through. A half with no arc has no durmuhurta.
+
+Worked, by hand (the unit test): twelve hours of daylight from 06:00
+make 48-minute muhurtas, so a Sunday's fourteenth runs 13 × 48 = 624 to
+672 minutes after sunrise, 16:24 to 17:12; a Tuesday's night seventh,
+from an 18:00 sunset, runs 6 × 48 = 288 minutes on, 22:48 to 23:36.
+
+The thirty names this needs are the ones §7 and §20 waited on for the
+catalogue, and vv. 50–51 now give them in order. They stay out of the
+catalogue for the reason the state readings give (`state-readings.md`):
+a kind is a key space every shipped locale must name, and the Nepali
+names are not yet vetted.
+
+### 21.2 Chandrashtama, chandra vasa and the nakshatra shool
+
+Each is a reading of a span the day already carries, so each is a method
+over the stored spans rather than another stored field, and costs
+nothing until asked:
+
+- **Nakshatra shool** (*Yatra* v. 10, the verse that gives the vara's
+  disha shool too): Jyeshtha east, Purva Bhadrapada south, Rohini west,
+  Uttara Phalguni north. The edition's Hindi reads the last as Bharani;
+  the Sanskrit's Aryaman is Uttara Phalguni (C402). The vara's table the
+  SDK already shipped (§9) is the same verse's.
+- **Chandra vasa**: the Moon's sign read through the sign directions of
+  MC's commentary on *Yatra* v. 34 — 1, 5, 9 east; 2, 6, 10 south; 3, 7,
+  11 west; 4, 8, 12 north (C403).
+- **Chandrashtama** (Kalaprakasika p. 51, with a worked case, and p. 167):
+  the Moon's passage through the eighth sign from the natal Moon's. A
+  day's answer is the Moon's sign spans with each member replaced by the
+  natal sign it afflicts — seven signs back, counting inclusively, so a
+  Moon in Scorpio is Aries's, the book's own example. The rival reading
+  of "eighth" as eight signs on is tested against (C404). It is a
+  reading for every native at once; the muhurta search's Chandrabala
+  (C160) is the same count against one native.
+
+### 21.3 What crosses which layer
+
+The Rust surface carries all four: `Panchanga` gains `durmuhurtas` and
+`is_durmuhurta`, and the three readings above. The document schema
+follows from the derive. The C boundary does not yet: varjyam crossed it
+as a span section written by `span_rows`, and a durmuhurta is not a span
+(it is a number, a half and an interval), so the blob needs a section of
+its own shape and each binding a type to read it into, which is not the
+varjyam commit's pattern repeated. The three readings need nothing new
+at the boundary beyond what a binding already reads (the nakshatra and
+Moon sign spans). No catalogue kind is added (§21.1), so
+`migrate::STATE_REFUSALS` keeps `dur-muhurta`, its reason now naming the
+Rust answer.

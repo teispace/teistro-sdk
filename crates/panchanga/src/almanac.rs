@@ -36,7 +36,7 @@ use teistro_time::local_day::{LocalDay, local_day, local_midnight};
 use crate::limb::{self, Limbs, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
-use crate::period::{self, Kaalas, Muhurtas, Part};
+use crate::period::{self, Durmuhurta, Kaalas, Muhurtas, Part};
 use crate::sky::{self, MoonDay, SunDay};
 use crate::span::{self, Span, Sunrises};
 use crate::year::{LunarYear, name_counts};
@@ -68,6 +68,9 @@ pub struct Panchanga {
     pub horas: Vec<Hora>,
     /// The thirty muhurtas, with Abhijit and Brahma muhurta named.
     pub muhurtas: Muhurtas,
+    /// The day's censured muhurtas under `panchanga.durmuhurta`, in the
+    /// order they run (`03-design/panchanga-day.md` §21, crux C398).
+    pub durmuhurtas: Vec<Durmuhurta>,
     /// The lunar month, under both conventions.
     pub month: LunarMonth,
     /// What the Moon did.
@@ -163,6 +166,53 @@ impl Panchanga {
     #[must_use]
     pub const fn disha_shool(&self) -> Direction {
         self.omens.disha_shool
+    }
+
+    /// The direction the day's nakshatras block travel in, while they run
+    /// ([`omen::nakshatra_shool`]): empty on a day the Moon crosses none
+    /// of the four.
+    ///
+    /// ```no_run
+    /// # fn day() -> teistro_panchanga::almanac::Panchanga { unimplemented!() }
+    /// let day = day();
+    /// println!("not {:?} by the vara", day.disha_shool());
+    /// for shool in day.nakshatra_shool() {
+    ///     println!("not {:?} until {}", shool.member, shool.inside.to);
+    /// }
+    /// ```
+    #[must_use]
+    pub fn nakshatra_shool(&self) -> Vec<Span<Direction>> {
+        omen::nakshatra_shools(&self.limbs.nakshatra)
+    }
+
+    /// The direction the Moon dwells in over the day, by the sign it
+    /// stood in ([`omen::chandra_vasa`]).
+    #[must_use]
+    pub fn chandra_vasa(&self) -> Vec<Span<Direction>> {
+        omen::chandra_vasas(&self.moon.signs)
+    }
+
+    /// Whose chandrashtama the day holds: each member is a **natal** Moon
+    /// sign, and its intervals the Moon's run through the eighth sign from
+    /// it ([`omen::chandrashtama_of`]).
+    ///
+    /// ```no_run
+    /// # fn day() -> teistro_panchanga::almanac::Panchanga { unimplemented!() }
+    /// for span in day().chandrashtama() {
+    ///     println!("chandrashtama for a {:?} Moon until {}", span.member, span.inside.to);
+    /// }
+    /// ```
+    #[must_use]
+    pub fn chandrashtama(&self) -> Vec<Span<Rashi>> {
+        omen::chandrashtama(&self.moon.signs)
+    }
+
+    /// Whether an instant falls inside one of the day's durmuhurtas.
+    #[must_use]
+    pub fn is_durmuhurta(&self, instant: JulianDay<Utc>) -> bool {
+        self.durmuhurtas
+            .iter()
+            .any(|durmuhurta| durmuhurta.at.contains(instant))
     }
 
     /// The tithi running at an instant.
@@ -349,7 +399,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// The day's own refusals (a polar day under `UNDEFINED`, a date the
     /// calendar does not have), an ayanamsha the catalogue cannot
     /// evaluate, a provider that cannot answer for the window, or a
-    /// muhurta yoga table the SDK does not ship.
+    /// muhurta yoga or durmuhurta table the SDK does not ship.
     pub fn day(&self, date: &CalendarDate, place: &Place) -> Result<Envelope<Panchanga>, Error> {
         let (value, frame) = self.value(date, place)?;
         let provenance = self.provenance(
@@ -602,6 +652,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let horas = hora::horas(&day, settings.day.hora_reckoning.try_into()?)?;
         let previous_night = self.previous_night(place, &date)?;
         let muhurtas = period::muhurtas(daylight, night, previous_night, day.vara);
+        let durmuhurtas = period::durmuhurtas(&muhurtas, day.vara, settings.panchanga.durmuhurta)?;
         let month = self.month(&longitudes, window, &limbs, zodiac)?;
         let moon = self.moon(&completion, place, &day, window, frame, zodiac)?;
         let sun_signs = Self::signs(&longitudes, Body::Sun, window, zodiac)?;
@@ -633,6 +684,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 choghadiya: period::choghadiya(daylight, night, day.vara),
                 horas,
                 muhurtas,
+                durmuhurtas,
                 month,
                 moon,
                 sun,

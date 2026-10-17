@@ -54,7 +54,7 @@ pub use limb::{Limbs, karana_of};
 pub use month::LunarMonth;
 pub use nepal_sambat::NepalSambatDate;
 pub use omen::{MuhurtaYoga, Omens, YogaCause};
-pub use period::{Kaalas, Muhurtas, Part};
+pub use period::{Durmuhurta, Kaalas, Muhurtas, Part};
 pub use sky::{MoonDay, SunDay};
 pub use span::Span;
 pub use teistro_time::local_day::LocalDay;

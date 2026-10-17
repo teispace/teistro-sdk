@@ -189,9 +189,9 @@ want the same widening when something says them.
 **A key with no subject is refused by name, not dropped.** Three are:
 `planet-condition`'s `COMBUST_CANCELLED`, because the SDK computes
 combustion and not its cancellation; and `inauspicious-kaal`'s
-`dur-muhurta` and `varjyam`, because it divides the day into muhurtas
-without naming any of them, and computes each star's varjyam window
-(C165) without a catalogue kind that names it.
+`dur-muhurta` and `varjyam`, because it finds a day's durmuhurtas
+(C398) and each star's varjyam window (C165) without a catalogue kind
+that names either.
 `migrate::STATE_REFUSALS` carries each with its reason, and the gate holds
 the list both ways: a key there that names a member now fails, and a key
 that names none and is not there fails. Without it a corpus with three

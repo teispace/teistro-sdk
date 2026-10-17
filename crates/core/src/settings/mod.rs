@@ -35,8 +35,8 @@ pub use knobs::{
     AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
     BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
     Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, DualLord, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
-    GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
+    DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya,
+    FirdariaNodes, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
     LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
     NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy,
@@ -521,6 +521,9 @@ group!(
         panchaka_start: PanchakaStart,
         /// Which table places each nakshatra's varjyam (crux C165).
         varjyam: Varjyam,
+        /// Which muhurtas of each weekday are censured, the durmuhurtas
+        /// (crux C398).
+        durmuhurta: DurmuhurtaTable,
         /// Which season a day falls in: the sidereal solar months', the
         /// lunar month's or the tropical Sun's (crux C178).
         ritu: RituReckoning,

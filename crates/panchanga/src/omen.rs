@@ -94,7 +94,9 @@ pub struct Omens {
 ///
 /// Monday and Saturday east, Tuesday and Wednesday north, Thursday
 /// south, Friday and Sunday west — the corpus's own table, on all 55
-/// days.
+/// days, and Muhurta Chintamani's (*Yatra Prakarana* v. 10; the 1906
+/// Venkateshwar Press edition, p. 111), which gives the nakshatra's
+/// beside it ([`nakshatra_shool`]).
 #[must_use]
 pub const fn disha_shool(vara: Vara) -> Direction {
     match vara {
@@ -172,6 +174,118 @@ pub fn varjyam(
         found.extend(Span::new(span.member, whole, span.inside));
     }
     Ok(found)
+}
+
+/// The direction a nakshatra blocks travel in, if it blocks one: the
+/// nakshatra shool.
+///
+/// Muhurta Chintamani, *Yatra Prakarana* v. 10, in the verse that gives
+/// the vara's: न पूर्वदिशि शाक्रभे, not east in Jyeshtha (Indra's);
+/// न चाजपदभे … यमदिशि, not south in Purva Bhadrapada (Ajapada's);
+/// न पाशिदिशि धातृभे, not west in Rohini (Dhatri's, Brahma's); and
+/// … अर्यमर्क्षे … न सौम्यककुभि, not north in Uttara Phalguni
+/// (Aryaman's). The edition's Hindi glosses the last as Bharani, which
+/// is Yama's star and not Aryaman's; the Sanskrit is followed (crux C402).
+///
+/// ```
+/// use teistro_core::catalogue::{Direction, Nakshatra};
+/// use teistro_panchanga::omen::nakshatra_shool;
+///
+/// assert_eq!(nakshatra_shool(Nakshatra::Jyeshtha), Some(Direction::East));
+/// assert_eq!(nakshatra_shool(Nakshatra::UttaraPhalguni), Some(Direction::North));
+/// assert_eq!(nakshatra_shool(Nakshatra::Ashwini), None);
+/// ```
+#[must_use]
+pub const fn nakshatra_shool(nakshatra: Nakshatra) -> Option<Direction> {
+    match nakshatra {
+        Nakshatra::Jyeshtha => Some(Direction::East),
+        Nakshatra::PurvaBhadrapada => Some(Direction::South),
+        Nakshatra::Rohini => Some(Direction::West),
+        Nakshatra::UttaraPhalguni => Some(Direction::North),
+        _ => None,
+    }
+}
+
+/// The nakshatra shool's spans over a day: while the Moon is in one of
+/// the four nakshatras that block a direction, that direction.
+#[must_use]
+pub fn nakshatra_shools(nakshatras: &[Span<Nakshatra>]) -> Vec<Span<Direction>> {
+    nakshatras
+        .iter()
+        .filter_map(|span| nakshatra_shool(span.member).map(|direction| span.map(|_| direction)))
+        .collect()
+}
+
+/// The direction the Moon dwells in from a sign, the chandra vasa:
+/// Aries, Leo and Sagittarius east; Taurus, Virgo and Capricorn south;
+/// Gemini, Libra and Aquarius west; Cancer, Scorpio and Pisces north.
+///
+/// The directions of the signs Muhurta Chintamani's commentary gives
+/// beside *Yatra Prakarana* v. 34 (the 1906 edition, p. 120: १।५।९ पूर्व,
+/// २।६।१० दक्षिण, ३।७।११ पश्चिम, ४।८।१२ उत्तर), read for the sign the Moon
+/// is in (crux C403). A sign's number from Aries, counted from zero,
+/// taken modulo four, is the direction's place in that cycle.
+///
+/// ```
+/// use teistro_core::catalogue::{Direction, Rashi};
+/// use teistro_panchanga::omen::chandra_vasa;
+///
+/// assert_eq!(chandra_vasa(Rashi::Leo), Direction::East);
+/// assert_eq!(chandra_vasa(Rashi::Capricorn), Direction::South);
+/// assert_eq!(chandra_vasa(Rashi::Aquarius), Direction::West);
+/// assert_eq!(chandra_vasa(Rashi::Pisces), Direction::North);
+/// ```
+#[must_use]
+pub const fn chandra_vasa(sign: Rashi) -> Direction {
+    match sign.id() % 4 {
+        0 => Direction::East,
+        1 => Direction::South,
+        2 => Direction::West,
+        _ => Direction::North,
+    }
+}
+
+/// The natal Moon sign a Moon in `sign` is eighth from, the one whose
+/// native has chandrashtama while the Moon is there.
+///
+/// Kalaprakasika (N. P. Subramania Iyer's translation, 1917, p. 51 and
+/// p. 167) defines chandrashtama as the Moon's passage through the eighth
+/// sign from the one it held at birth, and works one: a Moon born in
+/// Aries makes the days the Moon spends in Scorpio. Counting inclusively,
+/// the eighth sign is seven on, so the natal sign is seven back, which
+/// is five on (crux C404).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_panchanga::omen::chandrashtama_of;
+///
+/// // Kalaprakasika's own example, read backwards.
+/// assert_eq!(chandrashtama_of(Rashi::Scorpio), Rashi::Aries);
+/// assert_eq!(chandrashtama_of(Rashi::Aries), Rashi::Virgo);
+/// ```
+#[must_use]
+pub fn chandrashtama_of(sign: Rashi) -> Rashi {
+    Rashi::from_id((sign.id() + 5) % 12).unwrap_or(sign)
+}
+
+/// The spans of a day over which each natal Moon sign has chandrashtama,
+/// from the signs the Moon stood in: the member is the **natal** sign,
+/// and the intervals are the Moon's own run through the eighth from it.
+#[must_use]
+pub fn chandrashtama(moon_signs: &[Span<Rashi>]) -> Vec<Span<Rashi>> {
+    moon_signs
+        .iter()
+        .map(|span| span.map(chandrashtama_of))
+        .collect()
+}
+
+/// The Moon's direction over a day, by the sign it stood in.
+#[must_use]
+pub fn chandra_vasas(moon_signs: &[Span<Rashi>]) -> Vec<Span<Direction>> {
+    moon_signs
+        .iter()
+        .map(|span| span.map(chandra_vasa))
+        .collect()
 }
 
 /// The panchaka a nakshatra carries, if it is one of the last five.
@@ -447,8 +561,9 @@ mod tests {
     )]
 
     use super::{
-        CLASSICAL, disha_shool, panchaka, panchaka_of, panchaka_remainder, varjyam, varjyam_start,
-        yogas,
+        CLASSICAL, chandra_vasa, chandra_vasas, chandrashtama, chandrashtama_of, disha_shool,
+        nakshatra_shool, nakshatra_shools, panchaka, panchaka_of, panchaka_remainder, varjyam,
+        varjyam_start, yogas,
     };
     use teistro_core::catalogue::{
         Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, Vara,
@@ -638,6 +753,82 @@ mod tests {
         assert_eq!(disha_shool(Vara::Guruvara), Direction::South);
         assert_eq!(disha_shool(Vara::Shukravara), Direction::West);
         assert_eq!(disha_shool(Vara::Ravivara), Direction::West);
+    }
+
+    #[test]
+    fn four_nakshatras_block_one_direction_each() {
+        // Yatra Prakarana v. 10: Jyeshtha east, Purva Bhadrapada south,
+        // Rohini west, Uttara Phalguni north, and no other star.
+        assert_eq!(nakshatra_shool(Nakshatra::Jyeshtha), Some(Direction::East));
+        assert_eq!(
+            nakshatra_shool(Nakshatra::PurvaBhadrapada),
+            Some(Direction::South)
+        );
+        assert_eq!(nakshatra_shool(Nakshatra::Rohini), Some(Direction::West));
+        assert_eq!(
+            nakshatra_shool(Nakshatra::UttaraPhalguni),
+            Some(Direction::North)
+        );
+        // The Hindi gloss's Bharani is not the verse's Aryaman.
+        assert_eq!(nakshatra_shool(Nakshatra::Bharani), None);
+        assert_eq!(
+            Nakshatra::ALL
+                .iter()
+                .filter(|n| nakshatra_shool(**n).is_some())
+                .count(),
+            4
+        );
+        let day = [span(Nakshatra::Mrigashira), span(Nakshatra::Rohini)];
+        let found = nakshatra_shools(&day);
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].member, Direction::West);
+        assert_eq!(found[0].whole, day[1].whole);
+    }
+
+    #[test]
+    fn the_moon_dwells_east_south_west_north_by_its_signs_triplicity() {
+        let expected = [
+            (Rashi::Aries, Direction::East),
+            (Rashi::Taurus, Direction::South),
+            (Rashi::Gemini, Direction::West),
+            (Rashi::Cancer, Direction::North),
+            (Rashi::Leo, Direction::East),
+            (Rashi::Virgo, Direction::South),
+            (Rashi::Libra, Direction::West),
+            (Rashi::Scorpio, Direction::North),
+            (Rashi::Sagittarius, Direction::East),
+            (Rashi::Capricorn, Direction::South),
+            (Rashi::Aquarius, Direction::West),
+            (Rashi::Pisces, Direction::North),
+        ];
+        for (sign, direction) in expected {
+            assert_eq!(chandra_vasa(sign), direction, "{sign:?}");
+        }
+        let found = chandra_vasas(&[span(Rashi::Cancer)]);
+        assert_eq!(found[0].member, Direction::North);
+    }
+
+    #[test]
+    fn chandrashtama_is_the_eighth_sign_counted_inclusively() {
+        // Kalaprakasika p. 51: a Moon born in Aries has chandrashtama
+        // while the Moon is in Scorpio, the eighth sign from Aries.
+        assert_eq!(chandrashtama_of(Rashi::Scorpio), Rashi::Aries);
+        // Every sign is the eighth from exactly one natal sign, and
+        // counting eight from that sign, inclusively, gives it back:
+        // natal + 7 ≡ moon (mod 12). Not the rival reading "eight on",
+        // which would make Aries's Moon trouble in Sagittarius.
+        for moon in Rashi::ALL {
+            let natal = chandrashtama_of(moon);
+            assert_eq!((natal.id() + 7) % 12, moon.id(), "{moon:?}");
+        }
+        assert_ne!(chandrashtama_of(Rashi::Sagittarius), Rashi::Aries);
+        let found = chandrashtama(&[span(Rashi::Libra)]);
+        assert_eq!(
+            found[0].member,
+            Rashi::Pisces,
+            "Libra is eighth from Pisces"
+        );
+        assert_eq!(found[0].whole, window());
     }
 
     #[test]

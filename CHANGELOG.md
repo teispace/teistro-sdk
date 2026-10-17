@@ -359,6 +359,19 @@ navamsha, a strong unafflicted benefic in a kendra, and three figures of
 very long life. The note on v. 68 now says what vv. 69 and 70 ask, a cruel
 shashtyamsha, which is not built.
 
+**A day's durmuhurtas, and where the Moon points.** **Numbers:** none
+moved. Every almanac day gains its `durmuhurtas`, the muhurtas its
+weekday censures, chosen by `panchanga.durmuhurta`: Muhurta Chintamani's
+(Vivaha Prakarana v. 52, read by deity over vv. 50 and 51, so a
+Tuesday's second is the night's seventh) by default, or Raman's as
+printed (crux C398). `Panchanga::is_durmuhurta` asks one instant.
+`Panchanga::nakshatra_shool` (Yatra Prakarana v. 10, crux C402),
+`Panchanga::chandra_vasa` (C403) and `Panchanga::chandrashtama`
+(Kalaprakasika, counted inclusively, C404) read the spans the day
+already carries. The Rust surface only: no section reaches the blob or
+a binding yet. Amrita kalam, Vijaya muhurta and Godhuli's span wait on a
+text (C399 to C401).
+
 **A day's varjyam.** **Numbers:** every almanac day gains its stars'
 varjyam windows, and a muhurta search's windows are cut at each one's
 ends and carry a `VARJYAM` clause against the time. So under the texts'

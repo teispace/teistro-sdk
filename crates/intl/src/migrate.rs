@@ -1050,7 +1050,7 @@ pub const STATE_REFUSALS: [(&str, &str, &str); 3] = [
     (
         "inauspicious-kaal",
         "dur-muhurta",
-        "the SDK divides the day into muhurtas but names none of them, so the censured one has no key",
+        "the SDK finds a day's durmuhurtas (`Panchanga::durmuhurtas`, `panchanga.durmuhurta`), but no catalogue kind names one, so a censured muhurta has no key",
     ),
     (
         "inauspicious-kaal",
