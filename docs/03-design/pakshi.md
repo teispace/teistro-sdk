@@ -1,10 +1,14 @@
 # `pakshi`: Pancha Pakshi, the five birds
 
-Status: `draft`, 2026-10-09. Track B of the completion plan
-(`07-roadmap/00-roadmap.md`), the module catalogue's `pakshi` row. The
-kernel, `crates/pakshi`, the façade and the boundary are built, and the
-reading crosses to every binding; names in every strict locale wait on a
-vetted table (§7 step 4, P13).
+Status: `building`, 2026-10-17. §7 steps 1 to 3 are built (2026-10-09):
+the kernel, `crates/pakshi`, the façade (`AlmanacArea::pakshi_days`,
+`AlmanacArea::pakshi`, `ChartArea::pakshi_native`) and the boundary
+(`ts_pakshi`), and the reading crosses to every binding. Step 4 is not
+built: the birds and activities have no names in any strict locale and no
+catalogue kind, and cross as their keys until a vetted table exists (P13).
+Track B of the completion plan (`07-roadmap/00-roadmap.md`), the module
+catalogue's `pakshi` row. Written from the sources before the kernel;
+§9 says what building it found.
 
 ## 1. Sources
 
@@ -216,3 +220,28 @@ from the almanac.
 | P12 | the native's own sub-period | reported as `OWN` | neither scheme lists a bird among its own friends or enemies |
 | P13 | the birds' and activities' names in the strict locales | wait for a vetted table; no catalogue kind until then | Q38 gives a value a kind when a consumer must name it, and the names are what is missing: a Nepali table drafted here would be a guess shipped as a translation (`hand-the-work-out`) |
 | P11 | the name, sign and tithi birds | not in v1; `BirthBird` is an enum, so each can be added | named in AG and AG07, not yet read closely enough |
+
+## 9. What building it found
+
+- **The four tables are one rule, and the test holds it to the print.**
+  `tables::activity` is the formula of §2; `crates/pakshi/src/tests.rs`
+  carries Ayyar's four tables as transcribed, his one slip corrected, and
+  fails on any cell the rule does not give, and a second test holds the
+  slip itself (P7): the printed cell is the one the rule refuses.
+- **Every sub-period scheme fills its yama.** The lengths are kept in
+  144ths of a yama (its minutes at an even day), and Agastya's and each
+  of Pulippani's per-half figures sum to 144. The last sub-period of a
+  yama, and the last yama of a half, are closed on the half's end rather
+  than summed to it, so no instant falls between two of them.
+- **Pulippani's lengths cover three halves.** For the bright day he
+  prints none of his own, so `SubLengths::Pulippani` keeps Agastya's
+  there.
+- **A native comes from a chart or from a star.** `ChartArea::pakshi_native`
+  reads the Moon's nakshatra and the paksha from the Moon's elongation
+  from the Sun; the façade's test holds both to the almanac's own
+  nakshatra and tithi at the birth, under either `BirthBird`. A binding
+  can name a native as a bird or as a star and paksha (`PakshiNative`)
+  without a chart, and one naming both is refused on `pakshi.native.bird`.
+- **A day without both a sunrise and a sunset has no yamas.** Over a
+  range such a day answers no reading; asked for alone it is refused as
+  `UNSUPPORTED`.
