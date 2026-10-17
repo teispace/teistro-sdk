@@ -7522,6 +7522,10 @@ public final class Charts {
         private final int toMidheavenAt;
         private final int angleAt;
         private final int phaseAt;
+        private final int vargaAt;
+        private final int lunarPhaseAt;
+        private final int solarEclipseAt;
+        private final int lunarEclipseAt;
 
         Hits(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -7537,6 +7541,10 @@ public final class Charts {
             this.toMidheavenAt = blob.column(at, 7, 1);
             this.angleAt = blob.column(at, 8, 2);
             this.phaseAt = blob.column(at, 9, 1);
+            this.vargaAt = blob.column(at, 10, 2);
+            this.lunarPhaseAt = blob.column(at, 11, 1);
+            this.solarEclipseAt = blob.column(at, 12, 1);
+            this.lunarEclipseAt = blob.column(at, 13, 1);
         }
 
         /**
@@ -7586,7 +7594,7 @@ public final class Charts {
         }
 
         /**
-         * The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.
+         * The sign (a `Rashi` id) entered by a sign or varga ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.
          *
          * @param row the row, from 0
          * @return the value in that row
@@ -7597,7 +7605,7 @@ public final class Charts {
         }
 
         /**
-         * Which way the graha was moving through the line, or, for a station, the motion it turned to.
+         * Which way the graha was moving through the line, or, for a station, the motion it turned to; `DIRECT` for a lunar phase, a phase return or an eclipse, which cross no line of the graha's own.
          *
          * The id of a {@code Motion}.
          *
@@ -7610,7 +7618,7 @@ public final class Charts {
         }
 
         /**
-         * For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind.
+         * For an aspect or an eclipse, 1 when the natal point is the lagna, 0 when it is a natal graha; 0 for any other kind.
          *
          * @param row the row, from 0
          * @return the value in that row
@@ -7621,7 +7629,7 @@ public final class Charts {
         }
 
         /**
-         * For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.
+         * For an aspect or an eclipse on a natal graha, which (a `Graha` id); 0 otherwise.
          *
          * @param row the row, from 0
          * @return the value in that row
@@ -7632,7 +7640,7 @@ public final class Charts {
         }
 
         /**
-         * For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise.
+         * For an aspect or an eclipse, 1 when the natal point is the midheaven, 0 otherwise.
          *
          * @param row the row, from 0
          * @return the value in that row
@@ -7664,6 +7672,58 @@ public final class Charts {
          */
         public int phase(int row) {
             return Byte.toUnsignedInt(bytes.get(phaseAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * For a varga ingress, the divisional chart whose sign changed (C418); read only when `kind` is a varga ingress.
+         *
+         * The id of a {@code Varga}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int varga(int row) {
+            return Short.toUnsignedInt(bytes.getShort(vargaAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * For a lunar phase, which of the four the Moon reached, in the chart's frame (C419); read only when `kind` is a lunar phase.
+         *
+         * The id of a {@code MoonPhase}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int lunarPhase(int row) {
+            return Byte.toUnsignedInt(bytes.get(lunarPhaseAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * For a solar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a solar eclipse.
+         *
+         * The id of a {@code SolarEclipseKind}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int solarEclipse(int row) {
+            return Byte.toUnsignedInt(bytes.get(solarEclipseAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * For a lunar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a lunar eclipse.
+         *
+         * The id of a {@code LunarEclipseKind}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int lunarEclipse(int row) {
+            return Byte.toUnsignedInt(bytes.get(lunarEclipseAt + Objects.checkIndex(row, length) * 1));
         }
     }
 

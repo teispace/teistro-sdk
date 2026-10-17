@@ -4657,6 +4657,21 @@ Hit _hitAt(ChartsHits h, int row) {
       phase: AspectPhase.byId(h.phase[row]),
       motion: motion,
     ),
+    HitKind.vargaIngress => VargaIngress(
+      varga: Varga.byId(h.varga[row]),
+      into: Rashi.byId(h.into[row]),
+      motion: motion,
+    ),
+    HitKind.lunarPhase => LunarPhase(phase: MoonPhase.byId(h.lunarPhase[row])),
+    HitKind.phaseReturn => const PhaseReturn(),
+    HitKind.solarEclipse => SolarEclipseHit(
+      to: _pointAt(h.toLagna[row], h.toGraha[row], h.toMidheaven[row]),
+      eclipse: SolarEclipseKind.byId(h.solarEclipse[row]),
+    ),
+    HitKind.lunarEclipse => LunarEclipseHit(
+      to: _pointAt(h.toLagna[row], h.toGraha[row], h.toMidheaven[row]),
+      eclipse: LunarEclipseKind.byId(h.lunarEclipse[row]),
+    ),
   };
   return Hit(
     instant: h.instant[row],
@@ -15471,6 +15486,8 @@ final class HitRequest {
     this.points,
     this.aspects,
     this.orbDeg,
+    this.vargas,
+    this.eclipseOrbDeg,
   });
 
   /// The hit list that is each graha's returns: its conjunction, at 0°,
@@ -15506,7 +15523,8 @@ final class HitRequest {
   /// The grahas to search; the nine by default.
   final List<Graha>? grahas;
 
-  /// The kinds of event to report; all four by default.
+  /// The kinds of event to report; the four ingress, station and aspect
+  /// kinds by default.
   final List<HitKind>? kinds;
 
   /// The natal points aspected; the nine grahas and the lagna by default.
@@ -15520,6 +15538,14 @@ final class HitRequest {
   /// exact only by default.
   final double? orbDeg;
 
+  /// The divisional charts a [HitKind.vargaIngress] is searched in; the
+  /// navamsha by default, and never the rashi chart (C418).
+  final List<Varga>? vargas;
+
+  /// How near a natal point an eclipsed luminary must fall, in degrees,
+  /// more than 0 and at most 15; 3 by default (C422).
+  final double? eclipseOrbDeg;
+
   String get _json => jsonEncode(<String, Object?>{
     'from': from,
     'to': to,
@@ -15528,6 +15554,8 @@ final class HitRequest {
     if (points case final points?) 'points': [for (final p in points) p._json],
     if (aspects case final aspects?) 'aspects': aspects,
     if (orbDeg case final orbDeg?) 'orbDeg': orbDeg,
+    if (vargas case final vargas?) 'vargas': [for (final v in vargas) v.key],
+    if (eclipseOrbDeg case final eclipseOrbDeg?) 'eclipseOrbDeg': eclipseOrbDeg,
   });
 }
 
@@ -15598,7 +15626,9 @@ final class NatalMidheaven extends NatalPoint {
 }
 
 /// What a hit was: [SignIngress], [NakshatraIngress], [Station] or
-/// [AspectHit], each carrying only its own fields.
+/// [AspectHit] by default, and [VargaIngress], [LunarPhase],
+/// [PhaseReturn], [SolarEclipseHit] or [LunarEclipseHit] when
+/// [HitRequest.kinds] asks; each carries only its own fields.
 sealed class HitEvent {
   const HitEvent();
 
@@ -15669,6 +15699,77 @@ final class AspectHit extends HitEvent {
 
   @override
   HitKind get kind => HitKind.aspect;
+}
+
+/// The graha entered a new sign of a divisional chart (C418).
+final class VargaIngress extends HitEvent {
+  const VargaIngress({
+    required this.varga,
+    required this.into,
+    required this.motion,
+  });
+
+  /// The divisional chart whose sign changed.
+  final Varga varga;
+
+  /// The sign entered in that chart.
+  final Rashi into;
+
+  /// Which way it was moving.
+  final Motion motion;
+
+  @override
+  HitKind get kind => HitKind.vargaIngress;
+}
+
+/// The Moon reached a principal phase, in the chart's frame (C419).
+final class LunarPhase extends HitEvent {
+  const LunarPhase({required this.phase});
+
+  /// Which of the four.
+  final MoonPhase phase;
+
+  @override
+  HitKind get kind => HitKind.lunarPhase;
+}
+
+/// The Moon's elongation from the Sun came back to the natal chart's
+/// (C420).
+final class PhaseReturn extends HitEvent {
+  const PhaseReturn();
+
+  @override
+  HitKind get kind => HitKind.phaseReturn;
+}
+
+/// A solar eclipse fell on a natal point, within
+/// [HitRequest.eclipseOrbDeg] (C421).
+final class SolarEclipseHit extends HitEvent {
+  const SolarEclipseHit({required this.to, required this.eclipse});
+
+  /// The natal point the eclipsed Sun fell on.
+  final NatalPoint to;
+
+  /// Which kind of eclipse.
+  final SolarEclipseKind eclipse;
+
+  @override
+  HitKind get kind => HitKind.solarEclipse;
+}
+
+/// A lunar eclipse fell on a natal point, within
+/// [HitRequest.eclipseOrbDeg] (C421).
+final class LunarEclipseHit extends HitEvent {
+  const LunarEclipseHit({required this.to, required this.eclipse});
+
+  /// The natal point the eclipsed Moon fell on.
+  final NatalPoint to;
+
+  /// Which kind of eclipse.
+  final LunarEclipseKind eclipse;
+
+  @override
+  HitKind get kind => HitKind.lunarEclipse;
 }
 
 /// One event of the transit hit list.

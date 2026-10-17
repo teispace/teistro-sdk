@@ -206,11 +206,8 @@ order among themselves.
    year of the Sun, Mars and Jupiter in the navamsha and the trimshamsha
    reads back through the chart's own divisional chart founded a second
    either side, the navamsha also by its rule worked by hand, and Mars's
-   retrograde spell gives ingresses made backwards. **The C boundary does
-   not carry it yet**: section 56 has no column for the chart, so a
-   request naming it there is refused `UNSUPPORTED` on `hits.kinds`
-   before anything is founded (`TsHitKind::carried`); the kind is in
-   `TsHitKind` so a request's kinds are the boundary enum's keys.
+   retrograde spell gives ingresses made backwards. Section 56 carries
+   the chart in its own `varga` column and the sign in `into`.
 2. **Lunar phases and phase returns** (C419, C420): `LUNAR_PHASE`, the
    Moon's elongation from the Sun crossing 0°, 90°, 180° and 270° (new,
    first quarter, full, last quarter), and `PHASE_RETURN`, the elongation
@@ -225,8 +222,8 @@ order among themselves.
    second either side, the phases run in a lunation's order, the returns
    fall a synodic month apart, and January 2025's full and new moons land
    within three minutes of the almanacs' 13 January 22:27 UT and 29
-   January 12:36 UT. The C boundary refuses both as it does the varga
-   ingress.
+   January 12:36 UT. Section 56 carries the phase in its own
+   `lunar_phase` column, as a `TsMoonPhase`.
 3. **An eclipse on a natal point** (C421, C422): `SOLAR_ECLIPSE` and
    `LUNAR_ECLIPSE`, an eclipse whose luminary — the Sun in a solar
    eclipse, the Moon in a lunar one — stands at the greatest moment
@@ -244,5 +241,12 @@ order among themselves.
    of 2025 against every natal point of a birth an hour after the
    eclipsed new moon of 29 March is read back both ways through charts
    founded at the greatest moments: a hit exactly where the luminary lies
-   within the orb, and none elsewhere. The C boundary refuses both kinds
-   as it does the others of this section.
+   within the orb, and none elsewhere. Section 56 carries each kind in
+   its own `solar_eclipse` or `lunar_eclipse` column and the natal point
+   in the `to_*` columns an aspect uses.
+
+Every binding reads the five kinds as their own event types, each with
+only its fields, and a binding test asks for all five on the birth an
+hour after the eclipse of 29 March 2025: the ABI test checks every row
+against the façade's own list, and Node, Python, Dart and Java each read
+the kinds, the varga, the phases and the eclipses back.

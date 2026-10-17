@@ -723,8 +723,9 @@ test('every catalogue enum has a complete id table', () => {
   // `TsDhinamRule`, eleven, and `TsRajju`, five; 1330 since the marriage
   // doshas' `TsDoshaSystem`, three, and `TsMatchRole`, two; 1341 since
   // naam milan's `TsNameVarga`, eight, and `TsVargaRelation`, three;
-  // 1345 since the moment's `TsBirthEclipse`, four.
-  assert.equal(entries, 1345, 'every member of every enum is in a table');
+  // 1345 since the moment's `TsBirthEclipse`, four; 1354 since the hit
+  // list's five further `TsHitKind`s and `TsMoonPhase`, four.
+  assert.equal(entries, 1354, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2066,6 +2067,56 @@ test('a chart carries its hit list, the sky once for the batch', () => {
   ]) {
     assert.throws(
       () => ctx.chart.found({ instant: 2451545, ...at, hits: asked }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
+/**
+ * The five kinds past the default four cross with their own fields: a
+ * varga ingress's chart and sign, a lunar phase, a phase return, and an
+ * eclipse's kind and natal point. The birth is an hour after the solar
+ * eclipse of 29 March 2025, so 2025 holds an eclipse on its luminaries.
+ */
+test('a hit list carries varga ingresses, lunar phases and eclipses', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 0 };
+  const hits = {
+    from: 2460676.5,
+    to: 2461041.5,
+    grahas: ['SUN', 'MARS'],
+    kinds: ['VARGA_INGRESS', 'LUNAR_PHASE', 'PHASE_RETURN', 'SOLAR_ECLIPSE', 'LUNAR_ECLIPSE'],
+    vargas: ['D9', 'varga.D30'],
+    eclipseOrbDeg: 3,
+  };
+  const list = ctx.chart.found({ instant: 2460764, ...at, hits }).hits;
+  const kinds = new Set(list.map((h) => h.event.kind));
+  assert.deepEqual([...kinds].sort(), [...hits.kinds].sort());
+  for (const { graha, event: e } of list) {
+    if (e.kind === 'VARGA_INGRESS') {
+      assert.ok(['varga.D9', 'varga.D30'].includes(e.varga), e.varga);
+      assert.match(e.into, /^rashi\./);
+      assert.ok(['DIRECT', 'RETROGRADE'].includes(e.motion));
+    } else {
+      const luminary = e.kind === 'SOLAR_ECLIPSE' ? 'graha.SUN' : 'graha.MOON';
+      assert.equal(graha, luminary, 'a phase is the Moon\'s hit and an eclipse its luminary\'s');
+    }
+    if (e.kind === 'LUNAR_PHASE') assert.ok(['NEW', 'FIRST_QUARTER', 'FULL', 'LAST_QUARTER'].includes(e.phase));
+    if (e.kind === 'PHASE_RETURN') assert.deepEqual(e, { kind: 'PHASE_RETURN' });
+    if (e.kind === 'SOLAR_ECLIPSE') assert.match(e.eclipse, /^solar_eclipse_kind\./);
+    if (e.kind === 'LUNAR_ECLIPSE') assert.match(e.eclipse, /^lunar_eclipse_kind\./);
+    if (e.kind.endsWith('_ECLIPSE')) assert.ok(['GRAHA', 'LAGNA', 'MIDHEAVEN'].includes(e.to.point));
+  }
+  const phases = list.filter((h) => h.event.kind === 'LUNAR_PHASE');
+  assert.ok(phases.length >= 48 && phases.length <= 50, `${phases.length}`);
+  for (const [asked, field] of [
+    [{ ...hits, vargas: ['D1'] }, 'hits.vargas'],
+    [{ ...hits, eclipseOrbDeg: 20 }, 'hits.eclipseOrbDeg'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: 2460764, ...at, hits: asked }),
       (error) => error instanceof TeistroError && error.field === field,
       field,
     );

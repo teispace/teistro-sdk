@@ -7769,31 +7769,31 @@
         {
           "name": "VargaIngress",
           "value": 4,
-          "doc": "The graha entered a new sign of a divisional chart. Named so a\nrequest's kinds are this enum's; the `hits` section does not carry\nits chart yet, so a request asking for it is refused\n(`TsHitKind::CARRIED`).",
+          "doc": "The graha entered a new sign of a divisional chart: `varga` says\nwhich, and `into` the sign.",
           "key": "VARGA_INGRESS"
         },
         {
           "name": "LunarPhase",
           "value": 5,
-          "doc": "The Moon reached a principal phase; not carried yet, as\n`TsHitKind::VargaIngress`.",
+          "doc": "The Moon reached a principal phase, which `lunar_phase` names.",
           "key": "LUNAR_PHASE"
         },
         {
           "name": "PhaseReturn",
           "value": 6,
-          "doc": "The Moon's elongation from the Sun returned to the natal chart's;\nnot carried yet, as `TsHitKind::VargaIngress`.",
+          "doc": "The Moon's elongation from the Sun returned to the natal chart's.",
           "key": "PHASE_RETURN"
         },
         {
           "name": "SolarEclipse",
           "value": 7,
-          "doc": "A solar eclipse fell on a natal point; not carried yet, as\n`TsHitKind::VargaIngress`.",
+          "doc": "A solar eclipse fell on a natal point: `solar_eclipse` says which\nkind, and the `to_*` columns the point.",
           "key": "SOLAR_ECLIPSE"
         },
         {
           "name": "LunarEclipse",
           "value": 8,
-          "doc": "A lunar eclipse fell on a natal point; not carried yet, as\n`TsHitKind::VargaIngress`.",
+          "doc": "A lunar eclipse fell on a natal point: `lunar_eclipse` says which\nkind, and the `to_*` columns the point.",
           "key": "LUNAR_ECLIPSE"
         }
       ],
@@ -7903,6 +7903,38 @@
           "value": 2,
           "doc": "The transit passed out of the orb.",
           "key": "LEAVING"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsMoonPhase",
+      "doc": "A principal phase of the Moon, the Moon's elongation from the Sun a\nmultiple of 90° (C419).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "New",
+          "value": 0,
+          "doc": "The new moon, 0°.",
+          "key": "NEW"
+        },
+        {
+          "name": "FirstQuarter",
+          "value": 1,
+          "doc": "The first quarter, 90°.",
+          "key": "FIRST_QUARTER"
+        },
+        {
+          "name": "Full",
+          "value": 2,
+          "doc": "The full moon, 180°.",
+          "key": "FULL"
+        },
+        {
+          "name": "LastQuarter",
+          "value": 3,
+          "doc": "The last quarter, 270°.",
+          "key": "LAST_QUARTER"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -18633,28 +18665,28 @@
             {
               "name": "into",
               "scalar": "u16",
-              "doc": "The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed."
+              "doc": "The sign (a `Rashi` id) entered by a sign or varga ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed."
             },
             {
               "name": "motion",
               "scalar": "u8",
-              "doc": "Which way the graha was moving through the line, or, for a station, the motion it turned to.",
+              "doc": "Which way the graha was moving through the line, or, for a station, the motion it turned to; `DIRECT` for a lunar phase, a phase return or an eclipse, which cross no line of the graha's own.",
               "enum": "TsMotion"
             },
             {
               "name": "to_lagna",
               "scalar": "u8",
-              "doc": "For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind."
+              "doc": "For an aspect or an eclipse, 1 when the natal point is the lagna, 0 when it is a natal graha; 0 for any other kind."
             },
             {
               "name": "to_graha",
               "scalar": "u16",
-              "doc": "For an aspect to a natal graha, which (a `Graha` id); 0 otherwise."
+              "doc": "For an aspect or an eclipse on a natal graha, which (a `Graha` id); 0 otherwise."
             },
             {
               "name": "to_midheaven",
               "scalar": "u8",
-              "doc": "For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise."
+              "doc": "For an aspect or an eclipse, 1 when the natal point is the midheaven, 0 otherwise."
             },
             {
               "name": "angle",
@@ -18666,6 +18698,30 @@
               "scalar": "u8",
               "doc": "For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.",
               "enum": "TsAspectPhase"
+            },
+            {
+              "name": "varga",
+              "scalar": "u16",
+              "doc": "For a varga ingress, the divisional chart whose sign changed (C418); read only when `kind` is a varga ingress.",
+              "enum": "Varga"
+            },
+            {
+              "name": "lunar_phase",
+              "scalar": "u8",
+              "doc": "For a lunar phase, which of the four the Moon reached, in the chart's frame (C419); read only when `kind` is a lunar phase.",
+              "enum": "TsMoonPhase"
+            },
+            {
+              "name": "solar_eclipse",
+              "scalar": "u8",
+              "doc": "For a solar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a solar eclipse.",
+              "enum": "SolarEclipseKind"
+            },
+            {
+              "name": "lunar_eclipse",
+              "scalar": "u8",
+              "doc": "For a lunar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a lunar eclipse.",
+              "enum": "LunarEclipseKind"
             }
           ]
         },

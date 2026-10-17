@@ -2195,24 +2195,24 @@ export interface ChartsHits {
    */
   readonly kind: Uint8Array;
   /**
-   * The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.
+   * The sign (a `Rashi` id) entered by a sign or varga ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.
    */
   readonly into: Uint16Array;
   /**
-   * Which way the graha was moving through the line, or, for a station, the motion it turned to.
+   * Which way the graha was moving through the line, or, for a station, the motion it turned to; `DIRECT` for a lunar phase, a phase return or an eclipse, which cross no line of the graha's own.
    * The values are `Motion` ids.
    */
   readonly motion: Uint8Array;
   /**
-   * For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind.
+   * For an aspect or an eclipse, 1 when the natal point is the lagna, 0 when it is a natal graha; 0 for any other kind.
    */
   readonly toLagna: Uint8Array;
   /**
-   * For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.
+   * For an aspect or an eclipse on a natal graha, which (a `Graha` id); 0 otherwise.
    */
   readonly toGraha: Uint16Array;
   /**
-   * For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise.
+   * For an aspect or an eclipse, 1 when the natal point is the midheaven, 0 otherwise.
    */
   readonly toMidheaven: Uint8Array;
   /**
@@ -2224,6 +2224,26 @@ export interface ChartsHits {
    * The values are `AspectPhase` ids.
    */
   readonly phase: Uint8Array;
+  /**
+   * For a varga ingress, the divisional chart whose sign changed (C418); read only when `kind` is a varga ingress.
+   * The values are `Varga` ids.
+   */
+  readonly varga: Uint16Array;
+  /**
+   * For a lunar phase, which of the four the Moon reached, in the chart's frame (C419); read only when `kind` is a lunar phase.
+   * The values are `MoonPhase` ids.
+   */
+  readonly lunarPhase: Uint8Array;
+  /**
+   * For a solar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a solar eclipse.
+   * The values are `SolarEclipseKind` ids.
+   */
+  readonly solarEclipse: Uint8Array;
+  /**
+   * For a lunar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a lunar eclipse.
+   * The values are `LunarEclipseKind` ids.
+   */
+  readonly lunarEclipse: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }

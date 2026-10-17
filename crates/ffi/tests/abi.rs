@@ -1852,26 +1852,9 @@ fn a_chart_request_answers_the_transits() {
     );
 }
 
-/// The transit hit list crosses: a request's `hits_json` answers every
-/// chart's list in the `hits` section, ragged by `cast.hit_count`, each
-/// row the façade's own hit for that chart, and a refusal names the field
-/// the caller wrote (`03-design/transit-hit-list.md`).
-#[test]
-fn a_chart_request_answers_the_hit_list() {
-    use teistro::gochar::hits::HitEvent;
-    use teistro_ffi::chart::{TsAspectPhase, TsHitKind, TsMotion};
-    let ctx = Ctx::with_ephemeris(
-        0,
-        TsEphemeris::Builtin,
-        Some("conformance-baseline"),
-        None,
-        None,
-    )
-    .unwrap();
-    let births = [2_447_995.489_583_333_5, 2_451_545.0];
-    let text = r#"{"from":2460676.5,"to":2460866.5,"grahas":["SUN","MERCURY","SATURN","KETU"],"aspects":[0,90,180],"orbDeg":2}"#;
-    let hits = CString::new(text).unwrap();
-    let request = sized(
+/// A chart request for two births' hit lists, at Kathmandu.
+fn hit_list_request(births: &[f64; 2], hits: &CString) -> TsChartRequest {
+    sized(
         TsChartRequest {
             struct_size: 0,
             kind: 0,
@@ -1919,7 +1902,17 @@ fn a_chart_request_answers_the_hit_list() {
             lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
-    );
+    )
+}
+
+/// The `hits` section the boundary answers `text` with for `births`,
+/// checked row for row against the façade's own lists: how many hits of
+/// each kind, by `TsHitKind`, it carried.
+fn crossed_hits(ctx: &Ctx, births: [f64; 2], text: &str) -> [usize; 9] {
+    use teistro::gochar::hits::HitEvent;
+    use teistro_ffi::chart::{TsAspectPhase, TsHitKind, TsMoonPhase, TsMotion};
+    let hits = CString::new(text).unwrap();
+    let request = hit_list_request(&births, &hits);
     let mut blob = TsBlob::empty();
     // SAFETY: a live context, a valid request and a valid slot.
     assert_eq!(
@@ -1976,11 +1969,20 @@ fn a_chart_request_answers_the_hit_list() {
         "angle",
         "phase",
         "to_midheaven",
+        "varga",
+        "lunar_phase",
+        "solar_eclipse",
+        "lunar_eclipse",
     ]
     .map(column);
     let expected: Vec<&teistro::Hit> = lists.iter().flatten().collect();
+    let point = |to: teistro::NatalPoint| match to {
+        teistro::NatalPoint::Lagna => (1, 0, 0),
+        teistro::NatalPoint::Midheaven => (0, 0, 1),
+        teistro::NatalPoint::Graha { graha } => (0, i64::from(graha.id()), 0),
+    };
     assert_eq!(columns[0].len(), expected.len());
-    let mut kinds = [0_usize; 4];
+    let mut kinds = [0_usize; 9];
     for (at, hit) in expected.iter().enumerate() {
         let cell = |c: usize| columns[c][at].as_i64();
         assert_eq!(columns[0][at].as_f64(), hit.instant.get());
@@ -2019,11 +2021,55 @@ fn a_chart_request_answers_the_hit_list() {
                 assert_eq!(cell(7), i64::from(angle));
                 assert_eq!(cell(8), i64::from(TsAspectPhase::from(phase) as u8));
             }
-            other => panic!("the section carries no {other:?}"),
+            HitEvent::VargaIngress {
+                varga,
+                into,
+                motion,
+            } => {
+                assert_eq!(cell(10), i64::from(varga.id()));
+                assert_eq!(cell(3), i64::from(into.id()));
+                assert_eq!(cell(4), i64::from(TsMotion::from(motion) as u8));
+            }
+            HitEvent::LunarPhase { phase } => {
+                assert_eq!(cell(11), i64::from(TsMoonPhase::from(phase) as u8));
+            }
+            HitEvent::PhaseReturn => assert_eq!(cell(11), 0),
+            HitEvent::SolarEclipse { to, eclipse } => {
+                assert_eq!(point(to), (cell(5), cell(6), cell(9)));
+                assert_eq!(cell(12), i64::from(eclipse.id()));
+            }
+            HitEvent::LunarEclipse { to, eclipse } => {
+                assert_eq!(point(to), (cell(5), cell(6), cell(9)));
+                assert_eq!(cell(13), i64::from(eclipse.id()));
+            }
         }
     }
-    assert!(kinds.iter().all(|count| *count > 0), "{kinds:?}");
+    kinds
+}
 
+/// The transit hit list crosses: a request's `hits_json` answers every
+/// chart's list in the `hits` section, ragged by `cast.hit_count`, each
+/// row the façade's own hit for that chart, and a refusal names the field
+/// the caller wrote (`03-design/transit-hit-list.md`).
+#[test]
+fn a_chart_request_answers_the_hit_list() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0];
+    let text = r#"{"from":2460676.5,"to":2460866.5,"grahas":["SUN","MERCURY","SATURN","KETU"],"aspects":[0,90,180],"orbDeg":2}"#;
+    let kinds = crossed_hits(&ctx, births, text);
+    let (asked, others) = kinds.split_at(4);
+    assert!(asked.iter().all(|count| *count > 0), "{kinds:?}");
+    assert!(others.iter().all(|count| *count == 0), "{kinds:?}");
+
+    let hits = CString::new(text).unwrap();
+    let request = hit_list_request(&births, &hits);
     // A refusal names the field the caller wrote, under `hits`.
     let refused = |json: &str| {
         let text = CString::new(json).unwrap();
@@ -2049,19 +2095,28 @@ fn a_chart_request_answers_the_hit_list() {
         refused(r#"{"from":2460676.5,"to":2460866.5,"grahas":["PLUTO","PLUTO"]}"#).as_deref(),
         Some("hits.grahas")
     );
-    // A kind the section carries no fields for yet is refused by name
-    // before anything is founded, not answered without them.
-    let text =
-        CString::new(r#"{"from":2460676.5,"to":2460866.5,"kinds":["VARGA_INGRESS"]}"#).unwrap();
-    let asked = TsChartRequest {
-        hits_json: text.as_ptr(),
-        ..request
-    };
-    let mut out = TsBlob::empty();
-    // SAFETY: as above.
-    let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut out) };
-    assert_eq!(status, Status::Unsupported);
-    assert_eq!(ctx.last_error().2.as_deref(), Some("hits.kinds"));
+}
+
+/// The five kinds past the default four cross in their own columns: a
+/// varga ingress's chart, a lunar phase, a phase return, and an eclipse's
+/// kind with the natal point in the `to_*` columns, each row the façade's
+/// own. The second birth is an hour after the solar eclipse of 29 March
+/// 2025, so the year's search finds an eclipse on its luminaries.
+#[test]
+fn a_chart_request_answers_every_hit_kind() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let text = r#"{"from":2460676.5,"to":2461041.5,"grahas":["SUN","MARS"],"kinds":["VARGA_INGRESS","LUNAR_PHASE","PHASE_RETURN","SOLAR_ECLIPSE","LUNAR_ECLIPSE"],"vargas":["D9"]}"#;
+    let kinds = crossed_hits(&ctx, [2_451_545.0, 2_460_764.0], text);
+    let (defaults, asked) = kinds.split_at(4);
+    assert!(defaults.iter().all(|count| *count == 0), "{kinds:?}");
+    assert!(asked.iter().all(|count| *count > 0), "{kinds:?}");
 }
 
 /// Sade Sati crosses: a request's `sade_sati_json` answers every chart's

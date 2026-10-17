@@ -346,10 +346,10 @@ fn gochar(api: &Api) -> Vec<&'static str> {
 }
 
 /// The transit hit list's enums: an event's kind by its tag, and the
-/// motion and aspect phase it carries.
+/// motion, aspect phase and lunar phase it carries.
 fn hits(api: &Api) -> Vec<&'static str> {
-    use teistro::gochar::hits::{AspectPhase, HitEvent, Motion};
-    use teistro_ffi::chart::{TsAspectPhase, TsHitKind, TsMotion};
+    use teistro::gochar::hits::{AspectPhase, HitEvent, MoonPhase, Motion};
+    use teistro_ffi::chart::{TsAspectPhase, TsHitKind, TsMoonPhase, TsMotion};
     let id = |value: u8| Some(i64::from(value));
     let events: Vec<HitEvent> = read_keys(api, "TsHitKind", "kind", |key| match key {
         "SIGN_INGRESS" => json!({"into": "ARIES", "motion": "DIRECT"}),
@@ -374,6 +374,9 @@ fn hits(api: &Api) -> Vec<&'static str> {
         unit(api, "TsMotion", |m: &Motion| id(TsMotion::from(*m) as u8)),
         unit(api, "TsAspectPhase", |p: &AspectPhase| {
             id(TsAspectPhase::from(*p) as u8)
+        }),
+        unit(api, "TsMoonPhase", |p: &MoonPhase| {
+            id(TsMoonPhase::from(*p) as u8)
         }),
         unit(api, "TsWesternAspect", |a: &teistro::WesternAspect| {
             TsWesternAspect::of(*a).and_then(|a| id(a as u8))

@@ -1312,7 +1312,9 @@ class AnEngine(WithLibrary):
             self.assertNotEqual(first, second)
             self.assertEqual(first, sorted(first, key=lambda hit: hit.instant))
             kinds = {hit.event.kind for hit in first}
-            self.assertEqual(kinds, set(HitKind))
+            self.assertEqual(
+                kinds, {HitKind.SIGN_INGRESS, HitKind.NAKSHATRA_INGRESS, HitKind.STATION, HitKind.ASPECT}
+            )
             for hit in first:
                 self.assertIn(hit.graha, (Graha.SUN, Graha.MERCURY, Graha.SATURN))
                 if isinstance(hit.event, (SignIngress, NakshatraIngress)):
@@ -1320,6 +1322,7 @@ class AnEngine(WithLibrary):
                 elif isinstance(hit.event, Station):
                     self.assertIn(hit.event.turns.key, ("DIRECT", "RETROGRADE"))
                 else:
+                    assert isinstance(hit.event, AspectHit), hit.event
                     self.assertIn(hit.event.angle, (0, 90, 180))
             aspect = next(hit.event for hit in first if isinstance(hit.event, AspectHit))
             to_it: HitRequest = {**asked, "kinds": ["ASPECT"], "points": [aspect.to]}
@@ -1337,6 +1340,70 @@ class AnEngine(WithLibrary):
             for bad, field in refusals:
                 with self.assertRaises(TeistroError) as refused:
                     ctx.chart.found(instant=2451545, place=observer, utc_offset_seconds=20700, hits=bad)
+                self.assertEqual(refused.exception.field, field)
+
+    def test_a_hit_list_carries_varga_ingresses_lunar_phases_and_eclipses(self) -> None:
+        """The five kinds past the default four cross with their own fields:
+        a varga ingress's chart and sign, a lunar phase, a phase return, and
+        an eclipse's kind and natal point. The birth is an hour after the
+        solar eclipse of 29 March 2025, so 2025 holds an eclipse on its
+        luminaries."""
+        from teistro import (
+            HitKind,
+            HitRequest,
+            LunarEclipseHit,
+            LunarPhase,
+            MoonPhase,
+            PhaseReturn,
+            SolarEclipseHit,
+            Varga,
+            VargaIngress,
+        )
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        kinds = [
+            HitKind.VARGA_INGRESS,
+            HitKind.LUNAR_PHASE,
+            HitKind.PHASE_RETURN,
+            HitKind.SOLAR_ECLIPSE,
+            HitKind.LUNAR_ECLIPSE,
+        ]
+        asked: HitRequest = {
+            "from": 2460676.5,
+            "to": 2461041.5,
+            "grahas": [Graha.SUN, "MARS"],
+            "kinds": kinds,
+            "vargas": [Varga.D9, "D30"],
+            "eclipseOrbDeg": 3,
+        }
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            hits = ctx.chart.found(instant=2460764, place=observer, utc_offset_seconds=0, hits=asked).hits
+            self.assertEqual({hit.event.kind for hit in hits}, set(kinds))
+            for hit in hits:
+                event = hit.event
+                if isinstance(event, VargaIngress):
+                    self.assertIn(event.varga, (Varga.D9, Varga.D30))
+                    self.assertIsInstance(event.into, Rashi)
+                    continue
+                luminary = Graha.SUN if isinstance(event, SolarEclipseHit) else Graha.MOON
+                self.assertIs(hit.graha, luminary, "a phase is the Moon's hit and an eclipse its luminary's")
+                if isinstance(event, LunarPhase):
+                    self.assertIsInstance(event.phase, MoonPhase)
+                elif isinstance(event, (SolarEclipseHit, LunarEclipseHit)):
+                    self.assertIn(event.to.point, ("GRAHA", "LAGNA", "MIDHEAVEN"))
+                else:
+                    self.assertIsInstance(event, PhaseReturn)
+            phases = [hit for hit in hits if isinstance(hit.event, LunarPhase)]
+            self.assertTrue(48 <= len(phases) <= 50, len(phases))
+            refusals: list[tuple[HitRequest, str]] = [
+                ({**asked, "vargas": ["D1"]}, "hits.vargas"),
+                ({**asked, "eclipseOrbDeg": 20}, "hits.eclipseOrbDeg"),
+            ]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.chart.found(instant=2460764, place=observer, utc_offset_seconds=0, hits=bad)
                 self.assertEqual(refused.exception.field, field)
 
     def test_a_lunar_return_is_the_moon_back_on_her_own_natal_place(self) -> None:
