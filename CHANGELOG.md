@@ -441,6 +441,24 @@ rivals. Phaladeepika ch. 26 vv. 26–28, which `gochar.md` had named as this
 chakra, are the saptashalaka and the taras, and v. 48 is the chakra's
 verse (C428). The Rust surface only: no façade call or blob section yet.
 
+**The Black Moon Lilith in a chart** (`lilith.md`, C438 to C442).
+**Numbers:** none moved; a chart that does not ask is the same to the
+byte and to the hash. `ChartRequest::with_lilith(Apogee::Mean)` places
+the mean lunar apogee beside the nine in `ChartFoundation::lilith`, in
+the same request to the ephemeris: ELP2000-82B's mean perigee plus 180°,
+in the chart's own zodiac and houses (C439). It is held to Meeus's
+Example 47.a (*Astronomical Algorithms*, ch. 47: L′ − M′ + 180° with
+the example's nutation, 309.143959°) to a thousandth of a degree, and to
+his 40.690° a year. `Apogee::Osculating` places the apogee of the Moon's
+instantaneous ellipse, which later practice calls the "true" Lilith
+(C440). Both are read in the chart's frame and from its centre, as the
+nine are, so a topocentric chart sees the osculating apogee moved by up
+to about a degree (C441). The name is later practice; the record is the
+lunar apogee, not the asteroid (C442). Lilith is not a graha and not yet
+a catalogue point: the first reader that must name it adds the row
+(C438). A provider that cannot place the apogee is refused on `lilith`.
+The Rust surface only: no boundary section, binding or reader yet.
+
 **A hit list reports the Moon's phases and phase returns.** **Numbers:**
 none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,
 first quarter, full and last quarter moon, the Moon's elongation from the
