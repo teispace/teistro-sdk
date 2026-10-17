@@ -164,8 +164,13 @@ enumerable.
   finer chart changes more often, and the trimshamsha's changes land on
   its own five-degree boundaries.
 
-Still to come: PyJHora cross-checks for D81, D108 and D144, and the named
-hora and drekkana variants once a source for each is read.
+**What nothing outside the SDK checks** (2026-10-17): D81, D108 and D144.
+They are answered only as arbitrary cyclic charts, in the sample
+`crates/vargas/tests/exhaustive.rs` holds to the invariants and to their
+own rule; the corpus records none of them, and no PyJHora run has been
+made for them, so whether a named rule for any of them differs from the
+cyclic convention is unmeasured. Still to come: that cross-check, and the
+named hora and drekkana variants once a source for each is read.
 
 ## Not covered here
 
