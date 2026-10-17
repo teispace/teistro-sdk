@@ -20,7 +20,7 @@ mod common;
 
 use std::collections::BTreeMap;
 
-use common::{chart_at, files_in};
+use common::{chart, chart_at, files_in};
 use teistro_rules::{Evaluator, Readings, Rule, Tables, shipped};
 
 #[test]
@@ -2360,4 +2360,126 @@ const STRENGTH_BOUND: [(&str, usize); 6] = [
     ("PARASHARA_MRIDANGA", 0),
     ("PARASHARA_SANKHA", 22),
     ("PARASHARA_SARADA", 2),
+];
+
+/// Brihat Jataka ch. 12 v. 12 and Saravali ch. 21 v. 7 make an ashraya yoga
+/// fruitless where another Nabhasa yoga is mixed with it, which BPHS does not
+/// say, and the pack ships no such cancellation (crux C448). Under the pack's
+/// reading of the seven-house windows as confinement (crux C449) the clause
+/// could never let an ashraya yoga stand: every sky that holds one holds a
+/// dala or akriti yoga as well, most of them a window. This holds that over
+/// every sky the Sun, Mercury and Venus allow, so a change to either reading
+/// is seen here first.
+#[test]
+fn every_ashraya_sky_holds_another_nabhasa_yoga_under_the_confined_windows() {
+    let rule = |key: &str| -> &'static Rule {
+        shipped::nabhasas()
+            .iter()
+            .find(|rule| rule.key == key)
+            .unwrap_or_else(|| panic!("{key} ships"))
+    };
+    let ashraya = ["NABHASA_RAJJU", "NABHASA_MUSALA", "NABHASA_NALA"].map(rule);
+    let others = DALA_AND_AKRITI.map(rule);
+    let windows = CONFINED_WINDOWS.map(rule);
+    let (mut skies, mut alone, mut windowed) = (0_usize, 0_usize, 0_usize);
+    // Movable, fixed and dual: Aries, Taurus and Gemini, and every third sign
+    // on from each.
+    for (modality, ashraya) in (0_u8..).zip(ashraya) {
+        let signs = [0, 3, 6, 9].map(|step| modality + step);
+        for code in 0..4_usize.pow(5) {
+            // The Sun, Mercury and Venus share a sign: Mercury keeps within
+            // 28° of the Sun and Venus within 47°, and the nearest other sign
+            // of the same kind is three signs on.
+            let [inner, moon, mars, jupiter, saturn] =
+                [0, 1, 2, 3, 4].map(|at| signs[code / 4_usize.pow(at) % 4]);
+            for lagna in 0..12 {
+                let sky = ashraya_sky(lagna, [inner, moon, mars, inner, jupiter, inner, saturn]);
+                let evaluator = Evaluator::new(&sky, Readings::TEXTS);
+                skies += 1;
+                assert!(
+                    evaluator.evaluate(ashraya).present,
+                    "{} with the lagna in sign {lagna}",
+                    ashraya.key
+                );
+                if !others.iter().any(|rule| evaluator.evaluate(rule).present) {
+                    alone += 1;
+                }
+                if windows.iter().any(|rule| evaluator.evaluate(rule).present) {
+                    windowed += 1;
+                }
+            }
+        }
+    }
+    assert_eq!((skies, alone, windowed), (36_864, 0, 28_224));
+}
+
+/// A sky with the seven grahas in the signs given, the Sun to Saturn, the
+/// nodes in Aries and Libra and the lagna in sign `lagna`, every house whole
+/// signs from it.
+fn ashraya_sky(lagna: u8, seven: [u8; 7]) -> teistro_rules::RuleChart {
+    let mut bodies = serde_json::Map::new();
+    let mut place = |key: &str, sign: u8, degree: f64| {
+        bodies.insert(
+            key.to_owned(),
+            serde_json::json!({
+                "sidereal_longitude_deg": f64::from(sign) * 30.0 + degree,
+                "sign_index": sign,
+                "house": (sign + 12 - lagna) % 12 + 1,
+                "dignity": "NEUTRAL",
+                "is_retrograde": false,
+                "combust": "none",
+            }),
+        );
+    };
+    let grahas = [
+        "SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN",
+    ];
+    let degrees = [10.0, 15.0, 15.0, 16.0, 15.0, 22.0, 15.0];
+    for ((key, sign), degree) in grahas.into_iter().zip(seven).zip(degrees) {
+        place(key, sign, degree);
+    }
+    place("RAHU", 0, 5.0);
+    place("KETU", 6, 5.0);
+    place("LAGNA", lagna, 1.0);
+    chart(&serde_json::json!({ "bodies": bodies }))
+}
+
+/// The two dala and twenty akriti yogas: the Nabhasa yogas an ashraya yoga
+/// would stand down for under Brihat Jataka ch. 12 v. 12.
+const DALA_AND_AKRITI: [&str; 22] = [
+    "NABHASA_MAALA",
+    "NABHASA_SARPA",
+    "NABHASA_GADA",
+    "NABHASA_SAKATA",
+    "NABHASA_VIHAGA",
+    "NABHASA_SRINGATAKA",
+    "NABHASA_HALA",
+    "NABHASA_VAJRA",
+    "NABHASA_YAVA",
+    "NABHASA_KAMALA",
+    "NABHASA_VAPI",
+    "NABHASA_YUPA",
+    "NABHASA_SARA",
+    "NABHASA_SAKTHI",
+    "NABHASA_DANDA",
+    "NABHASA_NAUKA",
+    "NABHASA_KOOTA",
+    "NABHASA_CHATRA",
+    "NABHASA_CHAPA",
+    "NABHASA_ARDHA_CHANDRA",
+    "NABHASA_CHAKRA",
+    "NABHASA_SAMUDRA",
+];
+
+/// The akriti yogas the pack reads as the seven grahas confined to a window
+/// rather than filling it (crux C449): seven continuous houses from each of
+/// the twelve, and the six alternate houses from the first or the second.
+const CONFINED_WINDOWS: [&str; 7] = [
+    "NABHASA_NAUKA",
+    "NABHASA_KOOTA",
+    "NABHASA_CHATRA",
+    "NABHASA_CHAPA",
+    "NABHASA_ARDHA_CHANDRA",
+    "NABHASA_CHAKRA",
+    "NABHASA_SAMUDRA",
 ];
