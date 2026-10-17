@@ -1,7 +1,6 @@
 # The tithi pravesha
 
-Status: `drafted`, 2026-10-17 — written with the code, which no gate has
-run yet. `sdk.chart().tithi_praveshas(&birth, rule, through)` answers the
+Status: `built`, 2026-10-17. `sdk.chart().tithi_praveshas(&birth, rule, through)` answers the
 instants; the chart is the caller's to found at each one. The Rust
 surface only: no blob section or binding carries it yet. Cruxes C443 to
 C447.
