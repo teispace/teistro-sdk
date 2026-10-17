@@ -380,6 +380,17 @@ the traditional rulers or the modern ones, which give Aquarius, Pisces
 and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
 dispositor (C415), and the nodes are refused (C416). The Rust surface
 only: no blob section carries the chains yet.
+**A hit list reports varga ingresses.** **Numbers:** none moved: the
+new kind is asked for by name, `VARGA_INGRESS`, and a request naming no
+kinds asks for the four it always did (`HitKind::DEFAULT`). A graha
+entering a new sign of a divisional chart, in the charts `vargas` names
+(the navamsha by default, the rashi refused), is reported where the
+chart's sign changes and not at every part line, which is how
+`vargas::change::changes` already counted them (crux C418); the lines
+are `vargas::change::lines`, one more lattice in each graha's one scan.
+The Rust surface and the JSON record only: the C boundary names the kind
+in `TsHitKind` and refuses a request for it on `hits.kinds` until the
+`hits` section carries its chart.
 
 **A day's durmuhurtas, and where the Moon points.** **Numbers:** none
 moved. Every almanac day gains its `durmuhurtas`, the muhurtas its

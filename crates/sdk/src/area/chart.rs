@@ -1313,7 +1313,9 @@ impl<'a> ChartArea<'a> {
     /// Every ingress, station and aspect to a natal point of a window,
     /// against a natal chart: the transit hit list
     /// (`03-design/transit-hit-list.md`), sorted by instant, then graha,
-    /// then kind.
+    /// then kind. A request naming them adds the kinds the list has gained
+    /// since ([`HitKind::DEFAULT`](crate::HitKind::DEFAULT) are the four it
+    /// began with): a graha entering a new sign of a divisional chart.
     ///
     /// Each sign and nakshatra is the one a chart founded at that instant
     /// would give — the search reads the chart's own zodiac, not a frame's

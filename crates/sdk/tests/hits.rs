@@ -241,6 +241,7 @@ fn stations_alternate_and_bound_the_backward_ingresses() {
                 }
                 HitEvent::SignIngress { motion, .. }
                 | HitEvent::NakshatraIngress { motion, .. }
+                | HitEvent::VargaIngress { motion, .. }
                 | HitEvent::Aspect { motion, .. } => {
                     assert_eq!(motion == Motion::Retrograde, backward, "{graha:?} {hit:?}");
                 }
@@ -424,4 +425,93 @@ fn many_charts_are_answered_what_each_is_answered_alone() {
         sdk.chart().hits_many(none, &asked).unwrap_err().field(),
         Some("natals")
     );
+}
+
+/// Every varga ingress, read back through a chart founded a second either
+/// side of it, stands outside the sign it names before and inside it after,
+/// in the chart's own divisional chart: the navamsha, evenly cut, and the
+/// trimshamsha, whose parts are not (C418). The navamsha is also held to
+/// its rule worked by hand, a ninth of a sign counted on from Aries round
+/// the whole circle, and Mars's retrograde spell in early 2025 gives the
+/// ingresses made backwards.
+#[test]
+fn every_varga_ingress_is_where_a_founded_chart_puts_it() {
+    use teistro::catalogue::Varga;
+    use teistro_vargas::chart::{Axis, chart as varga_chart};
+    let sdk = context(None);
+    let natal = natal(&sdk);
+    let asked = year()
+        .with_grahas([Graha::Sun, Graha::Mars, Graha::Jupiter])
+        .with_kinds([HitKind::VargaIngress])
+        .with_vargas([Varga::D9, Varga::D30]);
+    let hits = sdk.chart().hits(&natal, &asked).unwrap().value;
+    let second = 1.0 / 86_400.0;
+    let either_side: Vec<JulianDay<Utc>> = hits
+        .iter()
+        .flat_map(|hit| {
+            [
+                JulianDay::<Utc>::literal(hit.instant.get() - second),
+                JulianDay::<Utc>::literal(hit.instant.get() + second),
+            ]
+        })
+        .collect();
+    let founded = sdk
+        .chart()
+        .found_many(&either_side, &place(), UtcOffset::UTC, ChartKind::Natal)
+        .unwrap()
+        .value;
+    let mut counted = std::collections::BTreeMap::new();
+    for (hit, pair) in hits.iter().zip(founded.chunks(2)) {
+        let HitEvent::VargaIngress {
+            varga,
+            into,
+            motion,
+        } = hit.event
+        else {
+            panic!("only varga ingresses were asked for: {hit:?}");
+        };
+        let sign = |at: usize| {
+            varga_chart(&pair[at], Axis::of(varga))
+                .unwrap()
+                .graha(hit.graha)
+                .unwrap()
+                .sign
+        };
+        // Whichever way the graha moved, the sign it entered is the one it
+        // stands in after the crossing.
+        assert_ne!(sign(0), into, "{hit:?}");
+        assert_eq!(sign(1), into, "{hit:?}");
+        if varga == Varga::D9 {
+            let by_hand = |at: usize| {
+                let deg = pair[at].graha(hit.graha).unwrap().longitude_deg;
+                Rashi::ALL[(deg.rem_euclid(360.0) * 9.0 / 30.0) as usize % 12]
+            };
+            assert_eq!(by_hand(1), into, "{hit:?}");
+        }
+        *counted.entry((varga, motion)).or_insert(0_usize) += 1;
+    }
+    // The Sun crosses 108 navamsha lines a year and changes trimshamsha
+    // five times a sign; Mars makes some of each backwards.
+    for key in [
+        (Varga::D9, Motion::Direct),
+        (Varga::D9, Motion::Retrograde),
+        (Varga::D30, Motion::Direct),
+        (Varga::D30, Motion::Retrograde),
+    ] {
+        assert!(counted.get(&key).is_some_and(|n| *n > 0), "{counted:?}");
+    }
+    let sun_d9 = hits
+        .iter()
+        .filter(|hit| {
+            hit.graha == Graha::Sun
+                && matches!(
+                    hit.event,
+                    HitEvent::VargaIngress {
+                        varga: Varga::D9,
+                        ..
+                    }
+                )
+        })
+        .count();
+    assert!((106..=109).contains(&sun_d9), "{sun_d9}");
 }

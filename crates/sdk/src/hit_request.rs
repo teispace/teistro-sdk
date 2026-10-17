@@ -5,12 +5,13 @@ use serde::{Deserialize, Serialize};
 use teistro_astro::events::{Direction, Lattice, StationKind};
 use teistro_chart::OUTER;
 use teistro_chart::foundation::{TransitEvent, TransitEventKind};
-use teistro_core::catalogue::{Catalogued as _, Graha};
+use teistro_core::catalogue::{Catalogued as _, Graha, Varga};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_gochar::GRAHAS;
 use teistro_gochar::hits::{self, Edge, HitEvent, Motion, NatalPoint};
 use teistro_serial::Document;
+use teistro_vargas::Scheme;
 
 /// A kind of event a hit list reports, spelled as the event's own `kind`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -27,11 +28,26 @@ pub enum HitKind {
     /// A graha aspecting a natal point, at the angles asked for (C145),
     /// with the orb's edges when an orb was asked for (C146).
     Aspect,
+    /// A graha entering a new sign of a divisional chart the request
+    /// names, the navamsha unless it names others (C418). Asked for by
+    /// name only: it is not among [`HitKind::DEFAULT`].
+    VargaIngress,
 }
 
 impl HitKind {
-    /// Every kind, the default a request asks for.
-    pub const ALL: [HitKind; 4] = [
+    /// Every kind a hit list can report.
+    pub const ALL: [HitKind; 5] = [
+        HitKind::SignIngress,
+        HitKind::NakshatraIngress,
+        HitKind::Station,
+        HitKind::Aspect,
+        HitKind::VargaIngress,
+    ];
+
+    /// The kinds a request asks for unless it names its own: the four the
+    /// hit list began with. A kind added since is asked for by name, so
+    /// no list a caller already reads grows under them.
+    pub const DEFAULT: [HitKind; 4] = [
         HitKind::SignIngress,
         HitKind::NakshatraIngress,
         HitKind::Station,
@@ -51,6 +67,14 @@ impl HitKind {
 ///     .with_grahas([Graha::Saturn, Graha::Jupiter])
 ///     .with_kinds([HitKind::SignIngress, HitKind::Station]);
 /// assert_eq!(asked.grahas().len(), 2);
+///
+/// // Jupiter's navamsha and dashamsha ingresses over the same years.
+/// use teistro::catalogue::Varga;
+/// let vargas = asked
+///     .with_grahas([Graha::Jupiter])
+///     .with_kinds([HitKind::VargaIngress])
+///     .with_vargas([Varga::D9, Varga::D10]);
+/// assert_eq!(vargas.vargas(), &[Varga::D9, Varga::D10]);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct HitRequest {
@@ -61,6 +85,7 @@ pub struct HitRequest {
     points: Vec<NatalPoint>,
     aspects: Vec<u16>,
     orb_deg: Option<f64>,
+    vargas: Vec<Varga>,
 }
 
 impl HitRequest {
@@ -69,16 +94,22 @@ impl HitRequest {
     /// C145).
     pub const DEFAULT_ASPECTS: [u16; 2] = [0, 180];
 
+    /// The divisional charts a varga ingress is reported in unless asked
+    /// otherwise: the navamsha, the chart a transit is most often read in
+    /// after the rashi (C418).
+    pub const DEFAULT_VARGAS: [Varga; 1] = [Varga::D9];
+
     /// Every event of all nine grahas between two instants: their
     /// ingresses, their stations and their conjunctions and oppositions to
-    /// the natal grahas and lagna, exact.
+    /// the natal grahas and lagna, exact — the kinds of
+    /// [`HitKind::DEFAULT`].
     #[must_use]
     pub fn between(from: JulianDay<Utc>, to: JulianDay<Utc>) -> HitRequest {
         HitRequest {
             from,
             to,
             grahas: GRAHAS.to_vec(),
-            kinds: HitKind::ALL.to_vec(),
+            kinds: HitKind::DEFAULT.to_vec(),
             points: GRAHAS
                 .iter()
                 .map(|graha| NatalPoint::Graha { graha: *graha })
@@ -86,6 +117,7 @@ impl HitRequest {
                 .collect(),
             aspects: HitRequest::DEFAULT_ASPECTS.to_vec(),
             orb_deg: None,
+            vargas: HitRequest::DEFAULT_VARGAS.to_vec(),
         }
     }
 
@@ -125,6 +157,7 @@ impl HitRequest {
             kinds: vec![HitKind::Aspect],
             aspects: vec![0],
             orb_deg: None,
+            vargas: HitRequest::DEFAULT_VARGAS.to_vec(),
         }
     }
 
@@ -163,6 +196,27 @@ impl HitRequest {
     pub const fn with_orb(mut self, orb_deg: f64) -> HitRequest {
         self.orb_deg = Some(orb_deg);
         self
+    }
+
+    /// The same request, reporting varga ingresses in these divisional
+    /// charts (C418). The rashi, D1, is not one: its ingresses are
+    /// [`HitKind::SignIngress`].
+    #[must_use]
+    pub fn with_vargas(mut self, vargas: impl IntoIterator<Item = Varga>) -> HitRequest {
+        self.vargas = vargas.into_iter().collect();
+        self
+    }
+
+    /// The divisional charts varga ingresses are reported in.
+    #[must_use]
+    pub fn vargas(&self) -> &[Varga] {
+        &self.vargas
+    }
+
+    /// The kinds of event asked for, in the order named.
+    #[must_use]
+    pub fn kinds(&self) -> &[HitKind] {
+        &self.kinds
     }
 
     /// The natal points aspected.
@@ -215,8 +269,8 @@ impl HitRequest {
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` naming `to`, `grahas`, `kinds`, `points`, `aspects`
-    /// or `orb_deg`.
+    /// `INVALID_ARG` naming `to`, `grahas`, `kinds`, `points`, `aspects`,
+    /// `orb_deg` or `vargas`.
     pub fn check(&self) -> Result<(), Error> {
         if self.to.get() <= self.from.get() {
             return Err(Error::invalid_arg(format!(
@@ -235,6 +289,22 @@ impl HitRequest {
         placeable(self.grahas.iter().copied(), "grahas")?;
         if self.kinds.is_empty() {
             return Err(Error::invalid_arg("no kind of event to report").with_field("kinds"));
+        }
+        if self.asks(HitKind::VargaIngress) {
+            if self.vargas.is_empty() {
+                return Err(
+                    Error::invalid_arg("no divisional chart to report varga ingresses in")
+                        .with_field("vargas"),
+                );
+            }
+            repeated(&self.vargas, "vargas")?;
+            if self.vargas.contains(&Varga::D1) {
+                return Err(Error::invalid_arg(
+                    "the rashi is no divisional chart to enter a new sign of",
+                )
+                .with_field("vargas")
+                .with_hint("a graha entering a sign is the SIGN_INGRESS kind"));
+            }
         }
         if self.asks(HitKind::Aspect) {
             if self.points.is_empty() {
@@ -276,9 +346,10 @@ impl HitRequest {
 
     /// The request a binding writes as `hits`, read and checked: the window
     /// as UTC Julian days, and optionally the grahas, the kinds, the natal
-    /// points, the aspects' angles and an orb, each spelled as the answer
-    /// spells it — a graha by its key, a kind as an event's `kind`, a point
-    /// as an aspect's `to` or bare (`"LAGNA"`, `"MOON"`).
+    /// points, the aspects' angles, an orb and the divisional charts
+    /// (`vargas`), each spelled as the answer spells it — a graha or a
+    /// varga by its key, a kind as an event's `kind`, a point as an
+    /// aspect's `to` or bare (`"LAGNA"`, `"MOON"`).
     ///
     /// ```
     /// use teistro::{HitKind, HitRequest};
@@ -323,6 +394,9 @@ impl HitRequest {
         if let Some(orb_deg) = asked.orb_deg {
             request = request.with_orb(orb_deg);
         }
+        if let Some(vargas) = asked.vargas {
+            request = request.with_vargas(vargas);
+        }
         request.check().map_err(|why| {
             // The builder's field is `orb_deg`; the record's is `orbDeg`.
             let why = match why.field() {
@@ -358,6 +432,8 @@ pub(crate) struct Asked {
     aspects: Option<Vec<u16>>,
     #[serde(default)]
     orb_deg: Option<f64>,
+    #[serde(default)]
+    vargas: Option<Vec<Varga>>,
 }
 
 /// A natal point as a request may name it: as an answer's `to` spells it
@@ -452,6 +528,7 @@ fn repeated<T: PartialEq + std::fmt::Debug>(members: &[T], field: &str) -> Resul
 pub(crate) enum Meaning {
     Sign,
     Nakshatra,
+    Varga(Varga),
     Aspect(usize, NatalPoint, f64, Edge),
 }
 
@@ -474,8 +551,9 @@ pub(crate) fn groups(natals: &[&Document], topocentric: bool) -> Vec<(Place, Vec
 }
 
 /// The lattices one group's scan tests, and what each one's crossings
-/// mean: the signs and the nakshatras once for the group, and each chart's
-/// aspect lines, exact and at the orb's two edges.
+/// mean: the signs, the nakshatras and each divisional chart's lines once
+/// for the group, and each chart's aspect lines, exact and at the orb's
+/// two edges.
 ///
 /// # Errors
 ///
@@ -492,6 +570,14 @@ pub(crate) fn lattices_of(
     }
     if request.asks(HitKind::NakshatraIngress) {
         meanings.push((Meaning::Nakshatra, Lattice::NAKSHATRAS));
+    }
+    if request.asks(HitKind::VargaIngress) {
+        for varga in &request.vargas {
+            let lines = teistro_vargas::change::lines(&Scheme::of(*varga)).ok_or_else(|| {
+                Error::internal(format!("{} has no lattice of lines", varga.key()))
+            })?;
+            meanings.push((Meaning::Varga(*varga), lines));
+        }
     }
     if !request.asks(HitKind::Aspect) {
         return Ok(meanings);
@@ -561,6 +647,14 @@ pub(crate) fn hit_of(
                 hits::nakshatra_ingress(boundary_deg, motion(direction)),
                 None,
             )),
+            // Most of the trimshamsha's lines, and the hora's at each
+            // sign's end, leave the sign as it was: no ingress.
+            Meaning::Varga(varga) => hits::varga_ingress(
+                varga,
+                teistro_vargas::change::either_side(&Scheme::of(varga), boundary_deg).ok()?,
+                motion(direction),
+            )
+            .map(|ingress| (ingress, None)),
             Meaning::Aspect(chart, point, natal_deg, edge) => hits::aspect_hit(
                 (point, natal_deg),
                 (boundary_deg, edge, request.orb_deg.unwrap_or(0.0)),
@@ -630,6 +724,26 @@ mod tests {
     }
 
     #[test]
+    fn a_new_kind_is_asked_for_by_name() {
+        // The default is the four the list began with, so no list a
+        // caller already reads grows.
+        let asked = HitRequest::from_json(&format!("{{{WINDOW}}}")).unwrap();
+        assert_eq!(asked.kinds(), HitKind::DEFAULT);
+        assert!(!asked.asks(HitKind::VargaIngress));
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "kinds": ["VARGA_INGRESS"], "vargas": ["D9", "varga.D30"]}}"#
+        ))
+        .unwrap();
+        assert_eq!(asked.vargas(), [Varga::D9, Varga::D30]);
+        // Asked for without charts, it reports the navamsha's.
+        let asked =
+            HitRequest::from_json(&format!(r#"{{{WINDOW}, "kinds": ["VARGA_INGRESS"]}}"#)).unwrap();
+        assert_eq!(asked.vargas(), HitRequest::DEFAULT_VARGAS);
+        // Charts named beside kinds that never read them are not checked.
+        assert!(HitRequest::from_json(&format!(r#"{{{WINDOW}, "vargas": []}}"#)).is_ok());
+    }
+
+    #[test]
     fn a_graha_is_named_bare_or_full() {
         let asked = HitRequest::from_json(&format!(
             r#"{{{WINDOW}, "grahas": ["SUN", "graha.SATURN"], "points": ["graha.MOON", {{"point": "GRAHA", "graha": "graha.MARS"}}]}}"#
@@ -655,6 +769,18 @@ mod tests {
             (r#", "aspects": [0, 10], "orbDeg": 6"#, "hits.orbDeg"),
             (r#", "orbDeg": 20"#, "hits.orbDeg"),
             (r#", "kinds": []"#, "hits.kinds"),
+            (
+                r#", "kinds": ["VARGA_INGRESS"], "vargas": []"#,
+                "hits.vargas",
+            ),
+            (
+                r#", "kinds": ["VARGA_INGRESS"], "vargas": ["D9", "D9"]"#,
+                "hits.vargas",
+            ),
+            (
+                r#", "kinds": ["VARGA_INGRESS"], "vargas": ["D1"]"#,
+                "hits.vargas",
+            ),
         ] {
             assert_eq!(refused(rest).field(), Some(field), "{rest}");
         }
