@@ -359,6 +359,18 @@ navamsha, a strong unafflicted benefic in a kendra, and three figures of
 very long life. The note on v. 68 now says what vv. 69 and 70 ask, a cruel
 shashtyamsha, which is not built.
 
+**Dispositor chains and the final dispositor.** **Numbers:** none
+moved. `Dignities` gains `dispositions`: each of the seven's dispositors
+followed until one repeats, where each chain stops (a planet in its own
+sign, or a cycle reported whole, a mutual reception by house being one of
+two), and the final dispositor when every chain stops at one planet in
+its own sign (Leo p. 130 and Lilly p. 161 for the dispositor; the chain
+is later practice, C413). `ChartArea::dispositions` reads a chart under
+the traditional rulers or the modern ones, which give Aquarius, Pisces
+and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
+dispositor (C415), and the nodes are refused (C416). The Rust surface
+only: no blob section carries the chains yet.
+
 **A day's durmuhurtas, and where the Moon points.** **Numbers:** none
 moved. Every almanac day gains its `durmuhurtas`, the muhurtas its
 weekday censures, chosen by `panchanga.durmuhurta`: Muhurta Chintamani's

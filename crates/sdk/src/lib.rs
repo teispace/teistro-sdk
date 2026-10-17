@@ -337,14 +337,15 @@ pub use teistro_hellenistic as hellenistic;
 #[cfg(feature = "chart")]
 pub use teistro_hellenistic::{
     Accident, AccidentalRules, AccidentalScores, Almuten, AlmutenRules, Almutens, Application,
-    ApplicationKind, AscendantClause, AspectTimeline, Collection, ConsiderationRules,
-    Considerations, Contact, Dignities, DignityKind, DignityRequest, DignityRules, Distance,
-    EssentialDignity, FortitudeRequest, Fortitudes, FortuneRule, Impediment, ImpedimentKind, Lot,
-    LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest, Matter, MoonClause, MoonCourse,
-    Partile, Perfection, PerfectionRequest, PerfectionRules, PlaceReading, PlacedLot,
-    PlanetAccidents, PlanetDignity, PtolemaicAspect, RadicalGround, Radicality, Reception, Scores,
-    Sect, SectRule, Separation, SeventhClause, Siege, SignificatorPlace, Standing, Station,
-    Temperament, Terms, TermsTable, Translation, Triplicities, Way, Ways,
+    ApplicationKind, AscendantClause, AspectTimeline, ChainEnd, Collection, ConsiderationRules,
+    Considerations, Contact, Dignities, DignityKind, DignityRequest, DignityRules, Dispositions,
+    DispositorChain, Distance, EssentialDignity, FortitudeRequest, Fortitudes, FortuneRule,
+    Impediment, ImpedimentKind, Lot, LotArc, LotFormula, LotPlace, LotPoint, LotReading,
+    LotRequest, Matter, MoonClause, MoonCourse, Partile, Perfection, PerfectionRequest,
+    PerfectionRules, PlaceReading, PlacedLot, PlanetAccidents, PlanetDignity, PtolemaicAspect,
+    RadicalGround, Radicality, Reception, Rulers, Scores, Sect, SectRule, Separation,
+    SeventhClause, Siege, SignificatorPlace, Standing, Station, Temperament, Terms, TermsTable,
+    Translation, Triplicities, Way, Ways,
 };
 // Progressions and directions, the modern Western measures held to Leo's
 // *The Progressed Horoscope* (`03-design/western-progressions.md`).
