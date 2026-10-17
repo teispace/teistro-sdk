@@ -396,6 +396,23 @@ and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
 dispositor (C415), and the nodes are refused (C416). The Rust surface
 only: no blob section carries the chains yet.
 
+**The tithi pravesha** (`tithi-pravesha.md`, C443 to C447). **Numbers:**
+none moved; the solar returns and the hit list are unchanged.
+`sdk.chart().tithi_praveshas(&birth, rule, through)` answers, for each
+year `1` to `through`, the instant the Moon's elongation from the Sun
+returns to the birth's, the hit list's phase return
+(`Founder::elongation_events`, C420), chosen around that year's sidereal
+solar return. `TithiRule::NatalSign`, the default, takes the return while
+the Sun is in its natal sign (C444); of two the nearer the solar return
+(C445), and with none the nearest return, reported as
+`picked: NEAREST_RETURN` (C446). `TithiRule::NearestReturn` takes the
+nearest whatever the sign. Each answer carries the solar return, the
+elongation, the rule that picked it and how many returns the sign held.
+No classical text defining the chart was found; the rule is the
+practice's own sentence, rank 3, and no verse is cited (C443). The year's
+chart is the caller's to found where the native is. The Rust surface
+only: no blob section or binding carries it yet.
+
 **Half- and quarter-returns.** **Numbers:** none moved. `returns`,
 `BodyReturn` and the hit list are unchanged, and offset 0 of the new call
 gives `returns`' instants bit for bit. `sdk.chart().returns_at(&birth,
