@@ -167,3 +167,50 @@ that reads the reference once.
    **built** at rank 4 as practice defines it, `sade-sati.md`), the
    hit list over the crossing search, and the Ashtakavarga's transit
    scoring.
+
+## 7. Said in words
+
+A reading crossed every binding as numbers and codes, and an application
+holding one could show only those: building a test app on the SDK, the
+gochar screen printed the reading's JSON (2026-10-14), because nothing
+turned a verdict into a sentence. `teistro_interpret::gochar` does, and
+`sdk.interpret().gochar(&reading)` reaches it.
+
+- **What it says**, in the order a reader takes it in: the sign the houses
+  are counted from and whose it is (`sdk.reason.gochar.from`); each graha
+  the Sun to Ketu in its house with its verdict (`transit`); for an
+  obstructed one, who obstructs it and from which house (`vedha`); where in
+  its sign it bears fruit and whether it stands there now (`fruition`, v.
+  25); and, when the request asked for the Ashtakavarga, each of the
+  seven's bindus with the reading's own good-or-not (`ashtakavarga`). Five
+  messages in English and Nepali, the Nepali in the verses' terms (गोचर,
+  वेध, शुभ, अशुभ, बिन्दु).
+- **It judges nothing.** The verdict and the threshold are the kernel's
+  under the settings' `gochar` group, and a sentence neither softens nor
+  sharpens one: "favourable, but obstructed" is `OBSTRUCTED`, not a third
+  opinion. It needs no corpus, unlike Sade Sati's readings, because the
+  rule is the SDK's and so are its words.
+- **One plan an instant.** A plan is a list of things to say about one
+  sky; a batch of instants is a batch of plans, so `Plans.gochar` is a
+  list of plans in the request's order rather than one plan that would
+  have to date each sentence.
+- **Left unsaid**, on purpose: the kakshya and the sign's sarva (v. 16's
+  "others say"), the vedha house when nothing stands in it (that is what
+  `GOOD` means), and the fruition of the three that bear fruit throughout
+  their signs (C138), which tells a reader nothing.
+
+**In a plan request.** `gochar` is a member of `PlanRequest` like
+`sadeSati`: it reads no section and **needs a gochar request beside it**
+(`PlanInputs::with_gochar`; at the boundary, the chart request's
+`gochar`), refused as `interpret.gochar` without one. The transits are
+read **once**: `ChartArea::interpreted` reads them beside each chart and
+hands them back as `Interpreted::gochar` as well as saying them, and
+`compose` takes its `gochar` table from there instead of reading it a
+second time.
+
+**Measured.** `interpret-measured.md`'s founded chart says its transits a
+month apart over two years with the Ashtakavarga, which emits all five
+keys and renders each in both strict locales with no fallback and no
+warning; a façade test (`crates/sdk/tests/plans.rs`) holds the plans to
+the composer over the same call's readings, one an instant, and the Node,
+Python and Dart suites hold the refusal and the shape across the boundary.

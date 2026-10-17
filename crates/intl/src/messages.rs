@@ -2071,6 +2071,114 @@ pub mod sdk {
             }
         }
 
+        /// The `gochar` group.
+        pub mod gochar {
+            /// The message `sdk.reason.gochar.ashtakavarga`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Ashtakavarga {
+                /// The `bindus` parameter.
+                pub bindus: i64,
+                /// The `good` parameter.
+                pub good: String,
+                /// The `graha` parameter.
+                pub graha: teistro_core::catalogue::Graha,
+            }
+
+            impl crate::TypedMessage for Ashtakavarga {
+                const KEY: &'static str = "sdk.reason.gochar.ashtakavarga";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("bindus", crate::Value::Int(self.bindus)),
+                        ("good", crate::Value::Str(self.good.clone())),
+                        ("graha", crate::Value::catalogued(self.graha)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.gochar.from`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct From {
+                /// The `from` parameter.
+                pub from: String,
+                /// The `rashi` parameter.
+                pub rashi: teistro_core::catalogue::Rashi,
+            }
+
+            impl crate::TypedMessage for From {
+                const KEY: &'static str = "sdk.reason.gochar.from";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("from", crate::Value::Str(self.from.clone())),
+                        ("rashi", crate::Value::catalogued(self.rashi)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.gochar.fruition`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Fruition {
+                /// The `graha` parameter.
+                pub graha: teistro_core::catalogue::Graha,
+                /// The `now` parameter.
+                pub now: String,
+                /// The `part` parameter.
+                pub part: String,
+            }
+
+            impl crate::TypedMessage for Fruition {
+                const KEY: &'static str = "sdk.reason.gochar.fruition";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("graha", crate::Value::catalogued(self.graha)),
+                        ("now", crate::Value::Str(self.now.clone())),
+                        ("part", crate::Value::Str(self.part.clone())),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.gochar.transit`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Transit {
+                /// The `graha` parameter.
+                pub graha: teistro_core::catalogue::Graha,
+                /// The `house` parameter.
+                pub house: i64,
+                /// The `verdict` parameter.
+                pub verdict: String,
+            }
+
+            impl crate::TypedMessage for Transit {
+                const KEY: &'static str = "sdk.reason.gochar.transit";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("graha", crate::Value::catalogued(self.graha)),
+                        ("house", crate::Value::Int(self.house)),
+                        ("verdict", crate::Value::Str(self.verdict.clone())),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.gochar.vedha`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Vedha {
+                /// The `grahas` parameter.
+                pub grahas: Vec<crate::Value>,
+                /// The `house` parameter.
+                pub house: i64,
+            }
+
+            impl crate::TypedMessage for Vedha {
+                const KEY: &'static str = "sdk.reason.gochar.vedha";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("grahas", crate::Value::List(self.grahas.clone())),
+                        ("house", crate::Value::Int(self.house)),
+                    ])
+                }
+            }
+
+        }
+
         /// The message `sdk.reason.grahaAt`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct GrahaAt {

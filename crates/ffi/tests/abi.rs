@@ -5919,6 +5919,8 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
     // Beside the rules `readings` says, the window `sadeSati` says: one
     // instant, since what is under test is that it can be asked for.
     let window = CString::new(r#"{"from": 2460676.5}"#).unwrap();
+    // And the instant `gochar` says the transits at.
+    let gochar = CString::new(r#"{"instants": [2461000.5]}"#).unwrap();
     let silent: std::collections::BTreeMap<&str, &str> = SILENT.iter().copied().collect();
 
     for member in teistro::PlanRequest::MEMBERS {
@@ -5949,7 +5951,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 rules_json: rules.as_ptr(),
                 interpret_json: plans.as_ptr(),
                 varsha_json: ptr::null(),
-                gochar_json: ptr::null(),
+                gochar_json: gochar.as_ptr(),
                 hits_json: ptr::null(),
                 sade_sati_json: window.as_ptr(),
                 kp_json: ptr::null(),

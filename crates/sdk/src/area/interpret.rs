@@ -3,9 +3,9 @@
 use teistro_core::error::Error;
 use teistro_interpret::{
     Plan, ashtakavarga as say_ashtakavarga, aspects, bhava_bala as say_bhava_bala,
-    chalit as say_chalit, conditions, dasha_phala, houses, karakas, panchanga as say_panchanga,
-    phala, placements, positions, readings, sade_sati as say_sade_sati, states as say_states,
-    strength, vimshopaka as say_vimshopaka,
+    chalit as say_chalit, conditions, dasha_phala, gochar as say_gochar, houses, karakas,
+    panchanga as say_panchanga, phala, placements, positions, readings, sade_sati as say_sade_sati,
+    states as say_states, strength, vimshopaka as say_vimshopaka,
 };
 use teistro_serial::document::Document;
 
@@ -182,6 +182,34 @@ impl<'a> InterpretArea<'a> {
     pub fn sade_sati(self, report: &teistro_gochar::sade_sati::Report) -> Plan {
         let engine = self.context.locale_engine();
         say_sade_sati(report, &*engine)
+    }
+
+    /// What a gochar reading says: the sign its houses are counted from,
+    /// each graha's house and verdict, who obstructs it, where in its sign
+    /// it bears fruit, and its bindus when the reading carries the
+    /// Ashtakavarga (`03-design/gochar.md` §7).
+    ///
+    /// It takes one reading of the ones [`ChartArea::gochar`](crate::ChartArea::gochar)
+    /// gives, one an instant, and says what the kernel judged under the
+    /// settings' `gochar` group without judging again. It needs no corpus:
+    /// the verdicts are Phaladeepika ch. 26's, and so are the words.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Ephemeris, GocharRequest};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let natal: Document = todo!();
+    /// let today = JulianDay::<Utc>::literal(2_461_000.5);
+    /// let readings = sdk.chart().gochar(&natal, &GocharRequest::at(today))?.value;
+    /// let plan = sdk.interpret().gochar(&readings[0]);
+    /// assert_eq!(plan.items[0].key, "sdk.reason.gochar.from");
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[must_use]
+    pub fn gochar(self, reading: &teistro_gochar::GocharReading) -> Plan {
+        say_gochar(reading)
     }
 
     /// Each bhava's strength in virupas, the first house first.
@@ -467,6 +495,14 @@ impl<'a> InterpretArea<'a> {
                     .sade_sati
                     .map_or_else(Plan::default, |report| self.sade_sati(report))
             }),
+            gochar: asked.gochar.then(|| {
+                answers
+                    .gochar
+                    .unwrap_or_default()
+                    .iter()
+                    .map(|reading| self.gochar(reading))
+                    .collect()
+            }),
         })
     }
 }
@@ -532,6 +568,10 @@ pub struct Plans {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "sadeSati")]
     pub sade_sati: Option<Plan>,
+    /// What the transits come to, one plan an instant in the order the
+    /// gochar request named them.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gochar: Option<Vec<Plan>>,
 }
 
 /// What the requests beside one chart answered for it, which the plans
@@ -543,6 +583,8 @@ pub struct Answers<'a, 'r> {
     pub reading: Option<&'a RulesReading<'r>>,
     /// Saturn's periods from the chart's Moon over the window asked.
     pub sade_sati: Option<&'a teistro_gochar::sade_sati::Report>,
+    /// The transits from the chart at each instant asked.
+    pub gochar: Option<&'a [teistro_gochar::GocharReading]>,
 }
 
 impl<'a, 'r> Answers<'a, 'r> {
@@ -552,6 +594,7 @@ impl<'a, 'r> Answers<'a, 'r> {
         Answers {
             reading: None,
             sade_sati: None,
+            gochar: None,
         }
     }
 
@@ -569,6 +612,16 @@ impl<'a, 'r> Answers<'a, 'r> {
         report: &'a teistro_gochar::sade_sati::Report,
     ) -> Answers<'a, 'r> {
         self.sade_sati = Some(report);
+        self
+    }
+
+    /// The chart's transits, one reading an instant.
+    #[must_use]
+    pub const fn with_gochar(
+        mut self,
+        readings: &'a [teistro_gochar::GocharReading],
+    ) -> Answers<'a, 'r> {
+        self.gochar = Some(readings);
         self
     }
 }

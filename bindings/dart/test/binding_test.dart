@@ -1171,6 +1171,42 @@ void _engineTests() {
       isNotEmpty,
       reason: 'the report is on the chart beside the plan',
     );
+    // The transits are said one plan an instant, from the readings beside
+    // them, and need no corpus; asked without a gochar request, refused.
+    expect(
+      () => found(const PlanRequest(gochar: true)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'interpret.gochar',
+        ),
+      ),
+    );
+    final transits = ctx.chart.found(
+      instant: 2451545.0,
+      place: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+      utcOffsetSeconds: 20700,
+      gochar: const GocharRequest(
+        instants: [2461000.5, 2461365.5],
+        ashtakavarga: true,
+      ),
+      interpret: const PlanRequest(gochar: true),
+    );
+    final transitPlans = transits.plans!['gochar']! as List<Object?>;
+    expect(transitPlans, hasLength(2), reason: 'one plan an instant');
+    for (final plan in transitPlans.cast<List<Object?>>()) {
+      final items = plan.cast<Map<String, Object?>>();
+      expect(items.first['key'], 'sdk.reason.gochar.from');
+      expect(
+        items.where((item) => item['key'] == 'sdk.reason.gochar.transit'),
+        hasLength(9),
+      );
+    }
     ctx.dispose();
   });
 

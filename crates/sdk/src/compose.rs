@@ -399,12 +399,16 @@ impl ChartRecords {
         request
     }
 
-    /// What the founding reads beside the charts: the rules and the Sade
-    /// Sati window.
+    /// What the founding reads beside the charts: the rules, the Sade
+    /// Sati window and the gochar instants.
     fn plan_inputs(&self) -> PlanInputs<'_> {
         let inputs = PlanInputs::from(self.rules.as_ref());
-        match &self.sade_sati {
+        let inputs = match &self.sade_sati {
             Some(window) => inputs.with_sade_sati(window),
+            None => inputs,
+        };
+        match &self.gochar {
+            Some(asked) => inputs.with_gochar(asked),
             None => inputs,
         }
     }
@@ -505,6 +509,7 @@ impl ChartArea<'_> {
         let mut readings = Vec::new();
         let mut plans = Vec::new();
         let mut sade_sati = Vec::new();
+        let mut gochar = Vec::new();
         for chart in read.value {
             hashes.push(chart.content_hash);
             readings.extend(chart.reading);
@@ -512,6 +517,7 @@ impl ChartArea<'_> {
                 plans.push(chart.plans);
             }
             sade_sati.extend(chart.sade_sati);
+            gochar.extend(chart.gochar);
             founded.push(chart.document);
         }
         let documents = founded.as_slice();
@@ -523,7 +529,7 @@ impl ChartArea<'_> {
             readings,
             plans,
             sade_sati,
-            gochar: self.transits_of(documents, records.gochar.as_ref())?,
+            gochar,
             hits: self.hits_of(documents, records.hits.as_ref())?,
             dignities: each(documents, records.dignities.as_ref(), |document, asked| {
                 self.dignities(document, asked)
@@ -704,28 +710,6 @@ impl ChartArea<'_> {
                     .map_err(|error| error.under("matching"))
             },
         )
-    }
-
-    /// Every chart's transits: one batch a chart, which places the grahas
-    /// at every instant in one request; a refusal says which chart of the
-    /// batch it was refused for.
-    fn transits_of(
-        self,
-        documents: &[Document],
-        asked: Option<&GocharRequest>,
-    ) -> Result<Vec<Vec<GocharReading>>, Error> {
-        let Some(asked) = asked else {
-            return Ok(Vec::new());
-        };
-        documents
-            .iter()
-            .enumerate()
-            .map(|(at, document)| {
-                self.gochar(document, asked)
-                    .map(|read| read.value)
-                    .map_err(|error| error.with_hint(format!("chart {at}")))
-            })
-            .collect()
     }
 
     /// Every chart's considerations, read from the fortitudes asked for

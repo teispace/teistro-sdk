@@ -17,6 +17,7 @@ import java.util.Objects;
  * @param chalit Where the two house readings put a graha in different bhavas: the placement system's and the chalit's. It reads the chart's own grahas, so it costs no section, and it says nothing of a chart whose readings agree. Null leaves the SDK's default.
  * @param conditions What each graha **is** where it stands: its dignity, its navamsha and whether that makes it vargottama, whether it is retrograde and whether the Sun burns it. It reads what `placements` reads, so it costs no section. Null leaves the SDK's default.
  * @param dashaPhala What each graha's placement says of its dasha: when in the dasha its effects come, whether its place is auspicious, the points its dignity earns and whether the placement makes the dasha favourable — with the reading a loaded corpus carries of that graha as a dasha lord. It reads `Document.dasha_phala`, so it **costs that section**: ask for it with `ChartRequest::with_dasha_phala`. Null leaves the SDK's default.
+ * @param gochar What the transits come to at each instant a gochar request beside this one names: the reference sign, each graha's house and verdict, who obstructs it, where in its sign it bears fruit, and its bindus when that request asks for the Ashtakavarga. One plan an instant. It reads no section and **needs that request** (`PlanInputs::with_gochar`); unlike `sadeSati` it needs no corpus (`03-design/gochar.md` §7). Null leaves the SDK's default.
  * @param houses The lord of each of the twelve bhavas. It reads the houses section, which the request computes for it. Null leaves the SDK's default.
  * @param karakas Which chara karaka each graha holds, under both schemes. It reads what `placements` reads, so it costs no section. Null leaves the SDK's default.
  * @param panchanga The almanac of the chart's day: the tithi with its paksha, the vara, the nakshatra and the Moon's pada in it, the yoga and the karana, and whether the birth fell by day where the chart says. It reads the panchanga the rules read, so it costs the same section they do. Null leaves the SDK's default.
@@ -29,7 +30,7 @@ import java.util.Objects;
  * @param strength Each graha's Shadbala in rupas, the strongest first. It reads the Shadbala section, which the request computes for it. Null leaves the SDK's default.
  * @param vimshopaka Each graha's Vimshopaka under all four schemes, each item naming the scheme it belongs to. It reads `Document.vimshopaka`, so it costs that section. Null leaves the SDK's default.
  */
-public record PlanRequest(Boolean ashtakavarga, Boolean aspects, Boolean bhavaBala, Boolean chalit, Boolean conditions, Boolean dashaPhala, Boolean houses, Boolean karakas, Boolean panchanga, Boolean phala, Boolean placements, Boolean positions, Boolean readings, Boolean sadeSati, Boolean states, Boolean strength, Boolean vimshopaka) implements RequestJson {
+public record PlanRequest(Boolean ashtakavarga, Boolean aspects, Boolean bhavaBala, Boolean chalit, Boolean conditions, Boolean dashaPhala, Boolean gochar, Boolean houses, Boolean karakas, Boolean panchanga, Boolean phala, Boolean placements, Boolean positions, Boolean readings, Boolean sadeSati, Boolean states, Boolean strength, Boolean vimshopaka) implements RequestJson {
     /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
@@ -48,6 +49,7 @@ public record PlanRequest(Boolean ashtakavarga, Boolean aspects, Boolean bhavaBa
         private Boolean chalit;
         private Boolean conditions;
         private Boolean dashaPhala;
+        private Boolean gochar;
         private Boolean houses;
         private Boolean karakas;
         private Boolean panchanga;
@@ -125,6 +127,17 @@ public record PlanRequest(Boolean ashtakavarga, Boolean aspects, Boolean bhavaBa
          */
         public Builder dashaPhala(boolean dashaPhala) {
             this.dashaPhala = dashaPhala;
+            return this;
+        }
+
+        /**
+         * Sets {@code gochar}.
+         *
+         * @param gochar What the transits come to at each instant a gochar request beside this one names: the reference sign, each graha's house and verdict, who obstructs it, where in its sign it bears fruit, and its bindus when that request asks for the Ashtakavarga. One plan an instant. It reads no section and **needs that request** (`PlanInputs::with_gochar`); unlike `sadeSati` it needs no corpus (`03-design/gochar.md` §7). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder gochar(boolean gochar) {
+            this.gochar = gochar;
             return this;
         }
 
@@ -256,7 +269,7 @@ public record PlanRequest(Boolean ashtakavarga, Boolean aspects, Boolean bhavaBa
          * @throws NullPointerException naming a required field left unset
          */
         public PlanRequest build() {
-            return new PlanRequest(ashtakavarga, aspects, bhavaBala, chalit, conditions, dashaPhala, houses, karakas, panchanga, phala, placements, positions, readings, sadeSati, states, strength, vimshopaka);
+            return new PlanRequest(ashtakavarga, aspects, bhavaBala, chalit, conditions, dashaPhala, gochar, houses, karakas, panchanga, phala, placements, positions, readings, sadeSati, states, strength, vimshopaka);
         }
     }
 
@@ -276,6 +289,7 @@ public record PlanRequest(Boolean ashtakavarga, Boolean aspects, Boolean bhavaBa
             Read.orNull(json.get("chalit"), present -> Read.bool(present, "PlanRequest.chalit")),
             Read.orNull(json.get("conditions"), present -> Read.bool(present, "PlanRequest.conditions")),
             Read.orNull(json.get("dashaPhala"), present -> Read.bool(present, "PlanRequest.dashaPhala")),
+            Read.orNull(json.get("gochar"), present -> Read.bool(present, "PlanRequest.gochar")),
             Read.orNull(json.get("houses"), present -> Read.bool(present, "PlanRequest.houses")),
             Read.orNull(json.get("karakas"), present -> Read.bool(present, "PlanRequest.karakas")),
             Read.orNull(json.get("panchanga"), present -> Read.bool(present, "PlanRequest.panchanga")),
@@ -309,6 +323,9 @@ public record PlanRequest(Boolean ashtakavarga, Boolean aspects, Boolean bhavaBa
         }
         if (dashaPhala != null) {
             json.put("dashaPhala", dashaPhala);
+        }
+        if (gochar != null) {
+            json.put("gochar", gochar);
         }
         if (houses != null) {
             json.put("houses", houses);

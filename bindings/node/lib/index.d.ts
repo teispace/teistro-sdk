@@ -4864,6 +4864,14 @@ export interface PlanRequest {
    * state readings is loaded.
    */
   readonly sadeSati?: boolean;
+  /**
+   * What the transits come to at each instant the chart request's `gochar`
+   * names: the sign they are counted from, each graha's house and verdict,
+   * who obstructs it, where in its sign it bears fruit, and its bindus when
+   * that request asks for the Ashtakavarga. One plan an instant; it needs
+   * `gochar` beside it, and no corpus.
+   */
+  readonly gochar?: boolean;
 }
 
 /**
@@ -4914,6 +4922,8 @@ export interface Plans {
   readonly ashtakavarga?: readonly PlanItem[];
   /** What a corpus says of Saturn's periods; absent unless `sadeSati` asked. */
   readonly sadeSati?: readonly PlanItem[];
+  /** What the transits come to, one plan an instant; absent unless `gochar` asked. */
+  readonly gochar?: readonly (readonly PlanItem[])[];
 }
 
 /** A theme the SDK ships, by its key: dark ink on white, or light on dark. */

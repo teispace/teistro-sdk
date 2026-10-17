@@ -1283,6 +1283,23 @@ fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
         .sade_sati(document, &century)
         .map_err(|why| format!("searching Saturn's periods: {why}"))?;
     plan.items.extend(interpret().sade_sati(&report.value));
+    // The transits a month apart over two years, with the Ashtakavarga, so
+    // an obstruction and every decanate are met whatever sign the Moon is
+    // in.
+    let months = (0..24_u32)
+        .map(|month| teistro::quantity::JulianDay::try_new(2_461_000.5 + f64::from(month) * 30.0))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|why| why.to_string())?;
+    let transits = sdk
+        .chart()
+        .gochar(
+            document,
+            &teistro::GocharRequest::over(months).with_ashtakavarga(),
+        )
+        .map_err(|why| format!("reading the transits: {why}"))?;
+    for reading in &transits.value {
+        plan.items.extend(interpret().gochar(reading));
+    }
     let set = teistro::RuleRequest::shipped([])
         .with_rules(every.clone())
         .rule_set()

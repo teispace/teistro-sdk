@@ -794,6 +794,12 @@ a test that a plan round-trips through JSON.
     graha, said by `placements` and `positions`. It was the oldest silence
     in this page — counted at 93 items, one a chart, for six composers —
     and it cost two messages because the `point` kind was already named.
+16. The **transits**, said at last. **Built** (2026-10-17):
+    `teistro_interpret::gochar` over a `GocharReading`, five messages
+    under `sdk.reason.gochar` in English and Nepali, one plan an instant,
+    and `gochar` in the plan request beside the gochar request it needs
+    (`gochar.md` §7). Before it a reading crossed every binding as codes
+    and an application could print only those.
 
 ## 8. What this design does not settle
 

@@ -9293,6 +9293,83 @@ public final class Messages {
             }
 
             /**
+             * The messages under `gochar`.
+             *
+             * @return the group
+             */
+            public SdkReasonGochar gochar() {
+                return new SdkReasonGochar(r);
+            }
+
+            /** The messages under `SdkReasonGochar`, each rendered by its own key. */
+            public static final class SdkReasonGochar {
+                private final Renderer r;
+
+                SdkReasonGochar(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * `sdk.reason.gochar.ashtakavarga`
+                 *
+                 * @param bindus `bindus`
+                 * @param good `good`
+                 * @param graha `graha`
+                 * @return the text
+                 */
+                public String ashtakavarga(long bindus, String good, GrahaKey graha) {
+                    return r.render("sdk.reason.gochar.ashtakavarga", Map.ofEntries(Map.entry("bindus", bindus), Map.entry("good", good), Map.entry("graha", Map.of("$entity", graha.value()))));
+                }
+
+                /**
+                 * `sdk.reason.gochar.from`
+                 *
+                 * @param from `from`
+                 * @param rashi `rashi`
+                 * @return the text
+                 */
+                public String from(String from, RashiKey rashi) {
+                    return r.render("sdk.reason.gochar.from", Map.ofEntries(Map.entry("from", from), Map.entry("rashi", Map.of("$entity", rashi.value()))));
+                }
+
+                /**
+                 * `sdk.reason.gochar.fruition`
+                 *
+                 * @param graha `graha`
+                 * @param now `now`
+                 * @param part `part`
+                 * @return the text
+                 */
+                public String fruition(GrahaKey graha, String now, String part) {
+                    return r.render("sdk.reason.gochar.fruition", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("now", now), Map.entry("part", part)));
+                }
+
+                /**
+                 * `sdk.reason.gochar.transit`
+                 *
+                 * @param graha `graha`
+                 * @param house `house`
+                 * @param verdict `verdict`
+                 * @return the text
+                 */
+                public String transit(GrahaKey graha, long house, String verdict) {
+                    return r.render("sdk.reason.gochar.transit", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("verdict", verdict)));
+                }
+
+                /**
+                 * `sdk.reason.gochar.vedha`
+                 *
+                 * @param grahas `grahas`
+                 * @param house `house`
+                 * @return the text
+                 */
+                public String vedha(List<?> grahas, long house) {
+                    return r.render("sdk.reason.gochar.vedha", Map.ofEntries(Map.entry("grahas", grahas), Map.entry("house", house)));
+                }
+            }
+
+
+            /**
              * `sdk.reason.grahaAt`
              *
              * @param graha `graha`

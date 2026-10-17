@@ -22,7 +22,7 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 140 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
 | every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 25574 disagree |
 | every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 25574 disagree |
 | every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 25574 disagree |
@@ -88,6 +88,11 @@ about.
 | `sdk.reason.dasha.phase` | 0 |
 | `sdk.reason.dasha.place` | 0 |
 | `sdk.reason.dasha.points` | 0 |
+| `sdk.reason.gochar.ashtakavarga` | 0 |
+| `sdk.reason.gochar.from` | 0 |
+| `sdk.reason.gochar.fruition` | 0 |
+| `sdk.reason.gochar.transit` | 0 |
+| `sdk.reason.gochar.vedha` | 0 |
 | `sdk.reason.grahaAt` | 837 |
 | `sdk.reason.grahaInBhava` | 837 |
 | `sdk.reason.grahaInRashi` | 837 |
@@ -235,11 +240,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 480 of 480 | 0 of 480 |
-| `hi-Deva-IN` | `base` | 0 of 480 | 406 of 480 |
-| `ne-Deva-NP` | `strict` | 480 of 480 | 434 of 480 |
-| `sa-Deva` | `base` | 0 of 480 | 406 of 480 |
-| `sa-Latn` | `base` | 0 of 480 | 399 of 480 |
+| `en-Latn` | `strict` | 1063 of 1063 | 0 of 1063 |
+| `hi-Deva-IN` | `base` | 0 of 1063 | 989 of 1063 |
+| `ne-Deva-NP` | `strict` | 1063 of 1063 | 1017 of 1063 |
+| `sa-Deva` | `base` | 0 of 1063 | 989 of 1063 |
+| `sa-Latn` | `base` | 0 of 1063 | 955 of 1063 |
 
 ## What a rich renderer gets
 
@@ -253,8 +258,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 480 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 480 | 42 | `b` |
+| `en-Latn` | 21 of 1063 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 1063 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -276,30 +281,30 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 960 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 2126 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
 
 The table above counts what the **recorded corpus** exercises, and it
 records bodies and chara karakas: no graha states, no almanac, no
-strengths. So 10 of the 17 composers run over it and 7 do not —
+strengths. So 10 of the 18 composers run over it and 8 do not —
 `bhavaBala`, `vimshopaka`, `panchanga`, `states`, `dashaPhala`,
-`ashtakavarga` and `sadeSati` — and the zeros that leaves are a fact
-about the fixtures rather than about the composers. Reading them as
-nothing-to-see is how a dead end hid for a week — `sdk.phala.tithi`
-read zero because `RuleInputs::of` never gave a chart its limbs, which
-also kept **11 shipped rules** from ever holding.
+`ashtakavarga`, `sadeSati` and `gochar` — and the zeros that leaves
+are a fact about the fixtures rather than about the composers. Reading
+them as nothing-to-see is how a dead end hid for a week —
+`sdk.phala.tithi` read zero because `RuleInputs::of` never gave a chart
+its limbs, which also kept **11 shipped rules** from ever holding.
 
 So every key is emitted here by **one chart the SDK founds itself**,
-with every section asked for and both corpora loaded — 69 of 70 —
+with every section asked for and both corpora loaded — 74 of 75 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 960 renderings.
-What this chart cannot reach is named below, with the reason it needs
-another. A key missing from both fails, and so does a key excused that
-this chart emits — which is not a hypothetical: **three of the four
-excuses first written here were wrong**, and the check said so one at a
-time.
+own message, with no fallback and nothing to warn about: 2126
+renderings. What this chart cannot reach is named below, with the reason
+it needs another. A key missing from both fails, and so does a key
+excused that this chart emits — which is not a hypothetical: **three
+of the four excuses first written here were wrong**, and the check said
+so one at a time.
 
 | key | why this chart cannot reach it |
 |---|---|
@@ -307,7 +312,7 @@ time.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is emitted by one founded chart, or listed with the reason it needs another | **holds** | 0 of 70 disagree |
+| every key a composer can emit is emitted by one founded chart, or listed with the reason it needs another | **holds** | 0 of 75 disagree |
 
 ## Every section, and what says it
 
@@ -355,7 +360,7 @@ outlive its blocker.
 
 ## What the packs carry, and what reads it
 
-70 of the 77 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+75 of the 82 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -407,7 +412,7 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 84 messages to read, 40 that render a value and
+**`ne-Deva-NP`** — 89 messages to read, 40 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
@@ -417,7 +422,7 @@ need no reading.
 | `sdk.condition` | 11 |
 | `sdk.karaka` | 2 |
 | `sdk.reading` | 5 |
-| `sdk.reason` | 32 |
+| `sdk.reason` | 37 |
 
 `hi-Deva-IN`, `sa-Deva`, `sa-Latn` carry no `sdk.*` message at all —
 `base` completeness is the entity names and the packs' own records —
@@ -441,10 +446,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 1724 | 356 |
-| `ne-Deva-NP` | 1724 | 8 |
-| `sa-Deva` | 1724 | 356 |
-| `sa-Latn` | 1724 | 356 |
+| `hi-Deva-IN` | 1729 | 361 |
+| `ne-Deva-NP` | 1729 | 8 |
+| `sa-Deva` | 1729 | 361 |
+| `sa-Latn` | 1729 | 361 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

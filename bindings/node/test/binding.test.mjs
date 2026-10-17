@@ -1200,6 +1200,28 @@ test('plans compose in the same crossing, and render with nothing in between', (
   });
   assert.deepEqual(periods.plans.sadeSati, [], 'no pack, no words');
   assert.ok(periods.sadeSati.sadeSati.length > 0, 'the report is on the chart beside the plan');
+  // The transits are said one plan an instant, from the readings beside
+  // them, and need no corpus; asked without a gochar request, refused.
+  assert.throws(
+    () => ctx.chart.found({ ...request, interpret: { gochar: true } }),
+    (error) => error instanceof TeistroError && error.field === 'interpret.gochar',
+  );
+  const transits = ctx.chart.found({
+    ...request,
+    gochar: { instants: [2461000.5, 2461365.5], ashtakavarga: true },
+    interpret: { gochar: true },
+  });
+  assert.equal(transits.plans.gochar.length, 2, 'one plan an instant');
+  assert.equal(transits.gochar.length, 2, 'the readings beside the plans');
+  for (const plan of transits.plans.gochar) {
+    assert.equal(plan[0].key, 'sdk.reason.gochar.from');
+    assert.equal(plan.filter((item) => item.key === 'sdk.reason.gochar.transit').length, 9);
+    for (const item of plan) {
+      const said = ctx.intl.render(item.key, item.params);
+      assert.equal(said.isFallback, false, item.key);
+      assert.deepEqual(said.warnings, [], item.key);
+    }
+  }
   // And a composer that is not one is refused beside the ones that are.
   assert.throws(
     () => ctx.chart.found({ ...request, interpret: { readigns: true } }),

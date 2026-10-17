@@ -1686,6 +1686,21 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- **The transits said in words** (`gochar.md` §7). `teistro_interpret::gochar`
+  and `sdk.interpret().gochar(&reading)` say a gochar reading: the sign it
+  is counted from, each graha's house and verdict, who obstructs it and
+  from which house, where in its sign it bears fruit, and the seven's
+  bindus when the reading carries the Ashtakavarga — five messages under
+  `sdk.reason.gochar` in English and Nepali, needing no corpus. `gochar`
+  in a plan request beside a gochar request answers `plans.gochar`, one
+  plan an instant, in Rust, Node, Python, Dart and Java, refused on
+  `interpret.gochar` without one. `ChartArea::interpreted` reads the
+  transits once and leaves them on `Interpreted::gochar`; `compose` takes
+  its `gochar` table from there rather than reading them again.
+  `PlanInputs` gains `gochar` and `Answers` gains `with_gochar`.
+
+  **Numbers:** none.
+
 - **What the baseline corpus says of Sade Sati reaches a reader**
   (`state-readings.md` §8). The five `sade-sati-phala` records land on a
   new open catalogue kind, `gochar_bhava` (number 66): a graha in transit
