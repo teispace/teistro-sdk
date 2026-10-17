@@ -499,10 +499,11 @@ pub use crate::rashifal_request::{
 };
 #[cfg(feature = "rashifal")]
 pub use teistro_rashifal as rashifal;
-// A body's returns to its own natal place: the lunar return after Morin
+// A body's returns to its own natal place, the lunar return after Morin,
+// and to a place an offset past it, the half- and quarter-returns
 // (`03-design/western-returns.md`).
 #[cfg(feature = "chart")]
-pub use crate::returns::BodyReturn;
+pub use crate::returns::{BodyReturn, OffsetReturn};
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
 #[cfg(feature = "western")]

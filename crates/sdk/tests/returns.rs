@@ -2,7 +2,8 @@
 //! the lunar return Morin defines (*Astrologia Gallica* XXIII, pp.
 //! 633–634), timed as the recast that holds his Richelieu figure times it,
 //! and the Sun's return read back as the Tajika pravesha, sidereal and
-//! tropical.
+//! tropical; and the half- and quarter-returns (C433 to C437), each read
+//! back on its offset from a chart founded at it.
 
 #![allow(
     clippy::unwrap_used,
@@ -14,7 +15,7 @@ use teistro::catalogue::Graha;
 use teistro::gochar::hits::Motion;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::Reading;
-use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
+use teistro::{ChartRequest, Context, Document, Ephemeris, OffsetReturn, UtcOffset};
 
 fn context(profile: Option<&str>) -> Context {
     let builder = Context::builder().ephemeris([Ephemeris::Builtin]);
@@ -193,4 +194,141 @@ fn a_return_is_refused_by_the_field_it_names() {
         .returns(&radix, day(2_451_546.0), day(2_451_600.0), [])
         .unwrap_err();
     assert_eq!(none.field(), Some("grahas"));
+}
+
+/// The returns of `graha` at `offsets` over a window, as rows.
+fn at_offsets(
+    sdk: &Context,
+    radix: &Document,
+    (from, to): (f64, f64),
+    graha: Graha,
+    offsets: &[u16],
+) -> Vec<OffsetReturn> {
+    sdk.chart()
+        .returns_at(radix, day(from), day(to), [graha], offsets.iter().copied())
+        .unwrap()
+        .value
+}
+
+#[test]
+fn the_quarti_solar_returns_are_the_sun_at_its_quarters_a_season_apart() {
+    let sdk = context(Some("western-tropical-default"));
+    let radix = founded(&sdk, 2_451_545.0, paris());
+    let natal = longitude(&radix, Graha::Sun);
+    let window = (2_451_546.0, 2_451_546.0 + 366.0);
+    let year = at_offsets(&sdk, &radix, window, Graha::Sun, &[0, 90, 180, 270]);
+    // The circle in order from the birthday: the three quarters, then the
+    // return a year on.
+    let order: Vec<u16> = year.iter().map(|one| one.offset_deg).collect();
+    assert_eq!(order, [90, 180, 270, 0], "{year:?}");
+    for one in &year {
+        assert_eq!((one.graha, one.motion), (Graha::Sun, Motion::Direct));
+        let chart = founded(&sdk, one.at.get(), paris());
+        let target = natal + f64::from(one.offset_deg);
+        let off = apart(longitude(&chart, Graha::Sun), target) * 3600.0;
+        assert!(off < 1.0, "{}°: {off}″ off", one.offset_deg);
+    }
+    // A season each, about a quarter of the year: longer through the
+    // northern summer, when the Sun is farthest and slowest.
+    let mut since = 2_451_545.0;
+    for one in &year {
+        let season = one.at.get() - since;
+        assert!(
+            (88.0..95.0).contains(&season),
+            "{}°: {season} days",
+            one.offset_deg
+        );
+        since = one.at.get();
+    }
+    // The demi-solar return asked alone is the 180° row of the four.
+    let half = at_offsets(&sdk, &radix, window, Graha::Sun, &OffsetReturn::HALF);
+    assert_eq!(half.len(), 1, "{half:?}");
+    assert_eq!(half[0].offset_deg, 180);
+    let seconds = (half[0].at.get() - year[1].at.get()).abs() * 86_400.0;
+    assert!(seconds < 1e-3, "{seconds} s");
+}
+
+#[test]
+fn offset_zero_is_the_return_instant_for_instant() {
+    let sdk = context(Some("western-tropical-default"));
+    let radix = founded(&sdk, 2_451_545.0, paris());
+    let window = (2_451_546.0, 2_451_630.0);
+    let returns = sdk
+        .chart()
+        .returns(&radix, day(window.0), day(window.1), [Graha::Moon])
+        .unwrap()
+        .value;
+    let at_zero = at_offsets(&sdk, &radix, window, Graha::Moon, &[0]);
+    assert_eq!(returns.len(), at_zero.len());
+    for (one, zero) in returns.iter().zip(&at_zero) {
+        assert_eq!(
+            (one.graha, one.at.get().to_bits(), one.motion),
+            (zero.graha, zero.at.get().to_bits(), zero.motion)
+        );
+        assert_eq!(zero.offset_deg, 0);
+    }
+}
+
+#[test]
+fn the_moons_quarter_returns_are_her_month_in_four() {
+    let sdk = context(Some("western-tropical-default"));
+    let radix = founded(&sdk, 2_451_545.0, paris());
+    let natal = longitude(&radix, Graha::Moon);
+    let offsets: Vec<u16> = [0].into_iter().chain(OffsetReturn::QUARTERS).collect();
+    // A sidereal month from a day after birth: each quarter once, in the
+    // order the circle passes them, the return last (Moshier's first).
+    let month = at_offsets(
+        &sdk,
+        &radix,
+        (2_451_546.0, 2_451_546.0 + 27.0),
+        Graha::Moon,
+        &offsets,
+    );
+    let order: Vec<u16> = month.iter().map(|one| one.offset_deg).collect();
+    assert_eq!(order, [90, 180, 270, 0], "{month:?}");
+    for pair in month.windows(2) {
+        // A quarter of 27.32 days, the Moon's speed ranging 12° to 15° a day.
+        let quarter = pair[1].at.get() - pair[0].at.get();
+        assert!((5.5..8.5).contains(&quarter), "{quarter} days");
+    }
+    for one in &month {
+        let chart = founded(&sdk, one.at.get(), paris());
+        let target = natal + f64::from(one.offset_deg);
+        assert!(apart(longitude(&chart, Graha::Moon), target) < 1.0 / 3600.0);
+    }
+}
+
+#[test]
+fn an_offset_is_refused_by_the_field_it_names() {
+    let sdk = context(None);
+    let radix = founded(&sdk, 2_451_545.0, paris());
+    let ask = |grahas: &[Graha], offsets: &[u16], to: f64| {
+        sdk.chart()
+            .returns_at(
+                &radix,
+                day(2_451_546.0),
+                day(to),
+                grahas.iter().copied(),
+                offsets.iter().copied(),
+            )
+            .unwrap_err()
+    };
+    let full_circle = ask(&[Graha::Sun], &[360], 2_451_600.0);
+    assert_eq!(full_circle.field(), Some("offsets"));
+    assert!(
+        full_circle
+            .hint()
+            .is_some_and(|hint| hint.contains("write 0"))
+    );
+    assert_eq!(
+        ask(&[Graha::Sun], &[], 2_451_600.0).field(),
+        Some("offsets")
+    );
+    assert_eq!(
+        ask(&[Graha::Sun], &[180, 180], 2_451_600.0).field(),
+        Some("offsets")
+    );
+    // The window and the grahas are refused as the return's are.
+    assert_eq!(ask(&[Graha::Sun], &[180], 2_451_500.0).field(), Some("to"));
+    assert_eq!(ask(&[], &[180], 2_451_600.0).field(), Some("grahas"));
 }

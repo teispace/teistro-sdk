@@ -600,7 +600,10 @@ fn placeable(grahas: impl IntoIterator<Item = Graha>, field: &str) -> Result<(),
 }
 
 /// Refuses a list that names one member twice, by field.
-fn repeated<T: PartialEq + std::fmt::Debug>(members: &[T], field: &str) -> Result<(), Error> {
+pub(crate) fn repeated<T: PartialEq + std::fmt::Debug>(
+    members: &[T],
+    field: &str,
+) -> Result<(), Error> {
     for (at, member) in members.iter().enumerate() {
         if members
             .get(..at)

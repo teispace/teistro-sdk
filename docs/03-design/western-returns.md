@@ -158,3 +158,101 @@ must find one instant.
   whether a return chart is precession-corrected and whether it is
   relocated, are C256 and C258: the chart's own zodiac, and the caller's
   place.
+
+## The half- and quarter-returns
+
+Built 2026-10-17. The demi-solar return is the instant the
+Sun stands 180° from its natal place, half a year after the birthday.
+The quarti-solar returns are the three instants it stands 90°, 180° and
+270° past it, so with the return they divide the solar year into four.
+Each is read as a figure for its quarter of the year.
+
+### What the sources say
+
+- **Morin does not have them.** Book XXIII sets out the solar and the
+  lunar revolution and nothing between them. A search of the open
+  scan's OCR text of the book, for *quadra-*, *dimidi-* and *opposit-*,
+  finds only the aspects inside his figures and two other uses of
+  *quadrante*. One is Stadius's complaint, which Morin reports: the
+  tables erred in the Sun's place by 20 or 30 minutes, so the figures
+  were erected "plusquam Coeli quadrante" wrong (OCR text, long s
+  normalised). The other is how far a native may travel from his
+  birthplace. That is a search of the OCR
+  text, not a page-by-page reading of the images, so it is recorded as
+  that.
+- **No earlier text is known to this page.** The half- and
+  quarter-returns are twentieth-century practice. They are usually
+  credited to the sidereal school of Cyril Fagan and Donald Bradley,
+  which read solar and lunar returns in the sidereal zodiac. This page
+  has not read a printed definition, so it cites none, and the crux
+  (C433) records the practice as rank 3.
+
+So the page has to decide what the practice leaves open, and it does
+that from the return's own rule. A partial return is the return with its
+line moved, not a new kind of figure.
+
+### What is decided
+
+- **A body's own longitude at natal + offset** (C433). The demi-solar
+  return is the Sun's crossing of the line 180° past its radical place,
+  found by the same search as the return. It is not the hit list's
+  aspect of the transiting Sun to its natal place. The two give the same
+  instant at 180°, but the aspect is a different question.
+- **The offset is directed, forward in the zodiac** (C434), from 0 to
+  359. A quarter ahead of the natal place, about three months after the
+  birthday, is 90. A quarter behind it, about nine months after, is 270.
+  The hit list's aspect angle runs from 0 to 180 and means both sides,
+  so its 90 is both squares. A quarter-return has to tell them apart, as
+  the phase return does (C420).
+- **Any body, as the return takes any body** (C435). The practice's
+  names are the Sun's, but the rule names no body, any more than the
+  return's does. So the Moon's half- and quarter-returns are the same
+  search over a month, and a planet's over its own period. A retrograde
+  planet crosses a line up to three times, each a row with its `motion`.
+- **Whole degrees from 0 to 359, any of them** (C436). The quarters are
+  constants (`OffsetReturn::QUARTERS`, `OffsetReturn::HALF`), but the
+  request takes any whole degree, so an octile-return at 45° is the same
+  call. 360 or more is refused on `offsets`, and the hint names the same
+  line less the circle. Offset 0 is the return.
+- **Read as the return is read** (C437): longitude only, in the chart's
+  own zodiac, on the centre the settings name, and erected at the
+  caller's place (C255 to C258). A sidereal chart's quarti-solar returns
+  are the sidereal quarters, which is the zodiac the practice used.
+
+### The surface
+
+- `sdk.chart().returns_at(&birth, from, to, grahas, offsets)` answers
+  `Vec<OffsetReturn { graha, offset_deg, at, motion }>`, ordered by
+  instant, then graha, then offset. Each graha and offset is its own
+  lattice, a single line one circle wide, scanned by the hit list's own
+  search (`Founder::transit_events`) in one pass over the window.
+- `sdk.chart().returns` and its `BodyReturn` are unchanged, and so are
+  the hit list and every binding's `returnsRequest`. Offset 0 of
+  `returns_at` gives the same instants as `returns`, bit for bit.
+- **Bindings.** A binding asks for a half-return today as a hit list:
+  `{ ...returnsRequest(from, to, ['SUN']), aspects: [180] }` in Node, and
+  the same record in the others. The opposition has one side,
+  so its row is the demi-solar return. A quarter-return asked as
+  `aspects: [90]` gives both squares with `angle: 90`. The side is the
+  chart founded at the row's instant, which the binding founds anyway to
+  erect the figure (C258). Carrying `returns_at` across the boundary as
+  its own section is left until a binding needs the side answered
+  without founding a chart. That is a follow-up, and the founded chart
+  already gives the answer.
+
+### The tests
+
+`crates/sdk/tests/returns.rs`, on the Paris radix of 1 January 2000,
+12h UT, under the tropical Western profile:
+
+- the Sun's returns at 0°, 90°, 180° and 270° over a year come in the
+  order 90, 180, 270, 0. Each one, read from a chart founded at its
+  instant, puts the Sun at natal + offset to within an arcsecond. Each
+  falls 88 to 95 days after the last, the summer quarters the longest.
+  The demi-solar asked alone is the 180° row;
+- the Moon's quarters over a sidereal month come in the same order, 5.5
+  to 8.5 days apart, each read back to the arcsecond;
+- offset 0 gives `returns`' instants bit for bit;
+- 360, no offset, or an offset named twice is refused on `offsets`, with
+  a hint naming the line it meant. The window and the grahas are refused
+  as the return's are.

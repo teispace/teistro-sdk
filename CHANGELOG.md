@@ -395,6 +395,25 @@ the traditional rulers or the modern ones, which give Aquarius, Pisces
 and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
 dispositor (C415), and the nodes are refused (C416). The Rust surface
 only: no blob section carries the chains yet.
+
+**Half- and quarter-returns.** **Numbers:** none moved. `returns`,
+`BodyReturn` and the hit list are unchanged, and offset 0 of the new call
+gives `returns`' instants bit for bit. `sdk.chart().returns_at(&birth,
+from, to, grahas, offsets)` answers each graha's crossing of the line
+`offset` degrees past its natal longitude, forward in the zodiac (crux
+C434). The Sun's at `OffsetReturn::HALF` is the demi-solar return, and
+at `OffsetReturn::QUARTERS` the quarti-solar returns. These are
+twentieth-century practice: Morin has no half- or quarter-revolution, so
+none is cited (C433). Any graha takes them, the Moon's quarters falling
+over a month (C435). Any whole degree from 0 to 359 can be asked, and
+360 or more is refused on `offsets` with the same line named in the hint
+(C436). Each row reads like a return: the chart's own zodiac, the
+settings' centre, the caller's place (C437). The Sun's quarters of 2000
+fall 88 to 95 days apart, each read back to the arcsecond from a chart
+founded at it. The Rust surface only. A binding asks for the half-return
+as its hit list's opposition, and tells a quarter's side apart from the
+chart it founds at the instant.
+
 **A hit list reports an eclipse on a natal point.** **Numbers:** none
 moved; both kinds are asked for by name. `SOLAR_ECLIPSE` and
 `LUNAR_ECLIPSE` are the almanac's own eclipses whose luminary, at the
