@@ -1,7 +1,8 @@
 # Jaimini significators: the karakamsha, the Brahma graha and the Sthira dasa
 
 Status: `built`, 2026-09-26: §5 steps 1 to 4 and 6 built; step 5, the Sudasa,
-is not built and waits on a verse, not on this page.
+is not built and waits on a verse, not on this page. §7, BPHS ch. 32's
+sthira karakas and bhava karakas, built 2026-10-17 (C408 to C412).
 Written from the texts and a measurement before any code; the building is
 expected to correct it.
 
@@ -218,8 +219,111 @@ about a third chart-query field for **periods**, and this is not one.
 
 ## 6. Not decided here
 
-Rudra and Maheshwara and the sthira karakas are the rest of the
-roadmap's Jaimini list; the graha arudhas, once among them, are built
-([`graha-arudhas.md`](graha-arudhas.md)). PyJHora answers each, and each
-is its own reading of BPHS or the Jaimini Sutras; they are taken after
-these, with the same method.
+Rudra and Maheshwara are the rest of the roadmap's Jaimini list; the
+graha arudhas, once among them, are built
+([`graha-arudhas.md`](graha-arudhas.md)), and so are the sthira karakas
+(§7). PyJHora answers each, and each is its own reading of BPHS or the
+Jaimini Sutras; they are taken after these, with the same method.
+
+## 7. The fixed significators: sthira karakas and bhava karakas
+
+Status: `built`, 2026-10-17, in the kernel (`teistro_dasha::jaimini`,
+`jaimini/fixed.rs`) and the document's `jaimini` section; not yet at the
+C boundary (below).
+
+### 7.1 The source
+
+BPHS ch. 32, the karaka chapter (कारकाध्यायः), read in the Devanagari
+e-text at sanskritdocuments.org (`par3140.html`), whose chapter and
+verse numbers are the ones used here. The e-text's ch. 32 is the chapter
+this repository already cites for the chara karakas, and its ch. 33 the
+karakamsha's (§1), so the numbering agrees with the print the rest of
+this page reads; it has not been checked verse by verse against that
+print. The chapter, after the chara karakas of vv. 1 to 17:
+
+- **v. 17** closes them with स्थिरकारकवशात्तस्य फलं ज्ञेयं शुभाऽशुभम्:
+  when two grahas' equal degrees leave a chara karaka unheld, its good
+  and ill are read from the sthira karaka. Which sthira karaka stands for
+  which chara karaka is not said, and that hand-over is **not built**.
+- **v. 18**, अधुना सम्प्रवक्ष्यामि स्थिराख्यान् कारकग्रहान् । स पितृकारको
+  ज्ञेयो यो बली रविशुक्रयोः: the father's karaka is **the stronger of the
+  Sun and Venus**.
+- **v. 19**, चन्द्रारयोर्बली खेटो मातृकारक उच्यते: the mother's is **the
+  stronger of the Moon and Mars**; भौमतो भगिनी श्यालः कनीयान् जननीत्यपि,
+  from Mars a sister, the wife's brother, a younger brother, and the
+  mother as well, which the pair already holds.
+- **v. 20**, बुधान्मातृसजातीया मातुलाद्याश्च बान्धवाः । गुरोः पितामहः शुक्रात्
+  पितः पुत्रः शनैश्चरात्: from Mercury the mother's kin and the maternal
+  uncle's, from Jupiter the paternal grandfather, from Venus पितः (C410),
+  from Saturn a son.
+- **v. 21**, the wife, the parents, the parents-in-law and the maternal
+  grandfather "are to be considered", एते च स्थिरकारकाः, naming no graha
+  (C411).
+- **vv. 22 to 24**, the karakas by graha and house: रवितः पुण्यभे तातः,
+  the 9th from the Sun the father; the 4th from the Moon the mother; the
+  3rd from Mars a brother; the 6th from Mercury the maternal uncle; the
+  5th from Jupiter a son; the 7th from Venus the wife; मन्दादष्टमतो
+  मृत्युः, the 8th from Saturn death, of the father and the rest.
+- **v. 34**, the bhava karakas, one a house: सूर्यो गुरुः कुजः सोमो
+  गुरुर्भौमो सितः शनिः । गुरुश्चन्द्रसुतो जीवो मन्दश्च भावकारकाः.
+  These are the **naisargika** (natural) karakas a house is read by, and
+  no chart changes them (C412).
+- vv. 25 to 30 (yoga karakas, grahas in own, exaltation or friend's signs
+  in mutual kendras) and vv. 31 to 33 (the lagna, the 2nd, 3rd, 5th, 7th
+  and 11th as karakas of the self and of relatives) are **not built**
+  here: the first is a yoga, which belongs to the rules, and the second
+  names houses rather than grahas.
+
+### 7.2 The tables
+
+| signification | sthira karaka (vv. 18 to 20) | house from (vv. 22 to 24) |
+|---|---|---|
+| father | the stronger of the Sun and Venus | 9th from the Sun |
+| mother | the stronger of the Moon and Mars | 4th from the Moon |
+| sister, wife's brother, younger brother | Mars | |
+| brother | | 3rd from Mars |
+| the mother's kin | Mercury | |
+| maternal uncle | Mercury | 6th from Mercury |
+| paternal grandfather | Jupiter | |
+| husband | Venus (C410) | |
+| son | Saturn | 5th from Jupiter |
+| wife | | 7th from Venus |
+| death | | 8th from Saturn |
+
+| house | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| bhava karaka (v. 34) | Sun | Jupiter | Mars | Moon | Jupiter | Mars | Venus | Saturn | Jupiter | Mercury | Jupiter | Saturn |
+
+### 7.3 The forks, registered
+
+| crux | question | readings | default | why |
+|---|---|---|---|---|
+| C408 | how "the stronger" (यो बली, बली खेटः) of the two is judged | the Jaimini sign strength of ch. 46 vv. 158 to 166 (`stronger_sign`) over the signs the two occupy; or the Shadbala of ch. 27, in rupas | the sign strength | the verses do not say; the chapter is the Jaimini one and this module already weighs two grahas by it (v. 173's बलाधिक्य for Brahma, `stronger_lord`); it needs nothing the Jaimini reading does not already compute, where Shadbala needs the ephemeris and its own section. `sthira_karakas_by` takes the rival as a comparison, and each answer says `chosen_by` |
+| C409 | what decides when the signs are equal, as they always are when the two share one (the Sun and Venus often do) | the grahas' dignities, then the one named first; or more degrees (v. 3's measure for the chara karakas); or no answer | dignity (the catalogue's order, deep exaltation first), then the Sun or the Moon | the ladder's first step is an exalted occupant, and dignity carries the same mark from the sign to the graha; every chart needs an answer, and the graha the verse names first is the one it names as the karaka's own (v. 22 counts the father from the Sun and the mother from the Moon) |
+| C410 | v. 20's शुक्रात् पितः, which is no word as printed | पतिः, the husband; or पिता, the father again | the husband | पिता would repeat v. 18's pair and add nothing; the chapter makes Venus the spouse's significator in v. 23 (दाराः शुक्रात् सप्तमे). Under the rival the husband's row goes and the father's is unchanged |
+| C411 | v. 21's wife, parents, parents-in-law and maternal grandfather | read from the karakas above (the wife from Venus by v. 23, the parents from v. 18 and 19's pairs); or carried on from Saturn, the last graha v. 20 names | **not built** | the verse names no graha; the parents are already rows, and a karaka for the parents-in-law or the maternal grandfather would be the SDK's, not the text's |
+| C412 | how many karakas a house has | one, v. 34; or the longer lists in circulation that give a house several (the 4th the Moon and Mercury, the 10th the Sun, Mercury, Jupiter and Saturn) | one, v. 34 | it is the verse read; the longer lists were not traced to a verse here, and a list is not shipped without one |
+
+### 7.4 Decided, and where it reaches
+
+`jaimini::STHIRA_KARAKAS`, `KARAKA_BHAVA_HOUSES` and `BHAVA_KARAKAS` are
+the three tables, as the verses give them; `sthira_karakas(chart)`,
+`karaka_bhavas(chart)` and `bhava_karaka(house)` read them for a chart,
+and `stronger_karaka` is C408 and C409's default, which
+`sthira_karakas_by` replaces with a caller's comparison (Shadbala, say)
+and falls back to where the caller cannot part a pair. Each sthira karaka
+carries its candidates and how it was chosen (`ChosenBy`: `ALONE`,
+`SIGN`, `DIGNITY`, `FIRST_NAMED`, `CALLER`), so a reader checks the
+choice against the chart rather than trusting it.
+
+The document's `jaimini` section, and so `sdk.chart().jaimini`, carries
+`sthira_karakas` (ten, in the table's order) and `karaka_bhavas` (seven,
+each the sign the house falls in, counted by whole signs in the rasi
+chart). The bhava karakas are not in the section, since no chart changes
+them; they are the kernel's table.
+
+**Not yet reached**: the C boundary (`TS_CHART_JAIMINI`'s `jaimini` and
+`jaimini_grahas` sections carry neither), so no binding sees them, and the
+parity runner does not print them; the interpretation composers do not
+say them (`sdk.karaka` names the chara karakas only); and no rule reads
+them.

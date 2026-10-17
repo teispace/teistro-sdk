@@ -81,7 +81,8 @@ pub struct Document {
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub dasha_phala: Option<DashaPhalaReading>,
     /// Jaimini's significators: the karakamsha and the Brahma graha, or why
-    /// the rule found none (`03-design/jaimini-significators.md`).
+    /// the rule found none, the graha arudhas, and BPHS ch. 32's sthira
+    /// karakas and karaka bhavas (`03-design/jaimini-significators.md`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub jaimini: Option<JaiminiReading>,
     /// The janma-patrika's summary of the Moon: its star and pada, the

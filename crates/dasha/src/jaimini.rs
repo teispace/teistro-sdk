@@ -9,6 +9,18 @@
 //! [`stronger_sign`](crate::rashi::stronger_sign), whose sign strength
 //! (BPHS ch. 46 vv. 158 to 166) Brahma is chosen by, and not in the rules,
 //! which no dasha may depend on.
+//!
+//! Beside them, the fixed significators of BPHS ch. 32: the sthira karakas,
+//! the karaka bhavas counted from them, and the bhava karakas
+//! ([`sthira_karakas`], [`karaka_bhavas`], [`bhava_karaka`]), the father's
+//! and the mother's chosen by the same sign strength.
+
+mod fixed;
+
+pub use fixed::{
+    BHAVA_KARAKAS, ChosenBy, KARAKA_BHAVA_HOUSES, KarakaBhava, STHIRA_KARAKAS, Signification,
+    SthiraKaraka, bhava_karaka, karaka_bhavas, sthira_karakas, sthira_karakas_by, stronger_karaka,
+};
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
@@ -116,6 +128,12 @@ pub struct JaiminiReading {
     /// and `jaimini.node_co_lordship`: `None` for a node that owns no sign
     /// (BPHS ch. 29 vv. 6 and 7; `03-design/graha-arudhas.md`).
     pub graha_arudhas: [Option<Rashi>; 9],
+    /// The sthira karakas, the father's and the mother's the stronger of
+    /// their pair by [`stronger_karaka`] (BPHS ch. 32 vv. 18 to 20).
+    pub sthira_karakas: [SthiraKaraka; 10],
+    /// The houses counted from the sthira karakas' grahas that show the
+    /// relatives (BPHS ch. 32 vv. 22 to 24).
+    pub karaka_bhavas: [KarakaBhava; 7],
 }
 
 /// Why a chart has no Brahma graha under the rule asked for.

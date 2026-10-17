@@ -307,3 +307,56 @@ fn the_arudha_lagna_counts_to_the_stronger_lord_only_under_co_lordship() {
     }
     panic!("400 charts parted the two readings {parted} times; the test needs 3");
 }
+
+/// BPHS ch. 32's fixed significators through the façade: the father's
+/// sthira karaka is the Sun or Venus and the mother's the Moon or Mars, a
+/// shared sign is never said to be parted by the sign ladder (C408, C409),
+/// and the father's karaka bhava is the 9th sign from the Sun's (v. 22).
+#[test]
+fn the_sthira_karakas_choose_within_their_pairs() {
+    use teistro::dasha::jaimini::{ChosenBy, Signification};
+
+    let sdk = context("{}");
+    let place = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let request = ChartRequest::at(place, UtcOffset::literal(5, 45, 0));
+    let sign_of = |document: &Document, graha: Graha| {
+        let longitude = document.foundation.graha(graha).unwrap().longitude_deg;
+        Rashi::ALL[(longitude / 30.0) as usize % 12]
+    };
+    let (mut shared, mut parted) = (0, 0);
+    for step in 0..60 {
+        let at = JulianDay::<Utc>::literal(BIRTH + f64::from(step) * 5.3);
+        let document = sdk.chart().reading(at, &request).unwrap().value;
+        let reading = sdk.chart().jaimini(&document).unwrap();
+        let father = &reading.sthira_karakas[0];
+        let mother = &reading.sthira_karakas[1];
+        assert_eq!(father.signification, Signification::Father);
+        assert_eq!(mother.signification, Signification::Mother);
+        assert!(
+            matches!(father.graha, Graha::Sun | Graha::Venus),
+            "{father:?}"
+        );
+        assert!(
+            matches!(mother.graha, Graha::Moon | Graha::Mars),
+            "{mother:?}"
+        );
+        if sign_of(&document, Graha::Sun) == sign_of(&document, Graha::Venus) {
+            shared += 1;
+            assert_ne!(father.chosen_by, ChosenBy::Sign, "{father:?}");
+        } else if father.chosen_by == ChosenBy::Sign {
+            parted += 1;
+        }
+        let sun = Rashi::ALL
+            .iter()
+            .position(|s| *s == sign_of(&document, Graha::Sun));
+        let ninth = Rashi::ALL[(sun.unwrap() + 8) % 12];
+        assert_eq!(reading.karaka_bhavas[0].sign, ninth);
+    }
+    // Venus is never more than two signs from the Sun, so both cases occur
+    // over a year of charts.
+    assert!(shared > 0 && parted > 0, "{shared} shared, {parted} parted");
+}
