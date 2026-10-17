@@ -359,6 +359,21 @@ navamsha, a strong unafflicted benefic in a kendra, and three figures of
 very long life. The note on v. 68 now says what vv. 69 and 70 ask, a cruel
 shashtyamsha, which is not built.
 
+**Zodiacal releasing reports its peaks and the loosing of the bond.**
+**Numbers:** none moved; both read periods the kernel already makes.
+`releasing_angle(lot, sign)` is the whole-sign angle a period's sign
+holds from a lot, `LotAngle::First`, `Fourth`, `Seventh` or `Tenth`, and
+nothing at no angle: the lot standing as the Ascendant (*Anthologies*
+II.17K) and Fortune's angles judging a releasing period (IV.7, crux
+C423). The lot is Fortune's sign for Daimon's releasing too (C424), and
+the angle is reported, not scored (C425, C426).
+`ReleasingDasha::loosing(parent)` is the period at which a level, its
+twelve signs spent, passes to the sign opposite the parent's (IV.4,
+IV.10), and `ReleasingDasha::is_loosed` holds for it and every period
+after it, read off the path, so a stored row answers the same (C427).
+The Rust surface only: a dasha row already carries the `path` and `sign`
+these are read from, so no record gains a field.
+
 **Synastry house overlays.** **Numbers:** none moved.
 `ChartArea::synastry_houses` counts each chart's planets and lagna in
 the other chart's houses, both ways, on the cusps that chart's own

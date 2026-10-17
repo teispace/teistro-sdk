@@ -7,6 +7,14 @@
 //! forward, and is cut at the parent's end. Once the twelve signs are
 //! spent (211 units), the rest is loosed to the sign opposite the parent's.
 //!
+//! **Peaks and the loosing** (IV.4, IV.7; II.17K). A period's sign is
+//! judged by its place from the Lot of Fortune, whose angles stand as the
+//! Ascendant's do: [`releasing_angle`] says which angle a sign is, and
+//! nothing for a sign at no angle. [`ReleasingDasha::loosing`] is the
+//! period at which a level jumps to the opposite sign, and
+//! [`ReleasingDasha::is_loosed`] says a period runs after the jump. Both
+//! read a period the kernel already made; neither moves one.
+//!
 //! **Profection** (IV.11). The ordinal year *n* falls *n − 1* signs on
 //! from the start, one sign a year, and the count never ends.
 //!
@@ -28,6 +36,7 @@
 
 use teistro_core::catalogue::{DashaFamily, DashaSystem, Graha, Rashi};
 use teistro_core::error::Error;
+use teistro_core::house::House;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::settings::YearLength;
@@ -88,6 +97,122 @@ fn year_days(length: YearLength) -> Result<f64, Error> {
         return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
     }
     Ok(days)
+}
+
+/// An angle of the circle counted from a lot by whole signs: the lot's own
+/// sign stands as the Ascendant, the fourth from it as the IC, the seventh
+/// as the Descendant and the tenth as the MC (*Anthologies* II.17K, 79K).
+///
+/// Valens judges a releasing period by where its sign falls from the Lot
+/// of Fortune: a distribution to "MC relative to the Lot of Fortune" or to
+/// "the Lot itself" brings rank, and one at the Ascendant's angles brings
+/// it "not to the same extent" (IV.7, 166K). Later practice calls such
+/// periods the peaks. The angle is reported, not weighed (cruxes C423,
+/// C425).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::{LotAngle, releasing_angle};
+///
+/// // Fortune in Leo: Taurus is the tenth from it, Fortune's own MC.
+/// assert_eq!(releasing_angle(Rashi::Leo, Rashi::Taurus), Some(LotAngle::Tenth));
+/// assert_eq!(LotAngle::Tenth.house().get(), 10);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum LotAngle {
+    /// The lot's own sign, its Ascendant: "Life".
+    First,
+    /// The fourth sign from the lot, its IC.
+    Fourth,
+    /// The seventh sign from the lot, its Descendant.
+    Seventh,
+    /// The tenth sign from the lot, its MC: "Rank".
+    Tenth,
+}
+
+impl LotAngle {
+    /// The four, in the order of the houses.
+    ///
+    /// ```
+    /// use teistro_dasha::LotAngle;
+    ///
+    /// assert_eq!(LotAngle::ALL.map(|angle| angle.house().get()), [1, 4, 7, 10]);
+    /// ```
+    pub const ALL: [LotAngle; 4] = [
+        LotAngle::First,
+        LotAngle::Fourth,
+        LotAngle::Seventh,
+        LotAngle::Tenth,
+    ];
+
+    /// The angle a house counted from the lot is, or nothing for a house
+    /// at no angle: a succedent one, or one "preceding an angle".
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    /// use teistro_dasha::LotAngle;
+    ///
+    /// assert_eq!(LotAngle::of(House::try_new(7)?), Some(LotAngle::Seventh));
+    /// assert_eq!(LotAngle::of(House::try_new(6)?), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn of(house: House) -> Option<LotAngle> {
+        match house.get() {
+            1 => Some(LotAngle::First),
+            4 => Some(LotAngle::Fourth),
+            7 => Some(LotAngle::Seventh),
+            10 => Some(LotAngle::Tenth),
+            _ => None,
+        }
+    }
+
+    /// The house it is from the lot, the lot's own sign being the first.
+    ///
+    /// ```
+    /// use teistro_dasha::LotAngle;
+    ///
+    /// assert_eq!(LotAngle::Fourth.house().get(), 4);
+    /// ```
+    #[must_use]
+    pub const fn house(self) -> House {
+        let [first, fourth, seventh, tenth] = House::KENDRAS;
+        match self {
+            LotAngle::First => first,
+            LotAngle::Fourth => fourth,
+            LotAngle::Seventh => seventh,
+            LotAngle::Tenth => tenth,
+        }
+    }
+}
+
+/// The angle `sign` is from `lot` by whole signs, or nothing when it is at
+/// none: the reading a releasing period's sign is judged by.
+///
+/// `lot` is the Lot of Fortune's sign, also when the releasing starts from
+/// Daimon, since Valens counts Daimon's distribution to "MC relative to the
+/// Lot of Fortune" (IV.7, 166K; crux C424). Any other sign may be passed:
+/// the Ascendant's gives the angles Valens ranks below Fortune's, and a
+/// parent period's sign gives a reading he does not make (C426). The whole
+/// place, angle or not, is `House::between(lot, sign)`.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::house::House;
+/// use teistro_dasha::{LotAngle, releasing_angle};
+///
+/// // IV.8: Fortune in Leo, Daimon in Scorpio. Daimon's own sign is the
+/// // fourth from Fortune, and Leo is Fortune itself.
+/// assert_eq!(releasing_angle(Rashi::Leo, Rashi::Scorpio), Some(LotAngle::Fourth));
+/// assert_eq!(releasing_angle(Rashi::Leo, Rashi::Leo), Some(LotAngle::First));
+/// // With the Ascendant in Pisces, Fortune in Leo is the sixth sign,
+/// // "preceding an angle <the Descendant>" (168K).
+/// assert_eq!(releasing_angle(Rashi::Pisces, Rashi::Leo), None);
+/// assert!(House::between(Rashi::Pisces, Rashi::Leo).is_apoklima());
+/// ```
+#[must_use]
+pub const fn releasing_angle(lot: Rashi, sign: Rashi) -> Option<LotAngle> {
+    LotAngle::of(House::between(lot, sign))
 }
 
 /// Valens's releasing from a sign: the vital sector begun from a lot.
@@ -155,6 +280,73 @@ impl ReleasingDasha {
         (0..index)
             .map(|k| releasing_years(Self::sign_at(from, k)))
             .sum()
+    }
+
+    /// The period below `parent` at which the bond is loosed: the first
+    /// after its twelve signs are spent, in the sign opposite the parent's
+    /// (IV.4, IV.10); nothing when the parent ends first, as a sign of
+    /// fewer than 211 units does, or below the deepest level (crux C427).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::settings::YearLength;
+    /// use teistro_dasha::{ReleasingDasha, Timeline};
+    ///
+    /// // IV.4: Gemini's 20 years spend the twelve in 17 years 7 months,
+    /// // and the rest goes to Sagittarius, opposite.
+    /// let birth = JulianDay::literal(2_451_545.0);
+    /// let dasha = ReleasingDasha::new(Rashi::Gemini, birth, YearLength::Savana360)?;
+    /// let gemini = dasha.mahadashas().next().ok_or("no first period")?;
+    /// let loosed = dasha.loosing(&gemini).ok_or("no loosing")?;
+    /// assert_eq!(loosed.sign, Some(Rashi::Sagittarius));
+    /// assert!(ReleasingDasha::is_loosed(&loosed));
+    /// // Aries's 15 years end before the twelve are spent.
+    /// let dasha = ReleasingDasha::new(Rashi::Aries, birth, YearLength::Savana360)?;
+    /// let aries = dasha.mahadashas().next().ok_or("no first period")?;
+    /// assert!(dasha.loosing(&aries).is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn loosing(&self, parent: &Period) -> Option<Period> {
+        self.child(parent, SIGNS)
+    }
+
+    /// Whether `period` runs after its level's bond was loosed: its place
+    /// among its parent's children is past the twelve, so its sign is
+    /// counted from the one opposite the parent's. The first such period
+    /// is [`ReleasingDasha::loosing`]; a first-level period never is one.
+    ///
+    /// It reads the period's [`Path`] alone, so a stored row answers the
+    /// same: a releasing row is loosed when the last place of its path is
+    /// 12 or more.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::settings::YearLength;
+    /// use teistro_dasha::{ReleasingDasha, Timeline};
+    ///
+    /// let birth = JulianDay::literal(2_451_545.0);
+    /// let dasha = ReleasingDasha::new(Rashi::Gemini, birth, YearLength::Savana360)?;
+    /// let gemini = dasha.mahadashas().next().ok_or("no first period")?;
+    /// let loosed: Vec<Rashi> = dasha
+    ///     .children(&gemini)
+    ///     .filter(ReleasingDasha::is_loosed)
+    ///     .filter_map(|period| period.sign)
+    ///     .collect();
+    /// assert_eq!(loosed, [Rashi::Sagittarius, Rashi::Capricorn]);
+    /// assert!(!ReleasingDasha::is_loosed(&gemini));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn is_loosed(period: &Period) -> bool {
+        period.path.depth() > 1
+            && period
+                .path
+                .indices()
+                .last()
+                .is_some_and(|&place| usize::from(place) >= SIGNS)
     }
 }
 
@@ -534,6 +726,164 @@ mod tests {
         let chain = dasha.at(JulianDay::literal(at), Depth::try_new(4).unwrap());
         let signs: Vec<Rashi> = chain.iter().filter_map(|p| p.sign).collect();
         assert_eq!(signs[..3], [Rashi::Pisces, Rashi::Gemini, Rashi::Scorpio]);
+    }
+
+    /// II.17K: the lot stands as the Ascendant, the tenth from it as the
+    /// MC, the seventh as the Descendant and the fourth as the IC; the
+    /// other eight signs are at no angle.
+    #[test]
+    fn a_lot_has_four_angles_and_the_tenth_is_its_mc() {
+        for lot in Rashi::ALL {
+            let angles: Vec<(usize, LotAngle)> = (0..SIGNS)
+                .filter_map(|on| {
+                    releasing_angle(lot, step(lot, Direction::Forward, on)).map(|a| (on, a))
+                })
+                .collect();
+            assert_eq!(
+                angles,
+                [
+                    (0, LotAngle::First),
+                    (3, LotAngle::Fourth),
+                    (6, LotAngle::Seventh),
+                    (9, LotAngle::Tenth),
+                ],
+                "{lot:?}"
+            );
+        }
+        for angle in LotAngle::ALL {
+            assert_eq!(LotAngle::of(angle.house()), Some(angle));
+        }
+    }
+
+    /// IV.8: the Ascendant in Pisces and the Lot of Fortune in Leo, which
+    /// Valens finds "preceding an angle <the Descendant>" (168K): the sixth
+    /// sign, no angle. Daimon's distribution to "MC relative to the Lot of
+    /// Fortune" (IV.7) is counted from Leo, so it is Taurus.
+    #[test]
+    fn valens_fortune_in_leo_precedes_the_descendant() {
+        assert_eq!(releasing_angle(Rashi::Pisces, Rashi::Leo), None);
+        assert_eq!(House::between(Rashi::Pisces, Rashi::Leo).get(), 6);
+        assert_eq!(
+            releasing_angle(Rashi::Pisces, Rashi::Virgo),
+            Some(LotAngle::Seventh)
+        );
+        assert_eq!(
+            releasing_angle(Rashi::Leo, Rashi::Taurus),
+            Some(LotAngle::Tenth)
+        );
+        // Releasing from Daimon in Scorpio, read from Fortune: Daimon's own
+        // sign is the fourth from Leo and Aquarius, from 54, the seventh.
+        // Counted, not printed.
+        let daimon = releasing(Rashi::Scorpio);
+        let angles: Vec<(Rashi, Option<LotAngle>)> = daimon
+            .mahadashas()
+            .take(4)
+            .filter_map(|p| p.sign)
+            .map(|sign| (sign, releasing_angle(Rashi::Leo, sign)))
+            .collect();
+        assert_eq!(
+            angles,
+            [
+                (Rashi::Scorpio, Some(LotAngle::Fourth)),
+                (Rashi::Sagittarius, None),
+                (Rashi::Capricorn, None),
+                (Rashi::Aquarius, Some(LotAngle::Seventh)),
+            ]
+        );
+    }
+
+    /// IV.4: the vital sector begun from Gemini, Cancer, Leo, Virgo,
+    /// Capricorn or Aquarius is loosed after 17 years 7 months, and no
+    /// other sign's years reach it.
+    #[test]
+    fn valens_six_signs_reach_the_loosing() {
+        let reached: Vec<Rashi> = Rashi::ALL
+            .into_iter()
+            .filter(|&start| {
+                let dasha = releasing(start);
+                dasha.loosing(&level_one(&dasha, start)).is_some()
+            })
+            .collect();
+        assert_eq!(
+            reached,
+            [
+                Rashi::Gemini,
+                Rashi::Cancer,
+                Rashi::Leo,
+                Rashi::Virgo,
+                Rashi::Capricorn,
+                Rashi::Aquarius,
+            ]
+        );
+        for start in reached {
+            let dasha = releasing(start);
+            let parent = level_one(&dasha, start);
+            let loosed = dasha.loosing(&parent).unwrap();
+            assert_eq!(months(&loosed).0 - months(&parent).0, 211.0, "{start:?}");
+            assert_eq!(loosed.sign, Some(start.opposite()), "{start:?}");
+            assert!(ReleasingDasha::is_loosed(&loosed));
+            assert_eq!(loosed.path.indices().last(), Some(&12));
+        }
+    }
+
+    /// IV.4 (163K): Leo transmits to Aquarius and Aquarius to Leo, Cancer
+    /// and Capricorn to each other, Virgo and Pisces likewise.
+    #[test]
+    fn valens_loosing_transmits_to_the_sign_in_opposition() {
+        for (from, to) in [
+            (Rashi::Leo, Rashi::Aquarius),
+            (Rashi::Aquarius, Rashi::Leo),
+            (Rashi::Cancer, Rashi::Capricorn),
+            (Rashi::Capricorn, Rashi::Cancer),
+            (Rashi::Virgo, Rashi::Pisces),
+        ] {
+            let dasha = releasing(from);
+            let loosed = dasha.loosing(&level_one(&dasha, from)).unwrap();
+            assert_eq!(loosed.sign, Some(to), "{from:?}");
+        }
+    }
+
+    /// IV.8: Daimon in Scorpio ends at 69 years 4 months inside Aquarius,
+    /// before Aquarius's twelve are spent at 71 years 7 months, so none of
+    /// the periods Valens prints is a loosed one.
+    #[test]
+    fn valens_daimon_in_scorpio_ends_before_the_loosing() {
+        let dasha = releasing(Rashi::Scorpio);
+        let aquarius = level_one(&dasha, Rashi::Aquarius);
+        let printed: Vec<Period> = dasha.children(&aquarius).take(11).collect();
+        assert!(!printed.iter().any(ReleasingDasha::is_loosed));
+        let loosed = dasha.loosing(&aquarius).unwrap();
+        assert_eq!(months(&loosed).0, 71.0 * 12.0 + 7.0);
+        assert_eq!(loosed.sign, Some(Rashi::Leo));
+        let after: Vec<Rashi> = dasha
+            .children(&aquarius)
+            .filter(ReleasingDasha::is_loosed)
+            .map(|p| p.sign.unwrap())
+            .collect();
+        // Leo 19 months, Virgo 20, Libra 8, Scorpio 15, Sagittarius 12,
+        // Capricorn 27, Aquarius 30, Pisces 12, and Aries the 6 left of 360.
+        assert_eq!(after.len(), 9);
+        assert_eq!(after.last(), Some(&Rashi::Aries));
+    }
+
+    /// IV.10: the cycle of days is 528, and the remaining days run from
+    /// the sign in opposition. The kernel's is 211 × 2½ = 527½ days, which
+    /// Valens rounds. Aquarius's 30 months hold a whole cycle and more,
+    /// and Pisces's 12 do not.
+    #[test]
+    fn valens_days_are_loosed_after_their_cycle() {
+        let dasha = releasing(Rashi::Aquarius);
+        let aquarius = level_one(&dasha, Rashi::Aquarius);
+        let months_of_aquarius = dasha.children(&aquarius).next().unwrap();
+        assert_eq!(months_of_aquarius.sign, Some(Rashi::Aquarius));
+        let loosed = dasha.loosing(&months_of_aquarius).unwrap();
+        let into = loosed.interval.from.get() - months_of_aquarius.interval.from.get();
+        assert_eq!(into, 527.5);
+        assert_eq!(loosed.sign, Some(Rashi::Leo));
+        assert_eq!(loosed.path.depth(), 3);
+        let shorter = dasha.children(&aquarius).nth(1).unwrap();
+        assert_eq!(shorter.sign, Some(Rashi::Pisces));
+        assert!(dasha.loosing(&shorter).is_none());
     }
 
     #[test]
