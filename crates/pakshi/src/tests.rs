@@ -20,7 +20,7 @@ use crate::{
 /// and each bird's row of activities over the five yamas.
 type Table = (Paksha, Half, [&'static [Vara]; 5], [[&'static str; 5]; 5]);
 
-/// Ayyar's four tables as `pakshi.md` §2.7 transcribes them, his one slip
+/// Ayyar's four tables as transcribed from his page images (`pakshi.md` §2), his one slip
 /// corrected (crux P7).
 const TABLES: [Table; 4] = {
     use Vara::{

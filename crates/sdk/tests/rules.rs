@@ -612,7 +612,7 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         .iter()
         .map(|(name, status)| (name.as_str(), *status))
         .collect();
-    assert_eq!((charts, present, set.rules().len()), (53, 4416, 1697));
+    assert_eq!((charts, present, set.rules().len()), (53, 4373, 1697));
     // Every chart names one span, over all eight, and the SDK computes
     // each.
     let named: Vec<(&str, u32)> = named.iter().map(|(ayus, n)| (ayus.as_str(), *n)).collect();

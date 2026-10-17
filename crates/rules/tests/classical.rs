@@ -2364,14 +2364,15 @@ const STRENGTH_BOUND: [(&str, usize); 6] = [
 
 /// Brihat Jataka ch. 12 v. 12 and Saravali ch. 21 v. 7 make an ashraya yoga
 /// fruitless where another Nabhasa yoga is mixed with it, which BPHS does not
-/// say, and the pack ships no such cancellation (crux C448). Under the pack's
-/// reading of the seven-house windows as confinement (crux C449) the clause
-/// could never let an ashraya yoga stand: every sky that holds one holds a
-/// dala or akriti yoga as well, most of them a window. This holds that over
-/// every sky the Sun, Mercury and Venus allow, so a change to either reading
-/// is seen here first.
+/// say; the pack writes it as a cancellation naming the dala and akriti yogas
+/// (crux C448). The clause leaves the yoga something to say only because the
+/// seven-house windows ask every house filled (crux C449): read as the seven
+/// confined, a window held on 28,224 of these skies and no ashraya yoga ever
+/// stood. This holds, over every sky the Sun, Mercury and Venus allow, that an
+/// ashraya yoga stands down exactly where another holds, that it stands alone
+/// on 20,488 of them, and that a filled window holds on none.
 #[test]
-fn every_ashraya_sky_holds_another_nabhasa_yoga_under_the_confined_windows() {
+fn an_ashraya_yoga_stands_down_exactly_where_a_dala_or_akriti_yoga_holds() {
     let rule = |key: &str| -> &'static Rule {
         shipped::nabhasas()
             .iter()
@@ -2380,7 +2381,7 @@ fn every_ashraya_sky_holds_another_nabhasa_yoga_under_the_confined_windows() {
     };
     let ashraya = ["NABHASA_RAJJU", "NABHASA_MUSALA", "NABHASA_NALA"].map(rule);
     let others = DALA_AND_AKRITI.map(rule);
-    let windows = CONFINED_WINDOWS.map(rule);
+    let windows = FILLED_WINDOWS.map(rule);
     let (mut skies, mut alone, mut windowed) = (0_usize, 0_usize, 0_usize);
     // Movable, fixed and dual: Aries, Taurus and Gemini, and every third sign
     // on from each.
@@ -2394,23 +2395,30 @@ fn every_ashraya_sky_holds_another_nabhasa_yoga_under_the_confined_windows() {
                 [0, 1, 2, 3, 4].map(|at| signs[code / 4_usize.pow(at) % 4]);
             for lagna in 0..12 {
                 let sky = ashraya_sky(lagna, [inner, moon, mars, inner, jupiter, inner, saturn]);
-                let evaluator = Evaluator::new(&sky, Readings::TEXTS);
+                let evaluator =
+                    Evaluator::new(&sky, Readings::TEXTS).with_rules(shipped::nabhasas());
                 skies += 1;
+                let result = evaluator.evaluate(ashraya);
                 assert!(
-                    evaluator.evaluate(ashraya).present,
+                    result.present,
                     "{} with the lagna in sign {lagna}",
                     ashraya.key
                 );
-                if !others.iter().any(|rule| evaluator.evaluate(rule).present) {
-                    alone += 1;
-                }
+                let mixed = others.iter().any(|rule| evaluator.evaluate(rule).present);
+                assert_eq!(
+                    result.is_cancelled(),
+                    mixed,
+                    "{} with the lagna in sign {lagna}",
+                    ashraya.key
+                );
+                alone += usize::from(!mixed);
                 if windows.iter().any(|rule| evaluator.evaluate(rule).present) {
                     windowed += 1;
                 }
             }
         }
     }
-    assert_eq!((skies, alone, windowed), (36_864, 0, 28_224));
+    assert_eq!((skies, alone, windowed), (36_864, 20_488, 0));
 }
 
 /// A sky with the seven grahas in the signs given, the Sun to Saturn, the
@@ -2471,10 +2479,11 @@ const DALA_AND_AKRITI: [&str; 22] = [
     "NABHASA_SAMUDRA",
 ];
 
-/// The akriti yogas the pack reads as the seven grahas confined to a window
-/// rather than filling it (crux C449): seven continuous houses from each of
-/// the twelve, and the six alternate houses from the first or the second.
-const CONFINED_WINDOWS: [&str; 7] = [
+/// The akriti yogas whose window the pack asks every house of filled, where
+/// it once asked only the seven confined to it (crux C449): seven continuous
+/// houses from each of the twelve, and the six alternate houses from the
+/// first or the second.
+const FILLED_WINDOWS: [&str; 7] = [
     "NABHASA_NAUKA",
     "NABHASA_KOOTA",
     "NABHASA_CHATRA",

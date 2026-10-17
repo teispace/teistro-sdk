@@ -476,20 +476,27 @@ a catalogue point: the first reader that must name it adds the row
 (C438). A provider that cannot place the apogee is refused on `lilith`.
 The Rust surface only: no boundary section, binding or reader yet.
 **The Nabhasa yogas read against Brihat Jataka and Saravali** (cruxes C448
-to C452). **Numbers:** none moved; no rule changed. All thirty-two of
-BPHS ch. 35 already ship, and each was read again against the Sanskrit of
-BPHS ch. 35, Brihat Jataka ch. 12 and Saravali ch. 21. Four readings the
-texts leave open are recorded with what each rival answers over the 93
-recorded charts: the seven-house and six-house windows, which the texts
-word as the sankhya yogas' occupied signs and the pack reads as
-confinement (C449, the filled reading recommended); Vajra and Yava, whose
-all-seven figure Varahamihira himself says the sky forbids (C450); where
-Vapi's seven stand (C451); and what "three angles" asks of Maala and Sarpa
-(C452). Brihat Jataka's and Saravali's clause that an ashraya yoga mixed
-with another bears no fruit is not shipped (C448): under the confined
-windows every ashraya sky holds another Nabhasa yoga, which a new test in
-`crates/rules/tests/classical.rs` proves over all 36,864 skies the Sun,
-Mercury and Venus allow, so the clause would cancel every ashraya yoga.
+to C452). **Numbers:** over the 93 recorded charts the seven window yogas
+answer 58 times fewer (Nauka 18, Koota 3, Chatra 3, Chapa 2, Ardha Chandra
+30, Chakra 1, Samudra 1, now none), the sankhya yogas stand down 17 times
+rather than 46, and 42 of the 62 figures answer as the recording engine
+does rather than 46. Each of BPHS ch. 35's thirty-two was read again
+against the Sanskrit of BPHS ch. 35, Brihat Jataka ch. 12 and Saravali
+ch. 21. Nauka, Koota, Chatra, Chapa, Ardha Chandra, Chakra and Samudra now
+ask every house of their window to hold one of the seven, where they asked
+only that the seven be confined to it: the texts word the windows as they
+word the sankhya yogas, which count the signs occupied (C449). The engine
+fills its Koota and confines the other six, so Koota now agrees with it and
+the six differ. An ashraya yoga, Rajju, Musala or Nala, now stands down
+where a dala or akriti yoga holds, as Brihat Jataka ch. 12 v. 12 and
+Saravali ch. 21 v. 7 say and BPHS does not (C448); under the filled
+windows 20,488 of the 36,864 skies the Sun, Mercury and Venus allow leave
+it standing alone, and `crates/rules/tests/classical.rs` holds that the
+cancellation falls exactly where another holds. Three readings the texts
+leave open are recorded with what each rival answers: Vajra and Yava,
+whose all-seven figure Varahamihira himself says the sky forbids (C450);
+where Vapi's seven stand (C451); and what "three angles" asks of Maala and
+Sarpa (C452).
 
 **A hit list reports the Moon's phases and phase returns.** **Numbers:**
 none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,

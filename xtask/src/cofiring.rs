@@ -110,7 +110,7 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// and a place, its latitude and longitude, where it does: rare rules,
 /// shown alive. Each was found at Kathmandu's latitude, on the meridian
 /// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 56] = [
+const FIXTURES: [(&str, f64, f64, f64); 59] = [
     (
         "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
         2_415_023.166_67,
@@ -194,11 +194,14 @@ const FIXTURES: [(&str, f64, f64, f64); 56] = [
     ("BPHS_WIFE_CURSE_11", 2_420_394.5, 27.7172, -103.057),
     ("BPHS_WIFE_CURSE_7", 2_384_731.5, 27.7172, 103.036),
     ("BPHS_WIFE_CURSE_8", 2_400_560.0, 27.7172, 162.235),
+    ("NABHASA_CHAKRA", 2_412_258.5, 27.7172, 65.74),
+    ("NABHASA_CHATRA", 2_378_584.5, 27.7172, -158.98),
     ("NABHASA_GADA", 2_430_110.0, 27.7172, -93.752),
     ("NABHASA_GOLA", 2_437_699.083_33, 27.7172, -37.399),
     ("NABHASA_KAMALA", 2_420_757.166_67, 27.7172, 119.593),
     ("NABHASA_NALA", 2_420_757.166_67, 27.7172, 59.593),
     ("NABHASA_SAKATA", 2_418_976.25, 27.7172, -8.53),
+    ("NABHASA_SAMUDRA", 2_412_258.5, 27.7172, 97.14),
     ("NABHASA_VIHAGA", 2_418_976.25, 27.7172, 81.47),
     ("PARASHARA_MATSYA", 2_418_336.0, 27.7172, 112.354),
     (

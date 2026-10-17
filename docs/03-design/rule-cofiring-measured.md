@@ -2,7 +2,7 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1910 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1834 rules hold at least once and 76 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1910 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1831 rules hold at least once and 79 never do.
 
 Rules holding on the same 5 or more charts form 113 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
@@ -181,11 +181,14 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `BPHS_WIFE_CURSE_11` | 2420394.5 | 27.7172, -103.057 |
 | `BPHS_WIFE_CURSE_7` | 2384731.5 | 27.7172, 103.036 |
 | `BPHS_WIFE_CURSE_8` | 2400560 | 27.7172, 162.235 |
+| `NABHASA_CHAKRA` | 2412258.5 | 27.7172, 65.74 |
+| `NABHASA_CHATRA` | 2378584.5 | 27.7172, -158.98 |
 | `NABHASA_GADA` | 2430110 | 27.7172, -93.752 |
 | `NABHASA_GOLA` | 2437699.08333 | 27.7172, -37.399 |
 | `NABHASA_KAMALA` | 2420757.16667 | 27.7172, 119.593 |
 | `NABHASA_NALA` | 2420757.16667 | 27.7172, 59.593 |
 | `NABHASA_SAKATA` | 2418976.25 | 27.7172, -8.53 |
+| `NABHASA_SAMUDRA` | 2412258.5 | 27.7172, 97.14 |
 | `NABHASA_VIHAGA` | 2418976.25 | 27.7172, 81.47 |
 | `PARASHARA_MATSYA` | 2418336 | 27.7172, 112.354 |
 | `PARIJATA_JUPITER_EIGHTH_IN_A_SIGN_OF_MARS_ASPECTED_BY_FOUR` | 2428308.91667 | 27.7172, -89.235 |
