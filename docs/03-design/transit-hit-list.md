@@ -227,3 +227,22 @@ order among themselves.
    within three minutes of the almanacs' 13 January 22:27 UT and 29
    January 12:36 UT. The C boundary refuses both as it does the varga
    ingress.
+3. **An eclipse on a natal point** (C421, C422): `SOLAR_ECLIPSE` and
+   `LUNAR_ECLIPSE`, an eclipse whose luminary — the Sun in a solar
+   eclipse, the Moon in a lunar one — stands at the greatest moment
+   within `eclipseOrbDeg` (3° unless asked otherwise, at most 15°) of a
+   natal point the request already names in `points`. No new search:
+   the eclipses are the almanac's own (`astro::eclipse::Eclipses`, under
+   `panchanga.eclipse_shadow`, the greatest moment's UT1 read as UTC as
+   the almanac reads it), found once for a batch since an eclipse is the
+   Earth's, and the luminary is placed in the chart's zodiac through
+   `Founder::longitudes`, which equals a founded chart's place to the bit.
+   A classical astronomy, whose eclipse is its own method (C188), is
+   refused `UNSUPPORTED` on `kinds`. The hit carries the eclipse's kind
+   from the catalogue (`SolarEclipseKind`, `LunarEclipseKind`), its
+   graha the luminary and its instant the greatest eclipse. Every eclipse
+   of 2025 against every natal point of a birth an hour after the
+   eclipsed new moon of 29 March is read back both ways through charts
+   founded at the greatest moments: a hit exactly where the luminary lies
+   within the orb, and none elsewhere. The C boundary refuses both kinds
+   as it does the others of this section.

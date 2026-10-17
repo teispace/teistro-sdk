@@ -889,6 +889,12 @@ pub enum TsHitKind {
     /// The Moon's elongation from the Sun returned to the natal chart's;
     /// not carried yet, as [`TsHitKind::VargaIngress`].
     PhaseReturn = 6,
+    /// A solar eclipse fell on a natal point; not carried yet, as
+    /// [`TsHitKind::VargaIngress`].
+    SolarEclipse = 7,
+    /// A lunar eclipse fell on a natal point; not carried yet, as
+    /// [`TsHitKind::VargaIngress`].
+    LunarEclipse = 8,
 }
 
 impl TsHitKind {
@@ -934,6 +940,8 @@ impl From<&teistro::gochar::hits::HitEvent> for TsHitKind {
             HitEvent::VargaIngress { .. } => TsHitKind::VargaIngress,
             HitEvent::LunarPhase { .. } => TsHitKind::LunarPhase,
             HitEvent::PhaseReturn => TsHitKind::PhaseReturn,
+            HitEvent::SolarEclipse { .. } => TsHitKind::SolarEclipse,
+            HitEvent::LunarEclipse { .. } => TsHitKind::LunarEclipse,
         }
     }
 }
@@ -2468,7 +2476,9 @@ impl HitColumns {
                 // holding one is a request that slipped past it.
                 HitEvent::VargaIngress { .. }
                 | HitEvent::LunarPhase { .. }
-                | HitEvent::PhaseReturn => {
+                | HitEvent::PhaseReturn
+                | HitEvent::SolarEclipse { .. }
+                | HitEvent::LunarEclipse { .. } => {
                     return Err(Error::internal(
                         "a hit the `hits` section does not carry reached the encoder",
                     ));

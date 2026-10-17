@@ -1,6 +1,6 @@
 //! The transit hit list's events (`03-design/transit-hit-list.md`): when a
 //! graha enters a sign, a nakshatra or a divisional chart's sign, when it
-//! stands still, and the Moon's phases.
+//! stands still, the Moon's phases, and an eclipse on a natal point.
 //!
 //! The searches are the SDK's; this module is the vocabulary the answer is
 //! said in, and the one place a crossing becomes the sign it entered — a
@@ -18,7 +18,8 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Varga};
+use teistro_core::angle::difference_deg;
+use teistro_core::catalogue::{Graha, LunarEclipseKind, Nakshatra, Rashi, SolarEclipseKind, Varga};
 use teistro_core::quantity::{JulianDay, Utc};
 
 /// Which way a graha was moving, through a line or out of a station.
@@ -202,6 +203,24 @@ pub enum HitEvent {
     /// the lunation phase the native was born in, once a synodic month
     /// (C420). The hit's graha is the Moon.
     PhaseReturn,
+    /// A solar eclipse whose Sun, at the greatest eclipse, stood within
+    /// the eclipse orb of a natal point (C421, C422). The hit's graha is
+    /// the Sun and its instant the greatest eclipse.
+    SolarEclipse {
+        /// The natal point eclipsed.
+        to: NatalPoint,
+        /// What kind of solar eclipse.
+        eclipse: SolarEclipseKind,
+    },
+    /// A lunar eclipse whose Moon, at the greatest eclipse, stood within
+    /// the eclipse orb of a natal point (C421, C422). The hit's graha is
+    /// the Moon and its instant the greatest eclipse.
+    LunarEclipse {
+        /// The natal point eclipsed.
+        to: NatalPoint,
+        /// What kind of lunar eclipse.
+        eclipse: LunarEclipseKind,
+    },
 }
 
 impl HitEvent {
@@ -217,14 +236,19 @@ impl HitEvent {
             HitEvent::VargaIngress { .. } => 4,
             HitEvent::LunarPhase { .. } => 5,
             HitEvent::PhaseReturn => 6,
+            HitEvent::SolarEclipse { .. } => 7,
+            HitEvent::LunarEclipse { .. } => 8,
         }
     }
 
     /// The place in a tie's order among events of one kind: an aspect's
-    /// natal point, a varga ingress's chart by its catalogue id.
+    /// or an eclipse's natal point, a varga ingress's chart by its
+    /// catalogue id.
     fn detail_rank(self) -> u16 {
         match self {
-            HitEvent::Aspect { to, .. } => u16::from(to.rank()),
+            HitEvent::Aspect { to, .. }
+            | HitEvent::SolarEclipse { to, .. }
+            | HitEvent::LunarEclipse { to, .. } => u16::from(to.rank()),
             HitEvent::VargaIngress { varga, .. } => varga as u16,
             _ => 0,
         }
@@ -351,6 +375,21 @@ pub fn lunar_phase(line_deg: f64) -> HitEvent {
     HitEvent::LunarPhase {
         phase: MoonPhase::at_line(line_deg),
     }
+}
+
+/// Whether an eclipse's luminary, at `luminary_deg`, falls on a natal
+/// point at `natal_deg`: no more than `orb_deg` from it either way, in the
+/// one zodiac both are read in (C421, C422).
+///
+/// ```
+/// use teistro_gochar::hits::eclipse_reaches;
+///
+/// assert!(eclipse_reaches(358.5, 1.0, 3.0));
+/// assert!(!eclipse_reaches(10.0, 14.0, 3.0));
+/// ```
+#[must_use]
+pub fn eclipse_reaches(luminary_deg: f64, natal_deg: f64, orb_deg: f64) -> bool {
+    difference_deg(luminary_deg, natal_deg).abs() <= orb_deg
 }
 
 /// The step of the lattice about a natal point that holds every line of the
