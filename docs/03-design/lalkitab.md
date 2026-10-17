@@ -1,11 +1,18 @@
 # `lalkitab`: the computable parts of Lal Kitab
 
-Status: `draft`, 2026-10-09. Track B of the completion plan
-(`07-roadmap/00-roadmap.md`), the module catalogue's `lalkitab` row ("facts
-only, cited by edition: the books are likely in copyright to 2042"). The
-kernel, `crates/lalkitab`, the façade and the boundary are built, and the
-reading crosses to every binding; a second reading against the Urdu is
-the next step (§7).
+Status: `building`, 2026-10-17. §7 steps 1 to 3 are built (2026-10-09):
+the kernel, `crates/lalkitab`, the façade (`ChartArea::lalkitab`) and the
+boundary (`lalkitab_json` and section 123), and the reading crosses to
+every binding; step 4's second reading against the Urdu was handed out
+on 2026-10-12. Not built: the year a date falls in (LK-C3 decides the
+civil birthday, with a solar return as an option, but a reading takes the
+year of life as a number and maps no date to one), and what waits on the
+second reading (LK-C6's remarks, LK-C8's p. 113 table and sudden-strike
+column, the ancestors' debt's second state). Track B of the completion
+plan (`07-roadmap/00-roadmap.md`), the module catalogue's `lalkitab` row
+("facts only, cited by edition: the books are likely in copyright to
+2042"). Written from the book before the kernel; §8 says what building it
+found.
 
 ## 1. The source and what may ship
 
@@ -48,7 +55,9 @@ house = ((sign − lagna_sign) mod 12) + 1
 ```
 
 `Teva::from_signs(lagna, signs)` does exactly this, and `Teva::from_houses`
-takes a teva a reader already has. One open-source implementation numbers
+takes a teva a reader already has. The façade reads the signs in the
+chart's own zodiac, so the book's teva is a sidereal chart's and a
+tropical chart gives a tropical one. One open-source implementation numbers
 houses by the planet's sign with Aries always 1; that is an Aries-lagna
 chart, which pp. 6–7 contradict (LK-C1). Bhava chalit houses are not
 mentioned in the pages read.
@@ -109,7 +118,10 @@ The **yog drishti** relations of p. 112 (R1) are a rule over every house
 `h` — help sees `h+4` and is seen from `h+8`, general `h+6`/`h+6`,
 collision `h+7`/`h+5`, foundation `h+8`/`h+4`, deceit `h+9`/`h+3`, the
 joint wall `h+1`/`h−1` — checked against all twelve printed rows, so
-`yog_drishti` computes it. The "sudden strike" column is irregular and the
+`yog_drishti` computes it. The kernel's test holds the printed row for
+house 4 and that each relation reads the same from both its houses; the
+other eleven rows are laid out for the second reader in
+[`lalkitab-tables.md`](lalkitab-tables.md). The "sudden strike" column is irregular and the
 p. 113 combined-strength table carries fractions and "eclipse" cells that
 need a second reading against the Urdu; both are deferred (LK-C8).
 
@@ -142,7 +154,9 @@ so the start is an explicit input with the general table as its default
 A **year of life** is the running year: year 1 runs from birth to the first
 birthday (LK-C2). The year changes on the civil birthday (LK-C3); the pages
 read give no astronomical moment, so a solar-return year is a reader's
-choice the façade can offer, not the default.
+choice the façade can offer, not the default. Neither is built: a reading
+takes the year of life as a number (`year`, 1 to 120) and maps no date to
+it.
 
 The **mahadasha** years (p. 33, R1) are Vimshottari's values in Lal
 Kitab's order, 120 in all, and each year divides into thirds ruled by the
@@ -177,6 +191,14 @@ ancestors' debt has a first state (p. 128, R1): a planet in 9 while Mercury
 sits in that planet's root house. Its second state's rows were not read
 in full, and the modern three-debt schemes have no page (LK-C5). The debt
 is read from the birth chart only, never from an annual one (p. ~128, R2).
+The kernel reads an annual teva with the same `read` as the birth teva, so
+`year.annual` carries `rinas` and `pitri` too; the book's debts are the
+birth reading's, and the annual ones are not to be read as debts.
+
+The enemies each debt names are p. 125's own, not p. 31's regard table:
+the ancestors' debt counts Rahu as well as Venus and Mercury, though p. 31
+makes only those two Jupiter's enemies, and the mother's debt counts Ketu
+and not Rahu, though p. 31 makes both the Moon's.
 
 ### 3.8 Not computed
 
@@ -195,7 +217,7 @@ write by hand, and the façade only builds the teva from a chart.
 | item | what it is |
 |---|---|
 | `Teva` | each planet's house, built from signs and a lagna or from houses; refuses a graha outside the nine, a planet given twice or missing, a house outside 1–12, each by its field |
-| `life(&Teva, &LifeRules) -> Life` | the reading, the cycle's periods over years 1 to 120, and a year asked for: its ruler, its thirds and, with a list, the annual teva's reading |
+| `life(&Teva, &LifeRules) -> Result<Life, Error>` | the reading, the cycle's periods over years 1 to 120, and a year asked for: its ruler, its thirds and, with a list, the annual teva's reading; refuses a year outside 1 to 120 on `year` |
 | `read(&Teva) -> Reading` | per planet: dignities, owners and its regard for them, awake, kayam, what it casts; per house: occupants, who looks at it, awake, waker; masnui formed; debts with the enemies seated; the ancestors' debt's first state; the teva's flags |
 | `cycle::{CycleStart, ruler, periods}` | the 35-year cycle from the general start or a reader's |
 | `aspects::{looks_at, looked_at_by, yog_drishti}` | the arrow table and the p. 112 rule |
@@ -265,3 +287,23 @@ measured.
    `cargo xtask review-sheets` from the kernel's own functions, each cell
    numbered and cited to its page; `check-review-sheets` fails when a table
    changes and its sheet does not.
+
+## 8. What building it found
+
+- **The teva is the chart's own zodiac.** `ChartArea::lalkitab` takes the
+  lagna's and each graha's sign as the chart's document gives them, so
+  the sidereal teva of pp. 6–7 is a sidereal chart's (§2).
+- **A table that checks itself.** p. 99's waking ages are the years from
+  which the general cycle's second round gives each planet its period,
+  from the 16th year on, and a test holds the two tables to each other
+  (§3.4).
+- **Two readings share one shape.** The annual teva is read with the same
+  `read` as the birth teva, so its reading carries debts the book does not
+  count (§3.7).
+- **A debt's enemies are its own list.** p. 125 does not reuse p. 31's
+  regard table, and `tables::RINAS` keeps p. 125's (§3.7).
+- **A year is a number.** A reading names a year of life from 1 to 120
+  and gets its ruler, its thirds and, with a list, its annual teva; which
+  year a date falls in is not computed (LK-C3, §3.5). A refusal is named
+  under the record a binding sends: `lalkitab.cycle.year`,
+  `lalkitab.year`, `lalkitab.varshphal.rows[i]`.
