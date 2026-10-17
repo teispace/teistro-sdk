@@ -29,6 +29,14 @@ class AvasthaBaladiKey(enum.StrEnum):
     MRITA = "avastha_baladi.MRITA"
 
 
+class AvasthaCheshtaKey(enum.StrEnum):
+    """A `avastha_cheshta` as a message names it: the full catalogue key."""
+
+    DRISHTI = "avastha_cheshta.DRISHTI"
+    CHESHTA = "avastha_cheshta.CHESHTA"
+    VICHESHTA = "avastha_cheshta.VICHESHTA"
+
+
 class AvasthaDeeptadiKey(enum.StrEnum):
     """A `avastha_deeptadi` as a message names it: the full catalogue key."""
 
@@ -60,6 +68,23 @@ class AvasthaLajjitadiKey(enum.StrEnum):
     TRISHITA = "avastha_lajjitadi.TRISHITA"
     MUDITA = "avastha_lajjitadi.MUDITA"
     KSHOBHITA = "avastha_lajjitadi.KSHOBHITA"
+
+
+class AvasthaSayanadiKey(enum.StrEnum):
+    """A `avastha_sayanadi` as a message names it: the full catalogue key."""
+
+    SHAYANA = "avastha_sayanadi.SHAYANA"
+    UPAVESHANA = "avastha_sayanadi.UPAVESHANA"
+    NETRAPANI = "avastha_sayanadi.NETRAPANI"
+    PRAKASHANA = "avastha_sayanadi.PRAKASHANA"
+    GAMANA = "avastha_sayanadi.GAMANA"
+    AGAMANA = "avastha_sayanadi.AGAMANA"
+    SABHA = "avastha_sayanadi.SABHA"
+    AGAMA = "avastha_sayanadi.AGAMA"
+    BHOJANA = "avastha_sayanadi.BHOJANA"
+    NRITYALIPSA = "avastha_sayanadi.NRITYALIPSA"
+    KAUTUKA = "avastha_sayanadi.KAUTUKA"
+    NIDRA = "avastha_sayanadi.NIDRA"
 
 
 class AyanaKey(enum.StrEnum):
@@ -181,6 +206,17 @@ class DashaSystemKey(enum.StrEnum):
     NIRYANA_SHOOLA = "dasha_system.NIRYANA_SHOOLA"
     MANDOOKA = "dasha_system.MANDOOKA"
     KALACHAKRA = "dasha_system.KALACHAKRA"
+    SHODASHOTTARI = "dasha_system.SHODASHOTTARI"
+    SHASHTIHAYANI = "dasha_system.SHASHTIHAYANI"
+    NAISARGIKA = "dasha_system.NAISARGIKA"
+    TARA = "dasha_system.TARA"
+    KARAKA = "dasha_system.KARAKA"
+    ASHTAKAVARGA = "dasha_system.ASHTAKAVARGA"
+    PANCHASWARA = "dasha_system.PANCHASWARA"
+    STHIRA = "dasha_system.STHIRA"
+    VARNADA = "dasha_system.VARNADA"
+    YOGARDHA = "dasha_system.YOGARDHA"
+    SUDARSHANA_CHAKRA = "dasha_system.SUDARSHANA_CHAKRA"
 
 
 class DeityKey(enum.StrEnum):
@@ -405,6 +441,13 @@ class NakshatraKey(enum.StrEnum):
     REVATI = "nakshatra.REVATI"
 
 
+class NatureKey(enum.StrEnum):
+    """A `nature` as a message names it: the full catalogue key."""
+
+    BENEFIC = "nature.BENEFIC"
+    MALEFIC = "nature.MALEFIC"
+
+
 class PakshaKey(enum.StrEnum):
     """A `paksha` as a message names it: the full catalogue key."""
 
@@ -433,6 +476,17 @@ class PointKey(enum.StrEnum):
     UPAKETU = "point.UPAKETU"
     GULIKA = "point.GULIKA"
     MANDI = "point.MANDI"
+    BHAVA_LAGNA = "point.BHAVA_LAGNA"
+    HORA_LAGNA = "point.HORA_LAGNA"
+    GHATI_LAGNA = "point.GHATI_LAGNA"
+    VARNADA_LAGNA = "point.VARNADA_LAGNA"
+    PRANAPADA_LAGNA = "point.PRANAPADA_LAGNA"
+    KALA = "point.KALA"
+    MRITYU = "point.MRITYU"
+    ARDHAPRAHARA = "point.ARDHAPRAHARA"
+    KARAKAMSHA = "point.KARAKAMSHA"
+    A1 = "point.A1"
+    A12 = "point.A12"
 
 
 class RashiKey(enum.StrEnum):
@@ -607,6 +661,38 @@ class TithiKey(enum.StrEnum):
     AMAVASYA = "tithi.AMAVASYA"
 
 
+class VaiseshikamsaKey(enum.StrEnum):
+    """A `vaiseshikamsa` as a message names it: the full catalogue key."""
+
+    KIMSHUKA = "vaiseshikamsa.KIMSHUKA"
+    VYANJANA = "vaiseshikamsa.VYANJANA"
+    CHAMARA = "vaiseshikamsa.CHAMARA"
+    CHATRA = "vaiseshikamsa.CHATRA"
+    KUNDALA = "vaiseshikamsa.KUNDALA"
+    MUKUTA = "vaiseshikamsa.MUKUTA"
+    PARIJATA = "vaiseshikamsa.PARIJATA"
+    UTTAMA = "vaiseshikamsa.UTTAMA"
+    GOPURA = "vaiseshikamsa.GOPURA"
+    SIMHASANA = "vaiseshikamsa.SIMHASANA"
+    PARAVATA = "vaiseshikamsa.PARAVATA"
+    DEVALOKA = "vaiseshikamsa.DEVALOKA"
+    BRAHMALOKA = "vaiseshikamsa.BRAHMALOKA"
+    SHAKRAVAHANA = "vaiseshikamsa.SHAKRAVAHANA"
+    SHRIDHAMA = "vaiseshikamsa.SHRIDHAMA"
+    BHEDAKA = "vaiseshikamsa.BHEDAKA"
+    NAGAPUSHPA = "vaiseshikamsa.NAGAPUSHPA"
+    KANDUKA = "vaiseshikamsa.KANDUKA"
+    KERALA = "vaiseshikamsa.KERALA"
+    KALPAVRIKSHA = "vaiseshikamsa.KALPAVRIKSHA"
+    CHANDANAVANA = "vaiseshikamsa.CHANDANAVANA"
+    PURNACHANDRA = "vaiseshikamsa.PURNACHANDRA"
+    UCHCHAISHRAVA = "vaiseshikamsa.UCHCHAISHRAVA"
+    DHANVANTARI = "vaiseshikamsa.DHANVANTARI"
+    SURYAKANTA = "vaiseshikamsa.SURYAKANTA"
+    VIDRUMA = "vaiseshikamsa.VIDRUMA"
+    GOLOKA = "vaiseshikamsa.GOLOKA"
+
+
 class VaraKey(enum.StrEnum):
     """A `vara` as a message names it: the full catalogue key."""
 
@@ -617,6 +703,26 @@ class VaraKey(enum.StrEnum):
     GURUVARA = "vara.GURUVARA"
     SHUKRAVARA = "vara.SHUKRAVARA"
     SHANIVARA = "vara.SHANIVARA"
+
+
+class VargaKey(enum.StrEnum):
+    """A `varga` as a message names it: the full catalogue key."""
+
+    D2 = "varga.D2"
+    D3 = "varga.D3"
+    D4 = "varga.D4"
+    D7 = "varga.D7"
+    D9 = "varga.D9"
+    D10 = "varga.D10"
+    D12 = "varga.D12"
+    D16 = "varga.D16"
+    D20 = "varga.D20"
+    D24 = "varga.D24"
+    D27 = "varga.D27"
+    D30 = "varga.D30"
+    D40 = "varga.D40"
+    D45 = "varga.D45"
+    D60 = "varga.D60"
 
 
 class VarnaKey(enum.StrEnum):
@@ -1362,6 +1468,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityAvasthaBaladi(self._r)
 
     @property
+    def avastha_cheshta(self) -> MessagesSdkEntityAvasthaCheshta:
+        """The messages under `avastha_cheshta`."""
+        return MessagesSdkEntityAvasthaCheshta(self._r)
+
+    @property
     def avastha_deeptadi(self) -> MessagesSdkEntityAvasthaDeeptadi:
         """The messages under `avastha_deeptadi`."""
         return MessagesSdkEntityAvasthaDeeptadi(self._r)
@@ -1375,6 +1486,11 @@ class MessagesSdkEntity:
     def avastha_lajjitadi(self) -> MessagesSdkEntityAvasthaLajjitadi:
         """The messages under `avastha_lajjitadi`."""
         return MessagesSdkEntityAvasthaLajjitadi(self._r)
+
+    @property
+    def avastha_sayanadi(self) -> MessagesSdkEntityAvasthaSayanadi:
+        """The messages under `avastha_sayanadi`."""
+        return MessagesSdkEntityAvasthaSayanadi(self._r)
 
     @property
     def ayana(self) -> MessagesSdkEntityAyana:
@@ -1477,6 +1593,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityNakshatra(self._r)
 
     @property
+    def nature(self) -> MessagesSdkEntityNature:
+        """The messages under `nature`."""
+        return MessagesSdkEntityNature(self._r)
+
+    @property
     def paksha(self) -> MessagesSdkEntityPaksha:
         """The messages under `paksha`."""
         return MessagesSdkEntityPaksha(self._r)
@@ -1527,9 +1648,19 @@ class MessagesSdkEntity:
         return MessagesSdkEntityTithi(self._r)
 
     @property
+    def vaiseshikamsa(self) -> MessagesSdkEntityVaiseshikamsa:
+        """The messages under `vaiseshikamsa`."""
+        return MessagesSdkEntityVaiseshikamsa(self._r)
+
+    @property
     def vara(self) -> MessagesSdkEntityVara:
         """The messages under `vara`."""
         return MessagesSdkEntityVara(self._r)
+
+    @property
+    def varga(self) -> MessagesSdkEntityVarga:
+        """The messages under `varga`."""
+        return MessagesSdkEntityVarga(self._r)
 
     @property
     def varna(self) -> MessagesSdkEntityVarna:
@@ -1801,6 +1932,89 @@ class MessagesSdkEntityVarna:
         return self._r.entity("varna.VAISHYA")
 
 
+class MessagesSdkEntityVarga:
+    """The messages under `MessagesSdkEntityVarga`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def d10(self) -> EntityForms:
+        """The forms of `varga.D10` in the current locale."""
+        return self._r.entity("varga.D10")
+
+    @property
+    def d12(self) -> EntityForms:
+        """The forms of `varga.D12` in the current locale."""
+        return self._r.entity("varga.D12")
+
+    @property
+    def d16(self) -> EntityForms:
+        """The forms of `varga.D16` in the current locale."""
+        return self._r.entity("varga.D16")
+
+    @property
+    def d2(self) -> EntityForms:
+        """The forms of `varga.D2` in the current locale."""
+        return self._r.entity("varga.D2")
+
+    @property
+    def d20(self) -> EntityForms:
+        """The forms of `varga.D20` in the current locale."""
+        return self._r.entity("varga.D20")
+
+    @property
+    def d24(self) -> EntityForms:
+        """The forms of `varga.D24` in the current locale."""
+        return self._r.entity("varga.D24")
+
+    @property
+    def d27(self) -> EntityForms:
+        """The forms of `varga.D27` in the current locale."""
+        return self._r.entity("varga.D27")
+
+    @property
+    def d3(self) -> EntityForms:
+        """The forms of `varga.D3` in the current locale."""
+        return self._r.entity("varga.D3")
+
+    @property
+    def d30(self) -> EntityForms:
+        """The forms of `varga.D30` in the current locale."""
+        return self._r.entity("varga.D30")
+
+    @property
+    def d4(self) -> EntityForms:
+        """The forms of `varga.D4` in the current locale."""
+        return self._r.entity("varga.D4")
+
+    @property
+    def d40(self) -> EntityForms:
+        """The forms of `varga.D40` in the current locale."""
+        return self._r.entity("varga.D40")
+
+    @property
+    def d45(self) -> EntityForms:
+        """The forms of `varga.D45` in the current locale."""
+        return self._r.entity("varga.D45")
+
+    @property
+    def d60(self) -> EntityForms:
+        """The forms of `varga.D60` in the current locale."""
+        return self._r.entity("varga.D60")
+
+    @property
+    def d7(self) -> EntityForms:
+        """The forms of `varga.D7` in the current locale."""
+        return self._r.entity("varga.D7")
+
+    @property
+    def d9(self) -> EntityForms:
+        """The forms of `varga.D9` in the current locale."""
+        return self._r.entity("varga.D9")
+
+
 class MessagesSdkEntityVara:
     """The messages under `MessagesSdkEntityVara`, each rendered by its own key."""
 
@@ -1842,6 +2056,149 @@ class MessagesSdkEntityVara:
     def somavara(self) -> EntityForms:
         """The forms of `vara.SOMAVARA` in the current locale."""
         return self._r.entity("vara.SOMAVARA")
+
+
+class MessagesSdkEntityVaiseshikamsa:
+    """The messages under `MessagesSdkEntityVaiseshikamsa`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def bhedaka(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.BHEDAKA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.BHEDAKA")
+
+    @property
+    def brahmaloka(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.BRAHMALOKA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.BRAHMALOKA")
+
+    @property
+    def chamara(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.CHAMARA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.CHAMARA")
+
+    @property
+    def chandanavana(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.CHANDANAVANA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.CHANDANAVANA")
+
+    @property
+    def chatra(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.CHATRA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.CHATRA")
+
+    @property
+    def devaloka(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.DEVALOKA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.DEVALOKA")
+
+    @property
+    def dhanvantari(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.DHANVANTARI` in the current locale."""
+        return self._r.entity("vaiseshikamsa.DHANVANTARI")
+
+    @property
+    def goloka(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.GOLOKA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.GOLOKA")
+
+    @property
+    def gopura(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.GOPURA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.GOPURA")
+
+    @property
+    def kalpavriksha(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.KALPAVRIKSHA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.KALPAVRIKSHA")
+
+    @property
+    def kanduka(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.KANDUKA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.KANDUKA")
+
+    @property
+    def kerala(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.KERALA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.KERALA")
+
+    @property
+    def kimshuka(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.KIMSHUKA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.KIMSHUKA")
+
+    @property
+    def kundala(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.KUNDALA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.KUNDALA")
+
+    @property
+    def mukuta(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.MUKUTA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.MUKUTA")
+
+    @property
+    def nagapushpa(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.NAGAPUSHPA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.NAGAPUSHPA")
+
+    @property
+    def paravata(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.PARAVATA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.PARAVATA")
+
+    @property
+    def parijata(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.PARIJATA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.PARIJATA")
+
+    @property
+    def purnachandra(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.PURNACHANDRA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.PURNACHANDRA")
+
+    @property
+    def shakravahana(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.SHAKRAVAHANA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.SHAKRAVAHANA")
+
+    @property
+    def shridhama(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.SHRIDHAMA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.SHRIDHAMA")
+
+    @property
+    def simhasana(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.SIMHASANA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.SIMHASANA")
+
+    @property
+    def suryakanta(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.SURYAKANTA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.SURYAKANTA")
+
+    @property
+    def uchchaishrava(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.UCHCHAISHRAVA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.UCHCHAISHRAVA")
+
+    @property
+    def uttama(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.UTTAMA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.UTTAMA")
+
+    @property
+    def vidruma(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.VIDRUMA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.VIDRUMA")
+
+    @property
+    def vyanjana(self) -> EntityForms:
+        """The forms of `vaiseshikamsa.VYANJANA` in the current locale."""
+        return self._r.entity("vaiseshikamsa.VYANJANA")
 
 
 class MessagesSdkEntityTithi:
@@ -2508,9 +2865,34 @@ class MessagesSdkEntityPoint:
 
 
     @property
+    def a1(self) -> EntityForms:
+        """The forms of `point.A1` in the current locale."""
+        return self._r.entity("point.A1")
+
+    @property
+    def a12(self) -> EntityForms:
+        """The forms of `point.A12` in the current locale."""
+        return self._r.entity("point.A12")
+
+    @property
+    def ardhaprahara(self) -> EntityForms:
+        """The forms of `point.ARDHAPRAHARA` in the current locale."""
+        return self._r.entity("point.ARDHAPRAHARA")
+
+    @property
+    def bhava_lagna(self) -> EntityForms:
+        """The forms of `point.BHAVA_LAGNA` in the current locale."""
+        return self._r.entity("point.BHAVA_LAGNA")
+
+    @property
     def dhuma(self) -> EntityForms:
         """The forms of `point.DHUMA` in the current locale."""
         return self._r.entity("point.DHUMA")
+
+    @property
+    def ghati_lagna(self) -> EntityForms:
+        """The forms of `point.GHATI_LAGNA` in the current locale."""
+        return self._r.entity("point.GHATI_LAGNA")
 
     @property
     def gulika(self) -> EntityForms:
@@ -2518,9 +2900,24 @@ class MessagesSdkEntityPoint:
         return self._r.entity("point.GULIKA")
 
     @property
+    def hora_lagna(self) -> EntityForms:
+        """The forms of `point.HORA_LAGNA` in the current locale."""
+        return self._r.entity("point.HORA_LAGNA")
+
+    @property
     def indrachapa(self) -> EntityForms:
         """The forms of `point.INDRACHAPA` in the current locale."""
         return self._r.entity("point.INDRACHAPA")
+
+    @property
+    def kala(self) -> EntityForms:
+        """The forms of `point.KALA` in the current locale."""
+        return self._r.entity("point.KALA")
+
+    @property
+    def karakamsha(self) -> EntityForms:
+        """The forms of `point.KARAKAMSHA` in the current locale."""
+        return self._r.entity("point.KARAKAMSHA")
 
     @property
     def lagna(self) -> EntityForms:
@@ -2533,14 +2930,29 @@ class MessagesSdkEntityPoint:
         return self._r.entity("point.MANDI")
 
     @property
+    def mrityu(self) -> EntityForms:
+        """The forms of `point.MRITYU` in the current locale."""
+        return self._r.entity("point.MRITYU")
+
+    @property
     def parivesha(self) -> EntityForms:
         """The forms of `point.PARIVESHA` in the current locale."""
         return self._r.entity("point.PARIVESHA")
 
     @property
+    def pranapada_lagna(self) -> EntityForms:
+        """The forms of `point.PRANAPADA_LAGNA` in the current locale."""
+        return self._r.entity("point.PRANAPADA_LAGNA")
+
+    @property
     def upaketu(self) -> EntityForms:
         """The forms of `point.UPAKETU` in the current locale."""
         return self._r.entity("point.UPAKETU")
+
+    @property
+    def varnada_lagna(self) -> EntityForms:
+        """The forms of `point.VARNADA_LAGNA` in the current locale."""
+        return self._r.entity("point.VARNADA_LAGNA")
 
     @property
     def vyatipata(self) -> EntityForms:
@@ -2597,6 +3009,24 @@ class MessagesSdkEntityPaksha:
     def shukla(self) -> EntityForms:
         """The forms of `paksha.SHUKLA` in the current locale."""
         return self._r.entity("paksha.SHUKLA")
+
+
+class MessagesSdkEntityNature:
+    """The messages under `MessagesSdkEntityNature`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def benefic(self) -> EntityForms:
+        """The forms of `nature.BENEFIC` in the current locale."""
+        return self._r.entity("nature.BENEFIC")
+
+    @property
+    def malefic(self) -> EntityForms:
+        """The forms of `nature.MALEFIC` in the current locale."""
+        return self._r.entity("nature.MALEFIC")
 
 
 class MessagesSdkEntityNakshatra:
@@ -3479,6 +3909,11 @@ class MessagesSdkEntityDashaSystem:
 
 
     @property
+    def ashtakavarga(self) -> EntityForms:
+        """The forms of `dasha_system.ASHTAKAVARGA` in the current locale."""
+        return self._r.entity("dasha_system.ASHTAKAVARGA")
+
+    @property
     def ashtottari(self) -> EntityForms:
         """The forms of `dasha_system.ASHTOTTARI` in the current locale."""
         return self._r.entity("dasha_system.ASHTOTTARI")
@@ -3514,9 +3949,19 @@ class MessagesSdkEntityDashaSystem:
         return self._r.entity("dasha_system.KALACHAKRA")
 
     @property
+    def karaka(self) -> EntityForms:
+        """The forms of `dasha_system.KARAKA` in the current locale."""
+        return self._r.entity("dasha_system.KARAKA")
+
+    @property
     def mandooka(self) -> EntityForms:
         """The forms of `dasha_system.MANDOOKA` in the current locale."""
         return self._r.entity("dasha_system.MANDOOKA")
+
+    @property
+    def naisargika(self) -> EntityForms:
+        """The forms of `dasha_system.NAISARGIKA` in the current locale."""
+        return self._r.entity("dasha_system.NAISARGIKA")
 
     @property
     def narayana(self) -> EntityForms:
@@ -3534,9 +3979,19 @@ class MessagesSdkEntityDashaSystem:
         return self._r.entity("dasha_system.PADANADHAMSA")
 
     @property
+    def panchaswara(self) -> EntityForms:
+        """The forms of `dasha_system.PANCHASWARA` in the current locale."""
+        return self._r.entity("dasha_system.PANCHASWARA")
+
+    @property
     def panchottari(self) -> EntityForms:
         """The forms of `dasha_system.PANCHOTTARI` in the current locale."""
         return self._r.entity("dasha_system.PANCHOTTARI")
+
+    @property
+    def shashtihayani(self) -> EntityForms:
+        """The forms of `dasha_system.SHASHTIHAYANI` in the current locale."""
+        return self._r.entity("dasha_system.SHASHTIHAYANI")
 
     @property
     def shatabdika(self) -> EntityForms:
@@ -3544,9 +3999,29 @@ class MessagesSdkEntityDashaSystem:
         return self._r.entity("dasha_system.SHATABDIKA")
 
     @property
+    def shodashottari(self) -> EntityForms:
+        """The forms of `dasha_system.SHODASHOTTARI` in the current locale."""
+        return self._r.entity("dasha_system.SHODASHOTTARI")
+
+    @property
     def shoola(self) -> EntityForms:
         """The forms of `dasha_system.SHOOLA` in the current locale."""
         return self._r.entity("dasha_system.SHOOLA")
+
+    @property
+    def sthira(self) -> EntityForms:
+        """The forms of `dasha_system.STHIRA` in the current locale."""
+        return self._r.entity("dasha_system.STHIRA")
+
+    @property
+    def sudarshana_chakra(self) -> EntityForms:
+        """The forms of `dasha_system.SUDARSHANA_CHAKRA` in the current locale."""
+        return self._r.entity("dasha_system.SUDARSHANA_CHAKRA")
+
+    @property
+    def tara(self) -> EntityForms:
+        """The forms of `dasha_system.TARA` in the current locale."""
+        return self._r.entity("dasha_system.TARA")
 
     @property
     def tribhagi(self) -> EntityForms:
@@ -3559,9 +4034,19 @@ class MessagesSdkEntityDashaSystem:
         return self._r.entity("dasha_system.TRIKONA")
 
     @property
+    def varnada(self) -> EntityForms:
+        """The forms of `dasha_system.VARNADA` in the current locale."""
+        return self._r.entity("dasha_system.VARNADA")
+
+    @property
     def vimshottari(self) -> EntityForms:
         """The forms of `dasha_system.VIMSHOTTARI` in the current locale."""
         return self._r.entity("dasha_system.VIMSHOTTARI")
+
+    @property
+    def yogardha(self) -> EntityForms:
+        """The forms of `dasha_system.YOGARDHA` in the current locale."""
+        return self._r.entity("dasha_system.YOGARDHA")
 
     @property
     def yogini(self) -> EntityForms:
@@ -3974,6 +4459,74 @@ class MessagesSdkEntityAyana:
         return self._r.entity("ayana.UTTARAYANA")
 
 
+class MessagesSdkEntityAvasthaSayanadi:
+    """The messages under `MessagesSdkEntityAvasthaSayanadi`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def agama(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.AGAMA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.AGAMA")
+
+    @property
+    def agamana(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.AGAMANA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.AGAMANA")
+
+    @property
+    def bhojana(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.BHOJANA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.BHOJANA")
+
+    @property
+    def gamana(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.GAMANA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.GAMANA")
+
+    @property
+    def kautuka(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.KAUTUKA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.KAUTUKA")
+
+    @property
+    def netrapani(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.NETRAPANI` in the current locale."""
+        return self._r.entity("avastha_sayanadi.NETRAPANI")
+
+    @property
+    def nidra(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.NIDRA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.NIDRA")
+
+    @property
+    def nrityalipsa(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.NRITYALIPSA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.NRITYALIPSA")
+
+    @property
+    def prakashana(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.PRAKASHANA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.PRAKASHANA")
+
+    @property
+    def sabha(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.SABHA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.SABHA")
+
+    @property
+    def shayana(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.SHAYANA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.SHAYANA")
+
+    @property
+    def upaveshana(self) -> EntityForms:
+        """The forms of `avastha_sayanadi.UPAVESHANA` in the current locale."""
+        return self._r.entity("avastha_sayanadi.UPAVESHANA")
+
+
 class MessagesSdkEntityAvasthaLajjitadi:
     """The messages under `MessagesSdkEntityAvasthaLajjitadi`, each rendered by its own key."""
 
@@ -4086,6 +4639,29 @@ class MessagesSdkEntityAvasthaDeeptadi:
     def vikala(self) -> EntityForms:
         """The forms of `avastha_deeptadi.VIKALA` in the current locale."""
         return self._r.entity("avastha_deeptadi.VIKALA")
+
+
+class MessagesSdkEntityAvasthaCheshta:
+    """The messages under `MessagesSdkEntityAvasthaCheshta`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def cheshta(self) -> EntityForms:
+        """The forms of `avastha_cheshta.CHESHTA` in the current locale."""
+        return self._r.entity("avastha_cheshta.CHESHTA")
+
+    @property
+    def drishti(self) -> EntityForms:
+        """The forms of `avastha_cheshta.DRISHTI` in the current locale."""
+        return self._r.entity("avastha_cheshta.DRISHTI")
+
+    @property
+    def vicheshta(self) -> EntityForms:
+        """The forms of `avastha_cheshta.VICHESHTA` in the current locale."""
+        return self._r.entity("avastha_cheshta.VICHESHTA")
 
 
 class MessagesSdkEntityAvasthaBaladi:

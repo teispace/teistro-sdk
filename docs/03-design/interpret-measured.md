@@ -325,7 +325,7 @@ must be a member of `PlanRequest`. The rows nothing says are **named**
 rather than described — `POINTS`, `VAISESHIKAMSA`, `JAIMINI`, `OUTER`,
 `AVAKAHADA` and `MOMENT` — because the sentence that described them
 named `VIMSHOPAKA` as one of them for as long as it took to build it,
-which is the rot this page keeps catching in its own prose. 4 rows are
+which is the rot this page keeps catching in its own prose. 3 rows are
 short a **name** rather than a sentence, because being a catalogue
 member is not being named. The kinds those rows cite are on `intl`'s own
 list of members no strict locale names, checked here so a reason cannot
@@ -334,15 +334,15 @@ outlive its blocker.
 | section | said by | what is left |
 |---|---|---|
 | `PANCHANGA` | `panchanga` and `phala` | the four **spans** each limb covered, the sankranti and the eclipse. `panchanga` says the five limbs running at the chart's instant, the Moon's pada and whether the birth fell by day; `phala` says what a loaded pack reads of them. A span is a pair of ghatikas a consumer formats with, which is the line `sdk.reason.exactLongitude` is already on, and a sankranti and an eclipse are **conditions** of the day rather than limbs of it. The kaalas, the choghadiya, the horas and the thirty muhurtas are on the same record and belong to a reader of **times** rather than of a chart |
-| `STATE` | `conditions` and `states` | the three friendships and the four avasthas are said now, which is what this row asked for: `conditions` says every fact a `Placement` carries and the section's own `GrahaState` carries a dozen. What is still unsaid is the **Sayanadi**, whose members no strict locale names because the vetted tables stop at the four avasthas, the Cheshta for the same reason, the war a graha is in and how near it stands to a classification boundary — the last two being records whose own shape is undecided rather than unnamed |
+| `STATE` | `conditions` and `states` | the three friendships and the four avasthas are said now, which is what this row asked for: `conditions` says every fact a `Placement` carries and the section's own `GrahaState` carries a dozen. What is still unsaid is the **Sayanadi** and its Cheshta, named now from BPHS 45.30-38 and wanting only the sentence, the war a graha is in and how near it stands to a classification boundary — the last two being records whose own shape is undecided rather than unnamed |
 | `ASPECTS` | `aspects` | — |
-| `POINTS` | — | the five upagrahas and the special lagnas are points with longitudes, and `positions` says a **graha's** degree in the same sentence a point's would need — but the vetted table names the upagrahas only, so a special lagna has no name for the sentence to put in. The name comes before the sentence, and five of the state corpus's `special-lagna` readings are waiting on the same table |
+| `POINTS` | — | the five upagrahas and the special lagnas are points with longitudes, and `positions` says a **graha's** degree in the same sentence a point's would need. BPHS now names the Bhava, Hora and Ghati lagnas, the Varnada, the Pranapada, four more upagrahas, the karakamsha and two padas, so what is missing for those is the sentence; the angles, the sphutas, the yogi points and the other lagnas still have no name for it to put in |
 | `HOUSES` | `houses` | — |
 | `ASHTAKAVARGA` | `ashtakavarga` | the reductions and the three pindas. This row was the last of the four called **decisions** and the only one that stayed one, and what it asked was never whether the numbers cross — they have crossed as `Document.ashtakavarga` since the module landed — but which of them a sentence is worth. The answer taken is the two a text quotes: each graha's bindus in the **sign it stands in**, which is why this composer takes the chart beside the section, and each sign's **sarvashtakavarga**, said once rather than repeated inside every graha's sentence. Nineteen items. No band and no verdict, which is `bhava_bala`'s rule and not `strength`'s: a `GrahaShadbala` carries `required_rupas` and an `AshtakavargaReading` carries no threshold, so *weak* and *strong* would be a rule invented rather than said — the objection that keeps `shadbala-strength`'s four bands out of the state corpus. What is left is left because it is **ruleset-dependent**: the measured page falsifies the text's reading of the trine reduction, the Ekadhipatya and all three pindas against the corpus on every chart, so a sentence saying one would have to name the ruleset it was reduced under. And the sarva is said by sign, which is what the reading is indexed by; by bhava would fold in the house system, which is `houses`' |
 | `VIMSHOPAKA` | `vimshopaka` | — |
 | `SHADBALA` | `strength` | the **total** and the requirement, which is the whole of it: a `GrahaShadbala` carries the six strengths it is the sum of and none of the six is an item, so a consumer reading a plan learns what a graha weighs and not what makes it weigh that. Four of the six — `dig`, `cheshta`, `naisargika`, `drik` — are **bare numbers** and would say themselves exactly as the Vimshopaka does, a message matching on the component's key. The other two are not: `SthanaBala` is five parts and `KaalaBala` is seven, so the question is how deep to go, and adding 42 items to a composer a consumer already asks for by name is a change to something that works rather than an addition. **That** is the decision — where the breakdown belongs, not whether the words exist |
 | `BHAVA_BALA` | `bhavaBala` | — |
-| `VAISESHIKAMSA` | — | **no strict locale names its designations.** Kimshuka, Parijata, Gopura and the rest are catalogue members, and being a catalogue member is not being named: `vaiseshikamsa` is on the unnamed list with no vetted source, exactly as the special lagnas are, so a composer saying them would print nothing a locale carries. This row called it the cheapest of the six on the strength of *being catalogued*, which is the conflation this page had been making in prose. It also names a graha under four schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides whether the name it earned is auspicious |
+| `VAISESHIKAMSA` | — | **three of its designations are still unnamed.** BPHS 6.43-51 names 27 of the 30, but the e-text misprints Kusuma, Chakrasimhasana and Shrivallabha, so `vaiseshikamsa` stays on the unnamed list for those and a composer would print a key for a graha that earned one. This row once called it the cheapest of the six on the strength of *being catalogued*, which is the conflation this page had been making in prose. It also names a graha under four schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides whether the name it earned is auspicious |
 | `DASHA_PHALA` | `dashaPhala` | — |
 | `JAIMINI` | — | the karakamsha and the Brahma graha. Every word a sentence would put in is already named — the Atmakaraka and Brahma are grahas, the karakamsha a rashi — so what is missing is **the sentence**, in every locale, and it wants a vetted text rather than one drafted here. Two things shape it before the words do: a house from the karakamsha must say which chart it is counted in, since the schools part on it (C130) and the section carries both; and a chart with no Brahma is an answer rather than a gap, so its reason (`NoBrahma`) wants saying as much as a found one does, and a boundary code is not a key a message can match on until it is given one (Q38) |
 | `OUTER` | — | Uranus, Neptune and Pluto, placed beside the nine. `positions` would say them in the sentence it says a graha's degree in, but **no strict locale names them**: the vetted graha table stops at the nine, so the sentence has no word to put in. The wheel waits on the same names (`western-outer-planets.md` step 5) |
@@ -441,10 +441,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 1562 | 194 |
-| `ne-Deva-NP` | 1562 | 8 |
-| `sa-Deva` | 1562 | 194 |
-| `sa-Latn` | 1562 | 194 |
+| `hi-Deva-IN` | 1724 | 356 |
+| `ne-Deva-NP` | 1724 | 8 |
+| `sa-Deva` | 1724 | 356 |
+| `sa-Latn` | 1724 | 356 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

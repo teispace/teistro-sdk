@@ -1135,6 +1135,10 @@ pub mod sdk {
         pub mod avastha_baladi {
         }
 
+        /// The `avastha_cheshta` group.
+        pub mod avastha_cheshta {
+        }
+
         /// The `avastha_deeptadi` group.
         pub mod avastha_deeptadi {
         }
@@ -1145,6 +1149,10 @@ pub mod sdk {
 
         /// The `avastha_lajjitadi` group.
         pub mod avastha_lajjitadi {
+        }
+
+        /// The `avastha_sayanadi` group.
+        pub mod avastha_sayanadi {
         }
 
         /// The `ayana` group.
@@ -1227,6 +1235,10 @@ pub mod sdk {
         pub mod nakshatra {
         }
 
+        /// The `nature` group.
+        pub mod nature {
+        }
+
         /// The `paksha` group.
         pub mod paksha {
         }
@@ -1267,8 +1279,16 @@ pub mod sdk {
         pub mod tithi {
         }
 
+        /// The `vaiseshikamsa` group.
+        pub mod vaiseshikamsa {
+        }
+
         /// The `vara` group.
         pub mod vara {
+        }
+
+        /// The `varga` group.
+        pub mod varga {
         }
 
         /// The `varna` group.

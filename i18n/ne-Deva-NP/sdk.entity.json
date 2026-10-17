@@ -378,6 +378,50 @@
       "name": "मान्दि",
       "prose": "मान्दि",
       "iast": "Māndi"
+    },
+    "BHAVA_LAGNA": {
+      "name": "भावलग्न",
+      "prose": "भावलग्न"
+    },
+    "HORA_LAGNA": {
+      "name": "होरालग्न",
+      "prose": "होरालग्न"
+    },
+    "GHATI_LAGNA": {
+      "name": "घटीलग्न",
+      "prose": "घटीलग्न"
+    },
+    "VARNADA_LAGNA": {
+      "name": "वर्णद",
+      "prose": "वर्णद"
+    },
+    "PRANAPADA_LAGNA": {
+      "name": "प्राणपद",
+      "prose": "प्राणपद"
+    },
+    "KALA": {
+      "name": "काल",
+      "prose": "काल"
+    },
+    "MRITYU": {
+      "name": "मृत्यु",
+      "prose": "मृत्यु"
+    },
+    "ARDHAPRAHARA": {
+      "name": "अर्धप्रहर",
+      "prose": "अर्धप्रहर"
+    },
+    "KARAKAMSHA": {
+      "name": "कारकांश",
+      "prose": "कारकांश"
+    },
+    "A1": {
+      "name": "लग्नपद",
+      "prose": "लग्नपद"
+    },
+    "A12": {
+      "name": "उपपद",
+      "prose": "उपपद"
     }
   },
   "era": {
@@ -2397,6 +2441,50 @@
       "name": "कालचक्र दशा",
       "prose": "कालचक्र दशा",
       "iast": "Kālacakra Daśā"
+    },
+    "SHODASHOTTARI": {
+      "name": "षोडशोत्तरी दशा",
+      "prose": "षोडशोत्तरी दशा"
+    },
+    "SHASHTIHAYANI": {
+      "name": "षष्टिसम दशा",
+      "prose": "षष्टिसम दशा"
+    },
+    "NAISARGIKA": {
+      "name": "नैसर्गिक दशा",
+      "prose": "नैसर्गिक दशा"
+    },
+    "TARA": {
+      "name": "तारा दशा",
+      "prose": "तारा दशा"
+    },
+    "KARAKA": {
+      "name": "कारक दशा",
+      "prose": "कारक दशा"
+    },
+    "ASHTAKAVARGA": {
+      "name": "अष्टवर्ग दशा",
+      "prose": "अष्टवर्ग दशा"
+    },
+    "PANCHASWARA": {
+      "name": "पञ्चस्वर दशा",
+      "prose": "पञ्चस्वर दशा"
+    },
+    "STHIRA": {
+      "name": "स्थिर दशा",
+      "prose": "स्थिर दशा"
+    },
+    "VARNADA": {
+      "name": "वर्णद दशा",
+      "prose": "वर्णद दशा"
+    },
+    "YOGARDHA": {
+      "name": "योगार्ध दशा",
+      "prose": "योगार्ध दशा"
+    },
+    "SUDARSHANA_CHAKRA": {
+      "name": "सुदर्शनचक्र दशा",
+      "prose": "सुदर्शनचक्र दशा"
     }
   },
   "blackout_kind": {
@@ -2455,6 +2543,252 @@
     "TOTAL": {
       "name": "खग्रास",
       "prose": "खग्रास"
+    }
+  },
+  "varga": {
+    "D2": {
+      "name": "होरा",
+      "prose": "होरा"
+    },
+    "D3": {
+      "name": "द्रेष्काण",
+      "prose": "द्रेष्काण"
+    },
+    "D4": {
+      "name": "तुर्यांश",
+      "prose": "तुर्यांश"
+    },
+    "D7": {
+      "name": "सप्तांश",
+      "prose": "सप्तांश"
+    },
+    "D9": {
+      "name": "नवांश",
+      "prose": "नवांश"
+    },
+    "D10": {
+      "name": "दशमांश",
+      "prose": "दशमांश"
+    },
+    "D12": {
+      "name": "द्वादशांश",
+      "prose": "द्वादशांश"
+    },
+    "D16": {
+      "name": "षोडशांश",
+      "prose": "षोडशांश"
+    },
+    "D20": {
+      "name": "विंशांश",
+      "prose": "विंशांश"
+    },
+    "D24": {
+      "name": "सिद्धांश",
+      "prose": "सिद्धांश"
+    },
+    "D27": {
+      "name": "भांश",
+      "prose": "भांश"
+    },
+    "D30": {
+      "name": "त्रिंशांश",
+      "prose": "त्रिंशांश"
+    },
+    "D40": {
+      "name": "खवेदांश",
+      "prose": "खवेदांश"
+    },
+    "D45": {
+      "name": "अक्षवेदांश",
+      "prose": "अक्षवेदांश"
+    },
+    "D60": {
+      "name": "षष्ट्यंश",
+      "prose": "षष्ट्यंश"
+    }
+  },
+  "vaiseshikamsa": {
+    "KIMSHUKA": {
+      "name": "किंशुक",
+      "prose": "किंशुक"
+    },
+    "VYANJANA": {
+      "name": "व्यञ्जन",
+      "prose": "व्यञ्जन"
+    },
+    "CHAMARA": {
+      "name": "चामर",
+      "prose": "चामर"
+    },
+    "CHATRA": {
+      "name": "छत्र",
+      "prose": "छत्र"
+    },
+    "KUNDALA": {
+      "name": "कुण्डल",
+      "prose": "कुण्डल"
+    },
+    "MUKUTA": {
+      "name": "मुकुट",
+      "prose": "मुकुट"
+    },
+    "PARIJATA": {
+      "name": "पारिजात",
+      "prose": "पारिजात"
+    },
+    "UTTAMA": {
+      "name": "उत्तम",
+      "prose": "उत्तम"
+    },
+    "GOPURA": {
+      "name": "गोपुर",
+      "prose": "गोपुर"
+    },
+    "SIMHASANA": {
+      "name": "सिंहासन",
+      "prose": "सिंहासन"
+    },
+    "PARAVATA": {
+      "name": "पारावत",
+      "prose": "पारावत"
+    },
+    "DEVALOKA": {
+      "name": "देवलोक",
+      "prose": "देवलोक"
+    },
+    "BRAHMALOKA": {
+      "name": "ब्रह्मलोक",
+      "prose": "ब्रह्मलोक"
+    },
+    "SHAKRAVAHANA": {
+      "name": "शक्रवाहन",
+      "prose": "शक्रवाहन"
+    },
+    "SHRIDHAMA": {
+      "name": "श्रीधाम",
+      "prose": "श्रीधाम"
+    },
+    "BHEDAKA": {
+      "name": "भेदक",
+      "prose": "भेदक"
+    },
+    "NAGAPUSHPA": {
+      "name": "नागपुष्प",
+      "prose": "नागपुष्प"
+    },
+    "KANDUKA": {
+      "name": "कन्दुक",
+      "prose": "कन्दुक"
+    },
+    "KERALA": {
+      "name": "केरल",
+      "prose": "केरल"
+    },
+    "KALPAVRIKSHA": {
+      "name": "कल्पवृक्ष",
+      "prose": "कल्पवृक्ष"
+    },
+    "CHANDANAVANA": {
+      "name": "चन्दनवन",
+      "prose": "चन्दनवन"
+    },
+    "PURNACHANDRA": {
+      "name": "पूर्णचन्द्र",
+      "prose": "पूर्णचन्द्र"
+    },
+    "UCHCHAISHRAVA": {
+      "name": "उच्चैःश्रवा",
+      "prose": "उच्चैःश्रवा"
+    },
+    "DHANVANTARI": {
+      "name": "धन्वन्तरि",
+      "prose": "धन्वन्तरि"
+    },
+    "SURYAKANTA": {
+      "name": "सूर्यकान्त",
+      "prose": "सूर्यकान्त"
+    },
+    "VIDRUMA": {
+      "name": "विद्रुम",
+      "prose": "विद्रुम"
+    },
+    "GOLOKA": {
+      "name": "गोलोक",
+      "prose": "गोलोक"
+    }
+  },
+  "avastha_sayanadi": {
+    "SHAYANA": {
+      "name": "शयन",
+      "prose": "शयन"
+    },
+    "UPAVESHANA": {
+      "name": "उपवेशन",
+      "prose": "उपवेशन"
+    },
+    "NETRAPANI": {
+      "name": "नेत्रपाणि",
+      "prose": "नेत्रपाणि"
+    },
+    "PRAKASHANA": {
+      "name": "प्रकाशन",
+      "prose": "प्रकाशन"
+    },
+    "GAMANA": {
+      "name": "गमन",
+      "prose": "गमन"
+    },
+    "AGAMANA": {
+      "name": "आगमन",
+      "prose": "आगमन"
+    },
+    "SABHA": {
+      "name": "सभा",
+      "prose": "सभा"
+    },
+    "AGAMA": {
+      "name": "आगम",
+      "prose": "आगम"
+    },
+    "BHOJANA": {
+      "name": "भोजन",
+      "prose": "भोजन"
+    },
+    "NRITYALIPSA": {
+      "name": "नृत्यलिप्सा",
+      "prose": "नृत्यलिप्सा"
+    },
+    "KAUTUKA": {
+      "name": "कौतुक",
+      "prose": "कौतुक"
+    },
+    "NIDRA": {
+      "name": "निद्रा",
+      "prose": "निद्रा"
+    }
+  },
+  "avastha_cheshta": {
+    "DRISHTI": {
+      "name": "दृष्टि",
+      "prose": "दृष्टि"
+    },
+    "CHESHTA": {
+      "name": "चेष्टा",
+      "prose": "चेष्टा"
+    },
+    "VICHESHTA": {
+      "name": "विचेष्टा",
+      "prose": "विचेष्टा"
+    }
+  },
+  "nature": {
+    "BENEFIC": {
+      "name": "सौम्य",
+      "prose": "सौम्य"
+    },
+    "MALEFIC": {
+      "name": "क्रूर",
+      "prose": "क्रूर"
     }
   }
 }

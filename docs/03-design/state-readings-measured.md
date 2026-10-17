@@ -187,7 +187,7 @@ one that names none and is not here fails.
 | `inauspicious-kaal` | `varjyam` | the SDK computes each star's varjyam window (a day's `omens.varjyam`, a muhurta's `VARJYAM` clause), but no catalogue kind names it, so a reading has no key to hang on |
 | `planet-condition` | `COMBUST_CANCELLED` | the SDK computes combustion but not its cancellation, and no `state` member names one |
 
-**31 readings land on a record the base locale does not name.** The
+**27 readings land on a record the base locale does not name.** The
 reading is there and answers; the subject's own name is not, because
 `03-design/entity-names.md` §4 refuses a translated stub and these
 kinds have no vetted table. A renderer asking for the name gets nothing,
@@ -196,7 +196,7 @@ so the count is here.
 | kind | records with a reading and no name |
 |---|---:|
 | `gochar_bhava` | 5 |
-| `point` | 5 |
+| `point` | 1 |
 | `rule` | 18 |
 | `state` | 3 |
 

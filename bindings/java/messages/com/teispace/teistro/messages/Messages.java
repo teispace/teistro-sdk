@@ -79,6 +79,31 @@ public final class Messages {
         }
     }
 
+    /** A `avastha_cheshta` as a message names it: the full catalogue key. */
+    public enum AvasthaCheshtaKey {
+        /** `avastha_cheshta.DRISHTI`. */
+        DRISHTI("avastha_cheshta.DRISHTI"),
+        /** `avastha_cheshta.CHESHTA`. */
+        CHESHTA("avastha_cheshta.CHESHTA"),
+        /** `avastha_cheshta.VICHESHTA`. */
+        VICHESHTA("avastha_cheshta.VICHESHTA");
+
+        private final String value;
+
+        AvasthaCheshtaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `avastha_deeptadi` as a message names it: the full catalogue key. */
     public enum AvasthaDeeptadiKey {
         /** `avastha_deeptadi.DEEPTA`. */
@@ -159,6 +184,49 @@ public final class Messages {
         private final String value;
 
         AvasthaLajjitadiKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `avastha_sayanadi` as a message names it: the full catalogue key. */
+    public enum AvasthaSayanadiKey {
+        /** `avastha_sayanadi.SHAYANA`. */
+        SHAYANA("avastha_sayanadi.SHAYANA"),
+        /** `avastha_sayanadi.UPAVESHANA`. */
+        UPAVESHANA("avastha_sayanadi.UPAVESHANA"),
+        /** `avastha_sayanadi.NETRAPANI`. */
+        NETRAPANI("avastha_sayanadi.NETRAPANI"),
+        /** `avastha_sayanadi.PRAKASHANA`. */
+        PRAKASHANA("avastha_sayanadi.PRAKASHANA"),
+        /** `avastha_sayanadi.GAMANA`. */
+        GAMANA("avastha_sayanadi.GAMANA"),
+        /** `avastha_sayanadi.AGAMANA`. */
+        AGAMANA("avastha_sayanadi.AGAMANA"),
+        /** `avastha_sayanadi.SABHA`. */
+        SABHA("avastha_sayanadi.SABHA"),
+        /** `avastha_sayanadi.AGAMA`. */
+        AGAMA("avastha_sayanadi.AGAMA"),
+        /** `avastha_sayanadi.BHOJANA`. */
+        BHOJANA("avastha_sayanadi.BHOJANA"),
+        /** `avastha_sayanadi.NRITYALIPSA`. */
+        NRITYALIPSA("avastha_sayanadi.NRITYALIPSA"),
+        /** `avastha_sayanadi.KAUTUKA`. */
+        KAUTUKA("avastha_sayanadi.KAUTUKA"),
+        /** `avastha_sayanadi.NIDRA`. */
+        NIDRA("avastha_sayanadi.NIDRA");
+
+        private final String value;
+
+        AvasthaSayanadiKey(String value) {
             this.value = value;
         }
 
@@ -450,7 +518,29 @@ public final class Messages {
         /** `dasha_system.MANDOOKA`. */
         MANDOOKA("dasha_system.MANDOOKA"),
         /** `dasha_system.KALACHAKRA`. */
-        KALACHAKRA("dasha_system.KALACHAKRA");
+        KALACHAKRA("dasha_system.KALACHAKRA"),
+        /** `dasha_system.SHODASHOTTARI`. */
+        SHODASHOTTARI("dasha_system.SHODASHOTTARI"),
+        /** `dasha_system.SHASHTIHAYANI`. */
+        SHASHTIHAYANI("dasha_system.SHASHTIHAYANI"),
+        /** `dasha_system.NAISARGIKA`. */
+        NAISARGIKA("dasha_system.NAISARGIKA"),
+        /** `dasha_system.TARA`. */
+        TARA("dasha_system.TARA"),
+        /** `dasha_system.KARAKA`. */
+        KARAKA("dasha_system.KARAKA"),
+        /** `dasha_system.ASHTAKAVARGA`. */
+        ASHTAKAVARGA("dasha_system.ASHTAKAVARGA"),
+        /** `dasha_system.PANCHASWARA`. */
+        PANCHASWARA("dasha_system.PANCHASWARA"),
+        /** `dasha_system.STHIRA`. */
+        STHIRA("dasha_system.STHIRA"),
+        /** `dasha_system.VARNADA`. */
+        VARNADA("dasha_system.VARNADA"),
+        /** `dasha_system.YOGARDHA`. */
+        YOGARDHA("dasha_system.YOGARDHA"),
+        /** `dasha_system.SUDARSHANA_CHAKRA`. */
+        SUDARSHANA_CHAKRA("dasha_system.SUDARSHANA_CHAKRA");
 
         private final String value;
 
@@ -1038,6 +1128,29 @@ public final class Messages {
         }
     }
 
+    /** A `nature` as a message names it: the full catalogue key. */
+    public enum NatureKey {
+        /** `nature.BENEFIC`. */
+        BENEFIC("nature.BENEFIC"),
+        /** `nature.MALEFIC`. */
+        MALEFIC("nature.MALEFIC");
+
+        private final String value;
+
+        NatureKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `paksha` as a message names it: the full catalogue key. */
     public enum PakshaKey {
         /** `paksha.SHUKLA`. */
@@ -1107,7 +1220,29 @@ public final class Messages {
         /** `point.GULIKA`. */
         GULIKA("point.GULIKA"),
         /** `point.MANDI`. */
-        MANDI("point.MANDI");
+        MANDI("point.MANDI"),
+        /** `point.BHAVA_LAGNA`. */
+        BHAVA_LAGNA("point.BHAVA_LAGNA"),
+        /** `point.HORA_LAGNA`. */
+        HORA_LAGNA("point.HORA_LAGNA"),
+        /** `point.GHATI_LAGNA`. */
+        GHATI_LAGNA("point.GHATI_LAGNA"),
+        /** `point.VARNADA_LAGNA`. */
+        VARNADA_LAGNA("point.VARNADA_LAGNA"),
+        /** `point.PRANAPADA_LAGNA`. */
+        PRANAPADA_LAGNA("point.PRANAPADA_LAGNA"),
+        /** `point.KALA`. */
+        KALA("point.KALA"),
+        /** `point.MRITYU`. */
+        MRITYU("point.MRITYU"),
+        /** `point.ARDHAPRAHARA`. */
+        ARDHAPRAHARA("point.ARDHAPRAHARA"),
+        /** `point.KARAKAMSHA`. */
+        KARAKAMSHA("point.KARAKAMSHA"),
+        /** `point.A1`. */
+        A1("point.A1"),
+        /** `point.A12`. */
+        A12("point.A12");
 
         private final String value;
 
@@ -1541,6 +1676,79 @@ public final class Messages {
         }
     }
 
+    /** A `vaiseshikamsa` as a message names it: the full catalogue key. */
+    public enum VaiseshikamsaKey {
+        /** `vaiseshikamsa.KIMSHUKA`. */
+        KIMSHUKA("vaiseshikamsa.KIMSHUKA"),
+        /** `vaiseshikamsa.VYANJANA`. */
+        VYANJANA("vaiseshikamsa.VYANJANA"),
+        /** `vaiseshikamsa.CHAMARA`. */
+        CHAMARA("vaiseshikamsa.CHAMARA"),
+        /** `vaiseshikamsa.CHATRA`. */
+        CHATRA("vaiseshikamsa.CHATRA"),
+        /** `vaiseshikamsa.KUNDALA`. */
+        KUNDALA("vaiseshikamsa.KUNDALA"),
+        /** `vaiseshikamsa.MUKUTA`. */
+        MUKUTA("vaiseshikamsa.MUKUTA"),
+        /** `vaiseshikamsa.PARIJATA`. */
+        PARIJATA("vaiseshikamsa.PARIJATA"),
+        /** `vaiseshikamsa.UTTAMA`. */
+        UTTAMA("vaiseshikamsa.UTTAMA"),
+        /** `vaiseshikamsa.GOPURA`. */
+        GOPURA("vaiseshikamsa.GOPURA"),
+        /** `vaiseshikamsa.SIMHASANA`. */
+        SIMHASANA("vaiseshikamsa.SIMHASANA"),
+        /** `vaiseshikamsa.PARAVATA`. */
+        PARAVATA("vaiseshikamsa.PARAVATA"),
+        /** `vaiseshikamsa.DEVALOKA`. */
+        DEVALOKA("vaiseshikamsa.DEVALOKA"),
+        /** `vaiseshikamsa.BRAHMALOKA`. */
+        BRAHMALOKA("vaiseshikamsa.BRAHMALOKA"),
+        /** `vaiseshikamsa.SHAKRAVAHANA`. */
+        SHAKRAVAHANA("vaiseshikamsa.SHAKRAVAHANA"),
+        /** `vaiseshikamsa.SHRIDHAMA`. */
+        SHRIDHAMA("vaiseshikamsa.SHRIDHAMA"),
+        /** `vaiseshikamsa.BHEDAKA`. */
+        BHEDAKA("vaiseshikamsa.BHEDAKA"),
+        /** `vaiseshikamsa.NAGAPUSHPA`. */
+        NAGAPUSHPA("vaiseshikamsa.NAGAPUSHPA"),
+        /** `vaiseshikamsa.KANDUKA`. */
+        KANDUKA("vaiseshikamsa.KANDUKA"),
+        /** `vaiseshikamsa.KERALA`. */
+        KERALA("vaiseshikamsa.KERALA"),
+        /** `vaiseshikamsa.KALPAVRIKSHA`. */
+        KALPAVRIKSHA("vaiseshikamsa.KALPAVRIKSHA"),
+        /** `vaiseshikamsa.CHANDANAVANA`. */
+        CHANDANAVANA("vaiseshikamsa.CHANDANAVANA"),
+        /** `vaiseshikamsa.PURNACHANDRA`. */
+        PURNACHANDRA("vaiseshikamsa.PURNACHANDRA"),
+        /** `vaiseshikamsa.UCHCHAISHRAVA`. */
+        UCHCHAISHRAVA("vaiseshikamsa.UCHCHAISHRAVA"),
+        /** `vaiseshikamsa.DHANVANTARI`. */
+        DHANVANTARI("vaiseshikamsa.DHANVANTARI"),
+        /** `vaiseshikamsa.SURYAKANTA`. */
+        SURYAKANTA("vaiseshikamsa.SURYAKANTA"),
+        /** `vaiseshikamsa.VIDRUMA`. */
+        VIDRUMA("vaiseshikamsa.VIDRUMA"),
+        /** `vaiseshikamsa.GOLOKA`. */
+        GOLOKA("vaiseshikamsa.GOLOKA");
+
+        private final String value;
+
+        VaiseshikamsaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `vara` as a message names it: the full catalogue key. */
     public enum VaraKey {
         /** `vara.RAVIVARA`. */
@@ -1561,6 +1769,55 @@ public final class Messages {
         private final String value;
 
         VaraKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `varga` as a message names it: the full catalogue key. */
+    public enum VargaKey {
+        /** `varga.D2`. */
+        D2("varga.D2"),
+        /** `varga.D3`. */
+        D3("varga.D3"),
+        /** `varga.D4`. */
+        D4("varga.D4"),
+        /** `varga.D7`. */
+        D7("varga.D7"),
+        /** `varga.D9`. */
+        D9("varga.D9"),
+        /** `varga.D10`. */
+        D10("varga.D10"),
+        /** `varga.D12`. */
+        D12("varga.D12"),
+        /** `varga.D16`. */
+        D16("varga.D16"),
+        /** `varga.D20`. */
+        D20("varga.D20"),
+        /** `varga.D24`. */
+        D24("varga.D24"),
+        /** `varga.D27`. */
+        D27("varga.D27"),
+        /** `varga.D30`. */
+        D30("varga.D30"),
+        /** `varga.D40`. */
+        D40("varga.D40"),
+        /** `varga.D45`. */
+        D45("varga.D45"),
+        /** `varga.D60`. */
+        D60("varga.D60");
+
+        private final String value;
+
+        VargaKey(String value) {
             this.value = value;
         }
 
@@ -2927,6 +3184,52 @@ public final class Messages {
 
 
             /**
+             * The messages under `avastha_cheshta`.
+             *
+             * @return the group
+             */
+            public SdkEntityAvasthaCheshta avasthaCheshta() {
+                return new SdkEntityAvasthaCheshta(r);
+            }
+
+            /** The messages under `SdkEntityAvasthaCheshta`, each rendered by its own key. */
+            public static final class SdkEntityAvasthaCheshta {
+                private final Renderer r;
+
+                SdkEntityAvasthaCheshta(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `avastha_cheshta.CHESHTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms cheshta() {
+                    return r.entity("avastha_cheshta.CHESHTA");
+                }
+
+                /**
+                 * The forms of `avastha_cheshta.DRISHTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms drishti() {
+                    return r.entity("avastha_cheshta.DRISHTI");
+                }
+
+                /**
+                 * The forms of `avastha_cheshta.VICHESHTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vicheshta() {
+                    return r.entity("avastha_cheshta.VICHESHTA");
+                }
+            }
+
+
+            /**
              * The messages under `avastha_deeptadi`.
              *
              * @return the group
@@ -3141,6 +3444,133 @@ public final class Messages {
                  */
                 public EntityForms trishita() {
                     return r.entity("avastha_lajjitadi.TRISHITA");
+                }
+            }
+
+
+            /**
+             * The messages under `avastha_sayanadi`.
+             *
+             * @return the group
+             */
+            public SdkEntityAvasthaSayanadi avasthaSayanadi() {
+                return new SdkEntityAvasthaSayanadi(r);
+            }
+
+            /** The messages under `SdkEntityAvasthaSayanadi`, each rendered by its own key. */
+            public static final class SdkEntityAvasthaSayanadi {
+                private final Renderer r;
+
+                SdkEntityAvasthaSayanadi(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.AGAMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms agama() {
+                    return r.entity("avastha_sayanadi.AGAMA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.AGAMANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms agamana() {
+                    return r.entity("avastha_sayanadi.AGAMANA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.BHOJANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhojana() {
+                    return r.entity("avastha_sayanadi.BHOJANA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.GAMANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gamana() {
+                    return r.entity("avastha_sayanadi.GAMANA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.KAUTUKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kautuka() {
+                    return r.entity("avastha_sayanadi.KAUTUKA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.NETRAPANI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms netrapani() {
+                    return r.entity("avastha_sayanadi.NETRAPANI");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.NIDRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nidra() {
+                    return r.entity("avastha_sayanadi.NIDRA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.NRITYALIPSA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nrityalipsa() {
+                    return r.entity("avastha_sayanadi.NRITYALIPSA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.PRAKASHANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms prakashana() {
+                    return r.entity("avastha_sayanadi.PRAKASHANA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.SABHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sabha() {
+                    return r.entity("avastha_sayanadi.SABHA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.SHAYANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shayana() {
+                    return r.entity("avastha_sayanadi.SHAYANA");
+                }
+
+                /**
+                 * The forms of `avastha_sayanadi.UPAVESHANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms upaveshana() {
+                    return r.entity("avastha_sayanadi.UPAVESHANA");
                 }
             }
 
@@ -3915,6 +4345,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.ASHTAKAVARGA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ashtakavarga() {
+                    return r.entity("dasha_system.ASHTAKAVARGA");
+                }
+
+                /**
                  * The forms of `dasha_system.ASHTOTTARI` in the current locale.
                  *
                  * @return the forms
@@ -3978,12 +4417,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.KARAKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms karaka() {
+                    return r.entity("dasha_system.KARAKA");
+                }
+
+                /**
                  * The forms of `dasha_system.MANDOOKA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms mandooka() {
                     return r.entity("dasha_system.MANDOOKA");
+                }
+
+                /**
+                 * The forms of `dasha_system.NAISARGIKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms naisargika() {
+                    return r.entity("dasha_system.NAISARGIKA");
                 }
 
                 /**
@@ -4014,12 +4471,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.PANCHASWARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms panchaswara() {
+                    return r.entity("dasha_system.PANCHASWARA");
+                }
+
+                /**
                  * The forms of `dasha_system.PANCHOTTARI` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms panchottari() {
                     return r.entity("dasha_system.PANCHOTTARI");
+                }
+
+                /**
+                 * The forms of `dasha_system.SHASHTIHAYANI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shashtihayani() {
+                    return r.entity("dasha_system.SHASHTIHAYANI");
                 }
 
                 /**
@@ -4032,12 +4507,48 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.SHODASHOTTARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shodashottari() {
+                    return r.entity("dasha_system.SHODASHOTTARI");
+                }
+
+                /**
                  * The forms of `dasha_system.SHOOLA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms shoola() {
                     return r.entity("dasha_system.SHOOLA");
+                }
+
+                /**
+                 * The forms of `dasha_system.STHIRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sthira() {
+                    return r.entity("dasha_system.STHIRA");
+                }
+
+                /**
+                 * The forms of `dasha_system.SUDARSHANA_CHAKRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sudarshanaChakra() {
+                    return r.entity("dasha_system.SUDARSHANA_CHAKRA");
+                }
+
+                /**
+                 * The forms of `dasha_system.TARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tara() {
+                    return r.entity("dasha_system.TARA");
                 }
 
                 /**
@@ -4059,12 +4570,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.VARNADA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms varnada() {
+                    return r.entity("dasha_system.VARNADA");
+                }
+
+                /**
                  * The forms of `dasha_system.VIMSHOTTARI` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms vimshottari() {
                     return r.entity("dasha_system.VIMSHOTTARI");
+                }
+
+                /**
+                 * The forms of `dasha_system.YOGARDHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yogardha() {
+                    return r.entity("dasha_system.YOGARDHA");
                 }
 
                 /**
@@ -5713,6 +6242,43 @@ public final class Messages {
 
 
             /**
+             * The messages under `nature`.
+             *
+             * @return the group
+             */
+            public SdkEntityNature nature() {
+                return new SdkEntityNature(r);
+            }
+
+            /** The messages under `SdkEntityNature`, each rendered by its own key. */
+            public static final class SdkEntityNature {
+                private final Renderer r;
+
+                SdkEntityNature(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `nature.BENEFIC` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms benefic() {
+                    return r.entity("nature.BENEFIC");
+                }
+
+                /**
+                 * The forms of `nature.MALEFIC` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms malefic() {
+                    return r.entity("nature.MALEFIC");
+                }
+            }
+
+
+            /**
              * The messages under `paksha`.
              *
              * @return the group
@@ -5831,12 +6397,57 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.A1` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a1() {
+                    return r.entity("point.A1");
+                }
+
+                /**
+                 * The forms of `point.A12` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a12() {
+                    return r.entity("point.A12");
+                }
+
+                /**
+                 * The forms of `point.ARDHAPRAHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ardhaprahara() {
+                    return r.entity("point.ARDHAPRAHARA");
+                }
+
+                /**
+                 * The forms of `point.BHAVA_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhavaLagna() {
+                    return r.entity("point.BHAVA_LAGNA");
+                }
+
+                /**
                  * The forms of `point.DHUMA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms dhuma() {
                     return r.entity("point.DHUMA");
+                }
+
+                /**
+                 * The forms of `point.GHATI_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ghatiLagna() {
+                    return r.entity("point.GHATI_LAGNA");
                 }
 
                 /**
@@ -5849,12 +6460,39 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.HORA_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms horaLagna() {
+                    return r.entity("point.HORA_LAGNA");
+                }
+
+                /**
                  * The forms of `point.INDRACHAPA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms indrachapa() {
                     return r.entity("point.INDRACHAPA");
+                }
+
+                /**
+                 * The forms of `point.KALA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kala() {
+                    return r.entity("point.KALA");
+                }
+
+                /**
+                 * The forms of `point.KARAKAMSHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms karakamsha() {
+                    return r.entity("point.KARAKAMSHA");
                 }
 
                 /**
@@ -5876,6 +6514,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.MRITYU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mrityu() {
+                    return r.entity("point.MRITYU");
+                }
+
+                /**
                  * The forms of `point.PARIVESHA` in the current locale.
                  *
                  * @return the forms
@@ -5885,12 +6532,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.PRANAPADA_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pranapadaLagna() {
+                    return r.entity("point.PRANAPADA_LAGNA");
+                }
+
+                /**
                  * The forms of `point.UPAKETU` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms upaketu() {
                     return r.entity("point.UPAKETU");
+                }
+
+                /**
+                 * The forms of `point.VARNADA_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms varnadaLagna() {
+                    return r.entity("point.VARNADA_LAGNA");
                 }
 
                 /**
@@ -7118,6 +7783,268 @@ public final class Messages {
 
 
             /**
+             * The messages under `vaiseshikamsa`.
+             *
+             * @return the group
+             */
+            public SdkEntityVaiseshikamsa vaiseshikamsa() {
+                return new SdkEntityVaiseshikamsa(r);
+            }
+
+            /** The messages under `SdkEntityVaiseshikamsa`, each rendered by its own key. */
+            public static final class SdkEntityVaiseshikamsa {
+                private final Renderer r;
+
+                SdkEntityVaiseshikamsa(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.BHEDAKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhedaka() {
+                    return r.entity("vaiseshikamsa.BHEDAKA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.BRAHMALOKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms brahmaloka() {
+                    return r.entity("vaiseshikamsa.BRAHMALOKA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.CHAMARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chamara() {
+                    return r.entity("vaiseshikamsa.CHAMARA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.CHANDANAVANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chandanavana() {
+                    return r.entity("vaiseshikamsa.CHANDANAVANA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.CHATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chatra() {
+                    return r.entity("vaiseshikamsa.CHATRA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.DEVALOKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms devaloka() {
+                    return r.entity("vaiseshikamsa.DEVALOKA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.DHANVANTARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dhanvantari() {
+                    return r.entity("vaiseshikamsa.DHANVANTARI");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.GOLOKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms goloka() {
+                    return r.entity("vaiseshikamsa.GOLOKA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.GOPURA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gopura() {
+                    return r.entity("vaiseshikamsa.GOPURA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.KALPAVRIKSHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kalpavriksha() {
+                    return r.entity("vaiseshikamsa.KALPAVRIKSHA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.KANDUKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kanduka() {
+                    return r.entity("vaiseshikamsa.KANDUKA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.KERALA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kerala() {
+                    return r.entity("vaiseshikamsa.KERALA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.KIMSHUKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kimshuka() {
+                    return r.entity("vaiseshikamsa.KIMSHUKA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.KUNDALA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kundala() {
+                    return r.entity("vaiseshikamsa.KUNDALA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.MUKUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mukuta() {
+                    return r.entity("vaiseshikamsa.MUKUTA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.NAGAPUSHPA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nagapushpa() {
+                    return r.entity("vaiseshikamsa.NAGAPUSHPA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.PARAVATA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms paravata() {
+                    return r.entity("vaiseshikamsa.PARAVATA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.PARIJATA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms parijata() {
+                    return r.entity("vaiseshikamsa.PARIJATA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.PURNACHANDRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms purnachandra() {
+                    return r.entity("vaiseshikamsa.PURNACHANDRA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.SHAKRAVAHANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shakravahana() {
+                    return r.entity("vaiseshikamsa.SHAKRAVAHANA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.SHRIDHAMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shridhama() {
+                    return r.entity("vaiseshikamsa.SHRIDHAMA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.SIMHASANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms simhasana() {
+                    return r.entity("vaiseshikamsa.SIMHASANA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.SURYAKANTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms suryakanta() {
+                    return r.entity("vaiseshikamsa.SURYAKANTA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.UCHCHAISHRAVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms uchchaishrava() {
+                    return r.entity("vaiseshikamsa.UCHCHAISHRAVA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.UTTAMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms uttama() {
+                    return r.entity("vaiseshikamsa.UTTAMA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.VIDRUMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vidruma() {
+                    return r.entity("vaiseshikamsa.VIDRUMA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.VYANJANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vyanjana() {
+                    return r.entity("vaiseshikamsa.VYANJANA");
+                }
+            }
+
+
+            /**
              * The messages under `vara`.
              *
              * @return the group
@@ -7195,6 +8122,160 @@ public final class Messages {
                  */
                 public EntityForms somavara() {
                     return r.entity("vara.SOMAVARA");
+                }
+            }
+
+
+            /**
+             * The messages under `varga`.
+             *
+             * @return the group
+             */
+            public SdkEntityVarga varga() {
+                return new SdkEntityVarga(r);
+            }
+
+            /** The messages under `SdkEntityVarga`, each rendered by its own key. */
+            public static final class SdkEntityVarga {
+                private final Renderer r;
+
+                SdkEntityVarga(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `varga.D10` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d10() {
+                    return r.entity("varga.D10");
+                }
+
+                /**
+                 * The forms of `varga.D12` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d12() {
+                    return r.entity("varga.D12");
+                }
+
+                /**
+                 * The forms of `varga.D16` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d16() {
+                    return r.entity("varga.D16");
+                }
+
+                /**
+                 * The forms of `varga.D2` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d2() {
+                    return r.entity("varga.D2");
+                }
+
+                /**
+                 * The forms of `varga.D20` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d20() {
+                    return r.entity("varga.D20");
+                }
+
+                /**
+                 * The forms of `varga.D24` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d24() {
+                    return r.entity("varga.D24");
+                }
+
+                /**
+                 * The forms of `varga.D27` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d27() {
+                    return r.entity("varga.D27");
+                }
+
+                /**
+                 * The forms of `varga.D3` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d3() {
+                    return r.entity("varga.D3");
+                }
+
+                /**
+                 * The forms of `varga.D30` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d30() {
+                    return r.entity("varga.D30");
+                }
+
+                /**
+                 * The forms of `varga.D4` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d4() {
+                    return r.entity("varga.D4");
+                }
+
+                /**
+                 * The forms of `varga.D40` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d40() {
+                    return r.entity("varga.D40");
+                }
+
+                /**
+                 * The forms of `varga.D45` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d45() {
+                    return r.entity("varga.D45");
+                }
+
+                /**
+                 * The forms of `varga.D60` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d60() {
+                    return r.entity("varga.D60");
+                }
+
+                /**
+                 * The forms of `varga.D7` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d7() {
+                    return r.entity("varga.D7");
+                }
+
+                /**
+                 * The forms of `varga.D9` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d9() {
+                    return r.entity("varga.D9");
                 }
             }
 

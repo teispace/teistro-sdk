@@ -1019,13 +1019,12 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 15] = [
         the three friendships and the four avasthas are said now, which \
         is what this row asked for: `conditions` says every fact a \
         `Placement` carries and the section's own `GrahaState` carries a \
-        dozen. What is still unsaid is the **Sayanadi**, whose members no \
-        strict locale names because the vetted tables stop at the four \
-        avasthas, the Cheshta for the same reason, the war a graha is in \
-        and how near it stands to a classification boundary — the last \
-        two being records whose own shape is undecided rather than \
-        unnamed",
-        &["avastha_sayanadi", "avastha_cheshta"],
+        dozen. What is still unsaid is the **Sayanadi** and its Cheshta, \
+        named now from BPHS 45.30-38 and wanting only the sentence, the \
+        war a graha is in and how near it stands to a classification \
+        boundary — the last two being records whose own shape is \
+        undecided rather than unnamed",
+        &[],
     ),
     ("ASPECTS", &["aspects"], "", &[]),
     (
@@ -1034,10 +1033,11 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 15] = [
         "\
         the five upagrahas and the special lagnas are points with \
         longitudes, and `positions` says a **graha's** degree in the same \
-        sentence a point's would need — but the vetted table names the \
-        upagrahas only, so a special lagna has no name for the sentence to \
-        put in. The name comes before the sentence, and five of the state \
-        corpus's `special-lagna` readings are waiting on the same table",
+        sentence a point's would need. BPHS now names the Bhava, Hora and \
+        Ghati lagnas, the Varnada, the Pranapada, four more upagrahas, the \
+        karakamsha and two padas, so what is missing for those is the \
+        sentence; the angles, the sphutas, the yogi points and the other \
+        lagnas still have no name for it to put in",
         &["point"],
     ),
     ("HOUSES", &["houses"], "", &[]),
@@ -1092,15 +1092,14 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 15] = [
         "VAISESHIKAMSA",
         &[],
         "\
-        **no strict locale names its designations.** Kimshuka, Parijata, \
-        Gopura and the rest are catalogue members, and being a catalogue \
-        member is not being named: `vaiseshikamsa` is on the unnamed list \
-        with no vetted source, exactly as the special lagnas are, so a \
-        composer saying them would print nothing a locale carries. This \
-        row called it the cheapest of the six on the strength of *being \
-        catalogued*, which is the conflation this page had been making in \
-        prose. It also names a graha under four schemes at once, which is \
-        `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides \
+        **three of its designations are still unnamed.** BPHS 6.43-51 names \
+        27 of the 30, but the e-text misprints Kusuma, Chakrasimhasana and \
+        Shrivallabha, so `vaiseshikamsa` stays on the unnamed list for \
+        those and a composer would print a key for a graha that earned \
+        one. This row once called it the cheapest of the six on the \
+        strength of *being catalogued*, which is the conflation this page \
+        had been making in prose. It also names a graha under four \
+        schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides \
         whether the name it earned is auspicious",
         &["vaiseshikamsa"],
     ),
