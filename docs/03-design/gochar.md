@@ -54,8 +54,12 @@ reads the 12th, which is the table's usual pair, and this page takes it.
 
 vv. 9 to 24 give each graha's effects in the twelve houses; they are
 readings, carried by the interpretation corpus when a vetted rendering
-exists, and not this module's. vv. 26 to 28 (the 28-star Sarvatobhadra
-vedha and the tara transits) are a second layer, after this one.
+exists, and not this module's. vv. 26 to 28 are the nakshatra transits:
+the seven-line *saptashalaka* of 28 stars (v. 26, the Sun's vedha of the
+janma, adhana and karma stars; v. 27, the other grahas') and the taras
+(v. 28). The Sarvatobhadra chakra is v. 48, which reads its vedhas into
+gochar; it is built as the second layer (§8). The saptashalaka and the
+taras are not built (C428).
 
 ## 2. What was measured
 
@@ -214,3 +218,147 @@ keys and renders each in both strict locales with no fallback and no
 warning; a façade test (`crates/sdk/tests/plans.rs`) holds the plans to
 the composer over the same call's readings, one an instant, and the Node,
 Python and Dart suites hold the refusal and the shape across the boundary.
+
+## 8. The Sarvatobhadra chakra: the second layer
+
+Status: `built` 2026-10-17 in the kernel (`teistro_gochar::sarvatobhadra`);
+the façade is described below and not wired. Cruxes C428 to C432.
+
+### 8.1 What the texts say
+
+**Where it is.** Phaladeepika ch. 26 v. 48 (Sastri's 1950 edition, p.
+301, read on the page image): सर्वतोभद्रचक्रोक्तशुभवेधाः शुभावहाः ।
+पापवेधा दुःखतरा गोचरे तांश्च चिन्तयेत्, the chakra's benefic vedhas bring
+good and its malefic ones sorrow, to be weighed in gochar. That is all
+Mantreswara says of it. vv. 26 to 28, which §1 once named as this chakra,
+are the seven-line saptashalaka and the taras (C428). The chakra itself
+is *Narapati Jayacharya Svarodaya*'s, the text C291 to C294 already read
+for naam milan: the 1946 Khemraj print with Harivansha's Jayalakshmi
+tika, pp. 55 to 62 (Internet Archive
+`QwjT_narapati-jayacharya-svarodaya-of-shri-narapati-with-jaya-lakshmi-tika-of-harivansha-1946-khemar`,
+leaves n64 to n71), every verse read on the page image. Sastri's
+edition prints under v. 48, pp. 305 to 307, the same verses from
+*Jatakabharana* and *Horaratna*, with Rajavijaya's and *Svara
+Chintamani*'s, which agree with *Svarodaya* except where §8.3 says.
+
+**The grid** (vv. 2 to 9). Ten lines each way make 81 cells (v. 2). The
+sixteen vowels a to the visarga go to the corners, the outermost first,
+north-east, south-east, south-west, north-west, then round again one ring
+in (v. 3). The 28 stars from Krittika fill the outer ring, seven a side
+from the east (v. 4). The next ring takes twenty letters, a va ka ha ḍa
+in the east, ma ṭa pa ra ta in the south, na ya bha ja kha in the west and
+ga sa da ca la in the north (v. 5). The next takes the twelve signs from
+Taurus (v. 6). The last five take the tithi groups, Nanda in the east,
+Bhadra, Jaya and Rikta round, Purna at the centre (the tika on v. 7), and
+the weekdays with them: Tuesday and Sunday in Nanda, Monday and
+Wednesday in Bhadra, Thursday in Jaya, Friday in Rikta, Saturday in Purna
+(vv. 8, 9). Every ring fills clockwise from the north-east corner, so the
+grid is **one rule**: each ring's corners take the next four vowels and
+its sides the next members of one sequence. The kernel encodes the rule;
+a test holds it to the printed chakra (p. 58, leaf n67) cell for cell.
+
+```
+ अ  कृ  रो  मृ  आ  पु  पु  श्ले  आ        east at the top,
+ भ  उ   अ   व  क   ह   ड   ऊ   म        north at the left,
+ अ  ल   ऌ   वृ  मि  क   ॡ   म   पू       as the print draws it
+ रे  च   मे   ओ  नं  औ   सिं  ट   उ
+ उ  द   मी  रि  पू  भ   क   प   ह        नं भ ज रि पू: the tithi
+ पू  स   कुं  अः  ज  अं   तु   र   चि       groups Nanda to Purna
+ श  ग   ऐ   म  ध   वृ   ए   त   स्वा
+ ध  ॠ   ख   ज  भ   य   न   ऋ   वि
+ ई  श्र   अ   उ  पू   मू   ज्ये  अ   इ
+```
+
+**The vedha** (vv. 12 to 30).
+
+- Saturn, the Sun, Rahu, Ketu and Mars are malefic, the rest benefic;
+  Mercury joined with a malefic is malefic, and so is the waning Moon (v.
+  12). Benefics joined with malefics give a malefic's results (v. 30).
+- From the star it stands in a graha strikes along three lines, by its
+  sight: left, front and right (v. 13).
+- The five from Mars: the retrograde look right, the fast left, the mean
+  ahead (v. 15); vv. 16 to 18 read the motion off the Sun's sign counted
+  from the graha's, "without computing the grahas". Rahu and Ketu are
+  always retrograde, the Sun and the Moon always fast, and "because their
+  motion is of one nature, these always have the three sights" (v. 19).
+- The sixteen vowels pair (v. 21), and b with v, ś with s, ṣ with kh, ṅ
+  with ñ (v. 22): one struck, both are. The letters the grid lacks are
+  struck with ka, pa, bha and da (v. 23), and by a graha standing in Ardra,
+  Hasta, Purvashadha and Uttarabhadrapada, the stars whose padas they are
+  (v. 24).
+- A graha in the last pada of the star before a corner or the first of
+  the one after it strikes the corner's vowels and Purna (v. 26).
+- From one to five malefics striking: agitation, fear, loss, disease,
+  death (v. 27). Struck, the star brings confusion, the letter loss, the
+  vowel sickness, the tithi fear, the sign a great obstacle; struck in all
+  five, the native does not live (v. 28). The birth weekday struck by a
+  malefic takes away peace of mind (*Svara Chintamani*, quoted p. 307).
+
+### 8.2 What was checked
+
+The rule against the print, every cell. Three worked examples, a graha in
+Krittika, Rohini and Mrigashira and the nine cells each strikes
+(*Jatakabharana* vv. 4 to 6; Rajavijaya, p. 306; Ranahasti in the tika on
+vv. 15 to 18), reproduced cell for cell by the three lines, the front
+striking only the star at its far end. On a sky that can happen: Mercury
+within 28° of the Sun and Venus within 47° are never retrograde by vv. 16
+to 18 (Mercury always fast or unseen, Venus at most mean), though both go
+retrograde in the sky; the nodes, always opposite, never share a star and
+always look along all three lines.
+
+No reference to measure against: neither the corpus nor PyJHora records
+a Sarvatobhadra vedha, so the acceptance values are the printed grid and
+the three examples.
+
+### 8.3 The forks
+
+| crux | question | default | the rival, kept as a knob |
+|---|---|---|---|
+| C428 | which text, and where Abhijit stands | *Svarodaya*'s chakra, the one Phaladeepika v. 48 names; a graha over 276°40′ to 280°53′20″ stands in Abhijit (C292's span) | none: vv. 26 to 28 are another chakra, recorded and not built |
+| C429 | what the front strikes; which diagonal is "left" | the star at its far end only, as all three worked examples list it; left and right as the graha sees them facing the centre, so a retrograde graha looks back to the stars behind it on every side | `FrontVedha::EveryCell`, v. 13 alone |
+| C430 | which lines a graha looks along, and its motion | the five by motion, one line; the Sun, the Moon and the nodes all three (v. 19 read whole); the caller gives the five's motion, `Motion::by_the_sun` gives vv. 16 to 18's | `Sight::OneEach` (the tika's "some": Sun and Moon left, nodes right), `Sight::AllThree` |
+| C431 | the native's points and letters | star, letter, vowel, tithi and sign (v. 28) and the birth weekday; v. 22's four pairs, v. 23's pillars and v. 24's stars all strike; a name beginning with a vowel at the letter a; the corner's four vowels | `CornerVedha::OuterVowel` (the tika's other reading) |
+| C432 | malefic and benefic | v. 12 and v. 30 over the sky: a benefic in a malefic's sign is malefic, the Moon waning past 180° of elongation | none |
+
+### 8.4 The design
+
+`sarvatobhadra(transits, motions, native, rules) -> Result<SarvatobhadraReading, Error>`
+in `teistro-gochar`, beside `gochar()` and leaving its verdicts as they
+were. `transits` are the nine's places as `gochar()` takes them;
+`motions` the five's from Mars; `native` the star, sign, tithi, weekday
+and, when given, the name's first letter and vowel (a letter the chakra
+does not read is refused as `native.name.letter`). Each graha's
+`GrahaVedha` says where it stands (`StarPlace`: the chakra's star and the
+27's star and pada), its motion, the lines it looks along, its nature and
+why (`waning`, `joined_by`), every cell it strikes and how (`Reach`: a
+line, a corner, or standing in a letter's star), and the native's points
+among them. Each `PointVedha` names the malefics and the benefics that
+strike the point; `malefic_points` counts v. 28's five a malefic strikes.
+**It reports clauses and scores nothing**: v. 27's "one to five" and v.
+28's "all five" are read off the lists, not folded into a number.
+
+`chakra()` is the grid, `sight(star, line)` a line's cells, `varas(class)`
+a tithi cell's weekdays.
+
+### 8.5 The façade (not built)
+
+`sdk.chart().sarvatobhadra(&natal, at, name, rules)`, beside `gochar`:
+the native's star and sign from the natal Moon, the tithi and weekday
+from the natal chart's panchanga, the transits placed by
+`Founder::longitudes` as gochar's batch places them. Two things wait on a
+decision before it is wired. The five's motion: vv. 16 to 18's rule is
+the text's and needs only the Sun, but makes Mercury and Venus never
+retrograde (§8.2); an ephemeris's speed gives retrograde but no line
+between fast and mean, and needs the founder's speed request (C430). And
+the three knobs belong in the settings' `gochar` group, which changes
+`teistro-core`'s settings and every generated page that lists them.
+
+### 8.6 Left unbuilt
+
+The saptashalaka and the taras (Phaladeepika vv. 26 to 28); v. 20's
+retrograde malefic "very cruel" and benefic "very good", vv. 31 to 38's
+effects by graha, strength by sign and the doubling for a retrograde or
+exalted striker (readings, the corpus's when vetted); vv. 10 and 11's
+upward, sideways, level and downward sights; the directions
+"set" while the Sun crosses their signs (the extracts as Sastri renders them, p. 315); and the chakra's use in
+muhurta (vv. 39 to 42).

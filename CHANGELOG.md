@@ -425,6 +425,22 @@ astronomy is refused on `kinds`, as its eclipse is its own method. The
 `hits` section carries the kind in its `solar_eclipse` or `lunar_eclipse`
 column and the point in the `to_*` columns, and every binding reads it.
 
+**The Sarvatobhadra chakra's vedha, gochar's second layer** (`gochar.md`
+§8, C428 to C432). **Numbers:** none moved; `gochar()`'s verdicts are
+untouched. `teistro_gochar::sarvatobhadra` builds *Narapati Jayacharya
+Svarodaya*'s 81-cell chakra from its own rule (vv. 2–9) and holds it to
+the 1946 print cell for cell, and `sarvatobhadra()` reads a sky against a
+native's star, sign, tithi, weekday and name: each graha's star, the lines
+it looks along (the five by their motion, the Sun, the Moon and the nodes
+all three), its nature (a benefic in a malefic's sign, and the waning
+Moon, malefic), every cell it strikes and how, and for each of the
+native's points the malefics and benefics that strike it. It reports
+clauses and scores nothing. The front strikes only the star at its far
+end, as every worked example prints it (C429); three knobs keep the
+rivals. Phaladeepika ch. 26 vv. 26–28, which `gochar.md` had named as this
+chakra, are the saptashalaka and the taras, and v. 48 is the chakra's
+verse (C428). The Rust surface only: no façade call or blob section yet.
+
 **A hit list reports the Moon's phases and phase returns.** **Numbers:**
 none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,
 first quarter, full and last quarter moon, the Moon's elongation from the
