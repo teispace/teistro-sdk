@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 25 574 items, 274 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 25 429 items, 273 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 3 222 917 bytes of JSON over the 93 charts, 34 655 bytes a
-chart, 41 842 bytes for the widest and 126 bytes an item. The verses'
-own cited words are **not** what weighs it — 164 688 bytes, 5% — so
+golden file: 3 194 240 bytes of JSON over the 93 charts, 34 346 bytes a
+chart, 41 842 bytes for the widest and 125 bytes an item. The verses'
+own cited words are **not** what weighs it — 159 176 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 25574 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 25574 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 25574 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 25574 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 25429 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 25429 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 25429 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 25429 disagree |
 
-Every one of the 51 148 renderings — 25 574 in each of 2 strict
+Every one of the 50 858 renderings — 25 429 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -72,13 +72,13 @@ about.
 | `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
-| `sdk.reading.effect` | 3898 |
+| `sdk.reading.effect` | 3840 |
 | `sdk.reading.lifeClass` | 296 |
 | `sdk.reading.lifeSpan` | 176 |
-| `sdk.reading.participants` | 4645 |
+| `sdk.reading.participants` | 4587 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
-| `sdk.reading.status` | 390 |
+| `sdk.reading.status` | 361 |
 | `sdk.reading.timing` | 29 |
 | `sdk.reason.ashtakavarga` | 0 |
 | `sdk.reason.bhavaBala` | 0 |
@@ -112,7 +112,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 3898 of the 25 574
+**The verse's own statement is not translated.** 3840 of the 25 429
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -240,11 +240,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 1063 of 1063 | 0 of 1063 |
-| `hi-Deva-IN` | `base` | 0 of 1063 | 989 of 1063 |
-| `ne-Deva-NP` | `strict` | 1063 of 1063 | 1017 of 1063 |
-| `sa-Deva` | `base` | 0 of 1063 | 989 of 1063 |
-| `sa-Latn` | `base` | 0 of 1063 | 955 of 1063 |
+| `en-Latn` | `strict` | 1059 of 1059 | 0 of 1059 |
+| `hi-Deva-IN` | `base` | 0 of 1059 | 987 of 1059 |
+| `ne-Deva-NP` | `strict` | 1059 of 1059 | 1015 of 1059 |
+| `sa-Deva` | `base` | 0 of 1059 | 987 of 1059 |
+| `sa-Latn` | `base` | 0 of 1059 | 953 of 1059 |
 
 ## What a rich renderer gets
 
@@ -258,8 +258,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 1063 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 1063 | 42 | `b` |
+| `en-Latn` | 21 of 1059 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 1059 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -281,7 +281,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 2126 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 2118 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -299,7 +299,7 @@ its limbs, which also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 74 of 75 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 2126
+own message, with no fallback and nothing to warn about: 2118
 renderings. What this chart cannot reach is named below, with the reason
 it needs another. A key missing from both fails, and so does a key
 excused that this chart emits — which is not a hypothetical: **three

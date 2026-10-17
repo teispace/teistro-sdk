@@ -8,7 +8,7 @@
         "chapter": "35",
         "verse": "7",
         "rank": 1,
-        "note": "All the seven in movable signs. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven in movable signs. Brihat Jataka ch. 12 v. 12 and Saravali ch. 21 v. 7 make an ashraya yoga fruitless where it is mixed with another Nabhasa yoga, the other giving the result, which BPHS does not say; it is written here as a cancellation naming the two dala and twenty akriti yogas, not the sankhya, one of which holds on every chart (C448). Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -40,6 +40,96 @@
           }
         }
       ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
       "outcomes": [
         {
           "type": "effect",
@@ -56,7 +146,7 @@
         "chapter": "35",
         "verse": "7",
         "rank": 1,
-        "note": "All the seven in fixed signs. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven in fixed signs. Brihat Jataka ch. 12 v. 12 and Saravali ch. 21 v. 7 make an ashraya yoga fruitless where it is mixed with another Nabhasa yoga, the other giving the result, which BPHS does not say; it is written here as a cancellation naming the two dala and twenty akriti yogas, not the sankhya, one of which holds on every chart (C448). Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -88,6 +178,96 @@
           }
         }
       ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
       "outcomes": [
         {
           "type": "effect",
@@ -104,7 +284,7 @@
         "chapter": "35",
         "verse": "7",
         "rank": 1,
-        "note": "All the seven in dual signs. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven in dual signs. Brihat Jataka ch. 12 v. 12 and Saravali ch. 21 v. 7 make an ashraya yoga fruitless where it is mixed with another Nabhasa yoga, the other giving the result, which BPHS does not say; it is written here as a cancellation naming the two dala and twenty akriti yogas, not the sankhya, one of which holds on every chart (C448). Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -134,6 +314,96 @@
               }
             }
           }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
         }
       ],
       "outcomes": [
@@ -910,7 +1180,7 @@
         "chapter": "35",
         "verse": "14",
         "rank": 1,
-        "note": "All the seven confined to the seven houses from the first. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven filling the seven houses from the first. Every house of the window holds one of the seven (C449): BPHS ch. 35 and Brihat Jataka ch. 12 word these figures as they word the sankhya yogas, which count the signs occupied. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -924,7 +1194,7 @@
             6,
             7
           ],
-          "requireAllHousesFilled": false
+          "requireAllHousesFilled": true
         }
       ],
       "outcomes": [
@@ -943,7 +1213,7 @@
         "chapter": "35",
         "verse": "14",
         "rank": 1,
-        "note": "All the seven confined to the seven houses from the fourth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven filling the seven houses from the fourth. Every house of the window holds one of the seven (C449): BPHS ch. 35 and Brihat Jataka ch. 12 word these figures as they word the sankhya yogas, which count the signs occupied. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -957,7 +1227,7 @@
             9,
             10
           ],
-          "requireAllHousesFilled": false
+          "requireAllHousesFilled": true
         }
       ],
       "outcomes": [
@@ -976,7 +1246,7 @@
         "chapter": "35",
         "verse": "14",
         "rank": 1,
-        "note": "All the seven confined to the seven houses from the seventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven filling the seven houses from the seventh. Every house of the window holds one of the seven (C449): BPHS ch. 35 and Brihat Jataka ch. 12 word these figures as they word the sankhya yogas, which count the signs occupied. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -990,7 +1260,7 @@
             12,
             1
           ],
-          "requireAllHousesFilled": false
+          "requireAllHousesFilled": true
         }
       ],
       "outcomes": [
@@ -1009,7 +1279,7 @@
         "chapter": "35",
         "verse": "14",
         "rank": 1,
-        "note": "All the seven confined to the seven houses from the tenth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven filling the seven houses from the tenth. Every house of the window holds one of the seven (C449): BPHS ch. 35 and Brihat Jataka ch. 12 word these figures as they word the sankhya yogas, which count the signs occupied. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -1023,7 +1293,7 @@
             3,
             4
           ],
-          "requireAllHousesFilled": false
+          "requireAllHousesFilled": true
         }
       ],
       "outcomes": [
@@ -1042,7 +1312,7 @@
         "chapter": "35",
         "verse": "40",
         "rank": 1,
-        "note": "All the seven confined to seven continuous houses beginning from a house that is not an angle, which is how Saravali ch. 21 v. 13 defines it; the Parashara chapter names the yoga and gives its effect without stating the figure. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven filling seven continuous houses beginning from a house that is not an angle, which is how Saravali ch. Every house of the window holds one of the seven (C449): BPHS ch. 35 and Brihat Jataka ch. 12 word these figures as they word the sankhya yogas, which count the signs occupied. 21 v. 13 defines it; the Parashara chapter names the yoga and gives its effect without stating the figure. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -1059,7 +1329,7 @@
                 7,
                 8
               ],
-              "requireAllHousesFilled": false
+              "requireAllHousesFilled": true
             },
             {
               "type": "all-classical-grahas-in-houses",
@@ -1072,7 +1342,7 @@
                 8,
                 9
               ],
-              "requireAllHousesFilled": false
+              "requireAllHousesFilled": true
             },
             {
               "type": "all-classical-grahas-in-houses",
@@ -1085,7 +1355,7 @@
                 10,
                 11
               ],
-              "requireAllHousesFilled": false
+              "requireAllHousesFilled": true
             },
             {
               "type": "all-classical-grahas-in-houses",
@@ -1098,7 +1368,7 @@
                 11,
                 12
               ],
-              "requireAllHousesFilled": false
+              "requireAllHousesFilled": true
             },
             {
               "type": "all-classical-grahas-in-houses",
@@ -1111,7 +1381,7 @@
                 1,
                 2
               ],
-              "requireAllHousesFilled": false
+              "requireAllHousesFilled": true
             },
             {
               "type": "all-classical-grahas-in-houses",
@@ -1124,7 +1394,7 @@
                 2,
                 3
               ],
-              "requireAllHousesFilled": false
+              "requireAllHousesFilled": true
             },
             {
               "type": "all-classical-grahas-in-houses",
@@ -1137,7 +1407,7 @@
                 4,
                 5
               ],
-              "requireAllHousesFilled": false
+              "requireAllHousesFilled": true
             },
             {
               "type": "all-classical-grahas-in-houses",
@@ -1150,7 +1420,7 @@
                 5,
                 6
               ],
-              "requireAllHousesFilled": false
+              "requireAllHousesFilled": true
             }
           ]
         }
@@ -1171,7 +1441,7 @@
         "chapter": "35",
         "verse": "15",
         "rank": 1,
-        "note": "All the seven confined to the alternate houses from the ascendant. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven filling the alternate houses from the ascendant. Every house of the window holds one of the seven (C449): BPHS ch. 35 and Brihat Jataka ch. 12 word these figures as they word the sankhya yogas, which count the signs occupied. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -1184,7 +1454,7 @@
             9,
             11
           ],
-          "requireAllHousesFilled": false
+          "requireAllHousesFilled": true
         }
       ],
       "outcomes": [
@@ -1203,7 +1473,7 @@
         "chapter": "35",
         "verse": "15",
         "rank": 1,
-        "note": "All the seven in alternate signs from the second. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+        "note": "All the seven in alternate signs from the second. Every house of the window holds one of the seven (C449): BPHS ch. 35 and Brihat Jataka ch. 12 word these figures as they word the sankhya yogas, which count the signs occupied. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
       },
       "conditions": [
         {
@@ -1216,7 +1486,7 @@
             10,
             12
           ],
-          "requireAllHousesFilled": false
+          "requireAllHousesFilled": true
         }
       ],
       "outcomes": [
