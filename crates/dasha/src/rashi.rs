@@ -813,8 +813,8 @@ pub const MANDOOKA: RashiRow = row(
 /// starts, the order it visits the signs in, how long a sign runs, which
 /// lord a mahadasha names — so a consumer holding a text that states them
 /// registers the row and asks for it by key, with no change to this crate.
-/// That is the whole point of it: without one, a school's Sthira or
-/// Varnada is shut to a consumer who **has** the text as firmly as it is
+/// That is the whole point of it: without one, a school's own Sthira
+/// is shut to a consumer who **has** the text as firmly as it is
 /// to this build, which is a dead end in the SDK rather than a gap in the
 /// sources (`03-design/dasha-coverage-measured.md`).
 ///

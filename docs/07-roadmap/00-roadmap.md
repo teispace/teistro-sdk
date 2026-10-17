@@ -692,8 +692,10 @@ on 2026-09-22 rather than assumed: the chara karakas under both schemes,
 the arudhas, rashi drishti and argala, the nakshatra references, the
 strength ranking and the three pairs of longevity are all in `rules`; the
 Chara, Narayana, Padanadhamsa, Trikona, Drig, Shoola, Niryana Shoola and
-Mandooka dashas are in `dasha`; and the Varnada and Sree lagnas are in
-`points`. What is left of it is the karakamsha and swamsa, the graha
+Mandooka dashas are in `dasha`; and the Sree lagna is in `points`. The
+Varnada is not: no reading of the received rule reproduces the recorded
+values, so `points` ships none (C22, `points-measured.md`), and the
+Varnada dasha waits on it (corrected 2026-10-17). What is left of it is the karakamsha and swamsa, the graha
 arudhas, the sthira karakas, Brahma, Rudra and Maheshwara, and the Jaimini
 yogas. **Since built** (2026-09-26): the karakamsha, read in both charts,
 which is the swamsa's question (C130); the Brahma graha, with the Sthira

@@ -24,7 +24,7 @@ a natal chart asked for one is refused, and 3 of those refusals name
 that call in the hint rather than leaving the caller at a list of the
 natal systems.
 
-## 11 systems: the text is not settled
+## 12 systems: the text is not settled
 
 What closes them is a cited source read by someone who reads it.
 Building is not what is missing: every row here is one line of table
@@ -41,7 +41,8 @@ and all of them are listed.
 | `KARANA_CHATURASHITI` | Chaturashiti-sama's table seeded by the **karana**, on a sixty-fold cycle |
 | `NAISARGIKA` | the natural order and the lifespan periods it divides are both unsettled here, which is the whole of the row |
 | `PANCHASWARA` | no attested shape at all. It is catalogued because a system by that name is named, which is what a key space is for |
-| `VARNADA` | the Varnada lagna it starts from **is** built (`teistro_points`), so what is missing is not the point but which of five school variants of it the dasha counts from |
+| `VARNADA` | the Varnada lagna it starts from is **not** built: no reading of the received rule reproduces the recorded values, five schools disagree (C22) and `teistro_points` ships none of them ([`points-measured.md`](points-measured.md)). `Start` has no arm for it, so a consumer cannot register the dasha either until a school is cited and the point is built |
+| `AAYU` | the longevity module it ends with is built: all eight of *Jataka Parijata* ch. 5's spans with each giver's years, and v. 33's choice between them ([`ayurdaya-spans.md`](ayurdaya-spans.md), C305 to C318). What is missing is the dasha itself, which no source read states: which span's givers it runs, in what order and from which. Its periods would be read from the chart, the field `TARA`, `KARAKA` and `ASHTAKAVARGA` wait on |
 | `SUDASA` | no verse is in hand. BPHS does not name it among its dasas (ch. 46 vv. 6 to 11), and neither Sanskrit edition of the Jaimini sutras read states it in plain words; PyJHora starts it from the Sree lagna with a first period set by its longitude, which the kernel has neither of. It was listed as waiting on the karakamsha, which is built and is not its start in any source read |
 | `VARSHA_NARAYANA` | Narayana read over one year. The solar return it waited on is built and the three annual dashas beside it are computed (`annual-dashas.md`), but neither book read for them gives this one: Charak's chapter V and the *Tajika Nilakanthi* name the Mudda, the Yogini and the Patyayini and stop |
 
@@ -59,15 +60,6 @@ at a time.
 | `KARAKA` | its lord **order** comes from chara-karaka strength, which is a second thing a row would have to ask the chart for |
 | `ASHTAKAVARGA` | its periods come from the bindu counts. The three above are one mechanism asked for three ways, and the kernel takes them together or not at all |
 | `SUDARSHANA_CHAKRA` | three rashi progressions running at once, from the lagna, the Sun and the Moon. A composition over kernels, and the reason it is a combinator |
-
-## 1 system: it waits on a module
-
-What closes them is the module itself. Each is the **last** step of one,
-so scheduling the dasha separately would schedule the module twice.
-
-| system | why it is not computed |
-|---|---|
-| `AAYU` | the longevity module decides the span this divides, and that span is three methods with a reconciliation between them (`crates/rules` `longevity`). The dasha is what the module ends with |
 
 ## Asking for one
 
@@ -90,28 +82,27 @@ reference, or where a system starts, the order it visits the signs in
 and how long a sign runs — each checked by the same row validation a
 shipped system passes. So a consumer holding the text registers the
 system on their context and asks for it by key, today, with no change
-here. That covers 3 of the 16 systems left.
+here. That covers 2 of the 16 systems left.
 
 | system | the kernel it arrives as | what is still missing |
 |---|---|---|
 | `SHODASHOTTARI` | nakshatra-seeded | the row is stated — from Pushya, eight lords, 116 years — and its verse numbers in BPHS ch. 46 are to be confirmed before it ships |
 | `SHATTRIMSHA_SAMA` | nakshatra-seeded | the same verse numbers to confirm. Its table is Yogini's, lord for lord and year for year, differing only in the reference nakshatra and the offset — so shipping it on a guess would ship Yogini twice |
-| `VARNADA` | sign-based | the Varnada lagna it starts from **is** built (`teistro_points`), so what is missing is not the point but which of five school variants of it the dasha counts from |
 
 The path is walked once per kernel rather than cited:
 `DEMO_SHODASHOTTARI`, 8 lords and 116 years from Pushya, the
 nakshatra-seeded kernel and `DEMO_RASHI`, every sign from the lagna for
 seven, eight or nine years by modality, the sign-based kernel.
 
-**The other 13 cannot be supplied by anyone**, and each for a reason in
+**The other 14 cannot be supplied by anyone**, and each for a reason in
 its own row rather than for want of an arm: `SUDASA` starts from the
-karakamsha, which is a place `Start` does not name; the tithi, yoga and
-karana seeds want a reference that is not a nakshatra; `TARA`, `KARAKA`
-and `ASHTAKAVARGA` ask the chart for their periods; `SUDARSHANA_CHAKRA`
-is a composition of systems rather than a system. Those are rows the
-kernels do not express, which is a different thing from a row nobody has
-written down — and the difference is what this section exists to keep
-visible.
+karakamsha and `VARNADA` from the Varnada lagna, which are places
+`Start` does not name; the tithi, yoga and karana seeds want a reference
+that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA` ask the
+chart for their periods; `SUDARSHANA_CHAKRA` is a composition of systems
+rather than a system. Those are rows the kernels do not express, which
+is a different thing from a row nobody has written down — and the
+difference is what this section exists to keep visible.
 
 ## What the types decide
 
@@ -120,7 +111,7 @@ visible.
 | every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 16 disagree |
 | no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 16 disagree |
 | every reason names a system the catalogue names | **holds** | 0 of 16 disagree |
-| every system said to be registrable is one this build does not compute | **holds** | 0 of 3 disagree |
+| every system said to be registrable is one this build does not compute | **holds** | 0 of 2 disagree |
 | asking for an unbuilt system is refused and never answered | **holds** | 0 of 16 disagree |
 | the refusal names the system asked for | **holds** | 0 of 16 disagree |
 | the refusal names every system this build does compute | **holds** | 0 of 16 disagree |

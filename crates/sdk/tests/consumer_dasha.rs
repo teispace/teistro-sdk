@@ -143,7 +143,7 @@ fn a_stored_document_rebuilds_the_system_without_its_registration() {
 /// registers answers exactly as the catalogued row it copies.
 ///
 /// This is what `dasha-coverage-measured.md` found missing. Without it a
-/// school's Sthira or Varnada is shut to a consumer who **has** the text, as
+/// school's own Sthira is shut to a consumer who **has** the text, as
 /// firmly as it is to this build — a dead end in the SDK rather than a gap
 /// in the sources.
 #[test]
