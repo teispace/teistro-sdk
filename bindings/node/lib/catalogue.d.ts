@@ -7242,7 +7242,16 @@ export declare const WayById: ReadonlyMap<number, Way>;
 /**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
-export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';
+export type HitKind =
+  | 'SIGN_INGRESS'
+  | 'NAKSHATRA_INGRESS'
+  | 'STATION'
+  | 'ASPECT'
+  | 'VARGA_INGRESS'
+  | 'LUNAR_PHASE'
+  | 'PHASE_RETURN'
+  | 'SOLAR_ECLIPSE'
+  | 'LUNAR_ECLIPSE';
 
 /** Every HitKind by name; the values are the strings the union accepts. */
 export declare const HitKind: {
@@ -7262,6 +7271,33 @@ export declare const HitKind: {
    * The graha aspected a natal point, or came within or left its orb.
    */
   readonly Aspect: 'ASPECT';
+  /**
+   * The graha entered a new sign of a divisional chart. Named so a
+   * request's kinds are this enum's; the `hits` section does not carry
+   * its chart yet, so a request asking for it is refused
+   * (`TsHitKind::CARRIED`).
+   */
+  readonly VargaIngress: 'VARGA_INGRESS';
+  /**
+   * The Moon reached a principal phase; not carried yet, as
+   * `TsHitKind::VargaIngress`.
+   */
+  readonly LunarPhase: 'LUNAR_PHASE';
+  /**
+   * The Moon's elongation from the Sun returned to the natal chart's;
+   * not carried yet, as `TsHitKind::VargaIngress`.
+   */
+  readonly PhaseReturn: 'PHASE_RETURN';
+  /**
+   * A solar eclipse fell on a natal point; not carried yet, as
+   * `TsHitKind::VargaIngress`.
+   */
+  readonly SolarEclipse: 'SOLAR_ECLIPSE';
+  /**
+   * A lunar eclipse fell on a natal point; not carried yet, as
+   * `TsHitKind::VargaIngress`.
+   */
+  readonly LunarEclipse: 'LUNAR_ECLIPSE';
 };
 
 /**

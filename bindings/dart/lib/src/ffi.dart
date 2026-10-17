@@ -994,7 +994,10 @@ final class ChartRequestStruct extends ffi.Struct {
   /// as a JSON object: the window `from` and `to`, UTC Julian days, and
   /// optionally `grahas` (keys, the nine by default), `kinds`
   /// (`"SIGN_INGRESS"`, `"NAKSHATRA_INGRESS"`, `"STATION"`, `"ASPECT"`;
-  /// all by default), `points` (the natal points aspected: a graha's key
+  /// all four by default; the kinds the façade has gained since,
+  /// `"VARGA_INGRESS"`, `"LUNAR_PHASE"`, `"PHASE_RETURN"`,
+  /// `"SOLAR_ECLIPSE"` and `"LUNAR_ECLIPSE"`, are refused `UNSUPPORTED` on
+  /// `hits.kinds` until the `hits` section carries their fields), `points` (the natal points aspected: a graha's key
   /// or `"LAGNA"`, or an answer's `to`; the nine and the lagna by
   /// default), `aspects` (angles, whole degrees to 180; 0 and 180 by
   /// default, C145) and `orbDeg` (more than 0, under 15 and under half
@@ -3562,7 +3565,10 @@ final class ChartRequest {
   /// as a JSON object: the window `from` and `to`, UTC Julian days, and
   /// optionally `grahas` (keys, the nine by default), `kinds`
   /// (`"SIGN_INGRESS"`, `"NAKSHATRA_INGRESS"`, `"STATION"`, `"ASPECT"`;
-  /// all by default), `points` (the natal points aspected: a graha's key
+  /// all four by default; the kinds the façade has gained since,
+  /// `"VARGA_INGRESS"`, `"LUNAR_PHASE"`, `"PHASE_RETURN"`,
+  /// `"SOLAR_ECLIPSE"` and `"LUNAR_ECLIPSE"`, are refused `UNSUPPORTED` on
+  /// `hits.kinds` until the `hits` section carries their fields), `points` (the natal points aspected: a graha's key
   /// or `"LAGNA"`, or an answer's `to`; the nine and the lagna by
   /// default), `aspects` (angles, whole degrees to 180; 0 and 180 by
   /// default, C145) and `orbDeg` (more than 0, under 15 and under half

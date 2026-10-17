@@ -313,8 +313,10 @@ applied again:
 - **Where it stops** (`ChainEnd`, C415). Either a planet in its own sign
   (`OWN_SIGN`), or a cycle (`CYCLE`) of two or more planets, each in the
   next one's sign. A cycle of two is a mutual reception by house (Leo,
-  p. 249n; §Reception). The cycle is reported whole, starting at the
-  member given first. No member is promoted to a winner.
+  p. 249n; §Reception). The cycle is reported whole, starting at its
+  slowest member (Pluto, Neptune and Uranus, then the Chaldean seven), so
+  the chains the dignities carry and those `dispositions` reads spell
+  one cycle alike. No member is promoted to a winner.
 - **The final dispositor.** It is the one planet in its own sign that
   every chain stops at. It is `None` when the chains stop at two ends or
   more, or at a cycle, even a single cycle.

@@ -12,14 +12,16 @@ import java.util.Objects;
  * `HitRequest` as the bindings write it, camel-cased as every request record is; every field but the window is optional, and an absent one is the default.
  *
  * @param aspects The {@code aspects} field. Null leaves the SDK's default.
+ * @param eclipseOrbDeg The {@code eclipseOrbDeg} field. Null leaves the SDK's default.
  * @param from The {@code from} field.
  * @param grahas The {@code grahas} field. Null leaves the SDK's default.
  * @param kinds A kind of event a hit list reports, spelled as the event's own `kind`. Null leaves the SDK's default.
  * @param orbDeg The {@code orbDeg} field. Null leaves the SDK's default.
  * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
  * @param to The {@code to} field.
+ * @param vargas The {@code vargas} field. Null leaves the SDK's default.
  */
-public record HitRequest(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, List<com.teispace.teistro.HitKind> kinds, Double orbDeg, List<NatalPoint> points, double to) implements RequestJson {
+public record HitRequest(List<Integer> aspects, Double eclipseOrbDeg, double from, List<com.teispace.teistro.Graha> grahas, List<com.teispace.teistro.HitKind> kinds, Double orbDeg, List<NatalPoint> points, double to, List<com.teispace.teistro.Varga> vargas) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -32,6 +34,7 @@ public record HitRequest(List<Integer> aspects, double from, List<com.teispace.t
         grahas = grahas == null ? null : List.copyOf(grahas);
         kinds = kinds == null ? null : List.copyOf(kinds);
         points = points == null ? null : List.copyOf(points);
+        vargas = vargas == null ? null : List.copyOf(vargas);
     }
 
     /**
@@ -47,12 +50,14 @@ public record HitRequest(List<Integer> aspects, double from, List<com.teispace.t
     /** Builds a {@link HitRequest} a field at a time. */
     public static final class Builder {
         private List<Integer> aspects;
+        private Double eclipseOrbDeg;
         private Double from;
         private List<com.teispace.teistro.Graha> grahas;
         private List<com.teispace.teistro.HitKind> kinds;
         private Double orbDeg;
         private List<NatalPoint> points;
         private Double to;
+        private List<com.teispace.teistro.Varga> vargas;
 
         private Builder() {}
 
@@ -64,6 +69,17 @@ public record HitRequest(List<Integer> aspects, double from, List<com.teispace.t
          */
         public Builder aspects(List<Integer> aspects) {
             this.aspects = aspects;
+            return this;
+        }
+
+        /**
+         * Sets {@code eclipseOrbDeg}.
+         *
+         * @param eclipseOrbDeg The {@code eclipseOrbDeg} field. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder eclipseOrbDeg(double eclipseOrbDeg) {
+            this.eclipseOrbDeg = eclipseOrbDeg;
             return this;
         }
 
@@ -134,13 +150,24 @@ public record HitRequest(List<Integer> aspects, double from, List<com.teispace.t
         }
 
         /**
+         * Sets {@code vargas}.
+         *
+         * @param vargas The {@code vargas} field. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder vargas(List<com.teispace.teistro.Varga> vargas) {
+            this.vargas = vargas;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public HitRequest build() {
-            return new HitRequest(aspects, Objects.requireNonNull(from, "`HitRequest.from` is required"), grahas, kinds, orbDeg, points, Objects.requireNonNull(to, "`HitRequest.to` is required"));
+            return new HitRequest(aspects, eclipseOrbDeg, Objects.requireNonNull(from, "`HitRequest.from` is required"), grahas, kinds, orbDeg, points, Objects.requireNonNull(to, "`HitRequest.to` is required"), vargas);
         }
     }
 
@@ -155,12 +182,14 @@ public record HitRequest(List<Integer> aspects, double from, List<com.teispace.t
         Map<String, Object> json = Read.object(raw, "HitRequest");
         return new HitRequest(
             Read.orNull(json.get("aspects"), present -> Read.list(present, "HitRequest.aspects", item0 -> Read.int32(item0, "HitRequest.aspects"))),
+            Read.orNull(json.get("eclipseOrbDeg"), present -> Read.number(present, "HitRequest.eclipseOrbDeg")),
             Read.number(Read.required(json.get("from"), "HitRequest.from"), "HitRequest.from"),
             Read.orNull(json.get("grahas"), present -> Read.list(present, "HitRequest.grahas", item0 -> Read.member(item0, "HitRequest.grahas", com.teispace.teistro.Graha::byKey))),
             Read.orNull(json.get("kinds"), present -> Read.list(present, "HitRequest.kinds", item0 -> Read.member(item0, "HitRequest.kinds", com.teispace.teistro.HitKind::byKey))),
             Read.orNull(json.get("orbDeg"), present -> Read.number(present, "HitRequest.orbDeg")),
             Read.orNull(json.get("points"), present -> Read.list(present, "HitRequest.points", item0 -> NatalPoint.of(item0))),
-            Read.number(Read.required(json.get("to"), "HitRequest.to"), "HitRequest.to"));
+            Read.number(Read.required(json.get("to"), "HitRequest.to"), "HitRequest.to"),
+            Read.orNull(json.get("vargas"), present -> Read.list(present, "HitRequest.vargas", item0 -> Read.member(item0, "HitRequest.vargas", com.teispace.teistro.Varga::byKey))));
     }
 
     @Override
@@ -168,6 +197,9 @@ public record HitRequest(List<Integer> aspects, double from, List<com.teispace.t
         Map<String, Object> json = new LinkedHashMap<>();
         if (aspects != null) {
             json.put("aspects", aspects);
+        }
+        if (eclipseOrbDeg != null) {
+            json.put("eclipseOrbDeg", eclipseOrbDeg);
         }
         json.put("from", from);
         if (grahas != null) {
@@ -183,6 +215,9 @@ public record HitRequest(List<Integer> aspects, double from, List<com.teispace.t
             json.put("points", points.stream().map(item0 -> item0.toJson()).toList());
         }
         json.put("to", to);
+        if (vargas != null) {
+            json.put("vargas", vargas.stream().map(item0 -> item0.fullKey()).toList());
+        }
         return json;
     }
 }

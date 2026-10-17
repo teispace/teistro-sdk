@@ -333,7 +333,7 @@ pub fn sthira_karakas(chart: &RashiChart) -> [SthiraKaraka; 10] {
 /// };
 /// // Rupas, the Sun to Saturn: Venus 7.1 over the Sun's 6.2, Mars 5.0
 /// // under the Moon's 5.4.
-/// let rupas = [6.2, 5.4, 5.0, 6.0, 6.5, 7.1, 5.9];
+/// let rupas: [f64; 7] = [6.2, 5.4, 5.0, 6.0, 6.5, 7.1, 5.9];
 /// let by_rupas = |a: Graha, b: Graha| {
 ///     let of = |g: Graha| rupas.get(g as usize).copied().unwrap_or(0.0);
 ///     of(a).total_cmp(&of(b))
@@ -505,7 +505,7 @@ mod tests {
             ],
             &[(Graha::Mars, Dignity::Exalted)],
         );
-        let rupas = [5.9, 5.5, 5.5, 6.0, 6.0, 7.4, 6.0];
+        let rupas: [f64; 7] = [5.9, 5.5, 5.5, 6.0, 6.0, 7.4, 6.0];
         let by_rupas = |a: Graha, b: Graha| rupas[a as usize].total_cmp(&rupas[b as usize]);
         let rival = sthira_karakas_by(&chart, by_rupas);
         let ladder = sthira_karakas(&chart);

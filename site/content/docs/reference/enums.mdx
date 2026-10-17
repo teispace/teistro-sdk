@@ -1932,6 +1932,11 @@ What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 | `TS_HIT_KIND_NAKSHATRA_INGRESS` | 1 | The graha entered a nakshatra. |
 | `TS_HIT_KIND_STATION` | 2 | The graha stood still in longitude. |
 | `TS_HIT_KIND_ASPECT` | 3 | The graha aspected a natal point, or came within or left its orb. |
+| `TS_HIT_KIND_VARGA_INGRESS` | 4 | The graha entered a new sign of a divisional chart. Named so a request's kinds are this enum's; the `hits` section does not carry its chart yet, so a request asking for it is refused (`TsHitKind::CARRIED`). |
+| `TS_HIT_KIND_LUNAR_PHASE` | 5 | The Moon reached a principal phase; not carried yet, as `TsHitKind::VargaIngress`. |
+| `TS_HIT_KIND_PHASE_RETURN` | 6 | The Moon's elongation from the Sun returned to the natal chart's; not carried yet, as `TsHitKind::VargaIngress`. |
+| `TS_HIT_KIND_SOLAR_ECLIPSE` | 7 | A solar eclipse fell on a natal point; not carried yet, as `TsHitKind::VargaIngress`. |
+| `TS_HIT_KIND_LUNAR_ECLIPSE` | 8 | A lunar eclipse fell on a natal point; not carried yet, as `TsHitKind::VargaIngress`. |
 
 ## ts_motion
 

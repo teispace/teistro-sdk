@@ -623,7 +623,7 @@ fn each_chart_is_counted_on_the_others_western_houses() {
         let longitude = match one.point {
             NatalPoint::Lagna => george.foundation.lagna_deg,
             NatalPoint::Graha { graha } => george.foundation.graha(graha).unwrap().longitude_deg,
-            other => panic!("{other:?}"),
+            other @ NatalPoint::Midheaven => panic!("{other:?}"),
         };
         assert_eq!(
             one.house,

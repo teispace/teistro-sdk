@@ -15,6 +15,8 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 
+use crate::dignity::CHALDEAN_ORDER;
+
 /// Which planet rules each sign, so which planet disposes of a body there
 /// (C414).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -83,8 +85,10 @@ pub enum ChainEnd {
     OwnSign(Graha),
     /// At a cycle of two or more planets each in the next one's sign, the
     /// last in the first's: two of them are a mutual reception by house
-    /// (Leo, p. 249n). It starts at the member given first, and no member
-    /// is chosen over the others (C415).
+    /// (Leo, p. 249n). It starts at its slowest member, Pluto, Neptune and
+    /// Uranus before the Chaldean seven, whatever order the bodies were
+    /// given in, so one cycle has one spelling; no member is chosen over
+    /// the others (C415).
     Cycle(Vec<Graha>),
 }
 
@@ -216,7 +220,6 @@ pub fn dispositions(planets: &[(Graha, f64)], rulers: Rulers) -> Result<Disposit
             .map(|&(_, longitude_deg)| rulers.lord(Rashi::of_longitude(longitude_deg)))
             .ok_or_else(|| Error::internal(format!("{planet:?} rules a sign and was given")))
     };
-    let given_at = |planet: Graha| planets.iter().position(|&(one, _)| one == planet);
     let mut chains = Vec::with_capacity(planets.len());
     for &(planet, _) in planets {
         // The body and every dispositor passed, none twice: each lord is
@@ -231,10 +234,10 @@ pub fn dispositions(planets: &[(Graha, f64)], rulers: Rulers) -> Result<Disposit
             if let Some(from) = passed.iter().position(|&one| one == lord) {
                 let dispositors = passed.get(1..).unwrap_or_default().to_vec();
                 let mut cycle = passed.split_off(from);
-                // From the member given first, keeping the order of
+                // From the slowest member, keeping the order of
                 // disposition: each in the next one's sign.
                 let first = (0..cycle.len())
-                    .min_by_key(|&k| cycle.get(k).copied().and_then(given_at))
+                    .min_by_key(|&k| cycle.get(k).copied().map(slowness))
                     .unwrap_or(0);
                 cycle.rotate_left(first);
                 break (dispositors, ChainEnd::Cycle(cycle));
@@ -266,6 +269,16 @@ pub fn dispositions(planets: &[(Graha, f64)], rulers: Rulers) -> Result<Disposit
     })
 }
 
+/// Where a planet stands, slowest first, in the order a cycle is written
+/// from: Pluto, Neptune and Uranus, then the Chaldean seven.
+fn slowness(planet: Graha) -> usize {
+    const OUTER: [Graha; 3] = [Graha::Pluto, Graha::Neptune, Graha::Uranus];
+    OUTER
+        .iter()
+        .chain(&CHALDEAN_ORDER)
+        .position(|&one| one == planet)
+        .unwrap_or(usize::MAX)
+}
 #[cfg(test)]
 mod tests {
     #![allow(
@@ -327,8 +340,8 @@ mod tests {
             Rulers::Traditional,
         )
         .unwrap();
-        // The cycle starts at the member given first: Mars, before the Sun
-        // in the Chaldean order.
+        // The cycle starts at its slowest member: Mars, before the Sun in
+        // the Chaldean order.
         let cycle = ChainEnd::Cycle(vec![Mars, Sun]);
         assert_eq!(read.ends, [cycle.clone(), ChainEnd::OwnSign(Venus)]);
         assert_eq!(read.final_dispositor, None);
@@ -394,7 +407,7 @@ mod tests {
         assert_eq!(chain_of(&new, Jupiter).dispositors, [Uranus, Neptune]);
         assert_eq!(
             chain_of(&new, Jupiter).end,
-            ChainEnd::Cycle(vec![Uranus, Neptune])
+            ChainEnd::Cycle(vec![Neptune, Uranus])
         );
         // Outer planets under the traditional rulers are bodies only.
         let old = dispositions(&planets, Rulers::Traditional).unwrap();
