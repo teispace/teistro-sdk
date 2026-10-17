@@ -243,9 +243,9 @@ const NOT_BUILT: [(&str, Blocker, &str); 16] = [
 /// it came to be built (`jaimini-significators.md`).
 ///
 /// What is still unregistrable is unregistrable for a reason in its row and
-/// not for want of an arm: `SUDASA` starts from the karakamsha and `VARNADA`
-/// from the Varnada lagna, places `Start` does not name; the tithi, yoga and karana seeds want a
-/// reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
+/// not for want of an arm: `SUDASA` starts from the karakamsha and
+/// `VARNADA` from the Varnada lagna, places `Start` does not name; the
+/// tithi, yoga and karana seeds want a reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
 /// ask the chart for their periods; `SUDARSHANA_CHAKRA` is a composition of
 /// systems rather than a system.
 const REGISTRABLE: [(&str, Kernel); 2] = [
