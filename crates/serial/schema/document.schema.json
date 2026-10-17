@@ -1688,6 +1688,36 @@
       "description": "A key of the `choghadiya` catalogue, bare or full.",
       "x-teistro-kind": "choghadiya"
     },
+    "ChosenBy": {
+      "description": "How a sthira karaka was chosen, so a reader can check the choice and a consumer who weighs strength otherwise knows which ones to recompute.",
+      "oneOf": [
+        {
+          "const": "ALONE",
+          "description": "The verse names one graha.",
+          "type": "string"
+        },
+        {
+          "const": "SIGN",
+          "description": "The two stand in signs BPHS ch. 46 vv. 158 to 166 part (`stronger_sign`): an exalted occupant, more occupants, then the modality (C408).",
+          "type": "string"
+        },
+        {
+          "const": "DIGNITY",
+          "description": "Their signs are equal by that ladder — always so when they share one — and one's dignity is the higher (C409).",
+          "type": "string"
+        },
+        {
+          "const": "FIRST_NAMED",
+          "description": "Nothing parts them, and the graha the verse names first is taken, the Sun for the father and the Moon for the mother (C409).",
+          "type": "string"
+        },
+        {
+          "const": "CALLER",
+          "description": "The caller's own comparison, through `sthira_karakas_by`.",
+          "type": "string"
+        }
+      ]
+    },
     "Classifier": {
       "description": "How a sign is sorted into groups, each with its own rule.",
       "oneOf": [
@@ -2488,7 +2518,7 @@
               "type": "null"
             }
           ],
-          "description": "Jaimini's significators: the karakamsha and the Brahma graha, or why the rule found none (`03-design/jaimini-significators.md`)."
+          "description": "Jaimini's significators: the karakamsha and the Brahma graha, or why the rule found none, the graha arudhas, and BPHS ch. 32's sthira karakas and karaka bhavas (`03-design/jaimini-significators.md`)."
         },
         "moment": {
           "anyOf": [
@@ -3531,6 +3561,13 @@
         }
       ]
     },
+    "House": {
+      "description": "A house, 1 to 12.",
+      "format": "uint8",
+      "maximum": 255,
+      "minimum": 0,
+      "type": "integer"
+    },
     "HouseSystem": {
       "anyOf": [
         {
@@ -3720,15 +3757,35 @@
           "minItems": 9,
           "type": "array"
         },
+        "karaka_bhavas": {
+          "description": "The houses counted from the sthira karakas' grahas that show the relatives (BPHS ch. 32 vv. 22 to 24).",
+          "items": {
+            "$ref": "#/$defs/KarakaBhava"
+          },
+          "maxItems": 7,
+          "minItems": 7,
+          "type": "array"
+        },
         "karakamsha": {
           "$ref": "#/$defs/Karakamsha",
           "description": "The karakamsha, with every graha's house from it in both charts."
+        },
+        "sthira_karakas": {
+          "description": "The sthira karakas, the father's and the mother's the stronger of their pair by `stronger_karaka` (BPHS ch. 32 vv. 18 to 20).",
+          "items": {
+            "$ref": "#/$defs/SthiraKaraka"
+          },
+          "maxItems": 10,
+          "minItems": 10,
+          "type": "array"
         }
       },
       "required": [
         "karakamsha",
         "brahma",
-        "graha_arudhas"
+        "graha_arudhas",
+        "sthira_karakas",
+        "karaka_bhavas"
       ],
       "type": "object"
     },
@@ -3937,6 +3994,34 @@
         "membership",
         "balance_of",
         "after_ninth"
+      ],
+      "type": "object"
+    },
+    "KarakaBhava": {
+      "description": "A karaka bhava of a chart (BPHS ch. 32 vv. 22 to 24): the sign the house counted from a graha falls in, whole signs in the rasi chart.",
+      "properties": {
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "The graha counted from."
+        },
+        "house": {
+          "$ref": "#/$defs/House",
+          "description": "The house counted from its sign."
+        },
+        "sign": {
+          "$ref": "#/$defs/Rashi",
+          "description": "The sign it falls in."
+        },
+        "signification": {
+          "$ref": "#/$defs/Signification",
+          "description": "What that house shows."
+        }
+      },
+      "required": [
+        "graha",
+        "house",
+        "signification",
+        "sign"
       ],
       "type": "object"
     },
@@ -6511,6 +6596,76 @@
         }
       ]
     },
+    "Signification": {
+      "description": "What a fixed significator signifies: a relative, or death.",
+      "oneOf": [
+        {
+          "const": "FATHER",
+          "description": "The father, पितृ (v. 18; the 9th from the Sun, v. 22).",
+          "type": "string"
+        },
+        {
+          "const": "MOTHER",
+          "description": "The mother, मातृ (v. 19; the 4th from the Moon, v. 22).",
+          "type": "string"
+        },
+        {
+          "const": "SISTER",
+          "description": "A sister, भगिनी (v. 19, from Mars).",
+          "type": "string"
+        },
+        {
+          "const": "WIFES_BROTHER",
+          "description": "The wife's brother, श्याल (v. 19, from Mars).",
+          "type": "string"
+        },
+        {
+          "const": "YOUNGER_BROTHER",
+          "description": "A younger brother, कनीयान् (v. 19, from Mars).",
+          "type": "string"
+        },
+        {
+          "const": "BROTHER",
+          "description": "A brother, भ्राता (the 3rd from Mars, v. 23).",
+          "type": "string"
+        },
+        {
+          "const": "MATERNAL_RELATIVES",
+          "description": "The mother's kin, मातृसजातीयाः (v. 20, from Mercury).",
+          "type": "string"
+        },
+        {
+          "const": "MATERNAL_UNCLE",
+          "description": "The maternal uncle and his kin, मातुलाद्याः (v. 20 from Mercury; the 6th from Mercury, v. 23).",
+          "type": "string"
+        },
+        {
+          "const": "PATERNAL_GRANDFATHER",
+          "description": "The paternal grandfather, पितामह (v. 20, from Jupiter).",
+          "type": "string"
+        },
+        {
+          "const": "HUSBAND",
+          "description": "The husband, पति, the e-text's पितः read as पतिः (v. 20, from Venus; crux C410).",
+          "type": "string"
+        },
+        {
+          "const": "SON",
+          "description": "A son, पुत्र (v. 20 from Saturn; the 5th from Jupiter, v. 23).",
+          "type": "string"
+        },
+        {
+          "const": "WIFE",
+          "description": "The wife, दाराः (the 7th from Venus, v. 23).",
+          "type": "string"
+        },
+        {
+          "const": "DEATH",
+          "description": "Death, मृत्यु, of the father and the others (the 8th from Saturn, v. 24).",
+          "type": "string"
+        }
+      ]
+    },
     "Spans": {
       "description": "Where the parts of a sign begin.",
       "oneOf": [
@@ -6640,6 +6795,37 @@
         "ojayugma",
         "kendradi",
         "drekkana"
+      ],
+      "type": "object"
+    },
+    "SthiraKaraka": {
+      "description": "One sthira karaka of a chart.",
+      "properties": {
+        "candidates": {
+          "description": "The grahas the verse names for it, in the verse's order: one, or the pair the stronger is taken of.",
+          "items": {
+            "$ref": "#/$defs/Graha"
+          },
+          "type": "array"
+        },
+        "chosen_by": {
+          "$ref": "#/$defs/ChosenBy",
+          "description": "How it was chosen."
+        },
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "The karaka."
+        },
+        "signification": {
+          "$ref": "#/$defs/Signification",
+          "description": "What it signifies."
+        }
+      },
+      "required": [
+        "signification",
+        "candidates",
+        "graha",
+        "chosen_by"
       ],
       "type": "object"
     },

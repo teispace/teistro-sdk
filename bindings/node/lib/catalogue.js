@@ -3591,6 +3591,11 @@ export const HitKind = /* @__PURE__ */ Object.freeze({
   NakshatraIngress: 'NAKSHATRA_INGRESS',
   Station: 'STATION',
   Aspect: 'ASPECT',
+  VargaIngress: 'VARGA_INGRESS',
+  LunarPhase: 'LUNAR_PHASE',
+  PhaseReturn: 'PHASE_RETURN',
+  SolarEclipse: 'SOLAR_ECLIPSE',
+  LunarEclipse: 'LUNAR_ECLIPSE',
 });
 
 /**
@@ -3602,6 +3607,11 @@ export const HitKindById = /* @__PURE__ */ new Map([
   [1, 'NAKSHATRA_INGRESS'],
   [2, 'STATION'],
   [3, 'ASPECT'],
+  [4, 'VARGA_INGRESS'],
+  [5, 'LUNAR_PHASE'],
+  [6, 'PHASE_RETURN'],
+  [7, 'SOLAR_ECLIPSE'],
+  [8, 'LUNAR_ECLIPSE'],
 ]);
 
 /** Every Motion by name. */

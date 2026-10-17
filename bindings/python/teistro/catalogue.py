@@ -4288,6 +4288,33 @@ class HitKind(Member):
     ASPECT = 3
     """The graha aspected a natal point, or came within or left its orb."""
 
+    VARGA_INGRESS = 4
+    """The graha entered a new sign of a divisional chart. Named so a
+    request's kinds are this enum's; the `hits` section does not carry
+    its chart yet, so a request asking for it is refused
+    (`TsHitKind::CARRIED`).
+    """
+
+    LUNAR_PHASE = 5
+    """The Moon reached a principal phase; not carried yet, as
+    `TsHitKind::VargaIngress`.
+    """
+
+    PHASE_RETURN = 6
+    """The Moon's elongation from the Sun returned to the natal chart's;
+    not carried yet, as `TsHitKind::VargaIngress`.
+    """
+
+    SOLAR_ECLIPSE = 7
+    """A solar eclipse fell on a natal point; not carried yet, as
+    `TsHitKind::VargaIngress`.
+    """
+
+    LUNAR_ECLIPSE = 8
+    """A lunar eclipse fell on a natal point; not carried yet, as
+    `TsHitKind::VargaIngress`.
+    """
+
 
 class Motion(Member):
     """Which way a graha was moving, through a line or out of a station."""
@@ -6749,6 +6776,11 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "NAKSHATRA_INGRESS",
         2: "STATION",
         3: "ASPECT",
+        4: "VARGA_INGRESS",
+        5: "LUNAR_PHASE",
+        6: "PHASE_RETURN",
+        7: "SOLAR_ECLIPSE",
+        8: "LUNAR_ECLIPSE",
     },
     "Motion": {
         0: "DIRECT",

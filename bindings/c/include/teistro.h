@@ -5443,6 +5443,33 @@ typedef enum ts_hit_kind {
      * The graha aspected a natal point, or came within or left its orb.
      */
     TS_HIT_KIND_ASPECT = 3,
+    /**
+     * The graha entered a new sign of a divisional chart. Named so a
+     * request's kinds are this enum's; the `hits` section does not carry
+     * its chart yet, so a request asking for it is refused
+     * (`TsHitKind::CARRIED`).
+     */
+    TS_HIT_KIND_VARGA_INGRESS = 4,
+    /**
+     * The Moon reached a principal phase; not carried yet, as
+     * `TsHitKind::VargaIngress`.
+     */
+    TS_HIT_KIND_LUNAR_PHASE = 5,
+    /**
+     * The Moon's elongation from the Sun returned to the natal chart's;
+     * not carried yet, as `TsHitKind::VargaIngress`.
+     */
+    TS_HIT_KIND_PHASE_RETURN = 6,
+    /**
+     * A solar eclipse fell on a natal point; not carried yet, as
+     * `TsHitKind::VargaIngress`.
+     */
+    TS_HIT_KIND_SOLAR_ECLIPSE = 7,
+    /**
+     * A lunar eclipse fell on a natal point; not carried yet, as
+     * `TsHitKind::VargaIngress`.
+     */
+    TS_HIT_KIND_LUNAR_ECLIPSE = 8,
 } ts_hit_kind;
 
 /**
@@ -7918,7 +7945,10 @@ struct ts_chart_request {
      * as a JSON object: the window `from` and `to`, UTC Julian days, and
      * optionally `grahas` (keys, the nine by default), `kinds`
      * (`"SIGN_INGRESS"`, `"NAKSHATRA_INGRESS"`, `"STATION"`, `"ASPECT"`;
-     * all by default), `points` (the natal points aspected: a graha's key
+     * all four by default; the kinds the façade has gained since,
+     * `"VARGA_INGRESS"`, `"LUNAR_PHASE"`, `"PHASE_RETURN"`,
+     * `"SOLAR_ECLIPSE"` and `"LUNAR_ECLIPSE"`, are refused `UNSUPPORTED` on
+     * `hits.kinds` until the `hits` section carries their fields), `points` (the natal points aspected: a graha's key
      * or `"LAGNA"`, or an answer's `to`; the nine and the lagna by
      * default), `aspects` (angles, whole degrees to 180; 0 and 180 by
      * default, C145) and `orbDeg` (more than 0, under 15 and under half

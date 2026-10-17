@@ -7765,6 +7765,36 @@
           "value": 3,
           "doc": "The graha aspected a natal point, or came within or left its orb.",
           "key": "ASPECT"
+        },
+        {
+          "name": "VargaIngress",
+          "value": 4,
+          "doc": "The graha entered a new sign of a divisional chart. Named so a\nrequest's kinds are this enum's; the `hits` section does not carry\nits chart yet, so a request asking for it is refused\n(`TsHitKind::CARRIED`).",
+          "key": "VARGA_INGRESS"
+        },
+        {
+          "name": "LunarPhase",
+          "value": 5,
+          "doc": "The Moon reached a principal phase; not carried yet, as\n`TsHitKind::VargaIngress`.",
+          "key": "LUNAR_PHASE"
+        },
+        {
+          "name": "PhaseReturn",
+          "value": 6,
+          "doc": "The Moon's elongation from the Sun returned to the natal chart's;\nnot carried yet, as `TsHitKind::VargaIngress`.",
+          "key": "PHASE_RETURN"
+        },
+        {
+          "name": "SolarEclipse",
+          "value": 7,
+          "doc": "A solar eclipse fell on a natal point; not carried yet, as\n`TsHitKind::VargaIngress`.",
+          "key": "SOLAR_ECLIPSE"
+        },
+        {
+          "name": "LunarEclipse",
+          "value": 8,
+          "doc": "A lunar eclipse fell on a natal point; not carried yet, as\n`TsHitKind::VargaIngress`.",
+          "key": "LUNAR_ECLIPSE"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -12253,7 +12283,7 @@
             },
             "mutable": false
           },
-          "doc": "The transit hit list to search against every chart in the batch,\nas a JSON object: the window `from` and `to`, UTC Julian days, and\noptionally `grahas` (keys, the nine by default), `kinds`\n(`\"SIGN_INGRESS\"`, `\"NAKSHATRA_INGRESS\"`, `\"STATION\"`, `\"ASPECT\"`;\nall by default), `points` (the natal points aspected: a graha's key\nor `\"LAGNA\"`, or an answer's `to`; the nine and the lagna by\ndefault), `aspects` (angles, whole degrees to 180; 0 and 180 by\ndefault, C145) and `orbDeg` (more than 0, under 15 and under half\nthe step between the aspects' lines, for the windows' edges; exact\nonly by default, C146).\nEach chart's hits come back in the `hits` section, `cast.hit_count`\nrows a chart, the sky searched once for the batch. Null for none\n(`03-design/transit-hit-list.md`). Refusals are named from the\nrecord every binding calls `hits`, as `hits.to`.",
+          "doc": "The transit hit list to search against every chart in the batch,\nas a JSON object: the window `from` and `to`, UTC Julian days, and\noptionally `grahas` (keys, the nine by default), `kinds`\n(`\"SIGN_INGRESS\"`, `\"NAKSHATRA_INGRESS\"`, `\"STATION\"`, `\"ASPECT\"`;\nall four by default; the kinds the façade has gained since,\n`\"VARGA_INGRESS\"`, `\"LUNAR_PHASE\"`, `\"PHASE_RETURN\"`,\n`\"SOLAR_ECLIPSE\"` and `\"LUNAR_ECLIPSE\"`, are refused `UNSUPPORTED` on\n`hits.kinds` until the `hits` section carries their fields), `points` (the natal points aspected: a graha's key\nor `\"LAGNA\"`, or an answer's `to`; the nine and the lagna by\ndefault), `aspects` (angles, whole degrees to 180; 0 and 180 by\ndefault, C145) and `orbDeg` (more than 0, under 15 and under half\nthe step between the aspects' lines, for the windows' edges; exact\nonly by default, C146).\nEach chart's hits come back in the `hits` section, `cast.hit_count`\nrows a chart, the sky searched once for the batch. Null for none\n(`03-design/transit-hit-list.md`). Refusals are named from the\nrecord every binding calls `hits`, as `hits.to`.",
           "meta": {
             "example": "{\"from\":2460676.5,\"to\":2461041.5,\"grahas\":[\"SATURN\"]}",
             "nullable": true

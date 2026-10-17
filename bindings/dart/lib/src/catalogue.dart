@@ -6231,7 +6231,24 @@ enum HitKind {
   /// The graha stood still in longitude.
   station(2, 'STATION'),
   /// The graha aspected a natal point, or came within or left its orb.
-  aspect(3, 'ASPECT');
+  aspect(3, 'ASPECT'),
+  /// The graha entered a new sign of a divisional chart. Named so a
+  /// request's kinds are this enum's; the `hits` section does not carry
+  /// its chart yet, so a request asking for it is refused
+  /// (`TsHitKind::CARRIED`).
+  vargaIngress(4, 'VARGA_INGRESS'),
+  /// The Moon reached a principal phase; not carried yet, as
+  /// `TsHitKind::VargaIngress`.
+  lunarPhase(5, 'LUNAR_PHASE'),
+  /// The Moon's elongation from the Sun returned to the natal chart's;
+  /// not carried yet, as `TsHitKind::VargaIngress`.
+  phaseReturn(6, 'PHASE_RETURN'),
+  /// A solar eclipse fell on a natal point; not carried yet, as
+  /// `TsHitKind::VargaIngress`.
+  solarEclipse(7, 'SOLAR_ECLIPSE'),
+  /// A lunar eclipse fell on a natal point; not carried yet, as
+  /// `TsHitKind::VargaIngress`.
+  lunarEclipse(8, 'LUNAR_ECLIPSE');
 
   const HitKind(this.id, this.key);
 

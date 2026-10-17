@@ -1469,8 +1469,8 @@ impl<'a> ChartArea<'a> {
         let lattices: Vec<_> = meanings.iter().map(|(_, lattice)| *lattice).collect();
         // The Moon's phases and each chart's phase return are lines of its
         // elongation from the Sun, one scan of their own.
-        let phases = phase_lattices_of(request, natals, members)?;
-        let phase_lattices: Vec<_> = phases.iter().map(|(_, lattice)| *lattice).collect();
+        let phase_meanings = phase_lattices_of(request, natals, members)?;
+        let phase_lattices: Vec<_> = phase_meanings.iter().map(|(_, lattice)| *lattice).collect();
         let instants: Vec<JulianDay<Utc>> =
             eclipses.iter().map(|eclipse| eclipse.instant()).collect();
         let (found, phased, luminaries) = self.founding(UtcOffset::UTC, |founder| {
@@ -1512,7 +1512,7 @@ impl<'a> ChartArea<'a> {
             })
             .collect();
         hits.extend(phased.iter().filter_map(|event| {
-            let (happened, only) = phase_hit_of(event, &phases)?;
+            let (happened, only) = phase_hit_of(event, &phase_meanings)?;
             Some((only, as_hit(event, happened)))
         }));
         hits.extend(
