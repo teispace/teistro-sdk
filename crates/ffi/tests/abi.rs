@@ -2019,6 +2019,7 @@ fn a_chart_request_answers_the_hit_list() {
                 assert_eq!(cell(7), i64::from(angle));
                 assert_eq!(cell(8), i64::from(TsAspectPhase::from(phase) as u8));
             }
+            other => panic!("the section carries no {other:?}"),
         }
     }
     assert!(kinds.iter().all(|count| *count > 0), "{kinds:?}");
@@ -2048,6 +2049,19 @@ fn a_chart_request_answers_the_hit_list() {
         refused(r#"{"from":2460676.5,"to":2460866.5,"grahas":["PLUTO","PLUTO"]}"#).as_deref(),
         Some("hits.grahas")
     );
+    // A kind the section carries no fields for yet is refused by name
+    // before anything is founded, not answered without them.
+    let text =
+        CString::new(r#"{"from":2460676.5,"to":2460866.5,"kinds":["VARGA_INGRESS"]}"#).unwrap();
+    let asked = TsChartRequest {
+        hits_json: text.as_ptr(),
+        ..request
+    };
+    let mut out = TsBlob::empty();
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut out) };
+    assert_eq!(status, Status::Unsupported);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("hits.kinds"));
 }
 
 /// Sade Sati crosses: a request's `sade_sati_json` answers every chart's

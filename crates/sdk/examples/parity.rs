@@ -4697,6 +4697,18 @@ fn the_hits(report: &mut Report, sdk: &Context, index: usize, document: &teistro
                 dash(),
             ),
             HitEvent::Station { turns } => (dash(), wire_key(&turns), dash(), dash(), dash()),
+            // Not asked for here; printed as the others would print it.
+            HitEvent::VargaIngress {
+                varga,
+                into,
+                motion,
+            } => (
+                into.full_key().to_owned(),
+                wire_key(&motion),
+                varga.full_key().to_owned(),
+                dash(),
+                dash(),
+            ),
             HitEvent::Aspect {
                 to,
                 angle,

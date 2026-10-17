@@ -89,6 +89,95 @@ fn equal_spans(scheme: &Scheme) -> bool {
         .all(|group| group.spans == Spans::Equal)
 }
 
+/// The lattice that holds every line a chart's sign can change at, for a
+/// search that tests it beside others in one scan (the transit hit list's
+/// varga ingresses, `03-design/transit-hit-list.md` §7): a part's width
+/// for a chart cut evenly, and for the trimshamsha the common divisor of
+/// its whole-degree widths, one degree.
+///
+/// Not every line of it changes the sign. The hora's line at the end of
+/// Aries leaves a body in Cancer on both sides, and most of the
+/// trimshamsha's one-degree lines fall inside a part, so a crossing of it
+/// is a change only where [`either_side`] differs, as [`changes`] keeps
+/// it. `None` for a chart mixing even and uneven groups whose even parts
+/// are not whole degrees, which no chart the SDK builds does.
+///
+/// ```
+/// use teistro_core::catalogue::Varga;
+/// use teistro_vargas::Scheme;
+/// use teistro_vargas::change::lines;
+///
+/// assert_eq!(lines(&Scheme::of(Varga::D9)).map(|l| l.step_deg), Some(30.0 / 9.0));
+/// assert_eq!(lines(&Scheme::of(Varga::D30)).map(|l| l.step_deg), Some(1.0));
+/// ```
+#[must_use]
+pub fn lines(scheme: &Scheme) -> Option<Lattice> {
+    const fn gcd(a: u16, b: u16) -> u16 {
+        if b == 0 { a } else { gcd(b, a % b) }
+    }
+    let divisions = scheme.divisions.max(1);
+    if equal_spans(scheme) {
+        return Some(Lattice {
+            origin_deg: 0.0,
+            step_deg: 30.0 / f64::from(divisions),
+        });
+    }
+    // Uneven parts are whole degrees wide, so their edges and the signs'
+    // own lie on the widths' common divisor.
+    let mut step = 30_u16;
+    for group in scheme.groups {
+        match group.spans {
+            Spans::Degrees { widths } => {
+                step = widths
+                    .iter()
+                    .fold(step, |step, width| gcd(step, u16::from(*width)));
+            }
+            Spans::Equal if 30 % divisions == 0 => step = gcd(step, 30 / divisions),
+            Spans::Equal => return None,
+        }
+    }
+    Some(Lattice {
+        origin_deg: 0.0,
+        step_deg: f64::from(step.max(1)),
+    })
+}
+
+/// The chart's sign just before a line of the zodiac and just past it: a
+/// body crossing the line forward leaves the first for the second, and
+/// crossing it backward the second for the first. The two are equal on a
+/// line that changes nothing.
+///
+/// Read an arcsecond either side of the line, on the canonical angle: a
+/// line a search reports a hair off still reads as itself, and no part is
+/// that narrow (a D300's is six arcminutes wide).
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::Scheme;
+/// use teistro_vargas::change::either_side;
+///
+/// // Ten degrees of Taurus ends the twelfth navamsha from Aries and
+/// // begins the thirteenth, which is Aries again.
+/// let d9 = Scheme::of(Varga::D9);
+/// assert_eq!(either_side(&d9, 40.0)?, (Rashi::Pisces, Rashi::Aries));
+/// // The hora's line at the end of Aries changes nothing.
+/// let (before, past) = either_side(&Scheme::of(Varga::D2), 30.0)?;
+/// assert_eq!(before, past);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// `INVALID_ARG` for a line that is not a finite number.
+pub fn either_side(scheme: &Scheme, line_deg: f64) -> Result<(Rashi, Rashi), Error> {
+    let line = Nas::try_from_degrees(line_deg)?;
+    let nudge = Nas::new(Nas::PER_ARCSECOND);
+    Ok((
+        place(scheme, line - nudge).sign,
+        place(scheme, line + nudge).sign,
+    ))
+}
+
 /// The changes of an evenly cut chart, from the boundary solver.
 fn by_lattice<S: Longitudes + ?Sized>(
     source: &S,
@@ -222,10 +311,59 @@ mod tests {
         reason = "tests fail by panicking"
     )]
 
-    use super::{TOLERANCE_DAYS, equal_spans, sampling_step};
+    use super::{TOLERANCE_DAYS, either_side, equal_spans, lines, sampling_step};
+    use crate::evaluate::place;
     use crate::scheme::Scheme;
+    use teistro_core::angle::Nas;
     use teistro_core::catalogue::Varga;
     use teistro_port_ephemeris::Body;
+
+    #[test]
+    fn every_change_lies_on_the_lines() {
+        // Read every chart at the middle of each arcminute of the circle:
+        // wherever two neighbours differ, a line of the chart's lattice
+        // lies between them. No part is narrower than six arcminutes, so
+        // no change hides between two readings.
+        let middle =
+            |minute: i32| Nas::new(i64::from(minute) * Nas::PER_ARCMINUTE + Nas::PER_ARCMINUTE / 2);
+        for varga in Varga::ALL {
+            let scheme = Scheme::of(varga);
+            let step = lines(&scheme)
+                .expect("every chart the SDK builds has one")
+                .step_deg;
+            let mut changes = 0;
+            for minute in 0..360 * 60 {
+                let here = place(&scheme, middle(minute)).sign;
+                let next = place(&scheme, middle(minute + 1)).sign;
+                if here == next {
+                    continue;
+                }
+                changes += 1;
+                let (low, high) = (
+                    (f64::from(minute) + 0.5) / 60.0,
+                    (f64::from(minute) + 1.5) / 60.0,
+                );
+                let line = (high / step).floor() * step;
+                assert!(
+                    line >= low - 1e-9,
+                    "{varga:?} changes between {low} and {high}, off its lattice"
+                );
+                // The line between them reads as the change itself.
+                let (before, past) = either_side(&scheme, line).unwrap();
+                assert_eq!((before, past), (here, next), "{varga:?} at {line}");
+            }
+            assert!(changes > 0, "{varga:?} changes somewhere");
+        }
+        // The navamsha changes at every one of its 108 lines; the hora's
+        // line at the end of Aries changes nothing.
+        let d9 = Scheme::of(Varga::D9);
+        assert!((0..108).all(|k| {
+            let (before, past) = either_side(&d9, f64::from(k) * 30.0 / 9.0).unwrap();
+            before != past
+        }));
+        let (before, past) = either_side(&Scheme::of(Varga::D2), 30.0).unwrap();
+        assert_eq!(before, past);
+    }
 
     #[test]
     fn only_the_trimshamsha_needs_the_slow_path() {

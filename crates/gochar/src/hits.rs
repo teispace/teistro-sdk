@@ -1,5 +1,6 @@
 //! The transit hit list's events (`03-design/transit-hit-list.md`): when a
-//! graha enters a sign or a nakshatra, and when it stands still.
+//! graha enters a sign, a nakshatra or a divisional chart's sign, and when
+//! it stands still.
 //!
 //! The searches are the SDK's; this module is the vocabulary the answer is
 //! said in, and the one place a crossing becomes the sign it entered — a
@@ -17,7 +18,7 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{Graha, Nakshatra, Rashi};
+use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Varga};
 use teistro_core::quantity::{JulianDay, Utc};
 
 /// Which way a graha was moving, through a line or out of a station.
@@ -124,24 +125,38 @@ pub enum HitEvent {
         /// Which way the transit was moving.
         motion: Motion,
     },
+    /// The graha entered a new sign of a divisional chart: its navamsha,
+    /// say, as the chart's own rule places it (C418).
+    VargaIngress {
+        /// The divisional chart.
+        varga: Varga,
+        /// The chart's sign entered.
+        into: Rashi,
+        /// Which way it was moving.
+        motion: Motion,
+    },
 }
 
 impl HitEvent {
     /// The kind's place in a tie's order: ingresses before stations, signs
-    /// before nakshatras.
+    /// before nakshatras, then aspects; a kind added since sorts after
+    /// these, so no list the older kinds made changes its order.
     const fn rank(self) -> u8 {
         match self {
             HitEvent::SignIngress { .. } => 0,
             HitEvent::NakshatraIngress { .. } => 1,
             HitEvent::Station { .. } => 2,
             HitEvent::Aspect { .. } => 3,
+            HitEvent::VargaIngress { .. } => 4,
         }
     }
 
-    /// The natal point's place in a tie's order, for an aspect.
-    const fn point_rank(self) -> u8 {
+    /// The place in a tie's order among events of one kind: an aspect's
+    /// natal point, a varga ingress's chart by its catalogue id.
+    fn detail_rank(self) -> u16 {
         match self {
-            HitEvent::Aspect { to, .. } => to.rank(),
+            HitEvent::Aspect { to, .. } => u16::from(to.rank()),
+            HitEvent::VargaIngress { varga, .. } => varga as u16,
             _ => 0,
         }
     }
@@ -159,8 +174,9 @@ pub struct Hit {
     pub event: HitEvent,
 }
 
-/// Hits in their one order: by instant, then by graha, then by kind, so
-/// two runs over the same window list them identically.
+/// Hits in their one order: by instant, then by graha, then by kind, then
+/// by the natal point or the divisional chart, so two runs over the same
+/// window list them identically.
 pub fn sort(hits: &mut [Hit]) {
     hits.sort_by(|a, b| {
         a.instant
@@ -168,7 +184,7 @@ pub fn sort(hits: &mut [Hit]) {
             .total_cmp(&b.instant.get())
             .then((a.graha as u8).cmp(&(b.graha as u8)))
             .then(a.event.rank().cmp(&b.event.rank()))
-            .then(a.event.point_rank().cmp(&b.event.point_rank()))
+            .then(a.event.detail_rank().cmp(&b.event.detail_rank()))
     });
 }
 
@@ -214,6 +230,43 @@ pub fn nakshatra_ingress(boundary_deg: f64, motion: Motion) -> HitEvent {
             .unwrap_or(Nakshatra::Ashwini),
         motion,
     }
+}
+
+/// A varga ingress at a crossing of a divisional chart's lines, from the
+/// chart's sign before the line and past it, as the vargas crate's
+/// `change::either_side` reads them: the one past it moving forward, the
+/// one before it moving back. `None` for a line that leaves the sign as
+/// it was, which is no ingress (C418).
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_gochar::hits::{HitEvent, Motion, varga_ingress};
+///
+/// // Forward over ten degrees of Taurus: navamsha Pisces to Aries.
+/// assert_eq!(
+///     varga_ingress(Varga::D9, (Rashi::Pisces, Rashi::Aries), Motion::Direct),
+///     Some(HitEvent::VargaIngress { varga: Varga::D9, into: Rashi::Aries, motion: Motion::Direct })
+/// );
+/// // The hora's line at the end of Aries is Cancer on both sides.
+/// assert_eq!(varga_ingress(Varga::D2, (Rashi::Cancer, Rashi::Cancer), Motion::Direct), None);
+/// ```
+#[must_use]
+pub fn varga_ingress(
+    varga: Varga,
+    (before, past): (Rashi, Rashi),
+    motion: Motion,
+) -> Option<HitEvent> {
+    if before == past {
+        return None;
+    }
+    Some(HitEvent::VargaIngress {
+        varga,
+        into: match motion {
+            Motion::Direct => past,
+            Motion::Retrograde => before,
+        },
+        motion,
+    })
 }
 
 /// The step of the lattice about a natal point that holds every line of the
@@ -398,6 +451,40 @@ mod tests {
             phase(95.0, Edge::Before, Motion::Retrograde),
             AspectPhase::Leaving
         );
+    }
+
+    #[test]
+    fn a_varga_ingress_enters_the_sign_on_the_side_it_moves_to() {
+        let crossed = (Rashi::Pisces, Rashi::Aries);
+        let into = |motion| match varga_ingress(Varga::D9, crossed, motion) {
+            Some(HitEvent::VargaIngress { into, .. }) => into,
+            other => panic!("{other:?}"),
+        };
+        assert_eq!(into(Motion::Direct), Rashi::Aries);
+        assert_eq!(into(Motion::Retrograde), Rashi::Pisces);
+    }
+
+    #[test]
+    fn varga_ingresses_at_one_instant_sort_by_chart() {
+        let at = |varga| Hit {
+            instant: JulianDay::<Utc>::literal(1.0),
+            graha: Graha::Sun,
+            event: HitEvent::VargaIngress {
+                varga,
+                into: Rashi::Aries,
+                motion: Motion::Direct,
+            },
+        };
+        // A sign's line is every chart's: the sign ingress first, then the
+        // divisional charts by their catalogue order.
+        let sign = Hit {
+            instant: JulianDay::<Utc>::literal(1.0),
+            graha: Graha::Sun,
+            event: sign_ingress(0.0, Motion::Direct),
+        };
+        let mut hits = vec![at(Varga::D9), sign, at(Varga::D3)];
+        sort(&mut hits);
+        assert_eq!(hits, vec![sign, at(Varga::D3), at(Varga::D9)]);
     }
 
     #[test]

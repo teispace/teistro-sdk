@@ -180,3 +180,34 @@ after stands in the sign the event says it left and entered.
 5. Sade Sati's phases over the ingresses: **done** in its own page,
    `sade-sati.md`, over a lattice of its own rather than the hit list's
    signs, since the degree reading needs one centred on the Moon.
+
+## 7. The kinds added since
+
+The research pages' P1 rows (`11-transits-gochar.md`: "ingress dates by
+sign, nakshatra, navamsa and any varga", "eclipse impact on natal
+points"; `15-western-modern.md`: "lunar phases and phase returns") are
+kinds of the same list, each a crossing the SDK already searches. None is
+asked for by default: `HitKind::DEFAULT` is the four the list began with,
+so no list a caller already reads grows, and a new kind is named in
+`kinds`. Each sorts after the four in a tie, so the old kinds keep their
+order among themselves.
+
+1. **Varga ingress** (C418): `VARGA_INGRESS`, in the divisional charts the
+   request names in `vargas` (the navamsha unless it names others; the
+   rashi refused, its ingresses being `SIGN_INGRESS`). The lines are the
+   vargas crate's own (`change::lines`): a part's width for the twenty
+   evenly cut charts and one degree for the trimshamsha, whose uneven
+   parts are whole degrees wide, each one more lattice in the graha's one
+   scan. A crossing is an ingress only where the chart's sign differs
+   either side of the line (`change::either_side`, an arcsecond each way
+   on the canonical angle), the rule `change::changes` already keeps: the
+   hora's line at the end of Aries is Cancer on both sides, and most of
+   the trimshamsha's degree lines fall inside a part. Every ingress of a
+   year of the Sun, Mars and Jupiter in the navamsha and the trimshamsha
+   reads back through the chart's own divisional chart founded a second
+   either side, the navamsha also by its rule worked by hand, and Mars's
+   retrograde spell gives ingresses made backwards. **The C boundary does
+   not carry it yet**: section 56 has no column for the chart, so a
+   request naming it there is refused `UNSUPPORTED` on `hits.kinds`
+   before anything is founded (`TsHitKind::carried`); the kind is in
+   `TsHitKind` so a request's kinds are the boundary enum's keys.

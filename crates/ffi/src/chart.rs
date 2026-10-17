@@ -878,6 +878,43 @@ pub enum TsHitKind {
     Station = 2,
     /// The graha aspected a natal point, or came within or left its orb.
     Aspect = 3,
+    /// The graha entered a new sign of a divisional chart. Named so a
+    /// request's kinds are this enum's; the `hits` section does not carry
+    /// its chart yet, so a request asking for it is refused
+    /// ([`TsHitKind::CARRIED`]).
+    VargaIngress = 4,
+}
+
+impl TsHitKind {
+    /// The kinds the `hits` section carries every field of. A request
+    /// asking for another is refused by name before anything is founded,
+    /// rather than answered without the fields that say what it was.
+    pub const CARRIED: [teistro::HitKind; 4] = [
+        teistro::HitKind::SignIngress,
+        teistro::HitKind::NakshatraIngress,
+        teistro::HitKind::Station,
+        teistro::HitKind::Aspect,
+    ];
+
+    /// A request whose every kind the `hits` section carries.
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` naming `hits.kinds` for a kind it does not carry.
+    pub fn carried(request: &teistro::HitRequest) -> Result<(), Error> {
+        match request
+            .kinds()
+            .iter()
+            .find(|kind| !TsHitKind::CARRIED.contains(kind))
+        {
+            Some(kind) => Err(Error::unsupported(format!(
+                "the `hits` section does not carry {kind:?} hits yet"
+            ))
+            .with_field("hits.kinds")
+            .with_hint("the Rust façade's `sdk.chart().hits` reports them")),
+            None => Ok(()),
+        }
+    }
 }
 
 impl From<&teistro::gochar::hits::HitEvent> for TsHitKind {
@@ -888,6 +925,7 @@ impl From<&teistro::gochar::hits::HitEvent> for TsHitKind {
             HitEvent::NakshatraIngress { .. } => TsHitKind::NakshatraIngress,
             HitEvent::Station { .. } => TsHitKind::Station,
             HitEvent::Aspect { .. } => TsHitKind::Aspect,
+            HitEvent::VargaIngress { .. } => TsHitKind::VargaIngress,
         }
     }
 }
@@ -2418,6 +2456,13 @@ impl HitColumns {
                     phase,
                     motion,
                 } => (0, motion, Some(to), angle, TsAspectPhase::from(phase) as u8),
+                // Refused with the request (`TsHitKind::carried`); a list
+                // holding one is a request that slipped past it.
+                HitEvent::VargaIngress { .. } => {
+                    return Err(Error::internal(
+                        "a hit the `hits` section does not carry reached the encoder",
+                    ));
+                }
             };
             columns.instant.push(hit.instant.get());
             columns.graha.push(hit.graha.id());
@@ -5987,7 +6032,11 @@ impl AskedRecords {
                 records.read(name, text)?;
             }
         }
-        records.checked()
+        let records = records.checked()?;
+        if let Some(hits) = &records.hits {
+            TsHitKind::carried(hits)?;
+        }
+        Ok(records)
     }
 }
 
