@@ -475,6 +475,21 @@ lunar apogee, not the asteroid (C442). Lilith is not a graha and not yet
 a catalogue point: the first reader that must name it adds the row
 (C438). A provider that cannot place the apogee is refused on `lilith`.
 The Rust surface only: no boundary section, binding or reader yet.
+**The Nabhasa yogas read against Brihat Jataka and Saravali** (cruxes C448
+to C452). **Numbers:** none moved; no rule changed. All thirty-two of
+BPHS ch. 35 already ship, and each was read again against the Sanskrit of
+BPHS ch. 35, Brihat Jataka ch. 12 and Saravali ch. 21. Four readings the
+texts leave open are recorded with what each rival answers over the 93
+recorded charts: the seven-house and six-house windows, which the texts
+word as the sankhya yogas' occupied signs and the pack reads as
+confinement (C449, the filled reading recommended); Vajra and Yava, whose
+all-seven figure Varahamihira himself says the sky forbids (C450); where
+Vapi's seven stand (C451); and what "three angles" asks of Maala and Sarpa
+(C452). Brihat Jataka's and Saravali's clause that an ashraya yoga mixed
+with another bears no fruit is not shipped (C448): under the confined
+windows every ashraya sky holds another Nabhasa yoga, which a new test in
+`crates/rules/tests/classical.rs` proves over all 36,864 skies the Sun,
+Mercury and Venus allow, so the clause would cancel every ashraya yoga.
 
 **A hit list reports the Moon's phases and phase returns.** **Numbers:**
 none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,
