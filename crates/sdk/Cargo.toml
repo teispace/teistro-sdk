@@ -350,6 +350,14 @@ name = "returns"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "lilith"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "tithi_pravesha"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "matching"
 required-features = ["builtin-ephemeris"]
 
