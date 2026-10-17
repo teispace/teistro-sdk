@@ -17,7 +17,9 @@
 //!   no `<style>` and places each baseline itself.
 //! - **Signs are text, not emoji.** Unicode draws the zodiac signs as emoji
 //!   unless they are followed by U+FE0E, which the writer adds after exactly
-//!   the characters that define that sequence.
+//!   the characters that define that sequence. A browser honours it;
+//!   `flutter_svg` on Apple platforms does not, and draws the emoji anyway,
+//!   so a drawing for Flutter there asks for [`CellLabel::SignShort`].
 //! - **No glyph table.** Every label comes from a locale's vetted `short` or
 //!   `glyph` form.
 //!

@@ -55,6 +55,17 @@ Four kinds of source were read.
    - ☉ ☽ ☿ ♃ ♄ ☊ ☋ have no variation sequence at all.
    - So the renderer appends U+FE0E after exactly those fourteen
      characters, and no others.
+   - **The selector is a request, and one renderer refuses it.** Measured
+     on 2026-10-14 in an iOS 26 simulator: `flutter_svg` draws the zodiac
+     signs of a wheel as Apple's colour emoji with the U+FE0E in place,
+     because its text goes to the platform's font fallback, which picks
+     Apple Color Emoji for those code points whatever the selector says.
+     Browsers (Chrome, Safari) honour it. So a drawing meant for Flutter
+     on Apple platforms asks for the signs' vetted abbreviations instead,
+     `ThemeContent(cellLabel: CellLabel.signShort)` (`content.cell_label:
+     "SIGN_SHORT"` in every binding), which every locale carries; the
+     glyph stays the default, since every other renderer measured draws
+     it as text.
 4. **What SVG renderers support.**
    - Flutter's `flutter_svg` asks for presentation attributes rather than
      CSS, "because CSS is not fully supported", and its issue #561
