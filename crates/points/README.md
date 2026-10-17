@@ -11,8 +11,8 @@ Points that are not bodies but behave like them.
 | module | what it settles |
 |---|---|
 | [`solar`](src/solar.rs) | the five upagrahas the Sun casts, as the chain they are |
-| [`eighth`](src/eighth.rs) | Gulika where Saturn's eighth of the arc begins, Mandi where it ends |
-| [`lagna`](src/lagna.rs) | the hora, ghati and pranapada lagnas, the Sree lagna, the Yogi and Avayogi |
+| [`eighth`](src/eighth.rs) | Gulika where Saturn's eighth of the arc begins, Mandi where it ends; Kala, Mrityu, Yamaghantaka and Ardhaprahara where the Sun's, Mars's, Jupiter's and Mercury's begin (BPHS ch. 3 vv. 66–70, crux C405) |
+| [`lagna`](src/lagna.rs) | the bhava, hora, ghati and pranapada lagnas, the Sree lagna, the Indu lagna (Uttara Kalamrita Kanda I section 4 v. 27, crux C406), the Yogi and Avayogi |
 | [`arudha`](src/arudha.rs) | the twelve arudha padas, the first the arudha lagna, reproduced on all 852 recorded (`docs/03-design/arudhas-measured.md`) |
 | [`derived`](src/derived.rs) | what every point is: a key, a longitude, a sign and its distance to an edge |
 | [`chart`](src/chart.rs) | the assembly over a founded chart |
@@ -65,9 +65,15 @@ disagree and this engine follows one of them. The catalogue keeps the
 `VARNADA_LAGNA` key for whoever cites a school. A guess here is a wrong
 *sign* in a chart, silently.
 
-The other 38 of the catalogue's 49 points — Bhava and Vighati lagna,
-Indu lagna, Kala, Mrityu, the sphutas, the arudhas — have rows and no
-formula. The corpus records none of them, so each waits on a citation.
+**The Vighati lagna.** No text read defines it — BPHS's special-lagna
+chapter names the bhava, hora and ghati lagnas and no fourth — so it is
+crux **C407** and the row stays without a formula.
+
+Kala, Mrityu, Yamaghantaka, Ardhaprahara and the Indu lagna are not in
+the corpus either, but each has its verse, so they ship on it and on
+hand-counted tests (`derived-points.md` §13). The rest of the
+catalogue's points without a formula — the sphutas, Bhrigu bindu,
+Sahayogi — wait on a citation.
 
 ## No provider, and no new knob
 
@@ -80,17 +86,21 @@ line.
 
 And no settings knob. The one thing the tradition genuinely divides over
 — where inside Saturn's eighth the point falls — the corpus settles, so
-a knob for it would be one nothing could choose between on evidence.
+a knob for it would be one nothing could choose between on evidence. The
+other four lords' eighths the corpus does not record, so where inside
+them a point is read is an argument, `eighth::Moment`, with the start as
+the default (crux C405).
 
 ## Tests
 
-25: 20 beside the rules they test, 5 over the corpus, 7 end to end over
+47: 33 beside the rules they test, 7 over the corpus, 7 end to end over
 a founded chart.
 
 - `tests/baseline.rs`: every recorded upagraha and special lagna through
   this crate, at the pass's own bounds — exact for the six that are
   exact, inside the published bracket for the three the clock drives,
-  and the Varnada's absence asserted as a deliberate one.
+  the Varnada's absence asserted as a deliberate one, and the corpus's
+  silence on the five points only a verse decides asserted by name.
 - `tests/chart.rs`: the assembled points, the families partitioning
-  them, the two the day divides joining when an ascendant is given, and
+  them, the six the day divides joining when an ascendant is given, and
   — as `aspect` does — every shipped profile computing.

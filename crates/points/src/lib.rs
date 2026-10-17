@@ -8,10 +8,14 @@
 //!   Parivesha, Indrachapa, Upaketu — a chain of five, each defined
 //!   from the one before it;
 //! - the **upagrahas the day divides** ([`eighth`]) — Gulika where
-//!   Saturn's eighth of the arc begins and Mandi where it ends;
-//! - the **special lagnas** ([`lagna`]) — the hora, ghati and pranapada
-//!   lagnas that the clock drives, the Sree lagna that the Moon's
-//!   nakshatra drives, and the Yogi and Avayogi points;
+//!   Saturn's eighth of the arc begins and Mandi where it ends, and
+//!   Kala, Mrityu, Yamaghantaka and Ardhaprahara where the Sun's, Mars's,
+//!   Jupiter's and Mercury's eighths begin (BPHS ch. 3 vv. 66 to 70);
+//! - the **special lagnas** ([`lagna`]) — the bhava, hora, ghati and
+//!   pranapada lagnas that the clock drives, the Sree lagna that the
+//!   Moon's nakshatra drives, the Indu lagna counted from the Moon by the
+//!   ninth lords' kalas (Uttara Kalamrita, Kanda I section 4 v. 27), and
+//!   the Yogi and Avayogi points;
 //! - the **arudha padas** ([`arudha`]) — each house's count to its lord and
 //!   as far again, the first of them the arudha lagna
 //!   (`03-design/arudhas-measured.md`).
@@ -20,6 +24,10 @@
 //! answer, so a formula reproduces a recorded value or it does not
 //! (`03-design/points-measured.md`, over `03-design/derived-points.md`).
 //! Six of the eight rules are **exact**, to the last bit of a double.
+//! The corpus records none of Kala, Mrityu, Yamaghantaka, Ardhaprahara
+//! or the Indu lagna, so those five stand on their verses and on
+//! hand-counted tests, with cruxes C405 and C406 for what the verses
+//! leave open.
 //!
 //! Four things worth knowing:
 //!
@@ -33,7 +41,8 @@
 //!   against end, not start against middle, derived from the corpus
 //!   rather than proposed.
 //! - **The Varnada does not ship.** No reading of the received rule
-//!   reproduces the engine's, which is crux C22 met in the data.
+//!   reproduces the engine's, which is crux C22 met in the data. Nor does
+//!   the Vighati lagna, which no text read defines (crux C407).
 //!
 //! ```
 //! use teistro_points::lagna::{avayogi, yogi};
@@ -60,4 +69,4 @@ pub mod solar;
 
 pub use chart::Points;
 pub use derived::Derived;
-pub use eighth::{Ascendant, Portion};
+pub use eighth::{Ascendant, Moment, Portion};

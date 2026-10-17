@@ -24,11 +24,12 @@ pub struct Points {
 
 impl Points {
     /// The points a chart's own longitudes decide, which is everything
-    /// but the two the day divides.
+    /// but the six the day divides.
     ///
     /// Use this when there is no ascendant to be had — a chart founded
     /// over a provider that cannot answer another instant, or a caller
-    /// that does not want Gulika. [`Points::of`] adds the other two.
+    /// that does not want Gulika. [`Points::of`] adds the other six:
+    /// Gulika and Mandi, and Kala, Mrityu, Yamaghantaka and Ardhaprahara.
     ///
     /// # Errors
     ///
@@ -40,20 +41,25 @@ impl Points {
         let moon = longitude(foundation, Graha::Moon)?;
         let lagna_deg = foundation.lagna_deg;
         let hours = foundation.timing.ishtakaal.to_hours();
-        let mut found = Vec::with_capacity(10);
+        let mut found = Vec::with_capacity(19);
         found.extend(solar::chain(sun)?);
         found.push(lagna::bhava(sun, hours)?);
         found.push(lagna::hora(sun, hours)?);
         found.push(lagna::ghati(sun, hours)?);
         found.push(lagna::pranapada(sun, hours)?);
         found.push(lagna::sree(lagna_deg, moon)?);
+        found.push(lagna::indu(lagna_deg, moon)?);
         found.push(lagna::yogi(sun, moon)?);
         found.push(lagna::avayogi(sun, moon)?);
         Ok(Points { found })
     }
 
-    /// Every derived point of a founded chart, the two the day divides
+    /// Every derived point of a founded chart, the six the day divides
     /// included.
+    ///
+    /// Kala, Mrityu, Yamaghantaka and Ardhaprahara are read where their
+    /// lords' eighths begin, the default of crux C405;
+    /// [`eighth::lorded_at`] reads them at another moment.
     ///
     /// # Errors
     ///
@@ -71,6 +77,9 @@ impl Points {
         points
             .found
             .extend(eighth::day_division(arc, vara, is_day, ascendant)?);
+        points
+            .found
+            .extend(eighth::lorded(arc, vara, is_day, ascendant)?);
         Ok(points)
     }
 
@@ -141,6 +150,15 @@ mod tests {
         // which `Points::family` reads and this test pins.
         assert_eq!(Point::Dhuma.attributes().family, PointFamily::UpagrahaSolar);
         assert_eq!(Point::Gulika.attributes().family, PointFamily::UpagrahaDay);
+        // The four other portions' points sit in Gulika's family, and the
+        // Indu lagna among the special lagnas.
+        for point in crate::eighth::BESIDE_GULIKA {
+            assert_eq!(point.attributes().family, PointFamily::UpagrahaDay);
+        }
+        assert_eq!(
+            Point::InduLagna.attributes().family,
+            PointFamily::SpecialLagna
+        );
         assert_eq!(
             Point::HoraLagna.attributes().family,
             PointFamily::SpecialLagna

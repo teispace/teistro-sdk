@@ -396,3 +396,37 @@ fn the_varnada_is_recorded_and_the_sdk_does_not_compute_it() {
         "the catalogue keeps the key for whoever cites a school"
     );
 }
+
+#[test]
+fn the_corpus_records_none_of_the_points_only_a_verse_decides() {
+    // Kala, Mrityu, Yamaghantaka and Ardhaprahara (BPHS ch. 3 vv. 66 to
+    // 70) and the Indu lagna (Uttara Kalamrita, Kanda I section 4 v. 27)
+    // ship on their verses, held by hand-counted tests in `eighth` and
+    // `lagna` and by the one worked chart a translation prints. The corpus
+    // records none of them, so nothing in this file can hold them; this
+    // says so by name rather than letting their absence pass silently,
+    // and fails the day the corpus starts recording one. The Vighati
+    // lagna is neither recorded nor computed (crux C407).
+    let mut read = 0;
+    for chart in charts() {
+        for point in eighth::BESIDE_GULIKA {
+            assert_eq!(
+                chart.upagraha(point.key()),
+                None,
+                "{}: {point:?} is recorded; hold it here",
+                chart.name
+            );
+        }
+        for key in ["indu_lagna_deg", "vighati_lagna_deg"] {
+            assert_eq!(
+                chart.recorded(key),
+                None,
+                "{}: {key} is recorded; hold it here",
+                chart.name
+            );
+        }
+        read += 1;
+    }
+    println!("{read} fixtures, none recording the five the verses alone decide");
+    assert!(read >= 71, "every fixture with derived points, {read}");
+}

@@ -117,7 +117,7 @@ fn every_profile_the_provider_can_found_computes_its_points() {
             Ok((foundation, _)) => {
                 let points = Points::from_longitudes(&foundation)
                     .unwrap_or_else(|e| panic!("{profile}: {e}"));
-                assert_eq!(points.all().len(), 12, "{profile}");
+                assert_eq!(points.all().len(), 13, "{profile}");
                 computed.push(profile);
             }
             Err(error) => {
@@ -139,7 +139,11 @@ fn every_profile_the_provider_can_found_computes_its_points() {
 fn every_point_of_a_founded_chart_agrees_with_itself() {
     let foundation = founded();
     let points = Points::from_longitudes(&foundation).expect("a founded chart");
-    assert_eq!(points.all().len(), 12, "five cast, five driven, two yogi");
+    assert_eq!(
+        points.all().len(),
+        13,
+        "five cast, four driven by the clock, two by the Moon, two yogi"
+    );
     for derived in points.all() {
         // The sign is the sign of its own longitude.
         assert_eq!(
@@ -187,8 +191,14 @@ fn the_families_partition_what_the_chart_holds() {
     assert_eq!(
         points.family(PointFamily::UpagrahaDay).count(),
         0,
-        "the two the day divides need an ascendant"
+        "the six the day divides need an ascendant"
     );
+    // The two special lagnas no source here computes stay absent, by
+    // name: the Varnada (crux C22) and the Vighati lagna (crux C407).
+    for absent in [Point::VarnadaLagna, Point::VighatiLagna] {
+        assert_eq!(points.at(absent), None, "{absent:?}");
+    }
+    assert!(points.at(Point::InduLagna).is_some(), "the Indu lagna is");
     // And a sign holds whatever falls in it.
     for sign in Rashi::ALL {
         for derived in points.in_sign(sign) {
@@ -205,14 +215,24 @@ fn the_families_partition_what_the_chart_holds() {
 }
 
 #[test]
-fn the_two_the_day_divides_join_the_rest_when_an_ascendant_is_given() {
+fn the_six_the_day_divides_join_the_rest_when_an_ascendant_is_given() {
     let foundation = founded();
     let arc = Interval::literal(2_460_482.25, 2_460_482.75);
     let with =
         Points::of(&foundation, Vara::ALL[0], arc, true, &rising).expect("an arc with eighths");
     let without = Points::from_longitudes(&foundation).expect("a founded chart");
-    assert_eq!(with.all().len(), without.all().len() + 2);
-    assert_eq!(with.family(PointFamily::UpagrahaDay).count(), 2);
+    assert_eq!(with.all().len(), without.all().len() + 6);
+    assert_eq!(with.family(PointFamily::UpagrahaDay).count(), 6);
+    // The four beside Gulika each begin their own lord's eighth.
+    for point in eighth::BESIDE_GULIKA {
+        let found = with.at(point).expect("a lorded upagraha");
+        let lord = eighth::lord_of(point).expect("a lord");
+        let portion = eighth::lords(arc, lord, Vara::ALL[0], true).expect("a portion");
+        assert!(
+            (found.longitude_deg - rising(portion.at.from).unwrap()).abs() < 1e-9,
+            "{point:?}"
+        );
+    }
     let gulika = with.at(Point::Gulika).expect("Gulika");
     let mandi = with.at(Point::Mandi).expect("Mandi");
     // They are one eighth apart in time, so the ascendant has turned.
