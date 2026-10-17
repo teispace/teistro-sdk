@@ -84,6 +84,33 @@ hooks:
       # library: ../teistro-sdk/target/aarch64-linux-android/release/libteistro_ffi.so
 ```
 
+One `library` path is one file for every platform the build targets, which
+suits `flutter run` on one device or simulator. A build for several
+architectures runs the hook once for each and needs one library per
+platform: `flutter build ios --simulator` builds `ios-sim-arm64` and
+`ios-sim-x64` and joins the two with `lipo`, and an APK for several ABIs
+holds one library per ABI. Name them with a map keyed by release platform
+(`android-arm64`, `android-arm`, `android-x64`, `ios-arm64`,
+`ios-sim-arm64`, `ios-sim-x64`):
+
+```yaml
+hooks:
+  user_defines:
+    teistro_flutter:
+      library:
+        ios-sim-arm64: ../teistro-sdk/target/aarch64-apple-ios-sim/release/libteistro_ffi.dylib
+        ios-sim-x64: ../teistro-sdk/target/x86_64-apple-ios/release/libteistro_ffi.dylib
+        android-arm64: ../teistro-sdk/target/aarch64-linux-android/release/libteistro_ffi.so
+```
+
+A relative path is read from the directory of the pubspec that declares
+it, in either form. A map that does not name the platform being built is
+refused with the line to add. The hook reads each library's ELF or Mach-O
+header and refuses one built for another processor, which is how a single
+path given to a multi-architecture build fails, before `lipo` does. It
+cannot tell an iOS device library from an arm64 simulator one, which the
+loader reports instead.
+
 Downloads honour `HTTPS_PROXY` and `NO_PROXY`. The hook caches each slice
 in Flutter's shared build directory and reuses it while its digest still
 matches.

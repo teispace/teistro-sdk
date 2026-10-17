@@ -51,15 +51,17 @@ void main() {
       platformFor(OS.iOS, Architecture.x64, sdk: IOSSdk.iPhoneSimulator),
       'ios-sim-x64',
     );
-    // Every name is one the release table can hold.
-    for (final name in [
+    // Every name is one the release table can hold, and the names a
+    // `library` map may be keyed by are these six.
+    expect(mobilePlatforms, [
       'android-arm64',
       'android-arm',
       'android-x64',
       'ios-arm64',
       'ios-sim-arm64',
       'ios-sim-x64',
-    ]) {
+    ]);
+    for (final name in mobilePlatforms) {
       expect(
         archiveUri(base: 'b', version: '1', file: 'f.so', platform: name).path,
         endsWith('-$name.so.gz'),
@@ -252,5 +254,215 @@ void main() {
       );
       expect(() => refuseFloor(code), returnsNormally, reason: '$os');
     }
+  });
+
+  group('a library the app names', () {
+    late Uri pubspec;
+    setUp(() => pubspec = scratch.uri.resolve('app/pubspec.yaml'));
+
+    /// The user defines a build of an iPhone simulator slice would read, with
+    /// [library] declared in the pubspec at [pubspec].
+    Future<HookInputUserDefines> defines(Object library) async {
+      late HookInputUserDefines read;
+      await testCodeBuildHook(
+        targetOS: OS.iOS,
+        targetArchitecture: Architecture.arm64,
+        targetIOSSdk: IOSSdk.iPhoneSimulator,
+        userDefines: PackageUserDefines(
+          workspacePubspec: PackageUserDefinesSource(
+            defines: {libraryDefine: library},
+            basePath: pubspec,
+          ),
+        ),
+        mainMethod: (arguments) => build(arguments, (input, _) async {
+          read = input.userDefines;
+        }),
+        check: (_, _) {},
+      );
+      return read;
+    }
+
+    test('names nothing when the define is absent', () async {
+      late HookInputUserDefines read;
+      await testCodeBuildHook(
+        targetOS: OS.iOS,
+        targetArchitecture: Architecture.arm64,
+        mainMethod: (arguments) => build(arguments, (input, _) async {
+          read = input.userDefines;
+        }),
+        check: (_, _) {},
+      );
+      expect(namedLibrary(read, 'ios-arm64'), isNull);
+    });
+
+    test('as one path, names it for every platform, as before', () async {
+      final relative = await defines('../lib/libteistro_ffi.dylib');
+      final expected = scratch.uri.resolve('lib/libteistro_ffi.dylib');
+      for (final platform in mobilePlatforms) {
+        expect(namedLibrary(relative, platform), expected, reason: platform);
+      }
+      // The same path `HookInputUserDefines.path` has always given.
+      expect(relative.path(libraryDefine), expected);
+      final absolute = await defines('/opt/teistro/libteistro_ffi.dylib');
+      expect(
+        namedLibrary(absolute, 'ios-sim-x64'),
+        Uri.file('/opt/teistro/libteistro_ffi.dylib'),
+      );
+    });
+
+    test('as a map, names each platform its own path', () async {
+      final read = await defines({
+        'ios-sim-arm64': '../aarch64-apple-ios-sim/libteistro_ffi.dylib',
+        'ios-sim-x64': '/opt/x86_64-apple-ios/libteistro_ffi.dylib',
+      });
+      // A relative path is read from the pubspec's directory, as one path is.
+      expect(
+        namedLibrary(read, 'ios-sim-arm64'),
+        scratch.uri.resolve('aarch64-apple-ios-sim/libteistro_ffi.dylib'),
+      );
+      expect(
+        namedLibrary(read, 'ios-sim-x64'),
+        Uri.file('/opt/x86_64-apple-ios/libteistro_ffi.dylib'),
+      );
+    });
+
+    test('as a map without the platform built, is refused with the line '
+        'to add', () async {
+      final read = await defines({
+        'ios-sim-arm64': 'a.dylib',
+        'android-arm64': 'b.so',
+      });
+      expect(
+        () => namedLibrary(read, 'ios-sim-x64'),
+        throwsA(
+          isA<BuildError>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('this build is for ios-sim-x64'),
+              contains('android-arm64, ios-sim-arm64 only'),
+              contains(
+                'hooks: user_defines: teistro_flutter: library: '
+                'ios-sim-x64: <path>',
+              ),
+            ),
+          ),
+        ),
+      );
+      final empty = await defines(<String, Object?>{});
+      expect(
+        () => namedLibrary(empty, 'ios-arm64'),
+        _refused('names a library for no platform'),
+      );
+    });
+
+    test('as a map with a key no platform has, is refused', () async {
+      final read = await defines({'ios-sim-arm': 'a.dylib'});
+      expect(
+        () => namedLibrary(read, 'ios-sim-arm64'),
+        _refused('the key(s) ios-sim-arm, and its keys are'),
+      );
+    });
+
+    test('as anything else, is refused', () async {
+      final number = await defines(3);
+      expect(
+        () => namedLibrary(number, 'ios-arm64'),
+        _refused('it takes a path, or a map of release platform to path'),
+      );
+      final read = await defines({'ios-arm64': 3});
+      expect(
+        () => namedLibrary(read, 'ios-arm64'),
+        _refused('names int `3` for ios-arm64'),
+      );
+    });
+
+    test('that is not there is refused', () {
+      final missing = scratch.uri.resolve('nothing.dylib');
+      expect(
+        () => refuseNamed(missing, 'ios-sim-x64'),
+        _refused(
+          'names ${missing.toFilePath()} for ios-sim-x64, and there is '
+          'no file there',
+        ),
+      );
+    });
+
+    test('built for another processor is refused, naming the map', () {
+      /// The first bytes of a library: an ELF or thin Mach-O header.
+      Uri library(String name, List<int> head) {
+        final file = File('${scratch.path}/$name')
+          ..writeAsBytesSync([...head, ...List<int>.filled(64, 0)]);
+        return file.uri;
+      }
+
+      final elf = [0x7f, 0x45, 0x4c, 0x46, 2, 1, ...List<int>.filled(12, 0)];
+      final so = library('arm64.so', [...elf, 183, 0]);
+      final arm = library('arm.so', [...elf, 40, 0]);
+      final x64 = library('x64.so', [...elf, 62, 0]);
+      final dylib = library('arm64.dylib', [
+        0xcf, 0xfa, 0xed, 0xfe, 0x0c, 0, 0, 0x01, //
+      ]);
+      final simX64 = library('x64.dylib', [
+        0xcf, 0xfa, 0xed, 0xfe, 0x07, 0, 0, 0x01, //
+      ]);
+      expect(processorOf(File.fromUri(so)), 'arm64');
+      expect(processorOf(File.fromUri(arm)), 'arm');
+      expect(processorOf(File.fromUri(x64)), 'x64');
+      expect(processorOf(File.fromUri(dylib)), 'arm64');
+      expect(processorOf(File.fromUri(simX64)), 'x64');
+      for (final (file, platform) in [
+        (so, 'android-arm64'),
+        (arm, 'android-arm'),
+        (x64, 'android-x64'),
+        (dylib, 'ios-arm64'),
+        (dylib, 'ios-sim-arm64'),
+        (simX64, 'ios-sim-x64'),
+      ]) {
+        expect(() => refuseNamed(file, platform), returnsNormally);
+      }
+      expect(
+        () => refuseNamed(dylib, 'ios-sim-x64'),
+        _refused('an arm64 library, for ios-sim-x64. A build for several'),
+      );
+      expect(
+        () => refuseNamed(so, 'android-x64'),
+        _refused('library: {android-x64: <path>, ...}'),
+      );
+      // A header not read here is the loader's to judge.
+      final other = File('${scratch.path}/other')..writeAsBytesSync(_library);
+      expect(processorOf(other), isNull);
+      expect(() => refuseNamed(other.uri, 'ios-sim-x64'), returnsNormally);
+    });
+
+    test('is bundled for the platform the map names it for', () async {
+      final file = File('${scratch.path}/x64/libteistro_ffi.dylib')
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(_library);
+      await testCodeBuildHook(
+        targetOS: OS.iOS,
+        targetArchitecture: Architecture.x64,
+        targetIOSSdk: IOSSdk.iPhoneSimulator,
+        userDefines: PackageUserDefines(
+          workspacePubspec: PackageUserDefinesSource(
+            defines: {
+              libraryDefine: {
+                'ios-sim-arm64': '../arm64/libteistro_ffi.dylib',
+                'ios-sim-x64': '../x64/libteistro_ffi.dylib',
+              },
+            },
+            basePath: pubspec,
+          ),
+        ),
+        mainMethod: (arguments) => build(
+          arguments,
+          (input, output) => bundlePrebuilt(input, output, release: _release()),
+        ),
+        check: (_, output) {
+          expect(output.assets.code.single.file, file.uri);
+          expect(output.dependencies, contains(file.uri));
+        },
+      );
+    });
   });
 }

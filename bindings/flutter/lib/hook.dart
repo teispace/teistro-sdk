@@ -10,7 +10,11 @@ export 'src/bundle.dart'
         bundlePrebuilt,
         iosFloor,
         libraryDefine,
+        mobilePlatforms,
+        namedLibrary,
         platformFor,
         prebuiltDirDefine,
+        processorOf,
         refuseFloor,
+        refuseNamed,
         slice;
