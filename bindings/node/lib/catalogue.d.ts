@@ -7242,7 +7242,16 @@ export declare const WayById: ReadonlyMap<number, Way>;
 /**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
-export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';
+export type HitKind =
+  | 'SIGN_INGRESS'
+  | 'NAKSHATRA_INGRESS'
+  | 'STATION'
+  | 'ASPECT'
+  | 'VARGA_INGRESS'
+  | 'LUNAR_PHASE'
+  | 'PHASE_RETURN'
+  | 'SOLAR_ECLIPSE'
+  | 'LUNAR_ECLIPSE';
 
 /** Every HitKind by name; the values are the strings the union accepts. */
 export declare const HitKind: {
@@ -7262,6 +7271,29 @@ export declare const HitKind: {
    * The graha aspected a natal point, or came within or left its orb.
    */
   readonly Aspect: 'ASPECT';
+  /**
+   * The graha entered a new sign of a divisional chart: `varga` says
+   * which, and `into` the sign.
+   */
+  readonly VargaIngress: 'VARGA_INGRESS';
+  /**
+   * The Moon reached a principal phase, which `lunar_phase` names.
+   */
+  readonly LunarPhase: 'LUNAR_PHASE';
+  /**
+   * The Moon's elongation from the Sun returned to the natal chart's.
+   */
+  readonly PhaseReturn: 'PHASE_RETURN';
+  /**
+   * A solar eclipse fell on a natal point: `solar_eclipse` says which
+   * kind, and the `to_*` columns the point.
+   */
+  readonly SolarEclipse: 'SOLAR_ECLIPSE';
+  /**
+   * A lunar eclipse fell on a natal point: `lunar_eclipse` says which
+   * kind, and the `to_*` columns the point.
+   */
+  readonly LunarEclipse: 'LUNAR_ECLIPSE';
 };
 
 /**
@@ -7379,6 +7411,38 @@ export declare const AspectPhase: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const AspectPhaseById: ReadonlyMap<number, AspectPhase>;
+
+/**
+ * A principal phase of the Moon, the Moon's elongation from the Sun a
+ * multiple of 90° (C419).
+ */
+export type MoonPhase = 'NEW' | 'FIRST_QUARTER' | 'FULL' | 'LAST_QUARTER';
+
+/** Every MoonPhase by name; the values are the strings the union accepts. */
+export declare const MoonPhase: {
+  /**
+   * The new moon, 0°.
+   */
+  readonly New: 'NEW';
+  /**
+   * The first quarter, 90°.
+   */
+  readonly FirstQuarter: 'FIRST_QUARTER';
+  /**
+   * The full moon, 180°.
+   */
+  readonly Full: 'FULL';
+  /**
+   * The last quarter, 270°.
+   */
+  readonly LastQuarter: 'LAST_QUARTER';
+};
+
+/**
+ * Every MoonPhase by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MoonPhaseById: ReadonlyMap<number, MoonPhase>;
 
 /**
  * The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).

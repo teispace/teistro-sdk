@@ -180,3 +180,73 @@ after stands in the sign the event says it left and entered.
 5. Sade Sati's phases over the ingresses: **done** in its own page,
    `sade-sati.md`, over a lattice of its own rather than the hit list's
    signs, since the degree reading needs one centred on the Moon.
+
+## 7. The kinds added since
+
+The research pages' P1 rows (`11-transits-gochar.md`: "ingress dates by
+sign, nakshatra, navamsa and any varga", "eclipse impact on natal
+points"; `15-western-modern.md`: "lunar phases and phase returns") are
+kinds of the same list, each a crossing the SDK already searches. None is
+asked for by default: `HitKind::DEFAULT` is the four the list began with,
+so no list a caller already reads grows, and a new kind is named in
+`kinds`. Each sorts after the four in a tie, so the old kinds keep their
+order among themselves.
+
+1. **Varga ingress** (C418): `VARGA_INGRESS`, in the divisional charts the
+   request names in `vargas` (the navamsha unless it names others; the
+   rashi refused, its ingresses being `SIGN_INGRESS`). The lines are the
+   vargas crate's own (`change::lines`): a part's width for the twenty
+   evenly cut charts and one degree for the trimshamsha, whose uneven
+   parts are whole degrees wide, each one more lattice in the graha's one
+   scan. A crossing is an ingress only where the chart's sign differs
+   either side of the line (`change::either_side`, an arcsecond each way
+   on the canonical angle), the rule `change::changes` already keeps: the
+   hora's line at the end of Aries is Cancer on both sides, and most of
+   the trimshamsha's degree lines fall inside a part. Every ingress of a
+   year of the Sun, Mars and Jupiter in the navamsha and the trimshamsha
+   reads back through the chart's own divisional chart founded a second
+   either side, the navamsha also by its rule worked by hand, and Mars's
+   retrograde spell gives ingresses made backwards. Section 56 carries
+   the chart in its own `varga` column and the sign in `into`.
+2. **Lunar phases and phase returns** (C419, C420): `LUNAR_PHASE`, the
+   Moon's elongation from the Sun crossing 0°, 90°, 180° and 270° (new,
+   first quarter, full, last quarter), and `PHASE_RETURN`, the elongation
+   returning to each natal chart's own, once a synodic month. No second
+   solver: the elongation is the tithi's quantity (`Quantity::ELONGATION`)
+   and `Founder::elongation_events` searches it with the crossing search
+   a tithi's ends use, the quarters and every chart's natal line tested
+   in one scan, in the chart's frame as every hit is. Both are the
+   Moon's hits whichever grahas the request names; a phase is the sky's,
+   handed to every chart of a batch, and a return its own chart's. Over a
+   year every phase and return reads back through charts founded a
+   second either side, the phases run in a lunation's order, the returns
+   fall a synodic month apart, and January 2025's full and new moons land
+   within three minutes of the almanacs' 13 January 22:27 UT and 29
+   January 12:36 UT. Section 56 carries the phase in its own
+   `lunar_phase` column, as a `TsMoonPhase`.
+3. **An eclipse on a natal point** (C421, C422): `SOLAR_ECLIPSE` and
+   `LUNAR_ECLIPSE`, an eclipse whose luminary — the Sun in a solar
+   eclipse, the Moon in a lunar one — stands at the greatest moment
+   within `eclipseOrbDeg` (3° unless asked otherwise, at most 15°) of a
+   natal point the request already names in `points`. No new search:
+   the eclipses are the almanac's own (`astro::eclipse::Eclipses`, under
+   `panchanga.eclipse_shadow`, the greatest moment's UT1 read as UTC as
+   the almanac reads it), found once for a batch since an eclipse is the
+   Earth's, and the luminary is placed in the chart's zodiac through
+   `Founder::longitudes`, which equals a founded chart's place to the bit.
+   A classical astronomy, whose eclipse is its own method (C188), is
+   refused `UNSUPPORTED` on `kinds`. The hit carries the eclipse's kind
+   from the catalogue (`SolarEclipseKind`, `LunarEclipseKind`), its
+   graha the luminary and its instant the greatest eclipse. Every eclipse
+   of 2025 against every natal point of a birth an hour after the
+   eclipsed new moon of 29 March is read back both ways through charts
+   founded at the greatest moments: a hit exactly where the luminary lies
+   within the orb, and none elsewhere. Section 56 carries each kind in
+   its own `solar_eclipse` or `lunar_eclipse` column and the natal point
+   in the `to_*` columns an aspect uses.
+
+Every binding reads the five kinds as their own event types, each with
+only its fields, and a binding test asks for all five on the birth an
+hour after the eclipse of 29 March 2025: the ABI test checks every row
+against the façade's own list, and Node, Python, Dart and Java each read
+the kinds, the varga, the phases and the eclipses back.

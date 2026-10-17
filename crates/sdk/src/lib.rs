@@ -337,14 +337,15 @@ pub use teistro_hellenistic as hellenistic;
 #[cfg(feature = "chart")]
 pub use teistro_hellenistic::{
     Accident, AccidentalRules, AccidentalScores, Almuten, AlmutenRules, Almutens, Application,
-    ApplicationKind, AscendantClause, AspectTimeline, Collection, ConsiderationRules,
-    Considerations, Contact, Dignities, DignityKind, DignityRequest, DignityRules, Distance,
-    EssentialDignity, FortitudeRequest, Fortitudes, FortuneRule, Impediment, ImpedimentKind, Lot,
-    LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest, Matter, MoonClause, MoonCourse,
-    Partile, Perfection, PerfectionRequest, PerfectionRules, PlaceReading, PlacedLot,
-    PlanetAccidents, PlanetDignity, PtolemaicAspect, RadicalGround, Radicality, Reception, Scores,
-    Sect, SectRule, Separation, SeventhClause, Siege, SignificatorPlace, Standing, Station,
-    Temperament, Terms, TermsTable, Translation, Triplicities, Way, Ways,
+    ApplicationKind, AscendantClause, AspectTimeline, ChainEnd, Collection, ConsiderationRules,
+    Considerations, Contact, Dignities, DignityKind, DignityRequest, DignityRules, Dispositions,
+    DispositorChain, Distance, EssentialDignity, FortitudeRequest, Fortitudes, FortuneRule,
+    Impediment, ImpedimentKind, Lot, LotArc, LotFormula, LotPlace, LotPoint, LotReading,
+    LotRequest, Matter, MoonClause, MoonCourse, Partile, Perfection, PerfectionRequest,
+    PerfectionRules, PlaceReading, PlacedLot, PlanetAccidents, PlanetDignity, PtolemaicAspect,
+    RadicalGround, Radicality, Reception, Rulers, Scores, Sect, SectRule, Separation,
+    SeventhClause, Siege, SignificatorPlace, Standing, Station, Temperament, Terms, TermsTable,
+    Translation, Triplicities, Way, Ways,
 };
 // Progressions and directions, the modern Western measures held to Leo's
 // *The Progressed Horoscope* (`03-design/western-progressions.md`).
@@ -421,8 +422,8 @@ pub use teistro_western::{
 // reaching one sidereal hour above it (`03-design/western-houses.md`).
 #[cfg(feature = "western")]
 pub use teistro_western::{
-    ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM,
-    LILLY_HOUSE_SYSTEM, WesternHouses,
+    ASCENDANT_REACH_DEG, HouseFrame, HouseOverlay, HouseOverlays, HousePlacement, HouseRequest,
+    LEO_HOUSE_SYSTEM, LILLY_HOUSE_SYSTEM, OverlayCusps, WesternHouses,
 };
 // A chart's harmonics after Addey: every point multiplied by a whole
 // number, and the points meeting in it (`03-design/western-harmonics.md`).
@@ -498,10 +499,11 @@ pub use crate::rashifal_request::{
 };
 #[cfg(feature = "rashifal")]
 pub use teistro_rashifal as rashifal;
-// A body's returns to its own natal place: the lunar return after Morin
+// A body's returns to its own natal place, the lunar return after Morin,
+// and to a place an offset past it, the half- and quarter-returns
 // (`03-design/western-returns.md`).
 #[cfg(feature = "chart")]
-pub use crate::returns::BodyReturn;
+pub use crate::returns::{BodyReturn, OffsetReturn};
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
 #[cfg(feature = "western")]

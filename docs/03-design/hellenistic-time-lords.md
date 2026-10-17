@@ -159,7 +159,85 @@ consumer must name one in a request.
   levels ship it.
 - **The peaks.** Valens judges a releasing period by its place from
   Fortune ("MC relative to the Lot of Fortune", IV.7). That is a reading,
-  not a period. It is reported as clauses later, not scored here.
+  not a period, and it ships as one (below, C423 to C426): the angle is
+  reported, never scored.
+
+## Peaks and the loosing of the bond
+
+Built 2026-10-17: two readers over the periods the kernel
+already makes. No period, row or record changes.
+
+**What Valens says.**
+
+- **A lot has angles.** Book II.17K (79K): the Lot of Fortune "will be
+  equivalent to the Ascendant", the tenth place from it "to MC" and
+  "Rank", the seventh the Descendant and the fourth the IC.
+- **A period is judged by them.** IV.7 (165K–166K) looks at whether the
+  sign that transmits and the sign that receives "are at an angle or are
+  preceding an angle". A distribution from Daimon "to MC (MC relative to
+  the Lot of Fortune) or to the Lot itself" brings power and rank. One
+  "at the Ascendant, at MC, or at the other angles" brings rank "but not
+  to the same extent, because the places square with the Lots are most
+  efficacious".
+- **The loosing.** IV.4 (161K–163K): once the twelve signs have used up
+  17 years 7 months, "the remaining time" is allotted "using the signs in
+  opposition". Gemini's remainder goes to Sagittarius. This happens when
+  the period starts in Gemini, Cancer, Leo, Virgo, Capricorn or Aquarius.
+  Leo hands over to Aquarius and Aquarius to Leo. IV.10 (171K) says the
+  same for the cycle of days (528) and of hours (44). IV.5 (163K) adds
+  that a transmission made "after <one> cycle" has an effect of its own.
+
+**What ships.**
+
+- **`releasing_angle(lot, sign) -> Option<LotAngle>`.** Gives the whole-sign
+  angle a period's sign holds from a lot: `First`, `Fourth`, `Seventh` or
+  `Tenth`. It gives nothing for a sign at no angle.
+  - The full place from the lot, angle or not, is
+    `House::between(lot, sign)`. Its `is_apoklima` is Valens's "preceding
+    an angle".
+  - The lot passed in is Fortune's sign, also for `RELEASING_DAIMON`.
+    The reason is that Valens measures Daimon's distribution to "MC
+    relative to the Lot of Fortune" (C424).
+  - The kernel does not know Fortune's sign when it releases from Daimon,
+    so the reader is a free function, not a method on `ReleasingDasha`.
+  - Passing the Ascendant's sign gives the natal angles, which Valens ranks
+    below Fortune's. Passing a parent period's sign gives a reading Valens
+    does not make (C426).
+- **`ReleasingDasha::loosing(parent)`.** The child at which the parent's
+  level jumps to the opposite sign: the thirteenth child, placed 211 units
+  into the parent. It is nothing when the parent ends first.
+- **`ReleasingDasha::is_loosed(period)`.** True for that child and for
+  every child after it (C427). It reads only the period's path, so a stored
+  row answers the same way: the last place of its `path` is 12 or more.
+
+**Why no field.** A dasha row already carries `path` and `sign`, and a
+chart's lots section carries Fortune's sign. From these a binding can
+derive both answers without any new field. No schema, IDL or generated
+page moves. When a consumer needs the answer on the row itself (for
+example, a binding that does not read lots), the field to add would be a
+`loosed: bool` on `PeriodRow`, left out of the record when false. Adding
+it would move the document schema, the IDL and every binding's generated
+row. The angle stays
+off the row in every case, because it depends on a lot the row does not
+name.
+
+**Tests**, against what Valens prints:
+
+- **II.17K.** The four angles of every lot, with the tenth as its MC.
+- **IV.8.** With the Ascendant in Pisces, Fortune in Leo is "preceding an
+  angle <the Descendant>": the sixth sign, at no angle. Fortune's MC is
+  Taurus. Counted rather than printed: Daimon's Scorpio and Aquarius are
+  Fortune's fourth and seventh.
+- **IV.4, the six starts.** Gemini, Cancer, Leo, Virgo, Capricorn and
+  Aquarius are exactly the start signs that reach the loosing. Each does so
+  at 211 months, in the opposite sign.
+- **IV.4, the pairings (163K).** Leo goes to Aquarius and back, Cancer to
+  Capricorn and back, and Virgo to Pisces.
+- **IV.8, Daimon in Scorpio.** The periods printed for Aquarius end at 69
+  years 4 months, before its loosing at 71 years 7 months. None of them is
+  loosed.
+- **IV.10, the cycle of days.** Inside Aquarius's 30 months, the days are
+  loosed to Leo 527½ days in. Valens gives the cycle as 528, rounded.
 
 ## The order of work
 

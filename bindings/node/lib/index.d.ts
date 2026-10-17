@@ -78,6 +78,7 @@ import type {
   Motion,
   WesternAspect,
   AspectPhase,
+  MoonPhase,
   GocharVerdict,
   NodeObstruction,
   NodeVedha,
@@ -893,6 +894,35 @@ export type HitEvent =
       /** Where in the orb's window (C146); always `'EXACT'` without an orb. */
       readonly phase: AspectPhase | 'unknown';
       readonly motion: Motion | 'unknown';
+    }
+  | {
+      readonly kind: 'VARGA_INGRESS';
+      /** The divisional chart whose sign changed (C418). */
+      readonly varga: Varga | 'unknown';
+      /** The sign entered in that chart. */
+      readonly into: Rashi | 'unknown';
+      readonly motion: Motion | 'unknown';
+    }
+  | {
+      readonly kind: 'LUNAR_PHASE';
+      /** Which of the four the Moon reached, in the chart's frame (C419). */
+      readonly phase: MoonPhase | 'unknown';
+    }
+  | {
+      /** The Moon's elongation from the Sun came back to the natal chart's (C420). */
+      readonly kind: 'PHASE_RETURN';
+    }
+  | {
+      readonly kind: 'SOLAR_ECLIPSE';
+      /** The natal point the eclipsed Sun fell on, within `eclipseOrbDeg` (C421). */
+      readonly to: NatalPoint;
+      readonly eclipse: SolarEclipseKind | 'unknown';
+    }
+  | {
+      readonly kind: 'LUNAR_ECLIPSE';
+      /** The natal point the eclipsed Moon fell on, within `eclipseOrbDeg` (C421). */
+      readonly to: NatalPoint;
+      readonly eclipse: LunarEclipseKind | 'unknown';
     };
 
 /**
@@ -1029,7 +1059,7 @@ export interface HitRequest {
   readonly to: number;
   /** The grahas to search, bare (`'SUN'`) or full (`'graha.SUN'`); the nine by default. */
   readonly grahas?: readonly GrahaName[];
-  /** The kinds of event to report; all four by default. */
+  /** The kinds of event to report; the four ingress, station and aspect kinds by default. */
   readonly kinds?: readonly HitKind[];
   /** The natal points aspected: a graha's key, `'LAGNA'`, `'MIDHEAVEN'`, or an aspect's `to`; the nine and the lagna by default. */
   readonly points?: readonly (
@@ -1043,6 +1073,10 @@ export interface HitRequest {
   readonly aspects?: readonly number[];
   /** An orb in degrees, more than 0, under 15 and under half the step between the aspects' lines, for each window's opening and closing; exact only by default (C146). */
   readonly orbDeg?: number;
+  /** The divisional charts a `'VARGA_INGRESS'` is searched in, bare (`'D9'`) or full (`'varga.D9'`); the navamsha by default, and never the rashi chart (C418). */
+  readonly vargas?: readonly (Exclude<Varga, 'unknown'> | BareKey<Varga>)[];
+  /** How near a natal point an eclipsed luminary must fall, in degrees, more than 0 and at most 15; 3 by default (C422). */
+  readonly eclipseOrbDeg?: number;
 }
 
 /**

@@ -755,6 +755,8 @@ function theHitList(ctx: Context): string {
       points: ['LAGNA', 'MOON', { point: 'GRAHA', graha: 'graha.SUN' }, { point: 'LAGNA' }],
       aspects: [0, 90, 180],
       orbDeg: 2,
+      vargas: ['D9', 'varga.D30'],
+      eclipseOrbDeg: 3,
     },
   }).hits;
   const words: string[] = hits.map((hit) => {
@@ -769,6 +771,17 @@ function theHitList(ctx: Context): string {
       case 'ASPECT': {
         const to = event.to.point === 'GRAHA' ? event.to.graha : event.to.point;
         return `${to} ${event.angle} ${event.phase} ${event.motion}`;
+      }
+      case 'VARGA_INGRESS':
+        return `${event.varga} ${event.into} ${event.motion}`;
+      case 'LUNAR_PHASE':
+        return `${event.phase}`;
+      case 'PHASE_RETURN':
+        return event.kind;
+      case 'SOLAR_ECLIPSE':
+      case 'LUNAR_ECLIPSE': {
+        const to = event.to.point === 'GRAHA' ? event.to.graha : event.to.point;
+        return `${to} ${event.eclipse}`;
       }
     }
   });

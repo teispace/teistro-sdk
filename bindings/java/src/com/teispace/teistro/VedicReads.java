@@ -410,6 +410,13 @@ final class VedicReads {
             case SIGN_INGRESS -> new SignIngress(Rashi.of(columns.into(row)), motion);
             case NAKSHATRA_INGRESS -> new NakshatraIngress(Nakshatra.of(columns.into(row)), motion);
             case STATION -> new Station(motion);
+            case VARGA_INGRESS -> new VargaIngress(Varga.of(columns.varga(row)), Rashi.of(columns.into(row)), motion);
+            case LUNAR_PHASE -> new LunarPhase(MoonPhase.of(columns.lunarPhase(row)));
+            case PHASE_RETURN -> new PhaseReturn();
+            case SOLAR_ECLIPSE -> new SolarEclipseHit(pointAt(columns.toLagna(row), columns.toGraha(row),
+                    columns.toMidheaven(row)), SolarEclipseKind.of(columns.solarEclipse(row)));
+            case LUNAR_ECLIPSE -> new LunarEclipseHit(pointAt(columns.toLagna(row), columns.toGraha(row),
+                    columns.toMidheaven(row)), LunarEclipseKind.of(columns.lunarEclipse(row)));
             default -> new AspectHit(pointAt(columns.toLagna(row), columns.toGraha(row), columns.toMidheaven(row)),
                     columns.angle(row),
                     AspectPhase.of(columns.phase(row)), motion);

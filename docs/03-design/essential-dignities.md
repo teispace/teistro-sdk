@@ -296,6 +296,48 @@ chart's pairs, ragged by that count. Each pair is a row: `first` and
 `second`, then the seven flags of each side. [`reception-measured.md`](reception-measured.md)
 holds Lilly's examples and counts each kind over the corpus.
 
+## Dispositors
+
+A planet's dispositor is "the ruler of the sign it is in" (Leo, *How to
+Judge a Nativity*, 1928 ed., p. 130). Lilly uses the word the same way:
+the "Lord of that Signe who disposeth the ☽" (*Christian Astrology*,
+p. 161). Neither follows a dispositor's own dispositor, and neither names
+a final dispositor. Those come from later practice and no source has been
+read for them (C413), so the module builds them from the one definition,
+applied again:
+
+- **The chain.** A body's dispositor, then that planet's dispositor, and so
+  on, until a planet repeats. `DispositorChain::dispositors` holds the
+  planets passed. It never holds the body itself or any planet twice, so
+  a body in its own sign has an empty chain.
+- **Where it stops** (`ChainEnd`, C415). Either a planet in its own sign
+  (`OWN_SIGN`), or a cycle (`CYCLE`) of two or more planets, each in the
+  next one's sign. A cycle of two is a mutual reception by house (Leo,
+  p. 249n; §Reception). The cycle is reported whole, starting at its
+  slowest member (Pluto, Neptune and Uranus, then the Chaldean seven), so
+  the chains the dignities carry and those `dispositions` reads spell
+  one cycle alike. No member is promoted to a winner.
+- **The final dispositor.** It is the one planet in its own sign that
+  every chain stops at. It is `None` when the chains stop at two ends or
+  more, or at a cycle, even a single cycle.
+- **Rulers** (`Rulers`, C414). `TRADITIONAL` is the catalogue's sign
+  lords, as the dignities' houses are. `MODERN` gives Aquarius to Uranus,
+  Pisces to Neptune and Scorpio to Pluto, each alone. Leo has Uranus
+  *share* Aquarius (p. 103) and calls Pisces "usually regarded as the
+  house of Neptune" (p. 126). Pluto is modern practice. A chain needs one
+  lord a sign, so Leo's shared rulership does not ship as a scheme. Every
+  planet the rulers name must be given. Under the traditional rulers an
+  outer planet given is a body with a chain and is nobody's dispositor.
+- **The nodes** rule no sign. They are refused, not skipped (C416).
+
+`Dignities::dispositions` carries the seven's chains under the
+traditional rulers, so every dignities answer has them.
+`ChartArea::dispositions(chart, rulers)` reads a founded chart's seven,
+plus the outer three when it placed them, under either rulers.
+`teistro_hellenistic::dispositions` takes any bodies and longitudes.
+The boundary does not carry them yet. `dignities` has no section for the
+chains, so no binding reads them (§What is not decided).
+
 ## Accidental fortitudes (step 5)
 
 Lilly's "ready Table" (p. 115) gives, beside the essential dignities, a
@@ -563,3 +605,8 @@ the other.
 - **The default `DignityRules`**: `LILLY` is the only complete, scored,
   cited row, because Ptolemy scores nothing. It is named rather than
   implied, and a request names its rules.
+- **Dispositors at the boundary** (§Dispositors). The chains are in the
+  façade and the document. No blob section carries them, so no binding
+  reads them. The likely shape is one ragged section of chains a chart
+  and one of ends, beside `dignity_receptions`. It waits on the IDL and
+  the bindings' parity.

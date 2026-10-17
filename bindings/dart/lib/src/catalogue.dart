@@ -6231,7 +6231,20 @@ enum HitKind {
   /// The graha stood still in longitude.
   station(2, 'STATION'),
   /// The graha aspected a natal point, or came within or left its orb.
-  aspect(3, 'ASPECT');
+  aspect(3, 'ASPECT'),
+  /// The graha entered a new sign of a divisional chart: `varga` says
+  /// which, and `into` the sign.
+  vargaIngress(4, 'VARGA_INGRESS'),
+  /// The Moon reached a principal phase, which `lunar_phase` names.
+  lunarPhase(5, 'LUNAR_PHASE'),
+  /// The Moon's elongation from the Sun returned to the natal chart's.
+  phaseReturn(6, 'PHASE_RETURN'),
+  /// A solar eclipse fell on a natal point: `solar_eclipse` says which
+  /// kind, and the `to_*` columns the point.
+  solarEclipse(7, 'SOLAR_ECLIPSE'),
+  /// A lunar eclipse fell on a natal point: `lunar_eclipse` says which
+  /// kind, and the `to_*` columns the point.
+  lunarEclipse(8, 'LUNAR_ECLIPSE');
 
   const HitKind(this.id, this.key);
 
@@ -6370,6 +6383,45 @@ enum AspectPhase {
 
   /// The member with a key, or `null` for one this build does not know.
   static AspectPhase? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A principal phase of the Moon, the Moon's elongation from the Sun a
+/// multiple of 90° (C419).
+enum MoonPhase {
+  /// The new moon, 0°.
+  newValue(0, 'NEW'),
+  /// The first quarter, 90°.
+  firstQuarter(1, 'FIRST_QUARTER'),
+  /// The full moon, 180°.
+  full(2, 'FULL'),
+  /// The last quarter, 270°.
+  lastQuarter(3, 'LAST_QUARTER');
+
+  const MoonPhase(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static MoonPhase byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a MoonPhase'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static MoonPhase? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

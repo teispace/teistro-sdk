@@ -75,6 +75,6 @@ pub use progression::{
     YearMeasure,
 };
 pub use synastry::{
-    DeclinedPoint, SynastryParallelRow, SynastryPoint, SynastryRequest, SynastryRow,
-    SynastryZodiac, synastry, synastry_parallels,
+    DeclinedPoint, HouseOverlay, HouseOverlays, OverlayCusps, SynastryParallelRow, SynastryPoint,
+    SynastryRequest, SynastryRow, SynastryZodiac, house_overlays, synastry, synastry_parallels,
 };

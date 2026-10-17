@@ -8,6 +8,11 @@
 //! every point of the second, on the engine a chart's own table reads, so
 //! the orbs are his single-chart orbs under whichever model is asked.
 //!
+//! The house overlays, each chart's points counted in the other's houses
+//! ([`house_overlays`]), are later practice that Leo does not use: he
+//! reads a planet "on the place of" another's luminaries or ascendant
+//! (p. 223), never in another chart's house (C417).
+//!
 //! ```
 //! use teistro_core::catalogue::Graha;
 //! use teistro_gochar::hits::NatalPoint;
@@ -26,8 +31,9 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_aspect::orb::Moving;
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Graha, HouseSystem};
 use teistro_core::error::Error;
+use teistro_core::house::{House, house_of};
 use teistro_gochar::hits::NatalPoint;
 
 use crate::antiscia::AntisciaRequest;
@@ -508,6 +514,131 @@ pub fn synastry_parallels(
         .collect())
 }
 
+/// One chart's cusps as an overlay counts the other chart's points on
+/// them: the twelve, in the zodiac the two are compared in, and the
+/// division they are of.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct OverlayCusps {
+    /// The division the cusps are of.
+    pub system: HouseSystem,
+    /// The twelve cusps, first to twelfth, degrees.
+    pub cusps_deg: [f64; 12],
+}
+
+/// A point of one chart counted in a house of the other's.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct HouseOverlay {
+    /// The point: a planet, or an angle.
+    pub point: NatalPoint,
+    /// The other chart's house whose cusp it has passed and whose next
+    /// cusp it has not (C417).
+    pub house: House,
+}
+
+/// Each chart's points in the other's houses: the house overlays.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct HouseOverlays {
+    /// The division of the first chart's cusps, which the second's points
+    /// are counted on.
+    pub first_system: HouseSystem,
+    /// The division of the second chart's cusps.
+    pub second_system: HouseSystem,
+    /// The first chart's points in the second's houses, in the order
+    /// given.
+    pub first_in_second: Vec<HouseOverlay>,
+    /// The second chart's points in the first's houses, in the order
+    /// given.
+    pub second_in_first: Vec<HouseOverlay>,
+}
+
+/// Each chart's points counted in the other chart's houses, both ways.
+///
+/// A point is in the house whose cusp it has passed and whose next cusp
+/// it has not, by the cusps alone, as a chart's own planets are counted
+/// ([`place_in_houses`](crate::place_in_houses)): a point exactly on a
+/// cusp is in the house that cusp opens (C417). The cusps are whatever
+/// division each chart's were cast in, and points and cusps are in the
+/// one zodiac the two are compared in.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_gochar::hits::NatalPoint;
+/// use teistro_western::{OverlayCusps, SynastryPoint, house_overlays};
+///
+/// // Her houses equal from 0° Aries, his from 15° Aries.
+/// let hers = OverlayCusps {
+///     system: HouseSystem::Equal,
+///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// };
+/// let his = OverlayCusps {
+///     system: HouseSystem::Equal,
+///     cusps_deg: std::array::from_fn(|k| 15.0 + k as f64 * 30.0),
+/// };
+/// // His Sun at 10° Aries is in her first house; her Moon at 10° Aries
+/// // is in his twelfth.
+/// let read = house_overlays(
+///     &[SynastryPoint::graha(Graha::Sun, 10.0)],
+///     &his,
+///     &[SynastryPoint::graha(Graha::Moon, 10.0)],
+///     &hers,
+/// )?;
+/// assert_eq!(read.first_in_second[0].point, NatalPoint::Graha { graha: Graha::Sun });
+/// assert_eq!(read.first_in_second[0].house.get(), 1);
+/// assert_eq!(read.second_in_first[0].house.get(), 12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// `INVALID_ARG` on a point given twice on one side (`first` or
+/// `second`), a longitude that is not finite (`first[k].longitudeDeg`),
+/// and a cusp that is not finite (`firstCusps.cuspsDeg[k]`).
+pub fn house_overlays(
+    first: &[SynastryPoint],
+    first_cusps: &OverlayCusps,
+    second: &[SynastryPoint],
+    second_cusps: &OverlayCusps,
+) -> Result<HouseOverlays, Error> {
+    for (side, points, cusps) in [
+        ("first", first, first_cusps),
+        ("second", second, second_cusps),
+    ] {
+        refuse_repeats(points.iter().map(|one| one.key()), "a point")
+            .map_err(|why| why.with_field(side))?;
+        if let Some(at) = points.iter().position(|one| !one.longitude_deg.is_finite()) {
+            return Err(
+                Error::invalid_arg("a longitude is a finite number of degrees")
+                    .with_field(format!("{side}[{at}].longitudeDeg")),
+            );
+        }
+        if let Some(at) = cusps.cusps_deg.iter().position(|cusp| !cusp.is_finite()) {
+            return Err(Error::invalid_arg("a cusp is a finite number of degrees")
+                .with_field(format!("{side}Cusps.cuspsDeg[{at}]")));
+        }
+    }
+    let count = |points: &[SynastryPoint], cusps: &OverlayCusps| -> Vec<HouseOverlay> {
+        points
+            .iter()
+            .map(|one| HouseOverlay {
+                point: one.point,
+                house: house_of(one.longitude_deg, &cusps.cusps_deg, 0.0),
+            })
+            .collect()
+    };
+    Ok(HouseOverlays {
+        first_system: first_cusps.system,
+        second_system: second_cusps.system,
+        first_in_second: count(first, second_cusps),
+        second_in_first: count(second, first_cusps),
+    })
+}
+
 /// A natal point's key, for a refusal: `SUN`, or `LAGNA`.
 const fn point_key(point: NatalPoint) -> &'static str {
     match point {
@@ -697,5 +828,108 @@ mod tests {
         let past = [DeclinedPoint::lagna(95.0)];
         let refused = synastry_parallels(&past, &hers, &ParallelRequest::default()).unwrap_err();
         assert_eq!(refused.field(), Some("first[0].declinationDeg"));
+    }
+
+    /// Her quadrant cusps, unequal and across 0° Aries.
+    const HER_CUSPS: OverlayCusps = OverlayCusps {
+        system: HouseSystem::Placidus,
+        cusps_deg: [
+            350.0, 20.0, 45.0, 80.0, 120.0, 150.0, 170.0, 200.0, 225.0, 260.0, 300.0, 330.0,
+        ],
+    };
+
+    /// His whole signs from Leo rising: the first house is all of Leo.
+    const HIS_CUSPS: OverlayCusps = OverlayCusps {
+        system: HouseSystem::WholeSign,
+        cusps_deg: [
+            120.0, 150.0, 180.0, 210.0, 240.0, 270.0, 300.0, 330.0, 0.0, 30.0, 60.0, 90.0,
+        ],
+    };
+
+    fn houses(read: &[HouseOverlay]) -> Vec<(NatalPoint, u8)> {
+        read.iter()
+            .map(|one| (one.point, one.house.get()))
+            .collect()
+    }
+
+    /// Worked by hand: each point in the house whose cusp it last passed
+    /// on the other's cusps; on a cusp, in the house it opens (C417).
+    #[test]
+    fn each_chart_is_counted_on_the_others_cusps() {
+        let his = [
+            SynastryPoint::graha(Graha::Sun, 355.0),
+            SynastryPoint::graha(Graha::Moon, 20.0),
+            SynastryPoint::graha(Graha::Mars, 19.99),
+            SynastryPoint::graha(Graha::Venus, 0.0),
+            SynastryPoint::graha(Graha::Jupiter, 170.0),
+            SynastryPoint::lagna(125.0),
+        ];
+        let hers = [
+            SynastryPoint::graha(Graha::Sun, 125.0),
+            SynastryPoint::graha(Graha::Moon, 95.0),
+            SynastryPoint::graha(Graha::Mars, 0.0),
+            SynastryPoint::lagna(350.0),
+        ];
+        let read = house_overlays(&his, &HIS_CUSPS, &hers, &HER_CUSPS).unwrap();
+        assert_eq!(
+            (read.first_system, read.second_system),
+            (HouseSystem::WholeSign, HouseSystem::Placidus)
+        );
+        let lagna = NatalPoint::Lagna;
+        let at = |graha| NatalPoint::Graha { graha };
+        assert_eq!(
+            houses(&read.first_in_second),
+            [
+                // 5° past her first cusp, across 0° Aries.
+                (at(Graha::Sun), 1),
+                // On her second cusp, and a hundredth of a degree short.
+                (at(Graha::Moon), 2),
+                (at(Graha::Mars), 1),
+                (at(Graha::Venus), 1),
+                // On her seventh cusp.
+                (at(Graha::Jupiter), 7),
+                // His ascendant at 5° Leo, past her fifth cusp at 0° Leo.
+                (lagna, 5),
+            ]
+        );
+        assert_eq!(
+            houses(&read.second_in_first),
+            [
+                (at(Graha::Sun), 1),
+                // 5° Cancer, his twelfth sign.
+                (at(Graha::Moon), 12),
+                // 0° Aries, his ninth sign's first degree.
+                (at(Graha::Mars), 9),
+                // 20° Pisces, his eighth.
+                (lagna, 8),
+            ]
+        );
+    }
+
+    #[test]
+    fn an_overlay_refuses_by_side_and_field() {
+        let once = [SynastryPoint::graha(Graha::Sun, 0.0)];
+        let twice = [
+            SynastryPoint::graha(Graha::Sun, 0.0),
+            SynastryPoint::graha(Graha::Sun, 1.0),
+        ];
+        let field = |a: &[SynastryPoint], a_cusps: &OverlayCusps, b: &[SynastryPoint]| {
+            house_overlays(a, a_cusps, b, &HER_CUSPS)
+                .unwrap_err()
+                .field()
+                .map(str::to_owned)
+        };
+        assert_eq!(field(&once, &HIS_CUSPS, &twice).as_deref(), Some("second"));
+        let nan = [SynastryPoint::lagna(f64::NAN)];
+        assert_eq!(
+            field(&nan, &HIS_CUSPS, &once).as_deref(),
+            Some("first[0].longitudeDeg")
+        );
+        let mut broken = HIS_CUSPS;
+        broken.cusps_deg[3] = f64::INFINITY;
+        assert_eq!(
+            field(&once, &broken, &once).as_deref(),
+            Some("firstCusps.cuspsDeg[3]")
+        );
     }
 }

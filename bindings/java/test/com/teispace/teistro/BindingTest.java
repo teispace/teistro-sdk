@@ -383,6 +383,43 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a hit list carries varga ingresses, lunar phases and eclipses", () -> {
+            // The birth is an hour after the solar eclipse of 29 March 2025,
+            // so 2025 holds an eclipse on its luminaries.
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                List<HitKind> kinds = List.of(HitKind.VARGA_INGRESS, HitKind.LUNAR_PHASE, HitKind.PHASE_RETURN,
+                        HitKind.SOLAR_ECLIPSE, HitKind.LUNAR_ECLIPSE);
+                HitRequest.Builder asked = HitRequest.builder().from(2_460_676.5).to(2_461_041.5)
+                        .grahas(List.of(Graha.SUN, Graha.MARS)).kinds(kinds).vargas(List.of(Varga.D9, Varga.D30))
+                        .eclipseOrbDeg(3);
+                List<Hit> hits = sky.chart().found(2_460_764.0, kathmandu, 0,
+                        ChartOptions.builder().hits(asked.build()).build()).hits();
+                same(java.util.Set.copyOf(kinds),
+                        hits.stream().map(hit -> hit.event().kind()).collect(java.util.stream.Collectors.toSet()),
+                        "every kind asked for");
+                int phases = 0;
+                for (Hit hit : hits) {
+                    switch (hit.event()) {
+                        case VargaIngress ingress -> check(ingress.varga() == Varga.D9 || ingress.varga() == Varga.D30,
+                                "a varga asked for: " + ingress.varga());
+                        case LunarPhase phase -> {
+                            same(Graha.MOON, hit.graha(), "a phase is the Moon's");
+                            phases += 1;
+                        }
+                        case SolarEclipseHit eclipse -> same(Graha.SUN, hit.graha(), "a solar eclipse is the Sun's hit");
+                        case LunarEclipseHit eclipse -> same(Graha.MOON, hit.graha(), "an eclipse is the Moon's hit");
+                        case PhaseReturn back -> same(Graha.MOON, hit.graha(), "a phase return is the Moon's");
+                        default -> throw new AssertionError("a kind not asked for: " + hit.event());
+                    }
+                }
+                check(48 <= phases && phases <= 50, "a year's phases: " + phases);
+                TeistroException d1 = refusal(() -> sky.chart().found(2_460_764.0, kathmandu, 0,
+                        ChartOptions.builder().hits(asked.vargas(List.of(Varga.D1)).build()).build()));
+                same("hits.vargas", d1.field(), "the rashi chart refused by name");
+            }
+        });
+
         tests.put("a chart's day is the almanac's, and its date converts", () -> {
             try (Context sky = context(teistro)) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));

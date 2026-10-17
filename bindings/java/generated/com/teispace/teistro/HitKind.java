@@ -27,7 +27,35 @@ public enum HitKind implements Member {
     /**
      * The graha aspected a natal point, or came within or left its orb.
      */
-    ASPECT(3, "ASPECT");
+    ASPECT(3, "ASPECT"),
+
+    /**
+     * The graha entered a new sign of a divisional chart: `varga` says
+     * which, and `into` the sign.
+     */
+    VARGA_INGRESS(4, "VARGA_INGRESS"),
+
+    /**
+     * The Moon reached a principal phase, which `lunar_phase` names.
+     */
+    LUNAR_PHASE(5, "LUNAR_PHASE"),
+
+    /**
+     * The Moon's elongation from the Sun returned to the natal chart's.
+     */
+    PHASE_RETURN(6, "PHASE_RETURN"),
+
+    /**
+     * A solar eclipse fell on a natal point: `solar_eclipse` says which
+     * kind, and the `to_*` columns the point.
+     */
+    SOLAR_ECLIPSE(7, "SOLAR_ECLIPSE"),
+
+    /**
+     * A lunar eclipse fell on a natal point: `lunar_eclipse` says which
+     * kind, and the `to_*` columns the point.
+     */
+    LUNAR_ECLIPSE(8, "LUNAR_ECLIPSE");
 
     private static final HitKind[] MEMBERS = values();
 

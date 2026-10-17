@@ -4697,6 +4697,34 @@ fn the_hits(report: &mut Report, sdk: &Context, index: usize, document: &teistro
                 dash(),
             ),
             HitEvent::Station { turns } => (dash(), wire_key(&turns), dash(), dash(), dash()),
+            // Not asked for here; printed as the others would print it.
+            HitEvent::LunarPhase { phase } => (dash(), dash(), wire_key(&phase), dash(), dash()),
+            HitEvent::PhaseReturn => (dash(), dash(), dash(), dash(), dash()),
+            HitEvent::SolarEclipse { to, eclipse } => (
+                dash(),
+                dash(),
+                natal_key(to).to_owned(),
+                dash(),
+                eclipse.full_key().to_owned(),
+            ),
+            HitEvent::LunarEclipse { to, eclipse } => (
+                dash(),
+                dash(),
+                natal_key(to).to_owned(),
+                dash(),
+                eclipse.full_key().to_owned(),
+            ),
+            HitEvent::VargaIngress {
+                varga,
+                into,
+                motion,
+            } => (
+                into.full_key().to_owned(),
+                wire_key(&motion),
+                varga.full_key().to_owned(),
+                dash(),
+                dash(),
+            ),
             HitEvent::Aspect {
                 to,
                 angle,

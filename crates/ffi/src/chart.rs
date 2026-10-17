@@ -878,6 +878,19 @@ pub enum TsHitKind {
     Station = 2,
     /// The graha aspected a natal point, or came within or left its orb.
     Aspect = 3,
+    /// The graha entered a new sign of a divisional chart: `varga` says
+    /// which, and `into` the sign.
+    VargaIngress = 4,
+    /// The Moon reached a principal phase, which `lunar_phase` names.
+    LunarPhase = 5,
+    /// The Moon's elongation from the Sun returned to the natal chart's.
+    PhaseReturn = 6,
+    /// A solar eclipse fell on a natal point: `solar_eclipse` says which
+    /// kind, and the `to_*` columns the point.
+    SolarEclipse = 7,
+    /// A lunar eclipse fell on a natal point: `lunar_eclipse` says which
+    /// kind, and the `to_*` columns the point.
+    LunarEclipse = 8,
 }
 
 impl From<&teistro::gochar::hits::HitEvent> for TsHitKind {
@@ -888,6 +901,11 @@ impl From<&teistro::gochar::hits::HitEvent> for TsHitKind {
             HitEvent::NakshatraIngress { .. } => TsHitKind::NakshatraIngress,
             HitEvent::Station { .. } => TsHitKind::Station,
             HitEvent::Aspect { .. } => TsHitKind::Aspect,
+            HitEvent::VargaIngress { .. } => TsHitKind::VargaIngress,
+            HitEvent::LunarPhase { .. } => TsHitKind::LunarPhase,
+            HitEvent::PhaseReturn => TsHitKind::PhaseReturn,
+            HitEvent::SolarEclipse { .. } => TsHitKind::SolarEclipse,
+            HitEvent::LunarEclipse { .. } => TsHitKind::LunarEclipse,
         }
     }
 }
@@ -955,6 +973,33 @@ impl From<teistro::gochar::hits::AspectPhase> for TsAspectPhase {
             AspectPhase::Entering => TsAspectPhase::Entering,
             AspectPhase::Exact => TsAspectPhase::Exact,
             AspectPhase::Leaving => TsAspectPhase::Leaving,
+        }
+    }
+}
+
+/// A principal phase of the Moon, the Moon's elongation from the Sun a
+/// multiple of 90° (C419).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsMoonPhase {
+    /// The new moon, 0°.
+    New = 0,
+    /// The first quarter, 90°.
+    FirstQuarter = 1,
+    /// The full moon, 180°.
+    Full = 2,
+    /// The last quarter, 270°.
+    LastQuarter = 3,
+}
+
+impl From<teistro::gochar::hits::MoonPhase> for TsMoonPhase {
+    fn from(phase: teistro::gochar::hits::MoonPhase) -> TsMoonPhase {
+        use teistro::gochar::hits::MoonPhase;
+        match phase {
+            MoonPhase::New => TsMoonPhase::New,
+            MoonPhase::FirstQuarter => TsMoonPhase::FirstQuarter,
+            MoonPhase::Full => TsMoonPhase::Full,
+            MoonPhase::LastQuarter => TsMoonPhase::LastQuarter,
         }
     }
 }
@@ -2368,6 +2413,20 @@ impl GocharColumns {
     }
 }
 
+/// One hit's cells past its instant, graha, kind and motion: zero in
+/// every column its kind does not mean.
+#[derive(Default)]
+struct HitCells {
+    into: u16,
+    to: Option<teistro::NatalPoint>,
+    angle: u16,
+    phase: u8,
+    varga: u16,
+    lunar_phase: u8,
+    solar_eclipse: u8,
+    lunar_eclipse: u8,
+}
+
 /// Every chart's transit hit list, a row a hit, charts outermost and
 /// **ragged** by `cast.hit_count`; empty when none was asked for.
 #[derive(Default)]
@@ -2384,6 +2443,10 @@ struct HitColumns {
     to_midheaven: Vec<u8>,
     angle: Vec<u16>,
     phase: Vec<u8>,
+    varga: Vec<u16>,
+    lunar_phase: Vec<u8>,
+    solar_eclipse: Vec<u8>,
+    lunar_eclipse: Vec<u8>,
 }
 
 impl HitColumns {
@@ -2408,28 +2471,70 @@ impl HitColumns {
                 .map_err(|_| Error::internal("a hit list longer than a section can count"))?;
         }
         for hit in lists.iter().flatten() {
-            let (into, motion, to, angle, phase) = match hit.event {
-                HitEvent::SignIngress { into, motion } => (into.id(), motion, None, 0, 0),
-                HitEvent::NakshatraIngress { into, motion } => (into.id(), motion, None, 0, 0),
-                HitEvent::Station { turns } => (0, turns, None, 0, 0),
+            let mut cells = HitCells::default();
+            let motion = match hit.event {
+                HitEvent::SignIngress { into, motion } => {
+                    cells.into = into.id();
+                    motion
+                }
+                HitEvent::NakshatraIngress { into, motion } => {
+                    cells.into = into.id();
+                    motion
+                }
+                HitEvent::Station { turns } => turns,
                 HitEvent::Aspect {
                     to,
                     angle,
                     phase,
                     motion,
-                } => (0, motion, Some(to), angle, TsAspectPhase::from(phase) as u8),
+                } => {
+                    cells.to = Some(to);
+                    cells.angle = angle;
+                    cells.phase = TsAspectPhase::from(phase) as u8;
+                    motion
+                }
+                HitEvent::VargaIngress {
+                    varga,
+                    into,
+                    motion,
+                } => {
+                    cells.varga = varga.id();
+                    cells.into = into.id();
+                    motion
+                }
+                HitEvent::LunarPhase { phase } => {
+                    cells.lunar_phase = TsMoonPhase::from(phase) as u8;
+                    teistro::gochar::hits::Motion::Direct
+                }
+                HitEvent::PhaseReturn => teistro::gochar::hits::Motion::Direct,
+                HitEvent::SolarEclipse { to, eclipse } => {
+                    cells.to = Some(to);
+                    cells.solar_eclipse = u8::try_from(eclipse.id())
+                        .map_err(|_| Error::internal("a solar eclipse kind past a byte"))?;
+                    teistro::gochar::hits::Motion::Direct
+                }
+                HitEvent::LunarEclipse { to, eclipse } => {
+                    cells.to = Some(to);
+                    cells.lunar_eclipse = u8::try_from(eclipse.id())
+                        .map_err(|_| Error::internal("a lunar eclipse kind past a byte"))?;
+                    teistro::gochar::hits::Motion::Direct
+                }
             };
             columns.instant.push(hit.instant.get());
             columns.graha.push(hit.graha.id());
             columns.kind.push(TsHitKind::from(&hit.event) as u8);
-            columns.into.push(into);
+            columns.into.push(cells.into);
             columns.motion.push(TsMotion::from(motion) as u8);
-            let (to_lagna, to_graha, to_midheaven) = point_cells(to);
+            let (to_lagna, to_graha, to_midheaven) = point_cells(cells.to);
             columns.to_lagna.push(to_lagna);
             columns.to_graha.push(to_graha);
             columns.to_midheaven.push(to_midheaven);
-            columns.angle.push(angle);
-            columns.phase.push(phase);
+            columns.angle.push(cells.angle);
+            columns.phase.push(cells.phase);
+            columns.varga.push(cells.varga);
+            columns.lunar_phase.push(cells.lunar_phase);
+            columns.solar_eclipse.push(cells.solar_eclipse);
+            columns.lunar_eclipse.push(cells.lunar_eclipse);
         }
         Ok(columns)
     }
@@ -2449,6 +2554,10 @@ impl HitColumns {
                 ColumnData::U8(&self.to_midheaven),
                 ColumnData::U16(&self.angle),
                 ColumnData::U8(&self.phase),
+                ColumnData::U16(&self.varga),
+                ColumnData::U8(&self.lunar_phase),
+                ColumnData::U8(&self.solar_eclipse),
+                ColumnData::U8(&self.lunar_eclipse),
             ],
         )
     }

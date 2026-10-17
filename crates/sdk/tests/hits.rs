@@ -241,9 +241,14 @@ fn stations_alternate_and_bound_the_backward_ingresses() {
                 }
                 HitEvent::SignIngress { motion, .. }
                 | HitEvent::NakshatraIngress { motion, .. }
+                | HitEvent::VargaIngress { motion, .. }
                 | HitEvent::Aspect { motion, .. } => {
                     assert_eq!(motion == Motion::Retrograde, backward, "{graha:?} {hit:?}");
                 }
+                HitEvent::LunarPhase { .. }
+                | HitEvent::PhaseReturn
+                | HitEvent::SolarEclipse { .. }
+                | HitEvent::LunarEclipse { .. } => {}
             }
         }
     }
@@ -424,4 +429,277 @@ fn many_charts_are_answered_what_each_is_answered_alone() {
         sdk.chart().hits_many(none, &asked).unwrap_err().field(),
         Some("natals")
     );
+}
+
+/// Every varga ingress, read back through a chart founded a second either
+/// side of it, stands outside the sign it names before and inside it after,
+/// in the chart's own divisional chart: the navamsha, evenly cut, and the
+/// trimshamsha, whose parts are not (C418). The navamsha is also held to
+/// its rule worked by hand, a ninth of a sign counted on from Aries round
+/// the whole circle, and Mars's retrograde spell in early 2025 gives the
+/// ingresses made backwards.
+#[test]
+fn every_varga_ingress_is_where_a_founded_chart_puts_it() {
+    use teistro::catalogue::Varga;
+    use teistro_vargas::chart::{Axis, chart as varga_chart};
+    let sdk = context(None);
+    let natal = natal(&sdk);
+    let asked = year()
+        .with_grahas([Graha::Sun, Graha::Mars, Graha::Jupiter])
+        .with_kinds([HitKind::VargaIngress])
+        .with_vargas([Varga::D9, Varga::D30]);
+    let hits = sdk.chart().hits(&natal, &asked).unwrap().value;
+    let second = 1.0 / 86_400.0;
+    let either_side: Vec<JulianDay<Utc>> = hits
+        .iter()
+        .flat_map(|hit| {
+            [
+                JulianDay::<Utc>::literal(hit.instant.get() - second),
+                JulianDay::<Utc>::literal(hit.instant.get() + second),
+            ]
+        })
+        .collect();
+    let founded = sdk
+        .chart()
+        .found_many(&either_side, &place(), UtcOffset::UTC, ChartKind::Natal)
+        .unwrap()
+        .value;
+    let mut counted = std::collections::BTreeMap::new();
+    for (hit, pair) in hits.iter().zip(founded.chunks(2)) {
+        let HitEvent::VargaIngress {
+            varga,
+            into,
+            motion,
+        } = hit.event
+        else {
+            panic!("only varga ingresses were asked for: {hit:?}");
+        };
+        let sign = |at: usize| {
+            varga_chart(&pair[at], Axis::of(varga))
+                .unwrap()
+                .graha(hit.graha)
+                .unwrap()
+                .sign
+        };
+        // Whichever way the graha moved, the sign it entered is the one it
+        // stands in after the crossing.
+        assert_ne!(sign(0), into, "{hit:?}");
+        assert_eq!(sign(1), into, "{hit:?}");
+        if varga == Varga::D9 {
+            let by_hand = |at: usize| {
+                let deg = pair[at].graha(hit.graha).unwrap().longitude_deg;
+                Rashi::ALL[(deg.rem_euclid(360.0) * 9.0 / 30.0) as usize % 12]
+            };
+            assert_eq!(by_hand(1), into, "{hit:?}");
+        }
+        *counted.entry((varga, motion)).or_insert(0_usize) += 1;
+    }
+    // The Sun crosses 108 navamsha lines a year and changes trimshamsha
+    // five times a sign; Mars makes some of each backwards.
+    for key in [
+        (Varga::D9, Motion::Direct),
+        (Varga::D9, Motion::Retrograde),
+        (Varga::D30, Motion::Direct),
+        (Varga::D30, Motion::Retrograde),
+    ] {
+        assert!(counted.get(&key).is_some_and(|n| *n > 0), "{counted:?}");
+    }
+    let sun_d9 = hits
+        .iter()
+        .filter(|hit| {
+            hit.graha == Graha::Sun
+                && matches!(
+                    hit.event,
+                    HitEvent::VargaIngress {
+                        varga: Varga::D9,
+                        ..
+                    }
+                )
+        })
+        .count();
+    assert!((106..=109).contains(&sun_d9), "{sun_d9}");
+}
+
+/// Every lunar phase and phase return, read back through a chart founded a
+/// second either side of it, finds the Moon's elongation from the Sun just
+/// short of its line before and just past it after (C419, C420). The
+/// phases come in a lunation's order, the returns a synodic month apart,
+/// and January 2025's full and new moons fall when almanacs print them:
+/// 13 January 22:27 UT and 29 January 12:36 UT.
+#[test]
+fn every_lunar_phase_and_phase_return_is_where_founded_charts_put_it() {
+    use teistro::gochar::hits::MoonPhase;
+    let sdk = context(None);
+    let natal = natal(&sdk);
+    let asked = year().with_kinds([HitKind::LunarPhase, HitKind::PhaseReturn]);
+    let hits = sdk.chart().hits(&natal, &asked).unwrap().value;
+    let elongation = |moon: f64, sun: f64| (moon - sun).rem_euclid(360.0);
+    let born = elongation(
+        natal.foundation.graha(Graha::Moon).unwrap().longitude_deg,
+        natal.foundation.graha(Graha::Sun).unwrap().longitude_deg,
+    );
+    let second = 1.0 / 86_400.0;
+    let either_side: Vec<JulianDay<Utc>> = hits
+        .iter()
+        .flat_map(|hit| {
+            [
+                JulianDay::<Utc>::literal(hit.instant.get() - second),
+                JulianDay::<Utc>::literal(hit.instant.get() + second),
+            ]
+        })
+        .collect();
+    let founded = sdk
+        .chart()
+        .found_many(&either_side, &place(), UtcOffset::UTC, ChartKind::Natal)
+        .unwrap()
+        .value;
+    let (mut phases, mut returns) = (Vec::new(), Vec::new());
+    for (hit, pair) in hits.iter().zip(founded.chunks(2)) {
+        assert_eq!(hit.graha, Graha::Moon, "{hit:?}");
+        let line = match hit.event {
+            HitEvent::LunarPhase { phase } => {
+                phases.push((hit.instant.get(), phase));
+                f64::from(phase.elongation_deg())
+            }
+            HitEvent::PhaseReturn => {
+                returns.push(hit.instant.get());
+                born
+            }
+            other => panic!("only phases and returns were asked for: {other:?}"),
+        };
+        // Signed, in (-180, 180]: the Moon gains about half an arcsecond on
+        // the Sun in a second.
+        let off = |at: usize| {
+            let chart = &pair[at];
+            let apart = elongation(
+                chart.graha(Graha::Moon).unwrap().longitude_deg,
+                chart.graha(Graha::Sun).unwrap().longitude_deg,
+            ) - line;
+            let apart = apart.rem_euclid(360.0);
+            if apart > 180.0 { apart - 360.0 } else { apart }
+        };
+        assert!(off(0) < 0.0 && off(0) > -0.01, "{hit:?}: {}", off(0));
+        assert!(off(1) > 0.0 && off(1) < 0.01, "{hit:?}: {}", off(1));
+    }
+    assert!((48..=51).contains(&phases.len()), "{}", phases.len());
+    for pair in phases.windows(2) {
+        let next = MoonPhase::ALL[(pair[0].1 as usize + 1) % 4];
+        assert_eq!(pair[1].1, next, "{pair:?}");
+    }
+    assert!((12..=13).contains(&returns.len()), "{returns:?}");
+    for pair in returns.windows(2) {
+        let month = pair[1] - pair[0];
+        assert!((29.2..29.9).contains(&month), "{month}");
+    }
+    let near = |jd: f64, phase: MoonPhase| {
+        phases
+            .iter()
+            .any(|(at, found)| *found == phase && (at - jd).abs() < 3.0 / 1440.0)
+    };
+    assert!(near(2_460_689.435_417, MoonPhase::Full), "{phases:?}");
+    assert!(near(2_460_705.025, MoonPhase::New), "{phases:?}");
+}
+
+/// An eclipse on a natal point is the almanac's eclipse, at its greatest
+/// moment, wherever a chart founded then puts its luminary within the
+/// orb of the point, and nowhere else (C421, C422): every eclipse of 2025
+/// against every natal point is read back both ways. The birth is an hour
+/// after the new moon of 29 March 2025, which eclipsed the Sun in part,
+/// so its Sun and Moon both lie within a degree of that eclipse.
+#[test]
+fn an_eclipse_on_a_natal_point_is_the_almanacs_within_the_orb() {
+    use teistro::CalendarDate;
+    use teistro::catalogue::{Calendar, SolarEclipseKind};
+    let sdk = context(None);
+    let natal = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(2_460_764.0),
+            &ChartRequest::at(place(), UtcOffset::UTC),
+        )
+        .unwrap()
+        .value;
+    let asked = year().with_kinds([HitKind::SolarEclipse, HitKind::LunarEclipse]);
+    let hits = sdk.chart().hits(&natal, &asked).unwrap().value;
+    let almanac = sdk
+        .almanac()
+        .eclipses(
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 1, 1),
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 12, 31),
+            &place(),
+            UtcOffset::UTC,
+        )
+        .unwrap()
+        .value;
+    let eclipses: Vec<(f64, Graha)> = almanac
+        .solar
+        .iter()
+        .map(|solar| (solar.eclipse.greatest.get(), Graha::Sun))
+        .chain(
+            almanac
+                .lunar
+                .iter()
+                .map(|lunar| (lunar.eclipse.greatest.get(), Graha::Moon)),
+        )
+        .collect();
+    assert_eq!(
+        eclipses.len(),
+        4,
+        "2025 has two solar and two lunar eclipses"
+    );
+    let instants: Vec<JulianDay<Utc>> = eclipses
+        .iter()
+        .map(|(jd, _)| JulianDay::<Utc>::literal(*jd))
+        .collect();
+    let founded = sdk
+        .chart()
+        .found_many(&instants, &place(), UtcOffset::UTC, ChartKind::Natal)
+        .unwrap()
+        .value;
+    let natal_deg = |point: NatalPoint| match point {
+        NatalPoint::Graha { graha } => natal.foundation.graha(graha).unwrap().longitude_deg,
+        NatalPoint::Lagna => natal.foundation.lagna_deg,
+        NatalPoint::Midheaven => panic!("not asked for"),
+    };
+    let rank = |point: &NatalPoint| asked.points().iter().position(|p| p == point).unwrap();
+    let mut expected = Vec::new();
+    for ((jd, luminary), chart) in eclipses.iter().zip(&founded) {
+        let at = chart.graha(*luminary).unwrap().longitude_deg;
+        for point in asked.points() {
+            let apart = (at - natal_deg(*point)).rem_euclid(360.0);
+            if apart.min(360.0 - apart) <= HitRequest::DEFAULT_ECLIPSE_ORB_DEG {
+                expected.push((*jd, *luminary, rank(point)));
+            }
+        }
+    }
+    let mut got: Vec<(f64, Graha, usize)> = hits
+        .iter()
+        .map(|hit| match hit.event {
+            HitEvent::SolarEclipse { to, .. } | HitEvent::LunarEclipse { to, .. } => {
+                (hit.instant.get(), hit.graha, rank(&to))
+            }
+            other => panic!("only eclipses were asked for: {other:?}"),
+        })
+        .collect();
+    let order =
+        |a: &(f64, Graha, usize), b: &(f64, Graha, usize)| a.0.total_cmp(&b.0).then(a.2.cmp(&b.2));
+    expected.sort_by(order);
+    got.sort_by(order);
+    assert_eq!(got, expected);
+    let sun = NatalPoint::Graha { graha: Graha::Sun };
+    assert!(
+        hits.iter().any(|hit| hit.event
+            == HitEvent::SolarEclipse {
+                to: sun,
+                eclipse: SolarEclipseKind::Partial
+            }),
+        "{hits:?}"
+    );
+    // A tighter orb keeps only what lies inside it.
+    let tight = sdk
+        .chart()
+        .hits(&natal, &asked.clone().with_eclipse_orb(0.25))
+        .unwrap()
+        .value;
+    assert!(tight.len() < hits.len() && tight.iter().all(|hit| hits.contains(hit)));
 }

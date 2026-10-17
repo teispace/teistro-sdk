@@ -7765,6 +7765,36 @@
           "value": 3,
           "doc": "The graha aspected a natal point, or came within or left its orb.",
           "key": "ASPECT"
+        },
+        {
+          "name": "VargaIngress",
+          "value": 4,
+          "doc": "The graha entered a new sign of a divisional chart: `varga` says\nwhich, and `into` the sign.",
+          "key": "VARGA_INGRESS"
+        },
+        {
+          "name": "LunarPhase",
+          "value": 5,
+          "doc": "The Moon reached a principal phase, which `lunar_phase` names.",
+          "key": "LUNAR_PHASE"
+        },
+        {
+          "name": "PhaseReturn",
+          "value": 6,
+          "doc": "The Moon's elongation from the Sun returned to the natal chart's.",
+          "key": "PHASE_RETURN"
+        },
+        {
+          "name": "SolarEclipse",
+          "value": 7,
+          "doc": "A solar eclipse fell on a natal point: `solar_eclipse` says which\nkind, and the `to_*` columns the point.",
+          "key": "SOLAR_ECLIPSE"
+        },
+        {
+          "name": "LunarEclipse",
+          "value": 8,
+          "doc": "A lunar eclipse fell on a natal point: `lunar_eclipse` says which\nkind, and the `to_*` columns the point.",
+          "key": "LUNAR_ECLIPSE"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -7873,6 +7903,38 @@
           "value": 2,
           "doc": "The transit passed out of the orb.",
           "key": "LEAVING"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsMoonPhase",
+      "doc": "A principal phase of the Moon, the Moon's elongation from the Sun a\nmultiple of 90° (C419).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "New",
+          "value": 0,
+          "doc": "The new moon, 0°.",
+          "key": "NEW"
+        },
+        {
+          "name": "FirstQuarter",
+          "value": 1,
+          "doc": "The first quarter, 90°.",
+          "key": "FIRST_QUARTER"
+        },
+        {
+          "name": "Full",
+          "value": 2,
+          "doc": "The full moon, 180°.",
+          "key": "FULL"
+        },
+        {
+          "name": "LastQuarter",
+          "value": 3,
+          "doc": "The last quarter, 270°.",
+          "key": "LAST_QUARTER"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -12253,7 +12315,7 @@
             },
             "mutable": false
           },
-          "doc": "The transit hit list to search against every chart in the batch,\nas a JSON object: the window `from` and `to`, UTC Julian days, and\noptionally `grahas` (keys, the nine by default), `kinds`\n(`\"SIGN_INGRESS\"`, `\"NAKSHATRA_INGRESS\"`, `\"STATION\"`, `\"ASPECT\"`;\nall by default), `points` (the natal points aspected: a graha's key\nor `\"LAGNA\"`, or an answer's `to`; the nine and the lagna by\ndefault), `aspects` (angles, whole degrees to 180; 0 and 180 by\ndefault, C145) and `orbDeg` (more than 0, under 15 and under half\nthe step between the aspects' lines, for the windows' edges; exact\nonly by default, C146).\nEach chart's hits come back in the `hits` section, `cast.hit_count`\nrows a chart, the sky searched once for the batch. Null for none\n(`03-design/transit-hit-list.md`). Refusals are named from the\nrecord every binding calls `hits`, as `hits.to`.",
+          "doc": "The transit hit list to search against every chart in the batch,\nas a JSON object: the window `from` and `to`, UTC Julian days, and\noptionally `grahas` (keys, the nine by default), `kinds`\n(`\"SIGN_INGRESS\"`, `\"NAKSHATRA_INGRESS\"`, `\"STATION\"`, `\"ASPECT\"`;\nall four by default; the kinds the façade has gained since,\n`\"VARGA_INGRESS\"`, `\"LUNAR_PHASE\"`, `\"PHASE_RETURN\"`,\n`\"SOLAR_ECLIPSE\"` and `\"LUNAR_ECLIPSE\"`, are refused `UNSUPPORTED` on\n`hits.kinds` until the `hits` section carries their fields), `points` (the natal points aspected: a graha's key\nor `\"LAGNA\"`, or an answer's `to`; the nine and the lagna by\ndefault), `aspects` (angles, whole degrees to 180; 0 and 180 by\ndefault, C145) and `orbDeg` (more than 0, under 15 and under half\nthe step between the aspects' lines, for the windows' edges; exact\nonly by default, C146).\nEach chart's hits come back in the `hits` section, `cast.hit_count`\nrows a chart, the sky searched once for the batch. Null for none\n(`03-design/transit-hit-list.md`). Refusals are named from the\nrecord every binding calls `hits`, as `hits.to`.",
           "meta": {
             "example": "{\"from\":2460676.5,\"to\":2461041.5,\"grahas\":[\"SATURN\"]}",
             "nullable": true
@@ -18603,28 +18665,28 @@
             {
               "name": "into",
               "scalar": "u16",
-              "doc": "The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed."
+              "doc": "The sign (a `Rashi` id) entered by a sign or varga ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed."
             },
             {
               "name": "motion",
               "scalar": "u8",
-              "doc": "Which way the graha was moving through the line, or, for a station, the motion it turned to.",
+              "doc": "Which way the graha was moving through the line, or, for a station, the motion it turned to; `DIRECT` for a lunar phase, a phase return or an eclipse, which cross no line of the graha's own.",
               "enum": "TsMotion"
             },
             {
               "name": "to_lagna",
               "scalar": "u8",
-              "doc": "For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind."
+              "doc": "For an aspect or an eclipse, 1 when the natal point is the lagna, 0 when it is a natal graha; 0 for any other kind."
             },
             {
               "name": "to_graha",
               "scalar": "u16",
-              "doc": "For an aspect to a natal graha, which (a `Graha` id); 0 otherwise."
+              "doc": "For an aspect or an eclipse on a natal graha, which (a `Graha` id); 0 otherwise."
             },
             {
               "name": "to_midheaven",
               "scalar": "u8",
-              "doc": "For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise."
+              "doc": "For an aspect or an eclipse, 1 when the natal point is the midheaven, 0 otherwise."
             },
             {
               "name": "angle",
@@ -18636,6 +18698,30 @@
               "scalar": "u8",
               "doc": "For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.",
               "enum": "TsAspectPhase"
+            },
+            {
+              "name": "varga",
+              "scalar": "u16",
+              "doc": "For a varga ingress, the divisional chart whose sign changed (C418); read only when `kind` is a varga ingress.",
+              "enum": "Varga"
+            },
+            {
+              "name": "lunar_phase",
+              "scalar": "u8",
+              "doc": "For a lunar phase, which of the four the Moon reached, in the chart's frame (C419); read only when `kind` is a lunar phase.",
+              "enum": "TsMoonPhase"
+            },
+            {
+              "name": "solar_eclipse",
+              "scalar": "u8",
+              "doc": "For a solar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a solar eclipse.",
+              "enum": "SolarEclipseKind"
+            },
+            {
+              "name": "lunar_eclipse",
+              "scalar": "u8",
+              "doc": "For a lunar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a lunar eclipse.",
+              "enum": "LunarEclipseKind"
             }
           ]
         },

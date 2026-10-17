@@ -4,13 +4,14 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::events::{Direction, Lattice, StationKind};
 use teistro_chart::OUTER;
-use teistro_chart::foundation::{TransitEvent, TransitEventKind};
-use teistro_core::catalogue::{Catalogued as _, Graha};
+use teistro_chart::foundation::{ChartFoundation, TransitEvent, TransitEventKind};
+use teistro_core::catalogue::{Catalogued as _, Graha, LunarEclipseKind, SolarEclipseKind, Varga};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_gochar::GRAHAS;
-use teistro_gochar::hits::{self, Edge, HitEvent, Motion, NatalPoint};
+use teistro_gochar::hits::{self, Edge, Hit, HitEvent, Motion, NatalPoint};
 use teistro_serial::Document;
+use teistro_vargas::Scheme;
 
 /// A kind of event a hit list reports, spelled as the event's own `kind`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -27,11 +28,44 @@ pub enum HitKind {
     /// A graha aspecting a natal point, at the angles asked for (C145),
     /// with the orb's edges when an orb was asked for (C146).
     Aspect,
+    /// A graha entering a new sign of a divisional chart the request
+    /// names, the navamsha unless it names others (C418). Asked for by
+    /// name only: it is not among [`HitKind::DEFAULT`].
+    VargaIngress,
+    /// The Moon reaching a principal phase, its elongation from the Sun at
+    /// a multiple of 90° (C419): the Moon's, reported whichever grahas the
+    /// request names. Asked for by name only.
+    LunarPhase,
+    /// The Moon's elongation from the Sun returning to the natal chart's,
+    /// once a synodic month (C420): each chart's own, reported whichever
+    /// grahas the request names. Asked for by name only.
+    PhaseReturn,
+    /// A solar eclipse whose Sun falls within the eclipse orb of a natal
+    /// point the request names (C421, C422). Asked for by name only.
+    SolarEclipse,
+    /// A lunar eclipse whose Moon falls within the eclipse orb of a natal
+    /// point the request names (C421, C422). Asked for by name only.
+    LunarEclipse,
 }
 
 impl HitKind {
-    /// Every kind, the default a request asks for.
-    pub const ALL: [HitKind; 4] = [
+    /// Every kind a hit list can report.
+    pub const ALL: [HitKind; 9] = [
+        HitKind::SignIngress,
+        HitKind::NakshatraIngress,
+        HitKind::Station,
+        HitKind::Aspect,
+        HitKind::VargaIngress,
+        HitKind::LunarPhase,
+        HitKind::PhaseReturn,
+        HitKind::SolarEclipse,
+        HitKind::LunarEclipse,
+    ];
+
+    /// The kinds a request asks for unless it names its own: the four the
+    /// hit list began with. A kind added since is asked for by name, so
+    /// no list a caller already reads grows under them.
+    pub const DEFAULT: [HitKind; 4] = [
         HitKind::SignIngress,
         HitKind::NakshatraIngress,
         HitKind::Station,
@@ -51,6 +85,14 @@ impl HitKind {
 ///     .with_grahas([Graha::Saturn, Graha::Jupiter])
 ///     .with_kinds([HitKind::SignIngress, HitKind::Station]);
 /// assert_eq!(asked.grahas().len(), 2);
+///
+/// // Jupiter's navamsha and dashamsha ingresses over the same years.
+/// use teistro::catalogue::Varga;
+/// let vargas = asked
+///     .with_grahas([Graha::Jupiter])
+///     .with_kinds([HitKind::VargaIngress])
+///     .with_vargas([Varga::D9, Varga::D10]);
+/// assert_eq!(vargas.vargas(), &[Varga::D9, Varga::D10]);
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct HitRequest {
@@ -61,6 +103,8 @@ pub struct HitRequest {
     points: Vec<NatalPoint>,
     aspects: Vec<u16>,
     orb_deg: Option<f64>,
+    vargas: Vec<Varga>,
+    eclipse_orb_deg: f64,
 }
 
 impl HitRequest {
@@ -69,16 +113,30 @@ impl HitRequest {
     /// C145).
     pub const DEFAULT_ASPECTS: [u16; 2] = [0, 180];
 
+    /// The divisional charts a varga ingress is reported in unless asked
+    /// otherwise: the navamsha, the chart a transit is most often read in
+    /// after the rashi (C418).
+    pub const DEFAULT_VARGAS: [Varga; 1] = [Varga::D9];
+
+    /// How far an eclipse's luminary may stand from a natal point and
+    /// still fall on it, degrees, unless asked otherwise (C422): the
+    /// middle of the one to five degrees practice gives an eclipse.
+    pub const DEFAULT_ECLIPSE_ORB_DEG: f64 = 3.0;
+
+    /// The widest eclipse orb a request may name, degrees.
+    pub const MOST_ECLIPSE_ORB_DEG: f64 = 15.0;
+
     /// Every event of all nine grahas between two instants: their
     /// ingresses, their stations and their conjunctions and oppositions to
-    /// the natal grahas and lagna, exact.
+    /// the natal grahas and lagna, exact — the kinds of
+    /// [`HitKind::DEFAULT`].
     #[must_use]
     pub fn between(from: JulianDay<Utc>, to: JulianDay<Utc>) -> HitRequest {
         HitRequest {
             from,
             to,
             grahas: GRAHAS.to_vec(),
-            kinds: HitKind::ALL.to_vec(),
+            kinds: HitKind::DEFAULT.to_vec(),
             points: GRAHAS
                 .iter()
                 .map(|graha| NatalPoint::Graha { graha: *graha })
@@ -86,6 +144,8 @@ impl HitRequest {
                 .collect(),
             aspects: HitRequest::DEFAULT_ASPECTS.to_vec(),
             orb_deg: None,
+            vargas: HitRequest::DEFAULT_VARGAS.to_vec(),
+            eclipse_orb_deg: HitRequest::DEFAULT_ECLIPSE_ORB_DEG,
         }
     }
 
@@ -125,6 +185,8 @@ impl HitRequest {
             kinds: vec![HitKind::Aspect],
             aspects: vec![0],
             orb_deg: None,
+            vargas: HitRequest::DEFAULT_VARGAS.to_vec(),
+            eclipse_orb_deg: HitRequest::DEFAULT_ECLIPSE_ORB_DEG,
         }
     }
 
@@ -163,6 +225,57 @@ impl HitRequest {
     pub const fn with_orb(mut self, orb_deg: f64) -> HitRequest {
         self.orb_deg = Some(orb_deg);
         self
+    }
+
+    /// The same request, reporting varga ingresses in these divisional
+    /// charts (C418). The rashi, D1, is not one: its ingresses are
+    /// [`HitKind::SignIngress`].
+    #[must_use]
+    pub fn with_vargas(mut self, vargas: impl IntoIterator<Item = Varga>) -> HitRequest {
+        self.vargas = vargas.into_iter().collect();
+        self
+    }
+
+    /// The same request, an eclipse falling on a natal point when its
+    /// luminary stands within this many degrees of it (C422).
+    ///
+    /// ```
+    /// use teistro::quantity::{JulianDay, Utc};
+    /// use teistro::{HitKind, HitRequest};
+    ///
+    /// let year = HitRequest::between(JulianDay::<Utc>::literal(2_460_676.5), JulianDay::literal(2_461_041.5))
+    ///     .with_kinds([HitKind::SolarEclipse, HitKind::LunarEclipse]);
+    /// assert_eq!(year.eclipse_orb_deg(), HitRequest::DEFAULT_ECLIPSE_ORB_DEG);
+    /// assert_eq!(year.with_eclipse_orb(1.0).eclipse_orb_deg(), 1.0);
+    /// ```
+    #[must_use]
+    pub const fn with_eclipse_orb(mut self, orb_deg: f64) -> HitRequest {
+        self.eclipse_orb_deg = orb_deg;
+        self
+    }
+
+    /// The eclipse orb, degrees.
+    #[must_use]
+    pub const fn eclipse_orb_deg(&self) -> f64 {
+        self.eclipse_orb_deg
+    }
+
+    /// Whether either kind of eclipse was asked for.
+    #[must_use]
+    pub fn asks_eclipses(&self) -> bool {
+        self.asks(HitKind::SolarEclipse) || self.asks(HitKind::LunarEclipse)
+    }
+
+    /// The divisional charts varga ingresses are reported in.
+    #[must_use]
+    pub fn vargas(&self) -> &[Varga] {
+        &self.vargas
+    }
+
+    /// The kinds of event asked for, in the order named.
+    #[must_use]
+    pub fn kinds(&self) -> &[HitKind] {
+        &self.kinds
     }
 
     /// The natal points aspected.
@@ -215,8 +328,8 @@ impl HitRequest {
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` naming `to`, `grahas`, `kinds`, `points`, `aspects`
-    /// or `orb_deg`.
+    /// `INVALID_ARG` naming `to`, `grahas`, `kinds`, `points`, `aspects`,
+    /// `orb_deg`, `vargas` or `eclipse_orb_deg`.
     pub fn check(&self) -> Result<(), Error> {
         if self.to.get() <= self.from.get() {
             return Err(Error::invalid_arg(format!(
@@ -236,6 +349,22 @@ impl HitRequest {
         if self.kinds.is_empty() {
             return Err(Error::invalid_arg("no kind of event to report").with_field("kinds"));
         }
+        if self.asks(HitKind::VargaIngress) {
+            if self.vargas.is_empty() {
+                return Err(
+                    Error::invalid_arg("no divisional chart to report varga ingresses in")
+                        .with_field("vargas"),
+                );
+            }
+            repeated(&self.vargas, "vargas")?;
+            if self.vargas.contains(&Varga::D1) {
+                return Err(Error::invalid_arg(
+                    "the rashi is no divisional chart to enter a new sign of",
+                )
+                .with_field("vargas")
+                .with_hint("a graha entering a sign is the SIGN_INGRESS kind"));
+            }
+        }
         if self.asks(HitKind::Aspect) {
             if self.points.is_empty() {
                 return Err(Error::invalid_arg("no natal point to aspect").with_field("points"));
@@ -243,14 +372,7 @@ impl HitRequest {
             if self.aspects.is_empty() {
                 return Err(Error::invalid_arg("no aspect to report").with_field("aspects"));
             }
-            repeated(&self.points, "points")?;
-            placeable(
-                self.points.iter().filter_map(|point| match point {
-                    NatalPoint::Graha { graha } => Some(*graha),
-                    NatalPoint::Lagna | NatalPoint::Midheaven => None,
-                }),
-                "points",
-            )?;
+            self.check_points()?;
             repeated(&self.aspects, "aspects")?;
             if let Some(angle) = self.aspects.iter().find(|a| **a > 180) {
                 return Err(Error::invalid_arg(format!(
@@ -271,14 +393,50 @@ impl HitRequest {
                 }
             }
         }
+        self.check_eclipses()
+    }
+
+    /// The natal points, when a kind that reads them was asked for: at
+    /// least one, none twice, each a point a chart places.
+    fn check_points(&self) -> Result<(), Error> {
+        if self.points.is_empty() {
+            return Err(
+                Error::invalid_arg("no natal point to aspect or eclipse").with_field("points")
+            );
+        }
+        repeated(&self.points, "points")?;
+        placeable(
+            self.points.iter().filter_map(|point| match point {
+                NatalPoint::Graha { graha } => Some(*graha),
+                NatalPoint::Lagna | NatalPoint::Midheaven => None,
+            }),
+            "points",
+        )
+    }
+
+    /// The eclipses' natal points and orb, when an eclipse was asked for.
+    fn check_eclipses(&self) -> Result<(), Error> {
+        if !self.asks_eclipses() {
+            return Ok(());
+        }
+        self.check_points()?;
+        let orb = self.eclipse_orb_deg;
+        if !(orb > 0.0 && orb <= HitRequest::MOST_ECLIPSE_ORB_DEG) {
+            return Err(Error::invalid_arg(format!(
+                "an eclipse orb is more than 0 and at most {} degrees, not {orb}",
+                HitRequest::MOST_ECLIPSE_ORB_DEG
+            ))
+            .with_field("eclipse_orb_deg"));
+        }
         Ok(())
     }
 
     /// The request a binding writes as `hits`, read and checked: the window
     /// as UTC Julian days, and optionally the grahas, the kinds, the natal
-    /// points, the aspects' angles and an orb, each spelled as the answer
-    /// spells it — a graha by its key, a kind as an event's `kind`, a point
-    /// as an aspect's `to` or bare (`"LAGNA"`, `"MOON"`).
+    /// points, the aspects' angles, an orb and the divisional charts
+    /// (`vargas`), each spelled as the answer spells it — a graha or a
+    /// varga by its key, a kind as an event's `kind`, a point as an
+    /// aspect's `to` or bare (`"LAGNA"`, `"MOON"`).
     ///
     /// ```
     /// use teistro::{HitKind, HitRequest};
@@ -323,10 +481,17 @@ impl HitRequest {
         if let Some(orb_deg) = asked.orb_deg {
             request = request.with_orb(orb_deg);
         }
+        if let Some(vargas) = asked.vargas {
+            request = request.with_vargas(vargas);
+        }
+        if let Some(orb_deg) = asked.eclipse_orb_deg {
+            request = request.with_eclipse_orb(orb_deg);
+        }
         request.check().map_err(|why| {
-            // The builder's field is `orb_deg`; the record's is `orbDeg`.
+            // The builder's fields are snake-cased; the record's are not.
             let why = match why.field() {
                 Some("orb_deg") => why.with_field("orbDeg"),
+                Some("eclipse_orb_deg") => why.with_field("eclipseOrbDeg"),
                 _ => why,
             };
             why.under(HITS)
@@ -358,6 +523,10 @@ pub(crate) struct Asked {
     aspects: Option<Vec<u16>>,
     #[serde(default)]
     orb_deg: Option<f64>,
+    #[serde(default)]
+    vargas: Option<Vec<Varga>>,
+    #[serde(default)]
+    eclipse_orb_deg: Option<f64>,
 }
 
 /// A natal point as a request may name it: as an answer's `to` spells it
@@ -431,7 +600,10 @@ fn placeable(grahas: impl IntoIterator<Item = Graha>, field: &str) -> Result<(),
 }
 
 /// Refuses a list that names one member twice, by field.
-fn repeated<T: PartialEq + std::fmt::Debug>(members: &[T], field: &str) -> Result<(), Error> {
+pub(crate) fn repeated<T: PartialEq + std::fmt::Debug>(
+    members: &[T],
+    field: &str,
+) -> Result<(), Error> {
     for (at, member) in members.iter().enumerate() {
         if members
             .get(..at)
@@ -452,6 +624,7 @@ fn repeated<T: PartialEq + std::fmt::Debug>(members: &[T], field: &str) -> Resul
 pub(crate) enum Meaning {
     Sign,
     Nakshatra,
+    Varga(Varga),
     Aspect(usize, NatalPoint, f64, Edge),
 }
 
@@ -474,8 +647,9 @@ pub(crate) fn groups(natals: &[&Document], topocentric: bool) -> Vec<(Place, Vec
 }
 
 /// The lattices one group's scan tests, and what each one's crossings
-/// mean: the signs and the nakshatras once for the group, and each chart's
-/// aspect lines, exact and at the orb's two edges.
+/// mean: the signs, the nakshatras and each divisional chart's lines once
+/// for the group, and each chart's aspect lines, exact and at the orb's
+/// two edges.
 ///
 /// # Errors
 ///
@@ -493,6 +667,14 @@ pub(crate) fn lattices_of(
     if request.asks(HitKind::NakshatraIngress) {
         meanings.push((Meaning::Nakshatra, Lattice::NAKSHATRAS));
     }
+    if request.asks(HitKind::VargaIngress) {
+        for varga in &request.vargas {
+            let lines = teistro_vargas::change::lines(&Scheme::of(*varga)).ok_or_else(|| {
+                Error::internal(format!("{} has no lattice of lines", varga.key()))
+            })?;
+            meanings.push((Meaning::Varga(*varga), lines));
+        }
+    }
     if !request.asks(HitKind::Aspect) {
         return Ok(meanings);
     }
@@ -504,23 +686,8 @@ pub(crate) fn lattices_of(
     };
     let step_deg = hits::aspect_step_deg(&request.aspects);
     for chart in members {
-        let foundation = &natals
-            .get(*chart)
-            .ok_or_else(|| Error::internal("a group names a chart it was not given"))?
-            .foundation;
         for point in &request.points {
-            let natal_deg = match point {
-                NatalPoint::Graha { graha } => foundation.graha(*graha).map(|at| at.longitude_deg),
-                NatalPoint::Lagna => Some(foundation.lagna_deg),
-                NatalPoint::Midheaven => midheavens.get(*chart).copied().flatten(),
-            }
-            .ok_or_else(|| {
-                Error::invalid_arg(format!("natal chart {chart} has no {point:?} to aspect"))
-                    .with_field("points")
-                    .with_hint(
-                        "an outer planet is in a chart founded `with_outer_planets`; found the natal chart with it",
-                    )
-            })?;
+            let natal_deg = point_deg(natals, midheavens, *chart, *point)?;
             for (edge, shift) in edges {
                 meanings.push((
                     Meaning::Aspect(*chart, *point, natal_deg, *edge),
@@ -533,6 +700,212 @@ pub(crate) fn lattices_of(
         }
     }
     Ok(meanings)
+}
+
+/// One chart of the batch, by its index.
+fn foundation_of<'d>(natals: &[&'d Document], chart: usize) -> Result<&'d ChartFoundation, Error> {
+    natals
+        .get(chart)
+        .map(|natal| &natal.foundation)
+        .ok_or_else(|| Error::internal("a group names a chart it was not given"))
+}
+
+/// A natal point's longitude in one chart of the batch, in the chart's
+/// zodiac: a graha's or the lagna's from its foundation, the midheaven's
+/// from its angles, read once for the batch.
+///
+/// # Errors
+///
+/// A chart without the point, named `points`: an outer planet the birth
+/// was not founded with.
+fn point_deg(
+    natals: &[&Document],
+    midheavens: &[Option<f64>],
+    chart: usize,
+    point: NatalPoint,
+) -> Result<f64, Error> {
+    let foundation = foundation_of(natals, chart)?;
+    match point {
+        NatalPoint::Graha { graha } => foundation.graha(graha).map(|at| at.longitude_deg),
+        NatalPoint::Lagna => Some(foundation.lagna_deg),
+        NatalPoint::Midheaven => midheavens.get(chart).copied().flatten(),
+    }
+    .ok_or_else(|| {
+        Error::invalid_arg(format!("natal chart {chart} has no {point:?} to aspect"))
+            .with_field("points")
+            .with_hint(
+                "an outer planet is in a chart founded `with_outer_planets`; found the natal chart with it",
+            )
+    })
+}
+
+/// One group's hits, each with the one chart it belongs to or `None` for
+/// every chart of the group, and the stamp of the search that found them.
+pub(crate) type GroupHits = (
+    Vec<(Option<usize>, Hit)>,
+    teistro_core::envelope::Provenance,
+);
+
+/// An eclipse of a hit list's window, as the eclipse search found it:
+/// its greatest moment, UT1 read as UTC as the almanac's eclipses are,
+/// and its kind (C421).
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum SkyEclipse {
+    Solar {
+        greatest: JulianDay<Utc>,
+        kind: SolarEclipseKind,
+    },
+    Lunar {
+        greatest: JulianDay<Utc>,
+        kind: LunarEclipseKind,
+    },
+}
+
+impl SkyEclipse {
+    /// The greatest eclipse.
+    pub(crate) const fn instant(self) -> JulianDay<Utc> {
+        match self {
+            SkyEclipse::Solar { greatest, .. } | SkyEclipse::Lunar { greatest, .. } => greatest,
+        }
+    }
+
+    /// The luminary eclipsed, whose place is the eclipse's: the Sun's in a
+    /// solar eclipse, the Moon's in a lunar one.
+    pub(crate) const fn luminary(self) -> Graha {
+        match self {
+            SkyEclipse::Solar { .. } => Graha::Sun,
+            SkyEclipse::Lunar { .. } => Graha::Moon,
+        }
+    }
+
+    /// The hit the eclipse is on a natal point.
+    pub(crate) const fn on(self, to: NatalPoint) -> HitEvent {
+        match self {
+            SkyEclipse::Solar { kind, .. } => HitEvent::SolarEclipse { to, eclipse: kind },
+            SkyEclipse::Lunar { kind, .. } => HitEvent::LunarEclipse { to, eclipse: kind },
+        }
+    }
+}
+
+/// Every eclipse of the window that falls on a natal point of a group's
+/// charts, each with the chart it is the hit of: its luminary, read in the
+/// chart's zodiac at the greatest moment (`luminaries`, a row an eclipse,
+/// as `Founder::longitudes` reads the nine), within the eclipse orb of the
+/// point (C421, C422).
+///
+/// # Errors
+///
+/// A natal chart without a point asked for, as [`lattices_of`] refuses.
+pub(crate) fn eclipse_hits(
+    request: &HitRequest,
+    (natals, midheavens, members): (&[&Document], &[Option<f64>], &[usize]),
+    eclipses: &[SkyEclipse],
+    luminaries: &[[f64; 9]],
+) -> Result<Vec<(usize, Hit)>, Error> {
+    let mut found = Vec::new();
+    for (eclipse, row) in eclipses.iter().zip(luminaries) {
+        let graha = eclipse.luminary();
+        let Some(&luminary_deg) = row.get(graha as usize) else {
+            return Err(Error::internal(format!(
+                "no place of {graha:?} at an eclipse"
+            )));
+        };
+        for chart in members {
+            for point in &request.points {
+                let natal_deg = point_deg(natals, midheavens, *chart, *point)?;
+                if hits::eclipse_reaches(luminary_deg, natal_deg, request.eclipse_orb_deg) {
+                    found.push((
+                        *chart,
+                        Hit {
+                            instant: eclipse.instant(),
+                            graha,
+                            event: eclipse.on(*point),
+                        },
+                    ));
+                }
+            }
+        }
+    }
+    Ok(found)
+}
+
+/// What a crossing of the Moon's elongation from the Sun means: a phase,
+/// which is the sky's, or one chart's phase return (by its index in the
+/// batch).
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum PhaseMeaning {
+    Phases,
+    Return(usize),
+}
+
+/// The lattices of the elongation one group's scan tests: the quarters
+/// once for the group, and each chart's natal elongation once a circle.
+///
+/// # Errors
+///
+/// A natal chart without its Sun or Moon, which a founded chart always
+/// places.
+pub(crate) fn phase_lattices_of(
+    request: &HitRequest,
+    natals: &[&Document],
+    members: &[usize],
+) -> Result<Vec<(PhaseMeaning, Lattice)>, Error> {
+    let mut meanings = Vec::new();
+    if request.asks(HitKind::LunarPhase) {
+        meanings.push((
+            PhaseMeaning::Phases,
+            Lattice {
+                origin_deg: 0.0,
+                step_deg: 90.0,
+            },
+        ));
+    }
+    if request.asks(HitKind::PhaseReturn) {
+        for chart in members {
+            let foundation = foundation_of(natals, *chart)?;
+            let at = |graha: Graha| {
+                foundation
+                    .graha(graha)
+                    .map(|place| place.longitude_deg)
+                    .ok_or_else(|| Error::internal(format!("natal chart {chart} has no {graha:?}")))
+            };
+            meanings.push((
+                PhaseMeaning::Return(*chart),
+                Lattice {
+                    origin_deg: natal_elongation_deg(at(Graha::Moon)?, at(Graha::Sun)?),
+                    step_deg: 360.0,
+                },
+            ));
+        }
+    }
+    Ok(meanings)
+}
+
+/// The phase a chart was born in: the Moon's longitude less the Sun's,
+/// in `[0, 360)` (C420). Any zodiac gives the same, the ayanamsha
+/// cancelling.
+pub(crate) fn natal_elongation_deg(moon_deg: f64, sun_deg: f64) -> f64 {
+    teistro_core::angle::normalise_deg(moon_deg - sun_deg)
+}
+
+/// The hit a crossing of the elongation is, and the one chart it belongs
+/// to when it is a phase return.
+pub(crate) fn phase_hit_of(
+    event: &TransitEvent,
+    meanings: &[(PhaseMeaning, Lattice)],
+) -> Option<(HitEvent, Option<usize>)> {
+    let TransitEventKind::Crossing {
+        lattice,
+        boundary_deg,
+        ..
+    } = event.kind
+    else {
+        return None;
+    };
+    match meanings.get(lattice)?.0 {
+        PhaseMeaning::Phases => Some((hits::lunar_phase(boundary_deg), None)),
+        PhaseMeaning::Return(chart) => Some((HitEvent::PhaseReturn, Some(chart))),
+    }
 }
 
 /// The motion a crossing's direction is: a falling longitude is retrograde.
@@ -561,6 +934,14 @@ pub(crate) fn hit_of(
                 hits::nakshatra_ingress(boundary_deg, motion(direction)),
                 None,
             )),
+            // Most of the trimshamsha's lines, and the hora's at each
+            // sign's end, leave the sign as it was: no ingress.
+            Meaning::Varga(varga) => hits::varga_ingress(
+                varga,
+                teistro_vargas::change::either_side(&Scheme::of(varga), boundary_deg).ok()?,
+                motion(direction),
+            )
+            .map(|ingress| (ingress, None)),
             Meaning::Aspect(chart, point, natal_deg, edge) => hits::aspect_hit(
                 (point, natal_deg),
                 (boundary_deg, edge, request.orb_deg.unwrap_or(0.0)),
@@ -585,7 +966,11 @@ pub(crate) const fn station(kind: StationKind) -> HitEvent {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::float_cmp,
+        reason = "tests fail by panicking, and the elongations they compare are exact"
+    )]
 
     use super::*;
 
@@ -630,6 +1015,40 @@ mod tests {
     }
 
     #[test]
+    fn a_new_kind_is_asked_for_by_name() {
+        // The default is the four the list began with, so no list a
+        // caller already reads grows.
+        let asked = HitRequest::from_json(&format!("{{{WINDOW}}}")).unwrap();
+        assert_eq!(asked.kinds(), HitKind::DEFAULT);
+        assert!(!asked.asks(HitKind::VargaIngress));
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "kinds": ["VARGA_INGRESS"], "vargas": ["D9", "varga.D30"]}}"#
+        ))
+        .unwrap();
+        assert_eq!(asked.vargas(), [Varga::D9, Varga::D30]);
+        // Asked for without charts, it reports the navamsha's.
+        let asked =
+            HitRequest::from_json(&format!(r#"{{{WINDOW}, "kinds": ["VARGA_INGRESS"]}}"#)).unwrap();
+        assert_eq!(asked.vargas(), HitRequest::DEFAULT_VARGAS);
+        // Charts named beside kinds that never read them are not checked.
+        assert!(HitRequest::from_json(&format!(r#"{{{WINDOW}, "vargas": []}}"#)).is_ok());
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "kinds": ["LUNAR_PHASE", "PHASE_RETURN"]}}"#
+        ))
+        .unwrap();
+        assert!(asked.asks(HitKind::LunarPhase) && asked.asks(HitKind::PhaseReturn));
+    }
+
+    #[test]
+    fn a_natal_phase_is_the_moon_less_the_sun() {
+        assert_eq!(natal_elongation_deg(100.0, 10.0), 90.0);
+        // A waning Moon is past 180°, not the same square from the other
+        // side: the return keeps the lunation's half.
+        assert_eq!(natal_elongation_deg(10.0, 100.0), 270.0);
+        assert_eq!(natal_elongation_deg(5.0, 5.0), 0.0);
+    }
+
+    #[test]
     fn a_graha_is_named_bare_or_full() {
         let asked = HitRequest::from_json(&format!(
             r#"{{{WINDOW}, "grahas": ["SUN", "graha.SATURN"], "points": ["graha.MOON", {{"point": "GRAHA", "graha": "graha.MARS"}}]}}"#
@@ -655,6 +1074,30 @@ mod tests {
             (r#", "aspects": [0, 10], "orbDeg": 6"#, "hits.orbDeg"),
             (r#", "orbDeg": 20"#, "hits.orbDeg"),
             (r#", "kinds": []"#, "hits.kinds"),
+            (
+                r#", "kinds": ["VARGA_INGRESS"], "vargas": []"#,
+                "hits.vargas",
+            ),
+            (
+                r#", "kinds": ["VARGA_INGRESS"], "vargas": ["D9", "D9"]"#,
+                "hits.vargas",
+            ),
+            (
+                r#", "kinds": ["VARGA_INGRESS"], "vargas": ["D1"]"#,
+                "hits.vargas",
+            ),
+            (
+                r#", "kinds": ["SOLAR_ECLIPSE"], "eclipseOrbDeg": 0"#,
+                "hits.eclipseOrbDeg",
+            ),
+            (
+                r#", "kinds": ["LUNAR_ECLIPSE"], "eclipseOrbDeg": 16"#,
+                "hits.eclipseOrbDeg",
+            ),
+            (
+                r#", "kinds": ["LUNAR_ECLIPSE"], "points": []"#,
+                "hits.points",
+            ),
         ] {
             assert_eq!(refused(rest).field(), Some(field), "{rest}");
         }

@@ -11,3 +11,8 @@ and whether it stands in the decanate where its transit bears fruit
 (v. 25). The table is the text's, read on the printed page, and the two
 places the text is silent — the nodes' vedha and whether the nodes
 obstruct — are settings (`gochar.node_vedha`, `gochar.node_obstruction`).
+
+`sarvatobhadra` is the second layer (`gochar.md` §8): *Svarodaya*'s
+81-cell chakra, generated from its rule and held to the 1946 print, and
+the vedha a sky's grahas cast on a native's star, name, sign, tithi and
+weekday, which Phaladeepika ch. 26 v. 48 reads into gochar.

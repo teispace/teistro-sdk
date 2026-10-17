@@ -11,11 +11,12 @@
 )]
 
 use teistro::catalogue::Graha;
+use teistro::hellenistic::house_of;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    AntisciaRequest, AspectRequest, ChartRequest, Context, Document, Ephemeris, MidpointRequest,
-    NatalPoint, ParallelRequest, Partner, PartnerSynastry, SynastryMidpointRow, SynastryRequest,
-    SynastryRow, SynastryZodiac, UtcOffset, WesternAspect,
+    AntisciaRequest, AspectRequest, ChartRequest, Context, Document, Ephemeris, HouseRequest,
+    MidpointRequest, NatalPoint, ParallelRequest, Partner, PartnerSynastry, SynastryMidpointRow,
+    SynastryRequest, SynastryRow, SynastryZodiac, UtcOffset, WesternAspect,
 };
 
 /// "born 1-18 a.m., 3rd June, 1865, London", at Marlborough House.
@@ -587,4 +588,56 @@ fn the_equal_distances_across_agree_with_the_recast() {
     ))
     .unwrap_err();
     assert_eq!(wide.field(), Some("synastry.midpoints.orbDeg"));
+}
+
+/// The house overlays count each chart's points on the cusps the other
+/// chart's own planets are counted on (§House overlays, C417): a chart
+/// read against itself gives its own houses back, and George V's points
+/// fall in Queen Mary's houses by her cusps.
+#[test]
+fn each_chart_is_counted_on_the_others_western_houses() {
+    let sdk = western();
+    let george = born(&sdk, GEORGE);
+    let mary = born(&sdk, MARY);
+    let request = SynastryRequest::default().with_zodiac(SynastryZodiac::Charts);
+    let houses = HouseRequest::default();
+    let hers = sdk.chart().western_houses(&mary, &houses).unwrap();
+    let mirror = sdk
+        .chart()
+        .synastry_houses(&mary, &mary, &request, &houses)
+        .unwrap();
+    for placed in &hers.planets {
+        let found = mirror
+            .first_in_second
+            .iter()
+            .find(|one| one.point == graha(placed.graha))
+            .unwrap();
+        assert_eq!(found.house, placed.house, "{:?}", placed.graha);
+    }
+    let read = sdk
+        .chart()
+        .synastry_houses(&george, &mary, &request, &houses)
+        .unwrap();
+    assert_eq!(read.second_system, hers.system);
+    for one in &read.first_in_second {
+        let longitude = match one.point {
+            NatalPoint::Lagna => george.foundation.lagna_deg,
+            NatalPoint::Graha { graha } => george.foundation.graha(graha).unwrap().longitude_deg,
+            other @ NatalPoint::Midheaven => panic!("{other:?}"),
+        };
+        assert_eq!(
+            one.house,
+            house_of(longitude, &hers.frame.cusps_deg, 0.0),
+            "{one:?}"
+        );
+    }
+    // Both ways, every point once: his ten planets and lagna, hers too.
+    assert_eq!(read.first_in_second.len(), 11);
+    assert_eq!(read.second_in_first.len(), 11);
+    // Without the lagna, the planets alone.
+    let planets = sdk
+        .chart()
+        .synastry_houses(&george, &mary, &request.clone().with_lagna(false), &houses)
+        .unwrap();
+    assert_eq!(planets.first_in_second.len(), 10);
 }

@@ -359,6 +359,111 @@ navamsha, a strong unafflicted benefic in a kendra, and three figures of
 very long life. The note on v. 68 now says what vv. 69 and 70 ask, a cruel
 shashtyamsha, which is not built.
 
+**Zodiacal releasing reports its peaks and the loosing of the bond.**
+**Numbers:** none moved; both read periods the kernel already makes.
+`releasing_angle(lot, sign)` is the whole-sign angle a period's sign
+holds from a lot, `LotAngle::First`, `Fourth`, `Seventh` or `Tenth`, and
+nothing at no angle: the lot standing as the Ascendant (*Anthologies*
+II.17K) and Fortune's angles judging a releasing period (IV.7, crux
+C423). The lot is Fortune's sign for Daimon's releasing too (C424), and
+the angle is reported, not scored (C425, C426).
+`ReleasingDasha::loosing(parent)` is the period at which a level, its
+twelve signs spent, passes to the sign opposite the parent's (IV.4,
+IV.10), and `ReleasingDasha::is_loosed` holds for it and every period
+after it, read off the path, so a stored row answers the same (C427).
+The Rust surface only: a dasha row already carries the `path` and `sign`
+these are read from, so no record gains a field.
+
+**Synastry house overlays.** **Numbers:** none moved.
+`ChartArea::synastry_houses` counts each chart's planets and lagna in
+the other chart's houses, both ways, on the cusps that chart's own
+Western houses use: the division the `HouseRequest` names, else the
+profile's, else Placidus. A point on a cusp is in the house it opens
+(`western::house_overlays`, C417). Leo reads no planet in another
+chart's house, so the overlay is later practice built from the single
+chart's rules. The Rust surface only: the `synastry` record gains no
+field, since no blob section would answer it.
+
+**Dispositor chains and the final dispositor.** **Numbers:** none
+moved. `Dignities` gains `dispositions`: each of the seven's dispositors
+followed until one repeats, where each chain stops (a planet in its own
+sign, or a cycle reported whole, a mutual reception by house being one of
+two), and the final dispositor when every chain stops at one planet in
+its own sign (Leo p. 130 and Lilly p. 161 for the dispositor; the chain
+is later practice, C413). `ChartArea::dispositions` reads a chart under
+the traditional rulers or the modern ones, which give Aquarius, Pisces
+and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
+dispositor (C415), and the nodes are refused (C416). The Rust surface
+only: no blob section carries the chains yet.
+
+**Half- and quarter-returns.** **Numbers:** none moved. `returns`,
+`BodyReturn` and the hit list are unchanged, and offset 0 of the new call
+gives `returns`' instants bit for bit. `sdk.chart().returns_at(&birth,
+from, to, grahas, offsets)` answers each graha's crossing of the line
+`offset` degrees past its natal longitude, forward in the zodiac (crux
+C434). The Sun's at `OffsetReturn::HALF` is the demi-solar return, and
+at `OffsetReturn::QUARTERS` the quarti-solar returns. These are
+twentieth-century practice: Morin has no half- or quarter-revolution, so
+none is cited (C433). Any graha takes them, the Moon's quarters falling
+over a month (C435). Any whole degree from 0 to 359 can be asked, and
+360 or more is refused on `offsets` with the same line named in the hint
+(C436). Each row reads like a return: the chart's own zodiac, the
+settings' centre, the caller's place (C437). The Sun's quarters of 2000
+fall 88 to 95 days apart, each read back to the arcsecond from a chart
+founded at it. The Rust surface only. A binding asks for the half-return
+as its hit list's opposition, and tells a quarter's side apart from the
+chart it founds at the instant.
+
+**A hit list reports an eclipse on a natal point.** **Numbers:** none
+moved; both kinds are asked for by name. `SOLAR_ECLIPSE` and
+`LUNAR_ECLIPSE` are the almanac's own eclipses whose luminary, at the
+greatest moment and in the chart's zodiac, stands within
+`eclipseOrbDeg` of a natal point the request names: 3° by default (crux
+C422), the Sun's degree for a solar eclipse and the Moon's for a lunar
+one, every kind counted and carried on the hit (C421). A classical
+astronomy is refused on `kinds`, as its eclipse is its own method. The
+`hits` section carries the kind in its `solar_eclipse` or `lunar_eclipse`
+column and the point in the `to_*` columns, and every binding reads it.
+
+**The Sarvatobhadra chakra's vedha, gochar's second layer** (`gochar.md`
+§8, C428 to C432). **Numbers:** none moved; `gochar()`'s verdicts are
+untouched. `teistro_gochar::sarvatobhadra` builds *Narapati Jayacharya
+Svarodaya*'s 81-cell chakra from its own rule (vv. 2–9) and holds it to
+the 1946 print cell for cell, and `sarvatobhadra()` reads a sky against a
+native's star, sign, tithi, weekday and name: each graha's star, the lines
+it looks along (the five by their motion, the Sun, the Moon and the nodes
+all three), its nature (a benefic in a malefic's sign, and the waning
+Moon, malefic), every cell it strikes and how, and for each of the
+native's points the malefics and benefics that strike it. It reports
+clauses and scores nothing. The front strikes only the star at its far
+end, as every worked example prints it (C429); three knobs keep the
+rivals. Phaladeepika ch. 26 vv. 26–28, which `gochar.md` had named as this
+chakra, are the saptashalaka and the taras, and v. 48 is the chakra's
+verse (C428). The Rust surface only: no façade call or blob section yet.
+
+**A hit list reports the Moon's phases and phase returns.** **Numbers:**
+none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,
+first quarter, full and last quarter moon, the Moon's elongation from the
+Sun crossing a multiple of 90° in the chart's frame (crux C419);
+`PHASE_RETURN` is the elongation returning to the natal chart's, the
+directed angle, once a synodic month (C420). Both are searched by the
+crossing search a tithi's ends use, over the tithi's own quantity
+(`Founder::elongation_events`), and January 2025's full and new moons
+fall within three minutes of the almanacs' times. The `hits` section
+carries the phase in its `lunar_phase` column, and every binding reads
+both.
+
+**A hit list reports varga ingresses.** **Numbers:** none moved: the
+new kind is asked for by name, `VARGA_INGRESS`, and a request naming no
+kinds asks for the four it always did (`HitKind::DEFAULT`). A graha
+entering a new sign of a divisional chart, in the charts `vargas` names
+(the navamsha by default, the rashi refused), is reported where the
+chart's sign changes and not at every part line, which is how
+`vargas::change::changes` already counted them (crux C418); the lines
+are `vargas::change::lines`, one more lattice in each graha's one scan.
+The `hits` section carries the chart in its `varga` column, and every
+binding reads it, with `vargas` and `eclipseOrbDeg` on its request.
+
 **A day's durmuhurtas, and where the Moon points.** **Numbers:** none
 moved. Every almanac day gains its `durmuhurtas`, the muhurtas its
 weekday censures, chosen by `panchanga.durmuhurta`: Muhurta Chintamani's

@@ -79,8 +79,8 @@ pub use rashi::{
 pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use registry::DashaSystems;
 pub use releasing::{
-    PROFECTION_YEARS, ProfectionDasha, RELEASING_CYCLE, ReleasingDasha, TIME_LORDS, minimum_years,
-    releasing_years, time_lord,
+    LotAngle, PROFECTION_YEARS, ProfectionDasha, RELEASING_CYCLE, ReleasingDasha, TIME_LORDS,
+    minimum_years, releasing_angle, releasing_years, time_lord,
 };
 pub use row::{
     ASHTOTTARI_BPHS, Count, DashaName, Lord, ROWS, SHASHTIHAYANI, Scale, Seat, UduDefinition,

@@ -100,6 +100,11 @@ const fn kind_column(event: HitEvent) -> usize {
         HitEvent::NakshatraIngress { .. } => 1,
         HitEvent::Station { .. } => 2,
         HitEvent::Aspect { .. } => 3,
+        HitEvent::VargaIngress { .. } => 4,
+        HitEvent::LunarPhase { .. } => 5,
+        HitEvent::PhaseReturn => 6,
+        HitEvent::SolarEclipse { .. } => 7,
+        HitEvent::LunarEclipse { .. } => 8,
     }
 }
 
@@ -218,7 +223,13 @@ fn read_ingresses(
         let (into, motion, of) = match hit.event {
             HitEvent::SignIngress { into, motion } => (into as usize, motion, 12_u16),
             HitEvent::NakshatraIngress { into, motion } => (into as usize, motion, 27),
-            HitEvent::Station { .. } | HitEvent::Aspect { .. } => continue,
+            HitEvent::Station { .. }
+            | HitEvent::Aspect { .. }
+            | HitEvent::VargaIngress { .. }
+            | HitEvent::LunarPhase { .. }
+            | HitEvent::PhaseReturn
+            | HitEvent::SolarEclipse { .. }
+            | HitEvent::LunarEclipse { .. } => continue,
         };
         let width = 360.0 / f64::from(of);
         let division = |chart: &ChartFoundation| -> Result<usize, String> {

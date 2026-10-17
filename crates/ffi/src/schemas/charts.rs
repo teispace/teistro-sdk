@@ -2984,28 +2984,28 @@ fn chart_hits_section(id: u32) -> SectionSchema {
             ColumnDef::new(
                 "into",
                 Scalar::U16,
-                "The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.",
+                "The sign (a `Rashi` id) entered by a sign or varga ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.",
             ),
             ColumnDef::new(
                 "motion",
                 Scalar::U8,
-                "Which way the graha was moving through the line, or, for a station, the motion it turned to.",
+                "Which way the graha was moving through the line, or, for a station, the motion it turned to; `DIRECT` for a lunar phase, a phase return or an eclipse, which cross no line of the graha's own.",
             )
             .of_enum("TsMotion"),
             ColumnDef::new(
                 "to_lagna",
                 Scalar::U8,
-                "For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind.",
+                "For an aspect or an eclipse, 1 when the natal point is the lagna, 0 when it is a natal graha; 0 for any other kind.",
             ),
             ColumnDef::new(
                 "to_graha",
                 Scalar::U16,
-                "For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.",
+                "For an aspect or an eclipse on a natal graha, which (a `Graha` id); 0 otherwise.",
             ),
             ColumnDef::new(
                 "to_midheaven",
                 Scalar::U8,
-                "For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise.",
+                "For an aspect or an eclipse, 1 when the natal point is the midheaven, 0 otherwise.",
             ),
             ColumnDef::new(
                 "angle",
@@ -3018,6 +3018,30 @@ fn chart_hits_section(id: u32) -> SectionSchema {
                 "For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.",
             )
             .of_enum("TsAspectPhase"),
+            ColumnDef::new(
+                "varga",
+                Scalar::U16,
+                "For a varga ingress, the divisional chart whose sign changed (C418); read only when `kind` is a varga ingress.",
+            )
+            .of_enum("Varga"),
+            ColumnDef::new(
+                "lunar_phase",
+                Scalar::U8,
+                "For a lunar phase, which of the four the Moon reached, in the chart's frame (C419); read only when `kind` is a lunar phase.",
+            )
+            .of_enum("TsMoonPhase"),
+            ColumnDef::new(
+                "solar_eclipse",
+                Scalar::U8,
+                "For a solar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a solar eclipse.",
+            )
+            .of_enum("SolarEclipseKind"),
+            ColumnDef::new(
+                "lunar_eclipse",
+                Scalar::U8,
+                "For a lunar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a lunar eclipse.",
+            )
+            .of_enum("LunarEclipseKind"),
         ],
     )
 }

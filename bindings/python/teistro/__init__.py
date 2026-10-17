@@ -174,6 +174,7 @@ from .catalogue import (
     Motion,
     WesternAspect,
     AspectPhase,
+    MoonPhase,
     Reckoning,
     Sect,
     SectRule,
@@ -442,7 +443,14 @@ __all__ = [
     "NakshatraIngress",
     "Station",
     "AspectHit",
+    "VargaIngress",
+    "LunarPhase",
+    "PhaseReturn",
+    "SolarEclipseHit",
+    "LunarEclipseHit",
+    "HitEvent",
     "HitKind",
+    "MoonPhase",
     "Motion",
     "WesternAspect",
     "AspectPhase",
@@ -3426,17 +3434,23 @@ HitRequest = TypedDict(
         "points": Sequence[Union["NatalPoint", Graha, str]],
         "aspects": Sequence[int],
         "orbDeg": float,
+        "vargas": Sequence[Union[Varga, str]],
+        "eclipseOrbDeg": float,
     },
     total=False,
 )
 HitRequest.__doc__ = """The transit hit list to search against every chart of a
 request (`03-design/transit-hit-list.md`): the window `from` and `to`, UTC
 Julian days, and optionally `grahas` (the nine by default; members or keys,
-bare or full), `kinds` (all four by default), `points` (the natal points
-aspected: a graha, `"LAGNA"`, `"MIDHEAVEN"` or a `NatalPoint`; the nine and
-the lagna by default), `aspects` (whole degrees to 180; 0 and 180 by default, C145) and
+bare or full), `kinds` (the four ingress, station and aspect kinds by
+default), `points` (the natal points aspected or eclipsed: a graha,
+`"LAGNA"`, `"MIDHEAVEN"` or a `NatalPoint`; the nine and the lagna by
+default), `aspects` (whole degrees to 180; 0 and 180 by default, C145),
 `orbDeg` (more than 0, under 15 and under half the step between the aspects'
-lines; exact only by default, C146). A
+lines; exact only by default, C146), `vargas` (the divisional charts a
+`VARGA_INGRESS` is searched in; D9 by default, never D1, C418) and
+`eclipseOrbDeg` (how near a natal point an eclipsed luminary falls, more
+than 0 and at most 15; 3 by default, C422). A
 functional `TypedDict` because `from` is a keyword, and the record is spelt as
 every binding spells it.
 
@@ -3525,9 +3539,74 @@ class AspectHit:
 
 
 @dataclass(frozen=True)
+class VargaIngress:
+    """The graha entered a new sign of a divisional chart (C418)."""
+
+    varga: Varga
+    """The divisional chart whose sign changed."""
+
+    into: Rashi
+    """The sign entered in that chart."""
+
+    motion: Motion
+    kind: HitKind = field(default=HitKind.VARGA_INGRESS, init=False)
+
+
+@dataclass(frozen=True)
+class LunarPhase:
+    """The Moon reached a principal phase, in the chart's frame (C419)."""
+
+    phase: MoonPhase
+    kind: HitKind = field(default=HitKind.LUNAR_PHASE, init=False)
+
+
+@dataclass(frozen=True)
+class PhaseReturn:
+    """The Moon's elongation from the Sun came back to the natal chart's
+    (C420)."""
+
+    kind: HitKind = field(default=HitKind.PHASE_RETURN, init=False)
+
+
+@dataclass(frozen=True)
+class SolarEclipseHit:
+    """A solar eclipse fell on a natal point, within `eclipseOrbDeg`
+    (C421)."""
+
+    to: NatalPoint
+    eclipse: SolarEclipseKind
+    kind: HitKind = field(default=HitKind.SOLAR_ECLIPSE, init=False)
+
+
+@dataclass(frozen=True)
+class LunarEclipseHit:
+    """A lunar eclipse fell on a natal point, within `eclipseOrbDeg`
+    (C421)."""
+
+    to: NatalPoint
+    eclipse: LunarEclipseKind
+    kind: HitKind = field(default=HitKind.LUNAR_ECLIPSE, init=False)
+
+
+HitEvent = Union[
+    SignIngress,
+    NakshatraIngress,
+    Station,
+    AspectHit,
+    VargaIngress,
+    LunarPhase,
+    PhaseReturn,
+    SolarEclipseHit,
+    LunarEclipseHit,
+]
+"""What a hit was: one event class a kind, each with its `kind`."""
+
+
+@dataclass(frozen=True)
 class Hit:
-    """One event of the transit hit list: `event` is one of `SignIngress`,
-    `NakshatraIngress`, `Station` or `AspectHit`, each with its `kind`.
+    """One event of the transit hit list: `event` is one of the `HitEvent`
+    classes, `SignIngress`, `NakshatraIngress`, `Station` or `AspectHit` by
+    default, each with its `kind`.
 
     >>> # chart = ctx.chart.found(..., hits={"from": 2460676.5, "to": 2461041.5})
     >>> # saturn = [h for h in chart.hits if h.graha is Graha.SATURN and isinstance(h.event, SignIngress)]
@@ -3539,7 +3618,7 @@ class Hit:
     graha: Graha
     """The transiting graha."""
 
-    event: Union[SignIngress, NakshatraIngress, Station, AspectHit]
+    event: HitEvent
 
 
 SadeSatiRequest = TypedDict(
@@ -10888,15 +10967,25 @@ def _hit_at(columns: Any, row: int) -> Hit:
     """One row of the `hits` section as the Rust `Hit` spells it."""
     kind = HitKind(columns.kind[row])
     motion = Motion(columns.motion[row])
-    event: Union[SignIngress, NakshatraIngress, Station, AspectHit]
+    event: HitEvent
+    to = _point_at(columns.to_lagna[row], columns.to_graha[row], columns.to_midheaven[row])
     if kind is HitKind.SIGN_INGRESS:
         event = SignIngress(into=Rashi(columns.into[row]), motion=motion)
     elif kind is HitKind.NAKSHATRA_INGRESS:
         event = NakshatraIngress(into=Nakshatra(columns.into[row]), motion=motion)
     elif kind is HitKind.STATION:
         event = Station(turns=motion)
+    elif kind is HitKind.VARGA_INGRESS:
+        event = VargaIngress(varga=Varga(columns.varga[row]), into=Rashi(columns.into[row]), motion=motion)
+    elif kind is HitKind.LUNAR_PHASE:
+        event = LunarPhase(phase=MoonPhase(columns.lunar_phase[row]))
+    elif kind is HitKind.PHASE_RETURN:
+        event = PhaseReturn()
+    elif kind is HitKind.SOLAR_ECLIPSE:
+        event = SolarEclipseHit(to=to, eclipse=SolarEclipseKind(columns.solar_eclipse[row]))
+    elif kind is HitKind.LUNAR_ECLIPSE:
+        event = LunarEclipseHit(to=to, eclipse=LunarEclipseKind(columns.lunar_eclipse[row]))
     else:
-        to = _point_at(columns.to_lagna[row], columns.to_graha[row], columns.to_midheaven[row])
         event = AspectHit(to=to, angle=columns.angle[row], phase=AspectPhase(columns.phase[row]), motion=motion)
     return Hit(instant=columns.instant[row], graha=Graha(columns.graha[row]), event=event)
 
@@ -11249,7 +11338,7 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
 
     def hit(one: Mapping[str, Any]) -> Hit:
         event = one["event"]
-        happened: Union[SignIngress, NakshatraIngress, Station, AspectHit]
+        happened: HitEvent
         if event["kind"] == "SIGN_INGRESS":
             happened = SignIngress(into=_member(Rashi, event["into"]), motion=_member(Motion, event["motion"]))
         elif event["kind"] == "STATION":
@@ -12489,7 +12578,7 @@ def _keyed(record: Mapping[str, Any]) -> Dict[str, Any]:
     def key(value: Any) -> Any:
         if isinstance(value, NatalPoint):
             return {"point": value.point} if value.graha is None else {"point": value.point, "graha": value.graha.full_key}
-        if isinstance(value, Graha):
+        if isinstance(value, Catalogued):
             return value.full_key
         if isinstance(value, Member):
             return value.key

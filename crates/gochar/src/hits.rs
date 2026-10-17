@@ -1,5 +1,6 @@
 //! The transit hit list's events (`03-design/transit-hit-list.md`): when a
-//! graha enters a sign or a nakshatra, and when it stands still.
+//! graha enters a sign, a nakshatra or a divisional chart's sign, when it
+//! stands still, the Moon's phases, and an eclipse on a natal point.
 //!
 //! The searches are the SDK's; this module is the vocabulary the answer is
 //! said in, and the one place a crossing becomes the sign it entered — a
@@ -17,7 +18,8 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{Graha, Nakshatra, Rashi};
+use teistro_core::angle::difference_deg;
+use teistro_core::catalogue::{Graha, LunarEclipseKind, Nakshatra, Rashi, SolarEclipseKind, Varga};
 use teistro_core::quantity::{JulianDay, Utc};
 
 /// Which way a graha was moving, through a line or out of a station.
@@ -60,6 +62,63 @@ impl NatalPoint {
             NatalPoint::Lagna => u8::MAX - 1,
             NatalPoint::Midheaven => u8::MAX,
         }
+    }
+}
+
+/// A principal phase of the Moon: its elongation from the Sun, the Moon's
+/// longitude less the Sun's, at a quarter of the circle (C419).
+///
+/// ```
+/// use teistro_gochar::hits::MoonPhase;
+///
+/// assert_eq!(MoonPhase::at_line(180.0), MoonPhase::Full);
+/// // A line the search reports a hair short of 360° is the new moon's.
+/// assert_eq!(MoonPhase::at_line(359.999_999_9), MoonPhase::New);
+/// assert_eq!(MoonPhase::Full.elongation_deg(), 180);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MoonPhase {
+    /// The new moon: the Moon conjoins the Sun, 0°.
+    New,
+    /// The first quarter: the waxing Moon 90° past the Sun.
+    FirstQuarter,
+    /// The full moon: the Moon opposite the Sun, 180°.
+    Full,
+    /// The last quarter: the waning Moon 270° past the Sun.
+    LastQuarter,
+}
+
+impl MoonPhase {
+    /// The four in the order a lunation passes them.
+    pub const ALL: [MoonPhase; 4] = [
+        MoonPhase::New,
+        MoonPhase::FirstQuarter,
+        MoonPhase::Full,
+        MoonPhase::LastQuarter,
+    ];
+
+    /// The elongation the phase is reached at, degrees: 0, 90, 180 or 270.
+    #[must_use]
+    pub const fn elongation_deg(self) -> u16 {
+        match self {
+            MoonPhase::New => 0,
+            MoonPhase::FirstQuarter => 90,
+            MoonPhase::Full => 180,
+            MoonPhase::LastQuarter => 270,
+        }
+    }
+
+    /// The phase whose line `line_deg` is, rounded to the nearest quarter
+    /// of the circle: a line the search reports a hair either side of its
+    /// quarter is still that quarter.
+    #[must_use]
+    pub fn at_line(line_deg: f64) -> MoonPhase {
+        MoonPhase::ALL
+            .get(entered(line_deg, Motion::Direct, 4))
+            .copied()
+            .unwrap_or(MoonPhase::New)
     }
 }
 
@@ -124,24 +183,73 @@ pub enum HitEvent {
         /// Which way the transit was moving.
         motion: Motion,
     },
+    /// The graha entered a new sign of a divisional chart: its navamsha,
+    /// say, as the chart's own rule places it (C418).
+    VargaIngress {
+        /// The divisional chart.
+        varga: Varga,
+        /// The chart's sign entered.
+        into: Rashi,
+        /// Which way it was moving.
+        motion: Motion,
+    },
+    /// The Moon reached a principal phase (C419). The hit's graha is the
+    /// Moon.
+    LunarPhase {
+        /// Which.
+        phase: MoonPhase,
+    },
+    /// The Moon's elongation from the Sun returned to the natal chart's:
+    /// the lunation phase the native was born in, once a synodic month
+    /// (C420). The hit's graha is the Moon.
+    PhaseReturn,
+    /// A solar eclipse whose Sun, at the greatest eclipse, stood within
+    /// the eclipse orb of a natal point (C421, C422). The hit's graha is
+    /// the Sun and its instant the greatest eclipse.
+    SolarEclipse {
+        /// The natal point eclipsed.
+        to: NatalPoint,
+        /// What kind of solar eclipse.
+        eclipse: SolarEclipseKind,
+    },
+    /// A lunar eclipse whose Moon, at the greatest eclipse, stood within
+    /// the eclipse orb of a natal point (C421, C422). The hit's graha is
+    /// the Moon and its instant the greatest eclipse.
+    LunarEclipse {
+        /// The natal point eclipsed.
+        to: NatalPoint,
+        /// What kind of lunar eclipse.
+        eclipse: LunarEclipseKind,
+    },
 }
 
 impl HitEvent {
     /// The kind's place in a tie's order: ingresses before stations, signs
-    /// before nakshatras.
+    /// before nakshatras, then aspects; a kind added since sorts after
+    /// these, so no list the older kinds made changes its order.
     const fn rank(self) -> u8 {
         match self {
             HitEvent::SignIngress { .. } => 0,
             HitEvent::NakshatraIngress { .. } => 1,
             HitEvent::Station { .. } => 2,
             HitEvent::Aspect { .. } => 3,
+            HitEvent::VargaIngress { .. } => 4,
+            HitEvent::LunarPhase { .. } => 5,
+            HitEvent::PhaseReturn => 6,
+            HitEvent::SolarEclipse { .. } => 7,
+            HitEvent::LunarEclipse { .. } => 8,
         }
     }
 
-    /// The natal point's place in a tie's order, for an aspect.
-    const fn point_rank(self) -> u8 {
+    /// The place in a tie's order among events of one kind: an aspect's
+    /// or an eclipse's natal point, a varga ingress's chart by its
+    /// catalogue id.
+    fn detail_rank(self) -> u16 {
         match self {
-            HitEvent::Aspect { to, .. } => to.rank(),
+            HitEvent::Aspect { to, .. }
+            | HitEvent::SolarEclipse { to, .. }
+            | HitEvent::LunarEclipse { to, .. } => u16::from(to.rank()),
+            HitEvent::VargaIngress { varga, .. } => varga as u16,
             _ => 0,
         }
     }
@@ -159,8 +267,9 @@ pub struct Hit {
     pub event: HitEvent,
 }
 
-/// Hits in their one order: by instant, then by graha, then by kind, so
-/// two runs over the same window list them identically.
+/// Hits in their one order: by instant, then by graha, then by kind, then
+/// by the natal point or the divisional chart, so two runs over the same
+/// window list them identically.
 pub fn sort(hits: &mut [Hit]) {
     hits.sort_by(|a, b| {
         a.instant
@@ -168,7 +277,7 @@ pub fn sort(hits: &mut [Hit]) {
             .total_cmp(&b.instant.get())
             .then((a.graha as u8).cmp(&(b.graha as u8)))
             .then(a.event.rank().cmp(&b.event.rank()))
-            .then(a.event.point_rank().cmp(&b.event.point_rank()))
+            .then(a.event.detail_rank().cmp(&b.event.detail_rank()))
     });
 }
 
@@ -214,6 +323,73 @@ pub fn nakshatra_ingress(boundary_deg: f64, motion: Motion) -> HitEvent {
             .unwrap_or(Nakshatra::Ashwini),
         motion,
     }
+}
+
+/// A varga ingress at a crossing of a divisional chart's lines, from the
+/// chart's sign before the line and past it, as the vargas crate's
+/// `change::either_side` reads them: the one past it moving forward, the
+/// one before it moving back. `None` for a line that leaves the sign as
+/// it was, which is no ingress (C418).
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_gochar::hits::{HitEvent, Motion, varga_ingress};
+///
+/// // Forward over ten degrees of Taurus: navamsha Pisces to Aries.
+/// assert_eq!(
+///     varga_ingress(Varga::D9, (Rashi::Pisces, Rashi::Aries), Motion::Direct),
+///     Some(HitEvent::VargaIngress { varga: Varga::D9, into: Rashi::Aries, motion: Motion::Direct })
+/// );
+/// // The hora's line at the end of Aries is Cancer on both sides.
+/// assert_eq!(varga_ingress(Varga::D2, (Rashi::Cancer, Rashi::Cancer), Motion::Direct), None);
+/// ```
+#[must_use]
+pub fn varga_ingress(
+    varga: Varga,
+    (before, past): (Rashi, Rashi),
+    motion: Motion,
+) -> Option<HitEvent> {
+    if before == past {
+        return None;
+    }
+    Some(HitEvent::VargaIngress {
+        varga,
+        into: match motion {
+            Motion::Direct => past,
+            Motion::Retrograde => before,
+        },
+        motion,
+    })
+}
+
+/// The phase a crossing of the Moon's elongation over the quarters'
+/// lattice reached (C419).
+///
+/// ```
+/// use teistro_gochar::hits::{HitEvent, MoonPhase, lunar_phase};
+///
+/// assert_eq!(lunar_phase(90.0), HitEvent::LunarPhase { phase: MoonPhase::FirstQuarter });
+/// ```
+#[must_use]
+pub fn lunar_phase(line_deg: f64) -> HitEvent {
+    HitEvent::LunarPhase {
+        phase: MoonPhase::at_line(line_deg),
+    }
+}
+
+/// Whether an eclipse's luminary, at `luminary_deg`, falls on a natal
+/// point at `natal_deg`: no more than `orb_deg` from it either way, in the
+/// one zodiac both are read in (C421, C422).
+///
+/// ```
+/// use teistro_gochar::hits::eclipse_reaches;
+///
+/// assert!(eclipse_reaches(358.5, 1.0, 3.0));
+/// assert!(!eclipse_reaches(10.0, 14.0, 3.0));
+/// ```
+#[must_use]
+pub fn eclipse_reaches(luminary_deg: f64, natal_deg: f64, orb_deg: f64) -> bool {
+    difference_deg(luminary_deg, natal_deg).abs() <= orb_deg
 }
 
 /// The step of the lattice about a natal point that holds every line of the
@@ -398,6 +574,51 @@ mod tests {
             phase(95.0, Edge::Before, Motion::Retrograde),
             AspectPhase::Leaving
         );
+    }
+
+    #[test]
+    fn a_varga_ingress_enters_the_sign_on_the_side_it_moves_to() {
+        let crossed = (Rashi::Pisces, Rashi::Aries);
+        let into = |motion| match varga_ingress(Varga::D9, crossed, motion) {
+            Some(HitEvent::VargaIngress { into, .. }) => into,
+            other => panic!("{other:?}"),
+        };
+        assert_eq!(into(Motion::Direct), Rashi::Aries);
+        assert_eq!(into(Motion::Retrograde), Rashi::Pisces);
+    }
+
+    #[test]
+    fn varga_ingresses_at_one_instant_sort_by_chart() {
+        let at = |varga| Hit {
+            instant: JulianDay::<Utc>::literal(1.0),
+            graha: Graha::Sun,
+            event: HitEvent::VargaIngress {
+                varga,
+                into: Rashi::Aries,
+                motion: Motion::Direct,
+            },
+        };
+        // A sign's line is every chart's: the sign ingress first, then the
+        // divisional charts by their catalogue order.
+        let sign = Hit {
+            instant: JulianDay::<Utc>::literal(1.0),
+            graha: Graha::Sun,
+            event: sign_ingress(0.0, Motion::Direct),
+        };
+        let mut hits = vec![at(Varga::D9), sign, at(Varga::D3)];
+        sort(&mut hits);
+        assert_eq!(hits, vec![sign, at(Varga::D3), at(Varga::D9)]);
+    }
+
+    #[test]
+    fn a_phase_is_its_quarter_of_the_circle() {
+        for phase in MoonPhase::ALL {
+            let line = f64::from(phase.elongation_deg());
+            for nudge in [-1e-7, 0.0, 1e-7] {
+                assert_eq!(MoonPhase::at_line(line + nudge), phase, "{line}");
+            }
+        }
+        assert_eq!(MoonPhase::at_line(360.0), MoonPhase::New);
     }
 
     #[test]

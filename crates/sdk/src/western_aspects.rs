@@ -408,7 +408,10 @@ pub(crate) fn planets(foundation: &ChartFoundation) -> impl Iterator<Item = &Gra
 
 /// One chart's points for a synastry, in the zodiac the request compares
 /// them in, its lagna last when asked.
-fn points(foundation: &ChartFoundation, request: &SynastryRequest) -> Vec<SynastryPoint> {
+pub(crate) fn points(
+    foundation: &ChartFoundation,
+    request: &SynastryRequest,
+) -> Vec<SynastryPoint> {
     let lagna = request
         .lagna
         .then(|| SynastryPoint::lagna(angle_in(foundation, request.zodiac, foundation.lagna_deg)));

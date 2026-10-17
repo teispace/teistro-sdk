@@ -125,6 +125,9 @@ import {
   MotionById,
   WesternAspectById,
   AspectPhaseById,
+  MoonPhaseById,
+  SolarEclipseKindById,
+  LunarEclipseKindById,
   KakshyaLordById,
   SarvaStandingById,
   GocharVerdictById,
@@ -1011,7 +1014,11 @@ export class Chart {
    * `{ kind: 'NAKSHATRA_INGRESS', into, motion }` with `into` a nakshatra,
    * `{ kind: 'STATION', turns }`, or `{ kind: 'ASPECT', to, angle, phase,
    * motion }` with `to` either `{ point: 'GRAHA', graha }` or
-   * `{ point: 'LAGNA' }` — the spelling `hits.points` takes back.
+   * `{ point: 'LAGNA' }` — the spelling `hits.points` takes back. Asked
+   * for by `kinds`, a hit may also be `{ kind: 'VARGA_INGRESS', varga,
+   * into, motion }`, `{ kind: 'LUNAR_PHASE', phase }`, `{ kind:
+   * 'PHASE_RETURN' }`, or `{ kind: 'SOLAR_ECLIPSE' | 'LUNAR_ECLIPSE', to,
+   * eclipse }`.
    */
   get hits() {
     const d = this.#batch.decoded;
@@ -3346,6 +3353,31 @@ function hitOf(h, row) {
         angle: h.angle[row],
         phase: AspectPhaseById.get(h.phase[row]) ?? 'unknown',
         motion,
+      };
+      break;
+    case 'VARGA_INGRESS':
+      event = {
+        kind,
+        varga: VargaById.get(h.varga[row]) ?? 'unknown',
+        into: RashiById.get(h.into[row]) ?? 'unknown',
+        motion,
+      };
+      break;
+    case 'LUNAR_PHASE':
+      event = { kind, phase: MoonPhaseById.get(h.lunarPhase[row]) ?? 'unknown' };
+      break;
+    case 'SOLAR_ECLIPSE':
+      event = {
+        kind,
+        to: pointOf(h.toLagna[row], h.toGraha[row], h.toMidheaven[row]),
+        eclipse: SolarEclipseKindById.get(h.solarEclipse[row]) ?? 'unknown',
+      };
+      break;
+    case 'LUNAR_ECLIPSE':
+      event = {
+        kind,
+        to: pointOf(h.toLagna[row], h.toGraha[row], h.toMidheaven[row]),
+        eclipse: LunarEclipseKindById.get(h.lunarEclipse[row]) ?? 'unknown',
       };
       break;
     default:

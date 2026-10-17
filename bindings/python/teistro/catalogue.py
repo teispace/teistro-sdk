@@ -4288,6 +4288,27 @@ class HitKind(Member):
     ASPECT = 3
     """The graha aspected a natal point, or came within or left its orb."""
 
+    VARGA_INGRESS = 4
+    """The graha entered a new sign of a divisional chart: `varga` says
+    which, and `into` the sign.
+    """
+
+    LUNAR_PHASE = 5
+    """The Moon reached a principal phase, which `lunar_phase` names."""
+
+    PHASE_RETURN = 6
+    """The Moon's elongation from the Sun returned to the natal chart's."""
+
+    SOLAR_ECLIPSE = 7
+    """A solar eclipse fell on a natal point: `solar_eclipse` says which
+    kind, and the `to_*` columns the point.
+    """
+
+    LUNAR_ECLIPSE = 8
+    """A lunar eclipse fell on a natal point: `lunar_eclipse` says which
+    kind, and the `to_*` columns the point.
+    """
+
 
 class Motion(Member):
     """Which way a graha was moving, through a line or out of a station."""
@@ -4341,6 +4362,24 @@ class AspectPhase(Member):
 
     LEAVING = 2
     """The transit passed out of the orb."""
+
+
+class MoonPhase(Member):
+    """A principal phase of the Moon, the Moon's elongation from the Sun a
+    multiple of 90° (C419).
+    """
+
+    NEW = 0
+    """The new moon, 0°."""
+
+    FIRST_QUARTER = 1
+    """The first quarter, 90°."""
+
+    FULL = 2
+    """The full moon, 180°."""
+
+    LAST_QUARTER = 3
+    """The last quarter, 270°."""
 
 
 class NodeVedha(Member):
@@ -6749,6 +6788,11 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "NAKSHATRA_INGRESS",
         2: "STATION",
         3: "ASPECT",
+        4: "VARGA_INGRESS",
+        5: "LUNAR_PHASE",
+        6: "PHASE_RETURN",
+        7: "SOLAR_ECLIPSE",
+        8: "LUNAR_ECLIPSE",
     },
     "Motion": {
         0: "DIRECT",
@@ -6769,6 +6813,12 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "ENTERING",
         1: "EXACT",
         2: "LEAVING",
+    },
+    "MoonPhase": {
+        0: "NEW",
+        1: "FIRST_QUARTER",
+        2: "FULL",
+        3: "LAST_QUARTER",
     },
     "NodeVedha": {
         0: "LIKE_THE_SUN",
