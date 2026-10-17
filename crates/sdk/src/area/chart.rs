@@ -1315,8 +1315,9 @@ impl<'a> ChartArea<'a> {
     /// (`03-design/transit-hit-list.md`), sorted by instant, then graha,
     /// then kind. A request naming them adds the kinds the list has gained
     /// since ([`HitKind::DEFAULT`](crate::HitKind::DEFAULT) are the four it
-    /// began with): a graha entering a new sign of a divisional chart, and
-    /// the Moon's phases and its returns to the natal phase.
+    /// began with): a graha entering a new sign of a divisional chart, the
+    /// Moon's phases and its returns to the natal phase, and an eclipse
+    /// falling on a natal point.
     ///
     /// Each sign and nakshatra is the one a chart founded at that instant
     /// would give — the search reads the chart's own zodiac, not a frame's
@@ -1388,9 +1389,7 @@ impl<'a> ChartArea<'a> {
         natals: impl IntoIterator<Item = &'d Document>,
         request: &crate::hit_request::HitRequest,
     ) -> Result<Envelope<Vec<Vec<teistro_gochar::hits::Hit>>>, Error> {
-        use crate::hit_request::{
-            HitKind, groups, hit_of, lattices_of, phase_hit_of, phase_lattices_of,
-        };
+        use crate::hit_request::groups;
         use teistro_core::settings::Centre;
         use teistro_gochar::hits::{self, Hit, NatalPoint};
 
@@ -1413,48 +1412,22 @@ impl<'a> ChartArea<'a> {
         } else {
             vec![None; natals.len()]
         };
+        // An eclipse is the Earth's and not a place's: found once for the
+        // batch, and only its luminary's place read per group.
+        let eclipses = self.hit_eclipses(request)?;
         let mut lists: Vec<Vec<Hit>> = vec![Vec::new(); natals.len()];
         let mut provenance = None;
         for (place, members) in groups(&natals, topocentric) {
-            let meanings = lattices_of(request, &natals, &midheavens, &members)?;
-            let lattices: Vec<_> = meanings.iter().map(|(_, lattice)| *lattice).collect();
-            // The Moon's phases and each chart's phase return are lines of
-            // its elongation from the Sun, one scan of their own.
-            let phases = phase_lattices_of(request, &natals, &members)?;
-            let phase_lattices: Vec<_> = phases.iter().map(|(_, lattice)| *lattice).collect();
-            let (found, phased) = self.founding(UtcOffset::UTC, |founder| {
-                let window = (request.from(), request.to());
-                let found = founder.transit_events(
-                    &place,
-                    request.grahas(),
-                    &lattices,
-                    request.asks(HitKind::Station),
-                    window,
-                )?;
-                let phased = if phase_lattices.is_empty() {
-                    Vec::new()
-                } else {
-                    founder
-                        .elongation_events(&place, &phase_lattices, window)?
-                        .value
-                };
-                Ok((found, phased))
-            })?;
-            let sky = found
-                .value
-                .iter()
-                .filter_map(|event| Some((event, hit_of(event, &meanings, request)?)));
-            let moon = phased
-                .iter()
-                .filter_map(|event| Some((event, phase_hit_of(event, &phases)?)));
-            for (event, (happened, only)) in sky.chain(moon) {
-                let hit = Hit {
-                    instant: event.instant,
-                    graha: event.graha,
-                    event: happened,
-                };
+            let (found, stamp) = self.group_hits(
+                request,
+                (&natals, &midheavens),
+                (&place, &members),
+                &eclipses,
+            )?;
+            for (only, hit) in found {
                 // An event of the sky goes to every chart of the group; an
-                // aspect or a phase return to its own chart alone.
+                // aspect, a phase return or an eclipse on a natal point to
+                // its own chart alone.
                 let to: &[usize] = match &only {
                     Some(chart) => std::slice::from_ref(chart),
                     None => &members,
@@ -1465,7 +1438,7 @@ impl<'a> ChartArea<'a> {
                     }
                 }
             }
-            provenance.get_or_insert(found.provenance);
+            provenance.get_or_insert(stamp);
         }
         for list in &mut lists {
             hits::sort(list);
@@ -1473,6 +1446,140 @@ impl<'a> ChartArea<'a> {
         let provenance = provenance
             .ok_or_else(|| Error::internal("a batch of charts was searched in no group"))?;
         Ok(Envelope::sealing(lists, provenance))
+    }
+
+    /// One group's hits, each with the one chart it belongs to, or `None`
+    /// for an event of the sky every chart of the group shares: the
+    /// graha's crossings and stations in one scan each, the Moon's
+    /// elongation in one scan of its own, and the luminary's place at
+    /// every eclipse of the window.
+    fn group_hits(
+        self,
+        request: &crate::hit_request::HitRequest,
+        (natals, midheavens): (&[&Document], &[Option<f64>]),
+        (place, members): (&Place, &[usize]),
+        eclipses: &[crate::hit_request::SkyEclipse],
+    ) -> Result<crate::hit_request::GroupHits, Error> {
+        use crate::hit_request::{
+            HitKind, eclipse_hits, hit_of, lattices_of, phase_hit_of, phase_lattices_of,
+        };
+        use teistro_gochar::hits::Hit;
+
+        let meanings = lattices_of(request, natals, midheavens, members)?;
+        let lattices: Vec<_> = meanings.iter().map(|(_, lattice)| *lattice).collect();
+        // The Moon's phases and each chart's phase return are lines of its
+        // elongation from the Sun, one scan of their own.
+        let phases = phase_lattices_of(request, natals, members)?;
+        let phase_lattices: Vec<_> = phases.iter().map(|(_, lattice)| *lattice).collect();
+        let instants: Vec<JulianDay<Utc>> =
+            eclipses.iter().map(|eclipse| eclipse.instant()).collect();
+        let (found, phased, luminaries) = self.founding(UtcOffset::UTC, |founder| {
+            let window = (request.from(), request.to());
+            let found = founder.transit_events(
+                place,
+                request.grahas(),
+                &lattices,
+                request.asks(HitKind::Station),
+                window,
+            )?;
+            let phased = if phase_lattices.is_empty() {
+                Vec::new()
+            } else {
+                founder
+                    .elongation_events(place, &phase_lattices, window)?
+                    .value
+            };
+            // The luminaries in the chart's zodiac, as a chart founded at
+            // the greatest moment places them.
+            let luminaries = if instants.is_empty() {
+                Vec::new()
+            } else {
+                founder.longitudes(&instants, place)?.value
+            };
+            Ok((found, phased, luminaries))
+        })?;
+        let as_hit = |event: &teistro_chart::foundation::TransitEvent, happened| Hit {
+            instant: event.instant,
+            graha: event.graha,
+            event: happened,
+        };
+        let mut hits: Vec<(Option<usize>, Hit)> = found
+            .value
+            .iter()
+            .filter_map(|event| {
+                let (happened, only) = hit_of(event, &meanings, request)?;
+                Some((only, as_hit(event, happened)))
+            })
+            .collect();
+        hits.extend(phased.iter().filter_map(|event| {
+            let (happened, only) = phase_hit_of(event, &phases)?;
+            Some((only, as_hit(event, happened)))
+        }));
+        hits.extend(
+            eclipse_hits(
+                request,
+                (natals, midheavens, members),
+                eclipses,
+                &luminaries,
+            )?
+            .into_iter()
+            .map(|(chart, hit)| (Some(chart), hit)),
+        );
+        Ok((hits, found.provenance))
+    }
+
+    /// The eclipses whose greatest moment falls in a hit list's window,
+    /// when the request asks for either kind (C421): the almanac's own
+    /// search over the same window, geocentric, under
+    /// `panchanga.eclipse_shadow`, the greatest moment's UT1 read as UTC as
+    /// the almanac's eclipses read it.
+    ///
+    /// # Errors
+    ///
+    /// A context with no ephemeris, or a classical one, whose eclipse is
+    /// its own method (C188), `UNSUPPORTED` naming `kinds`.
+    fn hit_eclipses(
+        self,
+        request: &crate::hit_request::HitRequest,
+    ) -> Result<Vec<crate::hit_request::SkyEclipse>, Error> {
+        use crate::hit_request::{HitKind, SkyEclipse};
+        if !request.asks_eclipses() {
+            return Ok(Vec::new());
+        }
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        let settings = self.context.settings();
+        let delta_t = self.context.delta_t();
+        let sky = Completion::new(provider, settings.provider.overrides, delta_t);
+        if sky.capabilities().astronomy == Astronomy::Classical {
+            return Err(Error::unsupported(
+                "a classical astronomy's eclipse is its own method, which a hit list does not read",
+            )
+            .with_field("kinds"));
+        }
+        let search = Eclipses::new(&sky, delta_t)
+            .with_shadow(ShadowRule::of_setting(settings.panchanga.eclipse_shadow)?);
+        let (from, to) = (
+            JulianDay::<Ut1>::literal(request.from().get()),
+            JulianDay::<Ut1>::literal(request.to().get()),
+        );
+        let mut found = Vec::new();
+        if request.asks(HitKind::SolarEclipse) {
+            for eclipse in search.solar_between(from, to)? {
+                found.push(SkyEclipse::Solar {
+                    greatest: JulianDay::<Utc>::literal(eclipse.greatest.get()),
+                    kind: eclipse.kind,
+                });
+            }
+        }
+        if request.asks(HitKind::LunarEclipse) {
+            for eclipse in search.lunar_between(from, to)? {
+                found.push(SkyEclipse::Lunar {
+                    greatest: JulianDay::<Utc>::literal(eclipse.greatest.get()),
+                    kind: eclipse.kind,
+                });
+            }
+        }
+        Ok(found)
     }
 
     /// Saturn's **Sade Sati** and smaller spells from the natal Moon over a

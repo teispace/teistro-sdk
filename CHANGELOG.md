@@ -380,6 +380,17 @@ the traditional rulers or the modern ones, which give Aquarius, Pisces
 and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
 dispositor (C415), and the nodes are refused (C416). The Rust surface
 only: no blob section carries the chains yet.
+**A hit list reports an eclipse on a natal point.** **Numbers:** none
+moved; both kinds are asked for by name. `SOLAR_ECLIPSE` and
+`LUNAR_ECLIPSE` are the almanac's own eclipses whose luminary, at the
+greatest moment and in the chart's zodiac, stands within
+`eclipseOrbDeg` of a natal point the request names: 3° by default (crux
+C422), the Sun's degree for a solar eclipse and the Moon's for a lunar
+one, every kind counted and carried on the hit (C421). A classical
+astronomy is refused on `kinds`, as its eclipse is its own method. The C
+boundary refuses both on `hits.kinds` until the `hits` section carries
+them.
+
 **A hit list reports the Moon's phases and phase returns.** **Numbers:**
 none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,
 first quarter, full and last quarter moon, the Moon's elongation from the

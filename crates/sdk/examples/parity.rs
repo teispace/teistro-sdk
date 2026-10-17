@@ -4700,6 +4700,20 @@ fn the_hits(report: &mut Report, sdk: &Context, index: usize, document: &teistro
             // Not asked for here; printed as the others would print it.
             HitEvent::LunarPhase { phase } => (dash(), dash(), wire_key(&phase), dash(), dash()),
             HitEvent::PhaseReturn => (dash(), dash(), dash(), dash(), dash()),
+            HitEvent::SolarEclipse { to, eclipse } => (
+                dash(),
+                dash(),
+                natal_key(to).to_owned(),
+                dash(),
+                eclipse.full_key().to_owned(),
+            ),
+            HitEvent::LunarEclipse { to, eclipse } => (
+                dash(),
+                dash(),
+                natal_key(to).to_owned(),
+                dash(),
+                eclipse.full_key().to_owned(),
+            ),
             HitEvent::VargaIngress {
                 varga,
                 into,

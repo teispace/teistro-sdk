@@ -245,7 +245,10 @@ fn stations_alternate_and_bound_the_backward_ingresses() {
                 | HitEvent::Aspect { motion, .. } => {
                     assert_eq!(motion == Motion::Retrograde, backward, "{graha:?} {hit:?}");
                 }
-                HitEvent::LunarPhase { .. } | HitEvent::PhaseReturn => {}
+                HitEvent::LunarPhase { .. }
+                | HitEvent::PhaseReturn
+                | HitEvent::SolarEclipse { .. }
+                | HitEvent::LunarEclipse { .. } => {}
             }
         }
     }
@@ -595,4 +598,108 @@ fn every_lunar_phase_and_phase_return_is_where_founded_charts_put_it() {
     };
     assert!(near(2_460_689.435_417, MoonPhase::Full), "{phases:?}");
     assert!(near(2_460_705.025, MoonPhase::New), "{phases:?}");
+}
+
+/// An eclipse on a natal point is the almanac's eclipse, at its greatest
+/// moment, wherever a chart founded then puts its luminary within the
+/// orb of the point, and nowhere else (C421, C422): every eclipse of 2025
+/// against every natal point is read back both ways. The birth is an hour
+/// after the new moon of 29 March 2025, which eclipsed the Sun in part,
+/// so its Sun and Moon both lie within a degree of that eclipse.
+#[test]
+fn an_eclipse_on_a_natal_point_is_the_almanacs_within_the_orb() {
+    use teistro::CalendarDate;
+    use teistro::catalogue::{Calendar, SolarEclipseKind};
+    let sdk = context(None);
+    let natal = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(2_460_764.0),
+            &ChartRequest::at(place(), UtcOffset::UTC),
+        )
+        .unwrap()
+        .value;
+    let asked = year().with_kinds([HitKind::SolarEclipse, HitKind::LunarEclipse]);
+    let hits = sdk.chart().hits(&natal, &asked).unwrap().value;
+    let almanac = sdk
+        .almanac()
+        .eclipses(
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 1, 1),
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 12, 31),
+            &place(),
+            UtcOffset::UTC,
+        )
+        .unwrap()
+        .value;
+    let eclipses: Vec<(f64, Graha)> = almanac
+        .solar
+        .iter()
+        .map(|solar| (solar.eclipse.greatest.get(), Graha::Sun))
+        .chain(
+            almanac
+                .lunar
+                .iter()
+                .map(|lunar| (lunar.eclipse.greatest.get(), Graha::Moon)),
+        )
+        .collect();
+    assert_eq!(
+        eclipses.len(),
+        4,
+        "2025 has two solar and two lunar eclipses"
+    );
+    let instants: Vec<JulianDay<Utc>> = eclipses
+        .iter()
+        .map(|(jd, _)| JulianDay::<Utc>::literal(*jd))
+        .collect();
+    let founded = sdk
+        .chart()
+        .found_many(&instants, &place(), UtcOffset::UTC, ChartKind::Natal)
+        .unwrap()
+        .value;
+    let natal_deg = |point: NatalPoint| match point {
+        NatalPoint::Graha { graha } => natal.foundation.graha(graha).unwrap().longitude_deg,
+        NatalPoint::Lagna => natal.foundation.lagna_deg,
+        NatalPoint::Midheaven => panic!("not asked for"),
+    };
+    let rank = |point: &NatalPoint| asked.points().iter().position(|p| p == point).unwrap();
+    let mut expected = Vec::new();
+    for ((jd, luminary), chart) in eclipses.iter().zip(&founded) {
+        let at = chart.graha(*luminary).unwrap().longitude_deg;
+        for point in asked.points() {
+            let apart = (at - natal_deg(*point)).rem_euclid(360.0);
+            if apart.min(360.0 - apart) <= HitRequest::DEFAULT_ECLIPSE_ORB_DEG {
+                expected.push((*jd, *luminary, rank(point)));
+            }
+        }
+    }
+    let mut got: Vec<(f64, Graha, usize)> = hits
+        .iter()
+        .map(|hit| match hit.event {
+            HitEvent::SolarEclipse { to, .. } | HitEvent::LunarEclipse { to, .. } => {
+                (hit.instant.get(), hit.graha, rank(&to))
+            }
+            other => panic!("only eclipses were asked for: {other:?}"),
+        })
+        .collect();
+    let order =
+        |a: &(f64, Graha, usize), b: &(f64, Graha, usize)| a.0.total_cmp(&b.0).then(a.2.cmp(&b.2));
+    expected.sort_by(order);
+    got.sort_by(order);
+    assert_eq!(got, expected);
+    let sun = NatalPoint::Graha { graha: Graha::Sun };
+    assert!(
+        hits.iter().any(|hit| hit.event
+            == HitEvent::SolarEclipse {
+                to: sun,
+                eclipse: SolarEclipseKind::Partial
+            }),
+        "{hits:?}"
+    );
+    // A tighter orb keeps only what lies inside it.
+    let tight = sdk
+        .chart()
+        .hits(&natal, &asked.clone().with_eclipse_orb(0.25))
+        .unwrap()
+        .value;
+    assert!(tight.len() < hits.len() && tight.iter().all(|hit| hits.contains(hit)));
 }

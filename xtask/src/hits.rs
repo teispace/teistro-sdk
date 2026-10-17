@@ -103,6 +103,8 @@ const fn kind_column(event: HitEvent) -> usize {
         HitEvent::VargaIngress { .. } => 4,
         HitEvent::LunarPhase { .. } => 5,
         HitEvent::PhaseReturn => 6,
+        HitEvent::SolarEclipse { .. } => 7,
+        HitEvent::LunarEclipse { .. } => 8,
     }
 }
 
@@ -225,7 +227,9 @@ fn read_ingresses(
             | HitEvent::Aspect { .. }
             | HitEvent::VargaIngress { .. }
             | HitEvent::LunarPhase { .. }
-            | HitEvent::PhaseReturn => continue,
+            | HitEvent::PhaseReturn
+            | HitEvent::SolarEclipse { .. }
+            | HitEvent::LunarEclipse { .. } => continue,
         };
         let width = 360.0 / f64::from(of);
         let division = |chart: &ChartFoundation| -> Result<usize, String> {
