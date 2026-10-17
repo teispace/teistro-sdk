@@ -508,3 +508,37 @@ fn a_system_counted_with_abhijit_reads_the_moon_across_its_own_segment() {
         ashtottari.periods[0].interval
     );
 }
+
+/// The systems whose sources stop above five levels, and where (C58), in
+/// the order `systems()` lists them:
+/// asked for more, each stops there and its reading says so.
+const SHALLOW: [(DashaSystem, u8); 3] = [
+    (DashaSystem::Kalachakra, 2),
+    (DashaSystem::Profection, 1),
+    (DashaSystem::Firdaria, 2),
+];
+
+/// Every system a chart always gives, asked for five levels: the depth a
+/// reading carries is its deepest period's, five for every system but the
+/// ones [`SHALLOW`] names, and never more than was asked
+/// (`03-design/settings-and-profiles.md`, the validation table).
+#[test]
+fn a_reading_says_the_depth_it_carries_for_every_system() {
+    let mut shallow = Vec::new();
+    for system in teistro::dasha::systems_every_chart_gives() {
+        let patch = format!(r#"{{"dasha": {{"depth": {{"{}": 5}}}}}}"#, system.key());
+        let (_, document) = reading(&patch, &[system]);
+        let dasha = &document.dashas[0];
+        let deepest = dasha
+            .periods
+            .iter()
+            .map(|period| period.path.split('/').count())
+            .max()
+            .unwrap();
+        assert_eq!(usize::from(dasha.depth.get()), deepest, "{system:?}");
+        if deepest < 5 {
+            shallow.push((system, dasha.depth.get()));
+        }
+    }
+    assert_eq!(shallow, SHALLOW, "the systems that stop above five levels");
+}
