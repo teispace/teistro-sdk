@@ -186,7 +186,8 @@ never the first:
 | `TROPICAL` with an ayanamsha set | warning: the ayanamsha is ignored |
 | `TOPOCENTRIC` and a request without a place | error at the request |
 | `TWENTY_EIGHT` nakshatras with a dasha seeded on 27 | error: the seed map has no Abhijit row |
-| a dasha depth beyond the system's supported depth | error |
+| a dasha depth outside 1 to 6 | error `INVALID_ARG`, field `dasha.depth` |
+| a dasha depth deeper than the system's sources define (Kalachakra and the firdaria stop at 2, the profected year at 1) | no error: the periods stop at the deepest level defined, and the reading's `depth` is the depth it carries, not the one asked for (C58); measured 2026-10-17 over every computed system at depth 5, each reading's `depth` equal to its deepest period |
 | `CLAMP` polar policy with `WHOLE_SIGN` placements | warning: the policy never applies |
 | a house system the provider declares it cannot compute natively under `NATIVE_ONLY` | error `CAPABILITY` |
 | `SURYA` siddhanta with `TOPOCENTRIC` | warning: the model is geocentric; the correction is applied on top and stamped |
