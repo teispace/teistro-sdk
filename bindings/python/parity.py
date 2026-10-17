@@ -1583,7 +1583,12 @@ def main() -> None:
             for k, hit in enumerate(chart.hits):
                 e = hit.event
                 into = e.into.full_key if isinstance(e, (SignIngress, NakshatraIngress)) else "-"
-                motion = e.turns.key if isinstance(e, Station) else e.motion.key
+                if isinstance(e, Station):
+                    motion = e.turns.key
+                elif isinstance(e, (SignIngress, NakshatraIngress, AspectHit)):
+                    motion = e.motion.key
+                else:
+                    motion = "-"
                 if isinstance(e, AspectHit):
                     to = natal_key(e.to)
                     angle, phase = str(e.angle), e.phase.key

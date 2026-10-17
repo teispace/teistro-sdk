@@ -1901,25 +1901,37 @@ class ChartsHits:
     """What happened, which says which columns below mean something."""
 
     into: memoryview[int]
-    """The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed."""
+    """The sign (a `Rashi` id) entered by a sign or varga ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed."""
 
     motion: memoryview[int]
-    """Which way the graha was moving through the line, or, for a station, the motion it turned to."""
+    """Which way the graha was moving through the line, or, for a station, the motion it turned to; `DIRECT` for a lunar phase, a phase return or an eclipse, which cross no line of the graha's own."""
 
     to_lagna: memoryview[int]
-    """For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind."""
+    """For an aspect or an eclipse, 1 when the natal point is the lagna, 0 when it is a natal graha; 0 for any other kind."""
 
     to_graha: memoryview[int]
-    """For an aspect to a natal graha, which (a `Graha` id); 0 otherwise."""
+    """For an aspect or an eclipse on a natal graha, which (a `Graha` id); 0 otherwise."""
 
     to_midheaven: memoryview[int]
-    """For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise."""
+    """For an aspect or an eclipse, 1 when the natal point is the midheaven, 0 otherwise."""
 
     angle: memoryview[int]
     """For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind."""
 
     phase: memoryview[int]
     """For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect."""
+
+    varga: memoryview[int]
+    """For a varga ingress, the divisional chart whose sign changed (C418); read only when `kind` is a varga ingress."""
+
+    lunar_phase: memoryview[int]
+    """For a lunar phase, which of the four the Moon reached, in the chart's frame (C419); read only when `kind` is a lunar phase."""
+
+    solar_eclipse: memoryview[int]
+    """For a solar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a solar eclipse."""
+
+    lunar_eclipse: memoryview[int]
+    """For a lunar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a lunar eclipse."""
 
     length: int
     """The number of rows every column holds."""
@@ -5841,6 +5853,10 @@ def decode_charts(raw: bytes) -> Charts:
             to_midheaven=blob.column(at_hits, 7, 1, at_hits.count).cast("B"),
             angle=blob.column(at_hits, 8, 2, at_hits.count).cast("H"),
             phase=blob.column(at_hits, 9, 1, at_hits.count).cast("B"),
+            varga=blob.column(at_hits, 10, 2, at_hits.count).cast("H"),
+            lunar_phase=blob.column(at_hits, 11, 1, at_hits.count).cast("B"),
+            solar_eclipse=blob.column(at_hits, 12, 1, at_hits.count).cast("B"),
+            lunar_eclipse=blob.column(at_hits, 13, 1, at_hits.count).cast("B"),
             length=at_hits.count,
         ),
         sade_sati=ChartsSadeSati(

@@ -910,6 +910,10 @@ export function decodeCharts(bytes) {
       toMidheaven: column(blob, at, 7, 'u8', at.count),
       angle: column(blob, at, 8, 'u16', at.count),
       phase: column(blob, at, 9, 'u8', at.count),
+      varga: column(blob, at, 10, 'u16', at.count),
+      lunarPhase: column(blob, at, 11, 'u8', at.count),
+      solarEclipse: column(blob, at, 12, 'u8', at.count),
+      lunarEclipse: column(blob, at, 13, 'u8', at.count),
       length: at.count,
     };
   }

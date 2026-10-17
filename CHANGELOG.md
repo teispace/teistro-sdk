@@ -421,9 +421,9 @@ greatest moment and in the chart's zodiac, stands within
 `eclipseOrbDeg` of a natal point the request names: 3° by default (crux
 C422), the Sun's degree for a solar eclipse and the Moon's for a lunar
 one, every kind counted and carried on the hit (C421). A classical
-astronomy is refused on `kinds`, as its eclipse is its own method. The C
-boundary refuses both on `hits.kinds` until the `hits` section carries
-them.
+astronomy is refused on `kinds`, as its eclipse is its own method. The
+`hits` section carries the kind in its `solar_eclipse` or `lunar_eclipse`
+column and the point in the `to_*` columns, and every binding reads it.
 
 **A hit list reports the Moon's phases and phase returns.** **Numbers:**
 none moved; both kinds are asked for by name. `LUNAR_PHASE` is the new,
@@ -433,8 +433,9 @@ Sun crossing a multiple of 90° in the chart's frame (crux C419);
 directed angle, once a synodic month (C420). Both are searched by the
 crossing search a tithi's ends use, over the tithi's own quantity
 (`Founder::elongation_events`), and January 2025's full and new moons
-fall within three minutes of the almanacs' times. The C boundary refuses
-both on `hits.kinds` until the `hits` section carries them.
+fall within three minutes of the almanacs' times. The `hits` section
+carries the phase in its `lunar_phase` column, and every binding reads
+both.
 
 **A hit list reports varga ingresses.** **Numbers:** none moved: the
 new kind is asked for by name, `VARGA_INGRESS`, and a request naming no
@@ -444,9 +445,8 @@ entering a new sign of a divisional chart, in the charts `vargas` names
 chart's sign changes and not at every part line, which is how
 `vargas::change::changes` already counted them (crux C418); the lines
 are `vargas::change::lines`, one more lattice in each graha's one scan.
-The Rust surface and the JSON record only: the C boundary names the kind
-in `TsHitKind` and refuses a request for it on `hits.kinds` until the
-`hits` section carries its chart.
+The `hits` section carries the chart in its `varga` column, and every
+binding reads it, with `vargas` and `eclipseOrbDeg` on its request.
 
 **A day's durmuhurtas, and where the Moon points.** **Numbers:** none
 moved. Every almanac day gains its `durmuhurtas`, the muhurtas its

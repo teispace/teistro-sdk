@@ -1494,6 +1494,7 @@ void _engineTests() {
       Station(:final turns) => '${h.instant} ${h.graha.key} ${turns.key}',
       AspectHit(:final to, :final angle, :final phase) =>
         '${h.instant} ${h.graha.key} ${to.point} $angle ${phase.key}',
+      final other => '${h.instant} ${h.graha.key} ${other.kind.key}',
     };
     final first = batch.at(0).hits;
     final second = batch.at(1).hits;
@@ -1503,7 +1504,15 @@ void _engineTests() {
     ];
     expect(sky(first), sky(second));
     expect(first.map(line), isNot(second.map(line)));
-    expect({for (final h in first) h.event.kind}, HitKind.values.toSet());
+    expect(
+      {for (final h in first) h.event.kind},
+      {
+        HitKind.signIngress,
+        HitKind.nakshatraIngress,
+        HitKind.station,
+        HitKind.aspect,
+      },
+    );
     for (final (k, h) in first.indexed) {
       if (k > 0) expect(first[k - 1].instant, lessThanOrEqualTo(h.instant));
       expect([Graha.sun, Graha.mercury, Graha.saturn], contains(h.graha));
@@ -1545,6 +1554,85 @@ void _engineTests() {
         isA<TeistroException>().having((e) => e.field, 'field', 'hits.to'),
       ),
     );
+    ctx.dispose();
+  });
+
+  /// The five kinds past the default four cross with their own fields: a
+  /// varga ingress's chart and sign, a lunar phase, a phase return, and an
+  /// eclipse's kind and natal point. The birth is an hour after the solar
+  /// eclipse of 29 March 2025, so 2025 holds an eclipse on its luminaries.
+  test('a hit list carries varga ingresses, lunar phases and eclipses', () {
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const kinds = [
+      HitKind.vargaIngress,
+      HitKind.lunarPhase,
+      HitKind.phaseReturn,
+      HitKind.solarEclipse,
+      HitKind.lunarEclipse,
+    ];
+    HitRequest asked({
+      List<Varga> vargas = const [Varga.d9, Varga.d30],
+      double eclipseOrbDeg = 3,
+    }) => HitRequest(
+      from: 2460676.5,
+      to: 2461041.5,
+      grahas: const [Graha.sun, Graha.mars],
+      kinds: kinds,
+      vargas: vargas,
+      eclipseOrbDeg: eclipseOrbDeg,
+    );
+    final hits =
+        ctx.chart
+            .found(
+              instant: 2460764,
+              place: place,
+              utcOffsetSeconds: 0,
+              hits: asked(),
+            )
+            .hits;
+    expect({for (final h in hits) h.event.kind}, kinds.toSet());
+    for (final h in hits) {
+      switch (h.event) {
+        case VargaIngress(:final varga):
+          expect([Varga.d9, Varga.d30], contains(varga));
+        case SolarEclipseHit(:final to):
+          expect(h.graha, Graha.sun);
+          expect(['GRAHA', 'LAGNA', 'MIDHEAVEN'], contains(to.point));
+        case LunarEclipseHit(:final to):
+          expect(h.graha, Graha.moon);
+          expect(['GRAHA', 'LAGNA', 'MIDHEAVEN'], contains(to.point));
+        case LunarPhase() || PhaseReturn():
+          expect(h.graha, Graha.moon);
+        default:
+          fail('a kind not asked for: ${h.event.kind}');
+      }
+    }
+    expect(
+      hits.where((h) => h.event is LunarPhase).length,
+      inInclusiveRange(48, 50),
+    );
+    for (final (bad, field) in [
+      (asked(vargas: const [Varga.d1]), 'hits.vargas'),
+      (asked(eclipseOrbDeg: 20), 'hits.eclipseOrbDeg'),
+    ]) {
+      expect(
+        () => ctx.chart.found(
+          instant: 2460764,
+          place: place,
+          utcOffsetSeconds: 0,
+          hits: bad,
+        ),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
     ctx.dispose();
   });
 

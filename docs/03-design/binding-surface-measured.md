@@ -7,7 +7,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 20 exported constants, 158 enums of 1350 members
+The description carries 20 exported constants, 159 enums of 1354 members
 in all, 2 opaque handle types, 10 callback types, 27 structs, 53 entry
 points and 5 result-blob schemas, extracted from 26 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
@@ -69,25 +69,26 @@ a call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1765 | 1 | 0 | 0 | 0 |
+| Dart | 1769 | 2 | 0 | 0 | 0 |
 | TypeScript | 415 | 0 | 0 | 1 | 0 |
-| Python | 1765 | 0 | 1 | 2 | 0 |
-| Java | 1765 | 0 | 1 | 0 | 0 |
+| Python | 1769 | 0 | 1 | 2 | 0 |
+| Java | 1769 | 0 | 1 | 0 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1765 looked at |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 1769 looked at |
 | no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 415 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1765 looked at |
-| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1765 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1765 disagree |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1769 looked at |
+| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1769 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1769 disagree |
 | renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 415 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1765 disagree |
-| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1765 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1769 disagree |
+| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1769 disagree |
 
 What Dart renames:
 
 - ChartKind: `return` → `returnValue`
+- TsMoonPhase: `new` → `newValue`
 
 What TypeScript renames:
 
@@ -114,7 +115,7 @@ the others — and it is caught on a **parameter** and a **field**,
 which the Dart rule never touches. A single list of reserved words
 shared by the two emitters would have found neither.
 
-The Dart rule fires on 1 of the names it spells and the Python rule on
+The Dart rule fires on 2 of the names it spells and the Python rule on
 3, and no name of either is left reserved once the rule has run.
 
 ## 3. What layout a binding must agree with
@@ -178,8 +179,8 @@ the class of mistake a generated binding exists to make impossible.
 
 | scalar | `ctypes` | format | at the boundary | in a column |
 |---|---|---|---|---|
-| `u8` | `c_uint8` | `B` | 67 | 429 |
-| `u16` | `c_uint16` | `H` | 20 | 258 |
+| `u8` | `c_uint8` | `B` | 67 | 432 |
+| `u16` | `c_uint16` | `H` | 20 | 259 |
 | `u32` | `c_uint32` | `I` | 50 | 63 |
 | `u64` | `c_uint64` | `Q` | 1 | 0 |
 | `i8` | `c_int8` | `b` | 0 | 36 |
@@ -196,7 +197,7 @@ the class of mistake a generated binding exists to make impossible.
 |---|---|---|
 | every scalar has a fixed-width `ctypes` type and a format code | **holds** | 0 of 13 disagree |
 | every scalar the boundary uses is one of the thirteen | **holds** | 8 of 13 appear |
-| every blob column's scalar has a format code | **holds** | 0 of 1111 disagree |
+| every blob column's scalar has a format code | **holds** | 0 of 1115 disagree |
 
 ## 5. What a binding can say about a value
 

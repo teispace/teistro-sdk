@@ -30,34 +30,30 @@ public enum HitKind implements Member {
     ASPECT(3, "ASPECT"),
 
     /**
-     * The graha entered a new sign of a divisional chart. Named so a
-     * request's kinds are this enum's; the `hits` section does not carry
-     * its chart yet, so a request asking for it is refused
-     * (`TsHitKind::CARRIED`).
+     * The graha entered a new sign of a divisional chart: `varga` says
+     * which, and `into` the sign.
      */
     VARGA_INGRESS(4, "VARGA_INGRESS"),
 
     /**
-     * The Moon reached a principal phase; not carried yet, as
-     * `TsHitKind::VargaIngress`.
+     * The Moon reached a principal phase, which `lunar_phase` names.
      */
     LUNAR_PHASE(5, "LUNAR_PHASE"),
 
     /**
-     * The Moon's elongation from the Sun returned to the natal chart's;
-     * not carried yet, as `TsHitKind::VargaIngress`.
+     * The Moon's elongation from the Sun returned to the natal chart's.
      */
     PHASE_RETURN(6, "PHASE_RETURN"),
 
     /**
-     * A solar eclipse fell on a natal point; not carried yet, as
-     * `TsHitKind::VargaIngress`.
+     * A solar eclipse fell on a natal point: `solar_eclipse` says which
+     * kind, and the `to_*` columns the point.
      */
     SOLAR_ECLIPSE(7, "SOLAR_ECLIPSE"),
 
     /**
-     * A lunar eclipse fell on a natal point; not carried yet, as
-     * `TsHitKind::VargaIngress`.
+     * A lunar eclipse fell on a natal point: `lunar_eclipse` says which
+     * kind, and the `to_*` columns the point.
      */
     LUNAR_ECLIPSE(8, "LUNAR_ECLIPSE");
 

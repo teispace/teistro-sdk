@@ -2360,6 +2360,10 @@ final class ChartsHits {
     required this.toMidheaven,
     required this.angle,
     required this.phase,
+    required this.varga,
+    required this.lunarPhase,
+    required this.solarEclipse,
+    required this.lunarEclipse,
     required this.length,
   });
 
@@ -2372,19 +2376,19 @@ final class ChartsHits {
   /// What happened, which says which columns below mean something.
   final Uint8List kind;
 
-  /// The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.
+  /// The sign (a `Rashi` id) entered by a sign or varga ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.
   final Uint16List into;
 
-  /// Which way the graha was moving through the line, or, for a station, the motion it turned to.
+  /// Which way the graha was moving through the line, or, for a station, the motion it turned to; `DIRECT` for a lunar phase, a phase return or an eclipse, which cross no line of the graha's own.
   final Uint8List motion;
 
-  /// For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind.
+  /// For an aspect or an eclipse, 1 when the natal point is the lagna, 0 when it is a natal graha; 0 for any other kind.
   final Uint8List toLagna;
 
-  /// For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.
+  /// For an aspect or an eclipse on a natal graha, which (a `Graha` id); 0 otherwise.
   final Uint16List toGraha;
 
-  /// For an aspect, 1 when the natal point aspected is the midheaven, 0 otherwise.
+  /// For an aspect or an eclipse, 1 when the natal point is the midheaven, 0 otherwise.
   final Uint8List toMidheaven;
 
   /// For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind.
@@ -2392,6 +2396,18 @@ final class ChartsHits {
 
   /// For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.
   final Uint8List phase;
+
+  /// For a varga ingress, the divisional chart whose sign changed (C418); read only when `kind` is a varga ingress.
+  final Uint16List varga;
+
+  /// For a lunar phase, which of the four the Moon reached, in the chart's frame (C419); read only when `kind` is a lunar phase.
+  final Uint8List lunarPhase;
+
+  /// For a solar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a solar eclipse.
+  final Uint8List solarEclipse;
+
+  /// For a lunar eclipse on a natal point, its kind as the almanac's eclipse search gives it (C421); read only when `kind` is a lunar eclipse.
+  final Uint8List lunarEclipse;
 
   /// The number of rows every column holds.
   final int length;
@@ -7995,6 +8011,26 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atHits, 9),
         blob.columnOffset(atHits, 9) + atHits.count * 1,
+      ),
+      varga: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 10),
+        blob.columnOffset(atHits, 10) + atHits.count * 2,
+      ),
+      lunarPhase: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 11),
+        blob.columnOffset(atHits, 11) + atHits.count * 1,
+      ),
+      solarEclipse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 12),
+        blob.columnOffset(atHits, 12) + atHits.count * 1,
+      ),
+      lunarEclipse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 13),
+        blob.columnOffset(atHits, 13) + atHits.count * 1,
       ),
       length: atHits.count,
     ),

@@ -5444,30 +5444,26 @@ typedef enum ts_hit_kind {
      */
     TS_HIT_KIND_ASPECT = 3,
     /**
-     * The graha entered a new sign of a divisional chart. Named so a
-     * request's kinds are this enum's; the `hits` section does not carry
-     * its chart yet, so a request asking for it is refused
-     * (`TsHitKind::CARRIED`).
+     * The graha entered a new sign of a divisional chart: `varga` says
+     * which, and `into` the sign.
      */
     TS_HIT_KIND_VARGA_INGRESS = 4,
     /**
-     * The Moon reached a principal phase; not carried yet, as
-     * `TsHitKind::VargaIngress`.
+     * The Moon reached a principal phase, which `lunar_phase` names.
      */
     TS_HIT_KIND_LUNAR_PHASE = 5,
     /**
-     * The Moon's elongation from the Sun returned to the natal chart's;
-     * not carried yet, as `TsHitKind::VargaIngress`.
+     * The Moon's elongation from the Sun returned to the natal chart's.
      */
     TS_HIT_KIND_PHASE_RETURN = 6,
     /**
-     * A solar eclipse fell on a natal point; not carried yet, as
-     * `TsHitKind::VargaIngress`.
+     * A solar eclipse fell on a natal point: `solar_eclipse` says which
+     * kind, and the `to_*` columns the point.
      */
     TS_HIT_KIND_SOLAR_ECLIPSE = 7,
     /**
-     * A lunar eclipse fell on a natal point; not carried yet, as
-     * `TsHitKind::VargaIngress`.
+     * A lunar eclipse fell on a natal point: `lunar_eclipse` says which
+     * kind, and the `to_*` columns the point.
      */
     TS_HIT_KIND_LUNAR_ECLIPSE = 8,
 } ts_hit_kind;
@@ -5545,6 +5541,29 @@ typedef enum ts_aspect_phase {
      */
     TS_ASPECT_PHASE_LEAVING = 2,
 } ts_aspect_phase;
+
+/**
+ * A principal phase of the Moon, the Moon's elongation from the Sun a
+ * multiple of 90° (C419).
+ */
+typedef enum ts_moon_phase {
+    /**
+     * The new moon, 0°.
+     */
+    TS_MOON_PHASE_NEW = 0,
+    /**
+     * The first quarter, 90°.
+     */
+    TS_MOON_PHASE_FIRST_QUARTER = 1,
+    /**
+     * The full moon, 180°.
+     */
+    TS_MOON_PHASE_FULL = 2,
+    /**
+     * The last quarter, 270°.
+     */
+    TS_MOON_PHASE_LAST_QUARTER = 3,
+} ts_moon_phase;
 
 /**
  * The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).

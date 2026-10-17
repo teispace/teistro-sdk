@@ -100,6 +100,7 @@ from .catalogue import (
     Modality,
     MonthKind,
     MoonEvent,
+    MoonPhase,
     Motion,
     MuhurtaNature,
     MuhurtaYoga,

@@ -1572,6 +1572,8 @@ void main() {
           '$angle',
           phase.key,
         ),
+        // Asked for by name, so not by the parity request.
+        _ => ('-', '-', '-', '-', '-'),
       };
       put(
         'chart-$i-hit-$k',

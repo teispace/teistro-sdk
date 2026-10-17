@@ -3675,6 +3675,25 @@ export const AspectPhaseById = /* @__PURE__ */ new Map([
   [2, 'LEAVING'],
 ]);
 
+/** Every MoonPhase by name. */
+export const MoonPhase = /* @__PURE__ */ Object.freeze({
+  New: 'NEW',
+  FirstQuarter: 'FIRST_QUARTER',
+  Full: 'FULL',
+  LastQuarter: 'LAST_QUARTER',
+});
+
+/**
+ * Every MoonPhase by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MoonPhaseById = /* @__PURE__ */ new Map([
+  [0, 'NEW'],
+  [1, 'FIRST_QUARTER'],
+  [2, 'FULL'],
+  [3, 'LAST_QUARTER'],
+]);
+
 /** Every NodeVedha by name. */
 export const NodeVedha = /* @__PURE__ */ Object.freeze({
   LikeTheSun: 'LIKE_THE_SUN',
