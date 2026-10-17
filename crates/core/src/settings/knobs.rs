@@ -237,6 +237,18 @@ knob!(
         None = "NONE" }
 );
 knob!(
+    /// Which muhurtas of each weekday are censured, the durmuhurtas
+    /// (`03-design/panchanga-day.md` §21, crux C398).
+    ///
+    /// Muhurta Chintamani (*Vivaha Prakarana* v. 52) names them by their
+    /// presiding deities over the two lists of vv. 50–51, so one name can
+    /// fall in the night; Raman's *Muhurtha* (ch. V, p. 32) numbers them
+    /// over a daylight list of his own, which has no Abhijit.
+    DurmuhurtaTable { /// Muhurta Chintamani's: Sunday the 14th; Monday the 9th and 12th; Tuesday the 4th and the night's 7th; Wednesday the 8th; Thursday the 6th and 12th; Friday the 4th and 9th; Saturday the 1st and 2nd.
+        MuhurtaChintamani = "MUHURTA_CHINTAMANI", /// Raman's as printed: Sunday the 14th; Monday the 8th and 12th; Tuesday the 4th and 11th; Wednesday the 8th (Abhijit); Thursday the 12th and 13th; Friday the 4th and 8th; Saturday the 1st and 2nd, all of the daylight.
+        Raman = "RAMAN" }
+);
+knob!(
     /// Which season a day falls in (crux C178).
     ///
     /// The Surya Siddhanta (XIV.10) counts the six seasons from the Sun's

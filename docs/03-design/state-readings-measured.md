@@ -183,7 +183,7 @@ one that names none and is not here fails.
 
 | category | key | why |
 |---|---|---|
-| `inauspicious-kaal` | `dur-muhurta` | the SDK divides the day into muhurtas but names none of them, so the censured one has no key |
+| `inauspicious-kaal` | `dur-muhurta` | the SDK finds a day's durmuhurtas (`Panchanga::durmuhurtas`, `panchanga.durmuhurta`), but no catalogue kind names one, so a censured muhurta has no key |
 | `inauspicious-kaal` | `varjyam` | the SDK computes each star's varjyam window (a day's `omens.varjyam`, a muhurta's `VARJYAM` clause), but no catalogue kind names it, so a reading has no key to hang on |
 | `planet-condition` | `COMBUST_CANCELLED` | the SDK computes combustion but not its cancellation, and no `state` member names one |
 

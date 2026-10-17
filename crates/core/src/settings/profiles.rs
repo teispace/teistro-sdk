@@ -12,8 +12,8 @@ use super::knobs::{
     AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
     BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
     Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, DualLord, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
-    GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
+    DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya,
+    FirdariaNodes, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
     LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
     NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy,
@@ -144,6 +144,9 @@ fn root_panchanga() -> Panchanga {
         panchaka_start: PanchakaStart::Aquarius,
         // Muhurta Chintamani's table, the rank-1 text (crux C165).
         varjyam: Varjyam::MuhurtaChintamani,
+        // Muhurta Chintamani's, the Sanskrit Raman's list departs from
+        // (crux C398).
+        durmuhurta: DurmuhurtaTable::MuhurtaChintamani,
         ritu: RituReckoning::Solar,
         solar_month_start: SolarMonthStart::Punyakala,
         eclipse_shadow: EclipseShadow::Danjon,

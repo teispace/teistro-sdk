@@ -2688,6 +2688,32 @@
         }
       ]
     },
+    "Durmuhurta": {
+      "description": "One censured muhurta of a day, a durmuhurta.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Interval",
+          "description": "When it runs."
+        },
+        "is_daytime": {
+          "description": "Whether it is a muhurta of the daylight; false for one of the night that follows it.",
+          "type": "boolean"
+        },
+        "number": {
+          "description": "The muhurta's number in its half, 1 to 15, as the texts count it.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "number",
+        "is_daytime",
+        "at"
+      ],
+      "type": "object"
+    },
     "Ekadhipatya": {
       "description": "How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign beside an occupied one (crux C60).",
       "oneOf": [
@@ -5129,6 +5155,13 @@
           "$ref": "#/$defs/LocalDay",
           "description": "The day, with its arc, its vara, its polar state and the sunrise convention it was reckoned under."
         },
+        "durmuhurtas": {
+          "description": "The day's censured muhurtas under `panchanga.durmuhurta`, in the order they run (`03-design/panchanga-day.md` §21, crux C398).",
+          "items": {
+            "$ref": "#/$defs/Durmuhurta"
+          },
+          "type": "array"
+        },
         "ghati_reckoning": {
           "$ref": "#/$defs/GhatiReckoning",
           "description": "How the day's ghatis are counted, `day.ghati_reckoning` as applied: what `Panchanga::ghati_pala` reads."
@@ -5184,6 +5217,7 @@
         "choghadiya",
         "horas",
         "muhurtas",
+        "durmuhurtas",
         "month",
         "moon",
         "sun",

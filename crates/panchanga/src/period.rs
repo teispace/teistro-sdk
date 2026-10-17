@@ -19,8 +19,10 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Choghadiya, Graha, Kaala, Vara};
+use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::settings::DurmuhurtaTable;
 
 /// The eighths an inauspicious period may take.
 const EIGHTHS: u16 = 8;
@@ -82,6 +84,163 @@ pub struct Muhurtas {
     /// night that **ends** at this day's sunrise. Absent when that night
     /// is not known, which is the polar case.
     pub brahma: Option<Interval>,
+}
+
+/// One censured muhurta of a day, a durmuhurta.
+///
+/// `number` counts what an almanac counts: the muhurta's place in its
+/// own half, **from one**, the daylight's from sunrise and the night's
+/// from sunset. It is not an index into [`Muhurtas::daylight`] (which
+/// counts from zero) and not a place among all thirty.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_core::interval::Interval;
+/// use teistro_core::settings::DurmuhurtaTable;
+/// use teistro_panchanga::period::{durmuhurtas, muhurtas};
+///
+/// let daylight = Interval::literal(100.0, 100.5);
+/// let night = Interval::literal(100.5, 101.0);
+/// let day = muhurtas(daylight, night, None, Vara::Ravivara);
+/// let found = durmuhurtas(&day, Vara::Ravivara, DurmuhurtaTable::MuhurtaChintamani)?;
+/// // A Sunday's one durmuhurta is the fourteenth of its daylight.
+/// assert_eq!(found.len(), 1);
+/// assert_eq!(found[0].number, 14);
+/// assert!(found[0].is_daytime);
+/// assert_eq!(found[0].at, day.daylight[13]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Durmuhurta {
+    /// The muhurta's number in its half, 1 to 15, as the texts count it.
+    pub number: u8,
+    /// Whether it is a muhurta of the daylight; false for one of the
+    /// night that follows it.
+    pub is_daytime: bool,
+    /// When it runs.
+    pub at: Interval,
+}
+
+/// A muhurta a durmuhurta table names: its half, and its number in that
+/// half from one.
+#[derive(Clone, Copy)]
+struct Censured {
+    /// Whether the muhurta is the daylight's.
+    is_daytime: bool,
+    /// Its number in its half, 1 to 15.
+    number: u8,
+}
+
+/// The daylight's muhurta of a number.
+const fn day(number: u8) -> Censured {
+    Censured {
+        is_daytime: true,
+        number,
+    }
+}
+
+/// The night's muhurta of a number.
+const fn night(number: u8) -> Censured {
+    Censured {
+        is_daytime: false,
+        number,
+    }
+}
+
+/// Muhurta Chintamani's durmuhurtas, Sunday first (*Vivaha Prakarana*
+/// v. 52, read over the deity lists of vv. 50 and 51; the 1906
+/// Venkateshwar Press edition, p. 89).
+///
+/// The verse names deities, not numbers: रवावर्यमा, Aryaman on a Sunday;
+/// ब्राह्म and रक्षः on a Monday; वह्नि and पित्र्य on a Tuesday; अभिजित् on a
+/// Wednesday; तोय and रक्षः on a Thursday; ब्राह्म and पित्र्य on a Friday;
+/// ईश and सार्प on a Saturday. Agni alone presides over no muhurta of the
+/// daylight (its eleventh is Indra's and Agni's together, where Raman's
+/// reading puts it), so Tuesday's second is the night's seventh. Brahma, water
+/// and Shiva preside over one muhurta of each list or two of one, and
+/// the edition's Hindi reads each as the daylight's: Vidhata the ninth,
+/// Jala (Ambu) the sixth, Girisha the first (crux C398).
+const CHINTAMANI: [&[Censured]; 7] = [
+    &[day(14)],
+    &[day(9), day(12)],
+    &[day(4), night(7)],
+    &[day(8)],
+    &[day(6), day(12)],
+    &[day(4), day(9)],
+    &[day(1), day(2)],
+];
+
+/// Raman's durmuhurtas as printed, Sunday first (*Muhurtha*, 1948,
+/// ch. V, p. 32), every one of the daylight.
+///
+/// His daylight list has no Abhijit — Vidhi is its eighth — so his
+/// Monday and Friday name the eighth where Muhurta Chintamani's
+/// Vidhata is the ninth; his Wednesday names Abhijit without a number,
+/// which is the eighth as every almanac counts it.
+const RAMAN: [&[Censured]; 7] = [
+    &[day(14)],
+    &[day(8), day(12)],
+    &[day(4), day(11)],
+    &[day(8)],
+    &[day(12), day(13)],
+    &[day(4), day(8)],
+    &[day(1), day(2)],
+];
+
+/// The durmuhurtas of a day of a vara, under a table, in the order they
+/// run.
+///
+/// A durmuhurta whose half has no arc — the daylight of a polar night,
+/// the night of a polar day — is absent rather than a muhurta of no
+/// length, as every period of the module is.
+///
+/// # Errors
+///
+/// `UNSUPPORTED` for a table this build does not know, naming the
+/// setting `panchanga.durmuhurta`.
+pub fn durmuhurtas(
+    muhurtas: &Muhurtas,
+    vara: Vara,
+    table: DurmuhurtaTable,
+) -> Result<Vec<Durmuhurta>, Error> {
+    let rows = match table {
+        DurmuhurtaTable::MuhurtaChintamani => &CHINTAMANI,
+        DurmuhurtaTable::Raman => &RAMAN,
+        other => {
+            return Err(Error::unsupported(format!(
+                "the panchanga does not know the durmuhurta table {other}; it knows {}",
+                DurmuhurtaTable::ALL
+                    .iter()
+                    .map(|known| known.key())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ))
+            .with_field("panchanga.durmuhurta"));
+        }
+    };
+    let row = rows
+        .get(usize::from(vara.attributes().weekday))
+        .copied()
+        .unwrap_or_default();
+    Ok(row
+        .iter()
+        .filter_map(|censured| {
+            let half = if censured.is_daytime {
+                &muhurtas.daylight
+            } else {
+                &muhurtas.night
+            };
+            let at = half
+                .get(usize::from(censured.number.checked_sub(1)?))
+                .copied()?;
+            Some(Durmuhurta {
+                number: censured.number,
+                is_daytime: censured.is_daytime,
+                at,
+            })
+        })
+        .collect())
 }
 
 /// The lord of the weekday `steps` on from a vara.
@@ -239,12 +398,13 @@ mod tests {
     )]
 
     use super::{
-        DAY_STEP, NIGHT_START, NIGHT_STEP, choghadiya, choghadiya_at, choghadiya_of,
+        DAY_STEP, NIGHT_START, NIGHT_STEP, choghadiya, choghadiya_at, choghadiya_of, durmuhurtas,
         is_inauspicious, kaalas, muhurtas, walk, walk_vara,
     };
     use teistro_core::catalogue::{Choghadiya, Graha, Kaala, Vara};
     use teistro_core::interval::Interval;
     use teistro_core::quantity::{JulianDay, Utc};
+    use teistro_core::settings::DurmuhurtaTable;
 
     fn daylight() -> Interval {
         Interval::literal(100.0, 100.5)
@@ -414,5 +574,99 @@ mod tests {
         let found = kaalas(daylight(), Vara::Ravivara);
         assert!(!is_inauspicious(&found, at), "the first eighth is clear");
         assert!(is_inauspicious(&found, JulianDay::literal(100.44)));
+    }
+
+    /// Each vara's durmuhurtas as (daytime, number) pairs.
+    fn censured(vara: Vara, table: DurmuhurtaTable) -> Vec<(bool, u8)> {
+        let day = muhurtas(daylight(), night(), None, vara);
+        durmuhurtas(&day, vara, table)
+            .unwrap()
+            .iter()
+            .map(|found| (found.is_daytime, found.number))
+            .collect()
+    }
+
+    #[test]
+    fn muhurta_chintamanis_durmuhurtas_are_the_verses() {
+        let table = DurmuhurtaTable::MuhurtaChintamani;
+        let expected: [(Vara, &[(bool, u8)]); 7] = [
+            (Vara::Ravivara, &[(true, 14)]),
+            (Vara::Somavara, &[(true, 9), (true, 12)]),
+            (Vara::Mangalavara, &[(true, 4), (false, 7)]),
+            (Vara::Budhavara, &[(true, 8)]),
+            (Vara::Guruvara, &[(true, 6), (true, 12)]),
+            (Vara::Shukravara, &[(true, 4), (true, 9)]),
+            (Vara::Shanivara, &[(true, 1), (true, 2)]),
+        ];
+        for (vara, pairs) in expected {
+            assert_eq!(censured(vara, table), pairs.to_vec(), "{vara:?}");
+        }
+    }
+
+    #[test]
+    fn ramans_durmuhurtas_differ_on_four_varas() {
+        let (chintamani, raman) = (DurmuhurtaTable::MuhurtaChintamani, DurmuhurtaTable::Raman);
+        let differing: Vec<Vara> = Vara::ALL
+            .iter()
+            .copied()
+            .filter(|vara| censured(*vara, chintamani) != censured(*vara, raman))
+            .collect();
+        assert_eq!(
+            differing,
+            vec![
+                Vara::Somavara,
+                Vara::Mangalavara,
+                Vara::Guruvara,
+                Vara::Shukravara
+            ]
+        );
+        // Raman's are all of the daylight.
+        for vara in Vara::ALL {
+            assert!(censured(vara, raman).iter().all(|(daytime, _)| *daytime));
+        }
+        assert_eq!(
+            censured(Vara::Mangalavara, raman),
+            vec![(true, 4), (true, 11)]
+        );
+    }
+
+    #[test]
+    fn a_durmuhurta_is_the_muhurta_it_names() {
+        // Twelve hours of daylight from 100.0: a muhurta is 0.5/15 of a
+        // day, 48 minutes. Sunday's fourteenth runs 13 × 48 = 624
+        // minutes after sunrise to 672: from 100.4333 to 100.4667, which
+        // from a 06:00 sunrise is 16:24 to 17:12.
+        let day = muhurtas(daylight(), night(), None, Vara::Ravivara);
+        let found = durmuhurtas(&day, Vara::Ravivara, DurmuhurtaTable::MuhurtaChintamani).unwrap();
+        assert_eq!(found.len(), 1);
+        assert!((found[0].at.from.get() - (100.0 + 624.0 / 1440.0)).abs() < 1e-12);
+        assert!((found[0].at.to.get() - (100.0 + 672.0 / 1440.0)).abs() < 1e-12);
+        // Tuesday's second is the night's seventh, from sunset 100.5:
+        // 6 × 48 = 288 minutes on, 100.7 to 100.7333 (22:48 to 23:36).
+        let day = muhurtas(daylight(), night(), None, Vara::Mangalavara);
+        let table = DurmuhurtaTable::MuhurtaChintamani;
+        let found = durmuhurtas(&day, Vara::Mangalavara, table).unwrap();
+        assert_eq!(found.len(), 2);
+        assert_eq!(found[0].at, day.daylight[3]);
+        assert_eq!(found[1].at, day.night[6]);
+        assert!(!found[1].is_daytime);
+        assert!((found[1].at.from.get() - 100.7).abs() < 1e-12);
+    }
+
+    #[test]
+    fn a_half_with_no_arc_has_no_durmuhurta() {
+        // A polar night: no daylight, so Tuesday keeps only the night's.
+        let none = Interval::literal(100.0, 100.0);
+        let day = muhurtas(
+            none,
+            Interval::literal(100.0, 101.0),
+            None,
+            Vara::Mangalavara,
+        );
+        let table = DurmuhurtaTable::MuhurtaChintamani;
+        let found = durmuhurtas(&day, Vara::Mangalavara, table).unwrap();
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].number, 7);
+        assert!(!found[0].is_daytime);
     }
 }
