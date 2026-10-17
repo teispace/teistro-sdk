@@ -32,6 +32,7 @@ mod accidental;
 mod almuten;
 mod considerations;
 mod dignity;
+mod disposition;
 mod fortitude;
 mod lot;
 mod perfection;
@@ -53,6 +54,7 @@ pub use dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,
     essential_dignity, exaltation_degree, face_lord,
 };
+pub use disposition::{ChainEnd, Dispositions, DispositorChain, Rulers, dispositions};
 pub use fortitude::{FortitudeRequest, Fortitudes};
 pub use lot::{
     Distance, FortuneRule, Lot, LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest,

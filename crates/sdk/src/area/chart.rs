@@ -40,8 +40,9 @@ use teistro_dasha::{
 use teistro_geometry::{Layout, draw};
 use teistro_hellenistic::{
     AccidentalSky, CHALDEAN_ORDER, ChartSky, ConsiderationRules, Considerations, Dignities,
-    DignityRequest, FortitudeRequest, Fortitudes, Lot, LotFormula, LotPlace, LotPoint, LotReading,
-    LotRequest, LotSky, Matter, PerfectionRequest, Sect, considerations,
+    DignityRequest, Dispositions, FortitudeRequest, Fortitudes, Lot, LotFormula, LotPlace,
+    LotPoint, LotReading, LotRequest, LotSky, Matter, PerfectionRequest, Rulers, Sect,
+    considerations,
 };
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
@@ -1688,6 +1689,62 @@ impl<'a> ChartArea<'a> {
     /// [`ChartArea::angles`] refuses.
     pub fn dignities(self, chart: &Document, request: &DignityRequest) -> Result<Dignities, Error> {
         request.read(&self.chart_sky(chart)?)
+    }
+
+    /// Every planet's **chain of dispositors** in a chart you founded, each
+    /// the ruler of the sign the one before stands in, followed until one
+    /// repeats; where each chain stops, a planet in its own sign or a cycle
+    /// of planets reported whole; and the **final dispositor** when every
+    /// chain stops at one planet in its own sign
+    /// (`03-design/essential-dignities.md` §Dispositors, C413 to C416).
+    ///
+    /// The bodies are the seven, and Uranus, Neptune and Pluto when the
+    /// chart placed them ([`ChartRequest::with_outer_planets`]); the nodes
+    /// rule no sign and are not read. [`Rulers::Modern`] needs the outer
+    /// three. The longitudes are the chart's own, in its zodiac, as
+    /// [`ChartArea::dignities`] reads them, whose answer carries the
+    /// traditional chains too. It needs **no ephemeris**.
+    ///
+    /// ```
+    /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// use teistro::Rulers;
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Test]).build().unwrap();
+    /// let london = Place::new(Latitude::literal(51.5), Longitude::literal(-0.12), Altitude::literal(20.0));
+    /// let request = ChartRequest::at(london, UtcOffset::literal(0, 0, 0));
+    /// let chart = sdk.chart().reading(JulianDay::<Utc>::literal(2_451_545.0), &request).unwrap().value;
+    /// let read = sdk.chart().dispositions(&chart, Rulers::Traditional).unwrap();
+    /// assert_eq!(read.chains.len(), 7);
+    /// if let Some(last) = read.final_dispositor {
+    ///     assert!(read.chains.iter().all(|one| one.end.own_sign() == Some(last)));
+    /// }
+    /// // The modern rulers need the outer planets the chart did not place.
+    /// assert!(sdk.chart().dispositions(&chart, Rulers::Modern).is_err());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming `planets` when the rulers name a planet the
+    /// chart does not place.
+    pub fn dispositions(self, chart: &Document, rulers: Rulers) -> Result<Dispositions, Error> {
+        let foundation = &chart.foundation;
+        let bodies: Vec<(Graha, f64)> = foundation
+            .grahas
+            .iter()
+            .chain(&foundation.outer)
+            .filter(|at| !matches!(at.graha, Graha::Rahu | Graha::Ketu))
+            .map(|at| (at.graha, at.longitude_deg))
+            .collect();
+        teistro_hellenistic::dispositions(&bodies, rulers).map_err(|why| {
+            if rulers == Rulers::Modern && foundation.outer.is_empty() {
+                why.with_hint(
+                    "found the chart with the outer planets, `ChartRequest::with_outer_planets`",
+                )
+            } else {
+                why
+            }
+        })
     }
 
     /// Both halves of Lilly's table in a chart you founded: the

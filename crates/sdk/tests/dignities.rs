@@ -17,9 +17,10 @@ use teistro::catalogue::{Graha, HouseSystem, Rashi};
 use teistro::hellenistic::house_of;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    Accident, AccidentalRules, ChartRequest, ConsiderationRules, Context, DignityRequest,
+    Accident, AccidentalRules, ChainEnd, ChartRequest, ConsiderationRules, Context, DignityRequest,
     DignityRules, Document, Ephemeris, FortitudeRequest, FortuneRule, ImpedimentKind, Lot,
-    LotRequest, PerfectionRequest, PtolemaicAspect, Scores, Sect, SectRule, Terms, UtcOffset,
+    LotRequest, PerfectionRequest, PtolemaicAspect, Rulers, Scores, Sect, SectRule, Terms,
+    UtcOffset,
 };
 
 fn context(patch: Option<&str>) -> Context {
@@ -471,4 +472,78 @@ fn a_perfection_refuses_one_planet_for_both_significators() {
             .unwrap();
         assert_eq!(held, matter);
     }
+}
+
+/// Each chain's every step is the lord of the sign the step before stands
+/// in, under the rulers asked, and the chart-level reading agrees with the
+/// chains the dignities carry (§Dispositors).
+#[test]
+fn a_chain_of_dispositors_is_the_sign_lords_followed_and_the_dignities_carry_it() {
+    let sdk = context(Some(r#"{"frame": {"zodiac": "TROPICAL"}}"#));
+    let place = Place::new(
+        Latitude::literal(51.5),
+        Longitude::literal(-0.12),
+        Altitude::literal(0.0),
+    );
+    let chart = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(2_451_545.0),
+            &ChartRequest::at(place, UtcOffset::UTC).with_outer_planets(),
+        )
+        .unwrap()
+        .value;
+    let sign_of =
+        |planet: Graha| Rashi::of_longitude(chart.foundation.graha(planet).unwrap().longitude_deg);
+    for rulers in [Rulers::Traditional, Rulers::Modern] {
+        let read = sdk.chart().dispositions(&chart, rulers).unwrap();
+        assert_eq!(read.chains.len(), 10, "{rulers:?}");
+        for chain in &read.chains {
+            let mut now = chain.planet;
+            for &next in &chain.dispositors {
+                assert_eq!(rulers.lord(sign_of(now)), next, "{rulers:?} {chain:?}");
+                now = next;
+            }
+            match &chain.end {
+                ChainEnd::OwnSign(last) => {
+                    assert_eq!(*last, now, "{chain:?}");
+                    assert_eq!(rulers.lord(sign_of(now)), now);
+                }
+                ChainEnd::Cycle(cycle) => {
+                    assert!(cycle.len() > 1 && cycle.contains(&rulers.lord(sign_of(now))));
+                }
+                _ => panic!("{chain:?}"),
+            }
+        }
+        if let Some(last) = read.final_dispositor {
+            assert!(
+                read.chains
+                    .iter()
+                    .all(|one| one.end.own_sign() == Some(last))
+            );
+        }
+    }
+    // The dignities carry the seven's traditional chains, in their own
+    // order, and the same final dispositor.
+    let carried = sdk
+        .chart()
+        .dignities(&chart, &DignityRequest::default())
+        .unwrap()
+        .dispositions;
+    let read = sdk
+        .chart()
+        .dispositions(&chart, Rulers::Traditional)
+        .unwrap();
+    assert_eq!(carried.final_dispositor, read.final_dispositor);
+    for chain in &carried.chains {
+        let same = read.chains.iter().find(|one| one.planet == chain.planet);
+        assert_eq!(Some(chain), same);
+    }
+    // Without the outer planets the modern rulers are refused by name.
+    let seven = london(&sdk);
+    let why = sdk
+        .chart()
+        .dispositions(&seven, Rulers::Modern)
+        .unwrap_err();
+    assert_eq!(why.field(), Some("planets"));
 }

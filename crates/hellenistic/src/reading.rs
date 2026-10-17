@@ -8,6 +8,7 @@ use teistro_core::error::Error;
 use crate::dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, essential_dignity,
 };
+use crate::disposition::{Dispositions, Rulers, dispositions};
 use crate::reception::{DignityKind, Reception, receptions};
 
 /// What a chart's dignities are read from: the seven planets' longitudes
@@ -253,6 +254,7 @@ impl DignityRequest {
         for at in &mut planets {
             at.reception = reception_score(at.planet, &receptions, self.scores);
         }
+        let dispositions = dispositions(&places, Rulers::Traditional)?;
         let planets = planets
             .try_into()
             .map_err(|_| Error::internal("the seven are seven"))?;
@@ -263,6 +265,7 @@ impl DignityRequest {
             scores: self.scores,
             planets,
             receptions,
+            dispositions,
         })
     }
 }
@@ -328,6 +331,11 @@ pub struct Dignities {
     /// Every pair each standing in a dignity of the other's, in the
     /// Chaldean order of the first and then the second (§Reception).
     pub receptions: Vec<Reception>,
+    /// The seven's chains of dispositors under the traditional rulers,
+    /// the planets' own houses, and the final dispositor when every chain
+    /// ends at one (§Dispositors); [`dispositions`](crate::dispositions)
+    /// follows the modern rulers.
+    pub dispositions: Dispositions,
 }
 
 #[cfg(test)]
@@ -340,7 +348,7 @@ mod tests {
     )]
 
     use super::{ChartSky, DignityRequest};
-    use crate::{CHALDEAN_ORDER, DignityKind, Scores, Sect, SectRule, Terms};
+    use crate::{CHALDEAN_ORDER, ChainEnd, DignityKind, Scores, Sect, SectRule, Terms};
     use teistro_core::catalogue::Graha;
 
     /// The Sun just under the western horizon: set by the horizon, still
@@ -416,6 +424,18 @@ mod tests {
         assert!(read.receptions.len() > 1, "{:?}", read.receptions);
         let reception: Vec<_> = read.planets.iter().map(|at| at.reception).collect();
         assert_eq!(reception, [0, 0, 5, 5, 0, 0, 0]);
+        // The same reception is a cycle of dispositors, beside Venus in
+        // Taurus and Mercury in Virgo, each in its own sign: three ends,
+        // so no final dispositor.
+        assert_eq!(
+            read.dispositions.ends,
+            [
+                ChainEnd::OwnSign(Graha::Venus),
+                ChainEnd::Cycle(vec![Graha::Mars, Graha::Sun]),
+                ChainEnd::OwnSign(Graha::Mercury),
+            ]
+        );
+        assert_eq!(read.dispositions.final_dispositor, None);
         let mars = read.planets[2];
         assert!(mars.dignity.peregrine(), "received, still peregrine");
         assert_eq!(mars.score, -5);
