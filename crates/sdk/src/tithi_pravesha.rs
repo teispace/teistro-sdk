@@ -14,7 +14,6 @@ use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::time::UtcOffset;
-use teistro_port_ephemeris::EphemerisProvider as _;
 use teistro_serial::Document;
 use teistro_tajika::Reading;
 
@@ -249,7 +248,7 @@ impl ChartArea<'_> {
                         &phases,
                         sojourn,
                         rule,
-                        Year {
+                        &Around {
                             year: one.year,
                             solar_return: one.at,
                             elongation_deg,
@@ -292,7 +291,7 @@ fn sojourn(
 }
 
 /// What a year's choice is made around.
-struct Year {
+struct Around {
     year: u16,
     solar_return: JulianDay<Utc>,
     elongation_deg: f64,
@@ -314,7 +313,7 @@ fn choose(
     phases: &[f64],
     (entered, left): (f64, f64),
     rule: TithiRule,
-    year: Year,
+    year: &Around,
 ) -> Option<TithiPravesha> {
     let solar = year.solar_return.get();
     let in_sign: Vec<f64> = phases
@@ -352,8 +351,8 @@ mod tests {
 
     use super::*;
 
-    fn year() -> Year {
-        Year {
+    fn year() -> Around {
+        Around {
             year: 3,
             solar_return: JulianDay::<Utc>::literal(100.0),
             elongation_deg: 40.0,
@@ -367,13 +366,13 @@ mod tests {
         // before the ingress is nearer the solar return.
         let phases = [98.5, 127.8];
         let sign = (99.0, 129.0);
-        let found = choose(&phases, sign, TithiRule::NatalSign, year()).unwrap();
+        let found = choose(&phases, sign, TithiRule::NatalSign, &year()).unwrap();
         assert_eq!(found.at.get(), 127.8);
         assert_eq!(found.picked, TithiRule::NatalSign);
         assert_eq!(found.in_sign, 1);
         assert!(!found.fell_back());
         // The rival ignores the sign and takes the nearer.
-        let nearest = choose(&phases, sign, TithiRule::NearestReturn, year()).unwrap();
+        let nearest = choose(&phases, sign, TithiRule::NearestReturn, &year()).unwrap();
         assert_eq!(nearest.at.get(), 98.5);
         assert_eq!(nearest.picked, TithiRule::NearestReturn);
         assert_eq!(nearest.in_sign, 1, "counted under either rule");
@@ -386,18 +385,18 @@ mod tests {
             &[71.0, 98.0, 127.0],
             (70.0, 101.5),
             TithiRule::NatalSign,
-            year(),
+            &year(),
         )
         .unwrap();
         assert_eq!(found.at.get(), 98.0);
         assert_eq!(found.in_sign, 2);
-        let found = choose(&[70.5, 99.9], (70.0, 101.5), TithiRule::NatalSign, year()).unwrap();
+        let found = choose(&[70.5, 99.9], (70.0, 101.5), TithiRule::NatalSign, &year()).unwrap();
         assert_eq!(found.at.get(), 99.9);
     }
 
     #[test]
     fn none_in_the_sign_falls_back_to_the_nearest_and_says_so() {
-        let found = choose(&[85.0, 114.6], (86.0, 114.5), TithiRule::NatalSign, year()).unwrap();
+        let found = choose(&[85.0, 114.6], (86.0, 114.5), TithiRule::NatalSign, &year()).unwrap();
         assert_eq!(found.at.get(), 114.6);
         assert_eq!(found.picked, TithiRule::NearestReturn);
         assert_eq!(found.in_sign, 0);
@@ -406,7 +405,7 @@ mod tests {
 
     #[test]
     fn a_window_with_no_return_answers_nothing() {
-        assert!(choose(&[], (90.0, 120.0), TithiRule::NearestReturn, year()).is_none());
+        assert!(choose(&[], (90.0, 120.0), TithiRule::NearestReturn, &year()).is_none());
     }
 
     #[test]

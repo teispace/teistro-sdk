@@ -20,6 +20,21 @@
       "format": "double",
       "type": "number"
     },
+    "Apogee": {
+      "description": "Which of the Moon's two apogees a chart places as the Black Moon Lilith (`03-design/lilith.md`).",
+      "oneOf": [
+        {
+          "const": "MEAN",
+          "description": "The mean lunar apogee: ELP2000-82B's mean perigee plus 180°.",
+          "type": "string"
+        },
+        {
+          "const": "OSCULATING",
+          "description": "The osculating lunar apogee: the apogee of the instantaneous Keplerian ellipse.",
+          "type": "string"
+        }
+      ]
+    },
     "Applied": {
       "description": "The orbs one reading was judged against, degrees.",
       "properties": {
@@ -1533,6 +1548,17 @@
           "description": "The lagna at the instant, in the chart's zodiac, degrees.",
           "format": "double",
           "type": "number"
+        },
+        "lilith": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LilithPosition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Black Moon Lilith, when the chart was asked to place it (`Carried::lilith`); absent, and left out of the document, when it was not (`03-design/lilith.md`)."
         },
         "outer": {
           "description": "Uranus, Neptune and Pluto, in the catalogue's order, when the chart was asked to place them (`OuterPlanets::Placed`); empty, and left out of the document, when it was not (`03-design/western-outer-planets.md`). Beside the nine rather than among them, because every reader of `ChartFoundation::grahas` counts nine.",
@@ -4307,6 +4333,59 @@
           "type": "object"
         }
       ]
+    },
+    "LilithPosition": {
+      "description": "Where the Black Moon Lilith is, in the chart's own zodiac: the lunar apogee the chart was asked for (`03-design/lilith.md`).",
+      "properties": {
+        "apogee": {
+          "$ref": "#/$defs/Apogee",
+          "description": "Which apogee."
+        },
+        "distance_au": {
+          "description": "Distance, astronomical units: zero for the mean apogee, which has none, and the osculating ellipse's apogee distance, `a(1 + e)`, for the osculating one.",
+          "format": "double",
+          "type": "number"
+        },
+        "house": {
+          "$ref": "#/$defs/BhavaPlacement",
+          "description": "Where it falls under the chart's placement system."
+        },
+        "latitude_deg": {
+          "description": "Ecliptic latitude, degrees: zero for the mean apogee, which the SDK answers as a direction on the ecliptic, and the orbit's own for the osculating one.",
+          "format": "double",
+          "type": "number"
+        },
+        "longitude_deg": {
+          "description": "Longitude in the chart's zodiac, degrees.",
+          "format": "double",
+          "type": "number"
+        },
+        "placement": {
+          "$ref": "#/$defs/BhavaPlacement",
+          "description": "Where it falls under the chart's chalit."
+        },
+        "speed_deg_per_day": {
+          "description": "Motion in the chart's longitude, degrees a day; negative when retrograde, which only the osculating apogee ever is.",
+          "format": "double",
+          "type": "number"
+        },
+        "tropical_deg": {
+          "description": "The same longitude in the tropical zodiac of date, degrees.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "apogee",
+        "longitude_deg",
+        "tropical_deg",
+        "latitude_deg",
+        "distance_au",
+        "speed_deg_per_day",
+        "placement",
+        "house"
+      ],
+      "type": "object"
     },
     "Limbs": {
       "description": "The four moving limbs of one day.",
