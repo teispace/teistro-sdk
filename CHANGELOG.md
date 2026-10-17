@@ -1712,6 +1712,26 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- **81 catalogue members named in English and Nepali**
+  (`entity-names.md` §4c): the vargas, 27 of the 30 vaiseshikamsas, the
+  Sayanadi and Cheshta avasthas, eleven points, eleven dasha systems and
+  the two natures, each Nepali name the BPHS e-text's own term. 72 stay
+  on `UNNAMED`, each with its reason (the outer planets, whose Nepali is
+  split between usage and Wikipedia; four names the e-text misprints;
+  names the text never prints). Every binding gains the new key types.
+
+  **Numbers:** none; an entity that rendered as its key now renders as
+  its name.
+
+- **A local Flutter library per platform.** The `library` user define
+  also takes a map of release platform to path (`ios-sim-arm64`,
+  `ios-sim-x64`, ...), so a build for several architectures names one
+  file each; a map missing the platform built is refused with the line
+  to add, and a named library built for another processor is refused
+  from its ELF or Mach-O header rather than failing in lipo.
+
+  **Numbers:** none.
+
 - **What the baseline corpus says of Sade Sati reaches a reader**
   (`state-readings.md` §8). The five `sade-sati-phala` records land on a
   new open catalogue kind, `gochar_bhava` (number 66): a graha in transit
