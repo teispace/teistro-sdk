@@ -356,8 +356,10 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // the engine's speed is -1.4e-6 degrees a day and the SDK's, the
     // derivative of its standard-tier places, +1.5e-5 — a sign inside any
     // tier's accuracy, which the corpus's own edge policy reports rather
-    // than fails. No field differs anywhere else. Twelve points and
-    // fourteen with Gulika and Mandi. The first special-lagna figure holds
+    // than fails. No field differs anywhere else. Thirteen points from the
+    // longitudes (the Indu lagna among them), and nineteen with the six the
+    // day divides: Gulika and Mandi, Kala, Mrityu, Yamaghantaka and
+    // Ardhaprahara. The first special-lagna figure holds
     // on no chart; the second on one, c034, whose hora lagna stands 0.24°
     // into Cancer, 28 seconds of sunrise from Gemini, so that it holds or
     // not with the sunrise's last half-minute (it did not until the
@@ -365,7 +367,7 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // record the special lagnas, so the count is the SDK's own.
     assert_eq!(
         (charts, points, differ, special),
-        (51, 51 * 14, [1, 1, 1, 0, 7], [0, 1])
+        (51, 51 * 19, [1, 1, 1, 0, 7], [0, 1])
     );
     let decided: Vec<(&str, usize)> = decided
         .iter()

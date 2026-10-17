@@ -21,9 +21,12 @@ it reads a graha. Three families ship:
   Indrachapa, Upaketu — a chain of five, each defined from the one
   before it;
 - the **upagrahas the day divides** — Gulika and Mandi, which are the
-  ascendant at the two ends of Saturn's eighth of the arc;
+  ascendant at the two ends of Saturn's eighth of the arc, and Kala,
+  Mrityu, Yamaghantaka and Ardhaprahara, the ascendant where the Sun's,
+  Mars's, Jupiter's and Mercury's eighths begin (§13);
 - the **special lagnas** — the bhava, hora, ghati and pranapada lagnas, which
   the clock drives; the Sree lagna, which the Moon's nakshatra drives;
+  the Indu lagna, which the ninth lords' kalas count from the Moon (§13);
   and the Yogi and Avayogi points.
 
 It is not: the chara karakas, which the corpus records under `houses`
@@ -181,6 +184,9 @@ pub mod lagna {
     pub fn ghati(sun_deg: f64, hours: f64) -> Result<Derived, Error>;
     pub fn pranapada(sun_deg: f64, hours: f64) -> Result<Derived, Error>;
     pub fn sree(lagna_deg: f64, moon_deg: f64) -> Result<Derived, Error>;
+    pub const INDU_KALAS: [u8; 7];                   // §13
+    pub fn indu_count(lagna: Rashi, moon: Rashi) -> u8;
+    pub fn indu(lagna_deg: f64, moon_deg: f64) -> Result<Derived, Error>;
 }
 pub mod yogi {
     pub fn yogi(sun_deg: f64, moon_deg: f64) -> Result<Derived, Error>;
@@ -190,6 +196,15 @@ pub mod yogi {
 pub mod eighth {
     pub struct Portion { pub eighth: u8, pub from: JulianDay<Utc>, pub to: JulianDay<Utc> }
     pub fn saturns(arc: Interval, vara: Vara, is_day: bool) -> Result<Portion, Error>;
+    // §13: the same rule for any weekday lord, and the four it names
+    pub const PORTION_LORDS: [(Point, Graha); 5];
+    pub enum Moment { Start, Middle, End }            // Start by default (C405)
+    pub fn lords_eighth(lord: Graha, vara: Vara, is_day: bool) -> Option<u8>;
+    pub fn lords(arc: Interval, lord: Graha, vara: Vara, is_day: bool) -> Result<Portion, Error>;
+    pub fn upagraha(point: Point, arc: Interval, vara: Vara, is_day: bool,
+                    moment: Moment, ascendant: &dyn Ascendant) -> Result<Derived, Error>;
+    pub fn lorded(arc: Interval, vara: Vara, is_day: bool,
+                  ascendant: &dyn Ascendant) -> Result<[Derived; 4], Error>;
 }
 
 /// Every point of a founded chart.
@@ -228,7 +243,10 @@ who knows its provider's accuracy.
 | an elapsed time that is not finite, or beyond a day and a half | `OUT_OF_RANGE` with the bound |
 | an arc with no length (a polar day or night) | `UNSUPPORTED`, naming the arc: an eighth of nothing is not an instant |
 | an ascendant the provider cannot give | whatever the `Ascendant` implementation returns, unchanged |
+| a lord with no weekday (a node, an outer planet) | `UNSUPPORTED`, naming `points.lord` |
+| a point no lord's eighth carries, asked of `eighth::upagraha` | `UNSUPPORTED`, naming `points.point` and the five that are |
 | the Varnada | `UNSUPPORTED (unsourced)`, naming crux C22 |
+| the Vighati lagna | not computed; crux C407 |
 
 ## 11. Tests
 
@@ -242,6 +260,14 @@ who knows its provider's accuracy.
 - **The eighths**: Saturn's portion for all fourteen vara-and-half
   combinations, that the eight portions partition the arc, and that a
   night walks the table five weekdays on.
+- **The verse against the measured table** (§13): the lords' rule gives
+  Saturn the catalogue's measured eighth on all fourteen halves of the
+  week; the four other lords' eighths are counted by hand for all
+  fourteen; the seven lords take seven distinct eighths and leave the
+  eighth unlorded.
+- **The Indu lagna's printed answer** (§13): the one worked chart a
+  translation prints, plus hand counts, the twelve-divides case, and
+  all 144 lagna-and-Moon sign pairs.
 - **Over every shipped profile**, as `aspect` does.
 
 ## 12. Open questions
@@ -257,13 +283,23 @@ who knows its provider's accuracy.
   do. The corpus records none, so what holds it is the arithmetic the
   verses imply — on every chart the SDK reads, it stands half as far round
   from the Sun as the hora lagna (`crates/sdk/tests/rules.rs`).
-- **The rest of the catalogue's 49 points.** Vighati lagna,
-  Indu lagna, Kala, Mrityu, Ardhaprahara and Yamaghantaka, Bhrigu bindu,
-  Sahayogi and the eight sphutas all have catalogue rows and no formula
-  here. The corpus records none of them, so each
-  waits on a citation — which is exactly the position `aspect` left the
-  sphuta drishti in, and the same answer applies: a row without a
-  formula is better than a formula without a source.
+- **The rest of the catalogue's 49 points.** Bhrigu bindu, Sahayogi and
+  the eight sphutas have catalogue rows and no formula here, and so does
+  the Vighati lagna, which no text read defines (C407). The corpus records
+  none of them, so each waits on a citation — which is exactly the
+  position `aspect` left the sphuta drishti in, and the same answer
+  applies: a row without a formula is better than a formula without a
+  source. Kala, Mrityu, Ardhaprahara, Yamaghantaka and the Indu lagna
+  found theirs on 2026-10-17 (§13).
+- **Where inside a portion the four are read** (C405) and **what a sum
+  twelve divides counts** for the Indu lagna (C406), §13.
+- **Two numberings of BPHS's opening chapters.** This page's §12 entry
+  above cites the bhava lagna as ch. 4 vv. 2 to 3; the sanskritdocuments
+  e-text puts the special lagnas in ch. 5 (*viśeṣalagnādhyāya*), the
+  bhava lagna at vv. 2 to 3, the hora lagna at vv. 4 to 5 and the ghati
+  lagna at vv. 6 to 8, one chapter on. `rectification-sources.md` meets
+  the same offset between the 1923 print and Jha. Which print the
+  ch. 4 citation counts by is worth stating where it is made.
 
 ## The arudha padas (2026-09-15)
 
@@ -276,4 +312,114 @@ sign and the grahas' signs, which is exactly what a point is. So
 `arudhas-measured.md`: the count from a house's sign to the catalogue's
 lord and as far again, a pada in the house or the seventh moving to the
 tenth from itself, reproduced on all 852.
+
+## 13. The other lords' eighths, and the Indu lagna (2026-10-17)
+
+The audit of what was buildable without new inputs named five rows of
+§12's list: Kala, Mrityu, Ardhaprahara and Yamaghantaka, and the Indu
+and Vighati lagnas. Four of the five ship; the Vighati lagna does not.
+The corpus records none of them (`crates/points/tests/baseline.rs` says
+so by name), so what holds each is its verse, a hand count, and the one
+worked chart a translation prints.
+
+### 13.1 Kala, Mrityu, Yamaghantaka and Ardhaprahara
+
+**Source.** BPHS ch. 3, read in the sanskritdocuments Devanagari e-text
+(`par0110`, *grahaguṇasvarūpādhyāya*), whose verse numbers are given here;
+the 1923 Subodhini print numbers the same verses one higher
+(`rectification-sources.md` §1 reads them there).
+
+| v. | key terms | paraphrase |
+|---|---|---|
+| 66 | *divasān aṣṭadhā bhaktvā vāreśād gaṇayet kramāt* | divide the daylight into eight and count the parts' lords in order from the weekday's lord |
+| 67 | *aṣṭamo 'ṃśo nirīśaḥ … rātrim apy aṣṭadhā kṛtvā vāreśāt pañcamāditaḥ* | the eighth part has no lord; the night is divided the same way, counting from the fifth lord from the weekday's |
+| 68 | *śanyaṃśo gulikaḥ … ravyaṃśaḥ kālasañjñakaḥ* | Saturn's part is Gulika; the Sun's is called Kala |
+| 69 | *bhaumāṃśo mṛtyur … gurvaṃśo yamaghaṇṭakaḥ, saumyāṃśo 'rdhapraharakaḥ, svasvadeśodbhavaḥ sphuṭaḥ* | Mars's part is Mrityu, Jupiter's Yamaghantaka, the saumya's (Mercury's) Ardhaprahara, each placed by what rises at its own place |
+| 70 | *gulikeṣṭavaśāl lagnaṃ … gulikaṃ procyate* | the lagna at Gulika's time is what is called Gulika |
+
+So the four are **one rule with Gulika**, a different lord's portion
+read the same way. The lords walk in weekday order (Sun, Moon, Mars,
+Mercury, Jupiter, Venus, Saturn): on a Sunday's daylight the Sun takes
+the first eighth, Mars the third, Mercury the fourth, Jupiter the fifth,
+Saturn the seventh; on its night the count starts at Jupiter, the fifth
+lord, so Jupiter takes the first eighth and the Sun the fourth. The
+Moon's and Venus's eighths carry no named point.
+
+**One table, held to the measured one.** The catalogue's Saturn row
+(`Kaala::GulikaKaala`) was measured against the recorded panchanga; the
+verse's rule was not. `eighth::lords_eighth` computes the rule for any
+weekday lord and a test holds it to the catalogue's Saturn on all
+fourteen halves of the week, which is what lets the rule stand for the
+four lords nothing recorded. The point-to-lord pairs are one table,
+`eighth::PORTION_LORDS`, in the verse's order.
+
+**Where inside the portion: crux C405.** v. 70 reads Gulika "at its
+time" and does not say which instant of the portion that is. Three
+readings exist:
+
+| reading | evidence |
+|---|---|
+| the start | the SDK's own Gulika, measured on all 71 fixtures (§5) |
+| the end | the 1923 Subodhini print's gloss works Gulika as the eighth's length times the part's ordinal, which is the end (`rectification-sources.md`); Sareen's translation of Uttara Kalamrita, Kanda I section 1 v. 8, reads Gulika at the end of Saturn's part, its example a Monday of 32 ghatis giving 4 × 6 = 24 ghatis |
+| the middle | the research page's attribution to Kalidasa; Uttara Kalamrita's Mandi multipliers (26, 22, 18, 14, 10, 6, 2 thirtieths of the day from Sunday) fall inside Saturn's eighth, near its end, at neither edge |
+
+**Default: the start**, because the shipped Gulika is the start and the
+verse gives the five one rule; reading Kala at one instant of its
+portion and Gulika at another would split a single verse in two. The
+reading is a caller's to change (`eighth::Moment`, `eighth::lorded_at`,
+`eighth::upagraha`); `Points::of` takes the default.
+
+### 13.2 The Indu lagna
+
+**Source.** Not Phaladeepika: neither the 1937 first edition nor the
+1950 second edition of Sastri's translation carries it (both
+Internet Archive OCR texts searched, the 1937 index read). It is
+**Uttara Kalamrita, Kanda I section 4 ("planets in the several bhavas")
+v. 27**, read on the page image of Sareen's print (p. 42), whose verse
+gives the numbers as numerals in parentheses; P. S. Sastri's translation
+carries the same verse in its ch. 4 with a worked chart.
+
+The verse: the kalās (*kalā*, "rays") of the seven grahas from the Sun
+are 30, 16, 6, 8, 10, 12 and 1; add those of the ninth lords
+(*bhāgyapa*) from the lagna and from the Moon, divide by twelve (*ina*,
+the twelve Suns), and the remainder counted from the Moon's sign
+(*vidhoḥ gṛham*) is the sign; a benefic there alone makes a man of
+crores, a malefic of thousands, an exalted malefic of crores again. (An
+older anonymous translation's OCR reads the series "30, 16, 6, 8, 8, 10,
+12"; the Devanagari print's own numerals give Saturn 1, and both later
+translations agree.)
+
+**The printed answer.** P. S. Sastri's chart 81 (dated 1905.2.4, drawn
+in the South Indian square on p. 98 of his translation, read on the page
+image): the lagna at Capricorn 25° and the Moon at Capricorn 17.4,
+read as 17°04′. The ninth from both is Virgo, Mercury's: 8 + 8 = 16,
+twelve expunged leaves 4, and the fourth sign from the Moon, counting
+its own, is Aries, which holds Jupiter. `lagna.rs`'s test takes the
+chart's lagna and Moon and asserts Aries; the degree it also asserts is
+the SDK's convention below, not the print's.
+
+**What the verse leaves open: crux C406.** Two things.
+
+1. **A sum twelve divides.** 6 + 6, 16 + 8, 12 + 12, 30 + 6 and 30 + 30
+   all leave nothing. The default counts the twelfth sign from the Moon,
+   which is what reducing by twelves leaves when the sum is a multiple of
+   twelve; the alternative counts nothing and lands on the Moon's own
+   sign.
+2. **A degree.** The verse names a sign. The point is given the Moon's
+   own degree in it: with the lagna's sign held, the Indu lagna changes
+   sign exactly when the Moon does, so the Moon's distance to its sign
+   edge is the point's, and `Boundaries` stays honest. The alternatives
+   are the sign's first degree, which would put every Indu lagna on an
+   edge, and its middle.
+
+### 13.3 The Vighati lagna does not ship
+
+BPHS ch. 5 of the e-text (*viśeṣalagnādhyāya*) announces three lagnas
+in v. 1, *bhāva-horā-ghaṭī-sañjña-lagnāni*, and closes the set at v. 24
+with *bhāva-horādi-lagnānām*; the word *vighaṭī* occurs nowhere in the
+e-text's 97 chapters. The catalogue row came from a software feature
+list, and the unit arithmetic does not suggest a rule: a vighati is a
+sixtieth of a ghati, and the ghati lagna already moves a sign a ghati.
+So the row stays at mark T, nothing computes it, and crux C407 waits on
+the text that defines it — the same answer as the Varnada.
 

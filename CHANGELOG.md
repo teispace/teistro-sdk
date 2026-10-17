@@ -175,6 +175,17 @@ chart rather than present or absent (`research-measured.md` §5 counts the
 cells the edges alone called stable). A study of births known to the
 minute is unchanged, and so is its input hash.
 
+**Five more derived points** (`crates/points`, `derived-points.md` §13).
+Kala, Mrityu, Yamaghantaka and Ardhaprahara are the ascendant where the
+Sun's, Mars's, Jupiter's and Mercury's eighths of the arc begin (BPHS ch.
+3 vv. 66 to 70), the rule Gulika already follows with another lord; the
+Indu lagna is a sign counted from the Moon's by the kalas of the two
+ninth lords (Uttara Kalamrita, Kanda I section 4 v. 27), at the Moon's
+degree. A chart's points go from 14 to 19 and every existing point is
+unchanged. Where inside a portion the four are read, and what a sum
+twelve divides counts, are cruxes C405 and C406; the Vighati lagna does
+not ship, since no text read defines it (C407).
+
 **The Python binding computes for the first time** (`bindings/python`,
 generated `ctypes` declarations, value classes, catalogue enums and blob
 decoders with a hand-written layer above them): the same calls the Node
