@@ -28,7 +28,8 @@ use teistro_core::settings::Balance;
 use teistro_core::settings::{CharaKarakas, DecennialDivision, ReleasingSharedSign};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
-    JaiminiReading, brahma, graha_arudhas, karakamsha, pada_lord, pada_lords,
+    JaiminiReading, brahma, graha_arudhas, karaka_bhavas, karakamsha, pada_lord, pada_lords,
+    sthira_karakas,
 };
 use teistro_dasha::rashi::{Direction, step};
 use teistro_dasha::{
@@ -1107,7 +1108,11 @@ impl<'a> ChartArea<'a> {
     /// Atmakaraka's navamsha sign with every graha's house from it in both
     /// charts, and its **Brahma graha**, the planet the Sthira dasa starts
     /// from, under the settings' `jaimini.brahma` rule and
-    /// `jaimini.node_co_lordship` (`03-design/jaimini-significators.md`).
+    /// `jaimini.node_co_lordship` (`03-design/jaimini-significators.md`);
+    /// with its graha arudhas, and BPHS ch. 32's **sthira karakas** and the
+    /// **karaka bhavas** counted from them, the father's karaka the stronger
+    /// of the Sun and Venus and the mother's of the Moon and Mars by the
+    /// sign strength Brahma is chosen by (crux C408).
     ///
     /// The Atmakaraka is the one the settings' `jaimini.chara_karakas`
     /// scheme ranks first, seven karakas or eight.
@@ -1132,6 +1137,9 @@ impl<'a> ChartArea<'a> {
     /// assert!(jaimini.karakamsha.in_rasi.iter().all(|house| (1..=12).contains(house)));
     /// // Brahma is either found, or its absence says why.
     /// assert_eq!(jaimini.brahma.graha.is_none(), jaimini.brahma.none.is_some());
+    /// // The father's sthira karaka is the Sun or Venus, whichever is stronger.
+    /// let father = &jaimini.sthira_karakas[0];
+    /// assert!(father.candidates.contains(&father.graha));
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -1182,6 +1190,8 @@ impl<'a> ChartArea<'a> {
                 settings.jaimini.node_co_lordship,
                 settings.jaimini.graha_arudha_exception,
             ),
+            sthira_karakas: sthira_karakas(&rashi),
+            karaka_bhavas: karaka_bhavas(&rashi),
         })
     }
 
