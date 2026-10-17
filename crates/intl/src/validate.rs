@@ -821,9 +821,10 @@ mod tests {
         assert!(kind("graha").present >= 9 && kind("graha").total == 12);
         assert_eq!(kind("rashi").present, 12);
         assert_eq!(kind("nakshatra").present, 27);
-        // The lagna, and the seven upagrahas the baseline engine names
-        // (`docs/03-design/entity-names.md`).
-        assert_eq!(kind("point").present, 8);
+        // The lagna, the seven upagrahas the baseline engine names, and
+        // the eleven points BPHS names (`docs/03-design/entity-names.md`
+        // §4c).
+        assert_eq!(kind("point").present, 19);
         assert_eq!(kind("era").present, 9);
         for (name, total) in [
             ("tithi", 30),

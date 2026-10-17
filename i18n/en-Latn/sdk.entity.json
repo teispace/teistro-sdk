@@ -378,6 +378,50 @@
       "name": "Mandi",
       "prose": "Mandi",
       "iast": "Māndi"
+    },
+    "BHAVA_LAGNA": {
+      "name": "Bhava Lagna",
+      "prose": "Bhava Lagna"
+    },
+    "HORA_LAGNA": {
+      "name": "Hora Lagna",
+      "prose": "Hora Lagna"
+    },
+    "GHATI_LAGNA": {
+      "name": "Ghati Lagna",
+      "prose": "Ghati Lagna"
+    },
+    "VARNADA_LAGNA": {
+      "name": "Varnada Lagna",
+      "prose": "Varnada Lagna"
+    },
+    "PRANAPADA_LAGNA": {
+      "name": "Pranapada",
+      "prose": "Pranapada"
+    },
+    "KALA": {
+      "name": "Kala",
+      "prose": "Kala"
+    },
+    "MRITYU": {
+      "name": "Mrityu",
+      "prose": "Mrityu"
+    },
+    "ARDHAPRAHARA": {
+      "name": "Ardhaprahara",
+      "prose": "Ardhaprahara"
+    },
+    "KARAKAMSHA": {
+      "name": "Karakamsha",
+      "prose": "Karakamsha"
+    },
+    "A1": {
+      "name": "Lagna Pada",
+      "prose": "Lagna Pada"
+    },
+    "A12": {
+      "name": "Upapada",
+      "prose": "Upapada"
     }
   },
   "era": {
@@ -2405,6 +2449,50 @@
       "name": "Kalachakra Dasha",
       "prose": "Kalachakra Dasha",
       "iast": "Kālacakra Daśā"
+    },
+    "SHODASHOTTARI": {
+      "name": "Shodashottari Dasha",
+      "prose": "Shodashottari Dasha"
+    },
+    "SHASHTIHAYANI": {
+      "name": "Shashtihayani Dasha",
+      "prose": "Shashtihayani Dasha"
+    },
+    "NAISARGIKA": {
+      "name": "Naisargika Dasha",
+      "prose": "Naisargika Dasha"
+    },
+    "TARA": {
+      "name": "Tara Dasha",
+      "prose": "Tara Dasha"
+    },
+    "KARAKA": {
+      "name": "Karaka Dasha",
+      "prose": "Karaka Dasha"
+    },
+    "ASHTAKAVARGA": {
+      "name": "Ashtakavarga Dasha",
+      "prose": "Ashtakavarga Dasha"
+    },
+    "PANCHASWARA": {
+      "name": "Panchaswara Dasha",
+      "prose": "Panchaswara Dasha"
+    },
+    "STHIRA": {
+      "name": "Sthira Dasha",
+      "prose": "Sthira Dasha"
+    },
+    "VARNADA": {
+      "name": "Varnada Dasha",
+      "prose": "Varnada Dasha"
+    },
+    "YOGARDHA": {
+      "name": "Yogardha Dasha",
+      "prose": "Yogardha Dasha"
+    },
+    "SUDARSHANA_CHAKRA": {
+      "name": "Sudarshana Chakra Dasha",
+      "prose": "Sudarshana Chakra Dasha"
     }
   },
   "blackout_kind": {
@@ -2463,6 +2551,252 @@
     "TOTAL": {
       "name": "Total",
       "prose": "total"
+    }
+  },
+  "varga": {
+    "D2": {
+      "name": "Hora",
+      "prose": "Hora"
+    },
+    "D3": {
+      "name": "Drekkana",
+      "prose": "Drekkana"
+    },
+    "D4": {
+      "name": "Chaturthamsha",
+      "prose": "Chaturthamsha"
+    },
+    "D7": {
+      "name": "Saptamsha",
+      "prose": "Saptamsha"
+    },
+    "D9": {
+      "name": "Navamsha",
+      "prose": "Navamsha"
+    },
+    "D10": {
+      "name": "Dashamsha",
+      "prose": "Dashamsha"
+    },
+    "D12": {
+      "name": "Dwadashamsha",
+      "prose": "Dwadashamsha"
+    },
+    "D16": {
+      "name": "Shodashamsha",
+      "prose": "Shodashamsha"
+    },
+    "D20": {
+      "name": "Vimshamsha",
+      "prose": "Vimshamsha"
+    },
+    "D24": {
+      "name": "Chaturvimshamsha",
+      "prose": "Chaturvimshamsha"
+    },
+    "D27": {
+      "name": "Saptavimshamsha",
+      "prose": "Saptavimshamsha"
+    },
+    "D30": {
+      "name": "Trimshamsha",
+      "prose": "Trimshamsha"
+    },
+    "D40": {
+      "name": "Khavedamsha",
+      "prose": "Khavedamsha"
+    },
+    "D45": {
+      "name": "Akshavedamsha",
+      "prose": "Akshavedamsha"
+    },
+    "D60": {
+      "name": "Shashtiamsha",
+      "prose": "Shashtiamsha"
+    }
+  },
+  "vaiseshikamsa": {
+    "KIMSHUKA": {
+      "name": "Kimshuka",
+      "prose": "Kimshuka"
+    },
+    "VYANJANA": {
+      "name": "Vyanjana",
+      "prose": "Vyanjana"
+    },
+    "CHAMARA": {
+      "name": "Chamara",
+      "prose": "Chamara"
+    },
+    "CHATRA": {
+      "name": "Chatra",
+      "prose": "Chatra"
+    },
+    "KUNDALA": {
+      "name": "Kundala",
+      "prose": "Kundala"
+    },
+    "MUKUTA": {
+      "name": "Mukuta",
+      "prose": "Mukuta"
+    },
+    "PARIJATA": {
+      "name": "Parijata",
+      "prose": "Parijata"
+    },
+    "UTTAMA": {
+      "name": "Uttama",
+      "prose": "Uttama"
+    },
+    "GOPURA": {
+      "name": "Gopura",
+      "prose": "Gopura"
+    },
+    "SIMHASANA": {
+      "name": "Simhasana",
+      "prose": "Simhasana"
+    },
+    "PARAVATA": {
+      "name": "Paravata",
+      "prose": "Paravata"
+    },
+    "DEVALOKA": {
+      "name": "Devaloka",
+      "prose": "Devaloka"
+    },
+    "BRAHMALOKA": {
+      "name": "Brahmaloka",
+      "prose": "Brahmaloka"
+    },
+    "SHAKRAVAHANA": {
+      "name": "Shakravahana",
+      "prose": "Shakravahana"
+    },
+    "SHRIDHAMA": {
+      "name": "Shridhama",
+      "prose": "Shridhama"
+    },
+    "BHEDAKA": {
+      "name": "Bhedaka",
+      "prose": "Bhedaka"
+    },
+    "NAGAPUSHPA": {
+      "name": "Nagapushpa",
+      "prose": "Nagapushpa"
+    },
+    "KANDUKA": {
+      "name": "Kanduka",
+      "prose": "Kanduka"
+    },
+    "KERALA": {
+      "name": "Kerala",
+      "prose": "Kerala"
+    },
+    "KALPAVRIKSHA": {
+      "name": "Kalpavriksha",
+      "prose": "Kalpavriksha"
+    },
+    "CHANDANAVANA": {
+      "name": "Chandanavana",
+      "prose": "Chandanavana"
+    },
+    "PURNACHANDRA": {
+      "name": "Purnachandra",
+      "prose": "Purnachandra"
+    },
+    "UCHCHAISHRAVA": {
+      "name": "Uchchaishrava",
+      "prose": "Uchchaishrava"
+    },
+    "DHANVANTARI": {
+      "name": "Dhanvantari",
+      "prose": "Dhanvantari"
+    },
+    "SURYAKANTA": {
+      "name": "Suryakanta",
+      "prose": "Suryakanta"
+    },
+    "VIDRUMA": {
+      "name": "Vidruma",
+      "prose": "Vidruma"
+    },
+    "GOLOKA": {
+      "name": "Goloka",
+      "prose": "Goloka"
+    }
+  },
+  "avastha_sayanadi": {
+    "SHAYANA": {
+      "name": "Shayana",
+      "prose": "Shayana"
+    },
+    "UPAVESHANA": {
+      "name": "Upaveshana",
+      "prose": "Upaveshana"
+    },
+    "NETRAPANI": {
+      "name": "Netrapani",
+      "prose": "Netrapani"
+    },
+    "PRAKASHANA": {
+      "name": "Prakashana",
+      "prose": "Prakashana"
+    },
+    "GAMANA": {
+      "name": "Gamana",
+      "prose": "Gamana"
+    },
+    "AGAMANA": {
+      "name": "Agamana",
+      "prose": "Agamana"
+    },
+    "SABHA": {
+      "name": "Sabha",
+      "prose": "Sabha"
+    },
+    "AGAMA": {
+      "name": "Agama",
+      "prose": "Agama"
+    },
+    "BHOJANA": {
+      "name": "Bhojana",
+      "prose": "Bhojana"
+    },
+    "NRITYALIPSA": {
+      "name": "Nrityalipsa",
+      "prose": "Nrityalipsa"
+    },
+    "KAUTUKA": {
+      "name": "Kautuka",
+      "prose": "Kautuka"
+    },
+    "NIDRA": {
+      "name": "Nidra",
+      "prose": "Nidra"
+    }
+  },
+  "avastha_cheshta": {
+    "DRISHTI": {
+      "name": "Drishti",
+      "prose": "Drishti"
+    },
+    "CHESHTA": {
+      "name": "Cheshta",
+      "prose": "Cheshta"
+    },
+    "VICHESHTA": {
+      "name": "Vicheshta",
+      "prose": "Vicheshta"
+    }
+  },
+  "nature": {
+    "BENEFIC": {
+      "name": "Benefic",
+      "prose": "Benefic"
+    },
+    "MALEFIC": {
+      "name": "Malefic",
+      "prose": "Malefic"
     }
   }
 }

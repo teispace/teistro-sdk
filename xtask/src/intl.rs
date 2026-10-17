@@ -221,31 +221,24 @@ fn every_key_type_is_declared(written: &[Output]) -> i32 {
 pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
     (
         "dasha_system",
-        "the baseline engine vets names for the 18 systems it implements, and none for these",
+        "BPHS ch. 46 names the 36-year system only by its length (\"षड्त्रिंशवत्सरा\", v. 5), \
+         lists the three lifespan dashas apart (v. 10) rather than one Aayu, and has no tithi, \
+         yoga, karana or Sudasa system; no text naming those has been read",
         &[
-            "SHODASHOTTARI",
             "SHATTRIMSHA_SAMA",
-            "SHASHTIHAYANI",
             "TITHI_ASHTOTTARI",
             "TITHI_YOGINI",
             "YOGA_VIMSHOTTARI",
             "KARANA_CHATURASHITI",
-            "NAISARGIKA",
-            "TARA",
-            "KARAKA",
             "AAYU",
-            "ASHTAKAVARGA",
-            "PANCHASWARA",
-            "STHIRA",
             "SUDASA",
-            "VARNADA",
-            "YOGARDHA",
-            "SUDARSHANA_CHAKRA",
-            "PATYAYINI",
-            "MUDDA",
-            "VARSHA_NARAYANA",
-            "VARSHA_YOGINI",
         ],
+    ),
+    (
+        "dasha_system",
+        "the Tajika annual dashas are outside BPHS, and no Tajika text naming them in \
+         Devanagari has been read",
+        &["PATYAYINI", "MUDDA", "VARSHA_NARAYANA", "VARSHA_YOGINI"],
     ),
     (
         "dasha_system",
@@ -260,31 +253,10 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
         ],
     ),
     (
-        "avastha_cheshta",
-        "no vetted name table for the Sayanadi's sub-states",
-        &["DRISHTI", "CHESHTA", "VICHESHTA"],
-    ),
-    (
-        "avastha_sayanadi",
-        "the vetted avastha tables stop at the Baladi, Jagradadi, Deeptadi and Lajjitadi",
-        &[
-            "SHAYANA",
-            "UPAVESHANA",
-            "NETRAPANI",
-            "PRAKASHANA",
-            "GAMANA",
-            "AGAMANA",
-            "SABHA",
-            "AGAMA",
-            "BHOJANA",
-            "NRITYALIPSA",
-            "KAUTUKA",
-            "NIDRA",
-        ],
-    ),
-    (
         "calendar",
-        "no vetted name table for the calendar systems",
+        "no vetted name table for the calendar systems: Bikram Sambat's Devanagari is \
+         printed several ways (संवत्, सम्वत्, वि.सं.) and the committee's own masthead has \
+         not been read, and the others have no Nepali source at all",
         &[
             "GREGORIAN",
             "JULIAN",
@@ -309,33 +281,32 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
     ),
     (
         "graha",
-        "the vetted graha table stops at the nine grahas",
+        "the vetted graha table stops at the nine grahas, and Nepali usage for the outer \
+         three splits (Nepali Wikipedia's अरुणग्रह, वरुणग्रह, यमग्रह against the \
+         transliterated युरेनस, नेप्च्युन, प्लुटो) with no committee, dictionary or \
+         textbook source found to decide it",
         &["URANUS", "NEPTUNE", "PLUTO"],
     ),
     (
         "nature",
-        "no vetted name table for a graha's benefic, malefic or neutral nature",
-        &["BENEFIC", "MALEFIC", "NEUTRAL"],
+        "BPHS 3.11 sorts the grahas into क्रूर and सौम्य only, and no text read names a \
+         neutral class",
+        &["NEUTRAL"],
     ),
     (
         "point",
-        "the vetted table names the upagrahas only; the angles, special lagnas, sphutas, yogi points and arudhas have none",
+        "the angles other than the lagna: BPHS names the kendras as houses, not as points, \
+         and no Nepali source for them has been read",
+        &["MC", "DESCENDANT", "IC"],
+    ),
+    (
+        "point",
+        "absent from BPHS, and the texts that teach them (Prasna Marga for the sphutas, \
+         the Jaimini commentaries, the yogi point's sources) have not been read",
         &[
-            "MC",
-            "DESCENDANT",
-            "IC",
-            "BHAVA_LAGNA",
-            "HORA_LAGNA",
-            "GHATI_LAGNA",
             "VIGHATI_LAGNA",
-            "VARNADA_LAGNA",
             "SREE_LAGNA",
             "INDU_LAGNA",
-            "PRANAPADA_LAGNA",
-            "KALA",
-            "MRITYU",
-            "ARDHAPRAHARA",
-            "YAMAGHANTAKA",
             "BHRIGU_BINDU",
             "YOGI",
             "AVAYOGI",
@@ -348,65 +319,38 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
             "MRITYU_SPHUTA",
             "BEEJA_SPHUTA",
             "KSHETRA_SPHUTA",
-            "KARAKAMSHA",
-            "SWAMSHA",
-            "A1",
-            "A2",
-            "A3",
-            "A4",
-            "A5",
-            "A6",
-            "A7",
-            "A8",
-            "A9",
-            "A10",
-            "A11",
-            "A12",
         ],
+    ),
+    (
+        "point",
+        "the BPHS e-text misprints it (\"यमघण्ट्कः\", 3.69), so a second print must give \
+         the spelling",
+        &["YAMAGHANTAKA"],
+    ),
+    (
+        "point",
+        "BPHS uses स्वांश for a graha's own division, not as the name of a point",
+        &["SWAMSHA"],
+    ),
+    (
+        "point",
+        "BPHS ch. 29 calls each of these the pada of its bhava and prints a name only for \
+         the first (लग्नपद) and the twelfth (उपपद, 30.3)",
+        &["A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11"],
     ),
     (
         "vaiseshikamsa",
-        "no vetted name table for the Vaiseshikamsa's designations",
-        &[
-            "KIMSHUKA",
-            "VYANJANA",
-            "CHAMARA",
-            "CHATRA",
-            "KUNDALA",
-            "MUKUTA",
-            "PARIJATA",
-            "UTTAMA",
-            "GOPURA",
-            "SIMHASANA",
-            "PARAVATA",
-            "DEVALOKA",
-            "BRAHMALOKA",
-            "SHAKRAVAHANA",
-            "SHRIDHAMA",
-            "BHEDAKA",
-            "KUSUMA",
-            "NAGAPUSHPA",
-            "KANDUKA",
-            "KERALA",
-            "KALPAVRIKSHA",
-            "CHANDANAVANA",
-            "PURNACHANDRA",
-            "UCHCHAISHRAVA",
-            "DHANVANTARI",
-            "SURYAKANTA",
-            "VIDRUMA",
-            "CHAKRASIMHASANA",
-            "GOLOKA",
-            "SHRIVALLABHA",
-        ],
+        "the BPHS e-text prints कुमुम (6.48), शक्रसिंहासन (6.51) and स्रीवल्लभ (6.51) \
+         against the catalogue's Kusuma, Chakrasimhasana and Shrivallabha, so a second \
+         print must decide each spelling",
+        &["KUSUMA", "CHAKRASIMHASANA", "SHRIVALLABHA"],
     ),
     (
         "varga",
-        "no vetted name table for the divisional charts",
-        &[
-            "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D16",
-            "D20", "D24", "D27", "D30", "D40", "D45", "D60", "D150",
-        ],
+        "BPHS 6.3-4 lists sixteen vargas and these five are not among them; D1 is, as \
+         क्षेत्र, while a chart prints it as the rashi or lagna chart, which is a reader's \
+         word rather than a source's",
+        &["D1", "D5", "D6", "D8", "D11", "D150"],
     ),
 ];
 

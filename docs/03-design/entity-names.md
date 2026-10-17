@@ -193,6 +193,55 @@ not see, and no text read so far gives a Nepali word. Each record is
 eclipse kinds' English `prose` is lower case (`total`), because it
 qualifies a noun.
 
+## 4c. The terms BPHS itself prints (2026-10-17)
+
+A test app drew `D9` and `KIMSHUKA` where a reader expected a word, so the
+list was read again against the rank-1 text. The source is the Devanagari
+e-text of *Bṛhat Pārāśara Horāśāstra* at sanskritdocuments.org
+(`doc_z_misc_sociology_astrology/par0110.html` to `par9197.html`). Its
+chapter numbers are the catalogue's (the vargas are ch. 6, the Sayanadi
+ch. 45, the dashas ch. 46). The Nepali record is the text's own
+Sanskrit term, as §4b took *Dharmasindhu*'s. The English record is the
+catalogue's established spelling. A script refused every name whose
+witness string does not occur in the downloaded text, so no Devanagari
+was typed from memory.
+
+| kind | named | where |
+|---|---:|---|
+| `varga` | 15 of 21 | 6.3-4, 6.6-33 (D24 as सिद्धांश, 6.22; D27 as भांश, 6.24; D4 as तुर्यांश, 6.9) |
+| `vaiseshikamsa` | 27 of 30 | 6.43-51 |
+| `avastha_sayanadi` | 12 of 12 | 45.30-31, the stems as the effect verses inflect them |
+| `avastha_cheshta` | 3 of 3 | 45.37-38 |
+| `point` | 11 more | the Bhava, Hora and Ghati lagnas (5.2-8), Varnada (5.14), Pranapada (3.71-72), Kala, Mrityu, Ardhaprahara (3.68-69), Karakamsha (ch. 33), Lagna Pada and Upapada for A1 and A12 (29.2-3, 30.2-3) |
+| `dasha_system` | 11 more | 46.3-11 and the systems' own verses; Shashtihayani is the text's षष्टिसमा (46.40), Ashtakavarga its अष्टवर्गदशा (46.203), Sudarshana Chakra ch. 74 |
+| `nature` | 2 of 3 | 3.11, क्रूर and सौम्य |
+
+Each record is `name` and `prose` alone. The e-text gives no IAST, and
+§3 refuses a computed one.
+
+Four rules kept members off:
+
+- **A misprint is not a spelling.** The e-text prints कुमुम (6.48),
+  शक्रसिंहासन and स्रीवल्लभ (6.51), and यमघण्ट्कः (3.69). A second print
+  must decide each one. The obvious correction is still a guess.
+- **Only a name the text prints counts.** BPHS calls every arudha the
+  pada of its bhava, so a "धनपद" for A2 would be a coinage. It lists the
+  36-year dasha only by its length, and it gives D1 as क्षेत्र where a
+  chart prints *rashi*.
+- **Not every outer planet's name is vetted.** Nepali Wikipedia titles
+  them अरुणग्रह, वरुणग्रह and यमग्रह, against the transliterations
+  common in print. No committee, Nepal Academy or curriculum source was
+  found to decide between them, so Uranus, Neptune and Pluto stay
+  unnamed. The bindings' tests still use `graha.PLUTO` as the entity a
+  locale does not carry.
+- **The texts not read stay unread.** The sphutas (Prasna Marga), the
+  yogi points, the Sree, Indu and Vighati lagnas, the Tajika annual
+  dashas and the tithi, yoga and karana dashas are not in BPHS.
+
+`chart_layout` is a catalogue kind, so `intl.entity("chart_layout.NEPALI_LOTUS")`
+resolves once a locale names it. No document carries it, so §4's list
+does not reach it, and no source names the layouts in Nepali.
+
 ## 5. What this does not settle
 
 - **Names for the listed members.** Each needs a rank-1 or rank-2
