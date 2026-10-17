@@ -6,7 +6,9 @@
 //! transit is good in certain houses from it (v. 2), and a good transit
 //! holds only if no other graha then stands in its paired **vedha** house,
 //! the verses naming who does not obstruct whom (vv. 3 to 8); and a transit
-//! bears its fruit in one decanate of the sign (v. 25).
+//! bears its fruit in one decanate of the sign (v. 25). The Sarvatobhadra
+//! chakra's vedha, which v. 48 reads into gochar, is a second layer beside
+//! these verdicts ([`sarvatobhadra`]).
 //!
 //! ```
 //! use teistro_core::catalogue::{Graha, Rashi};
@@ -421,6 +423,7 @@ pub fn gochar(reference: Reference, transits: &[Transit; 9], rules: GocharRules)
 pub mod ashtakavarga;
 pub mod hits;
 pub mod sade_sati;
+pub mod sarvatobhadra;
 
 #[cfg(test)]
 mod tests;
