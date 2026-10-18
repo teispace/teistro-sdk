@@ -17,9 +17,10 @@ use crate::gochar::GocharReading;
 use crate::sade_sati::Report;
 use crate::{
     ChartArea, ChartRequest, ConsiderationRules, Considerations, Dignities, DignityRequest,
-    FortitudeRequest, Fortitudes, GocharRequest, Hit, HitRequest, Lot, LotReading, LotRequest,
-    Matched, Matter, PartnerMatching, PerfectionRequest, PerfectionRules, PlanInputs, PlanRequest,
-    Plans, RuleRequest, RuleSet, RulesReading, RulesSection, SadeSatiRequest, SarvatobhadraRequest,
+    FortitudeRequest, Fortitudes, GocharRequest, GocharSection, Hit, HitRequest, Lot, LotReading,
+    LotRequest, Matched, Matter, PartnerMatching, PerfectionRequest, PerfectionRules, PlanInputs,
+    PlanRequest, Plans, RuleRequest, RuleSet, RulesReading, RulesSection, SadeSatiRequest,
+    SarvatobhadraRequest,
 };
 use teistro_gochar::sarvatobhadra::SarvatobhadraReading;
 use teistro_serial::dossier::DossierOptions;
@@ -225,7 +226,10 @@ impl ChartRecords {
             "hits" => self.hits = Some(HitRequest::from_json(json)?),
             "sarvatobhadra" => self.sarvatobhadra = Some(SarvatobhadraRequest::from_json(json)?),
             "dossier" => {
-                self.dossier = Some(DossierOptions::from_json(json, &[RulesSection::KEY])?);
+                self.dossier = Some(DossierOptions::from_json(
+                    json,
+                    &[RulesSection::KEY, GocharSection::KEY],
+                )?);
             }
             "dignities" => self.dignities = Some(DignityRequest::from_json(json)?),
             "fortitudes" => self.fortitudes = Some(FortitudeRequest::from_json(json)?),
@@ -566,8 +570,8 @@ impl ChartArea<'_> {
             self.fortitudes(document, asked)
         })?;
         Ok(Composed {
-            // Before `readings`, which the literal moves.
-            dossier: dossier_of(documents, &readings, records, request.offset())?,
+            // Before `readings` and `gochar`, which the literal moves.
+            dossier: dossier_of(documents, &readings, &gochar, records, request.offset())?,
             hashes,
             readings,
             plans,
@@ -887,11 +891,13 @@ fn dossier_needs(asked: Option<&DossierOptions>, request: ChartRequest) -> Chart
 }
 
 /// Every chart's dossier, on the request's clock unless the record named
-/// one, with its `RULES` when the request read the charts under rules; a
-/// refusal is named under `dossier` and the chart it came from.
+/// one, with its `RULES` when the request read the charts under rules and
+/// its `GOCHAR` when it read their transits; a refusal is named under
+/// `dossier` and the chart it came from.
 fn dossier_of(
     documents: &[Document],
     readings: &[RulesReading<'_>],
+    gochar: &[Vec<GocharReading>],
     records: &ChartRecords,
     clock: teistro_core::time::UtcOffset,
 ) -> Result<Vec<String>, Error> {
@@ -907,7 +913,11 @@ fn dossier_of(
         .enumerate()
         .map(|(at, document)| {
             let rules = RulesSection::new(readings.get(at));
-            teistro_serial::dossier::dossier(document, &options, &[&rules])
+            let transits = GocharSection::new(
+                records.gochar.as_ref().map_or(&[], GocharRequest::instants),
+                gochar.get(at).map(Vec::as_slice),
+            );
+            teistro_serial::dossier::dossier(document, &options, &[&rules, &transits])
                 .map_err(|error| error.under("dossier").with_hint(format!("chart {at}")))
         })
         .collect()

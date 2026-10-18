@@ -3228,7 +3228,9 @@ export type DossierSection =
   | 'ASPECTS'
   | 'AVAKAHADA'
   /** What held under the request's `rules` record, a row a rule. */
-  | 'RULES';
+  | 'RULES'
+  /** Each graha's transit at each of the request's `gochar` instants. */
+  | 'GOCHAR';
 
 /**
  * How every chart is written as a dossier for a language model

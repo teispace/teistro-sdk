@@ -283,7 +283,7 @@ pub use teistro_dasha as dasha;
 pub use teistro_dasha::jaimini::JaiminiReading;
 // Gochar: the transits read from the natal Moon (`03-design/gochar.md`).
 #[cfg(feature = "chart")]
-pub use crate::gochar_request::GocharRequest;
+pub use crate::gochar_request::{GocharRequest, GocharSection};
 #[cfg(feature = "chart")]
 pub use crate::hit_request::{HitKind, HitRequest};
 #[cfg(feature = "chart")]

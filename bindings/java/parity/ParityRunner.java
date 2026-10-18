@@ -1495,7 +1495,7 @@ public final class ParityRunner {
                         "name", map("letter", "र", "vowel", "A"), "rules", map("front", "EVERY_CELL"))))
                 // Three years under the practice's rule.
                 .tithiPravesha(TithiPraveshaRequest.builder().through(3).build())
-                .dossier(DossierOptions.builder().sections(List.of("CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES"))
+                .dossier(DossierOptions.builder().sections(List.of("CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES", "GOCHAR"))
                         .at(2460676.5).dashaDepth(2).utcOffsetSeconds(20_700).build())
                 // A varshphal list with the book's structure and none of its numbers:
                 // year y sends natal house h to h + y - 1, round the twelve.

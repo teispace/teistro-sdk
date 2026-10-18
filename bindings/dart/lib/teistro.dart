@@ -15474,7 +15474,10 @@ enum DossierSection implements _Keyed {
   avakahada('AVAKAHADA'),
 
   /// What held under the request's `rules` record, a row a rule.
-  rules('RULES');
+  rules('RULES'),
+
+  /// Each graha's transit at each of the request's `gochar` instants.
+  gochar('GOCHAR');
 
   const DossierSection(this.key);
 

@@ -368,8 +368,10 @@ fn clean(field: &str) -> String {
     field.replace(['|', '\n', '\r'], " ")
 }
 
-/// A number to `decimals`, with no sign on a zero.
-fn fixed(value: f64, decimals: usize) -> String {
+/// A number to `decimals`, with no sign on a zero: how every section
+/// writes a number, a consumer's too, so the bytes are the same everywhere.
+#[must_use]
+pub fn fixed(value: f64, decimals: usize) -> String {
     let written = format!("{value:.decimals$}");
     if written
         .trim_start_matches('-')
@@ -382,8 +384,10 @@ fn fixed(value: f64, decimals: usize) -> String {
     }
 }
 
-/// A value as serde spells it, quotes off: `GREAT_FRIEND`.
-fn word<T: Serialize>(value: &T) -> String {
+/// A value as serde spells it, quotes off: `GREAT_FRIEND`; how every
+/// section writes a member.
+#[must_use]
+pub fn word<T: Serialize>(value: &T) -> String {
     match serde_json::to_value(value) {
         Ok(serde_json::Value::String(text)) => text,
         Ok(other) => other.to_string(),
@@ -391,9 +395,11 @@ fn word<T: Serialize>(value: &T) -> String {
     }
 }
 
-/// The civil minute of `jd` on a clock `offset` seconds east:
-/// `1990-04-12 13:20`.
-fn civil(jd: JulianDay<Utc>, offset: i32) -> String {
+/// The civil minute of `jd` on a clock `offset` seconds east,
+/// `1990-04-12 13:20`: how every section writes an instant, on the
+/// [`View`]'s clock.
+#[must_use]
+pub fn civil(jd: JulianDay<Utc>, offset: i32) -> String {
     #[expect(
         clippy::cast_possible_truncation,
         reason = "the minutes of a Julian day fit an i64"

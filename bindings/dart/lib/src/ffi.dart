@@ -1383,7 +1383,8 @@ final class ChartRequestStruct extends ffi.Struct {
   /// order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
   /// `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
   /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`, and
-  /// `RULES`, what held under the `rules_json` record; a section one
+  /// `RULES` and `GOCHAR`, what held under the `rules_json` record and
+  /// the transits at the `gochar_json` record's instants; a section one
   /// flag computes widens the request with it), `preset`
   /// (`"FULL"`, the default, every section the chart carries, or
   /// `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
@@ -4006,7 +4007,8 @@ final class ChartRequest {
   /// order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
   /// `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
   /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`, and
-  /// `RULES`, what held under the `rules_json` record; a section one
+  /// `RULES` and `GOCHAR`, what held under the `rules_json` record and
+  /// the transits at the `gochar_json` record's instants; a section one
   /// flag computes widens the request with it), `preset`
   /// (`"FULL"`, the default, every section the chart carries, or
   /// `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
