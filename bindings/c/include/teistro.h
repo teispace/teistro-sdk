@@ -4963,6 +4963,93 @@ typedef enum ts_brahma_outcome {
 } ts_brahma_outcome;
 
 /**
+ * What a fixed significator signifies (BPHS ch. 32 vv. 18 to 24): a
+ * relative, or death (`03-design/jaimini-significators.md` §7).
+ */
+typedef enum ts_signification {
+    /**
+     * The father (v. 18; the 9th from the Sun, v. 22).
+     */
+    TS_SIGNIFICATION_FATHER = 0,
+    /**
+     * The mother (v. 19; the 4th from the Moon, v. 22).
+     */
+    TS_SIGNIFICATION_MOTHER = 1,
+    /**
+     * A sister (v. 19, from Mars).
+     */
+    TS_SIGNIFICATION_SISTER = 2,
+    /**
+     * The wife's brother (v. 19, from Mars).
+     */
+    TS_SIGNIFICATION_WIFES_BROTHER = 3,
+    /**
+     * A younger brother (v. 19, from Mars).
+     */
+    TS_SIGNIFICATION_YOUNGER_BROTHER = 4,
+    /**
+     * A brother (the 3rd from Mars, v. 23).
+     */
+    TS_SIGNIFICATION_BROTHER = 5,
+    /**
+     * The mother's kin (v. 20, from Mercury).
+     */
+    TS_SIGNIFICATION_MATERNAL_RELATIVES = 6,
+    /**
+     * The maternal uncle and his kin (v. 20 from Mercury; the 6th from
+     * Mercury, v. 23).
+     */
+    TS_SIGNIFICATION_MATERNAL_UNCLE = 7,
+    /**
+     * The paternal grandfather (v. 20, from Jupiter).
+     */
+    TS_SIGNIFICATION_PATERNAL_GRANDFATHER = 8,
+    /**
+     * The husband, the e-text's पितः read as पतिः (v. 20, from Venus; C410).
+     */
+    TS_SIGNIFICATION_HUSBAND = 9,
+    /**
+     * A son (v. 20 from Saturn; the 5th from Jupiter, v. 23).
+     */
+    TS_SIGNIFICATION_SON = 10,
+    /**
+     * The wife (the 7th from Venus, v. 23).
+     */
+    TS_SIGNIFICATION_WIFE = 11,
+    /**
+     * Death, of the father and the others (the 8th from Saturn, v. 24).
+     */
+    TS_SIGNIFICATION_DEATH = 12,
+} ts_signification;
+
+/**
+ * How a sthira karaka was chosen (C408, C409), so a reader checks the
+ * choice against the chart rather than trusting it.
+ */
+typedef enum ts_chosen_by {
+    /**
+     * The verse names one graha.
+     */
+    TS_CHOSEN_BY_ALONE = 0,
+    /**
+     * The two stand in signs BPHS ch. 46 vv. 158 to 166 part.
+     */
+    TS_CHOSEN_BY_SIGN = 1,
+    /**
+     * Their signs are equal by that ladder, and one's dignity is higher.
+     */
+    TS_CHOSEN_BY_DIGNITY = 2,
+    /**
+     * Nothing parts them, and the graha the verse names first is taken.
+     */
+    TS_CHOSEN_BY_FIRST_NAMED = 3,
+    /**
+     * The caller's own comparison.
+     */
+    TS_CHOSEN_BY_CALLER = 4,
+} ts_chosen_by;
+
+/**
  * What a gochar reading counted its houses from (crux C139).
  */
 typedef enum ts_gochar_from {

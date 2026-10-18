@@ -10399,3 +10399,141 @@ fn a_chart_request_places_the_lilith_it_names() {
     assert_eq!(status, Status::InvalidArg);
     assert_eq!(ctx.last_error().2.as_deref(), Some("lilith"));
 }
+
+/// The sthira karakas and the karaka bhavas cross as the document holds
+/// them, ten and seven a chart that asked for the Jaimini reading and none
+/// for a chart that did not (`03-design/jaimini-significators.md` §7).
+#[test]
+fn a_chart_request_carries_its_fixed_karakas() {
+    use teistro_ffi::chart::{TsChosenBy, TsSignification};
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let instants = [2_451_545.0, 2_460_482.5];
+    let base = chart_request(&instants, (27.7172, 85.324), 20_700);
+    let schema = schemas::charts();
+
+    let none = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&none, &schema).unwrap();
+    assert_eq!(
+        reader
+            .column("jaimini_sthira_karakas", "graha")
+            .unwrap()
+            .len(),
+        0
+    );
+    assert_eq!(
+        reader
+            .column("jaimini_karaka_bhavas", "graha")
+            .unwrap()
+            .len(),
+        0
+    );
+
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            sections: teistro_ffi::chart::TS_CHART_JAIMINI,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let jds: Vec<_> = instants
+        .iter()
+        .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+        .collect();
+    let request =
+        teistro::ChartRequest::at(place, teistro::UtcOffset::try_from_seconds(20_700).unwrap())
+            .with_jaimini();
+    let readings: Vec<_> = sdk
+        .chart()
+        .readings(&jds, &request)
+        .unwrap()
+        .value
+        .into_iter()
+        .map(|document| document.jaimini.expect("asked for"))
+        .collect();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let sthira: Vec<_> = readings.iter().flat_map(|r| &r.sthira_karakas).collect();
+    assert_eq!(sthira.len(), 20, "ten a chart");
+    let section = "jaimini_sthira_karakas";
+    assert_eq!(
+        ints(section, "signification"),
+        sthira
+            .iter()
+            .map(|k| i64::from(TsSignification::from(k.signification) as u16))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints(section, "candidates"),
+        sthira
+            .iter()
+            .map(|k| {
+                k.candidates
+                    .iter()
+                    .fold(0, |bits, g| bits | (1_i64 << g.id()))
+            })
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints(section, "graha"),
+        sthira
+            .iter()
+            .map(|k| i64::from(k.graha.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints(section, "chosen_by"),
+        sthira
+            .iter()
+            .map(|k| i64::from(TsChosenBy::from(k.chosen_by) as u8))
+            .collect::<Vec<_>>()
+    );
+    // The father's karaka is the Sun or Venus, as the verse pairs them.
+    let father = (1_i64 << teistro::catalogue::Graha::Sun.id())
+        | (1_i64 << teistro::catalogue::Graha::Venus.id());
+    assert_eq!(ints(section, "candidates")[0], father);
+
+    let bhavas: Vec<_> = readings.iter().flat_map(|r| &r.karaka_bhavas).collect();
+    assert_eq!(bhavas.len(), 14, "seven a chart");
+    let section = "jaimini_karaka_bhavas";
+    assert_eq!(
+        ints(section, "graha"),
+        bhavas
+            .iter()
+            .map(|b| i64::from(b.graha.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints(section, "house"),
+        bhavas
+            .iter()
+            .map(|b| i64::from(b.house.get()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints(section, "signification"),
+        bhavas
+            .iter()
+            .map(|b| i64::from(TsSignification::from(b.signification) as u16))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints(section, "sign"),
+        bhavas
+            .iter()
+            .map(|b| i64::from(b.sign.id()))
+            .collect::<Vec<_>>()
+    );
+}

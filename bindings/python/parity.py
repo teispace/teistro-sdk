@@ -1544,6 +1544,19 @@ def main() -> None:
                 f"chart-{i}-graha-arudhas",
                 ",".join(sign.full_key if sign else "-" for sign in jr.graha_arudhas),
             )
+            # The sthira karakas and karaka bhavas (BPHS ch. 32 vv. 18 to 24).
+            for sthira_at, karaka in enumerate(jr.sthira_karakas):
+                put(
+                    f"chart-{i}-sthira-{sthira_at}",
+                    f"{karaka.signification.key} {','.join(g.full_key for g in karaka.candidates)} "
+                    f"{karaka.graha.full_key} {karaka.chosen_by.key}",
+                )
+            for bhava_at, karaka_bhava in enumerate(jr.karaka_bhavas):
+                put(
+                    f"chart-{i}-karaka-bhava-{bhava_at}",
+                    f"{karaka_bhava.graha.full_key} {karaka_bhava.house} {karaka_bhava.signification.key} "
+                    f"{karaka_bhava.sign.full_key}",
+                )
             birth = chart.avakahada
             assert birth is not None
             put(

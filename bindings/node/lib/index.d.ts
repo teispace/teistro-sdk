@@ -52,6 +52,8 @@ import type {
   Nature,
   BrahmaRule,
   BrahmaOutcome,
+  ChosenBy,
+  Signification,
   AshtakavargaGoodFrom,
   Fruition,
   GocharFrom,
@@ -713,6 +715,46 @@ export interface JaiminiReading {
    * under `jaimini.node_co_lordship`.
    */
   readonly grahaArudhas: readonly (Rashi | 'unknown' | null)[];
+  /**
+   * The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten in the table's
+   * order: the father's and the mother's the stronger of their pair (C408,
+   * C409), and `chosenBy` says how.
+   *
+   * @example
+   * const father = chart.jaimini!.sthiraKarakas.find((k) => k.signification === 'FATHER')!;
+   * // father.graha is 'graha.SUN' or 'graha.VENUS', father.chosenBy why
+   */
+  readonly sthiraKarakas: readonly SthiraKaraka[];
+  /**
+   * The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven: the house counted
+   * from a graha's sign, whole signs in the rasi chart, and the sign it
+   * falls in.
+   */
+  readonly karakaBhavas: readonly KarakaBhava[];
+}
+
+/** One sthira karaka of a chart (`03-design/jaimini-significators.md` §7). */
+export interface SthiraKaraka {
+  /** What it signifies. */
+  readonly signification: Signification | 'unknown';
+  /** The grahas the verse names for it, in id order: one, or the pair the stronger is taken of. */
+  readonly candidates: readonly Graha[];
+  /** The karaka. */
+  readonly graha: Graha | 'unknown';
+  /** How it was chosen. */
+  readonly chosenBy: ChosenBy | 'unknown';
+}
+
+/** One karaka bhava of a chart: a house counted from a graha. */
+export interface KarakaBhava {
+  /** The graha counted from. */
+  readonly graha: Graha | 'unknown';
+  /** The house counted from its sign, 1 to 12. */
+  readonly house: number;
+  /** What that house shows. */
+  readonly signification: Signification | 'unknown';
+  /** The sign it falls in. */
+  readonly sign: Rashi | 'unknown';
 }
 
 /** The syllable a child is named by: the birth pada's own cell (C297 to C299). */

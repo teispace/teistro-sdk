@@ -726,8 +726,9 @@ test('every catalogue enum has a complete id table', () => {
   // naam milan's `TsNameVarga`, eight, and `TsVargaRelation`, three;
   // 1345 since the moment's `TsBirthEclipse`, four; 1354 since the hit
   // list's five further `TsHitKind`s and `TsMoonPhase`, four; 1357 since
-  // the chart request's `TsLilith`, three.
-  assert.equal(entries, 1357, 'every member of every enum is in a table');
+  // the chart request's `TsLilith`, three; 1375 since the fixed karakas'
+  // `TsSignification`, thirteen, and `TsChosenBy`, five.
+  assert.equal(entries, 1375, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1953,6 +1954,63 @@ test('a chart carries its karakamsha and its Brahma graha, or why there is none'
     assert.deepEqual(arudhas.slice(7), [null, null]);
   }
   assert.ok(outcomes.has('FOUND') && outcomes.size > 1, [...outcomes].join());
+  ctx.dispose();
+});
+
+test('a chart carries its sthira karakas and karaka bhavas', () => {
+  // BPHS ch. 32 vv. 18 to 24, as `03-design/jaimini-significators.md` §7
+  // tabulates them: the table's order, the verse's candidates, a pair's
+  // stronger chosen and saying how, and each house counted from its graha.
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const grahas = ['graha.SUN', 'graha.MOON', 'graha.MARS', 'graha.MERCURY', 'graha.JUPITER', 'graha.VENUS', 'graha.SATURN'];
+  const [sun, moon, mars, mercury, jupiter, venus, saturn] = grahas;
+  const sthira = [
+    ['FATHER', [sun, venus]],
+    ['MOTHER', [moon, mars]],
+    ['SISTER', [mars]],
+    ['WIFES_BROTHER', [mars]],
+    ['YOUNGER_BROTHER', [mars]],
+    ['MATERNAL_RELATIVES', [mercury]],
+    ['MATERNAL_UNCLE', [mercury]],
+    ['PATERNAL_GRANDFATHER', [jupiter]],
+    ['HUSBAND', [venus]],
+    ['SON', [saturn]],
+  ];
+  const bhavas = [
+    [sun, 9, 'FATHER'],
+    [moon, 4, 'MOTHER'],
+    [mars, 3, 'BROTHER'],
+    [mercury, 6, 'MATERNAL_UNCLE'],
+    [jupiter, 5, 'SON'],
+    [venus, 7, 'WIFE'],
+    [saturn, 8, 'DEATH'],
+  ];
+  const rashis = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'].map((r) => `rashi.${r}`);
+  const chosen = new Set();
+  for (let step = 0; step < 40; step += 1) {
+    const chart = ctx.chart.found({ instant: 2451545 + step * 2.9, place, utcOffsetSeconds: 20700, jaimini: true });
+    const { sthiraKarakas, karakaBhavas } = chart.jaimini;
+    assert.ok(Object.isFrozen(sthiraKarakas[0]) && Object.isFrozen(karakaBhavas[0]), 'frozen to its leaves');
+    assert.deepEqual(
+      sthiraKarakas.map((k) => [k.signification, k.candidates]),
+      sthira,
+    );
+    for (const k of sthiraKarakas) {
+      assert.ok(k.candidates.includes(k.graha), `${k.signification}: ${k.graha}`);
+      assert.equal(k.chosenBy === 'ALONE', k.candidates.length === 1, `${k.signification}: ${k.chosenBy}`);
+      if (k.candidates.length === 2) chosen.add(k.chosenBy);
+    }
+    assert.deepEqual(
+      karakaBhavas.map((b) => [b.graha, b.house, b.signification]),
+      bhavas,
+    );
+    for (const b of karakaBhavas) {
+      const own = Math.floor(chart.grahas[grahas.indexOf(b.graha)].longitudeDeg / 30);
+      assert.equal(b.sign, rashis[(own + b.house - 1) % 12], `${b.graha} ${b.house}`);
+    }
+  }
+  assert.ok(chosen.has('SIGN') && chosen.size > 1, [...chosen].join());
   ctx.dispose();
 });
 

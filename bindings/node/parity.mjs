@@ -838,6 +838,13 @@ for (const chart of charts) {
   const { karakamsha: k, brahma: b } = chart.jaimini;
   put(`chart-${i}-jaimini`, `${k.atmakaraka} ${k.sign} ${k.inRasi.join(',')} ${k.inNavamsha.join(',')}`);
   put(`chart-${i}-graha-arudhas`, chart.jaimini.grahaArudhas.map((sign) => sign ?? '-').join(','));
+  // The sthira karakas and karaka bhavas (BPHS ch. 32 vv. 18 to 24).
+  chart.jaimini.sthiraKarakas.forEach((s, at) =>
+    put(`chart-${i}-sthira-${at}`, `${s.signification} ${s.candidates.join(',')} ${s.graha} ${s.chosenBy}`),
+  );
+  chart.jaimini.karakaBhavas.forEach((b, at) =>
+    put(`chart-${i}-karaka-bhava-${at}`, `${b.graha} ${b.house} ${b.signification} ${b.sign}`),
+  );
   const birth = chart.avakahada;
   put(
     `chart-${i}-avakahada`,

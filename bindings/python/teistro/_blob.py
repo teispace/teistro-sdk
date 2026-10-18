@@ -3945,6 +3945,54 @@ class ChartsLilith:
 
 
 @dataclass(frozen=True)
+class ChartsJaiminiSthiraKarakas:
+    """The `jaimini_sthira_karakas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.
+    """
+
+    signification: memoryview[int]
+    """What it signifies."""
+
+    candidates: memoryview[int]
+    """The grahas the verse names for it, a bit set: bit `n` is the graha with id `n`; one, or the pair the stronger is taken of."""
+
+    graha: memoryview[int]
+    """The karaka."""
+
+    chosen_by: memoryview[int]
+    """How it was chosen."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsJaiminiKarakaBhavas:
+    """The `jaimini_karaka_bhavas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
+    """
+
+    graha: memoryview[int]
+    """The graha counted from."""
+
+    house: memoryview[int]
+    """The house counted from its sign, 1 to 12."""
+
+    signification: memoryview[int]
+    """What that house shows."""
+
+    sign: memoryview[int]
+    """The sign it falls in."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4671,6 +4719,12 @@ class Charts:
     lilith: ChartsLilith
     """The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440)."""
 
+    jaimini_sthira_karakas: ChartsJaiminiSthiraKarakas
+    """The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for."""
+
+    jaimini_karaka_bhavas: ChartsJaiminiKarakaBhavas
+    """The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4807,6 +4861,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_progressed_parallels = blob.section(125, "progressed_parallels")
     at_progressed_mutual_contacts = blob.section(126, "progressed_mutual_contacts")
     at_lilith = blob.section(127, "lilith")
+    at_jaimini_sthira_karakas = blob.section(128, "jaimini_sthira_karakas")
+    at_jaimini_karaka_bhavas = blob.section(129, "jaimini_karaka_bhavas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7508,6 +7564,36 @@ def decode_charts(raw: bytes) -> Charts:
                 at_lilith, 13, 8, at_lilith.count
             ).cast("d"),
             length=at_lilith.count,
+        ),
+        jaimini_sthira_karakas=ChartsJaiminiSthiraKarakas(
+            signification=blob.column(
+                at_jaimini_sthira_karakas, 0, 2, at_jaimini_sthira_karakas.count
+            ).cast("H"),
+            candidates=blob.column(
+                at_jaimini_sthira_karakas, 1, 2, at_jaimini_sthira_karakas.count
+            ).cast("H"),
+            graha=blob.column(
+                at_jaimini_sthira_karakas, 2, 2, at_jaimini_sthira_karakas.count
+            ).cast("H"),
+            chosen_by=blob.column(
+                at_jaimini_sthira_karakas, 3, 1, at_jaimini_sthira_karakas.count
+            ).cast("B"),
+            length=at_jaimini_sthira_karakas.count,
+        ),
+        jaimini_karaka_bhavas=ChartsJaiminiKarakaBhavas(
+            graha=blob.column(
+                at_jaimini_karaka_bhavas, 0, 2, at_jaimini_karaka_bhavas.count
+            ).cast("H"),
+            house=blob.column(
+                at_jaimini_karaka_bhavas, 1, 1, at_jaimini_karaka_bhavas.count
+            ).cast("B"),
+            signification=blob.column(
+                at_jaimini_karaka_bhavas, 2, 2, at_jaimini_karaka_bhavas.count
+            ).cast("H"),
+            sign=blob.column(
+                at_jaimini_karaka_bhavas, 3, 2, at_jaimini_karaka_bhavas.count
+            ).cast("H"),
+            length=at_jaimini_karaka_bhavas.count,
         ),
     )
 

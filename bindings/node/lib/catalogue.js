@@ -3228,6 +3228,64 @@ export const BrahmaOutcomeById = /* @__PURE__ */ new Map([
   [3, 'NO_PLANET_QUALIFIES'],
 ]);
 
+/** Every Signification by name. */
+export const Signification = /* @__PURE__ */ Object.freeze({
+  Father: 'FATHER',
+  Mother: 'MOTHER',
+  Sister: 'SISTER',
+  WifesBrother: 'WIFES_BROTHER',
+  YoungerBrother: 'YOUNGER_BROTHER',
+  Brother: 'BROTHER',
+  MaternalRelatives: 'MATERNAL_RELATIVES',
+  MaternalUncle: 'MATERNAL_UNCLE',
+  PaternalGrandfather: 'PATERNAL_GRANDFATHER',
+  Husband: 'HUSBAND',
+  Son: 'SON',
+  Wife: 'WIFE',
+  Death: 'DEATH',
+});
+
+/**
+ * Every Signification by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SignificationById = /* @__PURE__ */ new Map([
+  [0, 'FATHER'],
+  [1, 'MOTHER'],
+  [2, 'SISTER'],
+  [3, 'WIFES_BROTHER'],
+  [4, 'YOUNGER_BROTHER'],
+  [5, 'BROTHER'],
+  [6, 'MATERNAL_RELATIVES'],
+  [7, 'MATERNAL_UNCLE'],
+  [8, 'PATERNAL_GRANDFATHER'],
+  [9, 'HUSBAND'],
+  [10, 'SON'],
+  [11, 'WIFE'],
+  [12, 'DEATH'],
+]);
+
+/** Every ChosenBy by name. */
+export const ChosenBy = /* @__PURE__ */ Object.freeze({
+  Alone: 'ALONE',
+  Sign: 'SIGN',
+  Dignity: 'DIGNITY',
+  FirstNamed: 'FIRST_NAMED',
+  Caller: 'CALLER',
+});
+
+/**
+ * Every ChosenBy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ChosenByById = /* @__PURE__ */ new Map([
+  [0, 'ALONE'],
+  [1, 'SIGN'],
+  [2, 'DIGNITY'],
+  [3, 'FIRST_NAMED'],
+  [4, 'CALLER'],
+]);
+
 /** Every GocharFrom by name. */
 export const GocharFrom = /* @__PURE__ */ Object.freeze({
   Moon: 'MOON',

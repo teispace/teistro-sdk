@@ -458,6 +458,24 @@ rivals. Phaladeepika ch. 26 vv. 26–28, which `gochar.md` had named as this
 chakra, are the saptashalaka and the taras, and v. 48 is the chakra's
 verse (C428). The Rust surface only: no façade call or blob section yet.
 
+**The fixed significators: sthira karakas and karaka bhavas**
+(`jaimini-significators.md` §7, C408 to C412). **Numbers:** none moved;
+the Jaimini reading gains two lists and nothing it held changes. BPHS
+ch. 32 vv. 18 to 20's sthira karakas, ten (the father the stronger of
+the Sun and Venus, the mother of the Moon and Mars, the stronger by the
+Jaimini sign strength of ch. 46, then dignity, then the graha named
+first, each saying how it was chosen), vv. 22 to 24's karaka bhavas,
+seven (the 9th from the Sun the father to the 8th from Saturn death,
+each with the sign it falls in), and v. 34's bhava karakas, one a house,
+a table no chart changes. `teistro_dasha::jaimini::sthira_karakas`,
+`karaka_bhavas` and `bhava_karaka` read them, `sthira_karakas_by` takes
+a caller's own comparison, and the document's `jaimini` section and
+`sdk.chart().jaimini` carry the first two. At the boundary they cross
+in two new sections beside `jaimini`, `jaimini_sthira_karakas` and
+`jaimini_karaka_bhavas`, with the closed enums `TsSignification` and
+`TsChosenBy`, and every binding's Jaimini reading gains
+`sthiraKarakas` and `karakaBhavas` (`sthira_karakas`, `karaka_bhavas`
+in Python). The ABI suite holds both to the document's to the bit.
 **The Black Moon Lilith in a chart** (`lilith.md`, C438 to C442).
 **Numbers:** none moved; a chart that does not ask is the same to the
 byte and to the hash. `ChartRequest::with_lilith(Apogee::Mean)` places

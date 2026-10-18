@@ -4717,6 +4717,66 @@ export interface ChartsLilith {
 }
 
 /**
+ * The `jaimini_sthira_karakas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.
+ */
+export interface ChartsJaiminiSthiraKarakas {
+  /**
+   * What it signifies.
+   * The values are `Signification` ids.
+   */
+  readonly signification: Uint16Array;
+  /**
+   * The grahas the verse names for it, a bit set: bit `n` is the graha with id `n`; one, or the pair the stronger is taken of.
+   */
+  readonly candidates: Uint16Array;
+  /**
+   * The karaka.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * How it was chosen.
+   * The values are `ChosenBy` ids.
+   */
+  readonly chosenBy: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `jaimini_karaka_bhavas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
+ */
+export interface ChartsJaiminiKarakaBhavas {
+  /**
+   * The graha counted from.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * The house counted from its sign, 1 to 12.
+   */
+  readonly house: Uint8Array;
+  /**
+   * What that house shows.
+   * The values are `Signification` ids.
+   */
+  readonly signification: Uint16Array;
+  /**
+   * The sign it falls in.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5681,6 +5741,14 @@ export interface Charts {
    * The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).
    */
   readonly lilith: ChartsLilith;
+  /**
+   * The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.
+   */
+  readonly jaiminiSthiraKarakas: ChartsJaiminiSthiraKarakas;
+  /**
+   * The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
+   */
+  readonly jaiminiKarakaBhavas: ChartsJaiminiKarakaBhavas;
 }
 
 /**

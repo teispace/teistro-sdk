@@ -162,6 +162,8 @@ from .catalogue import (
     Nature,
     BrahmaRule,
     BrahmaOutcome,
+    ChosenBy,
+    Signification,
     GocharFrom,
     NodeVedha,
     NodeObstruction,
@@ -436,6 +438,10 @@ __all__ = [
     "BrahmaRule",
     "BrahmaOutcome",
     "JaiminiReading",
+    "SthiraKaraka",
+    "KarakaBhava",
+    "ChosenBy",
+    "Signification",
     # The transit hit list, and its names.
     "HitRequest",
     "returns_request",
@@ -7455,6 +7461,43 @@ class Brahma:
 
 
 @dataclass(frozen=True)
+class SthiraKaraka:
+    """One sthira karaka of a chart (BPHS ch. 32 vv. 18 to 20;
+    `03-design/jaimini-significators.md` §7)."""
+
+    signification: Signification
+    """What it signifies."""
+
+    candidates: Tuple[Graha, ...]
+    """The grahas the verse names for it, in id order: one, or the pair the
+    stronger is taken of."""
+
+    graha: Graha
+    """The karaka."""
+
+    chosen_by: ChosenBy
+    """How it was chosen (C408, C409)."""
+
+
+@dataclass(frozen=True)
+class KarakaBhava:
+    """One karaka bhava of a chart (BPHS ch. 32 vv. 22 to 24): a house
+    counted from a graha's sign, whole signs in the rasi chart."""
+
+    graha: Graha
+    """The graha counted from."""
+
+    house: int
+    """The house counted from its sign, 1 to 12."""
+
+    signification: Signification
+    """What that house shows."""
+
+    sign: Rashi
+    """The sign it falls in."""
+
+
+@dataclass(frozen=True)
 class JaiminiReading:
     """A chart's Jaimini significators, read under the settings' `jaimini` group.
 
@@ -7473,6 +7516,17 @@ class JaiminiReading:
     """Each graha's arudha, the Sun to Ketu (BPHS ch. 29 vv. 6 and 7), under
     `jaimini.graha_arudha_exception`; `None` for a node that owns no sign
     under `jaimini.node_co_lordship`."""
+
+    sthira_karakas: Tuple[SthiraKaraka, ...]
+    """The sthira karakas, ten in the table's order: the father's and the
+    mother's the stronger of their pair, and `chosen_by` says how.
+
+    >>> # father = next(k for k in chart.jaimini.sthira_karakas if k.signification is Signification.FATHER)
+    """
+
+    karaka_bhavas: Tuple[KarakaBhava, ...]
+    """The karaka bhavas, seven: each house counted from its graha and the
+    sign it falls in."""
 
 
 @dataclass(frozen=True)
@@ -14359,6 +14413,8 @@ class ChartBatch:
         were asked for."""
         c = self.decoded.jaimini
         h = self.decoded.jaimini_grahas
+        s = self.decoded.jaimini_sthira_karakas
+        kb = self.decoded.jaimini_karaka_bhavas
 
         def reading(chart: int) -> JaiminiReading:
             outcome = BrahmaOutcome(c.brahma_outcome[chart])
@@ -14383,6 +14439,24 @@ class ChartBatch:
                 graha_arudhas=tuple(
                     Rashi(h.arudha[row]) if h.arudha_present[row] == 1 else None
                     for row in range(chart * 9, chart * 9 + 9)
+                ),
+                sthira_karakas=tuple(
+                    SthiraKaraka(
+                        signification=Signification(s.signification[row]),
+                        candidates=tuple(_members(s.candidates[row], _NINE)),
+                        graha=Graha(s.graha[row]),
+                        chosen_by=ChosenBy(s.chosen_by[row]),
+                    )
+                    for row in range(chart * 10, chart * 10 + 10)
+                ),
+                karaka_bhavas=tuple(
+                    KarakaBhava(
+                        graha=Graha(kb.graha[row]),
+                        house=kb.house[row],
+                        signification=Signification(kb.signification[row]),
+                        sign=Rashi(kb.sign[row]),
+                    )
+                    for row in range(chart * 7, chart * 7 + 7)
                 ),
             )
 

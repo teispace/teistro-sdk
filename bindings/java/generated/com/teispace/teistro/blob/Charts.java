@@ -157,6 +157,8 @@ public final class Charts {
     private final ProgressedParallels progressedParallels;
     private final ProgressedMutualContacts progressedMutualContacts;
     private final Lilith lilith;
+    private final JaiminiSthiraKarakas jaiminiSthiraKarakas;
+    private final JaiminiKarakaBhavas jaiminiKarakaBhavas;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -304,6 +306,8 @@ public final class Charts {
         this.progressedParallels = new ProgressedParallels(blob, 125, "progressed_parallels");
         this.progressedMutualContacts = new ProgressedMutualContacts(blob, 126, "progressed_mutual_contacts");
         this.lilith = new Lilith(blob, 127, "lilith");
+        this.jaiminiSthiraKarakas = new JaiminiSthiraKarakas(blob, 128, "jaimini_sthira_karakas");
+        this.jaiminiKarakaBhavas = new JaiminiKarakaBhavas(blob, 129, "jaimini_karaka_bhavas");
     }
 
     /**
@@ -1602,6 +1606,24 @@ public final class Charts {
      */
     public Lilith lilith() {
         return lilith;
+    }
+
+    /**
+     * The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.
+     *
+     * @return the jaiminiSthiraKarakas
+     */
+    public JaiminiSthiraKarakas jaiminiSthiraKarakas() {
+        return jaiminiSthiraKarakas;
+    }
+
+    /**
+     * The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
+     *
+     * @return the jaiminiKarakaBhavas
+     */
+    public JaiminiKarakaBhavas jaiminiKarakaBhavas() {
+        return jaiminiKarakaBhavas;
     }
 
 
@@ -14965,6 +14987,172 @@ public final class Charts {
          */
         public double placementFromMadhyaDeg(int row) {
             return bytes.getDouble(placementFromMadhyaDegAt + Objects.checkIndex(row, length) * 8);
+        }
+    }
+
+    /**
+     * The `jaimini_sthira_karakas` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.
+     */
+    public static final class JaiminiSthiraKarakas {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int significationAt;
+        private final int candidatesAt;
+        private final int grahaAt;
+        private final int chosenByAt;
+
+        JaiminiSthiraKarakas(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.significationAt = blob.column(at, 0, 2);
+            this.candidatesAt = blob.column(at, 1, 2);
+            this.grahaAt = blob.column(at, 2, 2);
+            this.chosenByAt = blob.column(at, 3, 1);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * What it signifies.
+         *
+         * The id of a {@code Signification}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int signification(int row) {
+            return Short.toUnsignedInt(bytes.getShort(significationAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The grahas the verse names for it, a bit set: bit `n` is the graha with id `n`; one, or the pair the stronger is taken of.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int candidates(int row) {
+            return Short.toUnsignedInt(bytes.getShort(candidatesAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The karaka.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int graha(int row) {
+            return Short.toUnsignedInt(bytes.getShort(grahaAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * How it was chosen.
+         *
+         * The id of a {@code ChosenBy}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int chosenBy(int row) {
+            return Byte.toUnsignedInt(bytes.get(chosenByAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `jaimini_karaka_bhavas` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
+     */
+    public static final class JaiminiKarakaBhavas {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int grahaAt;
+        private final int houseAt;
+        private final int significationAt;
+        private final int signAt;
+
+        JaiminiKarakaBhavas(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.grahaAt = blob.column(at, 0, 2);
+            this.houseAt = blob.column(at, 1, 1);
+            this.significationAt = blob.column(at, 2, 2);
+            this.signAt = blob.column(at, 3, 2);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The graha counted from.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int graha(int row) {
+            return Short.toUnsignedInt(bytes.getShort(grahaAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The house counted from its sign, 1 to 12.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int house(int row) {
+            return Byte.toUnsignedInt(bytes.get(houseAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * What that house shows.
+         *
+         * The id of a {@code Signification}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int signification(int row) {
+            return Short.toUnsignedInt(bytes.getShort(significationAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The sign it falls in.
+         *
+         * The id of a {@code Rashi}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int sign(int row) {
+            return Short.toUnsignedInt(bytes.getShort(signAt + Objects.checkIndex(row, length) * 2));
         }
     }
 }

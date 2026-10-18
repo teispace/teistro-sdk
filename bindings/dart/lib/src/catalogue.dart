@@ -5523,6 +5523,105 @@ enum BrahmaOutcome {
   }
 }
 
+/// What a fixed significator signifies (BPHS ch. 32 vv. 18 to 24): a
+/// relative, or death (`03-design/jaimini-significators.md` §7).
+enum Signification {
+  /// The father (v. 18; the 9th from the Sun, v. 22).
+  father(0, 'FATHER'),
+  /// The mother (v. 19; the 4th from the Moon, v. 22).
+  mother(1, 'MOTHER'),
+  /// A sister (v. 19, from Mars).
+  sister(2, 'SISTER'),
+  /// The wife's brother (v. 19, from Mars).
+  wifesBrother(3, 'WIFES_BROTHER'),
+  /// A younger brother (v. 19, from Mars).
+  youngerBrother(4, 'YOUNGER_BROTHER'),
+  /// A brother (the 3rd from Mars, v. 23).
+  brother(5, 'BROTHER'),
+  /// The mother's kin (v. 20, from Mercury).
+  maternalRelatives(6, 'MATERNAL_RELATIVES'),
+  /// The maternal uncle and his kin (v. 20 from Mercury; the 6th from
+  /// Mercury, v. 23).
+  maternalUncle(7, 'MATERNAL_UNCLE'),
+  /// The paternal grandfather (v. 20, from Jupiter).
+  paternalGrandfather(8, 'PATERNAL_GRANDFATHER'),
+  /// The husband, the e-text's पितः read as पतिः (v. 20, from Venus; C410).
+  husband(9, 'HUSBAND'),
+  /// A son (v. 20 from Saturn; the 5th from Jupiter, v. 23).
+  son(10, 'SON'),
+  /// The wife (the 7th from Venus, v. 23).
+  wife(11, 'WIFE'),
+  /// Death, of the father and the others (the 8th from Saturn, v. 24).
+  death(12, 'DEATH');
+
+  const Signification(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Signification byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Signification'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Signification? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How a sthira karaka was chosen (C408, C409), so a reader checks the
+/// choice against the chart rather than trusting it.
+enum ChosenBy {
+  /// The verse names one graha.
+  alone(0, 'ALONE'),
+  /// The two stand in signs BPHS ch. 46 vv. 158 to 166 part.
+  sign(1, 'SIGN'),
+  /// Their signs are equal by that ladder, and one's dignity is higher.
+  dignity(2, 'DIGNITY'),
+  /// Nothing parts them, and the graha the verse names first is taken.
+  firstNamed(3, 'FIRST_NAMED'),
+  /// The caller's own comparison.
+  caller(4, 'CALLER');
+
+  const ChosenBy(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static ChosenBy byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a ChosenBy'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ChosenBy? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What a gochar reading counted its houses from (crux C139).
 enum GocharFrom {
   /// The natal Moon's sign, Phaladeepika ch. 26 v. 1's.

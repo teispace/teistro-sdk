@@ -395,7 +395,7 @@ pub fn charts() -> BlobSchema {
 
 /// The sections from `first` on, one a request field or a reading each,
 /// in the order they crossed.
-fn chart_later_sections(first: u32) -> [SectionSchema; 8] {
+fn chart_later_sections(first: u32) -> [SectionSchema; 10] {
     [
         chart_prashna_section(first),
         chart_remedies_section(first + 1),
@@ -405,7 +405,51 @@ fn chart_later_sections(first: u32) -> [SectionSchema; 8] {
         progressed_parallels_section(first + 5),
         progressed_mutual_contacts_section(first + 6),
         chart_lilith_section(first + 7),
+        chart_sthira_karakas_section(first + 8),
+        chart_karaka_bhavas_section(first + 9),
     ]
+}
+
+/// Every chart's sthira karakas, ten a chart that asked for the Jaimini
+/// reading (`03-design/jaimini-significators.md` §7).
+fn chart_sthira_karakas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "jaimini_sthira_karakas",
+        "The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.",
+        vec![
+            ColumnDef::new("signification", Scalar::U16, "What it signifies.")
+                .of_enum("TsSignification"),
+            ColumnDef::new(
+                "candidates",
+                Scalar::U16,
+                "The grahas the verse names for it, a bit set: bit `n` is the graha with id `n`; one, or the pair the stronger is taken of.",
+            ),
+            ColumnDef::new("graha", Scalar::U16, "The karaka.").of_enum("Graha"),
+            ColumnDef::new("chosen_by", Scalar::U8, "How it was chosen.").of_enum("TsChosenBy"),
+        ],
+    )
+}
+
+/// Every chart's karaka bhavas, seven a chart that asked for the Jaimini
+/// reading (`03-design/jaimini-significators.md` §7).
+fn chart_karaka_bhavas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "jaimini_karaka_bhavas",
+        "The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "The graha counted from.").of_enum("Graha"),
+            ColumnDef::new(
+                "house",
+                Scalar::U8,
+                "The house counted from its sign, 1 to 12.",
+            ),
+            ColumnDef::new("signification", Scalar::U16, "What that house shows.")
+                .of_enum("TsSignification"),
+            ColumnDef::new("sign", Scalar::U16, "The sign it falls in.").of_enum("Rashi"),
+        ],
+    )
 }
 
 /// The zodiac a chart batch is measured in, once for the batch.

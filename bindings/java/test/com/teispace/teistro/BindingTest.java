@@ -651,6 +651,55 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart carries its sthira karakas and karaka bhavas", () -> {
+            // BPHS ch. 32 vv. 18 to 24 as 03-design/jaimini-significators.md §7
+            // tabulates them: the table's order, the verse's candidates, a
+            // pair's stronger chosen and saying how, each house from its graha.
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                List<Signification> significations = List.of(Signification.FATHER, Signification.MOTHER,
+                        Signification.SISTER, Signification.WIFES_BROTHER, Signification.YOUNGER_BROTHER,
+                        Signification.MATERNAL_RELATIVES, Signification.MATERNAL_UNCLE,
+                        Signification.PATERNAL_GRANDFATHER, Signification.HUSBAND, Signification.SON);
+                List<List<Graha>> candidates = List.of(List.of(Graha.SUN, Graha.VENUS),
+                        List.of(Graha.MOON, Graha.MARS), List.of(Graha.MARS), List.of(Graha.MARS),
+                        List.of(Graha.MARS), List.of(Graha.MERCURY), List.of(Graha.MERCURY), List.of(Graha.JUPITER),
+                        List.of(Graha.VENUS), List.of(Graha.SATURN));
+                List<Graha> from = List.of(Graha.SUN, Graha.MOON, Graha.MARS, Graha.MERCURY, Graha.JUPITER,
+                        Graha.VENUS, Graha.SATURN);
+                List<Integer> houses = List.of(9, 4, 3, 6, 5, 7, 8);
+                List<Signification> shown = List.of(Signification.FATHER, Signification.MOTHER, Signification.BROTHER,
+                        Signification.MATERNAL_UNCLE, Signification.SON, Signification.WIFE, Signification.DEATH);
+                java.util.Set<ChosenBy> chosen = new java.util.HashSet<>();
+                for (int step = 0; step < 40; step += 1) {
+                    Chart chart = sky.chart().found(2_451_545.0 + step * 2.9, kathmandu, 20700,
+                            ChartOptions.builder().jaimini(true).build());
+                    JaiminiReading reading = chart.jaimini().orElseThrow();
+                    same(significations, reading.sthiraKarakas().stream().map(SthiraKaraka::signification).toList(),
+                            "the table's order");
+                    same(candidates, reading.sthiraKarakas().stream().map(SthiraKaraka::candidates).toList(),
+                            "the verse's candidates");
+                    for (SthiraKaraka k : reading.sthiraKarakas()) {
+                        check(k.candidates().contains(k.graha()), k.signification() + ": one of its candidates");
+                        check((k.chosenBy() == ChosenBy.ALONE) == (k.candidates().size() == 1),
+                                k.signification() + ": alone exactly when the verse names one");
+                        if (k.candidates().size() == 2) {
+                            chosen.add(k.chosenBy());
+                        }
+                    }
+                    same(from, reading.karakaBhavas().stream().map(KarakaBhava::graha).toList(), "counted from");
+                    same(houses, reading.karakaBhavas().stream().map(KarakaBhava::house).toList(), "the houses");
+                    same(shown, reading.karakaBhavas().stream().map(KarakaBhava::signification).toList(), "shown");
+                    for (KarakaBhava b : reading.karakaBhavas()) {
+                        int own = (int) Math.floor(chart.grahas().get(b.graha().id()).longitudeDeg() / 30);
+                        same((own + b.house() - 1) % 12, b.sign().id(), b.graha() + "'s house " + b.house());
+                    }
+                }
+                check(chosen.contains(ChosenBy.SIGN) && chosen.size() > 1, "a pair parted more ways than one: " + chosen);
+            }
+        });
+
         tests.put("every reading a chart was asked for reads back", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

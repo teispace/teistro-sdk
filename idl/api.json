@@ -7092,6 +7092,130 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsSignification",
+      "doc": "What a fixed significator signifies (BPHS ch. 32 vv. 18 to 24): a\nrelative, or death (`03-design/jaimini-significators.md` §7).",
+      "repr": "u16",
+      "values": [
+        {
+          "name": "Father",
+          "value": 0,
+          "doc": "The father (v. 18; the 9th from the Sun, v. 22).",
+          "key": "FATHER"
+        },
+        {
+          "name": "Mother",
+          "value": 1,
+          "doc": "The mother (v. 19; the 4th from the Moon, v. 22).",
+          "key": "MOTHER"
+        },
+        {
+          "name": "Sister",
+          "value": 2,
+          "doc": "A sister (v. 19, from Mars).",
+          "key": "SISTER"
+        },
+        {
+          "name": "WifesBrother",
+          "value": 3,
+          "doc": "The wife's brother (v. 19, from Mars).",
+          "key": "WIFES_BROTHER"
+        },
+        {
+          "name": "YoungerBrother",
+          "value": 4,
+          "doc": "A younger brother (v. 19, from Mars).",
+          "key": "YOUNGER_BROTHER"
+        },
+        {
+          "name": "Brother",
+          "value": 5,
+          "doc": "A brother (the 3rd from Mars, v. 23).",
+          "key": "BROTHER"
+        },
+        {
+          "name": "MaternalRelatives",
+          "value": 6,
+          "doc": "The mother's kin (v. 20, from Mercury).",
+          "key": "MATERNAL_RELATIVES"
+        },
+        {
+          "name": "MaternalUncle",
+          "value": 7,
+          "doc": "The maternal uncle and his kin (v. 20 from Mercury; the 6th from\nMercury, v. 23).",
+          "key": "MATERNAL_UNCLE"
+        },
+        {
+          "name": "PaternalGrandfather",
+          "value": 8,
+          "doc": "The paternal grandfather (v. 20, from Jupiter).",
+          "key": "PATERNAL_GRANDFATHER"
+        },
+        {
+          "name": "Husband",
+          "value": 9,
+          "doc": "The husband, the e-text's पितः read as पतिः (v. 20, from Venus; C410).",
+          "key": "HUSBAND"
+        },
+        {
+          "name": "Son",
+          "value": 10,
+          "doc": "A son (v. 20 from Saturn; the 5th from Jupiter, v. 23).",
+          "key": "SON"
+        },
+        {
+          "name": "Wife",
+          "value": 11,
+          "doc": "The wife (the 7th from Venus, v. 23).",
+          "key": "WIFE"
+        },
+        {
+          "name": "Death",
+          "value": 12,
+          "doc": "Death, of the father and the others (the 8th from Saturn, v. 24).",
+          "key": "DEATH"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsChosenBy",
+      "doc": "How a sthira karaka was chosen (C408, C409), so a reader checks the\nchoice against the chart rather than trusting it.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Alone",
+          "value": 0,
+          "doc": "The verse names one graha.",
+          "key": "ALONE"
+        },
+        {
+          "name": "Sign",
+          "value": 1,
+          "doc": "The two stand in signs BPHS ch. 46 vv. 158 to 166 part.",
+          "key": "SIGN"
+        },
+        {
+          "name": "Dignity",
+          "value": 2,
+          "doc": "Their signs are equal by that ladder, and one's dignity is higher.",
+          "key": "DIGNITY"
+        },
+        {
+          "name": "FirstNamed",
+          "value": 3,
+          "doc": "Nothing parts them, and the graha the verse names first is taken.",
+          "key": "FIRST_NAMED"
+        },
+        {
+          "name": "Caller",
+          "value": 4,
+          "doc": "The caller's own comparison.",
+          "key": "CALLER"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsGocharFrom",
       "doc": "What a gochar reading counted its houses from (crux C139).",
       "repr": "u8",
@@ -21848,6 +21972,68 @@
               "name": "placement_from_madhya_deg",
               "scalar": "f64",
               "doc": "Its distance from that bhava's madhya, degrees."
+            }
+          ]
+        },
+        {
+          "id": 128,
+          "name": "jaimini_sthira_karakas",
+          "doc": "The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "signification",
+              "scalar": "u16",
+              "doc": "What it signifies.",
+              "enum": "TsSignification"
+            },
+            {
+              "name": "candidates",
+              "scalar": "u16",
+              "doc": "The grahas the verse names for it, a bit set: bit `n` is the graha with id `n`; one, or the pair the stronger is taken of."
+            },
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The karaka.",
+              "enum": "Graha"
+            },
+            {
+              "name": "chosen_by",
+              "scalar": "u8",
+              "doc": "How it was chosen.",
+              "enum": "TsChosenBy"
+            }
+          ]
+        },
+        {
+          "id": 129,
+          "name": "jaimini_karaka_bhavas",
+          "doc": "The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The graha counted from.",
+              "enum": "Graha"
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The house counted from its sign, 1 to 12."
+            },
+            {
+              "name": "signification",
+              "scalar": "u16",
+              "doc": "What that house shows.",
+              "enum": "TsSignification"
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it falls in.",
+              "enum": "Rashi"
             }
           ]
         }

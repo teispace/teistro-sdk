@@ -228,8 +228,8 @@ Jaimini Sutras; they are taken after these, with the same method.
 ## 7. The fixed significators: sthira karakas and bhava karakas
 
 Status: `built`, 2026-10-17, in the kernel (`teistro_dasha::jaimini`,
-`jaimini/fixed.rs`) and the document's `jaimini` section; not yet at the
-C boundary (below).
+`jaimini/fixed.rs`) and the document's `jaimini` section; 2026-10-18 at
+the C boundary and in every binding (below).
 
 ### 7.1 The source
 
@@ -322,8 +322,15 @@ each the sign the house falls in, counted by whole signs in the rasi
 chart). The bhava karakas are not in the section, since no chart changes
 them; they are the kernel's table.
 
-**Not yet reached**: the C boundary (`TS_CHART_JAIMINI`'s `jaimini` and
-`jaimini_grahas` sections carry neither), so no binding sees them, and the
-parity runner does not print them; the interpretation composers do not
-say them (`sdk.karaka` names the chara karakas only); and no rule reads
-them.
+**At the boundary** (2026-10-18): `TS_CHART_JAIMINI` writes two more
+sections beside `jaimini` and `jaimini_grahas`. `jaimini_sthira_karakas`
+holds ten rows a chart, row `i * 10 + k` the `i`th chart in `jaimini`:
+the signification (`TsSignification`), the verse's candidates as a graha
+bit set, the karaka, and `chosen_by` (`TsChosenBy`).
+`jaimini_karaka_bhavas` holds seven: the graha, the house, the
+signification and the sign. Each binding's Jaimini reading carries them
+as `sthiraKarakas` and `karakaBhavas`, and the ABI suite holds both to
+the document's to the bit (`a_chart_request_carries_its_fixed_karakas`).
+
+**Not yet reached**: the interpretation composers do not say them
+(`sdk.karaka` names the chara karakas only), and no rule reads them.
