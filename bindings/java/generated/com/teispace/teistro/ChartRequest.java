@@ -59,6 +59,7 @@ import com.teispace.teistro.ffi.Native;
  * @param remediesJson Every chart's remedies, as BPHS, *Laghu Parashari* and *Yājñavalkya* prescribe them, as a JSON object, every member optional: `at` (the Julian day UTC whose running Vimśottarī mahādaśā and antardaśā name subjects and bring the antardaśā's printed śānti; none reads no daśā) and `rules` (`functional` `{scheme}`, `shanti` `{rik}`, `devata` `{sunWithKetu}`, the texts' own by default). A record with `at` asks for the Vimśottarī daśā too. Each chart's remedies come back in the `remedies` section. Null for none, which costs nothing (`03-design/remedies.md`). Refusals are named from the record every binding calls `remedies`, as `remedies.rules.devata`. Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
  * @param rectificationJson Every chart read as a birth time to rectify, the chart's instant the time on record, as a JSON object, every member optional: `purify` (`minutes` either side of the chart's instant, more than none and at most 1080, and `rules`, the purifier of BPHS ch. 2 vv. 67–78), `conception` (the pranapada's house, the nisheka and the conception Moon, with its rules), `circumstance` (`facts` the family remembers, `fatherPresent`, `presentation`, `oil`, `wick` and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline` (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1 to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`). Each chart's readings come back in the `rectification` section, one member for each reading asked. Null for none, which costs nothing (`03-design/rectification.md`). Refusals are named from the record every binding calls `rectification`, as `rectification.purify.minutes`. Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
  * @param lalkitabJson Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON object, every member optional: `cycle` (`{planet, year}`, where the 35-year cycle starts, the book's general table from Saturn in the first year when left out), `year` (a year of life from 1, the year from birth to the first birthday, to read its ruler, its thirds and its annual teva) and `varshphal` (`{rows}`, the 120-year list the annual teva is read from, which the SDK does not ship and checks row by row). Each chart's reading comes back in the `lalkitab` section. Null for none, which costs nothing (`03-design/lalkitab.md`). Refusals are named from the record every binding calls `lalkitab`, as `lalkitab.cycle.year`. Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+ * @param sarvatobhadraJson The Sarvatobhadra chakra to read against every chart, as a JSON object: `instants`, UTC Julian days, at least one, and optionally `name` (`{letter, vowel}`: the name's first letter in Devanagari and the vowel of its first syllable), `motion` (`"SKY"`, the default, `"SUN"`, or `{"GIVEN": five motions}` for Mars, Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight, corner}`; C429 to C431). Every chart is founded with its panchanga, which the birth's tithi and weekday are read from. Each chart's readings come back in the `sarvatobhadra` section, the transit charts founded once for the batch. Null for none (`03-design/gochar.md` §8). Refusals are named from the record every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`. Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
  */
 @SuppressWarnings("unused")
 public record ChartRequest(
@@ -98,7 +99,8 @@ public record ChartRequest(
         String prashnaJson,
         String remediesJson,
         String rectificationJson,
-        String lalkitabJson) {
+        String lalkitabJson,
+        String sarvatobhadraJson) {
     /** The value, checked: what may not be absent is present, and what is mutable is copied. */
     public ChartRequest {
         Objects.requireNonNull(kind, "kind");
@@ -150,7 +152,7 @@ public record ChartRequest(
      * @return a copy with {@code kind} replaced
      */
     public ChartRequest withKind(ChartKind value) {
-        return new ChartRequest(value, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(value, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -160,7 +162,7 @@ public record ChartRequest(
      * @return a copy with {@code lilith} replaced
      */
     public ChartRequest withLilith(Lilith value) {
-        return new ChartRequest(kind, value, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, value, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -170,7 +172,7 @@ public record ChartRequest(
      * @return a copy with {@code instants} replaced
      */
     public ChartRequest withInstants(double[] value) {
-        return new ChartRequest(kind, lilith, value, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, value, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -180,7 +182,7 @@ public record ChartRequest(
      * @return a copy with {@code latitudeDeg} replaced
      */
     public ChartRequest withLatitudeDeg(double value) {
-        return new ChartRequest(kind, lilith, instants, value, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, value, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -190,7 +192,7 @@ public record ChartRequest(
      * @return a copy with {@code longitudeDeg} replaced
      */
     public ChartRequest withLongitudeDeg(double value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, value, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, value, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -200,7 +202,7 @@ public record ChartRequest(
      * @return a copy with {@code altitudeM} replaced
      */
     public ChartRequest withAltitudeM(double value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, value, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, value, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -210,7 +212,7 @@ public record ChartRequest(
      * @return a copy with {@code utcOffsetSeconds} replaced
      */
     public ChartRequest withUtcOffsetSeconds(int value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, value, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, value, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -220,7 +222,7 @@ public record ChartRequest(
      * @return a copy with {@code sections} replaced
      */
     public ChartRequest withSections(long value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, value, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, value, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -230,7 +232,7 @@ public record ChartRequest(
      * @return a copy with {@code vargas} replaced
      */
     public ChartRequest withVargas(List<Varga> value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, value, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, value, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -240,7 +242,7 @@ public record ChartRequest(
      * @return a copy with {@code drawings} replaced
      */
     public ChartRequest withDrawings(long[] value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, value, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, value, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -250,7 +252,7 @@ public record ChartRequest(
      * @return a copy with {@code dashas} replaced
      */
     public ChartRequest withDashas(int[] value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, value, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, value, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -260,7 +262,7 @@ public record ChartRequest(
      * @return a copy with {@code themeJson} replaced
      */
     public ChartRequest withThemeJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, value, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, value, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -270,7 +272,7 @@ public record ChartRequest(
      * @return a copy with {@code rulesJson} replaced
      */
     public ChartRequest withRulesJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, value, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, value, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -280,7 +282,7 @@ public record ChartRequest(
      * @return a copy with {@code interpretJson} replaced
      */
     public ChartRequest withInterpretJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, value, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, value, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -290,7 +292,7 @@ public record ChartRequest(
      * @return a copy with {@code varshaJson} replaced
      */
     public ChartRequest withVarshaJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, value, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, value, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -300,7 +302,7 @@ public record ChartRequest(
      * @return a copy with {@code gocharJson} replaced
      */
     public ChartRequest withGocharJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, value, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, value, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -310,7 +312,7 @@ public record ChartRequest(
      * @return a copy with {@code hitsJson} replaced
      */
     public ChartRequest withHitsJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, value, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, value, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -320,7 +322,7 @@ public record ChartRequest(
      * @return a copy with {@code sadeSatiJson} replaced
      */
     public ChartRequest withSadeSatiJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, value, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, value, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -330,7 +332,7 @@ public record ChartRequest(
      * @return a copy with {@code kpJson} replaced
      */
     public ChartRequest withKpJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, value, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, value, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -340,7 +342,7 @@ public record ChartRequest(
      * @return a copy with {@code dignitiesJson} replaced
      */
     public ChartRequest withDignitiesJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, value, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, value, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -350,7 +352,7 @@ public record ChartRequest(
      * @return a copy with {@code fortitudesJson} replaced
      */
     public ChartRequest withFortitudesJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, value, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, value, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -360,7 +362,7 @@ public record ChartRequest(
      * @return a copy with {@code lotsJson} replaced
      */
     public ChartRequest withLotsJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, value, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, value, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -370,7 +372,7 @@ public record ChartRequest(
      * @return a copy with {@code considerationsJson} replaced
      */
     public ChartRequest withConsiderationsJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, value, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, value, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -380,7 +382,7 @@ public record ChartRequest(
      * @return a copy with {@code perfectionJson} replaced
      */
     public ChartRequest withPerfectionJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, value, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, value, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -390,7 +392,7 @@ public record ChartRequest(
      * @return a copy with {@code progressionsJson} replaced
      */
     public ChartRequest withProgressionsJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, value, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, value, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -400,7 +402,7 @@ public record ChartRequest(
      * @return a copy with {@code westernAspectsJson} replaced
      */
     public ChartRequest withWesternAspectsJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, value, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, value, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -410,7 +412,7 @@ public record ChartRequest(
      * @return a copy with {@code synastryJson} replaced
      */
     public ChartRequest withSynastryJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, value, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, value, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -420,7 +422,7 @@ public record ChartRequest(
      * @return a copy with {@code parallelsJson} replaced
      */
     public ChartRequest withParallelsJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, value, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, value, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -430,7 +432,7 @@ public record ChartRequest(
      * @return a copy with {@code antisciaJson} replaced
      */
     public ChartRequest withAntisciaJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, value, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, value, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -440,7 +442,7 @@ public record ChartRequest(
      * @return a copy with {@code midpointsJson} replaced
      */
     public ChartRequest withMidpointsJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, value, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, value, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -450,7 +452,7 @@ public record ChartRequest(
      * @return a copy with {@code westernHousesJson} replaced
      */
     public ChartRequest withWesternHousesJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, value, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, value, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -460,7 +462,7 @@ public record ChartRequest(
      * @return a copy with {@code harmonicJson} replaced
      */
     public ChartRequest withHarmonicJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, value, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, value, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -470,7 +472,7 @@ public record ChartRequest(
      * @return a copy with {@code matchingJson} replaced
      */
     public ChartRequest withMatchingJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, value, prashnaJson, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, value, prashnaJson, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -480,7 +482,7 @@ public record ChartRequest(
      * @return a copy with {@code prashnaJson} replaced
      */
     public ChartRequest withPrashnaJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, value, remediesJson, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, value, remediesJson, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -490,7 +492,7 @@ public record ChartRequest(
      * @return a copy with {@code remediesJson} replaced
      */
     public ChartRequest withRemediesJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, value, rectificationJson, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, value, rectificationJson, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -500,7 +502,7 @@ public record ChartRequest(
      * @return a copy with {@code rectificationJson} replaced
      */
     public ChartRequest withRectificationJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, value, lalkitabJson);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, value, lalkitabJson, sarvatobhadraJson);
     }
 
     /**
@@ -510,7 +512,17 @@ public record ChartRequest(
      * @return a copy with {@code lalkitabJson} replaced
      */
     public ChartRequest withLalkitabJson(String value) {
-        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, value);
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, value, sarvatobhadraJson);
+    }
+
+    /**
+     * This value with another sarvatobhadraJson.
+     *
+     * @param value the sarvatobhadraJson
+     * @return a copy with {@code sarvatobhadraJson} replaced
+     */
+    public ChartRequest withSarvatobhadraJson(String value) {
+        return new ChartRequest(kind, lilith, instants, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, vargas, drawings, dashas, themeJson, rulesJson, interpretJson, varshaJson, gocharJson, hitsJson, sadeSatiJson, kpJson, dignitiesJson, fortitudesJson, lotsJson, considerationsJson, perfectionJson, progressionsJson, westernAspectsJson, synastryJson, parallelsJson, antisciaJson, midpointsJson, westernHousesJson, harmonicJson, matchingJson, prashnaJson, remediesJson, rectificationJson, lalkitabJson, value);
     }
 
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
@@ -557,6 +569,7 @@ public record ChartRequest(
         Native.TsChartRequest.REMEDIES_JSON.set(raw, 0L, Values.cString(arena, remediesJson));
         Native.TsChartRequest.RECTIFICATION_JSON.set(raw, 0L, Values.cString(arena, rectificationJson));
         Native.TsChartRequest.LALKITAB_JSON.set(raw, 0L, Values.cString(arena, lalkitabJson));
+        Native.TsChartRequest.SARVATOBHADRA_JSON.set(raw, 0L, Values.cString(arena, sarvatobhadraJson));
     }
 
     /** This value as a fresh C struct in {@code arena}, ready to be passed by pointer. */
@@ -605,7 +618,8 @@ public record ChartRequest(
             Values.text((MemorySegment) Native.TsChartRequest.PRASHNA_JSON.get(raw, 0L), true),
             Values.text((MemorySegment) Native.TsChartRequest.REMEDIES_JSON.get(raw, 0L), true),
             Values.text((MemorySegment) Native.TsChartRequest.RECTIFICATION_JSON.get(raw, 0L), true),
-            Values.text((MemorySegment) Native.TsChartRequest.LALKITAB_JSON.get(raw, 0L), true));
+            Values.text((MemorySegment) Native.TsChartRequest.LALKITAB_JSON.get(raw, 0L), true),
+            Values.text((MemorySegment) Native.TsChartRequest.SARVATOBHADRA_JSON.get(raw, 0L), true));
     }
 
 }

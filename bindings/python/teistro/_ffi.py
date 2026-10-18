@@ -291,7 +291,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 320,
+    "ts_chart_request": 328,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -321,7 +321,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 184,
+    "ts_chart_request": 192,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -743,6 +743,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("remedies_json", ctypes.c_char_p),
         ("rectification_json", ctypes.c_char_p),
         ("lalkitab_json", ctypes.c_char_p),
+        ("sarvatobhadra_json", ctypes.c_char_p),
     ]
 
 
@@ -2769,6 +2770,22 @@ class ChartRequest:
     Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
     """
 
+    sarvatobhadra_json: Optional[str] = None
+    """The Sarvatobhadra chakra to read against every chart, as a JSON
+    object: `instants`, UTC Julian days, at least one, and optionally
+    `name` (`{letter, vowel}`: the name's first letter in Devanagari
+    and the vowel of its first syllable), `motion` (`"SKY"`, the
+    default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+    Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
+    corner}`; C429 to C431). Every chart is founded with its panchanga,
+    which the birth's tithi and weekday are read from. Each chart's
+    readings come back in the `sarvatobhadra` section, the transit
+    charts founded once for the batch. Null for none
+    (`03-design/gochar.md` §8). Refusals are named from the record
+    every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
+    Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2886,6 +2903,9 @@ class ChartRequest:
         _lalkitab_json = None if self.lalkitab_json is None else self.lalkitab_json.encode("utf-8")
         owned.append(_lalkitab_json)
         raw.lalkitab_json = _lalkitab_json
+        _sarvatobhadra_json = None if self.sarvatobhadra_json is None else self.sarvatobhadra_json.encode("utf-8")
+        owned.append(_sarvatobhadra_json)
+        raw.sarvatobhadra_json = _sarvatobhadra_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2949,6 +2969,7 @@ class ChartRequest:
             remedies_json=_text(raw.remedies_json),
             rectification_json=_text(raw.rectification_json),
             lalkitab_json=_text(raw.lalkitab_json),
+            sarvatobhadra_json=_text(raw.sarvatobhadra_json),
         )
 
 

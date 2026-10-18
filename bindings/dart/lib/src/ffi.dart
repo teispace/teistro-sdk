@@ -1351,6 +1351,21 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
   external ffi.Pointer<ffi.Char> lalkitabJson;
 
+  /// The Sarvatobhadra chakra to read against every chart, as a JSON
+  /// object: `instants`, UTC Julian days, at least one, and optionally
+  /// `name` (`{letter, vowel}`: the name's first letter in Devanagari
+  /// and the vowel of its first syllable), `motion` (`"SKY"`, the
+  /// default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+  /// Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
+  /// corner}`; C429 to C431). Every chart is founded with its panchanga,
+  /// which the birth's tithi and weekday are read from. Each chart's
+  /// readings come back in the `sarvatobhadra` section, the transit
+  /// charts founded once for the batch. Null for none
+  /// (`03-design/gochar.md` §8). Refusals are named from the record
+  /// every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
+  /// Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
+  external ffi.Pointer<ffi.Char> sarvatobhadraJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3430,7 +3445,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson});
+  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3930,8 +3945,23 @@ final class ChartRequest {
   /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
   final String? lalkitabJson;
 
+  /// The Sarvatobhadra chakra to read against every chart, as a JSON
+  /// object: `instants`, UTC Julian days, at least one, and optionally
+  /// `name` (`{letter, vowel}`: the name's first letter in Devanagari
+  /// and the vowel of its first syllable), `motion` (`"SKY"`, the
+  /// default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+  /// Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
+  /// corner}`; C429 to C431). Every chart is founded with its panchanga,
+  /// which the birth's tithi and weekday are read from. Each chart's
+  /// readings come back in the `sarvatobhadra` section, the transit
+  /// charts founded once for the batch. Null for none
+  /// (`03-design/gochar.md` §8). Refusals are named from the record
+  /// every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
+  /// Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
+  final String? sarvatobhadraJson;
+
   /// This value with the fields given replaced, and the rest kept.
-  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson}) => ChartRequest(
+  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson}) => ChartRequest(
     kind: kind ?? this.kind,
     lilith: lilith ?? this.lilith,
     instants: instants ?? this.instants,
@@ -3969,6 +3999,7 @@ final class ChartRequest {
     remediesJson: remediesJson ?? this.remediesJson,
     rectificationJson: rectificationJson ?? this.rectificationJson,
     lalkitabJson: lalkitabJson ?? this.lalkitabJson,
+    sarvatobhadraJson: sarvatobhadraJson ?? this.sarvatobhadraJson,
   );
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -4089,6 +4120,9 @@ final class ChartRequest {
     raw.lalkitabJson = lalkitabJson == null
         ? ffi.nullptr
         : lalkitabJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.sarvatobhadraJson = sarvatobhadraJson == null
+        ? ffi.nullptr
+        : sarvatobhadraJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -4193,6 +4227,9 @@ final class ChartRequest {
         lalkitabJson: raw.lalkitabJson == ffi.nullptr
             ? null
             : raw.lalkitabJson.cast<pkg_ffi.Utf8>().toDartString(),
+        sarvatobhadraJson: raw.sarvatobhadraJson == ffi.nullptr
+            ? null
+            : raw.sarvatobhadraJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

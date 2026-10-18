@@ -390,6 +390,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_avakahada_sections(118))
         .chain(chart_later_sections(120))
         .chain(chart_disposition_sections(130))
+        .chain([chart_sarvatobhadra_section(135)])
         .collect(),
     }
 }
@@ -2278,6 +2279,15 @@ fn chart_lalkitab_section(id: u32) -> SectionSchema {
         id,
         "lalkitab",
         "UTF-8 JSON, canonical: an array with one entry per chart, each `{reading, cycle, periods, year}` (`03-design/lalkitab.md`). `reading` is the teva's: `planets`, each `{graha, house, dignities, owners, awake, kayam, casts}` with `dignities` among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`, `owners` each `{owner, regard}` (`FRIEND`, `EQUAL` or `ENEMY`) and `casts` each aspect `{to, strength, onto}` (`QUARTER`, `HALF` or `FULL`); `houses`, each `{house, occupants, lookedAtBy, awake, waker}` with `lookedAtBy` each `{from, strength}`; `masnui`, each pair in one house `{pair, house, countsAs}`; `rinas`, each debt `{rin, of, seated}` with `seated` each `{enemy, house}`; `pitri`, the ancestors' debt's first state `{ninth, mercury}`; and `flags` `{ratandha, nabalig, dharmi, sathi}`. `cycle` is the 35-year cycle's start `{planet, year}` and `periods` its periods `{planet, from, to}` over years 1 to 120 of life. `year` is `{year, ruler, thirds, annual}`, `annual` the annual teva's reading in the same shape when the record sent a `varshphal` list, otherwise null; `year` itself is null unless the record named one. Grahas are bare catalogue keys. Empty when `lalkitab_json` asked for none.",
+    )
+}
+
+/// Every chart's Sarvatobhadra chakra (`03-design/gochar.md` §8).
+fn chart_sarvatobhadra_section(id: u32) -> SectionSchema {
+    SectionSchema::bytes(
+        id,
+        "sarvatobhadra",
+        "UTF-8 JSON, canonical: an array with one entry per chart, each an array with one reading per instant of the record, in its order (`03-design/gochar.md` §8). A reading is `{rules, native, grahas, points, maleficPoints}`. `rules` is `{front, sight, corner}`. `native` is `{nakshatra, rashi, tithi, vara, name}`, `name` `{letter, vowel}` and left out when the record named none. `grahas` is the nine, the Sun to Ketu, each `{graha, place, motion, lines, nature, waning, joinedBy, cells, points}`: `place` `{star, nakshatra, pada}` with `star` `{star: \"NAKSHATRA\", nakshatra}` or `{star: \"ABHIJIT\"}`; `motion` `FAST`, `MEAN` or `RETROGRADE`; `lines` among `LEFT`, `FRONT` and `RIGHT`; `nature` `BENEFIC` or `MALEFIC`; `cells` each reach `{by: \"LINE\", line, cell}`, `{by: \"CORNER\", cell}` or `{by: \"STANDS\"}`, a cell tagged by `cell` as `STAR` (`star`), `VOWEL` (`vowel`), `LETTER` (`letter`, one Devanagari character), `RASHI` (`rashi`) or `TITHI` (`class`); and `points` each `{point, by}`. `points` is each of the native's points `{point, malefics, benefics}`, `point` among `NAKSHATRA`, `LETTER`, `VOWEL`, `TITHI`, `RASHI` and `VARA`. `maleficPoints` counts v. 28's five a malefic strikes. Catalogue members are bare keys. Empty when `sarvatobhadra_json` asked for none.",
     )
 }
 

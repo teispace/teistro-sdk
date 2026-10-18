@@ -5480,6 +5480,10 @@ pub struct Composed<'a> {
     /// Every chart read as a birth time to rectify, as canonical JSON
     /// (`rectification.md`); empty when none was asked for.
     pub rectification: &'a str,
+    /// Every chart's Sarvatobhadra chakra at each of the record's
+    /// instants, as canonical JSON (`gochar.md` §8); empty when none was
+    /// asked for.
+    pub sarvatobhadra: &'a str,
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -5502,6 +5506,7 @@ impl Composed<'_> {
             ("remedies", self.remedies),
             ("lalkitab", self.lalkitab),
             ("rectification", self.rectification),
+            ("sarvatobhadra", self.sarvatobhadra),
         ] {
             writer.bytes(name, text.as_bytes())?;
         }
@@ -6507,6 +6512,11 @@ impl AskedRecords {
             ),
             ("harmonic", asked.harmonic_json, "harmonic_json"),
             ("matching", asked.matching_json, "matching_json"),
+            (
+                "sarvatobhadra",
+                asked.sarvatobhadra_json,
+                "sarvatobhadra_json",
+            ),
         ];
         let mut records = ChartRecords::default();
         for (name, text, field) in fields {
@@ -6665,6 +6675,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 remedies: &remedies,
                 lalkitab: &lalkitab,
                 rectification: &rectification,
+                sarvatobhadra: &section(records.sarvatobhadra.is_some(), &composed.sarvatobhadra),
                 hashes: &composed.hashes,
             },
             ctx.sdk().dashas(),

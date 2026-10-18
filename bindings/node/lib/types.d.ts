@@ -1247,6 +1247,23 @@ export interface ChartRequest {
    * @nullable
    */
   readonly lalkitabJson?: string;
+  /**
+   * The Sarvatobhadra chakra to read against every chart, as a JSON
+   * object: `instants`, UTC Julian days, at least one, and optionally
+   * `name` (`{letter, vowel}`: the name's first letter in Devanagari
+   * and the vowel of its first syllable), `motion` (`"SKY"`, the
+   * default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+   * Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
+   * corner}`; C429 to C431). Every chart is founded with its panchanga,
+   * which the birth's tithi and weekday are read from. Each chart's
+   * readings come back in the `sarvatobhadra` section, the transit
+   * charts founded once for the batch. Null for none
+   * (`03-design/gochar.md` §8). Refusals are named from the record
+   * every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
+   * @example {"instants":[2460676.5],"motion":"SUN"}
+   * @nullable
+   */
+  readonly sarvatobhadraJson?: string;
 }
 
 /**

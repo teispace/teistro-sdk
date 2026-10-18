@@ -1872,6 +1872,10 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 135, 'sarvatobhadra');
+    out.sarvatobhadra = text(blob, at);
+  }
   return out;
 }
 
