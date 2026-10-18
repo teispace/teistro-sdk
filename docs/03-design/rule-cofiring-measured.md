@@ -2,7 +2,7 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2032 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1943 rules hold at least once and 89 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2062 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1954 rules hold at least once and 108 never do.
 
 Rules holding on the same 5 or more charts form 120 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
@@ -155,6 +155,14 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 
 | rule | instant (JD, UT) | latitude, longitude |
 |---|---:|---|
+| `BJ_RAJA_VENUS_AT_HOME_IN_THE_FOURTH` | 2409098.2361 | 27.7172, 85.324 |
+| `BJ_RAJA_ARIES_SUN_AND_MOON_RISING_FIGURE` | 2406723.5139 | 27.7172, 85.324 |
+| `BJ_RAJA_ARIES_SUN_RISING_FIGURE` | 2380808.4722 | 27.7172, 85.324 |
+| `BJ_RAJA_CANCER_JUPITER_RISING_FIGURE` | 2387738.7361 | 27.7172, 85.324 |
+| `BJ_RAJA_CAPRICORN_MARS_AND_MOON_FIGURE` | 2381415.6527 | 27.7172, 85.324 |
+| `BJ_RAJA_CAPRICORN_MARS_AND_SATURN_FIGURE` | 2405512.6389 | 27.7172, 85.324 |
+| `BJ_RAJA_SAGITTARIUS_MOON_AND_JUPITER_FIGURE` | 2406714.5069 | 27.7172, 85.324 |
+| `BJ_RAJA_TAURUS_MOON_RISING_FIGURE` | 2384950.1944 | 27.7172, 85.324 |
 | `ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND` | 2415023.16667 | 27.7172, 172.13 |
 | `ARISHTA_NODES_WITH_LUMINARIES_LAGNA_AFFLICTED` | 2415345.25 | 27.7172, -86.883 |
 | `ARISHTA_SATURN_LAGNA_MOON_EIGHTH_JUPITER_THIRD` | 2416294.08333 | 27.7172, 105.938 |
@@ -229,6 +237,17 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | rule | why |
 |---|---|
 | `ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH` | It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak. |
+| `BJ_RAJA_AQUARIUS_ARIES_TAURUS_FIGURE` | It puts the Sun in Aries and Mercury in Gemini, two signs on, more than 30 degrees from the Sun, and Mercury never stands 28 degrees from him. |
+| `BJ_RAJA_CAPRICORN_SATURN_RISING_FIGURE` | No sky from 1801 to 2398 has it; the nearest a search from 1000 BC found is in 483 BC. |
+| `BJ_RAJA_CAPRICORN_SATURN_RISING_LORDS_AT_HOME_FIGURE` | It puts the Sun in Leo and Mercury in Gemini, two signs back, more than 30 degrees from the Sun, and Mercury never stands 28 degrees from him. |
+| `BJ_RAJA_JUPITER_RISING_MOON_TENTH` | It puts Mercury in the second and the Sun in the fourth, more than 30 degrees apart, and Mercury never stands 28 degrees from the Sun. |
+| `BJ_RAJA_LIBRA_TAURUS_FIGURE` | No sky from 1000 BC to AD 2400 has its seven grahas so with Libra or Taurus rising, searched day by day and every ten minutes of a day its slow grahas allow. |
+| `BJ_RAJA_MARS_AND_SATURN_RISING` | No sky from 1000 BC to AD 2400 has its seven grahas in those houses, searched day by day and every ten minutes of a day its slow grahas allow. |
+| `BJ_RAJA_PISCES_MOON_RISING_FIGURE` | No sky from 1801 to 2398 has it; the nearest a search from 1000 BC found is in 980 BC. |
+| `BJ_RAJA_SATURN_RISING_LUMINARIES_TENTH` | No sky from 1801 to 2398 has it; the nearest a search from 1000 BC found is in AD 1250. |
+| `BJ_RAJA_TAURUS_MOON_RISING_OTHERS_ELEVENTH` | No sky from 1000 BC to AD 2400 has its seven grahas in those houses, searched day by day and every ten minutes of a day its slow grahas allow. |
+| `BJ_RAJA_VIRGO_MERCURY_RISING_FIFTH_AND_FOURTH_FIGURE` | Venus three signs from Mercury needs both near their greatest elongations on either side of the Sun, and no sky from 1000 BC to AD 2400 has it with the other five so. |
+| `BJ_RAJA_VIRGO_MERCURY_RISING_PISCES_FIGURE` | Venus in Gemini three signs from Mercury in Virgo needs both near their greatest elongations on either side of the Sun, and no sky from 1000 BC to AD 2400 has it with the other five so. |
 | `BPHS_BRAHMIN_CURSE_1` | Of the 529 half-days from 1800 to 2398 with Jupiter, Mars and Saturn together and Rahu in a sign of Jupiter, the ninth lord, counted from a lagna four signs behind them, stands in the fifth itself or in the third or fourth, never the eighth. |
 | `BPHS_DEBILITATED_GRAHAS_SIXTH_EIGHTH_THIRD_AND_LAGNA_LORD_DIGNIFIED` | Only Leo and Aquarius rising have a sign of debilitation in each of the third, sixth and eighth, and in both the graha debilitated in the third is the lagna lord, the Sun in Libra or Saturn in Aries, whom the verse wants exalted or in his own sign. |
 | `BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM` | No lagna lord regards the Sun as a neutral: the Moon, Mars, Mercury and Jupiter count him a friend, Venus and Saturn an enemy, and for Leo rising the lord is the Sun himself. |
