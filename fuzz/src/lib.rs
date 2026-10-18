@@ -168,6 +168,9 @@ chart_slots!(
     remedies_json,
     rectification_json,
     lalkitab_json,
+    sarvatobhadra_json,
+    tithi_pravesha_json,
+    dossier_json,
 );
 
 /// The entry points beside the chart request that read a caller's JSON,
