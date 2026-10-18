@@ -30,7 +30,8 @@
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
 
 use serde_json::{Map, Value, json};
 
@@ -246,29 +247,71 @@ pub(crate) fn check(root: &Path, args: &[String]) -> i32 {
 /// four iOS verify runs on 17 October failed so, and one hung five hours.
 const VM_SERVICE_UNREACHED: &str = "Connecting to the VM Service";
 
+/// How long one `flutter test` attempt may take. A passing iOS job takes
+/// 15 to 20 minutes whole, the test a few of them; an app that never
+/// reaches the VM service waits for ever, and on 18 October three of six
+/// verify runs were cancelled at the job's hour so, the retry never
+/// reached. Two attempts at this limit fit inside that hour.
+const ATTEMPT_LIMIT: Duration = Duration::from_secs(15 * 60);
+
+/// One `flutter test` run: whether it passed, and its output, or `None`
+/// when it outlasted [`ATTEMPT_LIMIT`] and was killed. Its output goes to
+/// files rather than pipes, so a run that writes more than a pipe holds
+/// cannot stall waiting for a reader.
+fn attempt(app: &Path, device: &str) -> io::Result<Option<(bool, String)>> {
+    let out = app.join("build/flutter-test.out");
+    let err = app.join("build/flutter-test.err");
+    fs::create_dir_all(app.join("build"))?;
+    let mut child = Command::new("flutter")
+        .args(["test", "integration_test", "-d", device])
+        .current_dir(app)
+        .stdout(Stdio::from(fs::File::create(&out)?))
+        .stderr(Stdio::from(fs::File::create(&err)?))
+        .spawn()?;
+    let started = Instant::now();
+    let status = loop {
+        if let Some(status) = child.try_wait()? {
+            break Some(status);
+        }
+        if started.elapsed() > ATTEMPT_LIMIT {
+            child.kill()?;
+            child.wait()?;
+            break None;
+        }
+        std::thread::sleep(Duration::from_secs(5));
+    };
+    let written = format!(
+        "{}{}",
+        fs::read_to_string(&out).unwrap_or_default(),
+        fs::read_to_string(&err).unwrap_or_default()
+    );
+    print!("{written}");
+    Ok(status.map(|status| (status.success(), written)))
+}
+
 /// The app's integration test (`facts.dart`'s four facts) on `device`,
 /// run a second time only when the first never reached the app's VM
-/// service: any other failure, a fact among them, fails at once.
+/// service, whether it said so or hung past [`ATTEMPT_LIMIT`]: any other
+/// failure, a fact among them, fails at once.
 fn integration_test(app: &Path, device: &str, on: &str) -> Result<(), ()> {
-    let run = || {
-        Command::new("flutter")
-            .args(["test", "integration_test", "-d", device])
-            .current_dir(app)
-            .output()
-    };
-    for attempt in 1..=2 {
-        let output = run().map_err(|why| println!("FAIL  `flutter test` did not start: {why}"))?;
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        print!("{stdout}");
-        eprint!("{stderr}");
-        if output.status.success() {
-            println!("ok    the bundled library answers the four facts on {on}");
-            return Ok(());
-        }
-        let unreached =
-            stdout.contains(VM_SERVICE_UNREACHED) || stderr.contains(VM_SERVICE_UNREACHED);
-        if attempt == 1 && unreached {
+    for attempt_at in 1..=2 {
+        let ran = attempt(app, device)
+            .map_err(|why| println!("FAIL  `flutter test` did not run: {why}"))?;
+        let unreached = match ran {
+            Some((true, _)) => {
+                println!("ok    the bundled library answers the four facts on {on}");
+                return Ok(());
+            }
+            Some((false, written)) => written.contains(VM_SERVICE_UNREACHED),
+            None => {
+                println!(
+                    "retry `flutter test` on {on} ran past {} minutes and was stopped",
+                    ATTEMPT_LIMIT.as_secs() / 60
+                );
+                true
+            }
+        };
+        if attempt_at == 1 && unreached {
             println!(
                 "retry the app on {on} never opened its VM service to `flutter test`; once more"
             );
