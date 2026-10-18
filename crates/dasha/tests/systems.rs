@@ -237,10 +237,17 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
     );
     assert_eq!(answers, 1184);
     assert!(worst < BOUND_DAYS, "worst boundary {worst:e} days");
-    // Every row this build ships is measured here but two: Vimshottari by
-    // its own test, and Shashtihayani, which the corpus does not record and
-    // the row's tests hold to BPHS ch. 46's worked answers.
-    let elsewhere = [DashaSystem::Vimshottari, DashaSystem::Shashtihayani].map(DashaName::from);
+    // Every row this build ships is measured here but four: Vimshottari by
+    // its own test, and Shodashottari, Shattrimsha-sama and Shashtihayani,
+    // which the corpus does not record and the rows' tests hold to BPHS
+    // ch. 46's counts and worked answers.
+    let elsewhere = [
+        DashaSystem::Vimshottari,
+        DashaSystem::Shodashottari,
+        DashaSystem::ShattrimshaSama,
+        DashaSystem::Shashtihayani,
+    ]
+    .map(DashaName::from);
     let unmeasured: Vec<_> = ROWS
         .iter()
         .map(|row| row.system.clone())

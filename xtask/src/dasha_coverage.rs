@@ -109,20 +109,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 16] = [
-    (
-        "SHODASHOTTARI",
-        Blocker::Text,
-        "the row is stated — from Pushya, eight lords, 116 years — and its verse \
-         numbers in BPHS ch. 46 are to be confirmed before it ships",
-    ),
-    (
-        "SHATTRIMSHA_SAMA",
-        Blocker::Text,
-        "the same verse numbers to confirm. Its table is Yogini's, lord for lord \
-         and year for year, differing only in the reference nakshatra and the \
-         offset — so shipping it on a guess would ship Yogini twice",
-    ),
+const NOT_BUILT: [(&str, Blocker, &str); 14] = [
     (
         "TITHI_ASHTOTTARI",
         Blocker::Text,
@@ -235,6 +222,10 @@ const NOT_BUILT: [(&str, Blocker, &str); 16] = [
 /// A system is registrable exactly when its row is one of those two shapes
 /// and the only thing missing is the numbers in it.
 ///
+/// `SHODASHOTTARI` and `SHATTRIMSHA_SAMA` were the two here, rows stated and
+/// their verses unconfirmed; BPHS ch. 46 vv. 24 to 26 and 42 to 43 confirm
+/// them, and they ship, which leaves none.
+///
 /// `VARNADA` was listed here as sign-based, on the belief that its lagna
 /// was built. It is not (`teistro_points` ships no Varnada, C22), and
 /// `Start` names no place to count it from, so it is not registrable and
@@ -248,10 +239,7 @@ const NOT_BUILT: [(&str, Blocker, &str); 16] = [
 /// tithi, yoga and karana seeds want a reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
 /// ask the chart for their periods; `SUDARSHANA_CHAKRA` is a composition of
 /// systems rather than a system.
-const REGISTRABLE: [(&str, Kernel); 2] = [
-    ("SHODASHOTTARI", Kernel::Udu),
-    ("SHATTRIMSHA_SAMA", Kernel::Udu),
-];
+const REGISTRABLE: [(&str, Kernel); 0] = [];
 
 /// Which kernel a definition names.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -272,11 +260,11 @@ impl Kernel {
 /// Whether the registry path actually works, proved by walking it once per
 /// kernel rather than by citing the API.
 ///
-/// The nakshatra-seeded row is the one [`dasha-kernels.md`] states for
-/// Shodashottari, whose citations are exactly what is unconfirmed, and the
-/// sign-based one a plain row from the lagna — so each is registered under a
-/// **demonstration key** the catalogue does not have. Nothing here ships as
-/// a system.
+/// The nakshatra-seeded row is Shodashottari's, which ships, and the
+/// sign-based one a plain row from the lagna — each registered under a
+/// **demonstration key** the catalogue does not have, so the path a
+/// consumer's own system takes is walked whether or not anything is left to
+/// register. Nothing here ships as a system.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
 fn a_consumer_supplies_one() -> Result<Vec<String>, String> {
@@ -306,7 +294,7 @@ fn a_consumer_supplies_one() -> Result<Vec<String>, String> {
                 .collect(),
             ..UduDefinition::of("DEMO_SHODASHOTTARI", Nakshatra::Pushya)
         })
-        .map_err(|why| format!("registering the stated Shodashottari row: {why}"))?;
+        .map_err(|why| format!("registering Shodashottari's row under a key of its own: {why}"))?;
     walked.push(format!(
         "`DEMO_SHODASHOTTARI`, {} lords and {total} years from Pushya, the {} kernel",
         lords.len(),
@@ -628,15 +616,24 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
         count(REGISTRABLE.len()),
         count(NOT_BUILT.len()),
     );
-    out.push_str("| system | the kernel it arrives as | what is still missing |\n|---|---|---|\n");
-    for (key, kernel) in REGISTRABLE {
-        let why = NOT_BUILT
-            .iter()
-            .find(|(one, _, _)| *one == key)
-            .map_or("—", |(_, _, why)| why);
-        let _ = writeln!(out, "| `{key}` | {} | {why} |", kernel.title());
+    if REGISTRABLE.is_empty() {
+        out.push_str(
+            "None is left that only wants its numbers: the last two, \
+             `SHODASHOTTARI` and `SHATTRIMSHA_SAMA`, ship from BPHS ch. 46.\n\n",
+        );
+    } else {
+        out.push_str(
+            "| system | the kernel it arrives as | what is still missing |\n|---|---|---|\n",
+        );
+        for (key, kernel) in REGISTRABLE {
+            let why = NOT_BUILT
+                .iter()
+                .find(|(one, _, _)| *one == key)
+                .map_or("—", |(_, _, why)| why);
+            let _ = writeln!(out, "| `{key}` | {} | {why} |", kernel.title());
+        }
+        out.push('\n');
     }
-    out.push('\n');
     let _ = write!(
         out,
         "The path is walked once per kernel rather than cited: {}.\n\n",
@@ -644,7 +641,7 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
     );
     let _ = write!(
         out,
-        "**The other {} cannot be supplied by anyone**, and each for a reason \
+        "**{} cannot be supplied by anyone**, and each for a reason \
          in its own row rather than for want of an arm: `SUDASA` starts from \
          the karakamsha and `VARNADA` from the Varnada lagna, which are \
          places `Start` does not name; the tithi, \
@@ -654,7 +651,11 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
          system. Those are rows the kernels do not express, which is a \
          different thing from a row nobody has written down — and the \
          difference is what this section exists to keep visible.\n\n",
-        count(NOT_BUILT.len() - REGISTRABLE.len()),
+        if REGISTRABLE.is_empty() {
+            format!("The {} left", count(NOT_BUILT.len()))
+        } else {
+            format!("The other {}", count(NOT_BUILT.len() - REGISTRABLE.len()))
+        },
     );
 }
 

@@ -444,8 +444,8 @@ Abbreviations: Su Mo Ma Me Ju Ve Sa Ra Ke. All rows below use
 | Dwisaptati-sama | nakshatra | Mula 18 | from | 1 | 0 | Su Mo Ma Me Ju Ve Sa Ra, 9 each | 72 | V (baseline) |
 | Yogini | nakshatra | Ashwini 0 | from | 1 | 3 | Mo 1, Su 2, Ju 3, Ma 4, Me 5, Sa 6, Ve 7, Ra 8 | 36 | V (baseline) |
 | Tribhagi | nakshatra | Ashwini 0 | from | 1 | 0 | Vimshottari with `scale { factor: 2/3, rounds: 2 }` | 80 × 2 | V (baseline) |
-| Shodashottari | nakshatra | Pushya 7 | from | 1 | 0 | Su 11, Ma 12, Ju 13, Sa 14, Ke 15, Mo 16, Me 17, Ve 18 | 116 | T (BPHS ch. 46; verse numbers to confirm before shipping) |
-| Shattrimsha-sama | nakshatra | Shravana 21 | from | 1 | 0 | Mo 1, Su 2, Ju 3, Ma 4, Me 5, Sa 6, Ve 7, Ra 8 | 36 | T (BPHS ch. 46; verse numbers to confirm) |
+| Shodashottari | nakshatra | Pushya 7 | from | 1 | 0 | Su 11, Ma 12, Ju 13, Sa 14, Ke 15, Mo 16, Me 17, Ve 18 | 116 | V (BPHS ch. 46 vv. 24–26 in the Sanskrit: *puṣyabhāj janmabhaṃ yāvat … gajataṣṭitā*, Rahu left out, eleven to eighteen years; v. 24's condition, the lagna in the Moon's hora in the dark fortnight or the Sun's in the bright) |
+| Shattrimsha-sama | nakshatra | Shravana 21 | from | 1 | 0 | Mo 1, Su 2, Ju 3, Ma 4, Me 5, Sa 6, Ve 7, Ra 8 | 36 | V (BPHS ch. 46 vv. 42–43 in the Sanskrit: *śravaṇāj janmabhaṃ yāvat … vasuvibhājitā*, one year rising by one; v. 43's condition, by day the lagna in the Sun's hora, by night the Moon's) |
 | Shashtihayani | nakshatra | Ashvini 0 | from | `groups` 3, 4, 3, 4, 3, 4, 3, 4 over the `WITH_ABHIJIT` wheel | 0 | Ju 10, Su 10, Ma 10, Mo 6, Me 6, Ve 6, Sa 6, Ra 6 | 60 | V (BPHS ch. 46 vv. 40–41, the Sanskrit and the translation's own example; crux C1) |
 | Tithi-Ashtottari | tithi | to confirm | | 1 | | as Ashtottari | 108 | T |
 | Tithi-Yogini | tithi | to confirm | | 1 | | as Yogini | 36 | T |
@@ -462,7 +462,9 @@ Abbreviations: Su Mo Ma Me Ju Ve Sa Ra Ke. All rows below use
 Two observations from normalising the rows: Yogini and Shattrimsha-sama
 are the same table (lords, order and years identical) differing only in
 `reference` and `offset`, which is what a per-system architecture would
-implement twice; and the four seed-variant systems (tithi, yoga and
+implement twice — and since eight does not divide the twenty-seven, the
+two seat the same lord on only 6 of the nakshatras, so shipping the one
+is not shipping the other; and the four seed-variant systems (tithi, yoga and
 karana seeds) are rows that change one field. The reference index does
 not carry over between seed kinds because the cycles differ (27, 30, 60),
 so those rows wait for a text.
