@@ -517,7 +517,9 @@ pub use crate::returns::{BodyReturn, OffsetReturn};
 // Each year's instant the birth's tithi returns around the solar return,
 // chosen by a named rule (`03-design/tithi-pravesha.md`).
 #[cfg(feature = "tajika")]
-pub use crate::tithi_pravesha::{TITHI_WINDOW_DAYS, TithiPravesha, TithiRule};
+pub use crate::tithi_pravesha::{
+    TITHI_WINDOW_DAYS, TithiPravesha, TithiPraveshaRequest, TithiRule,
+};
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
 #[cfg(feature = "western")]

@@ -2292,6 +2292,17 @@ pub struct ChartRequest {
     /// every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
     /// Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
     pub sarvatobhadra_json: Option<String>,
+    /// The tithi praveshas to find for every chart's years, as a JSON
+    /// object: `through`, the last year, 1 to 200, and optionally `rule`,
+    /// `"NATAL_SIGN"` (the default: the phase return while the Sun is in
+    /// its natal sign, C444 to C446) or `"NEAREST_RETURN"`. Each chart's
+    /// years come back in the `tithi_pravesha` section; a year whose
+    /// search passes the ephemeris's end is left out, so a chart may hold
+    /// fewer. Null for none (`03-design/tithi-pravesha.md`). Refusals are
+    /// named from the record every binding calls `tithiPravesha`, as
+    /// `tithiPravesha.through`.
+    /// Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
+    pub tithi_pravesha_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2335,6 +2346,7 @@ pub struct HeldChartRequest {
     rectification_json: Option<std::ffi::CString>,
     lalkitab_json: Option<std::ffi::CString>,
     sarvatobhadra_json: Option<std::ffi::CString>,
+    tithi_pravesha_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2450,6 +2462,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             sarvatobhadra_json: self
                 .sarvatobhadra_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            tithi_pravesha_json: self
+                .tithi_pravesha_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2610,6 +2626,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            tithi_pravesha_json: self
+                .tithi_pravesha_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2671,6 +2692,7 @@ impl ChartRequest {
             rectification_json: unsafe { lent_text(raw.rectification_json) },
             lalkitab_json: unsafe { lent_text(raw.lalkitab_json) },
             sarvatobhadra_json: unsafe { lent_text(raw.sarvatobhadra_json) },
+            tithi_pravesha_json: unsafe { lent_text(raw.tithi_pravesha_json) },
         }
     }
 }

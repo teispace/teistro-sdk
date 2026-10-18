@@ -4833,6 +4833,9 @@ class Charts:
     sarvatobhadra: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each an array with one reading per instant of the record, in its order (`03-design/gochar.md` §8). A reading is `{rules, native, grahas, points, maleficPoints}`. `rules` is `{front, sight, corner}`. `native` is `{nakshatra, rashi, tithi, vara, name}`, `name` `{letter, vowel}` and left out when the record named none. `grahas` is the nine, the Sun to Ketu, each `{graha, place, motion, lines, nature, waning, joinedBy, cells, points}`: `place` `{star, nakshatra, pada}` with `star` `{star: "NAKSHATRA", nakshatra}` or `{star: "ABHIJIT"}`; `motion` `FAST`, `MEAN` or `RETROGRADE`; `lines` among `LEFT`, `FRONT` and `RIGHT`; `nature` `BENEFIC` or `MALEFIC`; `cells` each reach `{by: "LINE", line, cell}`, `{by: "CORNER", cell}` or `{by: "STANDS"}`, a cell tagged by `cell` as `STAR` (`star`), `VOWEL` (`vowel`), `LETTER` (`letter`, one Devanagari character), `RASHI` (`rashi`) or `TITHI` (`class`); and `points` each `{point, by}`. `points` is each of the native's points `{point, malefics, benefics}`, `point` among `NAKSHATRA`, `LETTER`, `VOWEL`, `TITHI`, `RASHI` and `VARA`. `maleficPoints` counts v. 28's five a malefic strikes. Catalogue members are bare keys. Empty when `sarvatobhadra_json` asked for none."""
 
+    tithi_pravesha: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each an array with one row per year found, `1` up, in order (`03-design/tithi-pravesha.md`). A row is `{year, at, solarReturn, elongationDeg, rule, picked, inSign}`: `year` counted as `praveshas.year` counts it; `at` the instant the Moon's elongation from the Sun returns to the birth's, a UTC Julian day, where the year's chart is founded; `solarReturn` the year's sidereal solar return, UTC; `elongationDeg` the birth's directed elongation, `[0, 360)`; `rule` the rule asked for and `picked` the rule that chose the instant, `NATAL_SIGN` or `NEAREST_RETURN`, which differ where the natal sign held no phase return (C446); `inSign` how many phase returns fell while the Sun was in its natal sign, 0 to 2. A chart can hold fewer rows than `through` asked for where the ephemeris ends first. Empty when `tithi_pravesha_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4977,6 +4980,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_dispositor_ends = blob.section(133, "dispositor_ends")
     at_dispositor_end_members = blob.section(134, "dispositor_end_members")
     at_sarvatobhadra = blob.section(135, "sarvatobhadra")
+    at_tithi_pravesha = blob.section(136, "tithi_pravesha")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7755,6 +7759,7 @@ def decode_charts(raw: bytes) -> Charts:
             length=at_dispositor_end_members.count,
         ),
         sarvatobhadra=blob.text(at_sarvatobhadra),
+        tithi_pravesha=blob.text(at_tithi_pravesha),
     )
 
 

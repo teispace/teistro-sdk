@@ -1,9 +1,10 @@
 # The tithi pravesha
 
 Status: `built`, 2026-10-17. `sdk.chart().tithi_praveshas(&birth, rule, through)` answers the
-instants; the chart is the caller's to found at each one. The Rust
-surface only: no blob section or binding carries it yet. Cruxes C443 to
-C447.
+instants; the chart is the caller's to found at each one. A chart
+request's `tithiPravesha` record finds them for every chart in a batch
+and section 136 carries them across the C boundary ("The record", below).
+Cruxes C443 to C447.
 
 ## What it is
 
@@ -94,6 +95,19 @@ elongation would take. A year whose window passes the provider's
 coverage is left out, as a solar return past it is: fewer instants, not
 the provider's `OutOfRange` on a day the caller never named.
 
+## The record
+
+A chart request's `tithiPravesha` record (`TithiPraveshaRequest::from_json`:
+`through`, one to two hundred, and optionally `rule`, `NATAL_SIGN` by
+default) is checked before anything is founded, a refusal named from the
+record (`tithiPravesha.through`), and answers each chart in the batch what
+`tithi_praveshas` answers it alone (`tests/tithi_pravesha.rs`). Section
+136, `tithi_pravesha`, carries every chart's years across the C boundary
+as canonical JSON, a list of years a chart (`tests/abi.rs` holds it to the
+façade's own), and the agent server reads the record as it reads the
+others. A chart whose years run past the ephemeris holds fewer rows, as
+the call answers fewer.
+
 ## What is decided and what is not
 
 | | |
@@ -101,8 +115,8 @@ the provider's `OutOfRange` on a day the caller never named.
 | **decided** | the exact natal elongation, directed; the Sun's natal sidereal sign around each solar return; the nearer of two; the fall-back with its report; the year counted in returns |
 | **a setting** | `TithiRule`: `NATAL_SIGN` (default) or `NEAREST_RETURN`; how many years, one to two hundred (`through`) |
 | **not decided** | where the year's chart is cast, the caller's, as for the Varsha Pravesha |
-| **built** | `TithiRule`, `TithiPravesha`, `TITHI_WINDOW_DAYS`, `ChartArea::tithi_praveshas` (`crates/sdk/src/tithi_pravesha.rs`); `crates/sdk/tests/tithi_pravesha.rs` reads every instant back through charts founded a second either side of it |
-| **not built** | the lunar-month rival; the yoga and nakshatra praveshas the research row names beside it (the Moon plus the Sun, the Moon alone: the same choice over another quantity); monthly tithi praveshas; a blob section and the bindings |
+| **built** | `TithiRule`, `TithiPravesha`, `TithiPraveshaRequest`, `TITHI_WINDOW_DAYS`, `ChartArea::tithi_praveshas` (`crates/sdk/src/tithi_pravesha.rs`); `crates/sdk/tests/tithi_pravesha.rs` reads every instant back through charts founded a second either side of it; the `tithiPravesha` record and section 136 |
+| **not built** | the lunar-month rival; the yoga and nakshatra praveshas the research row names beside it (the Moon plus the Sun, the Moon alone: the same choice over another quantity); monthly tithi praveshas; the bindings' typed readers |
 
 ## What the corpus cannot settle
 

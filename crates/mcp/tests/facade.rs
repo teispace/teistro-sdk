@@ -485,7 +485,7 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
         "perfection" => json!({"querent": "VENUS", "quesited": "MARS"}),
         "synastry" => json!({"partner": partner}),
         "matching" => json!({"partner": partner, "partnerRole": "BRIDE"}),
-        "varsha" => json!({"through": 1}),
+        "varsha" | "tithiPravesha" => json!({"through": 1}),
         "progressions" => json!({"at": 2_460_676.5}),
         "harmonic" => json!({"number": 5}),
         "gochar" | "sarvatobhadra" => json!({"instants": [2_460_676.5]}),
@@ -515,6 +515,10 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
                 "motion": {"GIVEN": ["MEAN", "FAST", "MEAN", "MEAN", "RETROGRADE"]},
                 "rules": {"front": "EVERY_CELL", "sight": "ALL_THREE", "corner": "OUTER_VOWEL"},
             }),
+        ),
+        (
+            "tithiPravesha",
+            json!({"through": 2, "rule": "NEAREST_RETURN"}),
         ),
     ];
     let mut server = Server::new(Engine::Builtin).with_detail(Detail::Full);

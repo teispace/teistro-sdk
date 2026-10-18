@@ -414,8 +414,11 @@ nearest whatever the sign. Each answer carries the solar return, the
 elongation, the rule that picked it and how many returns the sign held.
 No classical text defining the chart was found; the rule is the
 practice's own sentence, rank 3, and no verse is cited (C443). The year's
-chart is the caller's to found where the native is. The Rust surface
-only: no blob section or binding carries it yet.
+chart is the caller's to found where the native is. A chart request's
+`tithiPravesha` record (`TithiPraveshaRequest`: `through`, and optionally
+`rule`) finds them for every chart in a batch, a refusal named as
+`tithiPravesha.through`; section 136 carries each chart's years across
+the C boundary as canonical JSON, and the agent server reads the record.
 
 **Half- and quarter-returns.** **Numbers:** none moved. `returns`,
 `BodyReturn` and the hit list are unchanged, and offset 0 of the new call
