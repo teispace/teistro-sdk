@@ -2,7 +2,7 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2062 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1954 rules hold at least once and 108 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2104 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1992 rules hold at least once and 112 never do.
 
 Rules holding on the same 5 or more charts form 120 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
@@ -155,6 +155,10 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 
 | rule | instant (JD, UT) | latitude, longitude |
 |---|---:|---|
+| `BJ_ANISHTA_ECLIPSED_MOON_RISING_SATURN_AND_MARS_IN_THE_TRINES` | 2392651.0593 | -60, 78 |
+| `BJ_ANISHTA_ECLIPSED_SUN_RISING_SATURN_AND_MARS_IN_THE_TRINES` | 2440476.2218 | 25, -171 |
+| `BJ_ANISHTA_MOON_RISING_SATURN_AND_MARS_ABOUT_SUN_SEVENTH` | 2379626.9306 | 27.7172, 85.324 |
+| `BJ_ANISHTA_MOON_TENTH_MARS_SEVENTH_SATURN_SECOND_FROM_THE_SUN` | 2379033.125 | 27.7172, 85.324 |
 | `BJ_RAJA_VENUS_AT_HOME_IN_THE_FOURTH` | 2409098.2361 | 27.7172, 85.324 |
 | `BJ_RAJA_ARIES_SUN_AND_MOON_RISING_FIGURE` | 2406723.5139 | 27.7172, 85.324 |
 | `BJ_RAJA_ARIES_SUN_RISING_FIGURE` | 2380808.4722 | 27.7172, 85.324 |

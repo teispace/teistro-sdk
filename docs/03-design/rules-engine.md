@@ -730,6 +730,29 @@ the ancients and says himself (ch. 12 v. 6, Iyer's note) that his task is
 to state them, so they ship as written and the cofiring page says why each
 cannot be seen.
 
+**Brihat Jataka ch. 23's evil yogas, built (2026-10-19).** The chapter
+on malefic yogas, read in Iyer's 1885 translation, ships as
+`classical-bj-anishta.json`, 42 rules in the nabhasa set under the keys
+`BJ_ANISHTA_*`:
+- **vv. 1 to 6:** the wife and sons: the fifth and seventh from the lagna
+  and the Moon untended by benefics or their lords, the wife's death by
+  fire, fall or rope, a barren wife, adultery, and the family's end.
+- **vv. 7 to 12:** the diseases: of the genitals, leprosy by a leprous
+  sign or navamsha, consumption, blindness and deafness by the strongest of
+  four grahas, and the eclipsed luminary rising with Saturn and Mars in the
+  trines.
+- **vv. 13 to 17:** insanity, idiocy and windy complaints; baldness, ugly
+  teeth, weak sight and defective limbs; v. 16's imprisonment and v. 17's
+  servant, and its Moon with Saturn aspected by Mars, the halo the verse
+  adds not something a chart holds.
+
+The malefics of vv. 10, 11 and 16 are read as each of the grahas Iyer's
+notes name, and v. 14's lord of the Moon's navamsha, v. 16's drekkana
+figure and v. 6's painter are not built (C476). The four figures the
+computed sky misses have a fixture on the cofiring page: the two eclipses
+at a place that sees the luminary just risen, and the two placements on an
+early day of 1800 to 2400.
+
 **BPHS ch. 83's curses, built (2026-10-14).** The chapter reads, from the
 fifth house, the curse in a former birth that denies a son, and gives each
 curse its remedy. As `classical-bphs-shapa.json`, 76 rules join the

@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Brihat Jataka ch. 23's evil yogas** (`rules-engine.md`). **Numbers:**
+none moved; this adds 42 rules. Varahamihira's chapter on malefic yogas,
+read in Iyer's 1885 translation, joins the nabhasa set: the want of sons
+and of a wife and the wife's fate in vv. 1 to 6, the diseases of vv. 7 to
+12 including the eclipsed luminary rising, and the mind, the body,
+bondage and service of vv. 13 to 17. Crux C476.
+
 **Brihat Jataka ch. 11's raja yogas** (`rules-engine.md`). **Numbers:**
 none moved; this adds 30 rules. Varahamihira's chapter on the birth of
 kings, read in Chidambaram Iyer's 1885 translation, joins the nabhasa set:

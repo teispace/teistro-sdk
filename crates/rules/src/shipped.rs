@@ -107,6 +107,10 @@ const PHALADEEPIKA_RAJA: &str = include_str!("../rules/classical-phaladeepika-ra
 /// lagna and Moon, and the figures of named signs.
 const BJ_RAJA: &str = include_str!("../rules/classical-bj-raja.json");
 
+/// Brihat Jataka ch. 23's evil yogas: want of wife and sons, the diseases,
+/// the senses and bondage.
+const BJ_ANISHTA: &str = include_str!("../rules/classical-bj-anishta.json");
+
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
     #[derive(Deserialize)]
@@ -156,6 +160,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PHALADEEPIKA_YOGA));
     rules.append(&mut read(PHALADEEPIKA_RAJA));
     rules.append(&mut read(BJ_RAJA));
+    rules.append(&mut read(BJ_ANISHTA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -395,7 +400,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 2062);
+        assert_eq!(rules.len(), 2104);
         for rule in &rules {
             let rank = rule
                 .source

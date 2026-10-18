@@ -112,7 +112,36 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// and a place, its latitude and longitude, where it does: rare rules,
 /// shown alive. Each was found at Kathmandu's latitude, on the meridian
 /// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 76] = [
+const FIXTURES: [(&str, f64, f64, f64); 80] = [
+    // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
+    // eclipses at a place that sees the luminary just risen in the rising
+    // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
+    // v. 7's two placements on an early day, each read back through
+    // `cofiring-probe`.
+    (
+        "BJ_ANISHTA_ECLIPSED_MOON_RISING_SATURN_AND_MARS_IN_THE_TRINES",
+        2_392_651.059_3,
+        -60.0,
+        78.0,
+    ),
+    (
+        "BJ_ANISHTA_ECLIPSED_SUN_RISING_SATURN_AND_MARS_IN_THE_TRINES",
+        2_440_476.221_8,
+        25.0,
+        -171.0,
+    ),
+    (
+        "BJ_ANISHTA_MOON_RISING_SATURN_AND_MARS_ABOUT_SUN_SEVENTH",
+        2_379_626.930_6,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_ANISHTA_MOON_TENTH_MARS_SEVENTH_SATURN_SECOND_FROM_THE_SUN",
+        2_379_033.125,
+        27.7172,
+        85.324,
+    ),
     // Brihat Jataka ch. 11's figures the computed sky misses: an early day of
     // 1800 to 2400 with each, narrowed on placements and read back through
     // `cofiring-probe` (Venus at home in the fourth on 6 of 43 so narrowed).
