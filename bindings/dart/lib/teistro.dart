@@ -15657,7 +15657,7 @@ final class MasaPraveshaRequest {
 /// const floors = MasaPhalaRules(strongFrom: 9 * 3600);
 /// ```
 final class MasaPhalaRules {
-  const MasaPhalaRules({this.weakBelow, this.strongFrom});
+  const MasaPhalaRules({this.weakBelow, this.strongFrom, this.kshina});
 
   /// The strength below which a planet with no dignity is weak; `5 * 3600`
   /// when null.
@@ -15668,9 +15668,14 @@ final class MasaPhalaRules {
   /// `masaPravesha.results.strongFrom`.
   final int? strongFrom;
 
+  /// When the Moon wanes and so counts a malefic; the gloss's
+  /// [KshinaRule.darkEighthToBrightEighth] when null.
+  final KshinaRule? kshina;
+
   Map<String, Object?> get _json => <String, Object?>{
     if (weakBelow case final weakBelow?) 'weakBelow': weakBelow,
     if (strongFrom case final strongFrom?) 'strongFrom': strongFrom,
+    if (kshina case final kshina?) 'kshina': kshina.key,
   };
 }
 
@@ -15805,6 +15810,7 @@ final class MasaPravesha extends _Value {
     this.masesha,
     this.results,
     this.dinesha,
+    this.dayResults,
   });
 
   /// The year, as [Pravesha.year] counts it.
@@ -15833,6 +15839,10 @@ final class MasaPravesha extends _Value {
   /// otherwise.
   final Dinesha? dinesha;
 
+  /// The day's results, where the request named a month and a place; null
+  /// otherwise.
+  final DinaPhala? dayResults;
+
   @override
   List<Object?> get _fields => [
     year,
@@ -15843,6 +15853,7 @@ final class MasaPravesha extends _Value {
     masesha,
     results,
     dinesha,
+    dayResults,
   ];
 }
 
@@ -15987,10 +15998,11 @@ enum MonthLordClause implements _Keyed {
   /// In the 6th, 8th or 12th from the month lagna.
   trika('TRIKA'),
 
-  /// Sharing a sign with Mars or Saturn.
+  /// Sharing a sign with a malefic: the Sun, Mars, Saturn or the waning
+  /// Moon.
   withMalefic('WITH_MALEFIC'),
 
-  /// Aspected by Mars or Saturn with an inimical aspect.
+  /// Aspected by a malefic with an inimical aspect.
   maleficInimical('MALEFIC_INIMICAL'),
 
   /// Strong, by dignity or Vishwa bala.
@@ -16088,6 +16100,221 @@ final class MasaPhala extends _Value {
   List<Object?> get _fields => [...houses, ...lords];
 }
 
+/// The Moon's twelve states within a sign, 2°30′ each, in the gloss's
+/// order (vv. 30–33).
+enum MoonState implements _Keyed {
+  /// A stay abroad.
+  pravasa('PRAVASA'),
+
+  /// Loss of wealth.
+  nashta('NASHTA'),
+
+  /// Fear of death.
+  mrita('MRITA'),
+
+  /// Victory.
+  jaya('JAYA'),
+
+  /// Pleasure.
+  hasya('HASYA'),
+
+  /// Union.
+  rati('RATI'),
+
+  /// Happiness.
+  kridita('KRIDITA'),
+
+  /// Sleep and quarrel.
+  prasupta('PRASUPTA'),
+
+  /// Bodily pain.
+  bhukta('BHUKTA'),
+
+  /// Fear.
+  jvara('JVARA'),
+
+  /// Loss.
+  kampita('KAMPITA'),
+
+  /// Ease.
+  susthita('SUSTHITA');
+
+  const MoonState(this.key);
+
+  @override
+  final String key;
+}
+
+/// A clause of vv. 20–21 about one house's navamsha lord.
+enum DayHouseClause implements _Keyed {
+  /// Sharing a sign with a benefic.
+  withBenefic('WITH_BENEFIC'),
+
+  /// Aspected by a benefic with a friendly aspect.
+  beneficFriendly('BENEFIC_FRIENDLY'),
+
+  /// Aspected by the Moon with a friendly aspect.
+  moonFriendly('MOON_FRIENDLY'),
+
+  /// Sharing a sign with a malefic.
+  withMalefic('WITH_MALEFIC'),
+
+  /// Aspected by a malefic with an inimical aspect.
+  maleficInimical('MALEFIC_INIMICAL');
+
+  const DayHouseClause(this.key);
+
+  @override
+  final String key;
+}
+
+/// The day's lords v. 19 judges.
+enum DayLord implements _Keyed {
+  dinesha('DINESHA'),
+  varshesha('VARSHESHA'),
+  masesha('MASESHA'),
+  muntha('MUNTHA');
+
+  const DayLord(this.key);
+
+  @override
+  final String key;
+}
+
+/// A clause of vv. 18 and 26–29 about the day's chart as a whole.
+enum DayClause implements _Keyed {
+  /// Every benefic strong in a kendra, a trikona or the 11th from the
+  /// lagna.
+  beneficsWellPlacedFromLagna('BENEFICS_WELL_PLACED_FROM_LAGNA'),
+
+  /// The same from the Moon, she not counted.
+  beneficsWellPlacedFromMoon('BENEFICS_WELL_PLACED_FROM_MOON'),
+
+  /// Every malefic in the 3rd, 6th or 11th from the lagna.
+  maleficsWellPlacedFromLagna('MALEFICS_WELL_PLACED_FROM_LAGNA'),
+
+  /// The same from the Moon, she not counted.
+  maleficsWellPlacedFromMoon('MALEFICS_WELL_PLACED_FROM_MOON'),
+
+  /// Malefics in both the 2nd and the 12th.
+  maleficsFlank('MALEFICS_FLANK'),
+
+  /// A benefic in the 12th.
+  beneficTwelfth('BENEFIC_TWELFTH'),
+
+  /// A direct malefic in the 12th and a retrograde one in the 2nd.
+  papaKartari('PAPA_KARTARI'),
+
+  /// The same of benefics.
+  shubhaKartari('SHUBHA_KARTARI'),
+
+  /// The waning Moon in the 1st or 8th, joined or aspected by a malefic.
+  waningMoonAfflicted('WANING_MOON_AFFLICTED'),
+
+  /// The Moon with Mars in the 6th or 8th.
+  moonMarsDusthana('MOON_MARS_DUSTHANA'),
+
+  /// A malefic in the 4th.
+  maleficFourth('MALEFIC_FOURTH'),
+
+  /// A benefic in the 7th.
+  beneficSeventh('BENEFIC_SEVENTH'),
+
+  /// A benefic in the 2nd.
+  beneficSecond('BENEFIC_SECOND'),
+
+  /// A benefic in the 9th.
+  beneficNinth('BENEFIC_NINTH');
+
+  const DayClause(this.key);
+
+  @override
+  final String key;
+}
+
+/// One house of the day, read through its navamsha lord.
+final class DayHouse extends _Value {
+  const DayHouse({
+    required this.house,
+    required this.amshaLord,
+    required this.clauses,
+  });
+
+  /// The house, 1 to 12 by whole signs from the day lagna.
+  final int house;
+
+  /// The lord of the navamsha the house's point falls in.
+  final Graha amshaLord;
+
+  /// The clauses that hold, in the verses' order.
+  final List<DayHouseClause> clauses;
+
+  @override
+  List<Object?> get _fields => [
+    house,
+    amshaLord,
+    clauses.map((one) => one.key).join(','),
+  ];
+}
+
+/// Where one of the day's lords stands.
+final class DayLordPlace extends _Value {
+  const DayLordPlace({
+    required this.office,
+    required this.graha,
+    required this.house,
+    required this.clauses,
+  });
+
+  final DayLord office;
+  final Graha graha;
+
+  /// The house it stands in, 1 to 12 from the day lagna.
+  final int house;
+
+  /// The clauses that hold, the month's lords' own.
+  final List<MonthLordClause> clauses;
+
+  @override
+  List<Object?> get _fields => [
+    office,
+    graha,
+    house,
+    clauses.map((one) => one.key).join(','),
+  ];
+}
+
+/// The day's results (`03-design/varshesha.md`, "The day's results"): the
+/// clauses that hold, no verdict.
+final class DinaPhala extends _Value {
+  const DinaPhala({
+    required this.moonState,
+    required this.houses,
+    required this.lords,
+    required this.clauses,
+  });
+
+  /// The Moon's state within her sign.
+  final MoonState moonState;
+
+  /// The twelve houses, first to twelfth.
+  final List<DayHouse> houses;
+
+  /// The four lords, in [DayLord]'s order.
+  final List<DayLordPlace> lords;
+
+  /// The clauses about the whole chart that hold, in the verses' order.
+  final List<DayClause> clauses;
+
+  @override
+  List<Object?> get _fields => [
+    moonState,
+    ...houses,
+    ...lords,
+    clauses.map((one) => one.key).join(','),
+  ];
+}
+
 /// Each batch's month and day charts, parsed once however many charts
 /// read them.
 final Expando<List<List<MasaPravesha>>> _masaPraveshas =
@@ -16126,7 +16353,45 @@ MasaPravesha _masaPraveshaFrom(Map<String, Object?> raw) => MasaPravesha(
     final Map<String, Object?> lord => _dineshaFrom(lord),
     _ => null,
   },
+  dayResults: switch (raw['dayResults']) {
+    final Map<String, Object?> results => _dinaPhalaFrom(results),
+    _ => null,
+  },
 );
+
+/// A list of keys from the section's JSON, each made its member.
+List<T> _keyedList<T extends _Keyed>(List<T> values, Object? list) =>
+    List<T>.unmodifiable([
+      for (final key in list! as List<Object?>) _keyedIn(values, key),
+    ]);
+
+/// A day's results from the section's JSON, its keys made members.
+DinaPhala _dinaPhalaFrom(Map<String, Object?> raw) {
+  Graha graha(Object? key) => _key(key, Graha.byKey, Graha.unknown);
+  return DinaPhala(
+    moonState: _keyedIn(MoonState.values, raw['moonState']),
+    houses: List<DayHouse>.unmodifiable([
+      for (final one in raw['houses']! as List<Object?>)
+        if (one case final Map<String, Object?> one)
+          DayHouse(
+            house: one['house']! as int,
+            amshaLord: graha(one['amshaLord']),
+            clauses: _keyedList(DayHouseClause.values, one['clauses']),
+          ),
+    ]),
+    lords: List<DayLordPlace>.unmodifiable([
+      for (final one in raw['lords']! as List<Object?>)
+        if (one case final Map<String, Object?> one)
+          DayLordPlace(
+            office: _keyedIn(DayLord.values, one['office']),
+            graha: graha(one['graha']),
+            house: one['house']! as int,
+            clauses: _keyedList(MonthLordClause.values, one['clauses']),
+          ),
+    ]),
+    clauses: _keyedList(DayClause.values, raw['clauses']),
+  );
+}
 
 /// A day's lord from the section's JSON, read as the month's lord is.
 Dinesha _dineshaFrom(Map<String, Object?> raw) {
@@ -16152,10 +16417,6 @@ Dinesha _dineshaFrom(Map<String, Object?> raw) {
 /// A month's results from the section's JSON, its keys made members.
 MasaPhala _masaPhalaFrom(Map<String, Object?> raw) {
   Graha graha(Object? key) => _key(key, Graha.byKey, Graha.unknown);
-  List<T> keyed<T extends _Keyed>(List<T> values, Object? list) =>
-      List<T>.unmodifiable([
-        for (final key in list! as List<Object?>) _keyedIn(values, key),
-      ]);
   return MasaPhala(
     houses: List<MonthHouse>.unmodifiable([
       for (final one in raw['houses']! as List<Object?>)
@@ -16164,9 +16425,12 @@ MasaPhala _masaPhalaFrom(Map<String, Object?> raw) {
             house: one['house']! as int,
             amshaLord: graha(one['amshaLord']),
             lordAmshaLord: graha(one['lordAmshaLord']),
-            clauses: keyed(MonthHouseClause.values, one['clauses']),
-            seenByAmshaLord: keyed(MonthLord.values, one['seenByAmshaLord']),
-            seenByMoon: keyed(MonthLord.values, one['seenByMoon']),
+            clauses: _keyedList(MonthHouseClause.values, one['clauses']),
+            seenByAmshaLord: _keyedList(
+              MonthLord.values,
+              one['seenByAmshaLord'],
+            ),
+            seenByMoon: _keyedList(MonthLord.values, one['seenByMoon']),
           ),
     ]),
     lords: List<MonthLordPlace>.unmodifiable([
@@ -16176,7 +16440,7 @@ MasaPhala _masaPhalaFrom(Map<String, Object?> raw) {
             office: _keyedIn(MonthLord.values, one['office']),
             graha: graha(one['graha']),
             house: one['house']! as int,
-            clauses: keyed(MonthLordClause.values, one['clauses']),
+            clauses: _keyedList(MonthLordClause.values, one['clauses']),
           ),
     ]),
   );

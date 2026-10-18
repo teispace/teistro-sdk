@@ -68,7 +68,7 @@ impl KshinaRule {
     }
 
     /// Whether a Moon `elongation_deg` past the Sun is *kṣīṇa*.
-    fn holds(self, elongation_deg: f64) -> bool {
+    pub(crate) fn holds(self, elongation_deg: f64) -> bool {
         match self {
             KshinaRule::DarkEighthToBrightEighth => !(96.0..264.0).contains(&elongation_deg),
             KshinaRule::DarkEleventhToNewMoon => elongation_deg >= 300.0,

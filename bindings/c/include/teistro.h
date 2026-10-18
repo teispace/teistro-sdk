@@ -8523,10 +8523,12 @@ struct ts_chart_request {
      * `{latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds}` as
      * `varsha_json` writes it, where each month's chart is founded and
      * its lord and results read, or with `month` each day's chart and its
-     * lord, under optionally
+     * lord and results, under optionally
      * `masesha`, `{reading, muntha, chain}` (`03-design/varshesha.md`,
      * "The month's lord"), and `results`, `{weakBelow, strongFrom}` in
-     * sub-sub-units ("The month's results"). The instants come back in the `masa_pravesha` section, the
+     * sub-sub-units and `kshina`, `"DARK_EIGHTH_TO_BRIGHT_EIGHTH"` (the
+     * default) or `"DARK_ELEVENTH_TO_NEW_MOON"`, when the Moon wanes and
+     * is a malefic ("The month's results", "The day's results"). The instants come back in the `masa_pravesha` section, the
      * months each as its first day; a year past the ephemeris's end comes
      * back empty. Null for none (`03-design/annual-chart.md`, "The
      * month's and the day's chart"). Refusals are named from the record

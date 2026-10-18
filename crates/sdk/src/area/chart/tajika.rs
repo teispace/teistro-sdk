@@ -17,11 +17,11 @@ use teistro_serial::Document;
 use teistro_state::state;
 use teistro_tajika::{
     Affliction, AnnualDasha, AnnualDashaRules, AnnualSky, AnnualStates, Between, DayCharts,
-    DinaPravesha, Dinesha, DrishtiRules, Favour, Harsha, HarshaRules, MasaPhala, MasaPhalaRules,
-    Masesha, MaseshaRules, MonthCharts, MonthLords, MuddaBalance, Muntha, MunthaDegree, Natal,
-    OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN, Saham, SahamFormula,
-    SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength, SahamStrengthRules, Strength,
-    Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
+    DayLords, DinaPhala, DinaPravesha, Dinesha, DrishtiRules, Favour, Harsha, HarshaRules,
+    MasaPhala, MasaPhalaRules, Masesha, MaseshaRules, MonthCharts, MonthLords, MuddaBalance,
+    Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading,
+    SEVEN, Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength,
+    SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
 };
 
 use super::ChartArea;
@@ -805,6 +805,68 @@ impl ChartArea<'_> {
                 masesha: masesha.graha,
                 varshesha,
                 masa_lagna: bearers.masa_lagna,
+                muntha: bearers.muntha,
+            },
+            rules,
+        )
+    }
+
+    /// The **day's results** from the day's chart you founded and its lord
+    /// (*Tajika Nilakanthi*, Varsha Tantra, the month's and the day's
+    /// results, vv. 18–33; `03-design/varshesha.md`, "The day's results"):
+    /// the Moon's state, each house read through its navamsha lord, the
+    /// day's, the year's, the month's and the Muntha's lords where they
+    /// stand, and the clauses about the chart as a whole that hold.
+    ///
+    /// `dinesha` is the day's own answer from [`ChartArea::dinesha`],
+    /// which names the Muntha's lord; `varshesha` and `masesha` are the
+    /// year's and the month's lords. It needs **no ephemeris**.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document};
+    /// # use teistro::tajika::{Dinesha, MasaPhalaRules};
+    /// # use teistro::catalogue::Graha;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().build()?;
+    /// # let (day, lord, year_lord, month_lord): (Document, Dinesha, Graha, Graha) = todo!();
+    /// let results = sdk.chart().dina_phala(&day, &lord, year_lord, month_lord, MasaPhalaRules::default())?;
+    /// println!("the Moon is in {:?}", results.moon_state);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A day chart whose lagna's lord is not `dinesha`'s day lagna lord,
+    /// named `day`; a chart that does not place one of the seven; as
+    /// [`teistro_tajika::dina_phala`].
+    pub fn dina_phala(
+        self,
+        day: &Document,
+        dinesha: &Dinesha,
+        varshesha: Graha,
+        masesha: Graha,
+        rules: MasaPhalaRules,
+    ) -> Result<DinaPhala, Error> {
+        let lagna_deg = day.foundation.lagna_deg;
+        let bearers = &dinesha.bearers;
+        let lagna_lord = Rashi::of_longitude(lagna_deg).attributes().lord;
+        if lagna_lord != bearers.dina_lagna {
+            return Err(Error::invalid_arg(format!(
+                "the day chart's lagna is {lagna_lord:?}'s, but the day's lord was read with {:?}'s",
+                bearers.dina_lagna
+            ))
+            .with_field("day")
+            .with_hint("pass the chart the Dinesha was read from"));
+        }
+        teistro_tajika::dina_phala(
+            lagna_deg,
+            &Self::sky_of(day)?,
+            &self.annual_states(day)?,
+            &DayLords {
+                dinesha: dinesha.graha,
+                varshesha,
+                masesha,
                 muntha: bearers.muntha,
             },
             rules,

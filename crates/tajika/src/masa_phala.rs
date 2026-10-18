@@ -51,8 +51,9 @@ use teistro_core::house::House;
 
 use crate::bala::{AnnualSky, Bala, SEVEN, finite_longitude, navamsha_lord, sign_of_longitude};
 use crate::drishti::Drishti;
+use crate::moon::KshinaRule;
 use crate::states::AnnualStates;
-use crate::yoga::{MALEFICS, Strength, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YogaRules, strengths};
+use crate::yoga::{Strength, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YogaRules, strengths};
 
 /// A clause of vv. 7–11 about one house, in the verses' order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -221,11 +222,11 @@ impl MonthLords {
 pub enum LordClause {
     /// In the 6th, 8th or 12th from the month lagna (v. 12).
     Trika,
-    /// Sharing a sign with Mars or Saturn, the other of the two when it is
-    /// one (v. 12).
+    /// Sharing a sign with one of the chapter's malefics, the Sun, Mars,
+    /// Saturn and the waning Moon, itself excepted (v. 12; crux C460).
     WithMalefic,
-    /// Aspected by Mars or Saturn with an inimical aspect, the 1st, 4th,
-    /// 7th or 10th as the gloss lists them (v. 12; crux C455).
+    /// Aspected by one of them with an inimical aspect, the 1st, 4th, 7th
+    /// or 10th as the gloss lists them (v. 12; cruxes C455, C460).
     MaleficInimical,
     /// Strong, by dignity or Vishwa bala (v. 13).
     Strong,
@@ -349,8 +350,8 @@ pub struct MasaPhala {
     pub lords: Vec<MonthLordPlace>,
 }
 
-/// The floors the month's results judge strong and weak by, the year
-/// yogas' own by default.
+/// The floors the month's and the day's results judge strong and weak by,
+/// the year yogas' own by default, and when the Moon is waning.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -360,6 +361,10 @@ pub struct MasaPhalaRules {
     /// The Vishwa bala from which a planet is strong without a dignity;
     /// never below `weak_below`.
     pub strong_from: Bala,
+    /// When the Moon is waning, and so one of the chapter's malefics
+    /// rather than its benefics (crux C460); the Samjna Tantra gloss's own
+    /// by default.
+    pub kshina: KshinaRule,
 }
 
 impl Default for MasaPhalaRules {
@@ -367,6 +372,7 @@ impl Default for MasaPhalaRules {
         MasaPhalaRules {
             weak_below: YOGA_WEAK_BELOW,
             strong_from: YOGA_STRONG_FROM,
+            kshina: KshinaRule::default(),
         }
     }
 }
@@ -391,11 +397,49 @@ impl MasaPhalaRules {
         }
         Ok(self)
     }
+
+    /// The seven's strengths under these floors.
+    pub(crate) fn strengths(self, sky: &AnnualSky) -> Result<[Strength; 7], Error> {
+        strengths(
+            sky,
+            YogaRules {
+                weak_below: self.weak_below,
+                strong_from: self.strong_from,
+                ..YogaRules::default()
+            },
+        )
+    }
+
+    /// Whether the Moon is waning in `sky`.
+    pub(crate) fn waning(self, sky: &AnnualSky) -> bool {
+        self.kshina
+            .holds((sky.moon_deg - sky.sun_deg).rem_euclid(360.0))
+    }
+
+    /// The chapter's malefics in `sky`: the Sun, Mars, Saturn, and the Moon
+    /// when she is waning (the gloss on v. 28; crux C460).
+    pub(crate) fn malefics(self, sky: &AnnualSky) -> Vec<Graha> {
+        let mut out = vec![Graha::Sun, Graha::Mars, Graha::Saturn];
+        if self.waning(sky) {
+            out.push(Graha::Moon);
+        }
+        out
+    }
+
+    /// The chapter's benefics in `sky`, the rest of the seven: Mercury,
+    /// Jupiter, Venus, and the Moon when she is not waning (crux C460).
+    pub(crate) fn benefics(self, sky: &AnnualSky) -> Vec<Graha> {
+        let mut out = vec![Graha::Mercury, Graha::Jupiter, Graha::Venus];
+        if !self.waning(sky) {
+            out.push(Graha::Moon);
+        }
+        out
+    }
 }
 
 /// What two planets' signs make of them in vv. 7–10.
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum Bond {
+pub(crate) enum Bond {
     /// One planet.
     Same,
     /// Sharing a sign: v. 7's companionship.
@@ -409,7 +453,7 @@ enum Bond {
 }
 
 impl Bond {
-    fn between(a: Graha, b: Graha, sky: &AnnualSky) -> Bond {
+    pub(crate) fn between(a: Graha, b: Graha, sky: &AnnualSky) -> Bond {
         if a == b {
             return Bond::Same;
         }
@@ -422,7 +466,7 @@ impl Bond {
     }
 
     /// v. 10's "seen with a friendly aspect or joined".
-    const fn sees(self) -> bool {
+    pub(crate) const fn sees(self) -> bool {
         matches!(self, Bond::Conjoined | Bond::Friendly)
     }
 }
@@ -440,14 +484,14 @@ fn moon_holds(pair: [Graha; 2], sky: &AnnualSky, bond: Bond) -> bool {
             .all(|&graha| Bond::between(Graha::Moon, graha, sky) == bond)
 }
 
-fn debilitated(graha: Graha, sky: &AnnualSky) -> bool {
+pub(crate) fn debilitated(graha: Graha, sky: &AnnualSky) -> bool {
     graha
         .attributes()
         .debilitation
         .is_some_and(|at| at.sign == sky.sign_of(graha))
 }
 
-fn strength_of(graha: Graha, strengths: &[Strength; 7]) -> Option<Strength> {
+pub(crate) fn strength_of(graha: Graha, strengths: &[Strength; 7]) -> Option<Strength> {
     strengths.iter().copied().find(|one| one.graha == graha)
 }
 
@@ -488,14 +532,8 @@ pub fn masa_phala(
             .with_field(field));
         }
     }
-    let strengths = strengths(
-        sky,
-        YogaRules {
-            weak_below: rules.weak_below,
-            strong_from: rules.strong_from,
-            ..YogaRules::default()
-        },
-    )?;
+    let strengths = rules.strengths(sky)?;
+    let malefics = rules.malefics(sky);
     let lagna = sign_of_longitude(month_lagna_deg);
     let within = month_lagna_deg.rem_euclid(30.0);
     let houses = House::ALL
@@ -504,7 +542,16 @@ pub fn masa_phala(
         .collect();
     let lords = MonthLord::ALL
         .into_iter()
-        .map(|office| lord_place(office, lords.holder(office), lagna, sky, &strengths))
+        .map(|office| {
+            let graha = lords.holder(office);
+            let (house, clauses) = lord_clauses(graha, lagna, sky, &strengths, &malefics);
+            MonthLordPlace {
+                office,
+                graha,
+                house,
+                clauses,
+            }
+        })
         .collect();
     Ok(MasaPhala { houses, lords })
 }
@@ -564,15 +611,17 @@ fn month_house(
     }
 }
 
-fn lord_place(
-    office: MonthLord,
+/// Where `graha` stands from `lagna`, and the clauses of vv. 12–13 (and of
+/// the day's v. 19) that hold of it, `malefics` the chapter's own.
+pub(crate) fn lord_clauses(
     graha: Graha,
     lagna: Rashi,
     sky: &AnnualSky,
     strengths: &[Strength; 7],
-) -> MonthLordPlace {
+    malefics: &[Graha],
+) -> (House, Vec<LordClause>) {
     let house = House::between(lagna, sky.sign_of(graha));
-    let malefics = MALEFICS.into_iter().filter(|&malefic| malefic != graha);
+    let malefics = malefics.iter().copied().filter(|&malefic| malefic != graha);
     let mut clauses = Vec::new();
     for clause in LordClause::ALL {
         let holds = match clause {
@@ -595,12 +644,7 @@ fn lord_place(
             clauses.push(clause);
         }
     }
-    MonthLordPlace {
-        office,
-        graha,
-        house,
-        clauses,
-    }
+    (house, clauses)
 }
 
 #[cfg(test)]
@@ -786,6 +830,7 @@ mod tests {
         let floors = MasaPhalaRules {
             weak_below: Bala::new(9, 0, 0),
             strong_from: Bala::new(8, 0, 0),
+            ..MasaPhalaRules::default()
         };
         let why = masa_phala(5.0, &sky(), &AnnualStates::default(), &lords(), floors).unwrap_err();
         assert_eq!(why.field(), Some("strongFrom"));

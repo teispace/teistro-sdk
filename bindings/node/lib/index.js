@@ -5428,7 +5428,9 @@ const MASA_PRAVESHA = new WeakMap();
 function masaPraveshasOf(batch) {
   return sectionOf(MASA_PRAVESHA, batch, 'masaPravesha', (chart) =>
     chart.map((row) => {
-      if (row.dinesha !== undefined) return { ...row, dinesha: dineshaFrom(row.dinesha) };
+      if (row.dinesha !== undefined) {
+        return { ...row, dinesha: dineshaFrom(row.dinesha), dayResults: dinaPhalaFrom(row.dayResults) };
+      }
       if (row.masesha === undefined) return row;
       return { ...row, masesha: maseshaFrom(row.masesha), results: masaPhalaFrom(row.results) };
     }),
@@ -5450,6 +5452,22 @@ function masaPhalaFrom({ houses, lords }) {
       lordAmshaLord: full(one.lordAmshaLord),
     })),
     lords: lords.map((one) => ({ ...one, graha: full(one.graha) })),
+  };
+}
+
+/**
+ * A day's results as the section writes them, their grahas full keys.
+ *
+ * @param {object} raw
+ * @returns {object}
+ */
+function dinaPhalaFrom({ moonState, houses, lords, clauses }) {
+  const full = (key) => `graha.${key}`;
+  return {
+    moonState,
+    houses: houses.map((one) => ({ ...one, amshaLord: full(one.amshaLord) })),
+    lords: lords.map((one) => ({ ...one, graha: full(one.graha) })),
+    clauses,
   };
 }
 

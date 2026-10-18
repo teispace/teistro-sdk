@@ -4843,6 +4843,18 @@ test('a chart reads its month and day charts', () => {
     assert.equal(dinesha.bearers.masaLagna, lords[1].masesha.bearers.masaLagna);
     assert.ok(dinesha.bearers.dinaLagna.startsWith('graha.') && typeof dinesha.bearers.byDay === 'boolean');
   }
+  // Each day's results beside its lord: the four lords the day's, the
+  // year's, the month's and the Muntha's.
+  for (const { dinesha, dayResults } of daysWithLords) {
+    assert.equal(dayResults.houses.length, 12);
+    assert.deepEqual(
+      dayResults.lords.map((one) => one.graha),
+      [dinesha.graha, third.annual.yearLord.graha, lords[1].masesha.graha, dinesha.bearers.muntha],
+    );
+    assert.ok(dayResults.houses.every((one) => one.amshaLord.startsWith('graha.')));
+    assert.match(dayResults.moonState, /^[A-Z]+$/);
+  }
+  assert.ok(new Set(daysWithLords.map((one) => one.dayResults.moonState)).size > 1, 'the Moon moves through her states');
 
   // Each month's results beside its lord: twelve houses, five lords.
   assert.equal(months[0].results, undefined, 'no results without a place');

@@ -4,9 +4,9 @@ package com.teispace.teistro;
 public enum MonthLordClause {
     /** In the 6th, 8th or 12th from the month lagna. */
     TRIKA,
-    /** Sharing a sign with Mars or Saturn. */
+    /** Sharing a sign with a malefic: the Sun, Mars, Saturn or the waning Moon. */
     WITH_MALEFIC,
-    /** Aspected by Mars or Saturn with an inimical aspect. */
+    /** Aspected by a malefic with an inimical aspect. */
     MALEFIC_INIMICAL,
     /** Strong, by dignity or Vishwa bala. */
     STRONG,

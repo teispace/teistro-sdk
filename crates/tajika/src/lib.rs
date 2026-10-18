@@ -31,6 +31,7 @@
 
 mod annual_dasha;
 mod bala;
+mod dina_phala;
 mod dinesha;
 mod drishti;
 mod harsha;
@@ -57,6 +58,10 @@ pub use annual_dasha::{
 pub use bala::{
     AnnualSky, Bala, HuddaTable, Panchavargiya, Relation, SEVEN, drekkana_lord, hudda_lord,
     hudda_lord_in, navamsha_lord, panchavargiya,
+};
+pub use dina_phala::{
+    DayClause, DayHouse, DayHouseClause, DayLord, DayLordPlace, DayLords, DinaPhala, MoonState,
+    dina_phala,
 };
 pub use dinesha::{DayBearers, DayCharts, DayOffice, Dinesha, day_bearers, dinesha};
 pub use drishti::{

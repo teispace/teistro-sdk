@@ -817,6 +817,13 @@ __all__ = [
     "Masesha",
     "DayBearers",
     "Dinesha",
+    "MoonState",
+    "DayHouseClause",
+    "DayLord",
+    "DayClause",
+    "DayHouse",
+    "DayLordPlace",
+    "DinaPhala",
     "MasaPhalaRules",
     "MonthHouseClause",
     "MonthLord",
@@ -9727,8 +9734,9 @@ class MasaPraveshaRequest(TypedDict, total=False):
 
 
 class MasaPhalaRules(TypedDict, total=False):
-    """The floors the month's results judge strong and weak by
-    (`03-design/varshesha.md`, "The month's results").
+    """The floors the month's and the day's results judge strong and weak
+    by, and when the Moon wanes (`03-design/varshesha.md`, "The month's
+    results").
 
     >>> floors: MasaPhalaRules = {"strong_from": 9 * 3600}
     """
@@ -9739,6 +9747,9 @@ class MasaPhalaRules(TypedDict, total=False):
     strong_from: int
     """The strength from which a planet is strong, sub-sub units;
     `10 * 3600` by default, never below `weak_below`."""
+    kshina: KshinaRule
+    """When the Moon wanes and so counts a malefic: the gloss's
+    `DARK_EIGHTH_TO_BRIGHT_EIGHTH` by default."""
 
 
 class MaseshaRules(TypedDict, total=False):
@@ -9812,6 +9823,9 @@ class MasaPravesha:
     """The month's results, where the request named a `place`."""
     dinesha: Optional["Dinesha"] = None
     """The day's lord, where the request named a `month` and a `place`."""
+    day_results: Optional["DinaPhala"] = None
+    """The day's results, where the request named a `month` and a
+    `place`."""
 
 
 @dataclass(frozen=True)
@@ -9908,6 +9922,90 @@ class MasaPhala:
     """The twelve houses, first to twelfth."""
     lords: Tuple[MonthLordPlace, ...]
     """The five lords, in `MonthLord`'s order."""
+
+
+MoonState = Literal[
+    "PRAVASA",
+    "NASHTA",
+    "MRITA",
+    "JAYA",
+    "HASYA",
+    "RATI",
+    "KRIDITA",
+    "PRASUPTA",
+    "BHUKTA",
+    "JVARA",
+    "KAMPITA",
+    "SUSTHITA",
+]
+"""The Moon's twelve states within a sign, 2°30′ each, in the gloss's
+order (vv. 30–33)."""
+
+DayHouseClause = Literal[
+    "WITH_BENEFIC", "BENEFIC_FRIENDLY", "MOON_FRIENDLY", "WITH_MALEFIC", "MALEFIC_INIMICAL"
+]
+"""A clause of vv. 20–21 about one house's navamsha lord."""
+
+DayLord = Literal["DINESHA", "VARSHESHA", "MASESHA", "MUNTHA"]
+"""The day's lords v. 19 judges."""
+
+DayClause = Literal[
+    "BENEFICS_WELL_PLACED_FROM_LAGNA",
+    "BENEFICS_WELL_PLACED_FROM_MOON",
+    "MALEFICS_WELL_PLACED_FROM_LAGNA",
+    "MALEFICS_WELL_PLACED_FROM_MOON",
+    "MALEFICS_FLANK",
+    "BENEFIC_TWELFTH",
+    "PAPA_KARTARI",
+    "SHUBHA_KARTARI",
+    "WANING_MOON_AFFLICTED",
+    "MOON_MARS_DUSTHANA",
+    "MALEFIC_FOURTH",
+    "BENEFIC_SEVENTH",
+    "BENEFIC_SECOND",
+    "BENEFIC_NINTH",
+]
+"""A clause of vv. 18 and 26–29 about the day's chart as a whole."""
+
+
+@dataclass(frozen=True)
+class DayHouse:
+    """One house of the day, read through its navamsha lord."""
+
+    house: int
+    """The house, 1 to 12 by whole signs from the day lagna."""
+    amsha_lord: Graha
+    """The lord of the navamsha the house's point falls in."""
+    clauses: Tuple[DayHouseClause, ...]
+    """The clauses that hold, in the verses' order."""
+
+
+@dataclass(frozen=True)
+class DayLordPlace:
+    """Where one of the day's lords stands."""
+
+    office: DayLord
+    graha: Graha
+    house: int
+    """The house it stands in, 1 to 12 from the day lagna."""
+    clauses: Tuple[MonthLordClause, ...]
+    """The clauses that hold, the month's lords' own."""
+
+
+@dataclass(frozen=True)
+class DinaPhala:
+    """The day's results (`03-design/varshesha.md`, "The day's results"):
+    the clauses that hold, no verdict."""
+
+    moon_state: MoonState
+    """The Moon's state within her sign."""
+    houses: Tuple[DayHouse, ...]
+    """The twelve houses, first to twelfth."""
+    lords: Tuple[DayLordPlace, ...]
+    """The four lords, in `DayLord`'s order."""
+    clauses: Tuple[DayClause, ...]
+    """The clauses about the whole chart that hold, in the verses'
+    order."""
 
 
 DossierSection = Literal[
@@ -12225,6 +12323,32 @@ def _masa_pravesha(raw: Mapping[str, Any]) -> MasaPravesha:
         masesha=None if lord is None else _masesha(lord),
         results=None if lord is None else _masa_phala(raw["results"]),
         dinesha=None if raw.get("dinesha") is None else _dinesha(raw["dinesha"]),
+        day_results=None if raw.get("dayResults") is None else _dina_phala(raw["dayResults"]),
+    )
+
+
+def _dina_phala(raw: Mapping[str, Any]) -> DinaPhala:
+    """A day's results from the section's JSON, its grahas members."""
+    return DinaPhala(
+        moon_state=raw["moonState"],
+        houses=tuple(
+            DayHouse(
+                house=one["house"],
+                amsha_lord=_member(Graha, one["amshaLord"]),
+                clauses=tuple(one["clauses"]),
+            )
+            for one in raw["houses"]
+        ),
+        lords=tuple(
+            DayLordPlace(
+                office=one["office"],
+                graha=_member(Graha, one["graha"]),
+                house=one["house"],
+                clauses=tuple(one["clauses"]),
+            )
+            for one in raw["lords"]
+        ),
+        clauses=tuple(raw["clauses"]),
     )
 
 

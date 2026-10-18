@@ -12,6 +12,22 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The day's results** (`varshesha.md`). **Numbers:** none moved; this
+adds answers. `teistro_tajika::dina_phala` and `sdk.chart().dina_phala`
+read the *Tajika Nilakanthi*'s day's results (Varsha Tantra, the month's
+and the day's results, vv. 18–33) from a day's chart and its lord: the
+Moon's state, one of twelve of 2°30′ within her sign; each house's
+navamsha lord joined or befriended by a benefic or seen by the Moon; the
+Dinesha, the Varshesha, the Masesha and the Muntha's lord where they
+stand; and fourteen clauses about the chart as a whole, the papa and
+shubha kartari among them, read by motion as the gloss reads them. As
+with the month, the clauses that hold are reported and no verdict is
+given. Every day row a `masaPravesha` record founds now carries
+`dayResults`, read in Node, Python, Dart and Java. The month's and the
+day's results count the chapter's own malefics, the Sun, Mars, Saturn and
+the waning Moon, under a new `results.kshina`, rather than the year
+yogas' Mars and Saturn. Verses 22–25 are not built. Cruxes C460 to C463.
+
 **The day's lord (Dinesha)** (`varshesha.md`). **Numbers:** none moved;
 this adds answers. `teistro_tajika::dinesha` and `sdk.chart().dinesha`
 read the *Tajika Nilakanthi*'s day's lord (Varsha Tantra, the month's and
@@ -35,7 +51,7 @@ clauses and weigh none, so the clauses that hold are reported and no
 verdict is given. What the verses leave open is cruxes C453 to C457. Every
 month row a `masaPravesha` record founds at a `place` now carries
 `results` beside `masesha`, under the record's new `results` floors
-(`{weakBelow, strongFrom}`), read in Node, Python, Dart and Java with the
+(`{weakBelow, strongFrom, kshina}`), read in Node, Python, Dart and Java with the
 grahas as each binding's own members. The design page's claim that the
 verses do not name the day's office-bearers is corrected: v. 17 names
 seven, and the Dinesha is still to build.

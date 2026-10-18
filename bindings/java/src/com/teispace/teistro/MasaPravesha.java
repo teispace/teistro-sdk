@@ -15,6 +15,8 @@ package com.teispace.teistro;
  * @param results The month's results, where the request named a {@code place}; null otherwise.
  * @param dinesha The day's lord, where the request named a {@code month} and a {@code place}; null
  *     otherwise.
+ * @param dayResults The day's results, where the request named a {@code month} and a {@code
+ *     place}; null otherwise.
  */
 public record MasaPravesha(
         int year,
@@ -24,5 +26,6 @@ public record MasaPravesha(
         double sunDeg,
         Masesha masesha,
         MasaPhala results,
-        Dinesha dinesha) {
+        Dinesha dinesha,
+        DinaPhala dayResults) {
 }

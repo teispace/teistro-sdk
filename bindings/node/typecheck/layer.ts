@@ -24,6 +24,11 @@ import type {
   MonthLordClause,
   Dinesha,
   DayBearers,
+  DinaPhala,
+  DayHouseClause,
+  DayClause,
+  DayLord,
+  MoonState,
   WesternConfiguration,
   WesternConfigurationRequest,
   DossierRequest,
@@ -544,9 +549,17 @@ function masaPravesha(): string {
   const dayLord: Dinesha | undefined = daily.masaPravesha![0]!.dinesha;
   const dayBearers: DayBearers | undefined = dayLord?.bearers;
   const dinaLagna: Graha | undefined = dayBearers?.dinaLagna;
+  const dayResults: DinaPhala | undefined = daily.masaPravesha![1]!.dayResults;
+  const moonState: MoonState | undefined = dayResults?.moonState;
+  const dayHouse: DayHouseClause | undefined = dayResults?.houses[0]?.clauses[0];
+  const dayLordOffice: DayLord | undefined = dayResults?.lords[0]?.office;
+  const dayClause: DayClause | undefined = dayResults?.clauses[0];
+  const waning: MasaPraveshaRequest = { year: 30, month: 4, place: 'birth', results: { kshina: 'DARK_ELEVENTH_TO_NEW_MOON' } };
+  // @ts-expect-error a Moon state is a closed set
+  const notState: MoonState = 'FULL';
   // @ts-expect-error a house clause is a closed set
   const wrong: MonthHouseClause = 'BENEFIC';
-  return `${at} ${sun} ${day.month} ${day.day} ${mean.year} ${lord} ${tie} ${third.year} ${floors.year} ${clause} ${amsha} ${seen?.length} ${office?.house} ${placed} ${wrong} ${dinaLagna}`;
+  return `${at} ${sun} ${day.month} ${day.day} ${mean.year} ${lord} ${tie} ${third.year} ${floors.year} ${clause} ${amsha} ${seen?.length} ${office?.house} ${placed} ${wrong} ${dinaLagna} ${moonState} ${dayHouse} ${dayLordOffice} ${dayClause} ${waning.year} ${notState}`;
 }
 
 void masaPravesha;
