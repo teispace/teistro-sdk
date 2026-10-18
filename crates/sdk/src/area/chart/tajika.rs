@@ -68,11 +68,155 @@ impl ChartArea<'_> {
         // nonsense year is reported as one whichever reading was asked
         // for and whether or not a provider is attached.
         let asked = teistro_tajika::years(through)?;
+        if reading == Reading::Mean {
+            return teistro_tajika::mean_praveshas(&Self::natal_of(&document.foundation)?, asked);
+        }
+        self.sun_sky(document, |longitudes, zodiac, natal, covered| {
+            // Asked for more years than the provider covers, answer the
+            // ones it does. Without this the search runs off the end and
+            // the provider's own `OutOfRange` comes back naming an instant
+            // the caller never mentioned — true, and useless to act on.
+            // Fewer instants than asked for is the answer this method
+            // documents, and none of them is the answer when the coverage
+            // reaches none; the refusal for a nonsense year already
+            // happened above, before capping could turn it into an empty
+            // list.
+            let through = asked.min(covered);
+            if through == 0 {
+                return Ok(Vec::new());
+            }
+            teistro_tajika::praveshas(longitudes, zodiac, natal, reading, through)
+        })
+    }
+
+    /// The twelve month charts' instants of one year, the Maasa Pravesha:
+    /// the Sun at the annual chart's degree a sign further each month,
+    /// the first month the annual chart itself (*Tajika Nilakanthi*,
+    /// Saṃjñā Tantra, the monthly and daily entry, v. 1;
+    /// `03-design/annual-chart.md`). Empty when the provider's coverage
+    /// ends before the year does.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Ephemeris};
+    /// # use teistro::tajika::Reading;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let document: Document = todo!();
+    /// let months = sdk.chart().masa_praveshas(&document, Reading::Sidereal, 30)?;
+    /// assert_eq!(months.first().map(|one| one.month), Some(1));
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// No ephemeris; a year outside one to two hundred, named `year`;
+    /// [`Reading::Mean`], which places no Sun, named `reading`; whatever
+    /// the provider refuses while searching.
+    pub fn masa_praveshas(
+        self,
+        document: &Document,
+        reading: Reading,
+        year: u16,
+    ) -> Result<Vec<teistro_tajika::MasaPravesha>, Error> {
+        self.year_of(
+            document,
+            reading,
+            year,
+            |longitudes, zodiac, natal, pravesha| {
+                teistro_tajika::masa_praveshas(longitudes, zodiac, natal, pravesha)
+            },
+        )
+    }
+
+    /// The thirty day charts' instants of one month of one year, the Dina
+    /// Pravesha: the Sun at the month chart's degree a degree further
+    /// each solar day, the first day the month's chart itself (the same
+    /// verse). Empty when the provider's coverage ends first.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::masa_praveshas`], and a month outside one to
+    /// twelve, named `month`.
+    pub fn dina_praveshas(
+        self,
+        document: &Document,
+        reading: Reading,
+        year: u16,
+        month: u8,
+    ) -> Result<Vec<teistro_tajika::DinaPravesha>, Error> {
+        if !(1..=teistro_tajika::MONTHS).contains(&month) {
+            return Err(Error::invalid_arg(format!(
+                "a year divides into months 1 to {}, not {month}",
+                teistro_tajika::MONTHS
+            ))
+            .with_field("month"));
+        }
+        self.year_of(
+            document,
+            reading,
+            year,
+            |longitudes, zodiac, natal, pravesha| {
+                let months = teistro_tajika::masa_praveshas(longitudes, zodiac, natal, pravesha)?;
+                match months.iter().find(|one| one.month == month) {
+                    Some(one) => teistro_tajika::dina_praveshas(longitudes, zodiac, reading, one),
+                    None => Ok(Vec::new()),
+                }
+            },
+        )
+    }
+
+    /// The year `year`'s return found, and `divide` run over it; empty
+    /// when the coverage ends before the year does.
+    fn year_of<T>(
+        self,
+        document: &Document,
+        reading: Reading,
+        year: u16,
+        divide: impl FnOnce(
+            &dyn teistro_astro::events::Longitudes,
+            teistro_astro::sidereal::Zodiac,
+            &Natal,
+            &Pravesha,
+        ) -> Result<Vec<T>, Error>,
+    ) -> Result<Vec<T>, Error> {
+        let year = teistro_tajika::years(year).map_err(|_| {
+            Error::invalid_arg(format!(
+                "a year is asked for by the returns it completes, 1 to {}, not {year}",
+                teistro_tajika::MOST_YEARS
+            ))
+            .with_field("year")
+        })?;
+        // Refused before a provider is needed, as the year is.
+        teistro_tajika::divided(reading)?;
+        self.sun_sky(document, |longitudes, zodiac, natal, covered| {
+            // A year's months run to its next return, a year past it.
+            if year >= covered {
+                return Ok(Vec::new());
+            }
+            let found = teistro_tajika::praveshas(longitudes, zodiac, natal, reading, year)?;
+            match found.iter().find(|one| one.year == year) {
+                Some(pravesha) => divide(longitudes, zodiac, natal, pravesha),
+                None => Ok(Vec::new()),
+            }
+        })
+    }
+
+    /// The Sun's search set up as the chart reads it: the longitudes in
+    /// the chart's own frame, its zodiac, the birth, and how many whole
+    /// returns the provider covers.
+    fn sun_sky<T>(
+        self,
+        document: &Document,
+        run: impl FnOnce(
+            &dyn teistro_astro::events::Longitudes,
+            teistro_astro::sidereal::Zodiac,
+            &Natal,
+            u16,
+        ) -> Result<T, Error>,
+    ) -> Result<T, Error> {
         let foundation = &document.foundation;
         let natal = Self::natal_of(foundation)?;
-        if reading == Reading::Mean {
-            return teistro_tajika::mean_praveshas(&natal, asked);
-        }
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
         let completion = Completion::new(
@@ -90,19 +234,8 @@ impl ChartArea<'_> {
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(foundation.place);
         }
-        // Asked for more years than the provider covers, answer the ones
-        // it does. Without this the search runs off the end and the
-        // provider's own `OutOfRange` comes back naming an instant the
-        // caller never mentioned — true, and useless to act on. Fewer
-        // instants than asked for is the answer this method documents,
-        // and none of them is the answer when the coverage reaches none;
-        // the refusal for a nonsense year already happened above, before
-        // capping could turn it into an empty list.
-        let through = asked.min(Self::years_covered(&completion, foundation.instant.get()));
-        if through == 0 {
-            return Ok(Vec::new());
-        }
-        teistro_tajika::praveshas(&longitudes, zodiac, &natal, reading, through)
+        let covered = Self::years_covered(&completion, foundation.instant.get());
+        run(&longitudes, zodiac, &natal, covered)
     }
 
     /// How many whole returns the provider's coverage holds after an
