@@ -30,6 +30,12 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
+**Jataka Parijata's named yogas, ch. 7 vv. 128 to 163** (`rules-engine.md`).
+**Numbers:** none moved; this adds 21 rules. Parvata to Hariharabrahma, read
+in Sastri's 1932 translation against the verse: where a yoga shares its name
+with BPHS ch. 36's and differs, it ships as Jataka Parijata writes it, and
+the three it states alike answer what BPHS's do. Crux C481.
+
 **Saravali's yogas of the luminaries, chs. 13 and 14** (`rules-engine.md`).
 **Numbers:** none moved; this adds 36 rules. Sunapha, Anapha and Durudhara
 around the Moon and veshi, voshi and ubhayachari around the Sun, read in the

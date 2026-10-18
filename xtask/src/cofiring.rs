@@ -126,7 +126,7 @@ const REVIEWED: [(&[&str], &str); 6] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 111] = [
+const FIXTURES: [(&str, f64, f64, f64); 114] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -330,6 +330,20 @@ const FIXTURES: [(&str, f64, f64, f64); 111] = [
         27.7172,
         41.087,
     ),
+    // Jataka Parijata ch. 7's garland from the second, the seven in the
+    // second to the eighth one to a house, and Sarada, the Sun strong in Leo
+    // with the tenth lord in the fifth and Mars trine to Mercury, and Kurma,
+    // every graha in a place of its class and a sign or navamsha it is
+    // dignified in, which 28 days of 1801 to 2398 come near and one, in 2263,
+    // reaches; each read back through `cofiring-probe` at Kathmandu.
+    (
+        "PARIJATA_MALIKA_FROM_THE_SECOND",
+        2_379_544.972_2,
+        27.7172,
+        85.324,
+    ),
+    ("PARIJATA_SARADA", 2_390_777.222_2, 27.7172, 85.324),
+    ("PARIJATA_KURMA", 2_547_710.312_5, 27.7172, 85.324),
     // All five great men at once: Mars in Aries, Venus in Libra and Saturn in
     // Capricorn angular to an Aries lagna, Mercury in Virgo and Jupiter in
     // Sagittarius angular to a Gemini Moon; 9 days of 1800 to 2400 have it.
