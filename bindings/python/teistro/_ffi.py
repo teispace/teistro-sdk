@@ -291,7 +291,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 328,
+    "ts_chart_request": 336,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -744,6 +744,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("rectification_json", ctypes.c_char_p),
         ("lalkitab_json", ctypes.c_char_p),
         ("sarvatobhadra_json", ctypes.c_char_p),
+        ("tithi_pravesha_json", ctypes.c_char_p),
     ]
 
 
@@ -2786,6 +2787,19 @@ class ChartRequest:
     Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
     """
 
+    tithi_pravesha_json: Optional[str] = None
+    """The tithi praveshas to find for every chart's years, as a JSON
+    object: `through`, the last year, 1 to 200, and optionally `rule`,
+    `"NATAL_SIGN"` (the default: the phase return while the Sun is in
+    its natal sign, C444 to C446) or `"NEAREST_RETURN"`. Each chart's
+    years come back in the `tithi_pravesha` section; a year whose
+    search passes the ephemeris's end is left out, so a chart may hold
+    fewer. Null for none (`03-design/tithi-pravesha.md`). Refusals are
+    named from the record every binding calls `tithiPravesha`, as
+    `tithiPravesha.through`.
+    Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2906,6 +2920,9 @@ class ChartRequest:
         _sarvatobhadra_json = None if self.sarvatobhadra_json is None else self.sarvatobhadra_json.encode("utf-8")
         owned.append(_sarvatobhadra_json)
         raw.sarvatobhadra_json = _sarvatobhadra_json
+        _tithi_pravesha_json = None if self.tithi_pravesha_json is None else self.tithi_pravesha_json.encode("utf-8")
+        owned.append(_tithi_pravesha_json)
+        raw.tithi_pravesha_json = _tithi_pravesha_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2970,6 +2987,7 @@ class ChartRequest:
             rectification_json=_text(raw.rectification_json),
             lalkitab_json=_text(raw.lalkitab_json),
             sarvatobhadra_json=_text(raw.sarvatobhadra_json),
+            tithi_pravesha_json=_text(raw.tithi_pravesha_json),
         )
 
 

@@ -55,6 +55,7 @@ import java.util.Objects;
  * @param state The {@code state} field. Null leaves the SDK's default.
  * @param synastry What a synastry is asked: the aspects and orbs a chart's own table reads, whether each chart's lagna joins its planets, and the zodiac. Null leaves the SDK's default.
  * @param theme The {@code theme} field. Null leaves the SDK's default.
+ * @param tithiPravesha A chart request's `tithiPravesha` record: each chart's tithi praveshas, `1` through `through`, chosen by `rule`, as `ChartArea::tithi_praveshas` answers them for one birth. Null leaves the SDK's default.
  * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
  * @param vaiseshikamsa The {@code vaiseshikamsa} field. Null leaves the SDK's default.
  * @param vargas The {@code vargas} field. Null leaves the SDK's default.
@@ -63,7 +64,7 @@ import java.util.Objects;
  * @param westernAspects What an aspect table is asked: which aspects, under which orbs. Null leaves the SDK's default.
  * @param westernHouses What a chart's Western houses are asked with. Null leaves the SDK's default.
  */
-public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, PartnerMatching matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, HouseRequest westernHouses) implements RequestJson {
+public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, PartnerMatching matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, TithiPraveshaRequest tithiPravesha, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, HouseRequest westernHouses) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -134,6 +135,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         private Boolean state;
         private PartnerSynastry synastry;
         private ThemePatch theme;
+        private TithiPraveshaRequest tithiPravesha;
         private Integer utcOffsetSeconds;
         private Boolean vaiseshikamsa;
         private List<com.teispace.teistro.Varga> vargas;
@@ -629,6 +631,17 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         }
 
         /**
+         * Sets {@code tithiPravesha}.
+         *
+         * @param tithiPravesha A chart request's `tithiPravesha` record: each chart's tithi praveshas, `1` through `through`, chosen by `rule`, as `ChartArea::tithi_praveshas` answers them for one birth. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder tithiPravesha(TithiPraveshaRequest tithiPravesha) {
+            this.tithiPravesha = tithiPravesha;
+            return this;
+        }
+
+        /**
          * Sets {@code utcOffsetSeconds}.
          *
          * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
@@ -712,7 +725,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          * @throws NullPointerException naming a required field left unset
          */
         public ChartFoundRequest build() {
-            return new ChartFoundRequest(altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, Objects.requireNonNull(latitudeDeg, "`ChartFoundRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ChartFoundRequest.longitudeDeg` is required"), lots, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, Objects.requireNonNull(utcOffsetSeconds, "`ChartFoundRequest.utcOffsetSeconds` is required"), vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernHouses);
+            return new ChartFoundRequest(altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, Objects.requireNonNull(latitudeDeg, "`ChartFoundRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ChartFoundRequest.longitudeDeg` is required"), lots, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, Objects.requireNonNull(utcOffsetSeconds, "`ChartFoundRequest.utcOffsetSeconds` is required"), vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernHouses);
         }
     }
 
@@ -770,6 +783,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.orNull(json.get("state"), present -> Read.bool(present, "ChartFoundRequest.state")),
             Read.orNull(json.get("synastry"), present -> PartnerSynastry.of(present)),
             Read.orNull(json.get("theme"), present -> ThemePatch.of(present)),
+            Read.orNull(json.get("tithiPravesha"), present -> TithiPraveshaRequest.of(present)),
             Read.int32(Read.required(json.get("utcOffsetSeconds"), "ChartFoundRequest.utcOffsetSeconds"), "ChartFoundRequest.utcOffsetSeconds"),
             Read.orNull(json.get("vaiseshikamsa"), present -> Read.bool(present, "ChartFoundRequest.vaiseshikamsa")),
             Read.orNull(json.get("vargas"), present -> Read.list(present, "ChartFoundRequest.vargas", item0 -> Read.member(item0, "ChartFoundRequest.vargas", com.teispace.teistro.Varga::byKey))),
@@ -909,6 +923,9 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         }
         if (theme != null) {
             json.put("theme", theme.toJson());
+        }
+        if (tithiPravesha != null) {
+            json.put("tithiPravesha", tithiPravesha.toJson());
         }
         json.put("utcOffsetSeconds", utcOffsetSeconds);
         if (vaiseshikamsa != null) {

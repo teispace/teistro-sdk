@@ -510,6 +510,17 @@ pub struct TsChartRequest {
     /// every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
     /// `api: nullable example={"instants":[2460676.5],"motion":"SUN"}`
     pub sarvatobhadra_json: *const c_char,
+    /// The tithi praveshas to find for every chart's years, as a JSON
+    /// object: `through`, the last year, 1 to 200, and optionally `rule`,
+    /// `"NATAL_SIGN"` (the default: the phase return while the Sun is in
+    /// its natal sign, C444 to C446) or `"NEAREST_RETURN"`. Each chart's
+    /// years come back in the `tithi_pravesha` section; a year whose
+    /// search passes the ephemeris's end is left out, so a chart may hold
+    /// fewer. Null for none (`03-design/tithi-pravesha.md`). Refusals are
+    /// named from the record every binding calls `tithiPravesha`, as
+    /// `tithiPravesha.through`.
+    /// `api: nullable example={"through":40,"rule":"NATAL_SIGN"}`
+    pub tithi_pravesha_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**

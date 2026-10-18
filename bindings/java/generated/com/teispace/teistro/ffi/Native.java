@@ -1984,11 +1984,12 @@ public final class Native {
             ADDRESS.withName("remedies_json"),
             ADDRESS.withName("rectification_json"),
             ADDRESS.withName("lalkitab_json"),
-            ADDRESS.withName("sarvatobhadra_json")
+            ADDRESS.withName("sarvatobhadra_json"),
+            ADDRESS.withName("tithi_pravesha_json")
         ).withName("ts_chart_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 328;
+        public static final long SIZE = 336;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -2751,6 +2752,23 @@ public final class Native {
 
         /** The handle that reads and writes `sarvatobhadra_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle SARVATOBHADRA_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("sarvatobhadra_json"));
+
+        /**
+         * The offset of `tithi_pravesha_json`. The tithi praveshas to find for every chart's years, as a JSON
+         * object: `through`, the last year, 1 to 200, and optionally `rule`,
+         * `"NATAL_SIGN"` (the default: the phase return while the Sun is in
+         * its natal sign, C444 to C446) or `"NEAREST_RETURN"`. Each chart's
+         * years come back in the `tithi_pravesha` section; a year whose
+         * search passes the ephemeris's end is left out, so a chart may hold
+         * fewer. Null for none (`03-design/tithi-pravesha.md`). Refusals are
+         * named from the record every binding calls `tithiPravesha`, as
+         * `tithiPravesha.through`.
+         * Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
+         */
+        public static final long TITHI_PRAVESHA_JSON_OFFSET = 328;
+
+        /** The handle that reads and writes `tithi_pravesha_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle TITHI_PRAVESHA_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("tithi_pravesha_json"));
 
     }
 

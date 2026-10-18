@@ -165,6 +165,7 @@ public final class Charts {
     private final DispositorEnds dispositorEnds;
     private final DispositorEndMembers dispositorEndMembers;
     private final String sarvatobhadra;
+    private final String tithiPravesha;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -320,6 +321,7 @@ public final class Charts {
         this.dispositorEnds = new DispositorEnds(blob, 133, "dispositor_ends");
         this.dispositorEndMembers = new DispositorEndMembers(blob, 134, "dispositor_end_members");
         this.sarvatobhadra = blob.text(135, "sarvatobhadra");
+        this.tithiPravesha = blob.text(136, "tithi_pravesha");
     }
 
     /**
@@ -1690,6 +1692,15 @@ public final class Charts {
      */
     public String sarvatobhadra() {
         return sarvatobhadra;
+    }
+
+    /**
+     * UTF-8 JSON, canonical: an array with one entry per chart, each an array with one row per year found, `1` up, in order (`03-design/tithi-pravesha.md`). A row is `{year, at, solarReturn, elongationDeg, rule, picked, inSign}`: `year` counted as `praveshas.year` counts it; `at` the instant the Moon's elongation from the Sun returns to the birth's, a UTC Julian day, where the year's chart is founded; `solarReturn` the year's sidereal solar return, UTC; `elongationDeg` the birth's directed elongation, `[0, 360)`; `rule` the rule asked for and `picked` the rule that chose the instant, `NATAL_SIGN` or `NEAREST_RETURN`, which differ where the natal sign held no phase return (C446); `inSign` how many phase returns fell while the Sun was in its natal sign, 0 to 2. A chart can hold fewer rows than `through` asked for where the ephemeris ends first. Empty when `tithi_pravesha_json` asked for none.
+     *
+     * @return the tithiPravesha
+     */
+    public String tithiPravesha() {
+        return tithiPravesha;
     }
 
 

@@ -19,8 +19,8 @@ use teistro::catalogue::{ChartKind, Graha};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::Reading;
 use teistro::{
-    ChartRequest, Context, Document, Ephemeris, TITHI_WINDOW_DAYS, TithiPravesha, TithiRule,
-    UtcOffset,
+    ChartRecords, ChartRequest, Context, Document, Ephemeris, TITHI_WINDOW_DAYS, TithiPravesha,
+    TithiPraveshaRequest, TithiRule, UtcOffset,
 };
 
 const BIRTH: f64 = 2_447_995.489_583_333_5;
@@ -195,4 +195,58 @@ fn a_year_that_cannot_be_asked_is_refused_by_name() {
             .tithi_praveshas(&birth, TithiRule::NatalSign, 1)
             .is_err()
     );
+}
+
+#[test]
+fn the_record_answers_each_chart_what_the_facade_does() {
+    let sdk = context();
+    let mut records = ChartRecords::default();
+    records
+        .read(
+            "tithiPravesha",
+            r#"{"through": 6, "rule": "NEAREST_RETURN"}"#,
+        )
+        .unwrap();
+    assert_eq!(
+        records.tithi_pravesha,
+        Some(TithiPraveshaRequest::new(6).with_rule(TithiRule::NearestReturn))
+    );
+    let instants = [
+        JulianDay::<Utc>::literal(BIRTH),
+        JulianDay::<Utc>::literal(BIRTH + 100.25),
+    ];
+    let request = ChartRequest::at(place(), UtcOffset::try_from_seconds(20_700).unwrap());
+    let records = records.checked().unwrap();
+    let composed = sdk.chart().compose(&instants, &request, &records).unwrap();
+    assert_eq!(composed.tithi_pravesha.len(), 2);
+    for (document, years) in composed.founded.value.iter().zip(&composed.tithi_pravesha) {
+        let alone = sdk
+            .chart()
+            .tithi_praveshas(document, TithiRule::NearestReturn, 6)
+            .unwrap();
+        assert_eq!(years, &alone);
+        assert_eq!(years.len(), 6);
+    }
+    // No record, no rows.
+    let unasked = ChartRecords::default();
+    let none = sdk.chart().compose(&instants, &request, &unasked).unwrap();
+    assert_eq!(none.tithi_pravesha, Vec::<Vec<TithiPravesha>>::new());
+}
+
+#[test]
+fn a_record_that_cannot_be_asked_is_refused_by_its_field() {
+    for (json, field) in [
+        (r#"{"through": 0}"#, "tithiPravesha.through"),
+        (r#"{"through": 201}"#, "tithiPravesha.through"),
+        (r#"{"through": 3, "rule": "NATAL"}"#, "tithiPravesha.rule"),
+        (r#"{"through": 3, "years": 3}"#, "tithiPravesha.years"),
+        ("{}", "tithiPravesha"),
+    ] {
+        let why = TithiPraveshaRequest::from_json(json).unwrap_err();
+        assert!(
+            why.field().is_some_and(|named| named.starts_with(field)),
+            "{json}: {why} names {:?}",
+            why.field()
+        );
+    }
 }

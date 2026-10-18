@@ -8481,6 +8481,19 @@ struct ts_chart_request {
      * Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
      */
     const char * sarvatobhadra_json;
+    /**
+     * The tithi praveshas to find for every chart's years, as a JSON
+     * object: `through`, the last year, 1 to 200, and optionally `rule`,
+     * `"NATAL_SIGN"` (the default: the phase return while the Sun is in
+     * its natal sign, C444 to C446) or `"NEAREST_RETURN"`. Each chart's
+     * years come back in the `tithi_pravesha` section; a year whose
+     * search passes the ephemeris's end is left out, so a chart may hold
+     * fewer. Null for none (`03-design/tithi-pravesha.md`). Refusals are
+     * named from the record every binding calls `tithiPravesha`, as
+     * `tithiPravesha.through`.
+     * Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
+     */
+    const char * tithi_pravesha_json;
 };
 
 /**
@@ -9529,7 +9542,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 328, "ts_chart_request is 328 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 336, "ts_chart_request is 336 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

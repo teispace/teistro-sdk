@@ -5484,6 +5484,9 @@ pub struct Composed<'a> {
     /// instants, as canonical JSON (`gochar.md` §8); empty when none was
     /// asked for.
     pub sarvatobhadra: &'a str,
+    /// Every chart's tithi praveshas, as canonical JSON
+    /// (`tithi-pravesha.md`); empty when none was asked for.
+    pub tithi_pravesha: &'a str,
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -5507,6 +5510,7 @@ impl Composed<'_> {
             ("lalkitab", self.lalkitab),
             ("rectification", self.rectification),
             ("sarvatobhadra", self.sarvatobhadra),
+            ("tithi_pravesha", self.tithi_pravesha),
         ] {
             writer.bytes(name, text.as_bytes())?;
         }
@@ -6517,6 +6521,11 @@ impl AskedRecords {
                 asked.sarvatobhadra_json,
                 "sarvatobhadra_json",
             ),
+            (
+                "tithiPravesha",
+                asked.tithi_pravesha_json,
+                "tithi_pravesha_json",
+            ),
         ];
         let mut records = ChartRecords::default();
         for (name, text, field) in fields {
@@ -6637,6 +6646,7 @@ pub unsafe extern "C" fn ts_chart_found(
             records.rectification,
             composed.rectification
         );
+        let tithi_pravesha = section!("tajika", records.tithi_pravesha, composed.tithi_pravesha);
         let encoded = encode(
             &founded.value,
             &place,
@@ -6676,6 +6686,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 lalkitab: &lalkitab,
                 rectification: &rectification,
                 sarvatobhadra: &section(records.sarvatobhadra.is_some(), &composed.sarvatobhadra),
+                tithi_pravesha: &tithi_pravesha,
                 hashes: &composed.hashes,
             },
             ctx.sdk().dashas(),

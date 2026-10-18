@@ -152,6 +152,79 @@ impl TithiPravesha {
     }
 }
 
+/// A chart request's `tithiPravesha` record: each chart's tithi
+/// praveshas, `1` through `through`, chosen by `rule`, as
+/// [`ChartArea::tithi_praveshas`] answers them for one birth.
+///
+/// ```
+/// use teistro::{TithiPraveshaRequest, TithiRule};
+///
+/// let asked = TithiPraveshaRequest::from_json(r#"{"through": 40}"#)?;
+/// assert_eq!(asked, TithiPraveshaRequest::new(40));
+/// assert_eq!(asked.rule, TithiRule::NatalSign);
+/// let rival = TithiPraveshaRequest::new(12).with_rule(TithiRule::NearestReturn);
+/// assert_eq!(rival.rule, TithiRule::NearestReturn);
+/// let none = TithiPraveshaRequest::from_json(r#"{"through": 0}"#).unwrap_err();
+/// assert_eq!(none.field(), Some("tithiPravesha.through"));
+/// # Ok::<(), teistro::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TithiPraveshaRequest {
+    /// The last year, one to two hundred, counted as
+    /// [`TithiPravesha::year`] counts it.
+    pub through: u16,
+    /// Which phase return of each year is its tithi pravesha; the
+    /// practice's own, [`TithiRule::NatalSign`], by default.
+    #[serde(default)]
+    pub rule: TithiRule,
+}
+
+impl TithiPraveshaRequest {
+    /// Years `1` through `through` under the default rule.
+    #[must_use]
+    pub const fn new(through: u16) -> TithiPraveshaRequest {
+        TithiPraveshaRequest {
+            through,
+            rule: TithiRule::NatalSign,
+        }
+    }
+
+    /// The same request, choosing each year by `rule`.
+    #[must_use]
+    pub const fn with_rule(mut self, rule: TithiRule) -> TithiPraveshaRequest {
+        self.rule = rule;
+        self
+    }
+
+    /// The request a binding writes as `tithiPravesha`, read and checked;
+    /// a refusal names the field the caller wrote, `tithiPravesha.through`.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, or a request [`TithiPraveshaRequest::check`] refuses.
+    pub fn from_json(text: &str) -> Result<TithiPraveshaRequest, Error> {
+        let asked: TithiPraveshaRequest = teistro_core::strict::read(text, TITHI_PRAVESHA)?;
+        asked.check().map_err(|why| why.under(TITHI_PRAVESHA))?;
+        Ok(asked)
+    }
+
+    /// Whether the request can be answered, before any year is searched
+    /// for.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming `through` outside one to two hundred.
+    pub fn check(&self) -> Result<(), Error> {
+        teistro_tajika::years(self.through).map(|_| ())
+    }
+}
+
+/// The record every binding writes the request as.
+const TITHI_PRAVESHA: &str = "tithiPravesha";
+
 impl ChartArea<'_> {
     /// Each year's **tithi pravesha**, `1` through `through`: the instant
     /// the Moon's elongation from the Sun returns to the birth's, chosen
