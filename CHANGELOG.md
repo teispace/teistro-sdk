@@ -12,6 +12,24 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The month's results** (`varshesha.md`). **Numbers:** none moved; this
+adds answers. `teistro_tajika::masa_phala` and `sdk.chart().masa_phala`
+read the *Tajika Nilakanthi*'s month's results (Varsha Tantra, the month's
+and the day's results, vv. 7–13) from a month's chart and its lord. Each
+house is read through its navamsha lord and its lord's navamsha lord:
+friendly or inimical, the Moon's aspect on both, debility and combustion,
+and the first's strength, with the lords of v. 10 each sees. The year
+lagna's lord, the Masesha, the Varshesha, the month lagna's lord and the
+Muntha's lord are judged where they stand (vv. 12–13). The verses state
+clauses and weigh none, so the clauses that hold are reported and no
+verdict is given. What the verses leave open is cruxes C453 to C457. Every
+month row a `masaPravesha` record founds at a `place` now carries
+`results` beside `masesha`, under the record's new `results` floors
+(`{weakBelow, strongFrom}`), read in Node, Python, Dart and Java with the
+grahas as each binding's own members. The design page's claim that the
+verses do not name the day's office-bearers is corrected: v. 17 names
+seven, and the Dinesha is still to build.
+
 **The aspect configurations** (`western-configurations.md`). **Numbers:**
 none moved; this adds answers. `sdk.chart().western_configurations` reads
 the grand trines, T-squares, grand crosses, yods, kites, mystic rectangles

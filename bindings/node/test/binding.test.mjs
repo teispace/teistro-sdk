@@ -4835,6 +4835,30 @@ test('a chart reads its month and day charts', () => {
     () => ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, month: 2, place: 'birth' } }),
     (error) => error.field === 'masaPravesha.place',
   );
+
+  // Each month's results beside its lord: twelve houses, five lords.
+  assert.equal(months[0].results, undefined, 'no results without a place');
+  for (const { masesha, results } of lords) {
+    assert.equal(results.houses.length, 12);
+    assert.deepEqual(
+      results.lords.map((one) => one.office),
+      ['VARSHA_LAGNA', 'MASESHA', 'VARSHESHA', 'MASA_LAGNA', 'MUNTHA'],
+    );
+    assert.equal(results.lords[1].graha, masesha.graha);
+    assert.equal(results.lords[2].graha, third.annual.yearLord.graha, 'the year lord read on the year chart');
+    assert.equal(results.lords[3].graha, masesha.bearers.masaLagna);
+    assert.ok(results.houses.every((one) => one.amshaLord.startsWith('graha.') && one.lordAmshaLord.startsWith('graha.')));
+  }
+  assert.ok(Object.isFrozen(lords[0].results.houses[0].clauses), 'frozen to its leaves');
+  assert.throws(
+    () =>
+      ctx.chart.found({
+        instant,
+        ...at,
+        masaPravesha: { year: 3, place: 'birth', results: { weakBelow: 9 * 3600, strongFrom: 3600 } },
+      }),
+    (error) => error.field === 'masaPravesha.results.strongFrom',
+  );
 });
 
 test('a chart carries its Lal Kitab', () => {

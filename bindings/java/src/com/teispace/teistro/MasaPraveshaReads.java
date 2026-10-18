@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.teispace.teistro.request.MaseshaReading;
 
@@ -36,7 +37,9 @@ final class MasaPraveshaReads {
                             JsonRead.decimal(JsonRead.at(row, "at")),
                             JsonRead.decimal(JsonRead.at(row, "sunDeg")),
                             row instanceof Map<?, ?> fields && fields.get("masesha") != null
-                                    ? masesha(fields.get("masesha")) : null));
+                                    ? masesha(fields.get("masesha")) : null,
+                            row instanceof Map<?, ?> fields && fields.get("results") != null
+                                    ? results(fields.get("results")) : null));
                 }
                 charts.add(List.copyOf(one));
             }
@@ -73,6 +76,37 @@ final class MasaPraveshaReads {
                         TajikaReads.bala(JsonRead.integer(JsonRead.at(chain, "vishwa"))),
                         JsonRead.bool(JsonRead.at(chain, "moonPassedOver")),
                         List.copyOf(claims)));
+    }
+
+    /** A month's results, their grahas members. */
+    private static MasaPhala results(Object raw) {
+        List<MonthHouse> houses = new ArrayList<>();
+        for (Object one : JsonRead.list(JsonRead.at(raw, "houses"))) {
+            houses.add(new MonthHouse(
+                    JsonRead.integer(JsonRead.at(one, "house")),
+                    graha(JsonRead.at(one, "amshaLord")),
+                    graha(JsonRead.at(one, "lordAmshaLord")),
+                    keys(JsonRead.at(one, "clauses"), MonthHouseClause::valueOf),
+                    keys(JsonRead.at(one, "seenByAmshaLord"), MonthLord::valueOf),
+                    keys(JsonRead.at(one, "seenByMoon"), MonthLord::valueOf)));
+        }
+        List<MonthLordPlace> lords = new ArrayList<>();
+        for (Object one : JsonRead.list(JsonRead.at(raw, "lords"))) {
+            lords.add(new MonthLordPlace(
+                    MonthLord.valueOf(JsonRead.text(JsonRead.at(one, "office"))),
+                    graha(JsonRead.at(one, "graha")),
+                    JsonRead.integer(JsonRead.at(one, "house")),
+                    keys(JsonRead.at(one, "clauses"), MonthLordClause::valueOf)));
+        }
+        return new MasaPhala(List.copyOf(houses), List.copyOf(lords));
+    }
+
+    private static <T> List<T> keys(Object raw, Function<String, T> member) {
+        List<T> out = new ArrayList<>();
+        for (Object key : JsonRead.list(raw)) {
+            out.add(member.apply(JsonRead.text(key)));
+        }
+        return List.copyOf(out);
     }
 
     private static Graha graha(Object key) {

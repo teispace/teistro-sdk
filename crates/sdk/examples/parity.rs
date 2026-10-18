@@ -2685,7 +2685,54 @@ fn the_masa_pravesha(
                 u8::from(b.by_day)
             ),
         );
+        if let Some(results) = &one.results {
+            let (houses, lords) = month_results(results);
+            put(report, &format!("{key}-results-houses"), houses);
+            put(report, &format!("{key}-results-lords"), lords);
+        }
     }
+}
+
+/// A month's results as two parity lines: each house
+/// `amsha/lordAmsha/clauses/seenByAmshaLord/seenByMoon` and each lord
+/// `office/graha/house/clauses`, lists `+`-joined and `-` when empty.
+fn month_results(results: &teistro::tajika::MasaPhala) -> (String, String) {
+    fn list<'a>(keys: impl Iterator<Item = &'a str>) -> String {
+        let joined: Vec<&str> = keys.collect();
+        if joined.is_empty() {
+            "-".to_owned()
+        } else {
+            joined.join("+")
+        }
+    }
+    let houses: Vec<String> = results
+        .houses
+        .iter()
+        .map(|one| {
+            format!(
+                "{}/{}/{}/{}/{}",
+                one.amsha_lord.full_key(),
+                one.lord_amsha_lord.full_key(),
+                list(one.clauses.iter().map(|clause| clause.key())),
+                list(one.seen_by_amsha_lord.iter().map(|lord| lord.key())),
+                list(one.seen_by_moon.iter().map(|lord| lord.key())),
+            )
+        })
+        .collect();
+    let lords: Vec<String> = results
+        .lords
+        .iter()
+        .map(|one| {
+            format!(
+                "{}/{}/{}/{}",
+                one.office.key(),
+                one.graha.full_key(),
+                one.house.get(),
+                list(one.clauses.iter().map(|clause| clause.key())),
+            )
+        })
+        .collect();
+    (houses.join(" "), lords.join(" "))
 }
 
 /// The dossier every runner asks for: sections the shared request carries

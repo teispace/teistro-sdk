@@ -300,3 +300,75 @@ fn rows_with_lords(sdk: &Context, natal: &Document, clock: UtcOffset) -> Vec<tei
     let asked = teistro::MasaPraveshaRequest::new(30).at(teistro::AnnualPlace::Birth);
     sdk.chart().masa_pravesha(natal, clock, &asked).unwrap()
 }
+
+#[test]
+fn each_months_results_are_read_from_its_chart_beside_its_lord() {
+    let sdk = context();
+    let natal = chart(&sdk, BIRTH);
+    let clock = UtcOffset::try_from_seconds(20_700).unwrap();
+    let rows = rows_with_lords(&sdk, &natal, clock);
+    let months = sdk
+        .chart()
+        .masa_praveshas(&natal, Reading::Sidereal, 30)
+        .unwrap();
+    let year = chart(&sdk, months[0].at.get());
+    let year_lord = sdk
+        .chart()
+        .varshesha(&natal, &year, 30, VarsheshaRules::default())
+        .unwrap()
+        .graha;
+    let rules = teistro::tajika::MasaPhalaRules::default();
+    for (row, entry) in rows.iter().zip(&months) {
+        let month = chart(&sdk, entry.at.get());
+        let lord = row.masesha.as_ref().unwrap();
+        let results = sdk
+            .chart()
+            .masa_phala(&month, lord, year_lord, rules)
+            .unwrap();
+        assert_eq!(
+            row.results.as_ref(),
+            Some(&results),
+            "month {}",
+            entry.month
+        );
+        assert_eq!(results.houses.len(), 12);
+        // The first house is v. 7's: the lagna's own navamsha lord.
+        assert_eq!(
+            results.houses[0].amsha_lord,
+            teistro::tajika::navamsha_lord(month.foundation.lagna_deg)
+        );
+        let offices: Vec<_> = results.lords.iter().map(|one| one.office).collect();
+        assert_eq!(offices, teistro::tajika::MonthLord::ALL);
+        assert_eq!(results.lords[1].graha, lord.graha);
+        assert_eq!(results.lords[2].graha, year_lord);
+    }
+    // Another month's lord handed in with this month's chart is refused
+    // when the two lagnas have different lords.
+    let first = rows[0].masesha.as_ref().unwrap();
+    let wrong = months
+        .iter()
+        .map(|entry| chart(&sdk, entry.at.get()))
+        .find(|month| {
+            teistro::catalogue::Rashi::of_longitude(month.foundation.lagna_deg)
+                .attributes()
+                .lord
+                != first.bearers.masa_lagna
+        });
+    if let Some(month) = wrong {
+        let refused = sdk
+            .chart()
+            .masa_phala(&month, first, year_lord, rules)
+            .unwrap_err();
+        assert_eq!(refused.field(), Some("month"));
+    }
+    // The floors are refused by their wire name under the record.
+    let refused = teistro::MasaPraveshaRequest::from_json(
+        r#"{"year": 30, "place": "birth", "results": {"weakBelow": 9000, "strongFrom": 10}}"#,
+    )
+    .unwrap_err();
+    assert_eq!(refused.field(), Some("masaPravesha.results.strongFrom"));
+    let wire = serde_json::to_value(&rows[0]).unwrap();
+    assert!(wire["results"]["houses"][0]["amshaLord"].is_string());
+    assert!(wire["results"]["houses"][0]["seenByMoon"].is_array());
+    assert!(wire["results"]["lords"][0]["office"].is_string());
+}

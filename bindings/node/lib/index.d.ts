@@ -3363,12 +3363,22 @@ export interface MasaPraveshaRequest {
   readonly reading?: Exclude<VarshaReading, 'MEAN'>;
   /**
    * Where each month's chart is founded, as `varsha.place` is written; given,
-   * each month carries its `masesha`. The year's months only: a day's lord
-   * is not built, so a `month` beside it is refused.
+   * each month carries its `masesha` and its `results`. The year's months
+   * only: a day's lord is not built, so a `month` beside it is refused.
    */
   readonly place?: 'birth' | AnnualPlace;
   /** The readings the month's lord parts on; the verse's own by default. */
   readonly masesha?: MaseshaRules;
+  /** The floors the month's results judge strong and weak by; the year yogas' own by default. */
+  readonly results?: MasaPhalaRules;
+}
+
+/** The floors the month's results judge strong and weak by (`03-design/varshesha.md`, "The month's results"). */
+export interface MasaPhalaRules {
+  /** The strength below which a planet with no dignity is weak, in **sub-sub units**, 3600 to a unit: `5 * 3600` by default. */
+  readonly weakBelow?: number;
+  /** The strength from which a planet is strong, sub-sub units; `10 * 3600` by default, never below `weakBelow`. */
+  readonly strongFrom?: number;
 }
 
 /** The readings the month's lord parts on (`03-design/varshesha.md`, "The month's lord"). */
@@ -3421,6 +3431,76 @@ export interface MasaPravesha {
   readonly sunDeg: number;
   /** The month's lord, where the request named a `place`; absent otherwise. */
   readonly masesha?: Masesha;
+  /** The month's results, where the request named a `place`; absent otherwise. */
+  readonly results?: MasaPhala;
+}
+
+/**
+ * A clause of vv. 7–11 about one house (*Tajika Nilakanthi*, Varsha Tantra,
+ * the month's results): the house's navamsha lord and the lord's navamsha
+ * lord in friendly or inimical aspect, the Moon's aspect on both, their
+ * debility and combustion, one planet in both roles, and the first's
+ * strength.
+ */
+export type MonthHouseClause =
+  | 'FRIENDLY'
+  | 'MOON_FRIENDLY'
+  | 'INIMICAL'
+  | 'MOON_INIMICAL'
+  | 'LOW_AND_SET'
+  | 'BOTH_LOW'
+  | 'BOTH_SET'
+  | 'ONE_PLANET'
+  | 'STRONG'
+  | 'WEAK';
+
+/** The month's lords the results read: the year lagna's, the Masesha, the Varshesha, the month lagna's, the Muntha's. */
+export type MonthLord = 'VARSHA_LAGNA' | 'MASESHA' | 'VARSHESHA' | 'MASA_LAGNA' | 'MUNTHA';
+
+/** A clause of vv. 12–13 about one of the month's lords. */
+export type MonthLordClause = 'TRIKA' | 'WITH_MALEFIC' | 'MALEFIC_INIMICAL' | 'STRONG' | 'WELL_PLACED';
+
+/** One house of the month, read through its two planets. */
+export interface MonthHouse {
+  /** The house, 1 to 12 by whole signs from the month lagna. */
+  readonly house: number;
+  /** The lord of the navamsha the house's point falls in. */
+  readonly amshaLord: Graha;
+  /** The lord of the navamsha the house's sign lord stands in. */
+  readonly lordAmshaLord: Graha;
+  /** The clauses that hold, in the verses' order. */
+  readonly clauses: readonly MonthHouseClause[];
+  /** The lords of v. 10 the house's navamsha lord sees: a friendly aspect or a shared sign. */
+  readonly seenByAmshaLord: readonly MonthLord[];
+  /** The lords of v. 10 the Moon sees. */
+  readonly seenByMoon: readonly MonthLord[];
+}
+
+/** Where one of the month's lords stands. */
+export interface MonthLordPlace {
+  readonly office: MonthLord;
+  readonly graha: Graha;
+  /** The house it stands in, 1 to 12 from the month lagna. */
+  readonly house: number;
+  /** The clauses that hold, in the verses' order. */
+  readonly clauses: readonly MonthLordClause[];
+}
+
+/**
+ * The month's results (`03-design/varshesha.md`, "The month's results"):
+ * the clauses that hold, no verdict.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, masaPravesha: { year: 30, place: 'birth' } });
+ * for (const month of chart.masaPravesha ?? []) {
+ *   const body = month.results?.houses[0].clauses.includes('FRIENDLY');
+ * }
+ */
+export interface MasaPhala {
+  /** The twelve houses, first to twelfth. */
+  readonly houses: readonly MonthHouse[];
+  /** The five lords, in `MonthLord`'s order. */
+  readonly lords: readonly MonthLordPlace[];
 }
 
 /** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */

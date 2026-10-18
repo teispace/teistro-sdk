@@ -5427,8 +5427,30 @@ const MASA_PRAVESHA = new WeakMap();
  */
 function masaPraveshasOf(batch) {
   return sectionOf(MASA_PRAVESHA, batch, 'masaPravesha', (chart) =>
-    chart.map((row) => (row.masesha === undefined ? row : { ...row, masesha: maseshaFrom(row.masesha) })),
+    chart.map((row) =>
+      row.masesha === undefined
+        ? row
+        : { ...row, masesha: maseshaFrom(row.masesha), results: masaPhalaFrom(row.results) },
+    ),
   );
+}
+
+/**
+ * A month's results as the section writes them, their grahas full keys.
+ *
+ * @param {object} raw
+ * @returns {object}
+ */
+function masaPhalaFrom({ houses, lords }) {
+  const full = (key) => `graha.${key}`;
+  return {
+    houses: houses.map((one) => ({
+      ...one,
+      amshaLord: full(one.amshaLord),
+      lordAmshaLord: full(one.lordAmshaLord),
+    })),
+    lords: lords.map((one) => ({ ...one, graha: full(one.graha) })),
+  };
 }
 
 /**

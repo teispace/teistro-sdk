@@ -35,6 +35,7 @@ mod drishti;
 mod harsha;
 mod kamboola;
 mod masa;
+mod masa_phala;
 mod masesha;
 mod moon;
 mod muntha;
@@ -67,6 +68,10 @@ pub use kamboola::{
     Offices, kamboola_grade, offices,
 };
 pub use masa::{DAYS, DinaPravesha, MONTHS, MasaPravesha, dina_praveshas, divided, masa_praveshas};
+pub use masa_phala::{
+    HouseClause, LordClause, MasaPhala, MasaPhalaRules, MonthHouse, MonthLord, MonthLordPlace,
+    MonthLords, masa_phala,
+};
 pub use masesha::{
     Masesha, MaseshaReading, MaseshaRules, MonthBearers, MonthCharts, MonthOffice, masesha,
     month_bearers,

@@ -2073,6 +2073,32 @@ void main() {
               '${six.byDay ? 1 : 0}',
         );
       }
+      if (one.results case final results?) {
+        String list(Iterable<String> keys) =>
+            keys.isEmpty ? '-' : keys.join('+');
+        put(
+          '$key-results-houses',
+          results.houses
+              .map(
+                (h) =>
+                    '${h.amshaLord.fullKey}/${h.lordAmshaLord.fullKey}/'
+                    '${list(h.clauses.map((c) => c.key))}/'
+                    '${list(h.seenByAmshaLord.map((l) => l.key))}/'
+                    '${list(h.seenByMoon.map((l) => l.key))}',
+              )
+              .join(' '),
+        );
+        put(
+          '$key-results-lords',
+          results.lords
+              .map(
+                (l) =>
+                    '${l.office.key}/${l.graha.fullKey}/${l.house}/'
+                    '${list(l.clauses.map((c) => c.key))}',
+              )
+              .join(' '),
+        );
+      }
     }
     final dossier = chart.dossier!;
     put('chart-$i-dossier', '${utf8.encode(dossier).length} ${fnv(dossier)}');

@@ -12,6 +12,8 @@ package com.teispace.teistro;
  * @param at The instant, a Julian day (UTC).
  * @param sunDeg Where the Sun stands then, degrees in the year's zodiac.
  * @param masesha The month's lord, where the request named a {@code place}; null otherwise.
+ * @param results The month's results, where the request named a {@code place}; null otherwise.
  */
-public record MasaPravesha(int year, int month, int day, double at, double sunDeg, Masesha masesha) {
+public record MasaPravesha(
+        int year, int month, int day, double at, double sunDeg, Masesha masesha, MasaPhala results) {
 }

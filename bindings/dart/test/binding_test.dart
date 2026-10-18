@@ -5595,6 +5595,35 @@ void _engineTests() {
     for (final row in others) {
       expect(row.masesha!.graha, row.masesha!.bearers.masaLagna);
     }
+
+    // Each month's results beside its lord: twelve houses, five lords.
+    expect(months.first.results, isNull);
+    for (final row in lords) {
+      final results = row.results!;
+      expect(results.houses, hasLength(12));
+      expect(results.lords.map((one) => one.office), MonthLord.values);
+      expect(results.lords[1].graha, row.masesha!.graha);
+      expect(results.lords[2].graha, third.yearLord.graha);
+      expect(results.lords[3].graha, row.masesha!.bearers.masaLagna);
+      expect(results.houses.first.house, 1);
+    }
+    expect(
+      () => found(
+        instant,
+        const MasaPraveshaRequest(
+          year: 3,
+          place: AnnualPlace.birth,
+          results: MasaPhalaRules(weakBelow: 9 * 3600, strongFrom: 3600),
+        ),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'masaPravesha.results.strongFrom',
+        ),
+      ),
+    );
     expect(
       () => found(
         instant,
