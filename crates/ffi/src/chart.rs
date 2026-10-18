@@ -3605,11 +3605,142 @@ impl DignityColumns {
     }
 }
 
+/// Where a chain of dispositors stops (`03-design/dignities.md`
+/// §Dispositors, C415).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsChainEnd {
+    /// At a planet in its own sign, which disposes of itself: one member.
+    OwnSign = 0,
+    /// At a cycle of two or more planets each in the next one's sign, the
+    /// last in the first's, starting at its slowest member.
+    Cycle = 1,
+}
+
+impl TsChainEnd {
+    /// The code for an end, and its planets in the order they cross; `None`
+    /// for an end the façade gained and this boundary was not given.
+    #[must_use]
+    pub fn of(end: &teistro::ChainEnd) -> Option<(TsChainEnd, &[teistro::catalogue::Graha])> {
+        match end {
+            teistro::ChainEnd::OwnSign(planet) => {
+                Some((TsChainEnd::OwnSign, std::slice::from_ref(planet)))
+            }
+            teistro::ChainEnd::Cycle(planets) => Some((TsChainEnd::Cycle, planets)),
+            _ => None,
+        }
+    }
+}
+
+/// Every chart's dispositors, from the essential dignities it was asked
+/// for: a row a chart in `dispositions`, the seven's chains in
+/// `dispositor_chains`, each chain's dispositors in `dispositor_steps`,
+/// the chart's ends in `dispositor_ends` and each end's planets in
+/// `dispositor_end_members`, each ragged by the count before it.
+#[derive(Default)]
+struct DispositionColumns {
+    final_dispositor: Vec<u16>,
+    final_present: Vec<u8>,
+    end_count: Vec<u8>,
+    /// The `dispositor_chains` section.
+    planet: Vec<u16>,
+    step_count: Vec<u8>,
+    end: Vec<u8>,
+    /// The `dispositor_steps` section.
+    step: Vec<u16>,
+    /// The `dispositor_ends` section.
+    kind: Vec<u8>,
+    member_count: Vec<u8>,
+    /// The `dispositor_end_members` section.
+    member: Vec<u16>,
+}
+
+impl DispositionColumns {
+    fn of<'a>(
+        read: impl Iterator<Item = &'a teistro::Dispositions>,
+    ) -> Result<DispositionColumns, Error> {
+        let count = |n: usize, what: &str| {
+            u8::try_from(n).map_err(|_| Error::internal(format!("more {what} than a chart holds")))
+        };
+        let mut columns = DispositionColumns::default();
+        for one in read {
+            let (graha, present) = graha_or_absent(one.final_dispositor);
+            columns.final_dispositor.push(graha);
+            columns.final_present.push(present);
+            columns.end_count.push(count(one.ends.len(), "ends")?);
+            for chain in &one.chains {
+                columns.planet.push(chain.planet.id());
+                columns
+                    .step_count
+                    .push(count(chain.dispositors.len(), "dispositors")?);
+                let end = one
+                    .ends
+                    .iter()
+                    .position(|end| *end == chain.end)
+                    .ok_or_else(|| Error::internal("a chain's end is among the chart's ends"))?;
+                columns.end.push(count(end, "ends")?);
+                columns
+                    .step
+                    .extend(chain.dispositors.iter().map(|g| g.id()));
+            }
+            for end in &one.ends {
+                let (kind, members) = TsChainEnd::of(end)
+                    .ok_or_else(|| no_code("the end of a chain of dispositors"))?;
+                columns.kind.push(kind as u8);
+                columns.member_count.push(count(members.len(), "planets")?);
+                columns.member.extend(members.iter().map(|g| g.id()));
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "dispositions",
+            self.final_dispositor.len(),
+            &[
+                ColumnData::U16(&self.final_dispositor),
+                ColumnData::U8(&self.final_present),
+                ColumnData::U8(&self.end_count),
+            ],
+        )?;
+        writer.columns(
+            "dispositor_chains",
+            self.planet.len(),
+            &[
+                ColumnData::U16(&self.planet),
+                ColumnData::U8(&self.step_count),
+                ColumnData::U8(&self.end),
+            ],
+        )?;
+        writer.columns(
+            "dispositor_steps",
+            self.step.len(),
+            &[ColumnData::U16(&self.step)],
+        )?;
+        writer.columns(
+            "dispositor_ends",
+            self.kind.len(),
+            &[
+                ColumnData::U8(&self.kind),
+                ColumnData::U8(&self.member_count),
+            ],
+        )?;
+        writer.columns(
+            "dispositor_end_members",
+            self.member.len(),
+            &[ColumnData::U16(&self.member)],
+        )
+    }
+}
+
 /// The `hellenistic` module's sections: both halves of Lilly's table (the
 /// essential dignities, from `dignities_json` or from the fortitudes' own,
 /// and the accidental fortitudes) and Valens's lots.
 struct HellenisticColumns {
     dignities: DignityColumns,
+    /// Written after the later sections, since its sections came later.
+    dispositions: DispositionColumns,
     fortitudes: FortitudeColumns,
     lots: LotColumns,
     considerations: ConsiderationColumns,
@@ -3627,13 +3758,14 @@ impl HellenisticColumns {
             perfections,
             ..
         } = *composed;
-        let essential = if fortitudes.is_empty() {
-            DignityColumns::of(dignities.iter(), charts)?
+        let read: Vec<&teistro::Dignities> = if fortitudes.is_empty() {
+            dignities.iter().collect()
         } else {
-            DignityColumns::of(fortitudes.iter().map(|one| &one.dignities), charts)?
+            fortitudes.iter().map(|one| &one.dignities).collect()
         };
         Ok(HellenisticColumns {
-            dignities: essential,
+            dignities: DignityColumns::of(read.iter().copied(), charts)?,
+            dispositions: DispositionColumns::of(read.iter().map(|one| &one.dispositions))?,
             fortitudes: FortitudeColumns::of(fortitudes, charts)?,
             lots: LotColumns::of(lots, charts)?,
             considerations: ConsiderationColumns::of(considerations, charts)?,
@@ -5494,6 +5626,7 @@ pub fn encode(
         by.moment.write(&mut writer)?;
         lilith.write(&mut writer, "lilith")?;
         karakas.write(&mut writer)?;
+        hellenistic.dispositions.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

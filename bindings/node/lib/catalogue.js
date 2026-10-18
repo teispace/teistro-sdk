@@ -3932,6 +3932,21 @@ export const BirthEclipseById = /* @__PURE__ */ new Map([
   [3, 'UNJUDGED'],
 ]);
 
+/** Every ChainEnd by name. */
+export const ChainEnd = /* @__PURE__ */ Object.freeze({
+  OwnSign: 'OWN_SIGN',
+  Cycle: 'CYCLE',
+});
+
+/**
+ * Every ChainEnd by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ChainEndById = /* @__PURE__ */ new Map([
+  [0, 'OWN_SIGN'],
+  [1, 'CYCLE'],
+]);
+
 /** Every VarsheshaChosen by name. */
 export const VarsheshaChosen = /* @__PURE__ */ Object.freeze({
   Strongest: 'STRONGEST',

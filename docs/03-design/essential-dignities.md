@@ -335,8 +335,17 @@ traditional rulers, so every dignities answer has them.
 `ChartArea::dispositions(chart, rulers)` reads a founded chart's seven,
 plus the outer three when it placed them, under either rulers.
 `teistro_hellenistic::dispositions` takes any bodies and longitudes.
-The boundary does not carry them yet. `dignities` has no section for the
-chains, so no binding reads them (§What is not decided).
+At the boundary (2026-10-18) every dignities answer carries them in
+five sections from id 130: `dispositions`, a row a chart with the final
+dispositor and how many ends; `dispositor_chains`, seven a chart, each
+naming the row of its chart's ends it stops at; `dispositor_steps`, each
+chain's dispositors; `dispositor_ends`, a `TsChainEnd` and a member
+count; and `dispositor_end_members`, each ragged by the count before it,
+as `dignity_receptions` is by `reception_count`. Every binding's
+`dignities` reading carries `dispositions` (`chains`, `ends`,
+`finalDispositor`), each chain's `end` one of the chart's ends, and the
+ABI suite holds all five sections to the façade's to the bit. The modern
+rulers stay the Rust surface's (`ChartArea::dispositions`).
 
 ## Accidental fortitudes (step 5)
 
@@ -605,8 +614,3 @@ the other.
 - **The default `DignityRules`**: `LILLY` is the only complete, scored,
   cited row, because Ptolemy scores nothing. It is named rather than
   implied, and a request names its rules.
-- **Dispositors at the boundary** (§Dispositors). The chains are in the
-  façade and the document. No blob section carries them, so no binding
-  reads them. The likely shape is one ragged section of chains a chart
-  and one of ends, beside `dignity_receptions`. It waits on the IDL and
-  the bindings' parity.

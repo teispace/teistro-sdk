@@ -7868,6 +7868,31 @@ export declare const BirthEclipse: {
 export declare const BirthEclipseById: ReadonlyMap<number, BirthEclipse>;
 
 /**
+ * Where a chain of dispositors stops (`03-design/dignities.md`
+ * §Dispositors, C415).
+ */
+export type ChainEnd = 'OWN_SIGN' | 'CYCLE';
+
+/** Every ChainEnd by name; the values are the strings the union accepts. */
+export declare const ChainEnd: {
+  /**
+   * At a planet in its own sign, which disposes of itself: one member.
+   */
+  readonly OwnSign: 'OWN_SIGN';
+  /**
+   * At a cycle of two or more planets each in the next one's sign, the
+   * last in the first's, starting at its slowest member.
+   */
+  readonly Cycle: 'CYCLE';
+};
+
+/**
+ * Every ChainEnd by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ChainEndById: ReadonlyMap<number, ChainEnd>;
+
+/**
  * Which step of the year lord's chain decided it
  * (`03-design/varshesha.md`).
  *

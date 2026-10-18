@@ -1832,6 +1832,46 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 130, 'dispositions');
+    out.dispositions = {
+      finalDispositor: column(blob, at, 0, 'u16', at.count),
+      finalPresent: column(blob, at, 1, 'u8', at.count),
+      endCount: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 131, 'dispositor_chains');
+    out.dispositorChains = {
+      planet: column(blob, at, 0, 'u16', at.count),
+      stepCount: column(blob, at, 1, 'u8', at.count),
+      end: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 132, 'dispositor_steps');
+    out.dispositorSteps = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 133, 'dispositor_ends');
+    out.dispositorEnds = {
+      kind: column(blob, at, 0, 'u8', at.count),
+      memberCount: column(blob, at, 1, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 134, 'dispositor_end_members');
+    out.dispositorEndMembers = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

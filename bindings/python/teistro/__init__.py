@@ -162,6 +162,7 @@ from .catalogue import (
     Nature,
     BrahmaRule,
     BrahmaOutcome,
+    ChainEnd,
     ChosenBy,
     Signification,
     GocharFrom,
@@ -477,6 +478,10 @@ __all__ = [
     "DignityRules",
     "DignityScores",
     "Dignities",
+    "Dispositions",
+    "DispositorChain",
+    "DispositorEnd",
+    "ChainEnd",
     "AppliedDignityRules",
     "EssentialDignity",
     "PlanetDignity",
@@ -4037,6 +4042,58 @@ class Reception:
 
 
 @dataclass(frozen=True)
+class DispositorEnd:
+    """Where chains of dispositors stop (`03-design/essential-dignities.md`
+    §Dispositors, C415)."""
+
+    kind: ChainEnd
+    """A planet in its own sign, or a cycle."""
+
+    planets: Tuple[Graha, ...]
+    """The planet in its own sign, or the cycle's from its slowest member,
+    each in the next one's sign and the last in the first's."""
+
+
+@dataclass(frozen=True)
+class DispositorChain:
+    """One planet's dispositors, followed until one repeats."""
+
+    planet: Graha
+    """The planet the chain starts from."""
+
+    dispositors: Tuple[Graha, ...]
+    """Its dispositor, that planet's, and so on; empty for a planet in its
+    own sign."""
+
+    end: DispositorEnd
+    """Where it stops: one of the chart's `ends`."""
+
+
+@dataclass(frozen=True)
+class Dispositions:
+    """A chart's dispositors under the traditional rulers
+    (`03-design/essential-dignities.md` §Dispositors).
+
+    >>> # read = chart.dignities.dispositions
+    >>> # sun = next(c for c in read.chains if c.planet is Graha.SUN)
+    """
+
+    chains: Tuple[DispositorChain, ...]
+    """One chain a planet, in the order `Dignities.planets` gives them."""
+
+    ends: Tuple[DispositorEnd, ...]
+    """Where the chains stop, each once, in the order the chains first
+    reach it."""
+
+    final_dispositor: Optional[Graha]
+    """The one planet in its own sign every chain stops at; `None` for more
+    than one end or a cycle (C415)."""
+
+    rulers: Literal["TRADITIONAL"] = "TRADITIONAL"
+    """The rulers the chains were followed under: the dignities' own."""
+
+
+@dataclass(frozen=True)
 class Dignities:
     """A chart's essential dignities, with everything that made them: the
     sect, the rule that chose it, the rules and the scores
@@ -4056,6 +4113,10 @@ class Dignities:
     receptions: Tuple[Reception, ...]
     """Every pair in reception, in the Chaldean order of the first and then
     the second."""
+
+    dispositions: Dispositions
+    """The seven's chains of dispositors, where they stop, and the final
+    dispositor when every chain stops at one."""
 
 
 _CHALDEAN_NAMES = ("saturn", "jupiter", "mars", "sun", "venus", "mercury", "moon")
@@ -15409,6 +15470,7 @@ class ChartBatch:
             )
 
         starts = [0, *itertools.accumulate(c.reception_count)]
+        disposed = self._dispositions(charts)
 
         return [
             Dignities(
@@ -15427,9 +15489,54 @@ class ChartBatch:
                 ),
                 planets=tuple(planet(row) for row in range(7 * chart, 7 * chart + 7)),
                 receptions=tuple(reception(row) for row in range(starts[chart], starts[chart + 1])),
+                dispositions=disposed[chart],
             )
             for chart in range(charts)
         ]
+
+    def _dispositions(self, charts: int) -> list[Dispositions]:
+        """Every chart's dispositors: `dispositions` a row a chart and
+        `dispositor_chains` seven, their steps, ends and end members each
+        ragged by the count before it."""
+        c = self.decoded.dispositions
+        chains = self.decoded.dispositor_chains
+        steps = self.decoded.dispositor_steps.graha
+        ends = self.decoded.dispositor_ends
+        members = self.decoded.dispositor_end_members.graha
+        if c.length != charts or chains.length != 7 * charts:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"dispositions has {c.length} rows and dispositor_chains {chains.length} for {charts} charts;"
+                " they are one and seven a chart",
+            )
+        step_at = [0, *itertools.accumulate(chains.step_count)]
+        end_at = [0, *itertools.accumulate(c.end_count)]
+        member_at = [0, *itertools.accumulate(ends.member_count)]
+        if step_at[-1] != len(steps) or end_at[-1] != len(ends.kind) or member_at[-1] != len(members):
+            raise TeistroError(Status.INTERNAL, "the dispositor sections hold rows their counts do not reach")
+
+        def end(row: int) -> DispositorEnd:
+            return DispositorEnd(
+                kind=ChainEnd(ends.kind[row]),
+                planets=tuple(Graha(members[k]) for k in range(member_at[row], member_at[row + 1])),
+            )
+
+        def one(chart: int) -> Dispositions:
+            own = tuple(end(row) for row in range(end_at[chart], end_at[chart + 1]))
+            return Dispositions(
+                chains=tuple(
+                    DispositorChain(
+                        planet=Graha(chains.planet[row]),
+                        dispositors=tuple(Graha(steps[k]) for k in range(step_at[row], step_at[row + 1])),
+                        end=own[chains.end[row]],
+                    )
+                    for row in range(7 * chart, 7 * chart + 7)
+                ),
+                ends=own,
+                final_dispositor=Graha(c.final_dispositor[chart]) if c.final_present[chart] == 1 else None,
+            )
+
+        return [one(chart) for chart in range(charts)]
 
     @cached_property
     def _sade_satis(self) -> list[SadeSatiReport]:

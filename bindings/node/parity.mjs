@@ -944,6 +944,14 @@ for (const chart of charts) {
       `${one.planets[0]} ${one.planets[1]} ${firstIn} ${secondIn} ${one.mutual.join(',') || '-'}`,
     );
   });
+  // The dispositors: each chain, where it stops, and the final one.
+  put(`chart-${i}-final-dispositor`, dg.dispositions.finalDispositor ?? '-');
+  dg.dispositions.chains.forEach((chain, k) =>
+    put(
+      `chart-${i}-disposition-${k}`,
+      `${chain.planet} ${chain.dispositors.join(',') || '-'} ${chain.end.kind}:${chain.end.planets.join(',')}`,
+    ),
+  );
   const ft = chart.fortitudes;
   const withOrb = (reading) => (typeof reading === 'string' ? reading : `WITHIN:${number(Object.values(reading.WITHIN)[0])}`);
   const numbers = (values) => values.map(number).join(',');

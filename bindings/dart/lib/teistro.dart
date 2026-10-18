@@ -4832,6 +4832,7 @@ List<Dignities> _decodeDignities(Charts batch) {
     );
   }
 
+  final disposed = _decodeDispositions(batch, charts);
   Reception reception(int row) => Reception(
     planets: (Graha.byId(r.first[row]), Graha.byId(r.second[row])),
     firstIn: flags(firstFlags, row),
@@ -4864,8 +4865,65 @@ List<Dignities> _decodeDignities(Charts batch) {
         for (var row = starts[chart]; row < starts[chart + 1]; row += 1)
           reception(row),
       ]),
+      dispositions: disposed[chart],
     ),
   );
+}
+
+/// Every chart's dispositors: `dispositions` a row a chart and
+/// `dispositor_chains` seven, their steps, ends and end members each ragged
+/// by the count before it.
+List<Dispositions> _decodeDispositions(Charts batch, int charts) {
+  final c = batch.dispositions;
+  final chains = batch.dispositorChains;
+  final steps = batch.dispositorSteps.graha;
+  final ends = batch.dispositorEnds;
+  final members = batch.dispositorEndMembers.graha;
+  if (c.length != charts || chains.length != 7 * charts) {
+    throw StateError(
+      'dispositions has ${c.length} rows and dispositor_chains '
+      '${chains.length} for $charts charts; they are one and seven a chart',
+    );
+  }
+  var [step, end, member] = [0, 0, 0];
+  final out = List<Dispositions>.generate(charts, (chart) {
+    DispositorEnd endAt(int row) => DispositorEnd(
+      kind: ChainEnd.byId(ends.kind[row]),
+      planets: List<Graha>.unmodifiable([
+        for (var m = 0; m < ends.memberCount[row]; m += 1)
+          Graha.byId(members[member++]),
+      ]),
+    );
+    final own = List<DispositorEnd>.unmodifiable([
+      for (var k = 0; k < c.endCount[chart]; k += 1) endAt(end++),
+    ]);
+    return Dispositions(
+      chains: List<DispositorChain>.unmodifiable([
+        for (var row = 7 * chart; row < 7 * chart + 7; row += 1)
+          DispositorChain(
+            planet: Graha.byId(chains.planet[row]),
+            dispositors: List<Graha>.unmodifiable([
+              for (var k = 0; k < chains.stepCount[row]; k += 1)
+                Graha.byId(steps[step++]),
+            ]),
+            end: own[chains.end[row]],
+          ),
+      ]),
+      ends: own,
+      finalDispositor:
+          c.finalPresent[chart] == 1
+              ? Graha.byId(c.finalDispositor[chart])
+              : null,
+    );
+  });
+  if (step != steps.length ||
+      end != ends.kind.length ||
+      member != members.length) {
+    throw StateError(
+      'the dispositor sections hold rows their counts do not reach',
+    );
+  }
+  return out;
 }
 
 final Expando<List<Lots>> _lots = Expando<List<Lots>>('lots');
@@ -7672,6 +7730,7 @@ final class Dignities extends _Value {
     required this.scores,
     required this.planets,
     required this.receptions,
+    required this.dispositions,
   });
 
   final Sect sect;
@@ -7686,6 +7745,15 @@ final class Dignities extends _Value {
   /// the second.
   final List<Reception> receptions;
 
+  /// The seven's chains of dispositors, where they stop, and the final
+  /// dispositor when every chain stops at one.
+  ///
+  /// ```dart
+  /// final read = chart.dignities!.dispositions;
+  /// final sun = read.chains.firstWhere((c) => c.planet == Graha.sun);
+  /// ```
+  final Dispositions dispositions;
+
   @override
   List<Object?> get _fields => [
     sect,
@@ -7694,7 +7762,71 @@ final class Dignities extends _Value {
     scores,
     planets,
     receptions,
+    dispositions,
   ];
+}
+
+/// A chart's dispositors under the traditional rulers
+/// (`03-design/essential-dignities.md` §Dispositors).
+final class Dispositions extends _Value {
+  const Dispositions({
+    required this.chains,
+    required this.ends,
+    required this.finalDispositor,
+  });
+
+  /// The rulers the chains were followed under: the dignities' own.
+  String get rulers => 'TRADITIONAL';
+
+  /// One chain a planet, in the order [Dignities.planets] gives them.
+  final List<DispositorChain> chains;
+
+  /// Where the chains stop, each once, in the order the chains first reach
+  /// it.
+  final List<DispositorEnd> ends;
+
+  /// The one planet in its own sign every chain stops at; null for more than
+  /// one end or a cycle (C415).
+  final Graha? finalDispositor;
+
+  @override
+  List<Object?> get _fields => [chains, ends, finalDispositor];
+}
+
+/// One planet's dispositors, followed until one repeats.
+final class DispositorChain extends _Value {
+  const DispositorChain({
+    required this.planet,
+    required this.dispositors,
+    required this.end,
+  });
+
+  /// The planet the chain starts from.
+  final Graha planet;
+
+  /// Its dispositor, that planet's, and so on; empty for a planet in its own
+  /// sign.
+  final List<Graha> dispositors;
+
+  /// Where it stops: one of the chart's [Dispositions.ends].
+  final DispositorEnd end;
+
+  @override
+  List<Object?> get _fields => [planet, dispositors, end];
+}
+
+/// Where chains of dispositors stop.
+final class DispositorEnd extends _Value {
+  const DispositorEnd({required this.kind, required this.planets});
+
+  /// A planet in its own sign, or a cycle.
+  final ChainEnd kind;
+
+  /// The planet in its own sign, or the cycle's from its slowest member.
+  final List<Graha> planets;
+
+  @override
+  List<Object?> get _fields => [kind, planets];
 }
 
 /// The orbs and limits Lilly's accidental fortitudes are judged by

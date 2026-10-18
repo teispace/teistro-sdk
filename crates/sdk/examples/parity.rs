@@ -4492,6 +4492,36 @@ fn the_dignities(report: &mut Report, sdk: &Context, index: usize, document: &te
             ),
         );
     }
+    // The dispositors: each chain, where it stops, and the final one.
+    let disposed = &read.dispositions;
+    put(
+        report,
+        &format!("chart-{index}-final-dispositor"),
+        disposed
+            .final_dispositor
+            .map_or("-", |g| g.full_key())
+            .to_owned(),
+    );
+    for (k, chain) in disposed.chains.iter().enumerate() {
+        let steps: Vec<&str> = chain.dispositors.iter().map(|g| g.full_key()).collect();
+        let (kind, planets) = match &chain.end {
+            teistro::ChainEnd::OwnSign(planet) => ("OWN_SIGN", vec![planet.full_key()]),
+            teistro::ChainEnd::Cycle(planets) => {
+                ("CYCLE", planets.iter().map(|g| g.full_key()).collect())
+            }
+            _ => ("unknown", Vec::new()),
+        };
+        put(
+            report,
+            &format!("chart-{index}-disposition-{k}"),
+            format!(
+                "{} {} {kind}:{}",
+                chain.planet.full_key(),
+                comma_listed(&steps),
+                planets.join(",")
+            ),
+        );
+    }
 }
 
 /// The dignities and debilities that hold, by the names every runner

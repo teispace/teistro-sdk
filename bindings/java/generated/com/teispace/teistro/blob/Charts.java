@@ -159,6 +159,11 @@ public final class Charts {
     private final Lilith lilith;
     private final JaiminiSthiraKarakas jaiminiSthiraKarakas;
     private final JaiminiKarakaBhavas jaiminiKarakaBhavas;
+    private final Dispositions dispositions;
+    private final DispositorChains dispositorChains;
+    private final DispositorSteps dispositorSteps;
+    private final DispositorEnds dispositorEnds;
+    private final DispositorEndMembers dispositorEndMembers;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -308,6 +313,11 @@ public final class Charts {
         this.lilith = new Lilith(blob, 127, "lilith");
         this.jaiminiSthiraKarakas = new JaiminiSthiraKarakas(blob, 128, "jaimini_sthira_karakas");
         this.jaiminiKarakaBhavas = new JaiminiKarakaBhavas(blob, 129, "jaimini_karaka_bhavas");
+        this.dispositions = new Dispositions(blob, 130, "dispositions");
+        this.dispositorChains = new DispositorChains(blob, 131, "dispositor_chains");
+        this.dispositorSteps = new DispositorSteps(blob, 132, "dispositor_steps");
+        this.dispositorEnds = new DispositorEnds(blob, 133, "dispositor_ends");
+        this.dispositorEndMembers = new DispositorEndMembers(blob, 134, "dispositor_end_members");
     }
 
     /**
@@ -1624,6 +1634,51 @@ public final class Charts {
      */
     public JaiminiKarakaBhavas jaiminiKarakaBhavas() {
         return jaiminiKarakaBhavas;
+    }
+
+    /**
+     * Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.
+     *
+     * @return the dispositions
+     */
+    public Dispositions dispositions() {
+        return dispositions;
+    }
+
+    /**
+     * The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.
+     *
+     * @return the dispositorChains
+     */
+    public DispositorChains dispositorChains() {
+        return dispositorChains;
+    }
+
+    /**
+     * Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.
+     *
+     * @return the dispositorSteps
+     */
+    public DispositorSteps dispositorSteps() {
+        return dispositorSteps;
+    }
+
+    /**
+     * Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.
+     *
+     * @return the dispositorEnds
+     */
+    public DispositorEnds dispositorEnds() {
+        return dispositorEnds;
+    }
+
+    /**
+     * Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.
+     *
+     * @return the dispositorEndMembers
+     */
+    public DispositorEndMembers dispositorEndMembers() {
+        return dispositorEndMembers;
     }
 
 
@@ -15153,6 +15208,271 @@ public final class Charts {
          */
         public int sign(int row) {
             return Short.toUnsignedInt(bytes.getShort(signAt + Objects.checkIndex(row, length) * 2));
+        }
+    }
+
+    /**
+     * The `dispositions` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.
+     */
+    public static final class Dispositions {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int finalDispositorAt;
+        private final int finalPresentAt;
+        private final int endCountAt;
+
+        Dispositions(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.finalDispositorAt = blob.column(at, 0, 2);
+            this.finalPresentAt = blob.column(at, 1, 1);
+            this.endCountAt = blob.column(at, 2, 1);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The one planet in its own sign every chain stops at; read only when `final_present` is 1 (C415).
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int finalDispositor(int row) {
+            return Short.toUnsignedInt(bytes.getShort(finalDispositorAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * 1 when every chain stops at one planet in its own sign, else 0: the chains stop at more than one end, or at a cycle.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int finalPresent(int row) {
+            return Byte.toUnsignedInt(bytes.get(finalPresentAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * How many rows of the `dispositor_ends` section belong to this row.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endCount(int row) {
+            return Byte.toUnsignedInt(bytes.get(endCountAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `dispositor_chains` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.
+     */
+    public static final class DispositorChains {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int planetAt;
+        private final int stepCountAt;
+        private final int endAt;
+
+        DispositorChains(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.planetAt = blob.column(at, 0, 2);
+            this.stepCountAt = blob.column(at, 1, 1);
+            this.endAt = blob.column(at, 2, 1);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The planet the chain starts from.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int planet(int row) {
+            return Short.toUnsignedInt(bytes.getShort(planetAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * How many rows of the `dispositor_steps` section belong to this row.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int stepCount(int row) {
+            return Byte.toUnsignedInt(bytes.get(stepCountAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * Where it stops: the row of this chart's `dispositor_ends`, counted from its first.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int end(int row) {
+            return Byte.toUnsignedInt(bytes.get(endAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `dispositor_steps` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.
+     */
+    public static final class DispositorSteps {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int grahaAt;
+
+        DispositorSteps(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.grahaAt = blob.column(at, 0, 2);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The dispositor.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int graha(int row) {
+            return Short.toUnsignedInt(bytes.getShort(grahaAt + Objects.checkIndex(row, length) * 2));
+        }
+    }
+
+    /**
+     * The `dispositor_ends` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.
+     */
+    public static final class DispositorEnds {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int kindAt;
+        private final int memberCountAt;
+
+        DispositorEnds(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.kindAt = blob.column(at, 0, 1);
+            this.memberCountAt = blob.column(at, 1, 1);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * A planet in its own sign, or a cycle.
+         *
+         * The id of a {@code ChainEnd}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int kind(int row) {
+            return Byte.toUnsignedInt(bytes.get(kindAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * How many rows of the `dispositor_end_members` section belong to this row.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int memberCount(int row) {
+            return Byte.toUnsignedInt(bytes.get(memberCountAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `dispositor_end_members` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.
+     */
+    public static final class DispositorEndMembers {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int grahaAt;
+
+        DispositorEndMembers(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.grahaAt = blob.column(at, 0, 2);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The planet.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int graha(int row) {
+            return Short.toUnsignedInt(bytes.getShort(grahaAt + Objects.checkIndex(row, length) * 2));
         }
     }
 }

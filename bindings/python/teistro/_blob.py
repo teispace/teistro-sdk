@@ -3993,6 +3993,96 @@ class ChartsJaiminiKarakaBhavas:
 
 
 @dataclass(frozen=True)
+class ChartsDispositions:
+    """The `dispositions` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.
+    """
+
+    final_dispositor: memoryview[int]
+    """The one planet in its own sign every chain stops at; read only when `final_present` is 1 (C415)."""
+
+    final_present: memoryview[int]
+    """1 when every chain stops at one planet in its own sign, else 0: the chains stop at more than one end, or at a cycle."""
+
+    end_count: memoryview[int]
+    """How many rows of the `dispositor_ends` section belong to this row."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDispositorChains:
+    """The `dispositor_chains` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.
+    """
+
+    planet: memoryview[int]
+    """The planet the chain starts from."""
+
+    step_count: memoryview[int]
+    """How many rows of the `dispositor_steps` section belong to this row."""
+
+    end: memoryview[int]
+    """Where it stops: the row of this chart's `dispositor_ends`, counted from its first."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDispositorSteps:
+    """The `dispositor_steps` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.
+    """
+
+    graha: memoryview[int]
+    """The dispositor."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDispositorEnds:
+    """The `dispositor_ends` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.
+    """
+
+    kind: memoryview[int]
+    """A planet in its own sign, or a cycle."""
+
+    member_count: memoryview[int]
+    """How many rows of the `dispositor_end_members` section belong to this row."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDispositorEndMembers:
+    """The `dispositor_end_members` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.
+    """
+
+    graha: memoryview[int]
+    """The planet."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4725,6 +4815,21 @@ class Charts:
     jaimini_karaka_bhavas: ChartsJaiminiKarakaBhavas
     """The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for."""
 
+    dispositions: ChartsDispositions
+    """Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for."""
+
+    dispositor_chains: ChartsDispositorChains
+    """The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats."""
+
+    dispositor_steps: ChartsDispositorSteps
+    """Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign."""
+
+    dispositor_ends: ChartsDispositorEnds
+    """Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them."""
+
+    dispositor_end_members: ChartsDispositorEndMembers
+    """Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4863,6 +4968,11 @@ def decode_charts(raw: bytes) -> Charts:
     at_lilith = blob.section(127, "lilith")
     at_jaimini_sthira_karakas = blob.section(128, "jaimini_sthira_karakas")
     at_jaimini_karaka_bhavas = blob.section(129, "jaimini_karaka_bhavas")
+    at_dispositions = blob.section(130, "dispositions")
+    at_dispositor_chains = blob.section(131, "dispositor_chains")
+    at_dispositor_steps = blob.section(132, "dispositor_steps")
+    at_dispositor_ends = blob.section(133, "dispositor_ends")
+    at_dispositor_end_members = blob.section(134, "dispositor_end_members")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7594,6 +7704,51 @@ def decode_charts(raw: bytes) -> Charts:
                 at_jaimini_karaka_bhavas, 3, 2, at_jaimini_karaka_bhavas.count
             ).cast("H"),
             length=at_jaimini_karaka_bhavas.count,
+        ),
+        dispositions=ChartsDispositions(
+            final_dispositor=blob.column(
+                at_dispositions, 0, 2, at_dispositions.count
+            ).cast("H"),
+            final_present=blob.column(
+                at_dispositions, 1, 1, at_dispositions.count
+            ).cast("B"),
+            end_count=blob.column(
+                at_dispositions, 2, 1, at_dispositions.count
+            ).cast("B"),
+            length=at_dispositions.count,
+        ),
+        dispositor_chains=ChartsDispositorChains(
+            planet=blob.column(
+                at_dispositor_chains, 0, 2, at_dispositor_chains.count
+            ).cast("H"),
+            step_count=blob.column(
+                at_dispositor_chains, 1, 1, at_dispositor_chains.count
+            ).cast("B"),
+            end=blob.column(
+                at_dispositor_chains, 2, 1, at_dispositor_chains.count
+            ).cast("B"),
+            length=at_dispositor_chains.count,
+        ),
+        dispositor_steps=ChartsDispositorSteps(
+            graha=blob.column(
+                at_dispositor_steps, 0, 2, at_dispositor_steps.count
+            ).cast("H"),
+            length=at_dispositor_steps.count,
+        ),
+        dispositor_ends=ChartsDispositorEnds(
+            kind=blob.column(
+                at_dispositor_ends, 0, 1, at_dispositor_ends.count
+            ).cast("B"),
+            member_count=blob.column(
+                at_dispositor_ends, 1, 1, at_dispositor_ends.count
+            ).cast("B"),
+            length=at_dispositor_ends.count,
+        ),
+        dispositor_end_members=ChartsDispositorEndMembers(
+            graha=blob.column(
+                at_dispositor_end_members, 0, 2, at_dispositor_end_members.count
+            ).cast("H"),
+            length=at_dispositor_end_members.count,
         ),
     )
 

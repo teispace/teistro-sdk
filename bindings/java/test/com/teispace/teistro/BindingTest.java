@@ -435,6 +435,58 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart carries its dispositors", () -> {
+            // Each chain the sign lords followed from the planet's own sign until
+            // one repeats, its end one of the chart's ends, and the final
+            // dispositor exactly when every chain stops at one planet in its own
+            // sign (03-design/essential-dignities.md §Dispositors).
+            try (Context sky = teistro.context(ContextOptions.builder().profile("conformance-baseline")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(0));
+                // The traditional lords, Aries to Pisces.
+                List<Graha> lords = List.of(Graha.MARS, Graha.VENUS, Graha.MERCURY, Graha.MOON, Graha.SUN,
+                        Graha.MERCURY, Graha.VENUS, Graha.MARS, Graha.JUPITER, Graha.SATURN, Graha.SATURN,
+                        Graha.JUPITER);
+                java.util.Set<Boolean> finals = new java.util.HashSet<>();
+                for (int step = 0; step < 30; step += 1) {
+                    Dignities read = sky.chart().found(2_460_676.5 + step * 23.7, kathmandu, 20_700,
+                            ChartOptions.builder().dignities(DignityRequest.of(Map.of())).build())
+                            .dignities().orElseThrow();
+                    Map<Graha, Graha> lordOf = new java.util.HashMap<>();
+                    for (PlanetDignity p : read.planets()) {
+                        lordOf.put(p.planet(), lords.get((int) Math.floor(p.longitudeDeg() / 30)));
+                    }
+                    Dispositions disposed = read.dispositions();
+                    same("TRADITIONAL", disposed.rulers(), "the traditional rulers");
+                    same(read.planets().stream().map(PlanetDignity::planet).toList(),
+                            disposed.chains().stream().map(DispositorChain::planet).toList(), "the planets' order");
+                    for (DispositorChain chain : disposed.chains()) {
+                        List<Graha> walked = new ArrayList<>();
+                        for (Graha at = lordOf.get(chain.planet()); at != chain.planet() && !walked.contains(at);
+                                at = lordOf.get(at)) {
+                            walked.add(at);
+                        }
+                        same(walked, chain.dispositors(), chain.planet() + "'s chain");
+                        check(disposed.ends().contains(chain.end()), "one of the chart's ends");
+                        Graha last = walked.isEmpty() ? chain.planet() : walked.get(walked.size() - 1);
+                        if (chain.end().kind() == ChainEnd.OWN_SIGN) {
+                            same(List.of(last), chain.end().planets(), "the planet in its own sign");
+                            same(last, lordOf.get(last), last + " in its own sign");
+                        } else {
+                            same(ChainEnd.CYCLE, chain.end().kind(), "a cycle");
+                            check(chain.end().planets().size() >= 2 && chain.end().planets().contains(last),
+                                    "a cycle holding the chain's last");
+                        }
+                    }
+                    boolean one = disposed.ends().size() == 1 && disposed.ends().get(0).kind() == ChainEnd.OWN_SIGN;
+                    check(java.util.Objects.equals(one ? disposed.ends().get(0).planets().get(0) : null,
+                            disposed.finalDispositor()), "the final dispositor");
+                    finals.add(disposed.finalDispositor() == null);
+                }
+                same(java.util.Set.of(true, false), finals, "both a final dispositor and none");
+            }
+        });
+
         tests.put("a chart carries its essential dignities in the Chaldean order", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("conformance-baseline")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

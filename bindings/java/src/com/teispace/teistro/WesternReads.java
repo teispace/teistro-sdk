@@ -242,6 +242,7 @@ final class WesternReads {
             throw Reads.internal("dignity_receptions has " + r.length() + " rows and the charts count " + receptions);
         }
         int[] starts = Reads.starts(c.length(), c::receptionCount);
+        List<Dispositions> disposed = dispositions(decoded, charts);
         List<Dignities> out = new ArrayList<>(charts);
         for (int chart = 0; chart < charts; chart += 1) {
             int k = chart;
@@ -266,9 +267,48 @@ final class WesternReads {
                             new EssentialDignity(r.secondInHouse(row) == 1, r.secondInExaltation(row) == 1,
                                     r.secondInTriplicity(row) == 1, r.secondInTerm(row) == 1,
                                     r.secondInFace(row) == 1, r.secondInDetriment(row) == 1,
-                                    r.secondInFall(row) == 1)))));
+                                    r.secondInFall(row) == 1))),
+                    disposed.get(k)));
         }
         return Collections.unmodifiableList(out);
+    }
+
+    /**
+     * Every chart's dispositors: {@code dispositions} a row a chart and
+     * {@code dispositor_chains} seven, their steps, ends and end members each
+     * ragged by the count before it.
+     */
+    private static List<Dispositions> dispositions(Charts decoded, int charts) {
+        Charts.Dispositions c = decoded.dispositions();
+        Charts.DispositorChains chains = decoded.dispositorChains();
+        Charts.DispositorSteps steps = decoded.dispositorSteps();
+        Charts.DispositorEnds ends = decoded.dispositorEnds();
+        Charts.DispositorEndMembers members = decoded.dispositorEndMembers();
+        if (c.length() != charts || chains.length() != 7 * charts) {
+            throw Reads.internal("dispositions has " + c.length() + " rows and dispositor_chains " + chains.length()
+                    + " for " + charts + " charts; they are one and seven a chart");
+        }
+        int[] stepAt = Reads.starts(chains.length(), chains::stepCount);
+        int[] endAt = Reads.starts(c.length(), c::endCount);
+        int[] memberAt = Reads.starts(ends.length(), ends::memberCount);
+        if (stepAt[chains.length()] != steps.length() || endAt[c.length()] != ends.length()
+                || memberAt[ends.length()] != members.length()) {
+            throw Reads.internal("the dispositor sections hold rows their counts do not reach");
+        }
+        List<Dispositions> out = new ArrayList<>(charts);
+        for (int chart = 0; chart < charts; chart += 1) {
+            List<DispositorEnd> own = Reads.rows(endAt[chart], endAt[chart + 1], row -> new DispositorEnd(
+                    ChainEnd.of(ends.kind(row)),
+                    Reads.rows(memberAt[row], memberAt[row + 1], m -> Graha.of(members.graha(m)))));
+            out.add(new Dispositions(
+                    Reads.rows(7 * chart, 7 * chart + 7, row -> new DispositorChain(
+                            Graha.of(chains.planet(row)),
+                            Reads.rows(stepAt[row], stepAt[row + 1], k -> Graha.of(steps.graha(k))),
+                            own.get(chains.end(row)))),
+                    own,
+                    c.finalPresent(chart) == 1 ? Graha.of(c.finalDispositor(chart)) : null));
+        }
+        return out;
     }
 
     /**

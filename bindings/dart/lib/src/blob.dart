@@ -4960,6 +4960,111 @@ final class ChartsJaiminiKarakaBhavas {
   final int length;
 }
 
+/// The `dispositions` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.
+final class ChartsDispositions {
+  const ChartsDispositions({
+    required this.finalDispositor,
+    required this.finalPresent,
+    required this.endCount,
+    required this.length,
+  });
+
+  /// The one planet in its own sign every chain stops at; read only when `final_present` is 1 (C415).
+  final Uint16List finalDispositor;
+
+  /// 1 when every chain stops at one planet in its own sign, else 0: the chains stop at more than one end, or at a cycle.
+  final Uint8List finalPresent;
+
+  /// How many rows of the `dispositor_ends` section belong to this row.
+  final Uint8List endCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dispositor_chains` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.
+final class ChartsDispositorChains {
+  const ChartsDispositorChains({
+    required this.planet,
+    required this.stepCount,
+    required this.end,
+    required this.length,
+  });
+
+  /// The planet the chain starts from.
+  final Uint16List planet;
+
+  /// How many rows of the `dispositor_steps` section belong to this row.
+  final Uint8List stepCount;
+
+  /// Where it stops: the row of this chart's `dispositor_ends`, counted from its first.
+  final Uint8List end;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dispositor_steps` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.
+final class ChartsDispositorSteps {
+  const ChartsDispositorSteps({
+    required this.graha,
+    required this.length,
+  });
+
+  /// The dispositor.
+  final Uint16List graha;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dispositor_ends` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.
+final class ChartsDispositorEnds {
+  const ChartsDispositorEnds({
+    required this.kind,
+    required this.memberCount,
+    required this.length,
+  });
+
+  /// A planet in its own sign, or a cycle.
+  final Uint8List kind;
+
+  /// How many rows of the `dispositor_end_members` section belong to this row.
+  final Uint8List memberCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dispositor_end_members` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.
+final class ChartsDispositorEndMembers {
+  const ChartsDispositorEndMembers({
+    required this.graha,
+    required this.length,
+  });
+
+  /// The planet.
+  final Uint16List graha;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5485,6 +5590,11 @@ final class Charts {
     required this.lilith,
     required this.jaiminiSthiraKarakas,
     required this.jaiminiKarakaBhavas,
+    required this.dispositions,
+    required this.dispositorChains,
+    required this.dispositorSteps,
+    required this.dispositorEnds,
+    required this.dispositorEndMembers,
   });
 
   /// What kind of chart these are.
@@ -5918,6 +6028,21 @@ final class Charts {
   /// The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
   final ChartsJaiminiKarakaBhavas jaiminiKarakaBhavas;
 
+  /// Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.
+  final ChartsDispositions dispositions;
+
+  /// The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.
+  final ChartsDispositorChains dispositorChains;
+
+  /// Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.
+  final ChartsDispositorSteps dispositorSteps;
+
+  /// Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.
+  final ChartsDispositorEnds dispositorEnds;
+
+  /// Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.
+  final ChartsDispositorEndMembers dispositorEndMembers;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -6054,6 +6179,11 @@ Charts decodeCharts(Uint8List bytes) {
   final atLilith = blob.section(127, 'lilith');
   final atJaiminiSthiraKarakas = blob.section(128, 'jaimini_sthira_karakas');
   final atJaiminiKarakaBhavas = blob.section(129, 'jaimini_karaka_bhavas');
+  final atDispositions = blob.section(130, 'dispositions');
+  final atDispositorChains = blob.section(131, 'dispositor_chains');
+  final atDispositorSteps = blob.section(132, 'dispositor_steps');
+  final atDispositorEnds = blob.section(133, 'dispositor_ends');
+  final atDispositorEndMembers = blob.section(134, 'dispositor_end_members');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -10827,6 +10957,71 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atJaiminiKarakaBhavas, 3) + atJaiminiKarakaBhavas.count * 2,
       ),
       length: atJaiminiKarakaBhavas.count,
+    ),
+    dispositions: ChartsDispositions(
+      finalDispositor: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositions, 0),
+        blob.columnOffset(atDispositions, 0) + atDispositions.count * 2,
+      ),
+      finalPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositions, 1),
+        blob.columnOffset(atDispositions, 1) + atDispositions.count * 1,
+      ),
+      endCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositions, 2),
+        blob.columnOffset(atDispositions, 2) + atDispositions.count * 1,
+      ),
+      length: atDispositions.count,
+    ),
+    dispositorChains: ChartsDispositorChains(
+      planet: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositorChains, 0),
+        blob.columnOffset(atDispositorChains, 0) + atDispositorChains.count * 2,
+      ),
+      stepCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositorChains, 1),
+        blob.columnOffset(atDispositorChains, 1) + atDispositorChains.count * 1,
+      ),
+      end: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositorChains, 2),
+        blob.columnOffset(atDispositorChains, 2) + atDispositorChains.count * 1,
+      ),
+      length: atDispositorChains.count,
+    ),
+    dispositorSteps: ChartsDispositorSteps(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositorSteps, 0),
+        blob.columnOffset(atDispositorSteps, 0) + atDispositorSteps.count * 2,
+      ),
+      length: atDispositorSteps.count,
+    ),
+    dispositorEnds: ChartsDispositorEnds(
+      kind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositorEnds, 0),
+        blob.columnOffset(atDispositorEnds, 0) + atDispositorEnds.count * 1,
+      ),
+      memberCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositorEnds, 1),
+        blob.columnOffset(atDispositorEnds, 1) + atDispositorEnds.count * 1,
+      ),
+      length: atDispositorEnds.count,
+    ),
+    dispositorEndMembers: ChartsDispositorEndMembers(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDispositorEndMembers, 0),
+        blob.columnOffset(atDispositorEndMembers, 0) + atDispositorEndMembers.count * 2,
+      ),
+      length: atDispositorEndMembers.count,
     ),
   );
 }

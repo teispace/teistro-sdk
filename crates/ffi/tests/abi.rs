@@ -2627,6 +2627,84 @@ fn a_chart_request_answers_the_dignities() {
         }
     }
 
+    // The dispositors, each list the façade's own in its order: the chains
+    // and their steps, the ends and their planets, and the final one.
+    let column = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let read: Vec<&teistro::Dispositions> = expected.iter().map(|one| &one.dispositions).collect();
+    let ids = |grahas: &mut dyn Iterator<Item = teistro::catalogue::Graha>| -> Vec<i64> {
+        grahas.map(|g| i64::from(g.id())).collect()
+    };
+    assert_eq!(
+        column("dispositions", "final_present"),
+        read.iter()
+            .map(|one| i64::from(one.final_dispositor.is_some()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        column("dispositions", "end_count"),
+        read.iter()
+            .map(|one| i64::try_from(one.ends.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let chains: Vec<&teistro::DispositorChain> = read.iter().flat_map(|one| &one.chains).collect();
+    assert_eq!(chains.len(), 14, "seven a chart");
+    assert_eq!(
+        column("dispositor_chains", "planet"),
+        ids(&mut chains.iter().map(|c| c.planet))
+    );
+    assert_eq!(
+        column("dispositor_chains", "step_count"),
+        chains
+            .iter()
+            .map(|c| i64::try_from(c.dispositors.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        column("dispositor_chains", "end"),
+        read.iter()
+            .flat_map(|one| {
+                one.chains.iter().map(|c| {
+                    i64::try_from(one.ends.iter().position(|end| *end == c.end).unwrap()).unwrap()
+                })
+            })
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        column("dispositor_steps", "graha"),
+        ids(&mut chains.iter().flat_map(|c| c.dispositors.iter().copied()))
+    );
+    let ends: Vec<&teistro::ChainEnd> = read.iter().flat_map(|one| &one.ends).collect();
+    let members = |end: &teistro::ChainEnd| -> Vec<teistro::catalogue::Graha> {
+        match end {
+            teistro::ChainEnd::OwnSign(planet) => vec![*planet],
+            teistro::ChainEnd::Cycle(planets) => planets.clone(),
+            _ => unreachable!("the two ends the façade has"),
+        }
+    };
+    assert_eq!(
+        column("dispositor_ends", "kind"),
+        ends.iter()
+            .map(|end| i64::from(matches!(end, teistro::ChainEnd::Cycle(_))))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        column("dispositor_ends", "member_count"),
+        ends.iter()
+            .map(|end| i64::try_from(members(end).len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        column("dispositor_end_members", "graha"),
+        ids(&mut ends.iter().flat_map(|end| members(end)))
+    );
+
     // None asked: every section empty.
     let (status, mut blob) = found(&request(ptr::null()));
     assert_eq!(status, Status::Ok);
@@ -2641,6 +2719,15 @@ fn a_chart_request_answers_the_dignities() {
         reader.column("dignity_receptions", "first").unwrap().len(),
         0
     );
+    for (section, name) in [
+        ("dispositions", "end_count"),
+        ("dispositor_chains", "planet"),
+        ("dispositor_steps", "graha"),
+        ("dispositor_ends", "kind"),
+        ("dispositor_end_members", "graha"),
+    ] {
+        assert_eq!(reader.column(section, name).unwrap().len(), 0, "{section}");
+    }
 
     // A refusal names the field the caller wrote.
     let typo = CString::new(r#"{"scores":{"peregrin":0}}"#).unwrap();

@@ -1946,6 +1946,15 @@ public final class ParityRunner {
                     + String.join(",", dignityFlags(reception.secondIn())) + " "
                     + orDash(String.join(",", reception.mutual())));
         }
+        // The dispositors: each chain, where it stops, and the final one.
+        Dispositions disposed = dg.dispositions();
+        put(c + "-final-dispositor", disposed.finalDispositor() != null ? disposed.finalDispositor().fullKey() : "-");
+        for (int k = 0; k < disposed.chains().size(); k += 1) {
+            DispositorChain chain = disposed.chains().get(k);
+            put(c + "-disposition-" + k, chain.planet().fullKey() + " "
+                    + orDash(join(",", chain.dispositors(), Graha::fullKey)) + " " + chain.end().kind().key() + ":"
+                    + join(",", chain.end().planets(), Graha::fullKey));
+        }
         Fortitudes ft = chart.fortitudes().orElseThrow();
         AccidentalSky fsky = ft.sky();
         put(c + "-fortitudes", fsky.houses().fullKey() + " " + numbers(" ", List.of(fsky.northNodeDeg(),

@@ -1704,6 +1704,18 @@ void main() {
             '${listed([for (final kind in one.mutual) kind.name])}',
       );
     }
+    // The dispositors: each chain, where it stops, and the final one.
+    final disposed = dg.dispositions;
+    put('chart-$i-final-dispositor', disposed.finalDispositor?.fullKey ?? '-');
+    for (final (k, chain) in disposed.chains.indexed) {
+      put(
+        'chart-$i-disposition-$k',
+        '${chain.planet.fullKey} '
+            '${listed([for (final g in chain.dispositors) g.fullKey])} '
+            '${chain.end.kind.key}:'
+            '${chain.end.planets.map((g) => g.fullKey).join(',')}',
+      );
+    }
     final ft = chart.fortitudes!;
     String numbers(List<double> values) => values.map(number).join(',');
     put(

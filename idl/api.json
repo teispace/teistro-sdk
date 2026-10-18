@@ -8354,6 +8354,26 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsChainEnd",
+      "doc": "Where a chain of dispositors stops (`03-design/dignities.md`\n§Dispositors, C415).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "OwnSign",
+          "value": 0,
+          "doc": "At a planet in its own sign, which disposes of itself: one member.",
+          "key": "OWN_SIGN"
+        },
+        {
+          "name": "Cycle",
+          "value": 1,
+          "doc": "At a cycle of two or more planets each in the next one's sign, the\nlast in the first's, starting at its slowest member.",
+          "key": "CYCLE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsVarsheshaChosen",
       "doc": "Which step of the year lord's chain decided it\n(`03-design/varshesha.md`).\n\nMirrors `teistro::Chosen` through an **exhaustive** match, which is\nwhat stops the two drifting: a step added stops this crate compiling\nrather than silently crossing as whatever was first.",
       "repr": "u8",
@@ -22034,6 +22054,101 @@
               "scalar": "u16",
               "doc": "The sign it falls in.",
               "enum": "Rashi"
+            }
+          ]
+        },
+        {
+          "id": 130,
+          "name": "dispositions",
+          "doc": "Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "final_dispositor",
+              "scalar": "u16",
+              "doc": "The one planet in its own sign every chain stops at; read only when `final_present` is 1 (C415).",
+              "enum": "Graha"
+            },
+            {
+              "name": "final_present",
+              "scalar": "u8",
+              "doc": "1 when every chain stops at one planet in its own sign, else 0: the chains stop at more than one end, or at a cycle."
+            },
+            {
+              "name": "end_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `dispositor_ends` section belong to this row."
+            }
+          ]
+        },
+        {
+          "id": 131,
+          "name": "dispositor_chains",
+          "doc": "The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "planet",
+              "scalar": "u16",
+              "doc": "The planet the chain starts from.",
+              "enum": "Graha"
+            },
+            {
+              "name": "step_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `dispositor_steps` section belong to this row."
+            },
+            {
+              "name": "end",
+              "scalar": "u8",
+              "doc": "Where it stops: the row of this chart's `dispositor_ends`, counted from its first."
+            }
+          ]
+        },
+        {
+          "id": 132,
+          "name": "dispositor_steps",
+          "doc": "Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The dispositor.",
+              "enum": "Graha"
+            }
+          ]
+        },
+        {
+          "id": 133,
+          "name": "dispositor_ends",
+          "doc": "Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "kind",
+              "scalar": "u8",
+              "doc": "A planet in its own sign, or a cycle.",
+              "enum": "TsChainEnd"
+            },
+            {
+              "name": "member_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `dispositor_end_members` section belong to this row."
+            }
+          ]
+        },
+        {
+          "id": 134,
+          "name": "dispositor_end_members",
+          "doc": "Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The planet.",
+              "enum": "Graha"
             }
           ]
         }
