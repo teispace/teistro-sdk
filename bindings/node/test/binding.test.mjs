@@ -4734,6 +4734,45 @@ test('a chart reads its tithi praveshas', () => {
   );
 });
 
+test('a chart reads its month and day charts', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2447995.4895833335;
+  assert.equal(ctx.chart.found({ instant, ...at }).masaPravesha, null);
+
+  const sunAt = (when) => ctx.chart.found({ instant: when, ...at }).grahas.find((g) => g.graha === 'graha.SUN').longitudeDeg;
+  const apart = (a, b) => {
+    const d = (((a - b) % 360) + 360) % 360;
+    return Math.min(d, 360 - d);
+  };
+  const born = sunAt(instant);
+  const months = ctx.chart.found({ instant, ...at, masaPravesha: { year: 3 } }).masaPravesha;
+  assert.deepEqual(
+    months.map((m) => [m.year, m.month, m.day]),
+    Array.from({ length: 12 }, (_, i) => [3, i + 1, 1]),
+  );
+  assert.ok(Object.isFrozen(months[0]), 'frozen');
+  for (const month of months) {
+    assert.ok(apart(month.sunDeg, born + 30 * (month.month - 1)) < 1e-9, `month ${month.month}`);
+  }
+  // Read back: the fifth month's chart holds the Sun four signs on.
+  assert.ok(apart(sunAt(months[4].at), months[4].sunDeg) < 1e-4);
+
+  const days = ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, month: 5 } }).masaPravesha;
+  assert.equal(days.length, 30);
+  assert.equal(days[0].at, months[4].at, 'the first day is the month');
+  assert.ok(apart(sunAt(days[9].at), months[4].sunDeg + 9) < 1e-4, 'the tenth day nine degrees on');
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, month: 13 } }),
+    (error) => error.field === 'masaPravesha.month',
+  );
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, reading: 'MEAN' } }),
+    (error) => error.field === 'masaPravesha.reading',
+  );
+});
+
 test('a chart carries its Lal Kitab', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };

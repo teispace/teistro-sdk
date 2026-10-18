@@ -291,7 +291,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 344,
+    "ts_chart_request": 352,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -746,6 +746,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("sarvatobhadra_json", ctypes.c_char_p),
         ("tithi_pravesha_json", ctypes.c_char_p),
         ("dossier_json", ctypes.c_char_p),
+        ("masa_pravesha_json", ctypes.c_char_p),
     ]
 
 
@@ -2820,6 +2821,21 @@ class ChartRequest:
     Example: {"preset":"FULL","dashaDepth":2}. May be null.
     """
 
+    masa_pravesha_json: Optional[str] = None
+    """One year's month charts, or one month's day charts, to find for
+    every chart, as a JSON object: `year`, 1 to 200, counted as the
+    annual chart's years are; optionally `month`, 1 to 12, for that
+    month's thirty days instead of the year's twelve months; and
+    optionally `reading`, `"SIDEREAL"` (the default) or `"TROPICAL"`,
+    the zodiac the year divides in. The instants come back in the
+    `masa_pravesha` section, the months each as its first day; a year
+    past the ephemeris's end comes back empty. Null for none
+    (`03-design/annual-chart.md`, "The month's and the day's chart").
+    Refusals are named from the record every binding calls
+    `masaPravesha`, as `masaPravesha.month`.
+    Example: {"year":30,"month":4}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2946,6 +2962,9 @@ class ChartRequest:
         _dossier_json = None if self.dossier_json is None else self.dossier_json.encode("utf-8")
         owned.append(_dossier_json)
         raw.dossier_json = _dossier_json
+        _masa_pravesha_json = None if self.masa_pravesha_json is None else self.masa_pravesha_json.encode("utf-8")
+        owned.append(_masa_pravesha_json)
+        raw.masa_pravesha_json = _masa_pravesha_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -3012,6 +3031,7 @@ class ChartRequest:
             sarvatobhadra_json=_text(raw.sarvatobhadra_json),
             tithi_pravesha_json=_text(raw.tithi_pravesha_json),
             dossier_json=_text(raw.dossier_json),
+            masa_pravesha_json=_text(raw.masa_pravesha_json),
         )
 
 

@@ -1,0 +1,161 @@
+//! A chart request's `masaPravesha` record: one year's months, or one
+//! month's days, of each chart (`03-design/annual-chart.md`, "The month's
+//! and the day's chart").
+//!
+//! A month's chart is its own first day's, as the *Tajika Nilakanthi*'s
+//! commentary says, so both answers are rows of one shape,
+//! [`DinaPravesha`]: the twelve months as their first days, or the thirty
+//! days of the month asked for.
+
+use serde::{Deserialize, Serialize};
+use teistro_core::error::Error;
+use teistro_serial::Document;
+use teistro_tajika::{DinaPravesha, Reading};
+
+use crate::area::ChartArea;
+
+/// One year's months, or one month's days, of a birth.
+///
+/// ```
+/// use teistro::MasaPraveshaRequest;
+/// use teistro::tajika::Reading;
+///
+/// let months = MasaPraveshaRequest::from_json(r#"{"year": 30}"#)?;
+/// assert_eq!(months, MasaPraveshaRequest::new(30));
+/// assert_eq!(months.reading, Reading::Sidereal);
+/// let days = MasaPraveshaRequest::new(30).with_month(4);
+/// assert_eq!(days.month, Some(4));
+/// let refused = MasaPraveshaRequest::from_json(r#"{"year": 30, "month": 13}"#).unwrap_err();
+/// assert_eq!(refused.field(), Some("masaPravesha.month"));
+/// # Ok::<(), teistro::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MasaPraveshaRequest {
+    /// Which longitude the year's Sun returns to, and so which zodiac the
+    /// year divides in; the tradition's, sidereal, by default. The mean
+    /// year places no Sun and is refused.
+    #[serde(default)]
+    pub reading: Reading,
+    /// The year divided, one to two hundred, counted as
+    /// [`Pravesha::year`](crate::Pravesha::year) counts it.
+    pub year: u16,
+    /// The month whose thirty days are asked for, one to twelve; absent,
+    /// the year's twelve months are, each as its first day.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub month: Option<u8>,
+}
+
+impl MasaPraveshaRequest {
+    /// The twelve months of `year`, in the sidereal year.
+    #[must_use]
+    pub const fn new(year: u16) -> MasaPraveshaRequest {
+        MasaPraveshaRequest {
+            reading: Reading::Sidereal,
+            year,
+            month: None,
+        }
+    }
+
+    /// The same year's `month`'s thirty days instead.
+    #[must_use]
+    pub const fn with_month(mut self, month: u8) -> MasaPraveshaRequest {
+        self.month = Some(month);
+        self
+    }
+
+    /// The same request, the year read by `reading`.
+    #[must_use]
+    pub const fn with_reading(mut self, reading: Reading) -> MasaPraveshaRequest {
+        self.reading = reading;
+        self
+    }
+
+    /// The request a binding writes as `masaPravesha`, read and checked;
+    /// a refusal names the field the caller wrote, `masaPravesha.month`.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, or a request [`MasaPraveshaRequest::check`] refuses.
+    pub fn from_json(text: &str) -> Result<MasaPraveshaRequest, Error> {
+        let asked: MasaPraveshaRequest = teistro_core::strict::read(text, MASA_PRAVESHA)?;
+        asked.check().map_err(|why| why.under(MASA_PRAVESHA))?;
+        Ok(asked)
+    }
+
+    /// Whether the request can be answered, before any Sun is searched
+    /// for.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming `year` outside one to two hundred, `month`
+    /// outside one to twelve, or `reading` for the mean year.
+    pub fn check(&self) -> Result<(), Error> {
+        year_of(self.year)?;
+        if let Some(month) = self.month {
+            month_of(month)?;
+        }
+        teistro_tajika::divided(self.reading).map(|_| ())
+    }
+}
+
+/// `year` where a life has it.
+///
+/// # Errors
+///
+/// `INVALID_ARG` naming `year` outside one to two hundred.
+pub(crate) fn year_of(year: u16) -> Result<u16, Error> {
+    teistro_tajika::years(year).map_err(|_| {
+        Error::invalid_arg(format!(
+            "a year is asked for by the returns it completes, 1 to {}, not {year}",
+            teistro_tajika::MOST_YEARS
+        ))
+        .with_field("year")
+    })
+}
+
+/// `month` where a year has it.
+///
+/// # Errors
+///
+/// `INVALID_ARG` naming `month` outside one to twelve.
+pub(crate) fn month_of(month: u8) -> Result<u8, Error> {
+    if (1..=teistro_tajika::MONTHS).contains(&month) {
+        Ok(month)
+    } else {
+        Err(Error::invalid_arg(format!(
+            "a year divides into months 1 to {}, not {month}",
+            teistro_tajika::MONTHS
+        ))
+        .with_field("month"))
+    }
+}
+
+/// The record every binding writes the request as.
+const MASA_PRAVESHA: &str = "masaPravesha";
+
+impl ChartArea<'_> {
+    /// What `asked` asks of one birth: the year's twelve months, each as
+    /// its first day, or the month's thirty days
+    /// ([`ChartArea::masa_praveshas`], [`ChartArea::dina_praveshas`]).
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::dina_praveshas`].
+    pub fn masa_pravesha(
+        self,
+        birth: &Document,
+        asked: &MasaPraveshaRequest,
+    ) -> Result<Vec<DinaPravesha>, Error> {
+        match asked.month {
+            Some(month) => self.dina_praveshas(birth, asked.reading, asked.year, month),
+            None => Ok(self
+                .masa_praveshas(birth, asked.reading, asked.year)?
+                .into_iter()
+                .map(DinaPravesha::from)
+                .collect()),
+        }
+    }
+}

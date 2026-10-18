@@ -1396,6 +1396,20 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
   external ffi.Pointer<ffi.Char> dossierJson;
 
+  /// One year's month charts, or one month's day charts, to find for
+  /// every chart, as a JSON object: `year`, 1 to 200, counted as the
+  /// annual chart's years are; optionally `month`, 1 to 12, for that
+  /// month's thirty days instead of the year's twelve months; and
+  /// optionally `reading`, `"SIDEREAL"` (the default) or `"TROPICAL"`,
+  /// the zodiac the year divides in. The instants come back in the
+  /// `masa_pravesha` section, the months each as its first day; a year
+  /// past the ephemeris's end comes back empty. Null for none
+  /// (`03-design/annual-chart.md`, "The month's and the day's chart").
+  /// Refusals are named from the record every binding calls
+  /// `masaPravesha`, as `masaPravesha.month`.
+  /// Example: {"year":30,"month":4}. May be null.
+  external ffi.Pointer<ffi.Char> masaPraveshaJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3475,7 +3489,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson, this.tithiPraveshaJson, this.dossierJson});
+  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson, this.tithiPraveshaJson, this.dossierJson, this.masaPraveshaJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -4020,8 +4034,22 @@ final class ChartRequest {
   /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
   final String? dossierJson;
 
+  /// One year's month charts, or one month's day charts, to find for
+  /// every chart, as a JSON object: `year`, 1 to 200, counted as the
+  /// annual chart's years are; optionally `month`, 1 to 12, for that
+  /// month's thirty days instead of the year's twelve months; and
+  /// optionally `reading`, `"SIDEREAL"` (the default) or `"TROPICAL"`,
+  /// the zodiac the year divides in. The instants come back in the
+  /// `masa_pravesha` section, the months each as its first day; a year
+  /// past the ephemeris's end comes back empty. Null for none
+  /// (`03-design/annual-chart.md`, "The month's and the day's chart").
+  /// Refusals are named from the record every binding calls
+  /// `masaPravesha`, as `masaPravesha.month`.
+  /// Example: {"year":30,"month":4}. May be null.
+  final String? masaPraveshaJson;
+
   /// This value with the fields given replaced, and the rest kept.
-  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson, String? tithiPraveshaJson, String? dossierJson}) => ChartRequest(
+  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson, String? tithiPraveshaJson, String? dossierJson, String? masaPraveshaJson}) => ChartRequest(
     kind: kind ?? this.kind,
     lilith: lilith ?? this.lilith,
     instants: instants ?? this.instants,
@@ -4062,6 +4090,7 @@ final class ChartRequest {
     sarvatobhadraJson: sarvatobhadraJson ?? this.sarvatobhadraJson,
     tithiPraveshaJson: tithiPraveshaJson ?? this.tithiPraveshaJson,
     dossierJson: dossierJson ?? this.dossierJson,
+    masaPraveshaJson: masaPraveshaJson ?? this.masaPraveshaJson,
   );
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -4191,6 +4220,9 @@ final class ChartRequest {
     raw.dossierJson = dossierJson == null
         ? ffi.nullptr
         : dossierJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.masaPraveshaJson = masaPraveshaJson == null
+        ? ffi.nullptr
+        : masaPraveshaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -4304,6 +4336,9 @@ final class ChartRequest {
         dossierJson: raw.dossierJson == ffi.nullptr
             ? null
             : raw.dossierJson.cast<pkg_ffi.Utf8>().toDartString(),
+        masaPraveshaJson: raw.masaPraveshaJson == ffi.nullptr
+            ? null
+            : raw.masaPraveshaJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

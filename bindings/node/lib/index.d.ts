@@ -3300,6 +3300,40 @@ export interface TithiPravesha {
   readonly fellBack: boolean;
 }
 
+/**
+ * One year's month charts, or one month's day charts, to find for every
+ * chart (`03-design/annual-chart.md`, "The month's and the day's chart").
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, masaPravesha: { year: 30, month: 4 } });
+ * for (const day of chart.masaPravesha ?? []) {
+ *   // The day's chart, founded where the native is.
+ *   const daily = ctx.chart.found({ instant: day.at, place: residence, utcOffsetSeconds });
+ * }
+ */
+export interface MasaPraveshaRequest {
+  /** The year divided, 1 to 200, counted as `Pravesha.year` counts it. */
+  readonly year: number;
+  /** The month whose thirty days are wanted, 1 to 12; the year's twelve months when left out. */
+  readonly month?: number;
+  /** The zodiac the year divides in; `SIDEREAL` by default. The mean year places no Sun. */
+  readonly reading?: Exclude<VarshaReading, 'MEAN'>;
+}
+
+/** One month's or one day's chart instant: the Sun a sign further each month, a degree further each day. */
+export interface MasaPravesha {
+  /** The year, as `Pravesha.year` counts it. */
+  readonly year: number;
+  /** The month, 1 (the annual chart itself) to 12. */
+  readonly month: number;
+  /** The day, 1 (the month's chart itself) to 30; 1 on every row of a year's months. */
+  readonly day: number;
+  /** The instant, a Julian day (UTC): found the chart here. */
+  readonly at: number;
+  /** Where the Sun stands then, degrees in the year's zodiac. */
+  readonly sunDeg: number;
+}
+
 /** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */
 export interface LalKitabRequest {
   /** Where the 35-year cycle starts; the book's general table (Saturn from the first year) when left out. */
@@ -5630,6 +5664,12 @@ export declare class Chart {
    * (`03-design/tithi-pravesha.md`).
    */
   readonly tithiPravesha: readonly TithiPravesha[] | null;
+  /**
+   * The year's twelve month charts, each as its first day, or the month's
+   * thirty day charts; empty where the ephemeris ends first, `null` unless
+   * `masaPravesha` asked (`03-design/annual-chart.md`).
+   */
+  readonly masaPravesha: readonly MasaPravesha[] | null;
   /** The chart as a dossier for a language model; `null` unless `dossier` asked (`03-design/dossier.md`). */
   readonly dossier: string | null;
   /**
@@ -6987,6 +7027,12 @@ export interface ChartRequest {
    * default.
    */
   readonly tithiPravesha?: TithiPraveshaRequest;
+  /**
+   * One year's month charts, or one month's day charts, to find for every
+   * chart, read back as each chart's `masaPravesha`
+   * (`03-design/annual-chart.md`). None by default.
+   */
+  readonly masaPravesha?: MasaPraveshaRequest;
   /**
    * Every chart written as a dossier for a language model, read back as
    * each chart's `dossier` (`03-design/dossier.md`). None by default.

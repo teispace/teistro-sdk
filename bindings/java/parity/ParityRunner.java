@@ -1495,6 +1495,8 @@ public final class ParityRunner {
                         "name", map("letter", "र", "vowel", "A"), "rules", map("front", "EVERY_CELL"))))
                 // Three years under the practice's rule.
                 .tithiPravesha(TithiPraveshaRequest.builder().through(3).build())
+                // The second year's third month, a row a day.
+                .masaPravesha(MasaPraveshaRequest.builder().year(2).month(3).build())
                 .dossier(DossierOptions.builder().sections(List.of("CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES", "GOCHAR"))
                         .at(2460676.5).dashaDepth(2).utcOffsetSeconds(20_700).build())
                 // A varshphal list with the book's structure and none of its numbers:
@@ -2058,6 +2060,12 @@ public final class ParityRunner {
             put(c + "-tithi-pravesha-" + year.year(), number(year.at()) + " " + number(year.solarReturn()) + " "
                     + number(year.elongationDeg()) + " " + year.rule().key() + " " + year.picked().key() + " "
                     + year.inSign());
+        }
+        List<MasaPravesha> masa = chart.masaPravesha().orElseThrow();
+        put(c + "-masa-pravesha-count", String.valueOf(masa.size()));
+        for (MasaPravesha one : masa) {
+            put(c + "-masa-pravesha-" + one.year() + "-" + one.month() + "-" + one.day(),
+                    number(one.at()) + " " + number(one.sunDeg()));
         }
         String dossier = chart.dossier().orElseThrow();
         put(c + "-dossier", dossier.getBytes(java.nio.charset.StandardCharsets.UTF_8).length + " " + fnv(dossier));

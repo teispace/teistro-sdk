@@ -5423,6 +5423,68 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart reads its month and day charts', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const instant = 2447995.4895833335;
+    Chart found(double at, [MasaPraveshaRequest? asked]) => ctx.chart.found(
+      instant: at,
+      place: place,
+      utcOffsetSeconds: 20700,
+      masaPravesha: asked,
+    );
+    double sun(double at) =>
+        found(at).grahas.firstWhere((g) => g.graha == Graha.sun).longitudeDeg;
+    double apart(double a, double b) {
+      final d = (a - b) % 360;
+      return d < 360 - d ? d : 360 - d;
+    }
+
+    expect(found(instant).masaPravesha, isNull);
+    final born = sun(instant);
+    final months =
+        found(instant, const MasaPraveshaRequest(year: 3)).masaPravesha!;
+    expect(
+      [for (final m in months) '${m.year} ${m.month} ${m.day}'],
+      [for (var m = 1; m <= 12; m++) '3 $m 1'],
+    );
+    for (final month in months) {
+      expect(
+        apart(month.sunDeg, born + 30 * (month.month - 1)),
+        lessThan(1e-9),
+      );
+    }
+    expect(apart(sun(months[4].at), months[4].sunDeg), lessThan(1e-4));
+    final days =
+        found(
+          instant,
+          const MasaPraveshaRequest(year: 3, month: 5),
+        ).masaPravesha!;
+    expect(days, hasLength(30));
+    expect(days.first.at, months[4].at);
+    expect(apart(sun(days[9].at), months[4].sunDeg + 9), lessThan(1e-4));
+    expect(
+      () => found(
+        instant,
+        const MasaPraveshaRequest(year: 3, reading: VarshaReading.mean),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'masaPravesha.reading',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart writes its dossier', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

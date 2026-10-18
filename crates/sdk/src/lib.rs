@@ -127,6 +127,8 @@ mod research_request;
 // record, by name (`03-design/mcp-server.md` D3).
 pub mod records;
 // A consumer's own layouts and dasha systems, read from JSON.
+#[cfg(feature = "tajika")]
+mod masa_pravesha;
 pub mod registrations;
 #[cfg(feature = "chart")]
 mod returns;
@@ -518,6 +520,10 @@ pub use teistro_rashifal as rashifal;
 // (`03-design/western-returns.md`).
 #[cfg(feature = "chart")]
 pub use crate::returns::{BodyReturn, OffsetReturn};
+// One year's months, or one month's days, as a chart request asks for
+// them (`03-design/annual-chart.md`).
+#[cfg(feature = "tajika")]
+pub use crate::masa_pravesha::MasaPraveshaRequest;
 // Each year's instant the birth's tithi returns around the solar return,
 // chosen by a named rule (`03-design/tithi-pravesha.md`).
 #[cfg(feature = "tajika")]

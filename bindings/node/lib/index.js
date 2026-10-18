@@ -1153,6 +1153,18 @@ export class Chart {
   }
 
   /**
+   * The year's month charts, each as its first day, or one month's day
+   * charts (`masaPravesha: { year: 30, month: 4 }`): the Sun a sign
+   * further each month, a degree further each day. Empty where the
+   * ephemeris ends first; `null` unless asked (`03-design/annual-chart.md`).
+   *
+   * @returns {object[]|null}
+   */
+  get masaPravesha() {
+    return masaPraveshasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The chart written as a dossier for a language model
    * (`dossier: { sections: ['GRAHAS', 'DASHAS'], at: 2460676.5 }`): the
    * same chart under the same record is the same text. `null` unless asked
@@ -2819,6 +2831,11 @@ export class ChartArea extends Area {
           request.dossier,
           'dossier',
           "a dossier request record, e.g. {} or { sections: ['GRAHAS', 'DASHAS'], at: 2460676.5 }",
+        ),
+        masaPraveshaJson: recordJson(
+          request.masaPravesha,
+          'masaPravesha',
+          'a masa pravesha request record, e.g. { year: 30 } or { year: 30, month: 4 }',
         ),
         tithiPraveshaJson: recordJson(
           request.tithiPravesha,
@@ -5376,6 +5393,20 @@ const DOSSIER = new WeakMap();
  */
 function dossiersOf(batch) {
   return sectionOf(DOSSIER, batch, 'dossier');
+}
+
+/** Each batch's month and day charts, parsed once however many charts read them. */
+const MASA_PRAVESHA = new WeakMap();
+
+/**
+ * Every chart's month or day charts in a batch: the `masa_pravesha`
+ * section's JSON, a list of instants a chart.
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function masaPraveshasOf(batch) {
+  return sectionOf(MASA_PRAVESHA, batch, 'masaPravesha');
 }
 
 /** Each batch's tithi praveshas, parsed once however many charts read them. */

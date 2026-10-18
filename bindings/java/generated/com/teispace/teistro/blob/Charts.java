@@ -167,6 +167,7 @@ public final class Charts {
     private final String sarvatobhadra;
     private final String tithiPravesha;
     private final String dossier;
+    private final String masaPravesha;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -324,6 +325,7 @@ public final class Charts {
         this.sarvatobhadra = blob.text(135, "sarvatobhadra");
         this.tithiPravesha = blob.text(136, "tithi_pravesha");
         this.dossier = blob.text(137, "dossier");
+        this.masaPravesha = blob.text(138, "masa_pravesha");
     }
 
     /**
@@ -1712,6 +1714,15 @@ public final class Charts {
      */
     public String dossier() {
         return dossier;
+    }
+
+    /**
+     * UTF-8 JSON, canonical: an array with one entry per chart, each an array of rows in order (`03-design/annual-chart.md`, "The month's and the day's chart"). A row is `{year, month, day, at, sunDeg}`: `year` counted as `praveshas.year` counts it; `month` 1 to 12; `day` 1 to 30; `at` the instant, a UTC Julian day, where the chart is founded; `sunDeg` where the Sun stands then in the year's zodiac, the annual Sun a sign further each month and the month's Sun a degree further each day (*Tajika Nilakanthi*, Saṃjñā Tantra, the monthly and daily entry, v. 1). Without `month` the rows are the year's twelve months, each as its first day, `day` 1; with it, that month's thirty days. A chart holds no rows where the ephemeris ends before the year does. Empty when `masa_pravesha_json` asked for none.
+     *
+     * @return the masaPravesha
+     */
+    public String masaPravesha() {
+        return masaPravesha;
     }
 
 

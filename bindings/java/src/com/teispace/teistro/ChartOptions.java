@@ -18,6 +18,7 @@ import com.teispace.teistro.request.KpRequest;
 import com.teispace.teistro.request.LalKitabRequest;
 import com.teispace.teistro.request.SarvatobhadraRequest;
 import com.teispace.teistro.request.DossierOptions;
+import com.teispace.teistro.request.MasaPraveshaRequest;
 import com.teispace.teistro.request.TithiPraveshaRequest;
 import com.teispace.teistro.request.LotRequest;
 import com.teispace.teistro.request.MidpointRequest;
@@ -627,6 +628,18 @@ public record ChartOptions(
          */
         public Builder tithiPravesha(TithiPraveshaRequest request) {
             return json("tithi_pravesha_json", request);
+        }
+
+        /**
+         * One year's month charts, or one month's day charts, of every chart, as
+         * {@code MasaPraveshaRequest.builder().year(30).month(4).build()}
+         * ({@code 03-design/annual-chart.md}).
+         *
+         * @param request the request; null takes it away
+         * @return this builder
+         */
+        public Builder masaPravesha(MasaPraveshaRequest request) {
+            return json("masa_pravesha_json", request);
         }
 
         /**

@@ -538,6 +538,19 @@ pub struct TsChartRequest {
     /// record every binding calls `dossier`, as `dossier.sections[0]`.
     /// `api: nullable example={"preset":"FULL","dashaDepth":2}`
     pub dossier_json: *const c_char,
+    /// One year's month charts, or one month's day charts, to find for
+    /// every chart, as a JSON object: `year`, 1 to 200, counted as the
+    /// annual chart's years are; optionally `month`, 1 to 12, for that
+    /// month's thirty days instead of the year's twelve months; and
+    /// optionally `reading`, `"SIDEREAL"` (the default) or `"TROPICAL"`,
+    /// the zodiac the year divides in. The instants come back in the
+    /// `masa_pravesha` section, the months each as its first day; a year
+    /// past the ephemeris's end comes back empty. Null for none
+    /// (`03-design/annual-chart.md`, "The month's and the day's chart").
+    /// Refusals are named from the record every binding calls
+    /// `masaPravesha`, as `masaPravesha.month`.
+    /// `api: nullable example={"year":30,"month":4}`
+    pub masa_pravesha_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**

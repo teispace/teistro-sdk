@@ -711,6 +711,7 @@ final class ChartArea extends _Area {
     LalKitabRequest? lalkitab,
     SarvatobhadraRequest? sarvatobhadra,
     TithiPraveshaRequest? tithiPravesha,
+    MasaPraveshaRequest? masaPravesha,
     DossierRequest? dossier,
     RectificationRequest? rectification,
     bool aspects = false,
@@ -763,6 +764,7 @@ final class ChartArea extends _Area {
     lalkitab: lalkitab,
     sarvatobhadra: sarvatobhadra,
     tithiPravesha: tithiPravesha,
+    masaPravesha: masaPravesha,
     dossier: dossier,
     rectification: rectification,
     aspects: aspects,
@@ -835,6 +837,7 @@ final class ChartArea extends _Area {
     LalKitabRequest? lalkitab,
     SarvatobhadraRequest? sarvatobhadra,
     TithiPraveshaRequest? tithiPravesha,
+    MasaPraveshaRequest? masaPravesha,
     DossierRequest? dossier,
     RectificationRequest? rectification,
     bool aspects = false,
@@ -914,6 +917,7 @@ final class ChartArea extends _Area {
             lalkitabJson: lalkitab?._json,
             sarvatobhadraJson: sarvatobhadra?._json,
             tithiPraveshaJson: tithiPravesha?._json,
+            masaPraveshaJson: masaPravesha?._json,
             dossierJson: dossier?._json,
           ),
         ),
@@ -15454,6 +15458,103 @@ final class TithiPravesha extends _Value {
   ];
 }
 
+/// One year's month charts, or one month's day charts, to find for every
+/// chart (`03-design/annual-chart.md`, "The month's and the day's chart").
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ masaPravesha: const MasaPraveshaRequest(year: 30, month: 4),
+/// );
+/// for (final day in chart.masaPravesha!) {
+///   // The day's chart, founded where the native is.
+///   final daily = ctx.chart.found(instant: day.at, /* … */);
+/// }
+/// ```
+final class MasaPraveshaRequest {
+  const MasaPraveshaRequest({
+    required this.year,
+    this.month,
+    this.reading = VarshaReading.sidereal,
+  });
+
+  /// The year divided, 1 to 200, counted as [Pravesha.year] counts it; the
+  /// SDK refuses another by `masaPravesha.year`.
+  final int year;
+
+  /// The month whose thirty days are wanted, 1 to 12; the year's twelve
+  /// months when null.
+  final int? month;
+
+  /// The zodiac the year divides in. [VarshaReading.mean] places no Sun,
+  /// and the SDK refuses it by `masaPravesha.reading`.
+  final VarshaReading reading;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'year': year,
+    if (month != null) 'month': month,
+    'reading': reading.key,
+  });
+}
+
+/// One month's or one day's chart instant: the annual Sun a sign further
+/// each month, the month's Sun a degree further each day (*Tajika
+/// Nilakanthi*, Saṃjñā Tantra, the monthly and daily entry, v. 1).
+final class MasaPravesha extends _Value {
+  const MasaPravesha({
+    required this.year,
+    required this.month,
+    required this.day,
+    required this.at,
+    required this.sunDeg,
+  });
+
+  /// The year, as [Pravesha.year] counts it.
+  final int year;
+
+  /// The month, 1 (the annual chart itself) to 12.
+  final int month;
+
+  /// The day, 1 (the month's chart itself) to 30; 1 on every row of a
+  /// year's months.
+  final int day;
+
+  /// The instant, a Julian day (UTC): found the chart here.
+  final double at;
+
+  /// Where the Sun stands then, degrees in the year's zodiac.
+  final double sunDeg;
+
+  @override
+  List<Object?> get _fields => [year, month, day, at, sunDeg];
+}
+
+/// Each batch's month and day charts, parsed once however many charts
+/// read them.
+final Expando<List<List<MasaPravesha>>> _masaPraveshas =
+    Expando<List<List<MasaPravesha>>>('masaPravesha');
+
+List<List<MasaPravesha>> _masaPraveshasOf(Charts batch) =>
+    _masaPraveshas[batch] ??=
+        batch.masaPravesha.isEmpty
+            ? const <List<MasaPravesha>>[]
+            : [
+              for (final chart
+                  in jsonDecode(batch.masaPravesha) as List<Object?>)
+                List<MasaPravesha>.unmodifiable([
+                  for (final one in chart! as List<Object?>)
+                    _masaPraveshaFrom(one! as Map<String, Object?>),
+                ]),
+            ];
+
+/// One instant from the `masa_pravesha` section's JSON.
+MasaPravesha _masaPraveshaFrom(Map<String, Object?> raw) => MasaPravesha(
+  year: raw['year']! as int,
+  month: raw['month']! as int,
+  day: raw['day']! as int,
+  at: (raw['at']! as num).toDouble(),
+  sunDeg: (raw['sunDeg']! as num).toDouble(),
+);
+
 /// A section of a chart's dossier, in the dossier's own order
 /// (`03-design/dossier.md`).
 enum DossierSection implements _Keyed {
@@ -25209,6 +25310,15 @@ final class Chart {
   /// (`03-design/tithi-pravesha.md`).
   List<TithiPravesha>? get tithiPravesha {
     final all = _tithiPraveshasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The year's twelve month charts, each as its first day, or the
+  /// month's thirty day charts: the Sun a sign further each month, a
+  /// degree further each day. Empty where the ephemeris ends first; null
+  /// unless `masaPravesha` asked (`03-design/annual-chart.md`).
+  List<MasaPravesha>? get masaPravesha {
+    final all = _masaPraveshasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

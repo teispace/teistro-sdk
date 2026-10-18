@@ -776,6 +776,45 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart reads its month and day charts", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                double instant = 2_447_995.489_583_333_5;
+                check(sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder().build()).masaPravesha()
+                        .isEmpty(), "none unless asked");
+                java.util.function.DoubleUnaryOperator sun = at -> sky.chart()
+                        .found(at, kathmandu, 20_700, ChartOptions.builder().build()).grahas().stream()
+                        .filter(g -> g.graha() == Graha.SUN).findFirst().orElseThrow().longitudeDeg();
+                java.util.function.DoubleBinaryOperator apart = (a, b) -> {
+                    double d = ((a - b) % 360 + 360) % 360;
+                    return Math.min(d, 360 - d);
+                };
+                double born = sun.applyAsDouble(instant);
+                List<MasaPravesha> months = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .masaPravesha(MasaPraveshaRequest.builder().year(3).build()).build()).masaPravesha()
+                        .orElseThrow();
+                same(12, months.size(), "twelve months");
+                for (MasaPravesha month : months) {
+                    same(1, month.day(), "a month as its first day");
+                    check(apart.applyAsDouble(month.sunDeg(), born + 30 * (month.month() - 1)) < 1e-9,
+                            "month " + month.month() + " a sign on");
+                }
+                MasaPravesha fifth = months.get(4);
+                check(apart.applyAsDouble(sun.applyAsDouble(fifth.at()), fifth.sunDeg()) < 1e-4, "reads back");
+                List<MasaPravesha> days = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .masaPravesha(MasaPraveshaRequest.builder().year(3).month(5).build()).build())
+                        .masaPravesha().orElseThrow();
+                same(30, days.size(), "thirty days");
+                same(fifth.at(), days.get(0).at(), "the first day is the month");
+                check(apart.applyAsDouble(sun.applyAsDouble(days.get(9).at()), fifth.sunDeg() + 9) < 1e-4,
+                        "the tenth day nine degrees on");
+                TeistroException refused = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().masaPravesha(MasaPraveshaRequest.builder().year(3).month(13).build())
+                                .build()));
+                same("masaPravesha.month", refused.field(), "a refusal names its field");
+            }
+        });
+
         tests.put("a chart writes its dossier", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));

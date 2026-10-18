@@ -83,6 +83,9 @@ pub struct ChartRecords {
     /// The tithi praveshas every birth's years are cast for.
     #[cfg(feature = "tajika")]
     pub tithi_pravesha: Option<crate::TithiPraveshaRequest>,
+    /// The months of one year, or the days of one month, of every birth.
+    #[cfg(feature = "tajika")]
+    pub masa_pravesha: Option<crate::MasaPraveshaRequest>,
     /// The Western tables.
     #[cfg(feature = "western")]
     pub western: WesternRecords,
@@ -144,7 +147,7 @@ impl ChartRecords {
     /// The records a chart request names, as every binding writes them:
     /// the key in a JSON chart request ([`FoundRequest`](crate::FoundRequest))
     /// and the name [`ChartRecords::read`] takes.
-    pub const NAMES: [&'static str; 29] = [
+    pub const NAMES: [&'static str; 30] = [
         "theme",
         "rules",
         "interpret",
@@ -174,6 +177,7 @@ impl ChartRecords {
         "sarvatobhadra",
         "tithiPravesha",
         "dossier",
+        "masaPravesha",
     ];
 
     /// The records with `name`'s read from `json` by its own reader, which
@@ -198,6 +202,8 @@ impl ChartRecords {
     /// its reader refuses; `CAPABILITY` for a record of a family this
     /// build leaves out.
     pub fn read(&mut self, name: &str, json: &str) -> Result<(), Error> {
+        #[cfg(feature = "tajika")]
+        use crate::{MasaPraveshaRequest, TithiPraveshaRequest};
         /// The record of a family, read in a build with it and refused in
         /// one without it.
         macro_rules! family {
@@ -248,11 +254,8 @@ impl ChartRecords {
                 crate::RectificationRequest::from_json
             ),
             "varsha" => family!("tajika", varsha, crate::VarshaRequest::from_json),
-            "tithiPravesha" => family!(
-                "tajika",
-                tithi_pravesha,
-                crate::TithiPraveshaRequest::from_json
-            ),
+            "tithiPravesha" => family!("tajika", tithi_pravesha, TithiPraveshaRequest::from_json),
+            "masaPravesha" => family!("tajika", masa_pravesha, MasaPraveshaRequest::from_json),
             "progressions" => family!(
                 "western",
                 western.progressions,
@@ -329,6 +332,7 @@ impl ChartRecords {
             "theme" => family!("svg", crate::records::ThemePatch),
             "varsha" => family!("tajika", crate::VarshaRequest),
             "tithiPravesha" => family!("tajika", crate::TithiPraveshaRequest),
+            "masaPravesha" => family!("tajika", crate::MasaPraveshaRequest),
             "synastry" => {
                 #[cfg(feature = "western")]
                 {
@@ -517,6 +521,10 @@ pub struct Composed<'r> {
     /// Every chart's tithi praveshas, a year a row.
     #[cfg(feature = "tajika")]
     pub tithi_pravesha: Vec<Vec<crate::TithiPravesha>>,
+    /// Every chart's months of the year asked for, each as its first
+    /// day, or the days of the month asked for, a row each.
+    #[cfg(feature = "tajika")]
+    pub masa_pravesha: Vec<Vec<teistro_tajika::DinaPravesha>>,
     /// The Western tables.
     #[cfg(feature = "western")]
     pub western: WesternTables,
@@ -631,14 +639,11 @@ impl ChartArea<'_> {
                 |document, asked| self.rectification(document, request.offset(), asked),
             )?,
             #[cfg(feature = "tajika")]
-            varsha: chart_by_chart(
-                documents,
-                records.varsha.as_ref(),
-                None,
-                |document, asked| self.varsha(document, request.offset(), asked),
-            )?,
+            varsha: self.varshas_of(documents, records.varsha.as_ref(), request)?,
             #[cfg(feature = "tajika")]
             tithi_pravesha: self.tithi_praveshas_of(documents, records.tithi_pravesha.as_ref())?,
+            #[cfg(feature = "tajika")]
+            masa_pravesha: self.masa_praveshas_of(documents, records.masa_pravesha.as_ref())?,
             #[cfg(feature = "western")]
             western: self.western_of(documents, &records.western, request)?,
             fortitudes,
@@ -729,6 +734,32 @@ impl ChartArea<'_> {
                 Some("harmonic"),
                 |document, asked| self.harmonic(document, asked),
             )?,
+        })
+    }
+
+    /// Every chart's annual charts, on the request's own clock.
+    #[cfg(feature = "tajika")]
+    fn varshas_of(
+        self,
+        documents: &[Document],
+        asked: Option<&crate::VarshaRequest>,
+        request: &ChartRequest,
+    ) -> Result<Vec<crate::Varsha>, Error> {
+        chart_by_chart(documents, asked, None, |document, asked| {
+            self.varsha(document, request.offset(), asked)
+        })
+    }
+
+    /// Every chart's month or day charts; a refusal is named under
+    /// `masaPravesha` and the chart it came from.
+    #[cfg(feature = "tajika")]
+    fn masa_praveshas_of(
+        self,
+        documents: &[Document],
+        asked: Option<&crate::MasaPraveshaRequest>,
+    ) -> Result<Vec<Vec<teistro_tajika::DinaPravesha>>, Error> {
+        chart_by_chart(documents, asked, Some("masaPravesha"), |document, asked| {
+            self.masa_pravesha(document, asked)
         })
     }
 

@@ -331,6 +331,17 @@ public final class Chart {
     }
 
     /**
+     * The year's twelve month charts, each as its first day, or the month's thirty day charts,
+     * when they were asked for: the Sun a sign further each month, a degree further each day;
+     * none where the ephemeris ends first ({@code 03-design/annual-chart.md}).
+     *
+     * @return the instants, empty when they were not asked for
+     */
+    public Optional<List<MasaPravesha>> masaPravesha() {
+        return MasaPraveshaReads.masaPravesha(this);
+    }
+
+    /**
      * The chart written as a dossier for a language model, when it was asked for: the same chart
      * under the same record is the same text ({@code 03-design/dossier.md}).
      *
