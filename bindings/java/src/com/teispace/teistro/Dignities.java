@@ -20,10 +20,12 @@ import java.util.List;
  * @param planets the seven in the Chaldean order, Saturn first
  * @param receptions every pair in reception, in the Chaldean order of the
  *     first and then the second
+ * @param dispositions the seven's chains of dispositors, where they stop, and
+ *     the final dispositor when every chain stops at one
  */
 public record Dignities(
         Sect sect, SectRule sectRule, AppliedDignityRules rules, DignityScores scores, List<PlanetDignity> planets,
-        List<Reception> receptions) {
+        List<Reception> receptions, Dispositions dispositions) {
     /** Keeps the lists unmodifiable. */
     public Dignities {
         planets = List.copyOf(planets);

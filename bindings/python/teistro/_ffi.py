@@ -47,6 +47,7 @@ from .catalogue import (
     Burning,
     Calendar,
     Centre,
+    ChainEnd,
     CharaKaraka,
     ChartKind,
     ChartLayout,

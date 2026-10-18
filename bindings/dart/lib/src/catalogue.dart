@@ -6906,6 +6906,42 @@ enum BirthEclipse {
   }
 }
 
+/// Where a chain of dispositors stops (`03-design/dignities.md`
+/// §Dispositors, C415).
+enum ChainEnd {
+  /// At a planet in its own sign, which disposes of itself: one member.
+  ownSign(0, 'OWN_SIGN'),
+  /// At a cycle of two or more planets each in the next one's sign, the
+  /// last in the first's, starting at its slowest member.
+  cycle(1, 'CYCLE');
+
+  const ChainEnd(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static ChainEnd byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a ChainEnd'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ChainEnd? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which step of the year lord's chain decided it
 /// (`03-design/varshesha.md`).
 ///

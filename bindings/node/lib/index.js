@@ -101,6 +101,7 @@ import {
   NatureById,
   BrahmaRuleById,
   BrahmaOutcomeById,
+  ChainEndById,
   ChosenByById,
   SignificationById,
   AshtakavargaGoodFromById,
@@ -3684,6 +3685,7 @@ function dignitiesOf(batch) {
       );
     }
     let pair = 0;
+    const dispositions = dispositionsOf(d, charts);
     decoded = Object.freeze(
       Array.from({ length: charts }, (_, chart) => {
         const planets = Array.from({ length: 7 }, (_, k) => {
@@ -3728,6 +3730,7 @@ function dignitiesOf(batch) {
           }),
           planets: Object.freeze(planets),
           receptions: Object.freeze(receptions),
+          dispositions: dispositions[chart],
         });
       }),
     );
@@ -3737,6 +3740,55 @@ function dignitiesOf(batch) {
   }
   DIGNITIES.set(batch, decoded);
   return decoded;
+}
+
+/**
+ * Every chart's dispositors under the traditional rulers, a row a chart in
+ * `dispositions` and the rest ragged by its counts: the seven's chains in
+ * `dispositor_chains` (each `end` a row of the chart's own ends), their
+ * steps, and the ends with their planets
+ * (`03-design/essential-dignities.md` §Dispositors).
+ */
+function dispositionsOf(d, charts) {
+  const c = d.dispositions;
+  const chains = d.dispositorChains;
+  const steps = d.dispositorSteps.graha;
+  const ends = d.dispositorEnds;
+  const members = d.dispositorEndMembers.graha;
+  if (c.endCount.length !== charts || chains.planet.length !== 7 * charts) {
+    throw new Error(
+      `dispositions has ${c.endCount.length} rows and dispositor_chains ${chains.planet.length} for ${charts} charts; ` +
+        'they are one and seven a chart',
+    );
+  }
+  const graha = (id) => GrahaById.get(id) ?? 'unknown';
+  let [step, end, member] = [0, 0, 0];
+  const out = Array.from({ length: charts }, (_, chart) => {
+    const own = Array.from({ length: c.endCount[chart] }, () => {
+      const row = end++;
+      const planets = Array.from({ length: ends.memberCount[row] }, () => graha(members[member++]));
+      return Object.freeze({ kind: ChainEndById.get(ends.kind[row]) ?? 'unknown', planets: Object.freeze(planets) });
+    });
+    const read = Array.from({ length: 7 }, (_, k) => {
+      const row = 7 * chart + k;
+      const dispositors = Array.from({ length: chains.stepCount[row] }, () => graha(steps[step++]));
+      return Object.freeze({
+        planet: graha(chains.planet[row]),
+        dispositors: Object.freeze(dispositors),
+        end: own[chains.end[row]],
+      });
+    });
+    return Object.freeze({
+      rulers: 'TRADITIONAL',
+      chains: Object.freeze(read),
+      ends: Object.freeze(own),
+      finalDispositor: c.finalPresent[chart] !== 0 ? graha(c.finalDispositor[chart]) : null,
+    });
+  });
+  if (step !== steps.length || end !== ends.kind.length || member !== members.length) {
+    throw new Error('the dispositor sections hold rows their counts do not reach');
+  }
+  return out;
 }
 
 /** Each batch's fortitudes, decoded once however many charts read them. */

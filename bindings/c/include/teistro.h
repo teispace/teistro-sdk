@@ -5860,6 +5860,22 @@ typedef enum ts_birth_eclipse {
 } ts_birth_eclipse;
 
 /**
+ * Where a chain of dispositors stops (`03-design/dignities.md`
+ * §Dispositors, C415).
+ */
+typedef enum ts_chain_end {
+    /**
+     * At a planet in its own sign, which disposes of itself: one member.
+     */
+    TS_CHAIN_END_OWN_SIGN = 0,
+    /**
+     * At a cycle of two or more planets each in the next one's sign, the
+     * last in the first's, starting at its slowest member.
+     */
+    TS_CHAIN_END_CYCLE = 1,
+} ts_chain_end;
+
+/**
  * Which step of the year lord's chain decided it
  * (`03-design/varshesha.md`).
  *

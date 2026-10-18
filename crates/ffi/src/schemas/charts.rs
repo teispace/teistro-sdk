@@ -389,6 +389,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_marriage_dosha_sections(116))
         .chain(chart_avakahada_sections(118))
         .chain(chart_later_sections(120))
+        .chain(chart_disposition_sections(130))
         .collect(),
     }
 }
@@ -407,6 +408,75 @@ fn chart_later_sections(first: u32) -> [SectionSchema; 10] {
         chart_lilith_section(first + 7),
         chart_sthira_karakas_section(first + 8),
         chart_karaka_bhavas_section(first + 9),
+    ]
+}
+
+/// Every chart's dispositors from `first`, beside the essential dignities
+/// they were read with (`03-design/essential-dignities.md` §Dispositors).
+fn chart_disposition_sections(first: u32) -> [SectionSchema; 5] {
+    let graha =
+        |name: &'static str, what: &str| ColumnDef::new(name, Scalar::U16, what).of_enum("Graha");
+    let count = |name: &'static str, of: &str| {
+        ColumnDef::new(
+            name,
+            Scalar::U8,
+            &format!("How many rows of the `{of}` section belong to this row."),
+        )
+    };
+    [
+        SectionSchema::columns(
+            first,
+            "dispositions",
+            "Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.",
+            vec![
+                graha(
+                    "final_dispositor",
+                    "The one planet in its own sign every chain stops at; read only when `final_present` is 1 (C415).",
+                ),
+                ColumnDef::new(
+                    "final_present",
+                    Scalar::U8,
+                    "1 when every chain stops at one planet in its own sign, else 0: the chains stop at more than one end, or at a cycle.",
+                ),
+                count("end_count", "dispositor_ends"),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "dispositor_chains",
+            "The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.",
+            vec![
+                graha("planet", "The planet the chain starts from."),
+                count("step_count", "dispositor_steps"),
+                ColumnDef::new(
+                    "end",
+                    Scalar::U8,
+                    "Where it stops: the row of this chart's `dispositor_ends`, counted from its first.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "dispositor_steps",
+            "Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.",
+            vec![graha("graha", "The dispositor.")],
+        ),
+        SectionSchema::columns(
+            first + 3,
+            "dispositor_ends",
+            "Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.",
+            vec![
+                ColumnDef::new("kind", Scalar::U8, "A planet in its own sign, or a cycle.")
+                    .of_enum("TsChainEnd"),
+                count("member_count", "dispositor_end_members"),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 4,
+            "dispositor_end_members",
+            "Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.",
+            vec![graha("graha", "The planet.")],
+        ),
     ]
 }
 

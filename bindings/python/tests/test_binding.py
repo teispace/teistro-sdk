@@ -1996,6 +1996,51 @@ class AnEngine(WithLibrary):
             assert taken is not None
             self.assertEqual(len(taken.chart.cusps), 12)
 
+    def test_a_chart_carries_its_dispositors(self) -> None:
+        """The dispositors cross whole: each chain the sign lords followed
+        from the planet's own sign until one repeats, its end one of the
+        chart's ends, and the final dispositor exactly when every chain
+        stops at one planet in its own sign
+        (`03-design/essential-dignities.md` §Dispositors)."""
+        from teistro import ChainEnd
+
+        kathmandu: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 20700,
+        }
+        g = Graha
+        # The traditional lords, Aries to Pisces.
+        lords = (g.MARS, g.VENUS, g.MERCURY, g.MOON, g.SUN, g.MERCURY, g.VENUS, g.MARS, g.JUPITER, g.SATURN, g.SATURN, g.JUPITER)
+        finals = set()
+        with self.teistro.context(profile="conformance-baseline", ephemeris=Ephemeris.BUILTIN) as ctx:
+            for step in range(30):
+                read = ctx.chart.found(instant=2460676.5 + step * 23.7, dignities={}, **kathmandu).dignities
+                assert read is not None
+                lord_of = {p.planet: lords[int(p.longitude_deg // 30)] for p in read.planets}
+                disposed = read.dispositions
+                self.assertEqual(disposed.rulers, "TRADITIONAL")
+                self.assertEqual([c.planet for c in disposed.chains], [p.planet for p in read.planets])
+                for chain in disposed.chains:
+                    walked: list[Graha] = []
+                    at = lord_of[chain.planet]
+                    while at is not chain.planet and at not in walked:
+                        walked.append(at)
+                        at = lord_of[at]
+                    self.assertEqual(list(chain.dispositors), walked, chain.planet)
+                    self.assertIn(chain.end, disposed.ends)
+                    last = walked[-1] if walked else chain.planet
+                    if chain.end.kind is ChainEnd.OWN_SIGN:
+                        self.assertEqual(chain.end.planets, (last,))
+                        self.assertIs(lord_of[last], last)
+                    else:
+                        self.assertIs(chain.end.kind, ChainEnd.CYCLE)
+                        self.assertGreaterEqual(len(chain.end.planets), 2)
+                        self.assertIn(last, chain.end.planets)
+                one = len(disposed.ends) == 1 and disposed.ends[0].kind is ChainEnd.OWN_SIGN
+                self.assertEqual(disposed.final_dispositor, disposed.ends[0].planets[0] if one else None)
+                finals.add(disposed.final_dispositor is None)
+        self.assertEqual(finals, {True, False}, "both a final dispositor and none")
+
     def test_a_chart_carries_its_essential_dignities(self) -> None:
         """The essential dignities cross whole, members resolved: the sect and
         every rule applied reported back, the seven in the Chaldean order with

@@ -4,7 +4,12 @@
 // application. Every `@ts-expect-error` is a proof, as in `consumer.ts`.
 
 import type {
+  DispositorChain,
+  DispositorEnd,
+  Dispositions,
+  KarakaBhava,
   LilithPosition,
+  SthiraKaraka,
   Air,
   Antiscia,
   AntisciaRequest,
@@ -163,7 +168,20 @@ import type {
   Theme,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
-import type { Ayanamsha, Gana, Graha, Masa, Paksha, Saham, SahamStrong, SahamWeak, Vara } from '../lib/catalogue.js';
+import type {
+  Ayanamsha,
+  ChainEnd,
+  ChosenBy,
+  Gana,
+  Graha,
+  Masa,
+  Paksha,
+  Saham,
+  SahamStrong,
+  SahamWeak,
+  Signification,
+  Vara,
+} from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { decodeProvenance, returnsRequest } from '../lib/index.js';
 
@@ -399,7 +417,6 @@ function reading(): string {
 
 void reading;
 
-/** The almanac layer, typed: a range of days and one of them. */
 /** The Black Moon Lilith, typed: asked by its apogee, null unless asked. */
 function lilith(): string {
   const place = { latitude: 51.5, longitude: 0, altitude: 0 };
@@ -416,6 +433,28 @@ function lilith(): string {
 
 void lilith;
 
+/** The fixed karakas and the dispositors, typed: each a closed key, or unknown. */
+function karakas(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, jaimini: true, dignities: {} });
+  const father: SthiraKaraka = chart.jaimini!.sthiraKarakas[0]!;
+  const chosen: ChosenBy | 'unknown' = father.chosenBy;
+  const shown: Signification | 'unknown' = father.signification;
+  const bhava: KarakaBhava = chart.jaimini!.karakaBhavas[0]!;
+  const house: number = bhava.house;
+  const disposed: Dispositions = chart.dignities!.dispositions;
+  const chain: DispositorChain = disposed.chains[0]!;
+  const end: DispositorEnd = chain.end;
+  const kind: ChainEnd | 'unknown' = end.kind;
+  const last: Graha | 'unknown' | null = disposed.finalDispositor;
+  // @ts-expect-error the dignities' rulers are the traditional ones only
+  const modern: 'MODERN' = disposed.rulers;
+  return `${chosen} ${shown} ${house} ${kind} ${last} ${modern}`;
+}
+
+void karakas;
+
+/** The almanac layer, typed: a range of days and one of them. */
 function almanac(): string {
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
   const from: CalendarDate = someDate;

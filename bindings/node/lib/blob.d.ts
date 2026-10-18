@@ -4777,6 +4777,106 @@ export interface ChartsJaiminiKarakaBhavas {
 }
 
 /**
+ * The `dispositions` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.
+ */
+export interface ChartsDispositions {
+  /**
+   * The one planet in its own sign every chain stops at; read only when `final_present` is 1 (C415).
+   * The values are `Graha` ids.
+   */
+  readonly finalDispositor: Uint16Array;
+  /**
+   * 1 when every chain stops at one planet in its own sign, else 0: the chains stop at more than one end, or at a cycle.
+   */
+  readonly finalPresent: Uint8Array;
+  /**
+   * How many rows of the `dispositor_ends` section belong to this row.
+   */
+  readonly endCount: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dispositor_chains` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.
+ */
+export interface ChartsDispositorChains {
+  /**
+   * The planet the chain starts from.
+   * The values are `Graha` ids.
+   */
+  readonly planet: Uint16Array;
+  /**
+   * How many rows of the `dispositor_steps` section belong to this row.
+   */
+  readonly stepCount: Uint8Array;
+  /**
+   * Where it stops: the row of this chart's `dispositor_ends`, counted from its first.
+   */
+  readonly end: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dispositor_steps` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.
+ */
+export interface ChartsDispositorSteps {
+  /**
+   * The dispositor.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dispositor_ends` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.
+ */
+export interface ChartsDispositorEnds {
+  /**
+   * A planet in its own sign, or a cycle.
+   * The values are `ChainEnd` ids.
+   */
+  readonly kind: Uint8Array;
+  /**
+   * How many rows of the `dispositor_end_members` section belong to this row.
+   */
+  readonly memberCount: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dispositor_end_members` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.
+ */
+export interface ChartsDispositorEndMembers {
+  /**
+   * The planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5749,6 +5849,26 @@ export interface Charts {
    * The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
    */
   readonly jaiminiKarakaBhavas: ChartsJaiminiKarakaBhavas;
+  /**
+   * Each chart's dispositors under the traditional rulers, a row a chart in `dignities`, charts outermost. Empty when the dignities were not asked for.
+   */
+  readonly dispositions: ChartsDispositions;
+  /**
+   * The seven's chains of dispositors, seven a chart in the order `dignity_planets` gives them, each followed until a planet repeats.
+   */
+  readonly dispositorChains: ChartsDispositorChains;
+  /**
+   * Each chain's dispositors, ragged by `step_count`: its dispositor, that planet's, and so on, up to the last before the first that repeats; none for a planet in its own sign.
+   */
+  readonly dispositorSteps: ChartsDispositorSteps;
+  /**
+   * Where each chart's chains stop, each once, ragged by `end_count`, in the order the chains first reach them.
+   */
+  readonly dispositorEnds: ChartsDispositorEnds;
+  /**
+   * Each end's planets, ragged by `member_count`: the one in its own sign, or a cycle's from its slowest member, each in the next one's sign and the last in the first's.
+   */
+  readonly dispositorEndMembers: ChartsDispositorEndMembers;
 }
 
 /**

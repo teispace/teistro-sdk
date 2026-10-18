@@ -1713,6 +1713,18 @@ def main() -> None:
                     f"{reception.planets[0].full_key} {reception.planets[1].full_key} {sides[0]} {sides[1]} "
                     f"{','.join(reception.mutual) or '-'}",
                 )
+            # The dispositors: each chain, where it stops, and the final one.
+            disposed = dg.dispositions
+            put(
+                f"chart-{i}-final-dispositor",
+                disposed.final_dispositor.full_key if disposed.final_dispositor is not None else "-",
+            )
+            for k, chain in enumerate(disposed.chains):
+                put(
+                    f"chart-{i}-disposition-{k}",
+                    f"{chain.planet.full_key} {','.join(g.full_key for g in chain.dispositors) or '-'} "
+                    f"{chain.end.kind.key}:{','.join(g.full_key for g in chain.end.planets)}",
+                )
             ft = chart.fortitudes
             assert ft is not None
             put(

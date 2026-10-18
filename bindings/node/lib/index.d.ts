@@ -52,6 +52,7 @@ import type {
   Nature,
   BrahmaRule,
   BrahmaOutcome,
+  ChainEnd,
   ChosenBy,
   Signification,
   AshtakavargaGoodFrom,
@@ -1304,6 +1305,47 @@ export interface Dignities {
   readonly planets: readonly PlanetDignity[];
   /** Every pair in reception, in the Chaldean order of the first and then the second. */
   readonly receptions: readonly Reception[];
+  /**
+   * The seven's chains of dispositors under the traditional rulers, where
+   * they stop, and the final dispositor when every chain stops at one
+   * (`03-design/essential-dignities.md` §Dispositors).
+   *
+   * @example
+   * const { finalDispositor, chains } = chart.dignities!.dispositions;
+   * const sun = chains.find((c) => c.planet === 'graha.SUN')!;
+   * // sun.dispositors: the Sun's dispositor, its dispositor, and so on
+   */
+  readonly dispositions: Dispositions;
+}
+
+/** A chart's dispositors (`03-design/essential-dignities.md` §Dispositors). */
+export interface Dispositions {
+  /** The rulers the chains were followed under: the dignities' own, always traditional. */
+  readonly rulers: 'TRADITIONAL';
+  /** One chain a planet, in the order `planets` gives them. */
+  readonly chains: readonly DispositorChain[];
+  /** Where the chains stop, each once, in the order the chains first reach it. */
+  readonly ends: readonly DispositorEnd[];
+  /** The one planet in its own sign every chain stops at; `null` for more than one end or a cycle (C415). */
+  readonly finalDispositor: Graha | 'unknown' | null;
+}
+
+/** One planet's dispositors, followed until one repeats. */
+export interface DispositorChain {
+  /** The planet the chain starts from. */
+  readonly planet: Graha | 'unknown';
+  /** Its dispositor, that planet's, and so on; empty for a planet in its own sign. */
+  readonly dispositors: readonly (Graha | 'unknown')[];
+  /** Where it stops: one of `ends`, the same object. */
+  readonly end: DispositorEnd;
+}
+
+/** Where chains of dispositors stop. */
+export interface DispositorEnd {
+  /** A planet in its own sign, or a cycle. */
+  readonly kind: ChainEnd | 'unknown';
+  /** The planet in its own sign, or the cycle's from its slowest member. */
+  readonly planets: readonly (Graha | 'unknown')[];
 }
 
 /**

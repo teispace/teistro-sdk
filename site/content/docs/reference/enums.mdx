@@ -2121,6 +2121,15 @@ The eclipse a chart's instant falls in, as the `moment` section's `eclipse` colu
 | `TS_BIRTH_ECLIPSE_SOLAR` | 2 | A solar eclipse, the Sun up. |
 | `TS_BIRTH_ECLIPSE_UNJUDGED` | 3 | Not reckoned: the chart's astronomy is a classical one, whose eclipse the SDK does not build (C188). |
 
+## ts_chain_end
+
+Where a chain of dispositors stops (`03-design/dignities.md` §Dispositors, C415).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CHAIN_END_OWN_SIGN` | 0 | At a planet in its own sign, which disposes of itself: one member. |
+| `TS_CHAIN_END_CYCLE` | 1 | At a cycle of two or more planets each in the next one's sign, the last in the first's, starting at its slowest member. |
+
 ## ts_varshesha_chosen
 
 Which step of the year lord's chain decided it (`03-design/varshesha.md`).

@@ -30,11 +30,11 @@ use teistro_core::settings;
 use teistro_ffi::calendar::TsResolution;
 use teistro_ffi::chart::{TsAshtakavargaGoodFrom, TsKakshyaLord, TsSarvaStanding};
 use teistro_ffi::chart::{
-    TsBalance, TsBrahmaOutcome, TsBrahmaRule, TsBurning, TsChosenBy, TsDashaPhase, TsEkadhipatya,
-    TsFruition, TsGocharFrom, TsGocharVerdict, TsHarshaGrade, TsNodeObstruction, TsNodeVedha,
-    TsQuadrant, TsReading, TsSaham, TsSahamStrong, TsSahamWeak, TsShodhana, TsSignification,
-    TsStrength, TsTajikaDrishti, TsTajikaRelation, TsTajikaYoga, TsVarsheshaChosen,
-    TsVimshopakaScoring, TsWesternAspect, TsYearYoga,
+    TsBalance, TsBrahmaOutcome, TsBrahmaRule, TsBurning, TsChainEnd, TsChosenBy, TsDashaPhase,
+    TsEkadhipatya, TsFruition, TsGocharFrom, TsGocharVerdict, TsHarshaGrade, TsNodeObstruction,
+    TsNodeVedha, TsQuadrant, TsReading, TsSaham, TsSahamStrong, TsSahamWeak, TsShodhana,
+    TsSignification, TsStrength, TsTajikaDrishti, TsTajikaRelation, TsTajikaYoga,
+    TsVarsheshaChosen, TsVimshopakaScoring, TsWesternAspect, TsYearYoga,
 };
 use teistro_ffi::day::{
     TsDayPart, TsDayState, TsGhatiReckoning, TsHoraReckoning, TsPolarDayPolicy, TsPolarKind,
@@ -95,6 +95,11 @@ fn spelling(value: &serde_json::Value, tag: &str) -> Option<String> {
         .as_str()
         .or_else(|| value.get(tag).and_then(serde_json::Value::as_str))
         .map(String::from)
+        // Externally tagged, `{"OWN_SIGN": "SUN"}`: the one key.
+        .or_else(|| match value.as_object() {
+            Some(object) if tag.is_empty() && object.len() == 1 => object.keys().next().cloned(),
+            _ => None,
+        })
 }
 
 /// Holds `ts`'s keys to serde: each sample serialises to the key of the
@@ -398,6 +403,39 @@ fn hits(api: &Api) -> Vec<&'static str> {
     ]
 }
 
+/// A chart's Jaimini karakas and its dispositors.
+fn karakas_and_dispositors(api: &Api) -> Vec<&'static str> {
+    let id = |value: u8| Some(i64::from(value));
+    vec![
+        unit(
+            api,
+            "TsSignification",
+            |s: &teistro::dasha::jaimini::Signification| {
+                Some(i64::from(TsSignification::from(*s) as u16))
+            },
+        ),
+        unit(
+            api,
+            "TsChosenBy",
+            |c: &teistro::dasha::jaimini::ChosenBy| id(TsChosenBy::from(*c) as u8),
+        ),
+        spelled_as(
+            api,
+            "TsChainEnd",
+            "",
+            &[
+                teistro::ChainEnd::OwnSign(teistro::catalogue::Graha::Sun),
+                teistro::ChainEnd::Cycle(vec![
+                    teistro::catalogue::Graha::Mars,
+                    teistro::catalogue::Graha::Sun,
+                ]),
+            ],
+            |end| TsChainEnd::of(end).map(|(kind, _)| i64::from(kind as u8)),
+            &[],
+        ),
+    ]
+}
+
 /// A chart's enums, the Tajika ones among them.
 fn chart(api: &Api) -> Vec<&'static str> {
     let id = |value: u8| Some(i64::from(value));
@@ -437,18 +475,6 @@ fn chart(api: &Api) -> Vec<&'static str> {
             id(TsBrahmaRule::from(*r) as u8)
         }),
         brahma_outcome(api),
-        unit(
-            api,
-            "TsSignification",
-            |s: &teistro::dasha::jaimini::Signification| {
-                Some(i64::from(TsSignification::from(*s) as u16))
-            },
-        ),
-        unit(
-            api,
-            "TsChosenBy",
-            |c: &teistro::dasha::jaimini::ChosenBy| id(TsChosenBy::from(*c) as u8),
-        ),
         unit(api, "TsDayPart", |p: &teistro_chart::day::DayPart| {
             id(TsDayPart::from(*p) as u8)
         }),
@@ -766,6 +792,7 @@ fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
         port(&api),
         tagged(&api),
         chart(&api),
+        karakas_and_dispositors(&api),
         gochar(&api),
         hits(&api),
         dignities(&api),

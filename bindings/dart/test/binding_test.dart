@@ -2586,6 +2586,89 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its dispositors', () {
+    // Each chain the sign lords followed from the planet's own sign until one
+    // repeats, its end one of the chart's ends, and the final dispositor
+    // exactly when every chain stops at one planet in its own sign
+    // (`03-design/essential-dignities.md` §Dispositors).
+    final ctx = teistro.context(
+      profile: 'conformance-baseline',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(0),
+    );
+    // The traditional lords, Aries to Pisces.
+    const lords = [
+      Graha.mars,
+      Graha.venus,
+      Graha.mercury,
+      Graha.moon,
+      Graha.sun,
+      Graha.mercury,
+      Graha.venus,
+      Graha.mars,
+      Graha.jupiter,
+      Graha.saturn,
+      Graha.saturn,
+      Graha.jupiter,
+    ];
+    final finals = <bool>{};
+    for (var step = 0; step < 30; step += 1) {
+      final read =
+          ctx.chart
+              .found(
+                instant: 2460676.5 + step * 23.7,
+                place: kathmandu,
+                utcOffsetSeconds: 20700,
+                dignities: const DignityRequest(),
+              )
+              .dignities!;
+      final lordOf = {
+        for (final p in read.planets) p.planet: lords[p.longitudeDeg ~/ 30],
+      };
+      final disposed = read.dispositions;
+      expect(disposed.rulers, 'TRADITIONAL');
+      expect(
+        [for (final c in disposed.chains) c.planet],
+        [for (final p in read.planets) p.planet],
+      );
+      for (final chain in disposed.chains) {
+        final walked = <Graha>[];
+        for (
+          var at = lordOf[chain.planet]!;
+          at != chain.planet && !walked.contains(at);
+          at = lordOf[at]!
+        ) {
+          walked.add(at);
+        }
+        expect(chain.dispositors, walked, reason: '${chain.planet}');
+        expect(disposed.ends, contains(chain.end));
+        final last = walked.isEmpty ? chain.planet : walked.last;
+        if (chain.end.kind == ChainEnd.ownSign) {
+          expect(chain.end.planets, [last]);
+          expect(lordOf[last], last);
+        } else {
+          expect(chain.end.kind, ChainEnd.cycle);
+          expect(chain.end.planets.length, greaterThanOrEqualTo(2));
+          expect(chain.end.planets, contains(last));
+        }
+      }
+      final one =
+          disposed.ends.length == 1 &&
+          disposed.ends.first.kind == ChainEnd.ownSign;
+      expect(
+        disposed.finalDispositor,
+        one ? disposed.ends.first.planets.first : null,
+      );
+      finals.add(disposed.finalDispositor == null);
+    }
+    expect(finals, {true, false}, reason: 'both a final dispositor and none');
+    ctx.dispose();
+  });
+
   test('a chart carries its essential dignities', () {
     final ctx = teistro.context(
       profile: 'conformance-baseline',

@@ -393,8 +393,12 @@ its own sign (Leo p. 130 and Lilly p. 161 for the dispositor; the chain
 is later practice, C413). `ChartArea::dispositions` reads a chart under
 the traditional rulers or the modern ones, which give Aquarius, Pisces
 and Scorpio to Uranus, Neptune and Pluto (C414). A cycle is never a final
-dispositor (C415), and the nodes are refused (C416). The Rust surface
-only: no blob section carries the chains yet.
+dispositor (C415), and the nodes are refused (C416). At the boundary the
+dignities' chains cross in five sections from id 130 (`dispositions`,
+`dispositor_chains`, `dispositor_steps`, `dispositor_ends` and
+`dispositor_end_members`, with the closed enum `TsChainEnd`), and every
+binding's dignities reading gains `dispositions`: its chains, ends and
+final dispositor. The modern rulers stay the Rust surface's.
 
 **The tithi pravesha** (`tithi-pravesha.md`, C443 to C447). **Numbers:**
 none moved; the solar returns and the hit list are unchanged.

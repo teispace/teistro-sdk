@@ -4608,6 +4608,20 @@ class BirthEclipse(Member):
     """
 
 
+class ChainEnd(Member):
+    """Where a chain of dispositors stops (`03-design/dignities.md`
+    §Dispositors, C415).
+    """
+
+    OWN_SIGN = 0
+    """At a planet in its own sign, which disposes of itself: one member."""
+
+    CYCLE = 1
+    """At a cycle of two or more planets each in the next one's sign, the
+    last in the first's, starting at its slowest member.
+    """
+
+
 class VarsheshaChosen(Member):
     """Which step of the year lord's chain decided it
     (`03-design/varshesha.md`).
@@ -6982,6 +6996,10 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "LUNAR",
         2: "SOLAR",
         3: "UNJUDGED",
+    },
+    "ChainEnd": {
+        0: "OWN_SIGN",
+        1: "CYCLE",
     },
     "VarsheshaChosen": {
         0: "STRONGEST",

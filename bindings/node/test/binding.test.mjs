@@ -727,8 +727,9 @@ test('every catalogue enum has a complete id table', () => {
   // 1345 since the moment's `TsBirthEclipse`, four; 1354 since the hit
   // list's five further `TsHitKind`s and `TsMoonPhase`, four; 1357 since
   // the chart request's `TsLilith`, three; 1375 since the fixed karakas'
-  // `TsSignification`, thirteen, and `TsChosenBy`, five.
-  assert.equal(entries, 1375, 'every member of every enum is in a table');
+  // `TsSignification`, thirteen, and `TsChosenBy`, five; 1377 since the
+  // dispositors' `TsChainEnd`, two.
+  assert.equal(entries, 1377, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2271,6 +2272,46 @@ test('a chart carries its Sade Sati, each period whole', () => {
     );
   }
   assert.throws(() => ctx.chart.found({ instant: births[0], ...at, sadeSati: 2460676.5 }), TypeError);
+  ctx.dispose();
+});
+
+/**
+ * The dispositors cross whole: each chain the sign lords followed from the
+ * planet's own sign until one repeats, its end one of the chart's ends,
+ * and the final dispositor exactly when every chain stops at one planet in
+ * its own sign (`03-design/essential-dignities.md` §Dispositors).
+ */
+test('a chart carries its dispositors', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'conformance-baseline' });
+  const kathmandu = { place: { latitude: 27.7172, longitude: 85.324, altitude: 0 }, utcOffsetSeconds: 20700 };
+  // The traditional lords, Aries to Pisces.
+  const lords = ['MARS', 'VENUS', 'MERCURY', 'MOON', 'SUN', 'MERCURY', 'VENUS', 'MARS', 'JUPITER', 'SATURN', 'SATURN', 'JUPITER'].map((g) => `graha.${g}`);
+  const finals = new Set();
+  for (let step = 0; step < 30; step += 1) {
+    const { planets, dispositions } = ctx.chart.found({ instant: 2460676.5 + step * 23.7, ...kathmandu, dignities: {} }).dignities;
+    const lordOf = new Map(planets.map((p) => [p.planet, lords[Math.floor(p.longitudeDeg / 30)]]));
+    assert.equal(dispositions.rulers, 'TRADITIONAL');
+    assert.deepEqual(dispositions.chains.map((c) => c.planet), planets.map((p) => p.planet));
+    assert.ok(Object.isFrozen(dispositions.chains[0].dispositors), 'frozen to its leaves');
+    for (const chain of dispositions.chains) {
+      const walked = [];
+      for (let at = lordOf.get(chain.planet); at !== chain.planet && !walked.includes(at); at = lordOf.get(at)) walked.push(at);
+      assert.deepEqual(chain.dispositors, walked, chain.planet);
+      assert.ok(dispositions.ends.includes(chain.end), 'one of the chart\'s ends, the same object');
+      const last = walked.at(-1) ?? chain.planet;
+      if (chain.end.kind === 'OWN_SIGN') {
+        assert.deepEqual(chain.end.planets, [last]);
+        assert.equal(lordOf.get(last), last, `${last} in its own sign`);
+      } else {
+        assert.equal(chain.end.kind, 'CYCLE');
+        assert.ok(chain.end.planets.length >= 2 && chain.end.planets.includes(last), chain.end.planets.join());
+      }
+    }
+    const one = dispositions.ends.length === 1 && dispositions.ends[0].kind === 'OWN_SIGN';
+    assert.equal(dispositions.finalDispositor, one ? dispositions.ends[0].planets[0] : null);
+    finals.add(dispositions.finalDispositor === null ? 'none' : 'one');
+  }
+  assert.deepEqual([...finals].sort(), ['none', 'one'], 'both a final dispositor and none');
   ctx.dispose();
 });
 
