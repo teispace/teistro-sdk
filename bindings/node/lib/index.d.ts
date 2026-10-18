@@ -1748,6 +1748,49 @@ export interface WesternAspectRequest {
 }
 
 /**
+ * The aspect configurations to find in every chart
+ * (`03-design/western-configurations.md`): the aspect table the shapes
+ * are made of, as a {@link WesternAspectRequest}, and how many bodies in
+ * one tropical sign make a stellium. Every field is optional.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, outerPlanets: true,
+ *   westernConfigurations: { stelliumLeast: 4 } });
+ * for (const shape of chart.westernConfigurations ?? []) {
+ *   if (shape.inside.length === 0) console.log(shape.kind, shape.bodies);
+ * }
+ */
+export interface WesternConfigurationRequest extends WesternAspectRequest {
+  /** The bodies in one sign that make a stellium, three or more; three by default. */
+  readonly stelliumLeast?: number;
+}
+
+/** Which aspect configuration a shape is. */
+export type WesternConfigurationKind =
+  | 'GRAND_TRINE'
+  | 'T_SQUARE'
+  | 'GRAND_CROSS'
+  | 'YOD'
+  | 'KITE'
+  | 'MYSTIC_RECTANGLE'
+  | 'STELLIUM';
+
+/** One shape a chart's planets make, of aspects the chart holds. */
+export interface WesternConfiguration {
+  readonly kind: WesternConfigurationKind;
+  /** Its bodies, in the order the chart's planets are read. */
+  readonly bodies: readonly Graha[];
+  /** The graha a T-square, yod or kite points at; `null` for the others. */
+  readonly apex: Graha | null;
+  /** The tropical rashi a stellium stands in; `null` for the others. */
+  readonly sign: Rashi | null;
+  /** How far from exact its loosest aspect is, degrees; `null` for a stellium. */
+  readonly widestFromExactDeg: number | null;
+  /** The positions in the chart's list of the larger shapes this one is wholly inside. */
+  readonly inside: readonly number[];
+}
+
+/**
  * How wide a Western aspect may be (C240): Leo's by aspect, Lilly's
  * moieties by planet, or the caller's own by aspect.
  */
@@ -5716,6 +5759,11 @@ export declare class Chart {
    */
   readonly westernAspects: readonly WesternAspectRow[] | null;
   /**
+   * The aspect configurations the chart's planets make; `null` unless
+   * `westernConfigurations` asked (`03-design/western-configurations.md`).
+   */
+  readonly westernConfigurations: readonly WesternConfiguration[] | null;
+  /**
    * The Western aspects between this chart and the partner's, closest
    * first; `null` unless `synastry` asked (`03-design/western-synastry.md`).
    */
@@ -7090,6 +7138,11 @@ export interface ChartRequest {
    * default.
    */
   readonly westernAspects?: WesternAspectRequest;
+  /**
+   * The aspect configurations to find in every chart, read back as each
+   * chart's `westernConfigurations`. None by default.
+   */
+  readonly westernConfigurations?: WesternConfigurationRequest;
   /**
    * The partner every chart is read against, read back as each chart's
    * `synastry`. None by default.

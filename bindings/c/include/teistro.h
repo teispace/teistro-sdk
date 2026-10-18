@@ -8528,6 +8528,20 @@ struct ts_chart_request {
      * Example: {"year":30,"month":4}. May be null.
      */
     const char * masa_pravesha_json;
+    /**
+     * The aspect configurations to find in every chart, as a JSON
+     * object: optionally `aspects` and `orbs`, as `western_aspects_json`
+     * reads them (Leo's nine under his orbs by default), and
+     * `stelliumLeast`, the bodies in one tropical sign that make a
+     * stellium, three or more (three by default). The shapes come back in
+     * the `western_configurations` section, made only of aspects the
+     * chart holds under those orbs. Null for none
+     * (`03-design/western-configurations.md`). Refusals are named from
+     * the record every binding calls `westernConfigurations`, as
+     * `westernConfigurations.stelliumLeast`.
+     * Example: {"stelliumLeast":4}. May be null.
+     */
+    const char * western_configurations_json;
 };
 
 /**
@@ -9576,7 +9590,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 352, "ts_chart_request is 352 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 360, "ts_chart_request is 360 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

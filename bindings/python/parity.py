@@ -1280,6 +1280,8 @@ def main() -> None:
                 "varshphal": {"rows": [[(h + y) % 12 + 1 for h in range(12)] for y in range(120)]},
             },
             rectification=RECTIFICATION,
+            # Leo's nine under his orbs, a stellium of three.
+            western_configurations={},
             western_aspects={
                 "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"],
                 "orbs": {
@@ -2069,6 +2071,18 @@ def main() -> None:
                     f"chart-{i}-western-aspect-{n}",
                     f"{row.first.full_key} {row.second.full_key} {row.aspect.key} {number(row.apart_deg)} "
                     f"{number(row.from_exact_deg)} {number(row.orb_deg)} {int(row.applying)}",
+                )
+            shapes = chart.western_configurations
+            assert shapes is not None
+            put(f"chart-{i}-western-configuration-count", str(len(shapes)))
+            for n, shape in enumerate(shapes):
+                widest = "-" if shape.widest_from_exact_deg is None else number(shape.widest_from_exact_deg)
+                put(
+                    f"chart-{i}-western-configuration-{n}",
+                    f"{shape.kind} {','.join(body.full_key for body in shape.bodies)} "
+                    f"{'-' if shape.apex is None else shape.apex.full_key} "
+                    f"{'-' if shape.sign is None else shape.sign.full_key} {widest} "
+                    f"{','.join(str(at) for at in shape.inside) or '-'}",
                 )
             declined = chart.declinations
             assert declined is not None

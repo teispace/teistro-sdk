@@ -2756,6 +2756,55 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, outer_planets=outer, western_aspects=request, **palace)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_aspect_configurations(self) -> None:
+        """The aspect configurations cross whole on King Edward VII's
+        nativity: his two T-squares as the SDK pins them, each read back
+        from the chart's own aspect table, and refusals named in the record
+        (`03-design/western-configurations.md`)."""
+        from teistro import WesternAspect, WesternConfigurationRequest
+
+        palace: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.501), longitude_deg=Longitude(-0.142), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2393783.95
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **palace).western_configurations)
+
+            chart = ctx.chart.found(
+                instant=birth, outer_planets=True, western_aspects={}, western_configurations={}, **palace
+            )
+            shapes, rows = chart.western_configurations, chart.western_aspects
+            assert shapes is not None and rows is not None
+            self.assertEqual(
+                [(shape.kind, shape.bodies, shape.apex, shape.sign, shape.inside) for shape in shapes],
+                [
+                    ("T_SQUARE", (Graha.MOON, Graha.JUPITER, Graha.URANUS), Graha.JUPITER, None, ()),
+                    ("T_SQUARE", (Graha.MARS, Graha.VENUS, Graha.PLUTO), Graha.MARS, None, ()),
+                ],
+            )
+            held = {(frozenset((row.first, row.second)), row.aspect) for row in rows}
+            for shape in shapes:
+                assert shape.apex is not None and shape.widest_from_exact_deg is not None
+                x, y = (body for body in shape.bodies if body != shape.apex)
+                self.assertIn((frozenset((x, y)), WesternAspect.OPPOSITION), held)
+                for end in (x, y):
+                    self.assertIn((frozenset((shape.apex, end)), WesternAspect.SQUARE), held)
+                self.assertTrue(0 < shape.widest_from_exact_deg <= 10)
+
+            refusals: list[tuple[Any, str]] = [
+                ({"stelliumLeast": 2}, "westernConfigurations.stelliumLeast"),
+                ({"aspects": []}, "westernConfigurations.aspects"),
+                ({"stellium": 3}, "westernConfigurations.stellium"),
+            ]
+            trines: WesternConfigurationRequest = {"aspects": [WesternAspect.TRINE]}
+            only = ctx.chart.found(instant=birth, outer_planets=True, western_configurations=trines, **palace)
+            self.assertTrue(all(shape.kind != "T_SQUARE" for shape in only.western_configurations or ()))
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, western_configurations=request, **palace)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_declinations_and_parallels(self) -> None:
         """The declinations and parallels cross whole on King George V (Leo,
         *How to Judge a Nativity*, p. 130): the recast's declinations, his

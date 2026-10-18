@@ -1314,6 +1314,21 @@ export interface ChartRequest {
    * @nullable
    */
   readonly masaPraveshaJson?: string;
+  /**
+   * The aspect configurations to find in every chart, as a JSON
+   * object: optionally `aspects` and `orbs`, as `western_aspects_json`
+   * reads them (Leo's nine under his orbs by default), and
+   * `stelliumLeast`, the bodies in one tropical sign that make a
+   * stellium, three or more (three by default). The shapes come back in
+   * the `western_configurations` section, made only of aspects the
+   * chart holds under those orbs. Null for none
+   * (`03-design/western-configurations.md`). Refusals are named from
+   * the record every binding calls `westernConfigurations`, as
+   * `westernConfigurations.stelliumLeast`.
+   * @example {"stelliumLeast":4}
+   * @nullable
+   */
+  readonly westernConfigurationsJson?: string;
 }
 
 /**

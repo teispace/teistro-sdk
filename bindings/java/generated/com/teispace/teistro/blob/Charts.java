@@ -168,6 +168,7 @@ public final class Charts {
     private final String tithiPravesha;
     private final String dossier;
     private final String masaPravesha;
+    private final String westernConfigurations;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -326,6 +327,7 @@ public final class Charts {
         this.tithiPravesha = blob.text(136, "tithi_pravesha");
         this.dossier = blob.text(137, "dossier");
         this.masaPravesha = blob.text(138, "masa_pravesha");
+        this.westernConfigurations = blob.text(139, "western_configurations");
     }
 
     /**
@@ -1723,6 +1725,15 @@ public final class Charts {
      */
     public String masaPravesha() {
         return masaPravesha;
+    }
+
+    /**
+     * UTF-8 JSON, canonical: an array with one entry per chart, each an array of the shapes its planets make, by kind in the order `GRAND_TRINE`, `T_SQUARE`, `GRAND_CROSS`, `YOD`, `KITE`, `MYSTIC_RECTANGLE`, `STELLIUM`, and within a kind by the bodies' order (`03-design/western-configurations.md`). A shape is `{kind, bodies, apex, sign, widestFromExactDeg, inside}`: `kind` one of those keys; `bodies` the grahas, bare catalogue keys (`SUN`); `apex` the graha a T-square, yod or kite points at, null for the others; `sign` the tropical rashi a stellium stands in, bare (`LEO`), null for the others; `widestFromExactDeg` how far from exact its loosest aspect is, degrees, null for a stellium; `inside` the positions in the chart's array of the larger shapes this one is wholly inside, empty when it stands alone. Every shape is made of aspects the chart holds under the record's `aspects` and `orbs`. Empty when `western_configurations_json` asked for none.
+     *
+     * @return the westernConfigurations
+     */
+    public String westernConfigurations() {
+        return westernConfigurations;
     }
 
 

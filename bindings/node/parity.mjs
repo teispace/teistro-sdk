@@ -427,6 +427,8 @@ const charts = geo.chart.foundMany({
       ].map(([graha, orbDeg]) => ({ graha, orbDeg })),
     },
   },
+  // Leo's nine under his orbs, a stellium of three.
+  westernConfigurations: {},
   parallels: { orbDeg: 1.5 },
   antiscia: { cusps: {} },
   midpoints: { orbDeg: 1.5 },
@@ -1252,6 +1254,14 @@ for (const chart of charts) {
     put(
       `chart-${i}-western-aspect-${n}`,
       `${at.first} ${at.second} ${at.aspect} ${number(at.apartDeg)} ${number(at.fromExactDeg)} ${number(at.orbDeg)} ${at.applying ? 1 : 0}`,
+    ),
+  );
+  const shapes = chart.westernConfigurations;
+  put(`chart-${i}-western-configuration-count`, `${shapes.length}`);
+  shapes.forEach((at, n) =>
+    put(
+      `chart-${i}-western-configuration-${n}`,
+      `${at.kind} ${at.bodies.join(',')} ${at.apex ?? '-'} ${at.sign ?? '-'} ${at.widestFromExactDeg === null ? '-' : number(at.widestFromExactDeg)} ${at.inside.join(',') || '-'}`,
     ),
   );
   const declined = chart.declinations;

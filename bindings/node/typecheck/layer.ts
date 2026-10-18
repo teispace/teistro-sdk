@@ -16,6 +16,8 @@ import type {
   TithiPraveshaRequest,
   MasaPravesha,
   MasaPraveshaRequest,
+  WesternConfiguration,
+  WesternConfigurationRequest,
   DossierRequest,
   TithiRule,
   VedhaMotion,
@@ -189,6 +191,7 @@ import type {
   Graha,
   Masa,
   Paksha,
+  Rashi,
   Saham,
   SahamStrong,
   SahamWeak,
@@ -520,6 +523,28 @@ function masaPravesha(): string {
 }
 
 void masaPravesha;
+
+/** The aspect configurations, typed: full catalogue keys, the kind a closed set. */
+function westernConfigurations(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const asked: WesternConfigurationRequest = { aspects: ['TRINE', 'SQUARE', 'OPPOSITION'], stelliumLeast: 4 };
+  const chart = ctx.chart.found({
+    instant: 2451545.0,
+    place,
+    utcOffsetSeconds: 20700,
+    outerPlanets: true,
+    westernConfigurations: asked,
+  });
+  const shape: WesternConfiguration = chart.westernConfigurations![0]!;
+  const body: Graha = shape.bodies[0]!;
+  const apex: Graha | null = shape.apex;
+  const sign: Rashi | null = shape.sign;
+  // @ts-expect-error the kinds are a closed set
+  const ring: WesternConfiguration['kind'] = 'GRAND_SEXTILE';
+  return `${shape.kind} ${body} ${apex} ${sign} ${shape.widestFromExactDeg} ${shape.inside.length} ${ring}`;
+}
+
+void westernConfigurations;
 
 /** The dossier, typed: a string a chart, its sections a closed set. */
 function dossierText(): string {

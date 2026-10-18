@@ -5490,6 +5490,9 @@ pub struct Composed<'a> {
     /// Every chart's month or day charts' instants, as canonical JSON
     /// (`annual-chart.md`); empty when none was asked for.
     pub masa_pravesha: &'a str,
+    /// Every chart's aspect configurations, as canonical JSON
+    /// (`western-configurations.md`); empty when none were asked for.
+    pub western_configurations: &'a str,
     /// Every chart's dossier, as canonical JSON: a string a chart
     /// (`dossier.md`); empty when none was asked for.
     pub dossier: &'a str,
@@ -5518,6 +5521,7 @@ impl Composed<'_> {
             ("sarvatobhadra", self.sarvatobhadra),
             ("tithi_pravesha", self.tithi_pravesha),
             ("masa_pravesha", self.masa_pravesha),
+            ("western_configurations", self.western_configurations),
             ("dossier", self.dossier),
         ] {
             writer.bytes(name, text.as_bytes())?;
@@ -6540,6 +6544,11 @@ impl AskedRecords {
                 asked.masa_pravesha_json,
                 "masa_pravesha_json",
             ),
+            (
+                "westernConfigurations",
+                asked.western_configurations_json,
+                "western_configurations_json",
+            ),
         ];
         let mut records = ChartRecords::default();
         for (name, text, field) in fields {
@@ -6662,6 +6671,11 @@ pub unsafe extern "C" fn ts_chart_found(
         );
         let tithi_pravesha = section!("tajika", records.tithi_pravesha, composed.tithi_pravesha);
         let masa_pravesha = section!("tajika", records.masa_pravesha, composed.masa_pravesha);
+        let western_configurations = section!(
+            "western",
+            records.western.configurations,
+            western.configurations
+        );
         let encoded = encode(
             &founded.value,
             &place,
@@ -6703,6 +6717,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 sarvatobhadra: &section(records.sarvatobhadra.is_some(), &composed.sarvatobhadra),
                 tithi_pravesha: &tithi_pravesha,
                 masa_pravesha: &masa_pravesha,
+                western_configurations: &western_configurations,
                 dossier: &section(records.dossier.is_some(), &composed.dossier),
                 hashes: &composed.hashes,
             },

@@ -1512,6 +1512,8 @@ public final class ParityRunner {
                 .westernAspects(AspectRequest.of(map(
                         "aspects", List.of("CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"),
                         "orbs", map("model", "MOIETIES", "orbs", orbs))))
+                // Leo's nine under his orbs, a stellium of three.
+                .westernConfigurations(ConfigurationRequest.of(map()))
                 .parallels(ParallelRequest.of(map("orbDeg", 1.5)))
                 .antiscia(AntisciaRequest.of(map("cusps", map())))
                 .midpoints(MidpointRequest.of(map("orbDeg", 1.5)))
@@ -2078,6 +2080,18 @@ public final class ParityRunner {
             put(c + "-western-aspect-" + n, row.first().fullKey() + " " + row.second().fullKey() + " " + row.aspect().key()
                     + " " + number(row.apartDeg()) + " " + number(row.fromExactDeg()) + " " + number(row.orbDeg()) + " "
                     + flag(row.applying()));
+        }
+        List<WesternConfiguration> shapes = chart.westernConfigurations().orElseThrow();
+        put(c + "-western-configuration-count", String.valueOf(shapes.size()));
+        for (int n = 0; n < shapes.size(); n += 1) {
+            WesternConfiguration shape = shapes.get(n);
+            put(c + "-western-configuration-" + n, shape.kind().key() + " "
+                    + String.join(",", shape.bodies().stream().map(Graha::fullKey).toList()) + " "
+                    + (shape.apex() == null ? "-" : shape.apex().fullKey()) + " "
+                    + (shape.sign() == null ? "-" : shape.sign().fullKey()) + " "
+                    + (shape.widestFromExactDeg() == null ? "-" : number(shape.widestFromExactDeg())) + " "
+                    + (shape.inside().isEmpty() ? "-"
+                            : String.join(",", shape.inside().stream().map(String::valueOf).toList())));
         }
         Declinations declined = chart.declinations().orElseThrow();
         put(c + "-declinations", number(declined.obliquityDeg()) + " " + number(declined.lagnaDeg()) + " "

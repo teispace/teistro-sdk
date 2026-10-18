@@ -113,6 +113,48 @@ pub struct WesternRecords {
     pub houses: Option<crate::HouseRequest>,
     /// The harmonic chart.
     pub harmonic: Option<crate::HarmonicRequest>,
+    /// The aspect configurations.
+    pub configurations: Option<crate::ConfigurationRequest>,
+}
+
+/// The Western records' names, which a build without the family refuses
+/// as left out rather than unknown.
+#[cfg(not(feature = "western"))]
+const WESTERN: [&str; 9] = [
+    "progressions",
+    "westernAspects",
+    "synastry",
+    "parallels",
+    "antiscia",
+    "midpoints",
+    "westernHouses",
+    "harmonic",
+    "westernConfigurations",
+];
+
+#[cfg(feature = "western")]
+impl WesternRecords {
+    /// Reads the Western record `name` from `json`, as
+    /// [`ChartRecords::read`] does; false for a name that is not one.
+    fn read(&mut self, name: &str, json: &str) -> Result<bool, Error> {
+        match name {
+            "progressions" => {
+                self.progressions = Some(crate::ProgressionsRequest::from_json(json)?);
+            }
+            "westernAspects" => self.aspects = Some(crate::AspectRequest::from_json(json)?),
+            "synastry" => self.synastry = Some(crate::PartnerSynastry::from_json(json)?),
+            "parallels" => self.parallels = Some(crate::ParallelRequest::from_json(json)?),
+            "antiscia" => self.antiscia = Some(crate::AntisciaRequest::from_json(json)?),
+            "midpoints" => self.midpoints = Some(crate::MidpointRequest::from_json(json)?),
+            "westernHouses" => self.houses = Some(crate::HouseRequest::from_json(json)?),
+            "harmonic" => self.harmonic = Some(crate::HarmonicRequest::from_json(json)?),
+            "westernConfigurations" => {
+                self.configurations = Some(crate::ConfigurationRequest::from_json(json)?);
+            }
+            _ => return Ok(false),
+        }
+        Ok(true)
+    }
 }
 
 /// The Western tables a batch was asked for, a row a chart, each empty
@@ -141,13 +183,15 @@ pub struct WesternTables {
     pub houses: Vec<crate::WesternHouses>,
     /// Every chart's harmonic chart.
     pub harmonics: Vec<crate::HarmonicChart>,
+    /// Every chart's aspect configurations.
+    pub configurations: Vec<Vec<crate::Configuration>>,
 }
 
 impl ChartRecords {
     /// The records a chart request names, as every binding writes them:
     /// the key in a JSON chart request ([`FoundRequest`](crate::FoundRequest))
     /// and the name [`ChartRecords::read`] takes.
-    pub const NAMES: [&'static str; 30] = [
+    pub const NAMES: [&'static str; 31] = [
         "theme",
         "rules",
         "interpret",
@@ -178,6 +222,7 @@ impl ChartRecords {
         "tithiPravesha",
         "dossier",
         "masaPravesha",
+        "westernConfigurations",
     ];
 
     /// The records with `name`'s read from `json` by its own reader, which
@@ -215,6 +260,10 @@ impl ChartRecords {
                 #[cfg(not(feature = $family))]
                 return Err(Error::left_out($family).with_field(name));
             }};
+        }
+        #[cfg(feature = "western")]
+        if self.western.read(name, json)? {
+            return Ok(());
         }
         match name {
             "rules" => {
@@ -256,40 +305,8 @@ impl ChartRecords {
             "varsha" => family!("tajika", varsha, crate::VarshaRequest::from_json),
             "tithiPravesha" => family!("tajika", tithi_pravesha, TithiPraveshaRequest::from_json),
             "masaPravesha" => family!("tajika", masa_pravesha, MasaPraveshaRequest::from_json),
-            "progressions" => family!(
-                "western",
-                western.progressions,
-                crate::ProgressionsRequest::from_json
-            ),
-            "westernAspects" => {
-                family!("western", western.aspects, crate::AspectRequest::from_json);
-            }
-            "synastry" => family!(
-                "western",
-                western.synastry,
-                crate::PartnerSynastry::from_json
-            ),
-            "parallels" => family!(
-                "western",
-                western.parallels,
-                crate::ParallelRequest::from_json
-            ),
-            "antiscia" => family!(
-                "western",
-                western.antiscia,
-                crate::AntisciaRequest::from_json
-            ),
-            "midpoints" => family!(
-                "western",
-                western.midpoints,
-                crate::MidpointRequest::from_json
-            ),
-            "westernHouses" => family!("western", western.houses, crate::HouseRequest::from_json),
-            "harmonic" => family!(
-                "western",
-                western.harmonic,
-                crate::HarmonicRequest::from_json
-            ),
+            #[cfg(not(feature = "western"))]
+            _ if WESTERN.contains(&name) => return Err(Error::left_out("western").with_field(name)),
             _ => {
                 return Err(
                     Error::invalid_arg(format!("no chart record is named `{name}`"))
@@ -368,6 +385,7 @@ impl ChartRecords {
             "midpoints" => family!("western", crate::MidpointRequest),
             "westernHouses" => family!("western", crate::HouseRequest),
             "harmonic" => family!("western", crate::HarmonicRequest),
+            "westernConfigurations" => family!("western", crate::ConfigurationRequest),
             _ => None,
         }
     }
@@ -733,6 +751,14 @@ impl ChartArea<'_> {
                 records.harmonic.as_ref(),
                 Some("harmonic"),
                 |document, asked| self.harmonic(document, asked),
+            )?,
+            configurations: chart_by_chart(
+                documents,
+                records.configurations.as_ref(),
+                Some("westernConfigurations"),
+                |document, asked| {
+                    self.western_configurations(document, &asked.aspect_request(), asked.rules())
+                },
             )?,
         })
     }

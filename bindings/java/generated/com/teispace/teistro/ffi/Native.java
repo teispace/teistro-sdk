@@ -1987,11 +1987,12 @@ public final class Native {
             ADDRESS.withName("sarvatobhadra_json"),
             ADDRESS.withName("tithi_pravesha_json"),
             ADDRESS.withName("dossier_json"),
-            ADDRESS.withName("masa_pravesha_json")
+            ADDRESS.withName("masa_pravesha_json"),
+            ADDRESS.withName("western_configurations_json")
         ).withName("ts_chart_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 352;
+        public static final long SIZE = 360;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -2813,6 +2814,24 @@ public final class Native {
 
         /** The handle that reads and writes `masa_pravesha_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle MASA_PRAVESHA_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("masa_pravesha_json"));
+
+        /**
+         * The offset of `western_configurations_json`. The aspect configurations to find in every chart, as a JSON
+         * object: optionally `aspects` and `orbs`, as `western_aspects_json`
+         * reads them (Leo's nine under his orbs by default), and
+         * `stelliumLeast`, the bodies in one tropical sign that make a
+         * stellium, three or more (three by default). The shapes come back in
+         * the `western_configurations` section, made only of aspects the
+         * chart holds under those orbs. Null for none
+         * (`03-design/western-configurations.md`). Refusals are named from
+         * the record every binding calls `westernConfigurations`, as
+         * `westernConfigurations.stelliumLeast`.
+         * Example: {"stelliumLeast":4}. May be null.
+         */
+        public static final long WESTERN_CONFIGURATIONS_JSON_OFFSET = 352;
+
+        /** The handle that reads and writes `western_configurations_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle WESTERN_CONFIGURATIONS_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("western_configurations_json"));
 
     }
 

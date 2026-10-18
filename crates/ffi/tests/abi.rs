@@ -1385,6 +1385,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1545,6 +1546,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1703,6 +1705,7 @@ fn a_chart_request_answers_the_transits() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1916,6 +1919,7 @@ fn hit_list_request(births: &[f64; 2], hits: &CString) -> TsChartRequest {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -2197,6 +2201,7 @@ fn a_chart_request_answers_sade_sati() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2468,6 +2473,7 @@ fn a_chart_request_answers_the_dignities() {
                 tithi_pravesha_json: ptr::null(),
                 dossier_json: ptr::null(),
                 masa_pravesha_json: ptr::null(),
+                western_configurations_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2843,6 +2849,7 @@ fn a_chart_request_answers_the_fortitudes() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4159,6 +4166,7 @@ fn a_chart_request_answers_kp() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4368,6 +4376,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4489,6 +4498,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4639,6 +4649,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4794,6 +4805,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5580,6 +5592,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5703,6 +5716,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5895,6 +5909,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6193,6 +6208,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 tithi_pravesha_json: ptr::null(),
                 dossier_json: ptr::null(),
                 masa_pravesha_json: ptr::null(),
+                western_configurations_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -10343,6 +10359,7 @@ fn a_chart_request_answers_the_dossier() {
     let crossed: Vec<String> = serde_json::from_str(&section(&TsChartRequest {
         dossier_json: json.as_ptr(),
         masa_pravesha_json: ptr::null(),
+        western_configurations_json: ptr::null(),
         ..base
     }))
     .unwrap();
@@ -10390,6 +10407,7 @@ fn a_chart_request_answers_the_dossier() {
         &TsChartRequest {
             dossier_json: bad.as_ptr(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
             ..base
         },
     );

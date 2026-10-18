@@ -279,6 +279,7 @@ pub(crate) fn chart_request(
             tithi_pravesha_json: ptr::null(),
             dossier_json: ptr::null(),
             masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )

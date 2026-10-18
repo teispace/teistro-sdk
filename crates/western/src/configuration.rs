@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 
-use crate::aspects::{PlanetAt, WesternAspect, WesternAspectRow};
+use crate::aspects::{AspectRequest, OrbModel, PlanetAt, WesternAspect, WesternAspectRow};
 
 /// Which shape.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -92,7 +92,7 @@ impl ConfigurationRules {
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` naming `stellium_least` under three: two bodies in a
+    /// `INVALID_ARG` naming `stelliumLeast` under three: two bodies in a
     /// sign are a conjunction's business, not a stellium's.
     pub fn check(&self) -> Result<(), Error> {
         if self.stellium_least < 3 {
@@ -100,9 +100,102 @@ impl ConfigurationRules {
                 "a stellium is three bodies or more in a sign, not {}",
                 self.stellium_least
             ))
-            .with_field("stellium_least"));
+            .with_field("stelliumLeast"));
         }
         Ok(())
+    }
+}
+
+/// The record's name where a binding sends it, which a refusal is named
+/// under.
+const ROOT: &str = "westernConfigurations";
+
+/// What a chart's configurations are asked, as a binding sends them: the
+/// [`AspectRequest`] the shapes are read over and the
+/// [`ConfigurationRules`], side by side in one record, each defaulted.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields, default)]
+pub struct ConfigurationRequest {
+    /// The aspects the shapes are made of; Leo's nine unless a caller
+    /// names fewer.
+    pub aspects: Vec<WesternAspect>,
+    /// How wide each may be.
+    pub orbs: OrbModel,
+    /// How many bodies in one sign make a stellium.
+    pub stellium_least: u8,
+}
+
+impl Default for ConfigurationRequest {
+    fn default() -> ConfigurationRequest {
+        ConfigurationRequest::new(&AspectRequest::default(), ConfigurationRules::default())
+    }
+}
+
+impl ConfigurationRequest {
+    /// The shapes over `aspects`' table, under `rules`.
+    #[must_use]
+    pub fn new(aspects: &AspectRequest, rules: ConfigurationRules) -> ConfigurationRequest {
+        ConfigurationRequest {
+            aspects: aspects.aspects.clone(),
+            orbs: aspects.orbs.clone(),
+            stellium_least: rules.stellium_least,
+        }
+    }
+
+    /// The aspect table the shapes are read over.
+    #[must_use]
+    pub fn aspect_request(&self) -> AspectRequest {
+        AspectRequest {
+            aspects: self.aspects.clone(),
+            orbs: self.orbs.clone(),
+        }
+    }
+
+    /// The readings the shapes part on.
+    #[must_use]
+    pub const fn rules(&self) -> ConfigurationRules {
+        ConfigurationRules {
+            stellium_least: self.stellium_least,
+        }
+    }
+
+    /// The request a binding sends, as JSON: `aspects` and `orbs` as
+    /// [`AspectRequest::from_json`] reads them, and `stelliumLeast`, each
+    /// defaulted, so `{}` is Leo's nine with a stellium of three.
+    ///
+    /// ```
+    /// use teistro_western::ConfigurationRequest;
+    ///
+    /// let four = ConfigurationRequest::from_json(r#"{"stelliumLeast": 4}"#)?;
+    /// assert_eq!(four.rules().stellium_least, 4);
+    /// let two = ConfigurationRequest::from_json(r#"{"stelliumLeast": 2}"#).unwrap_err();
+    /// assert_eq!(two.field(), Some("westernConfigurations.stelliumLeast"));
+    /// let none = ConfigurationRequest::from_json(r#"{"aspects": []}"#).unwrap_err();
+    /// assert_eq!(none.field(), Some("westernConfigurations.aspects"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, and whatever [`ConfigurationRequest::check`] refuses, each
+    /// named under `westernConfigurations`.
+    pub fn from_json(text: &str) -> Result<ConfigurationRequest, Error> {
+        let asked: ConfigurationRequest = teistro_core::strict::read(text, ROOT)?;
+        asked.check().map_err(|why| why.under(ROOT))?;
+        Ok(asked)
+    }
+
+    /// Refuses what [`AspectRequest::check`] and
+    /// [`ConfigurationRules::check`] refuse, by the field written here.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming `aspects`, `orbs` or `stelliumLeast`.
+    pub fn check(&self) -> Result<(), Error> {
+        self.aspect_request().check()?;
+        self.rules().check()
     }
 }
 
@@ -506,6 +599,6 @@ mod tests {
         );
         let refused =
             configurations(&[], &[], ConfigurationRules { stellium_least: 2 }).unwrap_err();
-        assert_eq!(refused.field(), Some("stellium_least"));
+        assert_eq!(refused.field(), Some("stelliumLeast"));
     }
 }
