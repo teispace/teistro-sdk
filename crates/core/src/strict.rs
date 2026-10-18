@@ -172,6 +172,15 @@ impl<'de> Visitor<'de> for Unique<'_> {
 pub fn read_value<T: Serialize + DeserializeOwned>(given: &Value, root: &str) -> Result<T, Error> {
     let value: T = deserialize(given, root)?;
     let read = serde_json::to_value(&value).map_err(|err| not_json(root, &err))?;
+    if let Some(path) = listed_record(given, &read, root) {
+        // serde reads a struct from a list of its fields in order, so `[]`
+        // would be a record of every default.
+        return Err(Error::invalid_arg(format!(
+            "`{path}` is a record, written as an object `{{…}}`, not a list"
+        ))
+        .with_field(path)
+        .with_hint(String::from("write it with its field names")));
+    }
     match unread(given, &read, root) {
         None => Ok(value),
         Some(path) => Err(
@@ -181,6 +190,27 @@ pub fn read_value<T: Serialize + DeserializeOwned>(given: &Value, root: &str) ->
                     "check the spelling against the record's fields",
                 )),
         ),
+    }
+}
+
+/// The path of the first record in `given` written as a list, where `read`
+/// writes it as an object, walking objects and arrays together.
+fn listed_record(given: &Value, read: &Value, path: &str) -> Option<String> {
+    match (given, read) {
+        (Value::Array(_), Value::Object(_)) => Some(path.to_owned()),
+        (Value::Object(given), Value::Object(read)) => given.iter().find_map(|(key, inner)| {
+            listed_record(inner, read.get(key)?, &format!("{path}.{key}"))
+        }),
+        (Value::Array(given), Value::Array(read)) => {
+            given
+                .iter()
+                .zip(read)
+                .enumerate()
+                .find_map(|(index, (inner, back))| {
+                    listed_record(inner, back, &format!("{path}[{index}]"))
+                })
+        }
+        _ => None,
     }
 }
 
@@ -297,6 +327,19 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(err.field(), Some("layouts[0].shape.rings[1].outr"));
+    }
+
+    #[test]
+    fn a_record_written_as_a_list_is_refused_where_it_stands() {
+        // serde would read `[0.5]` as `{"inner": 0.5}` and `[]` as nothing.
+        let err = read::<Ring>("[0.5]", "ring").unwrap_err();
+        assert_eq!(err.field(), Some("ring"));
+        let err = read::<Shape>(
+            r#"{"kind": "square", "rings": [{"inner": 0}, [1]]}"#,
+            "shape",
+        )
+        .unwrap_err();
+        assert_eq!(err.field(), Some("shape.rings[1]"));
     }
 
     #[test]
