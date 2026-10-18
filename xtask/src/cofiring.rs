@@ -118,7 +118,7 @@ const REVIEWED: [(&[&str], &str); 5] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 104] = [
+const FIXTURES: [(&str, f64, f64, f64); 106] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -605,10 +605,22 @@ const FIXTURES: [(&str, f64, f64, f64); 104] = [
         27.7172,
         85.324,
     ),
+    (
+        "SARAVALI_RAJA_BRIGHT_LAGNA_LORD_MALEFICS_ELEVENTH_BENEFICS_IN_KENDRAS",
+        2_387_779.645_8,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_MERCURY_AND_SATURN_IN_KENDRAS_FROM_VENUS_THE_REST_THIRD_OR_ELEVENTH",
+        2_403_424.361_1,
+        27.7172,
+        85.324,
+    ),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 41] = [
+const UNSEEN: [(&str, &str); 44] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -773,6 +785,18 @@ const UNSEEN: [(&str, &str); 41] = [
     (
         "SARAVALI_RAJA_VIRGO_MERCURY_RISING_JUPITER_PISCES_SATURN_SIXTH",
         "Venus in Sagittarius three signs from Mercury in Virgo needs both near their greatest elongations on either side of the Sun, and no sky from 1801 to 2398 has it with Jupiter in Pisces and Saturn in Aquarius.",
+    ),
+    (
+        "SARAVALI_RAJA_MOON_TENTH_VENUS_NINTH_OTHERS_ELEVENTH",
+        "No sky from 1801 to 2398 has Mars, Mercury, Jupiter and Saturn in the Sun's sign with Venus two signs and the Moon one sign behind it, searched every ten minutes of a day they allow.",
+    ),
+    (
+        "SARAVALI_RAJA_JUPITER_SECOND_MARS_FOURTH_SUN_TENTH_MOON_RISING_THE_REST_IN_ENEMY_SIGNS",
+        "No sky from 1801 to 2398 holds it: the 164 instants at Kathmandu that place Jupiter, Mars, the Sun and the Moon as it asks, searched every ten minutes of a day they allow, never also put Mercury, Venus and Saturn all in an enemy's sign.",
+    ),
+    (
+        "SARAVALI_RAJA_VENUS_AND_MERCURY_IN_KENDRAS_FROM_SATURN_THE_REST_EXALTED",
+        "No sky from 1801 to 2398 has the Sun, the Moon, Mars, Jupiter and Saturn exalted at once, searched every ten minutes of a day they allow.",
     ),
 ];
 

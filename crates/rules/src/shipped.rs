@@ -111,9 +111,9 @@ const BJ_RAJA: &str = include_str!("../rules/classical-bj-raja.json");
 /// the senses and bondage.
 const BJ_ANISHTA: &str = include_str!("../rules/classical-bj-anishta.json");
 
-/// Saravali ch. 35's raja yogas, vv. 7 to 163: the figures of named signs,
-/// the Moon aspected and in her navamshas, the Yavanas' houses and the
-/// yogas of the royal-born.
+/// Saravali ch. 35's raja yogas, vv. 7 to 185: the figures of named signs,
+/// the Moon aspected and in her navamshas, the Yavanas' houses, the
+/// yogas of the royal-born and the closing verses' nakshatras.
 const SARAVALI_RAJA: &str = include_str!("../rules/classical-saravali-raja.json");
 
 /// The rules of one shipped file.
@@ -406,7 +406,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 2188);
+        assert_eq!(rules.len(), 2202);
         for rule in &rules {
             let rank = rule
                 .source

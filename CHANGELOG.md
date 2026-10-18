@@ -30,13 +30,15 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
-**Saravali ch. 35's raja yogas, vv. 7 to 163** (`rules-engine.md`).
-**Numbers:** none moved; this adds 84 rules. Kalyana Varma's chapter on
+**Saravali ch. 35's raja yogas, vv. 7 to 185** (`rules-engine.md`).
+**Numbers:** none moved; this adds 98 rules. Kalyana Varma's chapter on
 the birth of kings, read in the 1907 Nirnaya Sagar print, joins the
 nabhasa set: the figures of named signs, the Moon aspected and in her
 navamshas, the vargottama and exalted grahas, the lords in kendras, and
 the Yavanas' houses with Kalasha, and the royal-born's figures, aspects,
-lords, nakshatras and degrees with Pushkala. Verses that Brihat Jataka ch. 11 or
+lords, nakshatras and degrees with Pushkala, and the closing verses' Moon
+and Mars in their nakshatras and the grahas placed from the Moon, Venus
+and Saturn. Verses that Brihat Jataka ch. 11 or
 Phaladeepika ch. 7 already carry ship once. Crux C478.
 
 **Brihat Jataka ch. 23's evil yogas** (`rules-engine.md`). **Numbers:**
