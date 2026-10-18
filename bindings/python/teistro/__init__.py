@@ -831,6 +831,9 @@ __all__ = [
     "MonthHouse",
     "MonthLordPlace",
     "MasaPhala",
+    "MasaDashaRules",
+    "MasaDashaPeriod",
+    "MasaDasha",
     # The dossier: a chart as text for a language model.
     "DossierRequest",
     "DossierSection",
@@ -9723,14 +9726,37 @@ class MasaPraveshaRequest(TypedDict, total=False):
     year places no Sun."""
     place: Union[Literal["birth"], "VarshaPlace"]
     """Where each month's chart is founded, as `VarshaRequest.place` is
-    written; given, each month carries its `masesha` and its `results`,
-    and beside a `month` each day carries its `dinesha`."""
+    written; given, each month carries its `masesha`, its `results` and
+    its `dasha`, and beside a `month` each day carries its `dinesha` and
+    its `day_results`."""
     masesha: "MaseshaRules"
     """The readings the month's lord, and the day's, part on; the verse's
     own by default."""
     results: "MasaPhalaRules"
     """The floors the month's results judge strong and weak by; the year
     yogas' own by default."""
+    dasha: "MasaDashaRules"
+    """The readings each month's dasha is computed under; the verse's own
+    by default."""
+
+
+class MasaDashaRules(TypedDict, total=False):
+    """The readings a month's dasha is computed under
+    (`03-design/varshesha.md`, "The month's dasha", C477).
+
+    >>> civil: MasaDashaRules = {"clock": "DAYS", "sign": "OWNED"}
+    """
+
+    sign: Literal["OCCUPIED", "OWNED"]
+    """`OCCUPIED`, the sign the stronger lord stands in (the default), or
+    `OWNED`, the sign it rules here: the Muntha's or the month lagna."""
+    clock: Literal["SUN_DEGREES", "EVEN", "DAYS"]
+    """What a Hudda's degree is in time: `SUN_DEGREES`, the Sun's motion
+    through it (the default); `EVEN`, an equal share of the month; or
+    `DAYS`, a civil day."""
+    table: HuddaTable
+    """Which printing of the Hudda table (C109): `NILAKANTHI` by
+    default."""
 
 
 class MasaPhalaRules(TypedDict, total=False):
@@ -9821,6 +9847,8 @@ class MasaPravesha:
     """The month's lord, where the request named a `place`."""
     results: Optional["MasaPhala"] = None
     """The month's results, where the request named a `place`."""
+    dasha: Optional["MasaDasha"] = None
+    """The month's dasha, where the request named a `place`."""
     dinesha: Optional["Dinesha"] = None
     """The day's lord, where the request named a `month` and a `place`."""
     day_results: Optional["DinaPhala"] = None
@@ -9922,6 +9950,36 @@ class MasaPhala:
     """The twelve houses, first to twelfth."""
     lords: Tuple[MonthLordPlace, ...]
     """The five lords, in `MonthLord`'s order."""
+
+
+@dataclass(frozen=True)
+class MasaDashaPeriod:
+    """One Hudda lord's run of a month."""
+
+    lord: Graha
+    degrees: int
+    """The Hudda's width, degrees: the solar days it runs."""
+    starts: float
+    """When it begins, a Julian day (UTC)."""
+    ends: float
+    """When it ends, a Julian day (UTC): where the next begins."""
+
+
+@dataclass(frozen=True)
+class MasaDasha:
+    """A month's dasha (*Tajika Nilakanthi*, Varsha Tantra, v. 14): the
+    five Huddas of the stronger lord's sign, each running its degrees in
+    days."""
+
+    office: Literal["MUNTHA", "MASA_LAGNA"]
+    """Whose lord was the stronger: the Muntha's or the month lagna's."""
+    graha: Graha
+    sign: Rashi
+    """The sign whose Huddas run the month."""
+    rules: MasaDashaRules
+    """The readings it was computed under, every one named."""
+    periods: Tuple[MasaDashaPeriod, ...]
+    """The sign's five Huddas, in order from the month's opening."""
 
 
 MoonState = Literal[
@@ -12322,6 +12380,7 @@ def _masa_pravesha(raw: Mapping[str, Any]) -> MasaPravesha:
         sun_deg=raw["sunDeg"],
         masesha=None if lord is None else _masesha(lord),
         results=None if lord is None else _masa_phala(raw["results"]),
+        dasha=None if lord is None else _masa_dasha(raw["dasha"]),
         dinesha=None if raw.get("dinesha") is None else _dinesha(raw["dinesha"]),
         day_results=None if raw.get("dayResults") is None else _dina_phala(raw["dayResults"]),
     )
@@ -12374,6 +12433,30 @@ def _dinesha(raw: Mapping[str, Any]) -> Dinesha:
             by_day=seven["byDay"],
         ),
         chain=_year_lord_chain(raw["chain"]),
+    )
+
+
+def _masa_dasha(raw: Mapping[str, Any]) -> MasaDasha:
+    """A month's dasha from the section's JSON, its grahas and its sign
+    members."""
+    return MasaDasha(
+        office=raw["office"],
+        graha=_member(Graha, raw["graha"]),
+        sign=_member(Rashi, raw["sign"]),
+        rules=MasaDashaRules(
+            sign=raw["rules"]["sign"],
+            clock=raw["rules"]["clock"],
+            table=raw["rules"]["table"],
+        ),
+        periods=tuple(
+            MasaDashaPeriod(
+                lord=_member(Graha, one["lord"]),
+                degrees=one["degrees"],
+                starts=one["starts"],
+                ends=one["ends"],
+            )
+            for one in raw["periods"]
+        ),
     )
 
 

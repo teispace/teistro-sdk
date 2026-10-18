@@ -11,14 +11,15 @@ import java.util.Objects;
 /**
  * One year's months, or one month's days, of a birth.
  *
+ * @param dasha The readings each month's dasha is computed under: the sign of the stronger lord, what a degree is in time and the Hudda table; the verse's own by default. Null leaves the SDK's default.
  * @param masesha The readings the month's lord, and the day's, part on; the verse's own by default. Null leaves the SDK's default.
  * @param month The month whose thirty days are asked for, one to twelve; absent, the year's twelve months are, each as its first day. Null leaves the SDK's default.
- * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord and its results, and each day's row its lord and its results. Absent, the rows are the instants only. Null leaves the SDK's default.
+ * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord, its results and its dasha, and each day's row its lord and its results. Absent, the rows are the instants only. Null leaves the SDK's default.
  * @param reading Which longitude the year's Sun returns to, and so which zodiac the year divides in; the tradition's, sidereal, by default. The mean year places no Sun and is refused. Null leaves the SDK's default.
  * @param results The floors the month's and the day's results judge strong and weak by, and the waning Moon they count a malefic; the year yogas' own by default. Null leaves the SDK's default.
  * @param year The year divided, one to two hundred, counted as `Pravesha::year` counts it.
  */
-public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPlace place, ReturnLongitude reading, MasaPhalaRules results, int year) implements RequestJson {
+public record MasaPraveshaRequest(MasaDashaRules dasha, MaseshaRules masesha, Integer month, AnnualPlace place, ReturnLongitude reading, MasaPhalaRules results, int year) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -45,6 +46,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
 
     /** Builds a {@link MasaPraveshaRequest} a field at a time. */
     public static final class Builder {
+        private MasaDashaRules dasha;
         private MaseshaRules masesha;
         private Integer month;
         private AnnualPlace place;
@@ -53,6 +55,17 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
         private Integer year;
 
         private Builder() {}
+
+        /**
+         * Sets {@code dasha}.
+         *
+         * @param dasha The readings each month's dasha is computed under: the sign of the stronger lord, what a degree is in time and the Hudda table; the verse's own by default. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder dasha(MasaDashaRules dasha) {
+            this.dasha = dasha;
+            return this;
+        }
 
         /**
          * Sets {@code masesha}.
@@ -79,7 +92,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
         /**
          * Sets {@code place}.
          *
-         * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord and its results, and each day's row its lord and its results. Absent, the rows are the instants only. Null leaves the SDK's default.
+         * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord, its results and its dasha, and each day's row its lord and its results. Absent, the rows are the instants only. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder place(AnnualPlace place) {
@@ -127,7 +140,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
          * @throws NullPointerException naming a required field left unset
          */
         public MasaPraveshaRequest build() {
-            return new MasaPraveshaRequest(masesha, month, place, reading, results, Objects.requireNonNull(year, "`MasaPraveshaRequest.year` is required"));
+            return new MasaPraveshaRequest(dasha, masesha, month, place, reading, results, Objects.requireNonNull(year, "`MasaPraveshaRequest.year` is required"));
         }
     }
 
@@ -141,6 +154,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
     public static MasaPraveshaRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "MasaPraveshaRequest");
         return new MasaPraveshaRequest(
+            Read.orNull(json.get("dasha"), present -> MasaDashaRules.of(present)),
             Read.orNull(json.get("masesha"), present -> MaseshaRules.of(present)),
             Read.orNull(json.get("month"), present -> Read.int32(present, "MasaPraveshaRequest.month")),
             Read.orNull(json.get("place"), present -> AnnualPlace.of(present)),
@@ -152,6 +166,9 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (dasha != null) {
+            json.put("dasha", dasha.toJson());
+        }
         if (masesha != null) {
             json.put("masesha", masesha.toJson());
         }

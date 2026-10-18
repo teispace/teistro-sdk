@@ -17,6 +17,8 @@ import type {
   MasaPravesha,
   MasaPraveshaRequest,
   MasaPhala,
+  MasaDasha,
+  MasaDashaPeriod,
   MonthHouse,
   MonthHouseClause,
   MonthLord,
@@ -545,6 +547,13 @@ function masaPravesha(): string {
   const seen: readonly MonthLord[] | undefined = first?.seenByMoon;
   const office: MonthLordPlace | undefined = results?.lords[0];
   const placed: MonthLordClause | undefined = office?.clauses[0];
+  const dasha: MasaDasha | undefined = lords.masaPravesha![0]!.dasha;
+  const run: MasaDashaPeriod | undefined = dasha?.periods[0];
+  const runLord: Graha | undefined = run?.lord;
+  const whose: 'MUNTHA' | 'MASA_LAGNA' | undefined = dasha?.office;
+  const civil: MasaPraveshaRequest = { year: 30, place: 'birth', dasha: { clock: 'DAYS', sign: 'OWNED', table: 'CHARAK' } };
+  // @ts-expect-error a degree is the Sun's, an even share or a civil day
+  const hours: MasaPraveshaRequest = { year: 30, dasha: { clock: 'HOURS' } };
   const daily = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, masaPravesha: { year: 30, month: 4, place: 'birth' } });
   const dayLord: Dinesha | undefined = daily.masaPravesha![0]!.dinesha;
   const dayBearers: DayBearers | undefined = dayLord?.bearers;

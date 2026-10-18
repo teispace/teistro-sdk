@@ -574,29 +574,43 @@ pub fn hudda_lord(longitude_deg: f64) -> Graha {
 #[must_use]
 pub fn hudda_lord_in(table: HuddaTable, longitude_deg: f64) -> Graha {
     let longitude = longitude_deg.rem_euclid(360.0);
-    let sign = sign_of_longitude(longitude);
+    let terms = hudda_terms(table, sign_of_longitude(longitude));
     let within = longitude % 30.0;
-    let index = usize::from(sign.id() % 12);
-    // Twelve signs, twelve rows, which the table's own type fixes, so the
-    // sign always has one; answering Saturn rather than panicking in a
-    // consumer's process is the only thing to do if that ever changes.
-    let terms = match (table, index) {
-        (HuddaTable::Charak, 10) => &CHARAK_AQUARIUS,
-        _ => match HUDDA.get(index) {
-            Some(terms) => terms,
-            None => return Graha::Saturn,
-        },
-    };
     let mut edge = 0.0;
     for (width, lord) in terms {
-        edge += f64::from(*width);
+        edge += f64::from(width);
         if within < edge {
-            return *lord;
+            return lord;
         }
     }
     // The widths fill a sign, which a test holds; the last term answers a
     // longitude on the very edge rather than nothing answering.
-    terms.last().map_or(Graha::Saturn, |(_, lord)| *lord)
+    let [.., (_, last)] = terms;
+    last
+}
+
+/// The five Huddas of `sign` by `table`, in the sign's order: each its
+/// width in degrees and its lord. The widths add to thirty.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_tajika::{HuddaTable, hudda_terms};
+///
+/// let aries = hudda_terms(HuddaTable::Nilakanthi, Rashi::Aries);
+/// assert_eq!(aries[0], (6, Graha::Jupiter));
+/// assert_eq!(aries.iter().map(|(width, _)| u32::from(*width)).sum::<u32>(), 30);
+/// ```
+#[must_use]
+pub fn hudda_terms(table: HuddaTable, sign: Rashi) -> [(u8, Graha); 5] {
+    let index = usize::from(sign.id() % 12);
+    // Twelve signs, twelve rows, which the table's own type fixes, so the
+    // sign always has one; answering Aries's rather than panicking in a
+    // consumer's process is the only thing to do if that ever changes.
+    if table == HuddaTable::Charak && index == 10 {
+        return CHARAK_AQUARIUS;
+    }
+    let [aries, ..] = HUDDA;
+    HUDDA.get(index).copied().unwrap_or(aries)
 }
 
 /// The Tajika decanate lords, in one cycle from Mars — the weekday order

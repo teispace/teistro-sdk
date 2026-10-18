@@ -12,7 +12,10 @@
 
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::tajika::{MasaPhalaRules, MaseshaReading, MaseshaRules, Reading, VarsheshaRules};
+use teistro::tajika::{
+    MasaDashaRules, MasaDashaSign, MasaPhalaRules, MaseshaReading, MaseshaRules, MonthClock,
+    Reading, VarsheshaRules,
+};
 use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 const BIRTH: f64 = 2_447_995.489_583_333_5;
@@ -290,6 +293,93 @@ fn a_place_founds_each_month_and_carries_its_lord() {
     assert!(wire["masesha"]["bearers"]["masaLagna"].is_string());
     assert!(wire["masesha"]["chain"]["moonPassedOver"].is_boolean());
     assert!(wire["masesha"]["chain"]["claims"][0]["aspectsLagna"].is_boolean());
+}
+
+/// v. 14: each month's dasha runs the five Huddas of its stronger lord's
+/// sign from the month's opening to the next's, a Hudda's degree a
+/// degree of the Sun, and is what the façade reads from the month's
+/// charts and knots.
+#[test]
+fn each_months_dasha_runs_its_huddas_on_the_suns_degrees() {
+    let sdk = context();
+    let natal = chart(&sdk, BIRTH);
+    let clock = UtcOffset::try_from_seconds(20_700).unwrap();
+    let rows = rows_with_lords(&sdk, &natal, clock);
+    let months = sdk
+        .chart()
+        .masa_praveshas(&natal, Reading::Sidereal, 30)
+        .unwrap();
+    let year = chart(&sdk, months[0].at.get());
+    for (index, (row, entry)) in rows.iter().zip(&months).enumerate() {
+        let dasha = row.dasha.as_ref().unwrap();
+        let knots = sdk
+            .chart()
+            .month_knots(&natal, Reading::Sidereal, entry)
+            .unwrap();
+        assert_eq!(knots.len(), 31);
+        let month = chart(&sdk, entry.at.get());
+        let read = sdk
+            .chart()
+            .masa_dasha(
+                &natal,
+                &year,
+                &month,
+                entry,
+                &knots,
+                MaseshaRules::default().muntha,
+                MasaDashaRules::default(),
+            )
+            .unwrap();
+        assert_eq!(dasha, &read, "month {}", entry.month);
+        let lord = row.masesha.as_ref().unwrap();
+        assert!(
+            [lord.bearers.muntha, lord.bearers.masa_lagna].contains(&dasha.graha),
+            "the Muntha's lord or the lagna's"
+        );
+        assert_eq!(
+            dasha
+                .periods
+                .iter()
+                .map(|one| u32::from(one.degrees))
+                .sum::<u32>(),
+            30
+        );
+        let (first, last) = (&dasha.periods[0], &dasha.periods[4]);
+        assert_eq!(first.starts, entry.at);
+        if let Some(next) = months.get(index + 1) {
+            assert!(
+                (last.ends.get() - next.at.get()).abs() < 1e-6,
+                "ends as the next opens"
+            );
+        }
+        // A period's edge is where the Sun has moved its degrees on.
+        let moved = sun(&sdk, first.ends.get());
+        assert!(apart(moved, entry.sun_deg + f64::from(first.degrees)) < 1e-4);
+    }
+    // Thirty civil days need no search, and end thirty days on.
+    let days = teistro::MasaPraveshaRequest::new(30)
+        .at(teistro::AnnualPlace::Birth)
+        .with_dasha(MasaDashaRules {
+            clock: MonthClock::Days,
+            ..MasaDashaRules::default()
+        });
+    let rows = sdk.chart().masa_pravesha(&natal, clock, &days).unwrap();
+    let dasha = rows[3].dasha.as_ref().unwrap();
+    assert!((dasha.periods[4].ends.get() - months[3].at.get() - 30.0).abs() < 1e-9);
+    // The record's wire spelling, and its readings by name.
+    let asked = teistro::MasaPraveshaRequest::from_json(
+        r#"{"year": 30, "place": "birth", "dasha": {"sign": "OWNED", "clock": "EVEN", "table": "CHARAK"}}"#,
+    )
+    .unwrap();
+    assert_eq!(asked.dasha.sign, MasaDashaSign::Owned);
+    let wire = serde_json::to_value(&rows[0]).unwrap();
+    assert!(wire["dasha"]["office"].is_string());
+    assert!(wire["dasha"]["periods"][0]["degrees"].is_number());
+    assert_eq!(wire["dasha"]["rules"]["clock"], "DAYS");
+    let refused =
+        teistro::MasaPraveshaRequest::from_json(r#"{"year": 30, "dasha": {"clock": "HOURS"}}"#)
+            .unwrap_err();
+    assert!(refused.field().unwrap().starts_with("masaPravesha.dasha"));
 }
 
 fn rows_with_lords(sdk: &Context, natal: &Document, clock: UtcOffset) -> Vec<teistro::MasaRow> {

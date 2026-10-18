@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The month's dasha** (`varshesha.md`). **Numbers:** none moved; a
+`masaPravesha` month row with a `place` now carries `dasha`. The *Tajika
+Nilakanthi*'s v. 14: the Hudda lords of the stronger of the Muntha's
+lord's and the month lagna's lord's sign run the month, each its degrees
+in solar days, from the month's opening to the next. The record's new
+`dasha` rules name the sign (`OCCUPIED`, `OWNED`), the day (`SUN_DEGREES`,
+`EVEN`, `DAYS`) and the Hudda table. `sdk.chart().month_knots` and
+`masa_dasha` reach it directly; read in Node, Python, Dart and Java.
+Crux C477.
+
 **Brihat Jataka ch. 23's evil yogas** (`rules-engine.md`). **Numbers:**
 none moved; this adds 42 rules. Varahamihira's chapter on malefic yogas,
 read in Iyer's 1885 translation, joins the nabhasa set: the want of sons

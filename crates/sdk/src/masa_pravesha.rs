@@ -6,17 +6,18 @@
 //! commentary says, so both answers are rows of one shape,
 //! [`DinaPravesha`]: the twelve months as their first days, or the thirty
 //! days of the month asked for. Given a `place`, each month's chart is
-//! founded there and its lord, the [`Masesha`], and its results, the
-//! [`MasaPhala`], read beside it; or each day's, and its lord, the
-//! [`Dinesha`], and its results, the [`DinaPhala`].
+//! founded there and its lord, the [`Masesha`], its results, the
+//! [`MasaPhala`], and its dasha, the [`MasaDasha`], read beside it; or
+//! each day's, and its lord, the [`Dinesha`], and its results, the
+//! [`DinaPhala`].
 
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_tajika::{
-    DinaPhala, DinaPravesha, Dinesha, MasaPhala, MasaPhalaRules, MasaPravesha, Masesha,
-    MaseshaRules, Reading,
+    DinaPhala, DinaPravesha, Dinesha, MasaDasha, MasaDashaRules, MasaPhala, MasaPhalaRules,
+    MasaPravesha, Masesha, MaseshaRules, MonthClock, Reading,
 };
 
 use crate::area::ChartArea;
@@ -56,8 +57,9 @@ pub struct MasaPraveshaRequest {
     pub month: Option<u8>,
     /// Where each month's chart is founded, `"birth"` or a residence, as
     /// [`VarshaRequest::place`](crate::VarshaRequest::place) is written;
-    /// given, each month's row carries its lord and its results, and each
-    /// day's row its lord and its results. Absent, the rows are the instants only.
+    /// given, each month's row carries its lord, its results and its
+    /// dasha, and each day's row its lord and its results. Absent, the
+    /// rows are the instants only.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub place: Option<AnnualPlace>,
     /// The readings the month's lord, and the day's, part on; the verse's
@@ -69,11 +71,16 @@ pub struct MasaPraveshaRequest {
     /// by default.
     #[serde(default)]
     pub results: MasaPhalaRules,
+    /// The readings each month's dasha is computed under: the sign of the
+    /// stronger lord, what a degree is in time and the Hudda table; the
+    /// verse's own by default.
+    #[serde(default)]
+    pub dasha: MasaDashaRules,
 }
 
 /// One row of a `masaPravesha` answer: a month or a day, and, for a month
-/// whose chart was founded, its lord and its results, or for a day, its
-/// lord and its results.
+/// whose chart was founded, its lord, its results and its dasha, or for a
+/// day, its lord and its results.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -87,6 +94,9 @@ pub struct MasaRow {
     /// The month's results, when the request named a `place`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub results: Option<MasaPhala>,
+    /// The month's dasha, when the request named a `place`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dasha: Option<MasaDasha>,
     /// The day's lord, when the request named a `month` and a `place`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dinesha: Option<Dinesha>,
@@ -106,6 +116,7 @@ impl MasaPraveshaRequest {
             place: None,
             masesha: MaseshaRules::default(),
             results: MasaPhalaRules::default(),
+            dasha: MasaDashaRules::default(),
         }
     }
 
@@ -127,6 +138,13 @@ impl MasaPraveshaRequest {
     #[must_use]
     pub const fn with_results(mut self, rules: MasaPhalaRules) -> MasaPraveshaRequest {
         self.results = rules;
+        self
+    }
+
+    /// The same request, each month's dasha computed under `rules`.
+    #[must_use]
+    pub const fn with_dasha(mut self, rules: MasaDashaRules) -> MasaPraveshaRequest {
+        self.dasha = rules;
         self
     }
 
@@ -216,9 +234,10 @@ impl ChartArea<'_> {
     /// ([`ChartArea::masa_praveshas`], [`ChartArea::dina_praveshas`]).
     /// With a `place`, the year's chart and each month's are founded there
     /// (the birth's own place on `clock` for `"birth"`), and each month
-    /// carries its [`ChartArea::masesha`] and its [`ChartArea::masa_phala`],
-    /// beside the year's lord read on the year's chart. With a `month` as
-    /// well, the year's, the month's and each day's charts are founded, and
+    /// carries its [`ChartArea::masesha`], its [`ChartArea::masa_phala`] and
+    /// its [`ChartArea::masa_dasha`], beside the year's lord read on the
+    /// year's chart. With a `month` as well, the year's, the month's and
+    /// each day's charts are founded, and
     /// each day carries its [`ChartArea::dinesha`] and its
     /// [`ChartArea::dina_phala`], beside the year's and the month's lords.
     ///
@@ -226,7 +245,8 @@ impl ChartArea<'_> {
     ///
     /// As [`ChartArea::dina_praveshas`], [`ChartArea::masesha`],
     /// [`ChartArea::varshesha`], [`ChartArea::masa_phala`],
-    /// [`ChartArea::dinesha`] and [`ChartArea::dina_phala`].
+    /// [`ChartArea::masa_dasha`], [`ChartArea::dinesha`] and
+    /// [`ChartArea::dina_phala`].
     pub fn masa_pravesha(
         self,
         birth: &Document,
@@ -237,6 +257,7 @@ impl ChartArea<'_> {
             entry,
             masesha: None,
             results: None,
+            dasha: None,
             dinesha: None,
             day_results: None,
         };
@@ -279,10 +300,27 @@ impl ChartArea<'_> {
                 };
                 let lord = self.masesha(birth, &annual, &month, entry, asked.masesha)?;
                 let results = self.masa_phala(&month, &lord, year_lord, asked.results)?;
+                // Thirty civil days read only the opening, so ask no search.
+                let knots = match asked.dasha.clock {
+                    MonthClock::Days => vec![entry.at],
+                    MonthClock::SunDegrees | MonthClock::Even => {
+                        self.month_knots(birth, asked.reading, entry)?
+                    }
+                };
+                let dasha = self.masa_dasha(
+                    birth,
+                    &annual,
+                    &month,
+                    entry,
+                    &knots,
+                    asked.masesha.muntha,
+                    asked.dasha,
+                )?;
                 Ok(MasaRow {
                     entry: DinaPravesha::from(*entry),
                     masesha: Some(lord),
                     results: Some(results),
+                    dasha: Some(dasha),
                     dinesha: None,
                     day_results: None,
                 })
@@ -333,6 +371,7 @@ impl ChartArea<'_> {
                     entry,
                     masesha: None,
                     results: None,
+                    dasha: None,
                     dinesha: Some(lord),
                     day_results: Some(results),
                 })

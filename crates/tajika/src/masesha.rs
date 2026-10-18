@@ -26,7 +26,7 @@
 //! each sign at its start never leaves it inside a year.
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 
 use crate::bala::{AnnualSky, Panchavargiya};
@@ -187,17 +187,30 @@ pub fn month_bearers(charts: &MonthCharts, muntha: MunthaDegree) -> Result<Month
     let lagna = sign_at("month_lagna_deg", charts.month_lagna_deg)?;
     let sun = sign_at("month_sun_deg", charts.month_sun_deg)?;
     let moon = sign_at("month_moon_deg", charts.month_moon_deg)?;
-    let year = crate::muntha::muntha(charts.natal_lagna_deg, charts.completed_years, muntha)?;
-    let moved = year.during(f64::from(charts.month - 1) / f64::from(MONTHS));
     Ok(MonthBearers {
         masa_lagna: lagna.attributes().lord,
-        muntha: sign_at("muntha", moved)?.attributes().lord,
+        muntha: muntha_sign(charts, muntha)?.attributes().lord,
         janma_lagna: natal.attributes().lord,
         tri_rashi: tri_rashi_lord(lagna, charts.by_day),
         dina_ratri: if charts.by_day { sun } else { moon }.attributes().lord,
         varsha_lagna: annual.attributes().lord,
         by_day: charts.by_day,
     })
+}
+
+/// The sign the Muntha stands in this month, moved on 2°30′ a month from
+/// where `muntha` puts it in the year. `charts.month` is checked by the
+/// caller.
+///
+/// # Errors
+///
+/// A natal lagna that is not a number, or `completed_years` past the cap.
+pub(crate) fn muntha_sign(charts: &MonthCharts, muntha: MunthaDegree) -> Result<Rashi, Error> {
+    let year = crate::muntha::muntha(charts.natal_lagna_deg, charts.completed_years, muntha)?;
+    sign_at(
+        "muntha",
+        year.during(f64::from(charts.month - 1) / f64::from(MONTHS)),
+    )
 }
 
 /// Which reading makes a planet the month's lord.

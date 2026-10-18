@@ -2328,14 +2328,18 @@ pub struct ChartRequest {
     /// the zodiac the year divides in. Optionally `place`, `"birth"` or
     /// `{latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds}` as
     /// `varsha_json` writes it, where each month's chart is founded and
-    /// its lord and results read, or with `month` each day's chart and its
-    /// lord and results, under optionally
+    /// its lord, results and dasha read, or with `month` each day's chart
+    /// and its lord and results, under optionally
     /// `masesha`, `{reading, muntha, chain}` (`03-design/varshesha.md`,
-    /// "The month's lord"), and `results`, `{weakBelow, strongFrom}` in
+    /// "The month's lord"), `results`, `{weakBelow, strongFrom}` in
     /// sub-sub-units and `kshina`, `"DARK_EIGHTH_TO_BRIGHT_EIGHTH"` (the
     /// default) or `"DARK_ELEVENTH_TO_NEW_MOON"`, when the Moon wanes and
-    /// is a malefic ("The month's results", "The day's results"). The instants come back in the `masa_pravesha` section, the
-    /// months each as its first day; a year past the ephemeris's end comes
+    /// is a malefic ("The month's results", "The day's results"), and
+    /// `dasha`, `{sign, clock, table}` ("The month's dasha"): `sign`
+    /// `"OCCUPIED"` (the default) or `"OWNED"`, `clock` `"SUN_DEGREES"`
+    /// (the default), `"EVEN"` or `"DAYS"`, and `table` `"NILAKANTHI"` (the
+    /// default) or `"CHARAK"`. The instants come back in the
+    /// `masa_pravesha` section, the months each as its first day; a year past the ephemeris's end comes
     /// back empty. Null for none (`03-design/annual-chart.md`, "The
     /// month's and the day's chart"). Refusals are named from the record
     /// every binding calls `masaPravesha`, as `masaPravesha.month`.

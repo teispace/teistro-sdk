@@ -836,6 +836,30 @@ public final class BindingTest {
                 for (MasaPravesha row : others) {
                     same(row.masesha().bearers().masaLagna(), row.masesha().graha(), "the others' reading");
                 }
+                // Each month's dasha: the five Huddas of the stronger lord's sign, end to end from the
+                // month's opening to the next's.
+                check(months.get(0).dasha() == null, "no dasha without a place");
+                for (int index = 0; index < lords.size(); index++) {
+                    MasaPravesha row = lords.get(index);
+                    MasaDasha dasha = row.dasha();
+                    MonthBearers bearers = row.masesha().bearers();
+                    same(dasha.office() == MonthOffice.MUNTHA ? bearers.muntha() : bearers.masaLagna(),
+                            dasha.graha(), "the stronger lord's");
+                    same(30, dasha.periods().stream().mapToInt(MasaDashaPeriod::degrees).sum(), "thirty degrees");
+                    same(row.at(), dasha.periods().get(0).starts(), "from the month's opening");
+                    if (index < 11) {
+                        check(Math.abs(dasha.periods().get(4).ends() - lords.get(index + 1).at()) < 1e-6,
+                                "ends as the next opens");
+                    }
+                }
+                MasaDasha civil = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .masaPravesha(MasaPraveshaRequest.builder().year(3).place(AnnualPlace.BIRTH)
+                                .dasha(MasaDashaRules.builder().clock(MonthClock.DAYS).build()).build())
+                        .build()).masaPravesha().orElseThrow().get(0).dasha();
+                same(MonthClock.DAYS, civil.rules().clock(), "the clock asked for");
+                same(MasaDashaSign.OCCUPIED, civil.rules().sign(), "the default sign named");
+                check(Math.abs(civil.periods().get(4).ends() - civil.periods().get(0).starts() - 30) < 1e-9,
+                        "thirty civil days");
                 // Beside a month, a place founds each day and reads its lord; the first day's is the month's.
                 List<MasaPravesha> daily = sky.chart().found(instant, kathmandu, 20_700,
                         ChartOptions.builder().masaPravesha(MasaPraveshaRequest.builder().year(3).month(2)

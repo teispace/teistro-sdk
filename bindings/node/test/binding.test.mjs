@@ -4870,6 +4870,26 @@ test('a chart reads its month and day charts', () => {
     assert.ok(results.houses.every((one) => one.amshaLord.startsWith('graha.') && one.lordAmshaLord.startsWith('graha.')));
   }
   assert.ok(Object.isFrozen(lords[0].results.houses[0].clauses), 'frozen to its leaves');
+  // Each month's dasha: the five Huddas of the Muntha's lord's sign or the
+  // month lagna's lord's, end to end from the month's opening to the next.
+  assert.equal(months[0].dasha, undefined, 'no dasha without a place');
+  lords.forEach(({ masesha, dasha, at: opens }, index) => {
+    const lord = dasha.office === 'MUNTHA' ? masesha.bearers.muntha : masesha.bearers.masaLagna;
+    assert.equal(dasha.graha, lord);
+    assert.ok(dasha.sign.startsWith('rashi.'));
+    assert.equal(dasha.periods.reduce((sum, one) => sum + one.degrees, 0), 30);
+    assert.equal(dasha.periods[0].starts, opens);
+    if (index < 11) assert.ok(Math.abs(dasha.periods[4].ends - lords[index + 1].at) < 1e-6, 'ends as the next opens');
+    assert.ok(dasha.periods.every((one) => one.lord.startsWith('graha.') && one.ends > one.starts));
+  });
+  const civil = ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, place: 'birth', dasha: { clock: 'DAYS', sign: 'OWNED' } } })
+    .masaPravesha;
+  assert.deepEqual(civil[0].dasha.rules, { sign: 'OWNED', clock: 'DAYS', table: 'NILAKANTHI' });
+  assert.ok(Math.abs(civil[0].dasha.periods[4].ends - civil[0].at - 30) < 1e-9, 'thirty civil days');
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, place: 'birth', dasha: { clock: 'HOURS' } } }),
+    (error) => error.field.startsWith('masaPravesha.dasha'),
+  );
   assert.throws(
     () =>
       ctx.chart.found({

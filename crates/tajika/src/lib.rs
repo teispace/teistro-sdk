@@ -37,6 +37,7 @@ mod drishti;
 mod harsha;
 mod kamboola;
 mod masa;
+mod masa_dasha;
 mod masa_phala;
 mod masesha;
 mod moon;
@@ -57,7 +58,7 @@ pub use annual_dasha::{
 };
 pub use bala::{
     AnnualSky, Bala, HuddaTable, Panchavargiya, Relation, SEVEN, drekkana_lord, hudda_lord,
-    hudda_lord_in, navamsha_lord, panchavargiya,
+    hudda_lord_in, hudda_terms, navamsha_lord, panchavargiya,
 };
 pub use dina_phala::{
     DayClause, DayHouse, DayHouseClause, DayLord, DayLordPlace, DayLords, DinaPhala, MoonState,
@@ -74,7 +75,12 @@ pub use kamboola::{
     Adhikara, DrekkanaReading, EnemySign, KamboolaGrade, OfficeClause, OfficeOrder, OfficeRules,
     Offices, kamboola_grade, offices,
 };
-pub use masa::{DAYS, DinaPravesha, MONTHS, MasaPravesha, dina_praveshas, divided, masa_praveshas};
+pub use masa::{
+    DAYS, DinaPravesha, MONTHS, MasaPravesha, dina_praveshas, divided, masa_praveshas, month_knots,
+};
+pub use masa_dasha::{
+    MasaDasha, MasaDashaPeriod, MasaDashaRules, MasaDashaSign, MonthClock, masa_dasha,
+};
 pub use masa_phala::{
     HouseClause, LordClause, MasaPhala, MasaPhalaRules, MonthHouse, MonthLord, MonthLordPlace,
     MonthLords, masa_phala,

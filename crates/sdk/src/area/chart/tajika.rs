@@ -10,6 +10,7 @@ use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra, Rashi};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::house::House;
+use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::settings::Balance;
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{Wheel, YearDasha, YearRing};
@@ -18,10 +19,11 @@ use teistro_state::state;
 use teistro_tajika::{
     Affliction, AnnualDasha, AnnualDashaRules, AnnualSky, AnnualStates, Between, DayCharts,
     DayLords, DinaPhala, DinaPravesha, Dinesha, DrishtiRules, Favour, Harsha, HarshaRules,
-    MasaPhala, MasaPhalaRules, Masesha, MaseshaRules, MonthCharts, MonthLords, MuddaBalance,
-    Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading,
-    SEVEN, Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength,
-    SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
+    MasaDasha, MasaDashaRules, MasaPhala, MasaPhalaRules, Masesha, MaseshaRules, MonthCharts,
+    MonthLords, MuddaBalance, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha,
+    Qualification, Reading, SEVEN, Saham, SahamFormula, SahamPlace, SahamReading, SahamRules,
+    SahamSky, SahamStrength, SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts,
+    YearYogas, YogaRules,
 };
 
 use super::ChartArea;
@@ -641,6 +643,104 @@ impl ChartArea<'_> {
         entry: &teistro_tajika::MasaPravesha,
         rules: MaseshaRules,
     ) -> Result<Masesha, Error> {
+        let (charts, sky, strengths) = Self::month_charts(natal, annual, month, entry)?;
+        teistro_tajika::masesha(&charts, &sky, &strengths, rules)
+    }
+
+    /// The **month's dasha**, the Hudda lords of the stronger of the
+    /// Muntha's lord's and the month lagna's lord's sign, each running as
+    /// many solar days as its Hudda has degrees (*Tajika Nilakanthi*,
+    /// Varsha Tantra, the month's and the day's results, v. 14;
+    /// `03-design/varshesha.md`, "The month's dasha"). v. 15's "others",
+    /// who read the month in the Patyayini's antardashas instead, are
+    /// answered by [`ChartArea::annual_dashas`].
+    ///
+    /// The charts are as [`ChartArea::masesha`] takes them, and `muntha`
+    /// is the month's lord's own reading of the Muntha
+    /// ([`MaseshaRules::muntha`]). `knots` are the month's
+    /// [`ChartArea::month_knots`]; [`MonthClock::Days`](teistro_tajika::MonthClock::Days)
+    /// reads only the first, so it can be given the month's own instant
+    /// alone, and then needs **no ephemeris**.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Document, Ephemeris};
+    /// # use teistro::tajika::{MasaDashaRules, MunthaDegree, Reading};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (birth, request): (Document, ChartRequest) = todo!();
+    /// let months = sdk.chart().masa_praveshas(&birth, Reading::Sidereal, 30)?;
+    /// let year = sdk.chart().reading(months[0].at, &request)?.value;
+    /// let entry = &months[3];
+    /// let month = sdk.chart().reading(entry.at, &request)?.value;
+    /// let knots = sdk.chart().month_knots(&birth, Reading::Sidereal, entry)?;
+    /// let dasha = sdk.chart().masa_dasha(
+    ///     &birth, &year, &month, entry, &knots, MunthaDegree::default(), MasaDashaRules::default(),
+    /// )?;
+    /// for period in &dasha.periods {
+    ///     println!("{:?} for {} days", period.lord, period.degrees);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::masesha`]; fewer knots than the clock reads, named
+    /// `knots`.
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "the three charts and the entry as `masesha` takes them, the month's knots, \
+                  and the two readings the dasha parts on"
+    )]
+    pub fn masa_dasha(
+        self,
+        natal: &Document,
+        annual: &Document,
+        month: &Document,
+        entry: &teistro_tajika::MasaPravesha,
+        knots: &[JulianDay<Utc>],
+        muntha: MunthaDegree,
+        rules: MasaDashaRules,
+    ) -> Result<MasaDasha, Error> {
+        let (charts, _, strengths) = Self::month_charts(natal, annual, month, entry)?;
+        teistro_tajika::masa_dasha(&charts, &strengths, knots, muntha, rules)
+    }
+
+    /// The month's thirty-one knots: the instants the Sun stands none to
+    /// thirty degrees on from where `entry` opened, the last the next
+    /// month's opening, found in the sky [`ChartArea::masa_praveshas`]
+    /// found `entry` in. What [`ChartArea::masa_dasha`] counts its days by.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::dina_praveshas`]; fewer than thirty-one when the
+    /// provider's coverage ends inside the month.
+    pub fn month_knots(
+        self,
+        document: &Document,
+        reading: Reading,
+        entry: &teistro_tajika::MasaPravesha,
+    ) -> Result<Vec<JulianDay<Utc>>, Error> {
+        teistro_tajika::divided(reading)?;
+        self.sun_sky(document, |longitudes, zodiac, _, _| {
+            teistro_tajika::month_knots(longitudes, zodiac, reading, entry)
+        })
+    }
+
+    /// What a month's lord and dasha read: the month's charts reduced, its
+    /// sky and its strengths, the month chart checked to be founded at
+    /// `entry`'s instant.
+    ///
+    /// # Errors
+    ///
+    /// A month chart not founded at `entry`'s instant, named `month`; a
+    /// chart that does not place one of the seven.
+    fn month_charts(
+        natal: &Document,
+        annual: &Document,
+        month: &Document,
+        entry: &teistro_tajika::MasaPravesha,
+    ) -> Result<(MonthCharts, AnnualSky, [Panchavargiya; 7]), Error> {
         let opened = &month.foundation;
         // A second apart is a different chart; a swapped pair of charts is
         // days or months apart.
@@ -656,21 +756,17 @@ impl ChartArea<'_> {
         }
         let sky = Self::sky_of(month)?;
         let strengths = teistro_tajika::panchavargiya(&sky)?;
-        teistro_tajika::masesha(
-            &MonthCharts {
-                natal_lagna_deg: natal.foundation.lagna_deg,
-                completed_years: entry.year,
-                month: entry.month,
-                annual_lagna_deg: annual.foundation.lagna_deg,
-                month_lagna_deg: opened.lagna_deg,
-                month_sun_deg: sky.sun_deg,
-                month_moon_deg: sky.moon_deg,
-                by_day: opened.day.part.is_daylight(),
-            },
-            &sky,
-            &strengths,
-            rules,
-        )
+        let charts = MonthCharts {
+            natal_lagna_deg: natal.foundation.lagna_deg,
+            completed_years: entry.year,
+            month: entry.month,
+            annual_lagna_deg: annual.foundation.lagna_deg,
+            month_lagna_deg: opened.lagna_deg,
+            month_sun_deg: sky.sun_deg,
+            month_moon_deg: sky.moon_deg,
+            by_day: opened.day.part.is_daylight(),
+        };
+        Ok((charts, sky, strengths))
     }
 
     /// The **Dinesha**, the lord of one day of a month, from the birth
