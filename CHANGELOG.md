@@ -30,6 +30,14 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
+**Saravali's sets of grahas together, chs. 15 to 19** (`rules-engine.md`).
+**Numbers:** none moved; this adds 119 rules. Kalyana Varma's readings of
+every pair, three, four, five and six of the seven grahas sharing a sign
+join the readings set as `SARAVALI_TOGETHER_*`, read in the 1907 Nirnaya
+Sagar print, beside Jataka Parijata's lists of the same sets. Each verse
+names its grahas, and a test holds each chapter to every set of its size
+once. Crux C479.
+
 **Saravali ch. 35's raja yogas, vv. 7 to 185** (`rules-engine.md`).
 **Numbers:** none moved; this adds 98 rules. Kalyana Varma's chapter on
 the birth of kings, read in the 1907 Nirnaya Sagar print, joins the

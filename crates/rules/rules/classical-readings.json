@@ -3790,5 +3790,1185 @@
         ]
       }
     ]
+  },
+  "saravaliTogether": {
+    "text": "Saravali",
+    "rank": 1,
+    "note": "Grahas of the seven sharing one sign, and what the chapter says of the native: chs. 15 to 19 read every pair, three, four, five and six of them in turn. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali, each verse naming its grahas; the readings are paraphrased. A set fires whenever its grahas share a sign, as Jataka Parijata's lists do, so a sign holding three grahas also answers its three pairs. Ch. 18 prints twenty-two verses for its twenty-one sets, v. 13 naming the five v. 20 names; v. 20 stands at that set's place in the run and is the one built (C479).",
+    "chapters": [
+      {
+        "chapter": "15",
+        "readings": [
+          {
+            "verse": "2",
+            "planets": [
+              "SUN",
+              "MOON"
+            ],
+            "effect": "swayed by women, unruly, skilled in deceit, very wealthy, and clever at selling liquor and at practical work"
+          },
+          {
+            "verse": "3",
+            "planets": [
+              "SUN",
+              "MARS"
+            ],
+            "effect": "vigorous, daring and foolish, strong and spirited, untruthful, sinful in mind, given to killing, and fierce"
+          },
+          {
+            "verse": "4",
+            "planets": [
+              "SUN",
+              "MERCURY"
+            ],
+            "effect": "in service, of unsteady wealth, sweet-spoken and famous, noble, dear to kings and to the good, and endowed with strength, beauty, wealth and learning"
+          },
+          {
+            "verse": "5",
+            "planets": [
+              "SUN",
+              "JUPITER"
+            ],
+            "effect": "very righteous, a king's minister, prosperous, supported by friends, and a teacher"
+          },
+          {
+            "verse": "6",
+            "planets": [
+              "SUN",
+              "VENUS"
+            ],
+            "effect": "skilled in arms, in fighting and in learning, weak-sighted in old age, versed in the stage, and gaining kin and wealth through women"
+          },
+          {
+            "verse": "7",
+            "planets": [
+              "SUN",
+              "SATURN"
+            ],
+            "effect": "versed in metals, religious, devoted to his own duty, losing sons and wife, pure in his family's virtues, and of little character"
+          },
+          {
+            "verse": "8",
+            "planets": [
+              "MOON",
+              "MARS"
+            ],
+            "effect": "brave, glorious in battle, a wrestler, troubled in the blood, a craftsman in clay, leather and metal, and deceitful"
+          },
+          {
+            "verse": "9",
+            "planets": [
+              "MOON",
+              "MERCURY"
+            ],
+            "effect": "very skilled in poetry and tales, wealthy, liked by women, handsome and smiling, devoted to dharma, and of distinguished merits"
+          },
+          {
+            "verse": "10",
+            "planets": [
+              "MOON",
+              "JUPITER"
+            ],
+            "effect": "firm in friendship, modest, honouring and raising his kin, of good conduct, and devoted to the gods and the brahmins"
+          },
+          {
+            "verse": "11",
+            "planets": [
+              "MOON",
+              "VENUS"
+            ],
+            "effect": "given to garlands, perfumes and fine clothes, versed in rites, loving his family, lazy, and skilled in buying and selling"
+          },
+          {
+            "verse": "12",
+            "planets": [
+              "MOON",
+              "SATURN"
+            ],
+            "effect": "the lover of an old woman, a keeper of elephants and horses, without good conduct, dependent, poor and defeated"
+          },
+          {
+            "verse": "13",
+            "planets": [
+              "MARS",
+              "MERCURY"
+            ],
+            "effect": "unhappy with women, of little wealth, a worker in gold and iron, a builder, and skilled in physic for wicked women and widows"
+          },
+          {
+            "verse": "14",
+            "planets": [
+              "MARS",
+              "JUPITER"
+            ],
+            "effect": "learned in the crafts, the scriptures and the sciences, intelligent, eloquent and wise, and foremost among those fond of arms"
+          },
+          {
+            "verse": "15",
+            "planets": [
+              "MARS",
+              "VENUS"
+            ],
+            "effect": "honoured, the head of a group, a mathematician, given to others' wives, cunning, and fond of gambling, lies and deceit"
+          },
+          {
+            "verse": "16",
+            "planets": [
+              "MARS",
+              "SATURN"
+            ],
+            "effect": "skilled in metals and in magic, a cheat and a thief, unrighteous, hurt by weapons or poison, and quarrelsome"
+          },
+          {
+            "verse": "17",
+            "planets": [
+              "MERCURY",
+              "JUPITER"
+            ],
+            "effect": "versed in dance, wise, knowing music and the sciences, intelligent, and surely happy"
+          },
+          {
+            "verse": "18",
+            "planets": [
+              "MERCURY",
+              "VENUS"
+            ],
+            "effect": "very rich, politic, of many crafts, versed in the Veda, eloquent, knowing music, and fond of laughter, perfumes and garlands"
+          },
+          {
+            "verse": "19",
+            "planets": [
+              "MERCURY",
+              "SATURN"
+            ],
+            "effect": "in debt, given to pretence and a deceiver, yet skilled and of fine speech"
+          },
+          {
+            "verse": "20",
+            "planets": [
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "living by learning and debate, of distinguished dharma, an authority, with an excellent wife, and intelligent"
+          },
+          {
+            "verse": "21",
+            "planets": [
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "brave, rich, the chief of a town, famous, and the head of guilds, assemblies and villages"
+          },
+          {
+            "verse": "22",
+            "planets": [
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "skilled at splitting wood and at the crafts of the razor, painting and stone, a wrestler, a wanderer and a keeper of cattle"
+          }
+        ]
+      },
+      {
+        "chapter": "16",
+        "readings": [
+          {
+            "verse": "1",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS"
+            ],
+            "effect": "shameless, sinful, versed in machines, brave in destroying enemies, and skilled in work with stone"
+          },
+          {
+            "verse": "2",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MERCURY"
+            ],
+            "effect": "brilliant, of keen intellect, fond of the sciences, the arts, assemblies and drink, serving kings, and steady"
+          },
+          {
+            "verse": "3",
+            "planets": [
+              "SUN",
+              "MOON",
+              "JUPITER"
+            ],
+            "effect": "angry, skilled in deceit and in service, fond of travelling abroad, intelligent and fickle"
+          },
+          {
+            "verse": "4",
+            "planets": [
+              "SUN",
+              "MOON",
+              "VENUS"
+            ],
+            "effect": "skilled at taking others' wealth, given to others' wives, and learned in the sciences"
+          },
+          {
+            "verse": "5",
+            "planets": [
+              "SUN",
+              "MOON",
+              "SATURN"
+            ],
+            "effect": "quarrelsome in love, foolish, dependent on others and poor"
+          },
+          {
+            "verse": "6",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY"
+            ],
+            "effect": "famous, a wrestler, daring, harsh and shameless, and without wealth, sons or wife"
+          },
+          {
+            "verse": "7",
+            "planets": [
+              "SUN",
+              "MARS",
+              "JUPITER"
+            ],
+            "effect": "skilled in speech, very rich, a king's minister or a king, truthful and fierce"
+          },
+          {
+            "verse": "8",
+            "planets": [
+              "SUN",
+              "MARS",
+              "VENUS"
+            ],
+            "effect": "troubled in the eyes, well born, fortunate, sharp-tongued and wealthy"
+          },
+          {
+            "verse": "9",
+            "planets": [
+              "SUN",
+              "MARS",
+              "SATURN"
+            ],
+            "effect": "deformed, without wealth, always ill, without kin, and very foolish"
+          },
+          {
+            "verse": "10",
+            "planets": [
+              "SUN",
+              "MERCURY",
+              "JUPITER"
+            ],
+            "effect": "troubled in the eyes, very rich and yet foolish, fond of the sciences, crafts and poetry, and a writer"
+          },
+          {
+            "verse": "11",
+            "planets": [
+              "SUN",
+              "MERCURY",
+              "VENUS"
+            ],
+            "effect": "much troubled, talkative, fond of wandering, parted from his elders, and tormented on account of women"
+          },
+          {
+            "verse": "12",
+            "planets": [
+              "SUN",
+              "MERCURY",
+              "SATURN"
+            ],
+            "effect": "of unmanly conduct, hated, beaten by everyone and abandoned by his kin"
+          },
+          {
+            "verse": "13",
+            "planets": [
+              "SUN",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "weak-sighted, brave and wise, poor, a king's minister, and always busy with others' affairs"
+          },
+          {
+            "verse": "14",
+            "planets": [
+              "SUN",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "of unseemly body, honoured, hated by his own people, with a good wife, sons and friends, dear to the king and fearless"
+          },
+          {
+            "verse": "15",
+            "planets": [
+              "SUN",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "anxious for fear of enemies, without honour, arts or poetry, of base conduct, and leprous"
+          },
+          {
+            "verse": "16",
+            "planets": [
+              "MOON",
+              "MARS",
+              "MERCURY"
+            ],
+            "effect": "sinful, of low conduct, without friends or kin, and living on hire"
+          },
+          {
+            "verse": "17",
+            "planets": [
+              "MOON",
+              "MARS",
+              "JUPITER"
+            ],
+            "effect": "of wounded body, fond of women, a thief, handsome, liked by women, and quick to anger"
+          },
+          {
+            "verse": "18",
+            "planets": [
+              "MOON",
+              "MARS",
+              "VENUS"
+            ],
+            "effect": "born of a woman of bad character and married to one, fond of wandering, and afraid of the cold"
+          },
+          {
+            "verse": "19",
+            "planets": [
+              "MOON",
+              "MARS",
+              "SATURN"
+            ],
+            "effect": "losing his mother in childhood, mean, crooked, and hated by people"
+          },
+          {
+            "verse": "20",
+            "planets": [
+              "MOON",
+              "MERCURY",
+              "JUPITER"
+            ],
+            "effect": "rich, healthy, eloquent, brilliant and famous, with many sons and brothers"
+          },
+          {
+            "verse": "21",
+            "planets": [
+              "MOON",
+              "MERCURY",
+              "VENUS"
+            ],
+            "effect": "refined by learning yet of low conduct, gentle, and greedy for wealth"
+          },
+          {
+            "verse": "22",
+            "planets": [
+              "MOON",
+              "MERCURY",
+              "SATURN"
+            ],
+            "effect": "unwell and deformed, wise, eloquent, honoured, and a king"
+          },
+          {
+            "verse": "23",
+            "planets": [
+              "MOON",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "the son of a chaste woman, wise, skilled in the arts, very learned, good and fortunate"
+          },
+          {
+            "verse": "24",
+            "planets": [
+              "MOON",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "understanding the sense of the scriptures, attached to an old woman, free of disease, and the master of villages and groups"
+          },
+          {
+            "verse": "25",
+            "planets": [
+              "MOON",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "of a line of writers, readers of books, priests and astrologers, born of good deeds"
+          },
+          {
+            "verse": "26",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER"
+            ],
+            "effect": "a good poet, a ruler, the husband of a good wife, working for others' good, and skilled in music"
+          },
+          {
+            "verse": "27",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "VENUS"
+            ],
+            "effect": "low born, deformed, fickle, wicked, talkative and ever eager"
+          },
+          {
+            "verse": "28",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "SATURN"
+            ],
+            "effect": "a servant, dark-eyed, fond of travel, with a disease of the mouth, and delighting in jest"
+          },
+          {
+            "verse": "29",
+            "planets": [
+              "MARS",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "dear to kings, with good sons, always happy with courtesans, and delighting everyone"
+          },
+          {
+            "verse": "30",
+            "planets": [
+              "MARS",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "favoured by the king, of wounded body, of low conduct, blamed by his friends, and pitiless"
+          },
+          {
+            "verse": "31",
+            "planets": [
+              "MARS",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "the son and the husband of women without character, unhappy, and ever travelling"
+          },
+          {
+            "verse": "32",
+            "planets": [
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "handsome, destroying his enemies, a king, fortunate, famous and truthful"
+          },
+          {
+            "verse": "33",
+            "planets": [
+              "MERCURY",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "with place, wealth and power, wise, enjoying much, devoted to his own wife, steadfast, happy and fortunate"
+          },
+          {
+            "verse": "34",
+            "planets": [
+              "MERCURY",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "talkative, a cheat, untruthful, given to others' wives, of uneven temper, skilled in the arts, and attached to his own country"
+          },
+          {
+            "verse": "35",
+            "planets": [
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "though born in a low family, a king of wide fame and good character"
+          }
+        ]
+      },
+      {
+        "chapter": "17",
+        "readings": [
+          {
+            "verse": "1",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY"
+            ],
+            "effect": "a writer, a thief, talkative, sickly, and skilled in trickery and deceit"
+          },
+          {
+            "verse": "2",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "JUPITER"
+            ],
+            "effect": "rich, blameless among women, brilliant, politic, free of grief, capable and skilled"
+          },
+          {
+            "verse": "3",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "VENUS"
+            ],
+            "effect": "of speech fit for the noble, happy, skilled, given to gathering wealth, and with learning, sons and wife"
+          },
+          {
+            "verse": "4",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "SATURN"
+            ],
+            "effect": "of uneven body, short, without wealth, begging his food, foolish, and lowly before all"
+          },
+          {
+            "verse": "5",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MERCURY",
+              "JUPITER"
+            ],
+            "effect": "a goldsmith or a craftsman, or very rich, steady, and of a body troubled by heat"
+          },
+          {
+            "verse": "6",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MERCURY",
+              "VENUS"
+            ],
+            "effect": "infirm, fortunate, eloquent, short, and honoured by the king"
+          },
+          {
+            "verse": "7",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MERCURY",
+              "SATURN"
+            ],
+            "effect": "parted from mother and father, without wealth or comfort, wandering, living on alms, and untruthful"
+          },
+          {
+            "verse": "8",
+            "planets": [
+              "SUN",
+              "MOON",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "a master of waters, beasts and forests, happy, honoured and skilled"
+          },
+          {
+            "verse": "9",
+            "planets": [
+              "SUN",
+              "MOON",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "dull-eyed and sharp, with many sons and much wealth, and fortunate with fine women"
+          },
+          {
+            "verse": "10",
+            "planets": [
+              "SUN",
+              "MOON",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "of a woman's ways, a leader, very weak in body, and timid everywhere"
+          },
+          {
+            "verse": "11",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY",
+              "JUPITER"
+            ],
+            "effect": "brave, a maker of sutras or a keeper of wealth, losing wife and wealth, an ocean of sorrows, and given to wandering"
+          },
+          {
+            "verse": "12",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY",
+              "VENUS"
+            ],
+            "effect": "given to others' wives, a thief, uneven of limb, wicked, and without courage"
+          },
+          {
+            "verse": "13",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY",
+              "SATURN"
+            ],
+            "effect": "a warrior, wise and sharp, of low conduct, chief among poets, and a minister or a king"
+          },
+          {
+            "verse": "14",
+            "planets": [
+              "SUN",
+              "MARS",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "fortunate, honoured in the world, rich, favoured by the king, famous on earth, and politic"
+          },
+          {
+            "verse": "15",
+            "planets": [
+              "SUN",
+              "MARS",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "unbalanced in mind, respected by the many, achieving his aims, with kin and friends, or favoured by kings"
+          },
+          {
+            "verse": "16",
+            "planets": [
+              "SUN",
+              "MARS",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "infirm, of low conduct, uneven-eyed, hated by his kin, and defeated on every side"
+          },
+          {
+            "verse": "17",
+            "planets": [
+              "SUN",
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "rich, foremost in happiness, achieving his aims, with kin, and eminent"
+          },
+          {
+            "verse": "18",
+            "planets": [
+              "SUN",
+              "MERCURY",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "of unmanly conduct, proud, quarrelsome, and without zeal"
+          },
+          {
+            "verse": "19",
+            "planets": [
+              "SUN",
+              "MERCURY",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "talkative, fortunate and wise, of gentle comfort, courageous and pure, steady, and helped by friends"
+          },
+          {
+            "verse": "20",
+            "planets": [
+              "SUN",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "greedy, a poet, a chief, a master of artisans and a ruler of the low, and dear to kings"
+          },
+          {
+            "verse": "21",
+            "planets": [
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER"
+            ],
+            "effect": "skilled in the sciences, a king, or a great minister, or very wise"
+          },
+          {
+            "verse": "22",
+            "planets": [
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "VENUS"
+            ],
+            "effect": "quarrelsome, sleepy, low, the lord of a hamlet, fortunate, hating his kin, and unhappy"
+          },
+          {
+            "verse": "23",
+            "planets": [
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "SATURN"
+            ],
+            "effect": "brave, without mother and father, born of a poor family, with many wives, friends and sons, and devoted to good deeds"
+          },
+          {
+            "verse": "24",
+            "planets": [
+              "MOON",
+              "MARS",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "infirm, with a good wife, enduring all, very proud, wise, and happy with many friends"
+          },
+          {
+            "verse": "25",
+            "planets": [
+              "MOON",
+              "MARS",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "deaf, rich, brave, unbalanced, eloquent, steady in nature, intelligent and generous"
+          },
+          {
+            "verse": "26",
+            "planets": [
+              "MOON",
+              "MARS",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "the husband of an unchaste woman, bold, snake-eyed, and ever anxious"
+          },
+          {
+            "verse": "27",
+            "planets": [
+              "MOON",
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "learned, without mother and father, handsome, rich, very fortunate, and without enemies"
+          },
+          {
+            "verse": "28",
+            "planets": [
+              "MOON",
+              "MERCURY",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "of dharma and fame achieved, foremost, brilliant, dear to his kin, intelligent, a king's minister and an eminent poet"
+          },
+          {
+            "verse": "29",
+            "planets": [
+              "MOON",
+              "MERCURY",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "given to others' wives, with a wife of no character, his kin fallen on hard times, wise, and hated by people"
+          },
+          {
+            "verse": "30",
+            "planets": [
+              "MOON",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "without a mother, fortunate, with a disease of the skin, unhappy, wandering, talkative and truthful"
+          },
+          {
+            "verse": "31",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "fond of quarrels with women, wealthy, honoured in the world, of good conduct, and healthy in body"
+          },
+          {
+            "verse": "32",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "brave, learned, eloquent, without wealth, truthful and pure, a disputant, enduring hardship, and intelligent"
+          },
+          {
+            "verse": "33",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "a wrestler, kept by others, hard of body, fierce in battle, famous, and fond of dogs"
+          },
+          {
+            "verse": "34",
+            "planets": [
+              "MARS",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "brilliant, wealthy, fond of women, loving daring, fickle, and a gambler"
+          },
+          {
+            "verse": "35",
+            "planets": [
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "intelligent, devoted to the rites for the dead, attached to women, and with obedient servants"
+          }
+        ]
+      },
+      {
+        "chapter": "18",
+        "readings": [
+          {
+            "verse": "1",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER"
+            ],
+            "effect": "unhappy, deceitful, and tormented in body by separation from his wife"
+          },
+          {
+            "verse": "2",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "VENUS"
+            ],
+            "effect": "always at others' work, made spiritless by his kin and friends, and keeping company with eunuchs"
+          },
+          {
+            "verse": "3",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "SATURN"
+            ],
+            "effect": "short-lived, imprisoned, wretched, without any happiness, and without wife, sons or wealth"
+          },
+          {
+            "verse": "4",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "born blind, very unhappy, always abandoned by mother and father, and fond of song"
+          },
+          {
+            "verse": "5",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "skilled in war, capable, taking others' wealth, tormenting others, a slanderer, and fickle"
+          },
+          {
+            "verse": "6",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "without honour, wealth or prosperity, of foul conduct, and devoted to others' women"
+          },
+          {
+            "verse": "7",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "versed in machines, very prosperous, a king's minister or a commander, and famous for good deeds"
+          },
+          {
+            "verse": "8",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MERCURY",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "timid, abandoned by those he loves, unbalanced, skilled in deceit, fierce, and eating others' food"
+          },
+          {
+            "verse": "9",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MERCURY",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "tall, hairy, eager even to die, and without happiness, wealth or sons"
+          },
+          {
+            "verse": "10",
+            "planets": [
+              "SUN",
+              "MOON",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "eloquent, given to magic, fickle in mind, beloved of women, intelligent, and with many enemies yet fearless"
+          },
+          {
+            "verse": "11",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "amorous, with many horses and men, made a general, free of grief, dear to the king, and very fortunate"
+          },
+          {
+            "verse": "12",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "ever anxious, sickly, eating alms from house to house, and in old and dirty clothes"
+          },
+          {
+            "verse": "14",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "beset by diseases and enemies, fallen from his place, very unhappy, and wandering in distress"
+          },
+          {
+            "verse": "15",
+            "planets": [
+              "MOON",
+              "MARS",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "a servant, foolish, impotent, of dirty conduct, very unfortunate, infirm, and without wealth"
+          },
+          {
+            "verse": "16",
+            "planets": [
+              "SUN",
+              "MARS",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "very skilled with water machines, metals, mercury and elixirs, and of renowned deeds"
+          },
+          {
+            "verse": "17",
+            "planets": [
+              "SUN",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "skilled in many sciences, helpful to friends, honoured by his elders, devoted to dharma, and compassionate"
+          },
+          {
+            "verse": "18",
+            "planets": [
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "good, healthy, rich in learning, wealth, truth and happiness, kind to his kin, and with many friends"
+          },
+          {
+            "verse": "19",
+            "planets": [
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "dim-sighted, poor, always begging others' food, wretched, and a stain on his kin"
+          },
+          {
+            "verse": "20",
+            "planets": [
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "with many enemies and friends, working for others' good, of uneven temper, and very proud"
+          },
+          {
+            "verse": "21",
+            "planets": [
+              "MOON",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "a king's minister, equal to a king, a leader of many, and honoured by all"
+          },
+          {
+            "verse": "22",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "good-hearted, unbalanced, very dear to kings, free of grief, sleepy and poor"
+          }
+        ]
+      },
+      {
+        "chapter": "19",
+        "readings": [
+          {
+            "verse": "1",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "effect": "devoted to learning, wealth and dharma, thin, talkative, and of distinguished mind"
+          },
+          {
+            "verse": "2",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "SATURN"
+            ],
+            "effect": "generous, working for others, of fickle nature, of pure courage, and fond of lonely places"
+          },
+          {
+            "verse": "3",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "a thief, given to others' wives, leprous, cast off by his own people, foolish, fallen from his place, and sonless"
+          },
+          {
+            "verse": "4",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "low, doing others' work, consumptive, troubled by asthma and cough, and despised by his kin"
+          },
+          {
+            "verse": "5",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "a king's minister, fortunate, patient, tormented by grief, and without wife or wealth"
+          },
+          {
+            "verse": "6",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "always delighting in holy places, without sons or wealth, and living in forests and mountains"
+          },
+          {
+            "verse": "7",
+            "planets": [
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "effect": "always pure, glorious, fond of many young women, dear to kings, a minister, and with wealth, sons and good fortune"
+          }
+        ]
+      }
+    ]
   }
 }

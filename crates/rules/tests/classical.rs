@@ -676,7 +676,7 @@ const ANSWERED: [(&str, usize); 188] = [
 #[test]
 fn the_generator_makes_one_rule_a_reading() {
     let rules = shipped::readings();
-    assert_eq!(rules.len(), 1220);
+    assert_eq!(rules.len(), 1339);
     every_family_is_whole(rules);
     dwadasamsas_carry_their_signs(rules);
     // What the generator builds is a rule like any other: it writes out in the
@@ -733,8 +733,9 @@ fn the_generator_makes_one_rule_a_reading() {
     // charts cannot reach for every pair.
     let silent = counts.iter().filter(|(_, count)| *count == 0).count();
     // A twelfth of a sign is narrower still: 96 of the 144 dwadasamsas
-    // rise in none of the 93.
-    assert_eq!(silent, 549);
+    // rise in none of the 93. Saravali's 119 sets are silent where Jataka
+    // Parijata's are, 49 of them.
+    assert_eq!(silent, 598);
     // A graha stands in exactly one sign in every chart, so each of Saravali's
     // chapters answers 93 times over the 93.
     // One part of one sign rises in every chart, so each of Saravali's two
@@ -794,10 +795,19 @@ fn the_generator_makes_one_rule_a_reading() {
         by_family.values().all(|total| *total == 93),
         "{by_family:?}"
     );
+    // Saravali's sets and Jataka Parijata's are one figure read by two texts,
+    // so each answers the charts its twin does.
+    for (key, count) in counts
+        .iter()
+        .filter(|(key, _)| key.starts_with("PARIJATA_TOGETHER_"))
+    {
+        let set = key.strip_prefix("PARIJATA_TOGETHER_").unwrap();
+        assert_eq!(at(&format!("SARAVALI_TOGETHER_{set}")), *count, "{set}");
+    }
 }
 
 /// What each reading answers over the 93 recorded charts.
-static READINGS: [(&str, usize); 1220] = [
+static READINGS: [(&str, usize); 1339] = [
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
@@ -1945,6 +1955,128 @@ static READINGS: [(&str, usize); 1220] = [
     ("SARAVALI_SUN_VENUS_IN_BHAVA_10", 0),
     ("SARAVALI_SUN_VENUS_IN_BHAVA_4", 5),
     ("SARAVALI_SUN_VENUS_IN_BHAVA_7", 1),
+    ("SARAVALI_TOGETHER_JUPITER_SATURN", 24),
+    ("SARAVALI_TOGETHER_JUPITER_VENUS", 6),
+    ("SARAVALI_TOGETHER_JUPITER_VENUS_SATURN", 1),
+    ("SARAVALI_TOGETHER_MARS_JUPITER", 7),
+    ("SARAVALI_TOGETHER_MARS_JUPITER_SATURN", 4),
+    ("SARAVALI_TOGETHER_MARS_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_MARS_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_MARS_MERCURY", 6),
+    ("SARAVALI_TOGETHER_MARS_MERCURY_JUPITER", 1),
+    ("SARAVALI_TOGETHER_MARS_MERCURY_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_MARS_MERCURY_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_MARS_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_MARS_MERCURY_SATURN", 1),
+    ("SARAVALI_TOGETHER_MARS_MERCURY_VENUS", 3),
+    ("SARAVALI_TOGETHER_MARS_MERCURY_VENUS_SATURN", 1),
+    ("SARAVALI_TOGETHER_MARS_SATURN", 14),
+    ("SARAVALI_TOGETHER_MARS_VENUS", 23),
+    ("SARAVALI_TOGETHER_MARS_VENUS_SATURN", 4),
+    ("SARAVALI_TOGETHER_MERCURY_JUPITER", 10),
+    ("SARAVALI_TOGETHER_MERCURY_JUPITER_SATURN", 2),
+    ("SARAVALI_TOGETHER_MERCURY_JUPITER_VENUS", 2),
+    ("SARAVALI_TOGETHER_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_MERCURY_SATURN", 7),
+    ("SARAVALI_TOGETHER_MERCURY_VENUS", 19),
+    ("SARAVALI_TOGETHER_MERCURY_VENUS_SATURN", 2),
+    ("SARAVALI_TOGETHER_MOON_JUPITER", 12),
+    ("SARAVALI_TOGETHER_MOON_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_JUPITER_VENUS", 1),
+    ("SARAVALI_TOGETHER_MOON_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MARS", 6),
+    ("SARAVALI_TOGETHER_MOON_MARS_JUPITER", 1),
+    ("SARAVALI_TOGETHER_MOON_MARS_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MARS_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_MOON_MARS_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MARS_MERCURY", 2),
+    ("SARAVALI_TOGETHER_MOON_MARS_MERCURY_JUPITER", 1),
+    ("SARAVALI_TOGETHER_MOON_MARS_MERCURY_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS", 0),
+    (
+        "SARAVALI_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN",
+        0,
+    ),
+    ("SARAVALI_TOGETHER_MOON_MARS_MERCURY_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MARS_MERCURY_VENUS", 1),
+    ("SARAVALI_TOGETHER_MOON_MARS_MERCURY_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MARS_SATURN", 1),
+    ("SARAVALI_TOGETHER_MOON_MARS_VENUS", 2),
+    ("SARAVALI_TOGETHER_MOON_MARS_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MERCURY", 6),
+    ("SARAVALI_TOGETHER_MOON_MERCURY_JUPITER", 1),
+    ("SARAVALI_TOGETHER_MOON_MERCURY_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MERCURY_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_MOON_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_MOON_MERCURY_SATURN", 1),
+    ("SARAVALI_TOGETHER_MOON_MERCURY_VENUS", 2),
+    ("SARAVALI_TOGETHER_MOON_MERCURY_VENUS_SATURN", 1),
+    ("SARAVALI_TOGETHER_MOON_SATURN", 3),
+    ("SARAVALI_TOGETHER_MOON_VENUS", 7),
+    ("SARAVALI_TOGETHER_MOON_VENUS_SATURN", 1),
+    ("SARAVALI_TOGETHER_SUN_JUPITER", 6),
+    ("SARAVALI_TOGETHER_SUN_JUPITER_SATURN", 3),
+    ("SARAVALI_TOGETHER_SUN_JUPITER_VENUS", 1),
+    ("SARAVALI_TOGETHER_SUN_JUPITER_VENUS_SATURN", 1),
+    ("SARAVALI_TOGETHER_SUN_MARS", 13),
+    ("SARAVALI_TOGETHER_SUN_MARS_JUPITER", 1),
+    ("SARAVALI_TOGETHER_SUN_MARS_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_MERCURY", 3),
+    ("SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER", 1),
+    ("SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_MERCURY_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_MERCURY_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_MERCURY_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_SATURN", 1),
+    ("SARAVALI_TOGETHER_SUN_MARS_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MARS_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MERCURY", 45),
+    ("SARAVALI_TOGETHER_SUN_MERCURY_JUPITER", 4),
+    ("SARAVALI_TOGETHER_SUN_MERCURY_JUPITER_SATURN", 2),
+    ("SARAVALI_TOGETHER_SUN_MERCURY_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MERCURY_SATURN", 4),
+    ("SARAVALI_TOGETHER_SUN_MERCURY_VENUS", 4),
+    ("SARAVALI_TOGETHER_SUN_MERCURY_VENUS_SATURN", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON", 8),
+    ("SARAVALI_TOGETHER_SUN_MOON_JUPITER", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS", 2),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_JUPITER", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_SATURN", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MARS_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MERCURY", 3),
+    ("SARAVALI_TOGETHER_SUN_MOON_MERCURY_JUPITER", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_MERCURY_JUPITER_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MERCURY_JUPITER_VENUS", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("SARAVALI_TOGETHER_SUN_MOON_MERCURY_SATURN", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_MERCURY_VENUS", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_MERCURY_VENUS_SATURN", 1),
+    ("SARAVALI_TOGETHER_SUN_MOON_SATURN", 2),
+    ("SARAVALI_TOGETHER_SUN_MOON_VENUS", 3),
+    ("SARAVALI_TOGETHER_SUN_MOON_VENUS_SATURN", 1),
+    ("SARAVALI_TOGETHER_SUN_SATURN", 8),
+    ("SARAVALI_TOGETHER_SUN_VENUS", 10),
+    ("SARAVALI_TOGETHER_SUN_VENUS_SATURN", 2),
+    ("SARAVALI_TOGETHER_VENUS_SATURN", 8),
     ("SARAVALI_VENUS_IN_AQUARIUS", 13),
     ("SARAVALI_VENUS_IN_AQUARIUS_ASPECTED_BY_JUPITER", 10),
     ("SARAVALI_VENUS_IN_AQUARIUS_ASPECTED_BY_MARS", 0),
@@ -2029,8 +2161,9 @@ static READINGS: [(&str, usize); 1220] = [
 fn every_family_is_whole(rules: &[Rule]) {
     let mut pairs: Vec<(&str, &str)> = Vec::new();
     let mut moon: Vec<(&str, &str)> = Vec::new();
-    // Jataka Parijata's lists, by how many grahas share the sign.
-    let mut together: BTreeMap<usize, usize> = BTreeMap::new();
+    // Jataka Parijata's lists and Saravali's chapters, by text and by how
+    // many grahas share the sign.
+    let mut together: BTreeMap<(&str, usize), usize> = BTreeMap::new();
     // Saravali's chapters, by the graha each is about.
     let mut in_rasi: BTreeMap<&str, usize> = BTreeMap::new();
     let mut in_bhava: BTreeMap<&str, usize> = BTreeMap::new();
@@ -2071,7 +2204,9 @@ fn every_family_is_whole(rules: &[Rule]) {
                 else {
                     panic!("{}: grahas sharing a sign", rule.key)
                 };
-                *together.entry(planets.len()).or_default() += 1;
+                *together
+                    .entry((rule.source.text.as_str(), planets.len()))
+                    .or_default() += 1;
             }
             "graha-in-rasi" => *in_rasi.entry(named(&rule.key, "SARAVALI_").0).or_default() += 1,
             "graha-aspected-in-rasi" => {
@@ -2114,12 +2249,7 @@ fn every_family_is_whole(rules: &[Rule]) {
         });
     assert_eq!(signs.len(), 12);
     assert!(signs.values().all(|count| *count == 6));
-    // Every combination of the seven from two to six, once each: 21, 35, 35,
-    // 21 and 7.
-    assert_eq!(
-        together.into_iter().collect::<Vec<_>>(),
-        [(2, 21), (3, 35), (4, 35), (5, 21), (6, 7)]
-    );
+    every_set_in_each_text(&together);
     // Each of the seven in each of the twelve signs, once.
     assert_eq!(in_rasi.len(), 7);
     assert!(in_rasi.values().all(|count| *count == 12));
@@ -2132,6 +2262,24 @@ fn every_family_is_whole(rules: &[Rule]) {
         [("1", 21), ("10", 21), ("4", 21), ("7", 21)]
     );
     assert_eq!(rising.into_iter().collect::<Vec<_>>(), RISING);
+}
+
+/// Every combination of the seven from two to six, once each in each text
+/// that lists them: 21, 35, 35, 21 and 7.
+fn every_set_in_each_text(together: &BTreeMap<(&str, usize), usize>) {
+    for text in ["Jataka Parijata", "Saravali"] {
+        let sizes: Vec<(usize, usize)> = together
+            .iter()
+            .filter(|((of, _), _)| *of == text)
+            .map(|((_, size), count)| (*size, *count))
+            .collect();
+        assert_eq!(
+            sizes,
+            [(2, 21), (3, 35), (4, 35), (5, 21), (6, 7)],
+            "{text}"
+        );
+    }
+    assert_eq!(together.len(), 10);
 }
 
 /// Saravali's rising divisions: each of the twelve signs whole, and its two

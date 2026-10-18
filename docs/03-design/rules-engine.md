@@ -1096,6 +1096,17 @@ strict combinatorial order, the Sun first, so a rule's grahas are *generated*
 and only its reading is data; a list printed out of order would fail the test
 that holds each size to its own count.
 
+Saravali reads the same sets in chapters 15 to 19, a chapter to a size, and
+those ship beside Jataka Parijata's (`SARAVALI_TOGETHER_*`, 2026-10-19), read
+in the 1907 Nirnaya Sagar print. Here the verses name their grahas and ch. 18
+does not keep the combinations' order, so each reading carries its grahas and
+a test holds each chapter to every combination of its size once. Ch. 18 prints
+twenty-two verses for twenty-one sets, its v. 13 naming the five its v. 20
+names; v. 20 ships at the set's place in the run (C479). Each set answers the
+charts its Jataka Parijata twin does, which the corpus test holds reading by
+reading, and Saturn with both luminaries is the one set Saravali also reads as
+a child's death, in ch. 10.
+
 Saravali's chapters 22 to 29 give one more shape and eighty-four more
 readings: each of the seven grahas in each of the twelve signs, a chapter to a
 graha. Each chapter goes on to read the same graha under each other graha's

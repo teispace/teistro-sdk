@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2859 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1220 in `READINGS`, 769 in `NABHASAS`, 657 in `the corpus's own`. Their 11 766 conditions are written 4443 ways, which say 4439 things, and the renderer gives those 4439 sentences.
+2978 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1339 in `READINGS`, 769 in `NABHASAS`, 657 in `the corpus's own`. Their 11 885 conditions are written 4443 ways, which say 4439 things, and the renderer gives those 4439 sentences.
 
-The 2202 shipped rules are what a consumer evaluates; the corpus's own
+The 2321 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -18,7 +18,7 @@ pack uses.
 | proposed rule | verdict | measured |
 |---|---|---|
 | no two conditions that differ in meaning read alike | **holds** | 0 of 4439 disagree |
-| every condition of every rule renders | **holds** | 0 of 11766 disagree |
+| every condition of every rule renders | **holds** | 0 of 11885 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -55,7 +55,7 @@ a change to what a rule asks changes its prose.
 | `planet-in-kendra-from` | 34 | MARS stands in a kendra from MOON |
 | `lord-of-house-in-kendra` | 67 | the lord of the 1st house stands in a kendra |
 | `lord-of-house-in-house` | 482 | the lord of the 1st house stands in the 1st house |
-| `planet-conjunct` | 358 | MARS and SUN share a sign |
+| `planet-conjunct` | 477 | MARS and SUN share a sign |
 | `planet-in-house-from` | 386 | MARS stands in the 1st from SUN |
 | `no-planet-in-houses-from` | 22 | no graha stands in the 2nd from SUN, excepting MOON |
 | `mutual-exchange` | 126 | the lords of the 1st and 2nd houses stand each in the other's sign |
