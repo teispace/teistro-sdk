@@ -33,7 +33,11 @@ with the sections it names, and section 137 carries them across the C
 boundary; the agent server reads the record. Every binding reads it as
 a string (`chart.dossier`; Java's `chart.dossier()`), the sections typed
 as a closed set in Node, Python and Dart, and the parity example holds
-the four, wasm and Rust to the same bytes of a dated dossier.
+the four, wasm and Rust to the same bytes of a dated dossier. A `RULES`
+section writes every rule that held under the request's `rules` record
+(`RulesSection`, passed by a Rust caller as an extra section), and the
+API description no longer drops a bracket inside a code span
+(`data[len]` had read `datalen`).
 
 The conformance corpus moves to 0.12.0, which adds JPL's DE440 itself
 (CSPICE's geometric states, evidence rank 1), and every built-in tier is

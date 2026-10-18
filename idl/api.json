@@ -11579,7 +11579,7 @@
     },
     {
       "name": "TsString",
-      "doc": "A string the library allocated: UTF-8, NUL-terminated at `datalen`,\n`len` bytes before the NUL, freed by `ts_string_free`.",
+      "doc": "A string the library allocated: UTF-8, NUL-terminated at `data[len]`,\n`len` bytes before the NUL, freed by `ts_string_free`.",
       "role": "owned_string",
       "fields": [
         {
@@ -12533,7 +12533,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart's essential dignities, as a JSON object, every member\noptional: `sectRule` (`\"HORIZON\"`, the Sun's centre above the true\nhorizon and the default; `\"DAYLIGHT\"`, the chart's own sunrise to\nsunset; or `\"DAY\"` or `\"NIGHT\"` outright; C209), `rules`\n(`{terms, triplicities}`: the terms `\"PTOLEMAIC_LILLY\"`, the\ndefault, `\"EGYPTIAN\"`, `\"PTOLEMAIC_ASHMAND\"`, `\"CHALDEAN\"` or\n`{\"TABLE\": ...}`, twelve signs of five `{lord, end}` from Aries;\nthe triplicities `\"LILLY\"`, the default, or `\"PTOLEMY\"`; C208) and\n`scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,\n`detriment`, `fall`, `peregrine`, Lilly's by default). The sect and\nwhat was applied come back in the `dignities` section and the seven\nplanets in `dignity_planets`. Null for none, which costs nothing\n(`03-design/essential-dignities.md`). Refusals are named from the\nrecord every binding calls `dignities`, as `dignities.sectRule`.",
+          "doc": "Every chart's essential dignities, as a JSON object, every member\noptional: `sectRule` (`\"HORIZON\"`, the Sun's centre above the true\nhorizon and the default; `\"DAYLIGHT\"`, the chart's own sunrise to\nsunset; or `\"DAY\"` or `\"NIGHT\"` outright; C209), `rules`\n(`{terms, triplicities}`: the terms `\"PTOLEMAIC_LILLY\"`, the\ndefault, `\"EGYPTIAN\"`, `\"PTOLEMAIC_ASHMAND\"`, `\"CHALDEAN\"` or\n`{\"TABLE\": [...]}`, twelve signs of five `{lord, end}` from Aries;\nthe triplicities `\"LILLY\"`, the default, or `\"PTOLEMY\"`; C208) and\n`scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,\n`detriment`, `fall`, `peregrine`, Lilly's by default). The sect and\nwhat was applied come back in the `dignities` section and the seven\nplanets in `dignity_planets`. Null for none, which costs nothing\n(`03-design/essential-dignities.md`). Refusals are named from the\nrecord every binding calls `dignities`, as `dignities.sectRule`.",
           "meta": {
             "example": "{\"sectRule\":\"HORIZON\",\"rules\":{\"terms\":\"EGYPTIAN\"}}",
             "nullable": true
@@ -12803,7 +12803,7 @@
             },
             "mutable": false
           },
-          "doc": "The Sarvatobhadra chakra to read against every chart, as a JSON\nobject: `instants`, UTC Julian days, at least one, and optionally\n`name` (`{letter, vowel}`: the name's first letter in Devanagari\nand the vowel of its first syllable), `motion` (`\"SKY\"`, the\ndefault, `\"SUN\"`, or `{\"GIVEN\": five motions}` for Mars,\nMercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,\ncorner}`; C429 to C431). Every chart is founded with its panchanga,\nwhich the birth's tithi and weekday are read from. Each chart's\nreadings come back in the `sarvatobhadra` section, the transit\ncharts founded once for the batch. Null for none\n(`03-design/gochar.md` §8). Refusals are named from the record\nevery binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.",
+          "doc": "The Sarvatobhadra chakra to read against every chart, as a JSON\nobject: `instants`, UTC Julian days, at least one, and optionally\n`name` (`{letter, vowel}`: the name's first letter in Devanagari\nand the vowel of its first syllable), `motion` (`\"SKY\"`, the\ndefault, `\"SUN\"`, or `{\"GIVEN\": [five motions]}` for Mars,\nMercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,\ncorner}`; C429 to C431). Every chart is founded with its panchanga,\nwhich the birth's tithi and weekday are read from. Each chart's\nreadings come back in the `sarvatobhadra` section, the transit\ncharts founded once for the batch. Null for none\n(`03-design/gochar.md` §8). Refusals are named from the record\nevery binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.",
           "meta": {
             "example": "{\"instants\":[2460676.5],\"motion\":\"SUN\"}",
             "nullable": true
@@ -12833,7 +12833,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart written as a dossier for a language model, as a JSON\nobject: optionally `sections` (keys, written in the dossier's own\norder: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,\n`PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,\n`VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a\nsection one flag computes widens the request with it), `preset`\n(`\"FULL\"`, the default, every section the chart carries, or\n`\"FAMILY\"`), `at` (a UTC Julian day: the running dasha periods\nmarked and their branch expanded; date-free when left out),\n`dashaDepth` and `utcOffsetSeconds` (the request's own clock when\nleft out). Each chart's text comes back in the `dossier` section.\nNull for none (`03-design/dossier.md`). Refusals are named from the\nrecord every binding calls `dossier`, as `dossier.sections0`.",
+          "doc": "Every chart written as a dossier for a language model, as a JSON\nobject: optionally `sections` (keys, written in the dossier's own\norder: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,\n`PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,\n`VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`, and\n`RULES`, what held under the `rules_json` record; a section one\nflag computes widens the request with it), `preset`\n(`\"FULL\"`, the default, every section the chart carries, or\n`\"FAMILY\"`), `at` (a UTC Julian day: the running dasha periods\nmarked and their branch expanded; date-free when left out),\n`dashaDepth` and `utcOffsetSeconds` (the request's own clock when\nleft out). Each chart's text comes back in the `dossier` section.\nNull for none (`03-design/dossier.md`). Refusals are named from the\nrecord every binding calls `dossier`, as `dossier.sections[0]`.",
           "meta": {
             "example": "{\"preset\":\"FULL\",\"dashaDepth\":2}",
             "nullable": true

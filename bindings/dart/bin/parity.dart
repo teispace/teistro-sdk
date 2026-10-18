@@ -1167,6 +1167,7 @@ void main() {
         DossierSection.grahas,
         DossierSection.vargas,
         DossierSection.dashas,
+        DossierSection.rules,
       ],
       at: 2460676.5,
       dashaDepth: 2,

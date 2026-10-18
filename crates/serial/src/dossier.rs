@@ -177,33 +177,42 @@ impl DossierOptions {
 
     /// The options a binding writes as a chart request's `dossier` record,
     /// read and checked; a refusal names the field the caller wrote,
-    /// `dossier.sections[0]`.
+    /// `dossier.sections[0]`. A section is known when it is built in or one
+    /// of `extra`, the sections the reader writes of its own: a chart
+    /// request's `RULES`.
     ///
     /// ```
     /// use teistro_serial::dossier::{DossierOptions, DossierPreset};
     ///
-    /// let asked = DossierOptions::from_json(r#"{"preset": "FAMILY", "dashaDepth": 2}"#)?;
+    /// let asked = DossierOptions::from_json(r#"{"preset": "FAMILY", "dashaDepth": 2}"#, &[])?;
     /// assert_eq!(asked.preset, DossierPreset::Family);
-    /// let typo = DossierOptions::from_json(r#"{"section": ["GRAHAS"]}"#).unwrap_err();
+    /// let typo = DossierOptions::from_json(r#"{"section": ["GRAHAS"]}"#, &[]).unwrap_err();
     /// assert!(typo.field().is_some_and(|field| field.starts_with("dossier")));
-    /// let unknown = DossierOptions::from_json(r#"{"sections": ["PLANETS"]}"#).unwrap_err();
+    /// let unknown = DossierOptions::from_json(r#"{"sections": ["RULES"]}"#, &[]).unwrap_err();
     /// assert_eq!(unknown.field(), Some("dossier.sections[0]"));
+    /// let own = DossierOptions::from_json(r#"{"sections": ["GRAHAS", "RULES"]}"#, &["RULES"])?;
+    /// assert_eq!(own.sections.as_deref().map(<[String]>::len), Some(2));
     /// # Ok::<(), teistro_core::error::Error>(())
     /// ```
     ///
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, a section no built-in has, or what [`DossierOptions::view`]
-    /// refuses.
-    pub fn from_json(text: &str) -> Result<DossierOptions, Error> {
+    /// read, a section neither built in nor in `extra`, or what
+    /// [`DossierOptions::view`] refuses.
+    pub fn from_json(text: &str, extra: &[&str]) -> Result<DossierOptions, Error> {
         let asked: DossierOptions = teistro_core::strict::read(text, DOSSIER)?;
         asked.view().map_err(|why| why.under(DOSSIER))?;
         for (at, key) in asked.sections.iter().flatten().enumerate() {
-            if !BUILT_IN_KEYS.contains(&key.as_str()) {
+            if !BUILT_IN_KEYS.contains(&key.as_str()) && !extra.contains(&key.as_str()) {
                 return Err(Error::invalid_arg(format!(
                     "`{key}` is not a dossier section; there are {}",
-                    BUILT_IN_KEYS.join(", ")
+                    BUILT_IN_KEYS
+                        .iter()
+                        .chain(extra)
+                        .copied()
+                        .collect::<Vec<_>>()
+                        .join(", ")
                 ))
                 .with_field(format!("{DOSSIER}.sections[{at}]")));
             }

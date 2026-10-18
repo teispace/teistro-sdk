@@ -107,6 +107,19 @@ In this order, each present when the document carries it:
 | `ASPECTS` | `aspects` | each graha's drishti onto houses |
 | `AVAKAHADA` | `avakahada` | the Moon's star and pada, the naming syllable, the koota readings of one native |
 
+After them comes `RULES`, the one section the SDK adds itself: every
+rule that held on the chart under the request's `rules` record, a row a
+rule — its key, its category, its status after its cancellations, the
+bodies it consulted, their houses, its severity and the text, chapter and
+verse it is read from. It is not in the document, so it is not a
+built-in: `RulesSection` implements the trait below over the chart's
+`RulesReading`, a chart request passes it for every chart, and a caller
+of `dossier` passes it as an extra section. Named without a `rules`
+record it is refused by its place with that record as the hint; a
+`FULL` dossier carries it whenever the chart was read under rules. The
+twelve house readings and the longevity spans a rules reading can carry
+are not written yet.
+
 A section a consumer adds (below) comes after these, in the order added.
 
 ## Options and presets
@@ -144,7 +157,7 @@ documented the way a built-in one is.
 ## Across the boundary
 
 A chart request's `dossier` record (`{sections?, preset?, at?,
-dashaDepth?, utcOffsetSeconds?}`, `DossierOptions::from_json`) writes
+dashaDepth?, utcOffsetSeconds?}`, `DossierOptions::from_json`, which knows `RULES` there) writes
 each chart's dossier on the request's own clock, and section 137,
 `dossier`, carries them as a JSON array of strings, one a chart
 (`tests/abi.rs` holds it to the façade's own). A section the record
@@ -167,7 +180,7 @@ reads the record, so a model can ask a chart for its own dossier.
 |---|---|
 | **decided** | bare catalogue keys, not codes; presets choose sections and never thin them, and a named section the document lacks is refused; one column table writes the header and the legend; date-free unless `at` |
 | **a setting** | `sections`, `preset`, `at`, `dasha_depth`, `utc_offset_seconds` |
-| **not built** | the gochar overlay (a transit section from the `gochar` record's readings); the yogas and doshas of a rules reading as a built-in section; a localised legend |
+| **not built** | the gochar overlay (a transit section from the `gochar` record's readings); a rules reading's house readings and longevity spans; a localised legend |
 
 ## What will be measured
 

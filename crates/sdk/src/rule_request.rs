@@ -559,3 +559,117 @@ pub struct RulesReading<'r> {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub unreadable: Vec<&'static str>,
 }
+
+/// The `RULES` section of a chart's dossier: every rule that held on it,
+/// a row a rule (`03-design/dossier.md`). A chart request writes it from
+/// its `rules` record; a caller of [`crate::dossier::dossier`] passes it as
+/// an extra section with the chart's own reading.
+///
+/// ```no_run
+/// # fn read(document: &teistro::Document, reading: &teistro::RulesReading<'_>) -> Result<(), teistro::Error> {
+/// use teistro::dossier::{DossierOptions, dossier};
+///
+/// let rules = teistro::RulesSection::new(Some(reading));
+/// let text = dossier(document, &DossierOptions::default(), &[&rules])?;
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct RulesSection<'a, 'r> {
+    reading: Option<&'a RulesReading<'r>>,
+}
+
+impl<'a, 'r> RulesSection<'a, 'r> {
+    /// The section's key, as a dossier record names it.
+    pub const KEY: &'static str = "RULES";
+
+    /// The section of `reading`; `None`, a chart read under no rules,
+    /// whose dossier has no `RULES` to write.
+    #[must_use]
+    pub const fn new(reading: Option<&'a RulesReading<'r>>) -> RulesSection<'a, 'r> {
+        RulesSection { reading }
+    }
+}
+
+impl crate::dossier::DossierSection for RulesSection<'_, '_> {
+    fn key(&self) -> &'static str {
+        RulesSection::KEY
+    }
+    fn columns(&self) -> &[crate::dossier::Column] {
+        use crate::dossier::{Column, column};
+        const COLUMNS: [Column; 7] = [
+            column("rule", "the rule's key"),
+            column(
+                "category",
+                "the rule's kind, as its pack names it (neecha-bhanga, positional, …)",
+            ),
+            column(
+                "status",
+                "active, partially-cancelled or fully-cancelled after its cancellations",
+            ),
+            column(
+                "grahas",
+                "the bodies its conditions consulted, `,`-separated",
+            ),
+            column("houses", "the houses they stand in, `,`-separated"),
+            column("severity", "how grave, where the rule says"),
+            column("source", "the text, chapter and verse it is read from"),
+        ];
+        &COLUMNS
+    }
+    fn asked_by(&self) -> &'static str {
+        "the `rules` record on the chart request"
+    }
+    fn rows(&self, _: &crate::Document, _: &crate::dossier::View) -> Option<Vec<Vec<String>>> {
+        let joined = |items: Vec<String>| {
+            if items.is_empty() {
+                String::from("-")
+            } else {
+                items.join(",")
+            }
+        };
+        Some(
+            self.reading?
+                .present
+                .iter()
+                .map(|one| {
+                    let source = &one.rule.source;
+                    let mut cited = source.text.clone();
+                    if let Some(chapter) = &source.chapter {
+                        cited.push_str(" ch. ");
+                        cited.push_str(chapter);
+                    }
+                    if let Some(verse) = &source.verse {
+                        cited.push_str(" v. ");
+                        cited.push_str(verse);
+                    }
+                    vec![
+                        one.rule.key.clone(),
+                        one.rule.category.clone(),
+                        one.result
+                            .status
+                            .map_or_else(|| String::from("-"), |status| status.key().to_owned()),
+                        joined(
+                            one.result
+                                .participants
+                                .iter()
+                                .map(|body| body.key().to_owned())
+                                .collect(),
+                        ),
+                        joined(
+                            one.result
+                                .houses
+                                .iter()
+                                .map(|house| house.get().to_string())
+                                .collect(),
+                        ),
+                        one.result
+                            .severity
+                            .map_or_else(|| String::from("-"), |severity| severity.to_string()),
+                        cited,
+                    ]
+                })
+                .collect(),
+        )
+    }
+}

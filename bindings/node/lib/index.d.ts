@@ -3226,7 +3226,9 @@ export type DossierSection =
   | 'JAIMINI'
   | 'POINTS'
   | 'ASPECTS'
-  | 'AVAKAHADA';
+  | 'AVAKAHADA'
+  /** What held under the request's `rules` record, a row a rule. */
+  | 'RULES';
 
 /**
  * How every chart is written as a dossier for a language model

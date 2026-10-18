@@ -1265,7 +1265,7 @@ def main() -> None:
             # Three years under the practice's rule.
             tithi_pravesha={"through": 3},
             dossier={
-                "sections": ["CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS"],
+                "sections": ["CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES"],
                 "at": 2460676.5,
                 "dashaDepth": 2,
                 "utcOffsetSeconds": 20700,

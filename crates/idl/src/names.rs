@@ -144,15 +144,25 @@ fn separate(name: &str, separator: char) -> String {
 
 /// Documentation text with rustdoc's link syntax removed:
 /// ``[`Frame::to_bits`]`` becomes `Frame::to_bits`, `[text](url)` becomes
-/// `text`, and ``[`X`](crate::path)`` becomes `X`.
+/// `text`, and ``[`X`](crate::path)`` becomes `X`. A code span is text, so
+/// a bracket inside one is kept: `` `dossier.sections[0]` `` stays whole.
 #[must_use]
 pub fn clean_doc(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
     let mut rest = text;
-    while let Some(open) = rest.find('[') {
-        let (before, after) = rest.split_at(open);
+    while let Some(at) = rest.find(['[', '`']) {
+        let (before, after) = rest.split_at(at);
         out.push_str(before);
-        let Some(close) = after.find(']') else {
+        if let Some(code) = after.strip_prefix('`') {
+            let Some(end) = code.find('`') else {
+                out.push_str(after);
+                return out;
+            };
+            out.push_str(&after[..end + 2]);
+            rest = &after[end + 2..];
+            continue;
+        }
+        let Some(close) = link_close(after) else {
             out.push_str(after);
             return out;
         };
@@ -168,6 +178,20 @@ pub fn clean_doc(text: &str) -> String {
     }
     out.push_str(rest);
     out
+}
+
+/// Where the `]` closing the link `text` opens sits, a code span inside it
+/// skipped whole: ``[`a[0]`]`` closes at its last byte.
+fn link_close(text: &str) -> Option<usize> {
+    let mut at = 1;
+    while let Some(next) = text[at..].find([']', '`']) {
+        let found = at + next;
+        if text[found..].starts_with(']') {
+            return Some(found);
+        }
+        at = found + 1 + text[found + 1..].find('`')? + 1;
+    }
+    None
 }
 
 #[cfg(test)]
@@ -237,5 +261,16 @@ mod tests {
         assert_eq!(clean_doc("A [link](https://x.y) here"), "A link here");
         assert_eq!(clean_doc("[`X`](crate::x::X) and [`Y`]"), "`X` and `Y`");
         assert_eq!(clean_doc("no links [unclosed"), "no links [unclosed");
+    }
+
+    #[test]
+    fn a_code_span_keeps_its_brackets() {
+        assert_eq!(
+            clean_doc("refused as `dossier.sections[0]`."),
+            "refused as `dossier.sections[0]`."
+        );
+        assert_eq!(clean_doc("[`a[0]`] and `b[1]`"), "`a[0]` and `b[1]`");
+        assert_eq!(clean_doc("an `unclosed [span"), "an `unclosed [span");
+        assert_eq!(clean_doc("[an `unclosed](x)"), "[an `unclosed](x)");
     }
 }
