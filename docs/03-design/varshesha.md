@@ -226,7 +226,35 @@ which the month's lord turns.
 |---|---|
 | **built** | `teistro_tajika::{month_bearers, masesha}` and `sdk.chart().masesha(&birth, &year, &month, &entry, rules)`, which needs no ephemeris. `entry` is the month's `MasaPravesha`, which names the year and the month. A month chart not founded at the entry's instant is refused as `month`, since the three charts are all `Document`s and a swapped pair would otherwise answer. Tests: Charak's worked year read as the first month gives his year lord, the Sun, among the same claimants; the commentary's Muntha changes lord a month on only under `NatalDegree`; twelve founded months of one birth give a lord each, the first the year's |
 | **across the boundary** | the `masaPravesha` record takes a `place`, `"birth"` or a residence as `varsha.place` is written, and `masesha`, these rules. Given a place, the year's chart and each month's are founded there and every month row of the `masa_pravesha` section carries `masesha`: the lord, the reading, the six bearers and the chain, written as the year lord is. Without a place the rows are the instants alone, as before; a place beside a `month` is refused as `masaPravesha.place`, since a day's lord is not built. Node, Python, Dart and Java read it as each month's `masesha`, the chain as each binding's own `YearLord`; each binding's test holds the first month's lord to the year's and the others' reading to the month lagna's lord, and every parity runner prints the second year's twelve lords |
-| **not built** | the **Dinesha**, the day's lord. Verse 17 names its seven office-bearers: the six of the month with the day lagna's lord in the month lagna's place and the month lagna's lord added, the strongest that aspects the day's lagna being lord. Verse 16 reads the day's results from the Moon's and the lagna's navamshas. Neither is built yet |
+| **not built** | the day's results (vv. 16 and 18 onwards). The day's lord is the next section |
+
+## The day's lord
+
+Verse 17 of the same chapter (rank 1) names seven office-bearers at a
+day's entry: the lords of the Muntha's sign, the birth lagna, the day
+lagna's Tri-Rashi, the Sun's sign by day or the Moon's by night, and the
+day's, the month's and the year's lagnas. The strongest that **aspects the
+day's lagna** is the **Dinesha**. The commentary counts them "in the year
+five, in the month six, in the day seven", so the day's lord is the
+month's chain read on the day chart over seven:
+`teistro_tajika::dinesha` runs `varshesha` through `DayBearers`, which
+implements `Bearers` as the month's do. The gloss on v. 5 gives "some" the
+day lagna's lord outright, which is `MaseshaReading::LagnaLord` for the
+day as for the month, so the record's `masesha` rules govern both lords.
+
+The verse does not say whose Tri-Rashi it is. The month's is the month
+lagna's, so the day's is taken as the day lagna's (C458). The Muntha moves
+on 5′ a day, the source's daily figure for a year of twelve thirty-day
+months, so day `d` of month `m` has it `(m − 1) · 30 + (d − 1)` days on
+(C459). A month's first day is the month's own chart, so its seven are
+the month's six with the month lagna's lord twice, and its lord is the
+month's.
+
+| | |
+|---|---|
+| **built** | `teistro_tajika::{day_bearers, dinesha, DayCharts, DayBearers, DayOffice, Dinesha}` and `sdk.chart().dinesha(&birth, &year, &month, &day, &entry, rules)`, which needs no ephemeris. A day chart not founded at the entry's instant is refused as `day`. Tests: Charak's worked year read as a first day gives the month's lord, the Sun; a Muntha at 2s 28°20′40″ carrying its degree changes lord between the 20th and the 21st day; the others' reading takes the day lagna's lord; a day outside one to thirty is refused as `day`; thirty founded days of one birth read back through the façade, the first day's lord the month's |
+| **across the boundary** | a `masaPravesha` record with a `month` and a `place` now founds the year's, the month's and each day's charts, and every day row carries `dinesha`, `{graha, reading, bearers, chain}` with the seven `bearers` `{muntha, janmaLagna, triRashi, dinaRatri, dinaLagna, masaLagna, varshaLagna, byDay}`. It was refused before as `masaPravesha.place`. Node, Python, Dart and Java read it as each day's `dinesha`, and each binding's test holds the first day's lord to the month's. The parity runners ask for the year's months, so the days are proved by the binding tests and not printed |
+| **not built** | the day's results: v. 16 reads them from the Moon's and the lagna's navamshas, and vv. 18 onwards give the clauses |
 
 ## The month's results
 

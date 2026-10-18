@@ -836,10 +836,18 @@ public final class BindingTest {
                 for (MasaPravesha row : others) {
                     same(row.masesha().bearers().masaLagna(), row.masesha().graha(), "the others' reading");
                 }
-                TeistroException placed = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                // Beside a month, a place founds each day and reads its lord; the first day's is the month's.
+                List<MasaPravesha> daily = sky.chart().found(instant, kathmandu, 20_700,
                         ChartOptions.builder().masaPravesha(MasaPraveshaRequest.builder().year(3).month(2)
-                                .place(AnnualPlace.BIRTH).build()).build()));
-                same("masaPravesha.place", placed.field(), "a day's lord is not built");
+                                .place(AnnualPlace.BIRTH).build()).build()).masaPravesha().orElseThrow();
+                same(30, daily.size(), "thirty days");
+                same(lords.get(1).masesha().graha(), daily.get(0).dinesha().graha(), "the first day's lord is the month's");
+                for (MasaPravesha row : daily) {
+                    check(row.masesha() == null, "a day carries no month's lord");
+                    same(row.dinesha().chain().graha(), row.dinesha().graha(), "the chain's lord");
+                    same(lords.get(1).masesha().bearers().masaLagna(), row.dinesha().bearers().masaLagna(),
+                            "the month lagna's lord");
+                }
 
                 // Each month's results beside its lord: twelve houses, five lords.
                 check(months.get(0).results() == null, "no results without a place");

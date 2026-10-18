@@ -1941,9 +1941,20 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as refused:
                 ctx.chart.found(instant=instant, masa_pravesha=floors, **at)
             self.assertEqual(refused.exception.field, "masaPravesha.results.strongFrom")
-            with self.assertRaises(TeistroError) as refused:
-                ctx.chart.found(instant=instant, masa_pravesha={"year": 3, "month": 2, "place": "birth"}, **at)
-            self.assertEqual(refused.exception.field, "masaPravesha.place")
+            # Beside a month, a place founds each day and reads its lord; the
+            # first day's is the month's.
+            daily = ctx.chart.found(instant=instant, masa_pravesha={"year": 3, "month": 2, "place": "birth"}, **at)
+            assert daily.masa_pravesha is not None and lords[1].masesha is not None
+            self.assertEqual(len(daily.masa_pravesha), 30)
+            first_day = daily.masa_pravesha[0].dinesha
+            assert first_day is not None
+            self.assertEqual(first_day.graha, lords[1].masesha.graha)
+            for row in daily.masa_pravesha:
+                assert row.dinesha is not None
+                self.assertIsNone(row.masesha)
+                self.assertEqual(row.dinesha.graha, row.dinesha.chain.graha)
+                self.assertEqual(row.dinesha.bearers.masa_lagna, lords[1].masesha.bearers.masa_lagna)
+                self.assertIsInstance(row.dinesha.bearers.dina_lagna, Graha)
 
     def test_a_chart_writes_its_dossier(self) -> None:
         """The dossier crosses as text (`03-design/dossier.md`): the record

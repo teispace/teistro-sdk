@@ -16,12 +16,12 @@ use teistro_dasha::{Wheel, YearDasha, YearRing};
 use teistro_serial::Document;
 use teistro_state::state;
 use teistro_tajika::{
-    Affliction, AnnualDasha, AnnualDashaRules, AnnualSky, AnnualStates, Between, DrishtiRules,
-    Favour, Harsha, HarshaRules, MasaPhala, MasaPhalaRules, Masesha, MaseshaRules, MonthCharts,
-    MonthLords, MuddaBalance, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha,
-    Qualification, Reading, SEVEN, Saham, SahamFormula, SahamPlace, SahamReading, SahamRules,
-    SahamSky, SahamStrength, SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts,
-    YearYogas, YogaRules,
+    Affliction, AnnualDasha, AnnualDashaRules, AnnualSky, AnnualStates, Between, DayCharts,
+    DinaPravesha, Dinesha, DrishtiRules, Favour, Harsha, HarshaRules, MasaPhala, MasaPhalaRules,
+    Masesha, MaseshaRules, MonthCharts, MonthLords, MuddaBalance, Muntha, MunthaDegree, Natal,
+    OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN, Saham, SahamFormula,
+    SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength, SahamStrengthRules, Strength,
+    Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
 };
 
 use super::ChartArea;
@@ -665,6 +665,84 @@ impl ChartArea<'_> {
                 month_lagna_deg: opened.lagna_deg,
                 month_sun_deg: sky.sun_deg,
                 month_moon_deg: sky.moon_deg,
+                by_day: opened.day.part.is_daylight(),
+            },
+            &sky,
+            &strengths,
+            rules,
+        )
+    }
+
+    /// The **Dinesha**, the lord of one day of a month, from the birth
+    /// chart, the year's, the month's and the day's charts you founded
+    /// (*Tajika Nilakanthi*, Varsha Tantra, the month's and the day's
+    /// results, v. 17; `03-design/varshesha.md`, "The day's lord").
+    ///
+    /// Seven planets hold office at a day's entry: the lords of the
+    /// Muntha's sign (moved on 5′ a day), of the birth lagna, of the day
+    /// lagna's Tri-Rashi, of the Sun's or the Moon's sign by day or night,
+    /// and of the day's, the month's and the year's lagnas. The strongest
+    /// that aspects the day lagna is lord, by the year lord's chain under
+    /// `rules`, the month's lord's own readings. `entry` is the day's own
+    /// answer from [`ChartArea::dina_praveshas`]; found `day` at its
+    /// instant, where the native is. It needs **no ephemeris**.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Document, Ephemeris};
+    /// # use teistro::tajika::{MaseshaRules, Reading};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (birth, request): (Document, ChartRequest) = todo!();
+    /// let months = sdk.chart().masa_praveshas(&birth, Reading::Sidereal, 30)?;
+    /// let year = sdk.chart().reading(months[0].at, &request)?.value;
+    /// let month = sdk.chart().reading(months[3].at, &request)?.value;
+    /// for entry in &sdk.chart().dina_praveshas(&birth, Reading::Sidereal, 30, 4)? {
+    ///     let day = sdk.chart().reading(entry.at, &request)?.value;
+    ///     let lord = sdk.chart().dinesha(&birth, &year, &month, &day, entry, MaseshaRules::default())?;
+    ///     println!("day {}: {:?}", entry.day, lord.graha);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A day chart not founded at `entry`'s instant, named `day`; a chart
+    /// that does not place one of the seven; as
+    /// [`teistro_tajika::dinesha`].
+    pub fn dinesha(
+        self,
+        natal: &Document,
+        annual: &Document,
+        month: &Document,
+        day: &Document,
+        entry: &DinaPravesha,
+        rules: MaseshaRules,
+    ) -> Result<Dinesha, Error> {
+        let opened = &day.foundation;
+        if (opened.instant.get() - entry.at.get()).abs() > 1.0 / 86_400.0 {
+            return Err(Error::invalid_arg(format!(
+                "the day chart is founded at {}, not at day {}'s entry, {}",
+                opened.instant.get(),
+                entry.day,
+                entry.at.get()
+            ))
+            .with_field("day")
+            .with_hint("found the day's chart at the entry's `at`"));
+        }
+        let sky = Self::sky_of(day)?;
+        let strengths = teistro_tajika::panchavargiya(&sky)?;
+        teistro_tajika::dinesha(
+            &DayCharts {
+                natal_lagna_deg: natal.foundation.lagna_deg,
+                completed_years: entry.year,
+                month: entry.month,
+                day: entry.day,
+                annual_lagna_deg: annual.foundation.lagna_deg,
+                month_lagna_deg: month.foundation.lagna_deg,
+                day_lagna_deg: opened.lagna_deg,
+                day_sun_deg: sky.sun_deg,
+                day_moon_deg: sky.moon_deg,
                 by_day: opened.day.part.is_daylight(),
             },
             &sky,

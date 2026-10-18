@@ -31,6 +31,7 @@
 
 mod annual_dasha;
 mod bala;
+mod dinesha;
 mod drishti;
 mod harsha;
 mod kamboola;
@@ -57,6 +58,7 @@ pub use bala::{
     AnnualSky, Bala, HuddaTable, Panchavargiya, Relation, SEVEN, drekkana_lord, hudda_lord,
     hudda_lord_in, navamsha_lord, panchavargiya,
 };
+pub use dinesha::{DayBearers, DayCharts, DayOffice, Dinesha, day_bearers, dinesha};
 pub use drishti::{
     BY_SPEED, Between, Drishti, DrishtiRules, POORNA_DEG, RASHYANTA_DEG, SubDegree, Yoga,
     all as drishtis, all_with_rules as drishtis_with_rules, between, between_with_rules,

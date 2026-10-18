@@ -5624,19 +5624,25 @@ void _engineTests() {
         ),
       ),
     );
-    expect(
-      () => found(
-        instant,
-        const MasaPraveshaRequest(year: 3, month: 2, place: AnnualPlace.birth),
-      ),
-      throwsA(
-        isA<TeistroException>().having(
-          (e) => e.field,
-          'field',
-          'masaPravesha.place',
-        ),
-      ),
-    );
+    // Beside a month, a place founds each day and reads its lord; the first
+    // day's is the month's.
+    final daily =
+        found(
+          instant,
+          const MasaPraveshaRequest(
+            year: 3,
+            month: 2,
+            place: AnnualPlace.birth,
+          ),
+        ).masaPravesha!;
+    expect(daily, hasLength(30));
+    expect(daily.first.dinesha!.graha, lords[1].masesha!.graha);
+    for (final row in daily) {
+      final lord = row.dinesha!;
+      expect(row.masesha, isNull);
+      expect(lord.graha, lord.chain.graha);
+      expect(lord.bearers.masaLagna, lords[1].masesha!.bearers.masaLagna);
+    }
     ctx.dispose();
   });
 

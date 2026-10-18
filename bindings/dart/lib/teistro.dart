@@ -15627,11 +15627,12 @@ final class MasaPraveshaRequest {
 
   /// Where each month's chart is founded, as [VarshaRequest.place] is;
   /// given, each month carries its [MasaPravesha.masesha] and its
-  /// [MasaPravesha.results]. The year's months only: a day's lord is not
-  /// built, so the SDK refuses it beside a [month] by `masaPravesha.place`.
+  /// [MasaPravesha.results], and beside a [month] each day carries its
+  /// [MasaPravesha.dinesha].
   final AnnualPlace? place;
 
-  /// The readings the month's lord parts on; the verse's own by default.
+  /// The readings the month's lord, and the day's, part on; the verse's
+  /// own by default.
   final MaseshaRules masesha;
 
   /// The floors the month's results judge strong and weak by; the year
@@ -15803,6 +15804,7 @@ final class MasaPravesha extends _Value {
     required this.sunDeg,
     this.masesha,
     this.results,
+    this.dinesha,
   });
 
   /// The year, as [Pravesha.year] counts it.
@@ -15827,8 +15829,103 @@ final class MasaPravesha extends _Value {
   /// The month's results, where the request named a place; null otherwise.
   final MasaPhala? results;
 
+  /// The day's lord, where the request named a month and a place; null
+  /// otherwise.
+  final Dinesha? dinesha;
+
   @override
-  List<Object?> get _fields => [year, month, day, at, sunDeg, masesha, results];
+  List<Object?> get _fields => [
+    year,
+    month,
+    day,
+    at,
+    sunDeg,
+    masesha,
+    results,
+    dinesha,
+  ];
+}
+
+/// The seven office-bearers of one day (*Tajika Nilakanthi*, Varsha
+/// Tantra, v. 17).
+final class DayBearers extends _Value {
+  const DayBearers({
+    required this.muntha,
+    required this.janmaLagna,
+    required this.triRashi,
+    required this.dinaRatri,
+    required this.dinaLagna,
+    required this.masaLagna,
+    required this.varshaLagna,
+    required this.byDay,
+  });
+
+  /// The Muntha's sign's lord, the Muntha moved on 5′ a day.
+  final Graha muntha;
+  final Graha janmaLagna;
+
+  /// The day lagna's triplicity lord, by day or by night.
+  final Graha triRashi;
+
+  /// The lord of the Sun's sign by day, of the Moon's by night.
+  final Graha dinaRatri;
+  final Graha dinaLagna;
+  final Graha masaLagna;
+  final Graha varshaLagna;
+
+  /// Whether the day opened by day, which chose two of them.
+  final bool byDay;
+
+  @override
+  List<Object?> get _fields => [
+    muntha,
+    janmaLagna,
+    triRashi,
+    dinaRatri,
+    dinaLagna,
+    masaLagna,
+    varshaLagna,
+    byDay,
+  ];
+}
+
+/// The lord of one day, and the chain it was read beside
+/// (`03-design/varshesha.md`, "The day's lord").
+final class Dinesha extends _Value {
+  const Dinesha({
+    required this.graha,
+    required this.reading,
+    required this.bearers,
+    required this.chain,
+  });
+
+  /// The lord under [reading].
+  final Graha graha;
+  final MaseshaReading reading;
+
+  /// The seven it was chosen among.
+  final DayBearers bearers;
+
+  /// The chain over the seven, carried under either reading.
+  final YearLord chain;
+
+  /// The chain by what it holds, since a [YearLord] compares by identity.
+  @override
+  List<Object?> get _fields => [
+    graha,
+    reading,
+    bearers,
+    chain.graha,
+    chain.chosen,
+    chain.vishwa.total,
+    chain.moonPassedOver,
+    for (final claim in chain.claims) ...[
+      claim.graha,
+      claim.vishwa.total,
+      claim.portfolios,
+      claim.aspectsLagna,
+    ],
+  ];
 }
 
 /// A clause of vv. 7–11 about one house (*Tajika Nilakanthi*, Varsha
@@ -16025,7 +16122,32 @@ MasaPravesha _masaPraveshaFrom(Map<String, Object?> raw) => MasaPravesha(
     final Map<String, Object?> results => _masaPhalaFrom(results),
     _ => null,
   },
+  dinesha: switch (raw['dinesha']) {
+    final Map<String, Object?> lord => _dineshaFrom(lord),
+    _ => null,
+  },
 );
+
+/// A day's lord from the section's JSON, read as the month's lord is.
+Dinesha _dineshaFrom(Map<String, Object?> raw) {
+  Graha graha(Object? key) => _key(key, Graha.byKey, Graha.unknown);
+  final seven = raw['bearers']! as Map<String, Object?>;
+  return Dinesha(
+    graha: graha(raw['graha']),
+    reading: _keyedIn(MaseshaReading.values, raw['reading']),
+    bearers: DayBearers(
+      muntha: graha(seven['muntha']),
+      janmaLagna: graha(seven['janmaLagna']),
+      triRashi: graha(seven['triRashi']),
+      dinaRatri: graha(seven['dinaRatri']),
+      dinaLagna: graha(seven['dinaLagna']),
+      masaLagna: graha(seven['masaLagna']),
+      varshaLagna: graha(seven['varshaLagna']),
+      byDay: seven['byDay']! as bool,
+    ),
+    chain: _yearLordChainFrom(raw['chain']! as Map<String, Object?>),
+  );
+}
 
 /// A month's results from the section's JSON, its keys made members.
 MasaPhala _masaPhalaFrom(Map<String, Object?> raw) {
@@ -16078,26 +16200,33 @@ Masesha _maseshaFrom(Map<String, Object?> raw) {
       varshaLagna: graha(bearers['varshaLagna']),
       byDay: bearers['byDay']! as bool,
     ),
-    chain: YearLord(
-      graha: graha(chain['graha']),
-      chosen:
-          VarsheshaChosen.byKey(chain['chosen']! as String) ??
-          (throw StateError(
-            'a spelling this build does not know: ${chain['chosen']}',
-          )),
-      vishwa: Bala(chain['vishwa']! as int),
-      moonPassedOver: chain['moonPassedOver']! as bool,
-      claims: List<YearClaim>.unmodifiable([
-        for (final claim in chain['claims']! as List<Object?>)
-          if (claim case final Map<String, Object?> claim)
-            YearClaim(
-              graha: graha(claim['graha']),
-              vishwa: Bala(claim['vishwa']! as int),
-              portfolios: claim['portfolios']! as int,
-              aspectsLagna: claim['aspectsLagna']! as bool,
-            ),
-      ]),
-    ),
+    chain: _yearLordChainFrom(chain),
+  );
+}
+
+/// A month's or a day's chain from the section's JSON, its strengths read
+/// as the year lord's are.
+YearLord _yearLordChainFrom(Map<String, Object?> chain) {
+  Graha graha(Object? key) => _key(key, Graha.byKey, Graha.unknown);
+  return YearLord(
+    graha: graha(chain['graha']),
+    chosen:
+        VarsheshaChosen.byKey(chain['chosen']! as String) ??
+        (throw StateError(
+          'a spelling this build does not know: ${chain['chosen']}',
+        )),
+    vishwa: Bala(chain['vishwa']! as int),
+    moonPassedOver: chain['moonPassedOver']! as bool,
+    claims: List<YearClaim>.unmodifiable([
+      for (final claim in chain['claims']! as List<Object?>)
+        if (claim case final Map<String, Object?> claim)
+          YearClaim(
+            graha: graha(claim['graha']),
+            vishwa: Bala(claim['vishwa']! as int),
+            portfolios: claim['portfolios']! as int,
+            aspectsLagna: claim['aspectsLagna']! as bool,
+          ),
+    ]),
   );
 }
 

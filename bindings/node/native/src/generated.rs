@@ -2325,10 +2325,11 @@ pub struct ChartRequest {
     /// annual chart's years are; optionally `month`, 1 to 12, for that
     /// month's thirty days instead of the year's twelve months; and
     /// optionally `reading`, `"SIDEREAL"` (the default) or `"TROPICAL"`,
-    /// the zodiac the year divides in. Without `month`, optionally
-    /// `place`, `"birth"` or `{latitudeDeg, longitudeDeg, altitudeM,
-    /// utcOffsetSeconds}` as `varsha_json` writes it, where each month's
-    /// chart is founded and its lord and results read, under optionally
+    /// the zodiac the year divides in. Optionally `place`, `"birth"` or
+    /// `{latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds}` as
+    /// `varsha_json` writes it, where each month's chart is founded and
+    /// its lord and results read, or with `month` each day's chart and its
+    /// lord, under optionally
     /// `masesha`, `{reading, muntha, chain}` (`03-design/varshesha.md`,
     /// "The month's lord"), and `results`, `{weakBelow, strongFrom}` in
     /// sub-sub-units ("The month's results"). The instants come back in the `masa_pravesha` section, the

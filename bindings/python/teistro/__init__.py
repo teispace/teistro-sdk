@@ -815,6 +815,8 @@ __all__ = [
     "MaseshaRules",
     "MonthBearers",
     "Masesha",
+    "DayBearers",
+    "Dinesha",
     "MasaPhalaRules",
     "MonthHouseClause",
     "MonthLord",
@@ -9714,11 +9716,11 @@ class MasaPraveshaRequest(TypedDict, total=False):
     year places no Sun."""
     place: Union[Literal["birth"], "VarshaPlace"]
     """Where each month's chart is founded, as `VarshaRequest.place` is
-    written; given, each month carries its `masesha` and its `results`.
-    The year's months only: a day's lord is not built, so a `month` beside
-    it is refused."""
+    written; given, each month carries its `masesha` and its `results`,
+    and beside a `month` each day carries its `dinesha`."""
     masesha: "MaseshaRules"
-    """The readings the month's lord parts on; the verse's own by default."""
+    """The readings the month's lord, and the day's, part on; the verse's
+    own by default."""
     results: "MasaPhalaRules"
     """The floors the month's results judge strong and weak by; the year
     yogas' own by default."""
@@ -9808,6 +9810,41 @@ class MasaPravesha:
     """The month's lord, where the request named a `place`."""
     results: Optional["MasaPhala"] = None
     """The month's results, where the request named a `place`."""
+    dinesha: Optional["Dinesha"] = None
+    """The day's lord, where the request named a `month` and a `place`."""
+
+
+@dataclass(frozen=True)
+class DayBearers:
+    """The seven office-bearers of one day (*Tajika Nilakanthi*, Varsha
+    Tantra, v. 17)."""
+
+    muntha: Graha
+    """The Muntha's sign's lord, the Muntha moved on 5′ a day."""
+    janma_lagna: Graha
+    tri_rashi: Graha
+    """The day lagna's triplicity lord, by day or by night."""
+    dina_ratri: Graha
+    """The lord of the Sun's sign by day, of the Moon's by night."""
+    dina_lagna: Graha
+    masa_lagna: Graha
+    varsha_lagna: Graha
+    by_day: bool
+    """Whether the day opened by day, which chose two of them."""
+
+
+@dataclass(frozen=True)
+class Dinesha:
+    """The lord of one day, and the chain it was read beside
+    (`03-design/varshesha.md`, "The day's lord")."""
+
+    graha: Graha
+    """The lord under `reading`."""
+    reading: Literal["CHAIN", "LAGNA_LORD"]
+    bearers: DayBearers
+    """The seven it was chosen among."""
+    chain: YearLord
+    """The chain over the seven, carried under either reading."""
 
 
 MonthHouseClause = Literal[
@@ -12187,6 +12224,32 @@ def _masa_pravesha(raw: Mapping[str, Any]) -> MasaPravesha:
         sun_deg=raw["sunDeg"],
         masesha=None if lord is None else _masesha(lord),
         results=None if lord is None else _masa_phala(raw["results"]),
+        dinesha=None if raw.get("dinesha") is None else _dinesha(raw["dinesha"]),
+    )
+
+
+def _dinesha(raw: Mapping[str, Any]) -> Dinesha:
+    """A day's lord from the section's JSON, read as the month's lord is."""
+    seven = raw["bearers"]
+
+    def graha(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    return Dinesha(
+        graha=graha(raw["graha"]),
+        reading=raw["reading"],
+        bearers=DayBearers(
+            muntha=graha(seven["muntha"]),
+            janma_lagna=graha(seven["janmaLagna"]),
+            tri_rashi=graha(seven["triRashi"]),
+            dina_ratri=graha(seven["dinaRatri"]),
+            dina_lagna=graha(seven["dinaLagna"]),
+            masa_lagna=graha(seven["masaLagna"]),
+            varsha_lagna=graha(seven["varshaLagna"]),
+            by_day=seven["byDay"],
+        ),
+        chain=_year_lord_chain(raw["chain"]),
     )
 
 
@@ -12237,21 +12300,32 @@ def _masesha(raw: Mapping[str, Any]) -> Masesha:
             varsha_lagna=graha(bearers["varshaLagna"]),
             by_day=bearers["byDay"],
         ),
-        chain=YearLord(
-            graha=graha(chain["graha"]),
-            chosen=_member(VarsheshaChosen, chain["chosen"]),
-            vishwa=_bala(chain["vishwa"]),
-            moon_passed_over=chain["moonPassedOver"],
-            claims=[
-                YearClaim(
-                    graha=graha(claim["graha"]),
-                    vishwa=_bala(claim["vishwa"]),
-                    portfolios=claim["portfolios"],
-                    aspects_lagna=claim["aspectsLagna"],
-                )
-                for claim in chain["claims"]
-            ],
-        ),
+        chain=_year_lord_chain(chain),
+    )
+
+
+def _year_lord_chain(chain: Mapping[str, Any]) -> YearLord:
+    """A month's or a day's chain from the section's JSON, its strengths
+    read as the year lord's are."""
+
+    def graha(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    return YearLord(
+        graha=graha(chain["graha"]),
+        chosen=_member(VarsheshaChosen, chain["chosen"]),
+        vishwa=_bala(chain["vishwa"]),
+        moon_passed_over=chain["moonPassedOver"],
+        claims=[
+            YearClaim(
+                graha=graha(claim["graha"]),
+                vishwa=_bala(claim["vishwa"]),
+                portfolios=claim["portfolios"],
+                aspects_lagna=claim["aspectsLagna"],
+            )
+            for claim in chain["claims"]
+        ],
     )
 
 

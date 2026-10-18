@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The day's lord (Dinesha)** (`varshesha.md`). **Numbers:** none moved;
+this adds answers. `teistro_tajika::dinesha` and `sdk.chart().dinesha`
+read the *Tajika Nilakanthi*'s day's lord (Varsha Tantra, the month's and
+the day's results, v. 17). It is the strongest of seven office-bearers
+that aspects the day's lagna: the month's six with the day lagna's lord
+added. The Muntha moves on 5′ a day. A `masaPravesha` record with a
+`month` and a `place`, refused before, now founds each day's chart and
+carries its `dinesha` on every day row, read in Node, Python, Dart and
+Java. Cruxes C458 and C459.
+
 **The month's results** (`varshesha.md`). **Numbers:** none moved; this
 adds answers. `teistro_tajika::masa_phala` and `sdk.chart().masa_phala`
 read the *Tajika Nilakanthi*'s month's results (Varsha Tantra, the month's
