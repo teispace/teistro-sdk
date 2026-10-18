@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 28 851 items, 310 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 29 191 items, 313 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 3 731 987 bytes of JSON over the 93 charts, 40 128 bytes a
-chart, 48 358 bytes for the widest and 129 bytes an item. The verses'
-own cited words are **not** what weighs it — 308 988 bytes, 8% — so
+golden file: 3 778 859 bytes of JSON over the 93 charts, 40 632 bytes a
+chart, 49 421 bytes for the widest and 129 bytes an item. The verses'
+own cited words are **not** what weighs it — 312 395 bytes, 8% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 28851 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 28851 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 28851 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 28851 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 29191 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 29191 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 29191 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 29191 disagree |
 
-Every one of the 57 702 renderings — 28 851 in each of 2 strict
+Every one of the 58 382 renderings — 29 191 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -72,10 +72,10 @@ about.
 | `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
-| `sdk.reading.effect` | 5573 |
+| `sdk.reading.effect` | 5781 |
 | `sdk.reading.lifeClass` | 296 |
 | `sdk.reading.lifeSpan` | 176 |
-| `sdk.reading.participants` | 6217 |
+| `sdk.reading.participants` | 6349 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 420 |
@@ -112,7 +112,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 5573 of the 28 851
+**The verse's own statement is not translated.** 5781 of the 29 191
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -124,7 +124,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 842 rules this pass composes carry a reading, and they
+rule: 12 of the 884 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -717,6 +717,10 @@ PHALADEEPIKA_MAHARAJA_VENUS_ASPECTED_BY_JUPITER: a king, when born to a royal fa
 PHALADEEPIKA_MAHARAJA_VENUS_ASPECTED_BY_JUPITER: Jupiter and Venus take part
 BJ_RAJA_BENEFIC_SIGNS_IN_THE_KENDRAS_MALEFICS_IN_MALEFIC_SIGNS: rich, and the chief of hunters and robbers
 BJ_RAJA_BENEFIC_SIGNS_IN_THE_KENDRAS_MALEFICS_IN_MALEFIC_SIGNS: Sun, Mars and Saturn take part
+BJ_ANISHTA_NO_SONS: no sons
+BJ_ANISHTA_NO_WIFE: no wife
+BJ_ANISHTA_VENUS_TWELFTH_IN_A_SATURNIAN_NAVAMSHA: the son of a serving woman
+BJ_ANISHTA_VENUS_TWELFTH_IN_A_SATURNIAN_NAVAMSHA: Venus takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: Venus takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: cancelled
 ARISHTA_MALEFICS_FROM_THE_SUN: Moon and Ketu take part
@@ -1030,6 +1034,10 @@ PHALADEEPIKA_MAHARAJA_VENUS_ASPECTED_BY_JUPITER: a king, when born to a royal fa
 PHALADEEPIKA_MAHARAJA_VENUS_ASPECTED_BY_JUPITER: गुरु र शुक्र संलग्न छन्
 BJ_RAJA_BENEFIC_SIGNS_IN_THE_KENDRAS_MALEFICS_IN_MALEFIC_SIGNS: rich, and the chief of hunters and robbers
 BJ_RAJA_BENEFIC_SIGNS_IN_THE_KENDRAS_MALEFICS_IN_MALEFIC_SIGNS: सूर्य, मंगल र शनि संलग्न छन्
+BJ_ANISHTA_NO_SONS: no sons
+BJ_ANISHTA_NO_WIFE: no wife
+BJ_ANISHTA_VENUS_TWELFTH_IN_A_SATURNIAN_NAVAMSHA: the son of a serving woman
+BJ_ANISHTA_VENUS_TWELFTH_IN_A_SATURNIAN_NAVAMSHA: शुक्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: शुक्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: रद्द
 ARISHTA_MALEFICS_FROM_THE_SUN: चन्द्र र केतु संलग्न छन्
