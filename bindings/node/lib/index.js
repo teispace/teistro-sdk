@@ -5426,7 +5426,45 @@ const MASA_PRAVESHA = new WeakMap();
  * @returns {object[][]}
  */
 function masaPraveshasOf(batch) {
-  return sectionOf(MASA_PRAVESHA, batch, 'masaPravesha');
+  return sectionOf(MASA_PRAVESHA, batch, 'masaPravesha', (chart) =>
+    chart.map((row) => (row.masesha === undefined ? row : { ...row, masesha: maseshaFrom(row.masesha) })),
+  );
+}
+
+/**
+ * A month's lord as the section writes it, its grahas full keys and its
+ * strengths read as the year lord's are.
+ *
+ * @param {object} raw
+ * @returns {object}
+ */
+function maseshaFrom({ graha, reading, bearers, chain }) {
+  const full = (key) => `graha.${key}`;
+  return {
+    graha: full(graha),
+    reading,
+    bearers: {
+      masaLagna: full(bearers.masaLagna),
+      muntha: full(bearers.muntha),
+      janmaLagna: full(bearers.janmaLagna),
+      triRashi: full(bearers.triRashi),
+      dinaRatri: full(bearers.dinaRatri),
+      varshaLagna: full(bearers.varshaLagna),
+      byDay: bearers.byDay,
+    },
+    chain: {
+      graha: full(chain.graha),
+      chosen: chain.chosen,
+      vishwa: bala(chain.vishwa),
+      moonPassedOver: chain.moonPassedOver,
+      claims: chain.claims.map((claim) => ({
+        graha: full(claim.graha),
+        vishwa: bala(claim.vishwa),
+        portfolios: claim.portfolios,
+        aspectsLagna: claim.aspectsLagna,
+      })),
+    },
+  };
 }
 
 /** Each batch's aspect configurations, parsed once however many charts read them. */

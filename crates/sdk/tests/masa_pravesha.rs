@@ -256,3 +256,47 @@ fn each_month_has_its_lord_and_the_first_is_the_years() {
         .unwrap_err();
     assert_eq!(refused.field(), Some("month"));
 }
+
+#[test]
+fn a_place_founds_each_month_and_carries_its_lord() {
+    let sdk = context();
+    let natal = chart(&sdk, BIRTH);
+    let clock = UtcOffset::try_from_seconds(20_700).unwrap();
+    let asked =
+        teistro::MasaPraveshaRequest::from_json(r#"{"year": 30, "place": "birth"}"#).unwrap();
+    let rows = sdk.chart().masa_pravesha(&natal, clock, &asked).unwrap();
+    let months = sdk
+        .chart()
+        .masa_praveshas(&natal, Reading::Sidereal, 30)
+        .unwrap();
+    assert_eq!(rows.len(), 12);
+    let year = chart(&sdk, months[0].at.get());
+    for (row, entry) in rows.iter().zip(&months) {
+        assert_eq!(row.entry, teistro::tajika::DinaPravesha::from(*entry));
+        let month = chart(&sdk, entry.at.get());
+        let lord = sdk
+            .chart()
+            .masesha(&natal, &year, &month, entry, MaseshaRules::default())
+            .unwrap();
+        assert_eq!(row.masesha.as_ref(), Some(&lord), "month {}", entry.month);
+    }
+    // Without a place the rows are the instants alone.
+    let bare = teistro::MasaPraveshaRequest::new(30);
+    let rows = sdk.chart().masa_pravesha(&natal, clock, &bare).unwrap();
+    assert!(rows.iter().all(|row| row.masesha.is_none()));
+    // A place beside a month is refused: a day's lord is not built.
+    let refused =
+        teistro::MasaPraveshaRequest::from_json(r#"{"year": 30, "month": 2, "place": "birth"}"#)
+            .unwrap_err();
+    assert_eq!(refused.field(), Some("masaPravesha.place"));
+    // The section's wire spelling, camelCase to the leaves.
+    let wire = serde_json::to_value(&rows_with_lords(&sdk, &natal, clock)[0]).unwrap();
+    assert!(wire["masesha"]["bearers"]["masaLagna"].is_string());
+    assert!(wire["masesha"]["chain"]["moonPassedOver"].is_boolean());
+    assert!(wire["masesha"]["chain"]["claims"][0]["aspectsLagna"].is_boolean());
+}
+
+fn rows_with_lords(sdk: &Context, natal: &Document, clock: UtcOffset) -> Vec<teistro::MasaRow> {
+    let asked = teistro::MasaPraveshaRequest::new(30).at(teistro::AnnualPlace::Birth);
+    sdk.chart().masa_pravesha(natal, clock, &asked).unwrap()
+}

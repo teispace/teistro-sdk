@@ -4814,6 +4814,27 @@ test('a chart reads its month and day charts', () => {
     () => ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, reading: 'MEAN' } }),
     (error) => error.field === 'masaPravesha.reading',
   );
+
+  // A place founds each month and reads its lord; the first month's is the year's.
+  assert.equal(months[0].masesha, undefined, 'no lord without a place');
+  const third = ctx.chart.found({ instant, ...at, varsha: { through: 3, place: 'birth' } }).praveshas[2];
+  assert.equal(third.year, 3);
+  const lords = ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, place: 'birth' } }).masaPravesha;
+  assert.equal(lords.length, 12);
+  assert.ok(Object.isFrozen(lords[0].masesha.chain.claims), 'frozen to its leaves');
+  assert.equal(lords[0].masesha.graha, third.annual.yearLord.graha, "the first month's lord is the year's");
+  for (const { masesha } of lords) {
+    assert.equal(masesha.reading, 'CHAIN');
+    assert.equal(masesha.graha, masesha.chain.graha);
+    assert.ok(masesha.chain.claims.every((claim) => claim.graha.startsWith('graha.') && claim.vishwa.total > 0));
+  }
+  const others = ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, place: 'birth', masesha: { reading: 'LAGNA_LORD' } } })
+    .masaPravesha;
+  others.forEach(({ masesha }) => assert.equal(masesha.graha, masesha.bearers.masaLagna));
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, month: 2, place: 'birth' } }),
+    (error) => error.field === 'masaPravesha.place',
+  );
 });
 
 test('a chart carries its Lal Kitab', () => {

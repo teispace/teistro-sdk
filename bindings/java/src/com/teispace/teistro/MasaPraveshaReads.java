@@ -2,7 +2,10 @@ package com.teispace.teistro;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import com.teispace.teistro.request.MaseshaReading;
 
 /**
  * The {@code masa_pravesha} section parsed once a batch into {@link MasaPravesha} records, as
@@ -31,11 +34,48 @@ final class MasaPraveshaReads {
                             JsonRead.integer(JsonRead.at(row, "month")),
                             JsonRead.integer(JsonRead.at(row, "day")),
                             JsonRead.decimal(JsonRead.at(row, "at")),
-                            JsonRead.decimal(JsonRead.at(row, "sunDeg"))));
+                            JsonRead.decimal(JsonRead.at(row, "sunDeg")),
+                            row instanceof Map<?, ?> fields && fields.get("masesha") != null
+                                    ? masesha(fields.get("masesha")) : null));
                 }
                 charts.add(List.copyOf(one));
             }
             return List.copyOf(charts);
         }), chart.index());
+    }
+
+    /** A month's lord, its keys made members and its strengths read as the year lord's are. */
+    private static Masesha masesha(Object raw) {
+        Object six = JsonRead.at(raw, "bearers");
+        Object chain = JsonRead.at(raw, "chain");
+        List<YearClaim> claims = new ArrayList<>();
+        for (Object claim : JsonRead.list(JsonRead.at(chain, "claims"))) {
+            claims.add(new YearClaim(
+                    graha(JsonRead.at(claim, "graha")),
+                    TajikaReads.bala(JsonRead.integer(JsonRead.at(claim, "vishwa"))),
+                    JsonRead.integer(JsonRead.at(claim, "portfolios")),
+                    JsonRead.bool(JsonRead.at(claim, "aspectsLagna"))));
+        }
+        return new Masesha(
+                graha(JsonRead.at(raw, "graha")),
+                JsonRead.member(MaseshaReading::byKey, "MaseshaReading", JsonRead.at(raw, "reading")),
+                new MonthBearers(
+                        graha(JsonRead.at(six, "masaLagna")),
+                        graha(JsonRead.at(six, "muntha")),
+                        graha(JsonRead.at(six, "janmaLagna")),
+                        graha(JsonRead.at(six, "triRashi")),
+                        graha(JsonRead.at(six, "dinaRatri")),
+                        graha(JsonRead.at(six, "varshaLagna")),
+                        JsonRead.bool(JsonRead.at(six, "byDay"))),
+                new YearLord(
+                        graha(JsonRead.at(chain, "graha")),
+                        JsonRead.member(VarsheshaChosen::byKey, "VarsheshaChosen", JsonRead.at(chain, "chosen")),
+                        TajikaReads.bala(JsonRead.integer(JsonRead.at(chain, "vishwa"))),
+                        JsonRead.bool(JsonRead.at(chain, "moonPassedOver")),
+                        List.copyOf(claims)));
+    }
+
+    private static Graha graha(Object key) {
+        return JsonRead.member(Graha::byKey, "Graha", key);
     }
 }

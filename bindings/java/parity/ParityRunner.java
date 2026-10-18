@@ -1496,7 +1496,7 @@ public final class ParityRunner {
                 // Three years under the practice's rule.
                 .tithiPravesha(TithiPraveshaRequest.builder().through(3).build())
                 // The second year's third month, a row a day.
-                .masaPravesha(MasaPraveshaRequest.builder().year(2).month(3).build())
+                .masaPravesha(MasaPraveshaRequest.builder().year(2).place(AnnualPlace.BIRTH).build())
                 .dossier(DossierOptions.builder().sections(List.of("CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES", "GOCHAR"))
                         .at(2460676.5).dashaDepth(2).utcOffsetSeconds(20_700).build())
                 // A varshphal list with the book's structure and none of its numbers:
@@ -2066,8 +2066,18 @@ public final class ParityRunner {
         List<MasaPravesha> masa = chart.masaPravesha().orElseThrow();
         put(c + "-masa-pravesha-count", String.valueOf(masa.size()));
         for (MasaPravesha one : masa) {
-            put(c + "-masa-pravesha-" + one.year() + "-" + one.month() + "-" + one.day(),
-                    number(one.at()) + " " + number(one.sunDeg()));
+            String key = c + "-masa-pravesha-" + one.year() + "-" + one.month() + "-" + one.day();
+            put(key, number(one.at()) + " " + number(one.sunDeg()));
+            Masesha lord = one.masesha();
+            if (lord != null) {
+                MonthBearers six = lord.bearers();
+                List<Graha> bearers = List.of(six.masaLagna(), six.muntha(), six.janmaLagna(), six.triRashi(),
+                        six.dinaRatri(), six.varshaLagna());
+                put(key + "-masesha", lord.graha().fullKey() + " " + lord.reading().key() + " "
+                        + lord.chain().chosen().key() + " " + lord.chain().vishwa() + " "
+                        + String.join(",", bearers.stream().map(Graha::fullKey).toList()) + " "
+                        + (six.byDay() ? 1 : 0));
+            }
         }
         String dossier = chart.dossier().orElseThrow();
         put(c + "-dossier", dossier.getBytes(java.nio.charset.StandardCharsets.UTF_8).length + " " + fnv(dossier));

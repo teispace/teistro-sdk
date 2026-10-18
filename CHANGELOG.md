@@ -41,6 +41,14 @@ that "others" hold, the month lagna's lord outright, is
 choose among any set of office-bearers. The commentary's month example,
 which supposes a Muntha only the natal-degree reading gives, is recorded
 under crux C107 as evidence; the default is unchanged.
+The month's lord crosses the boundary in the `masaPravesha` record. Given a
+`place` (`"birth"` or a residence, as `varsha.place` is written) and
+optionally `masesha` rules, each of the year's months is founded there and
+its row carries `masesha`, read in every binding with the chain as that
+binding's own year lord. A place beside a `month` is refused as
+`masaPravesha.place`, since a day's lord is not built. The year lord's
+`Varshesha` and `Claim` now serialise in camelCase (`moonPassedOver`,
+`aspectsLagna`), the spelling every other answer uses.
 
 **The month's and the day's chart (Maasa and Dina Pravesha)**
 (`annual-chart.md`). **Numbers:** none moved; this adds answers.

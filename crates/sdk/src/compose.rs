@@ -542,7 +542,7 @@ pub struct Composed<'r> {
     /// Every chart's months of the year asked for, each as its first
     /// day, or the days of the month asked for, a row each.
     #[cfg(feature = "tajika")]
-    pub masa_pravesha: Vec<Vec<teistro_tajika::DinaPravesha>>,
+    pub masa_pravesha: Vec<Vec<crate::MasaRow>>,
     /// The Western tables.
     #[cfg(feature = "western")]
     pub western: WesternTables,
@@ -661,7 +661,7 @@ impl ChartArea<'_> {
             #[cfg(feature = "tajika")]
             tithi_pravesha: self.tithi_praveshas_of(documents, records.tithi_pravesha.as_ref())?,
             #[cfg(feature = "tajika")]
-            masa_pravesha: self.masa_praveshas_of(documents, records.masa_pravesha.as_ref())?,
+            masa_pravesha: self.masa_praveshas_of(documents, records, request)?,
             #[cfg(feature = "western")]
             western: self.western_of(documents, &records.western, request)?,
             fortitudes,
@@ -776,16 +776,19 @@ impl ChartArea<'_> {
         })
     }
 
-    /// Every chart's month or day charts; a refusal is named under
-    /// `masaPravesha` and the chart it came from.
+    /// Every chart's month or day charts, the months' founded on the
+    /// request's clock where the record names `"birth"`; a refusal is
+    /// named under `masaPravesha` and the chart it came from.
     #[cfg(feature = "tajika")]
     fn masa_praveshas_of(
         self,
         documents: &[Document],
-        asked: Option<&crate::MasaPraveshaRequest>,
-    ) -> Result<Vec<Vec<teistro_tajika::DinaPravesha>>, Error> {
+        records: &ChartRecords,
+        request: &ChartRequest,
+    ) -> Result<Vec<Vec<crate::MasaRow>>, Error> {
+        let asked = records.masa_pravesha.as_ref();
         chart_by_chart(documents, asked, Some("masaPravesha"), |document, asked| {
-            self.masa_pravesha(document, asked)
+            self.masa_pravesha(document, request.offset(), asked)
         })
     }
 

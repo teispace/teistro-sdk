@@ -812,6 +812,9 @@ __all__ = [
     # The month's and the day's chart: the Sun a sign, or a degree, further.
     "MasaPraveshaRequest",
     "MasaPravesha",
+    "MaseshaRules",
+    "MonthBearers",
+    "Masesha",
     # The dossier: a chart as text for a language model.
     "DossierRequest",
     "DossierSection",
@@ -2172,7 +2175,7 @@ class ChartArea(_Area):
             lalkitab_json=_lalkitab_json(lalkitab),
             sarvatobhadra_json=_record_json(sarvatobhadra, "sarvatobhadra", "{'instants': [2460676.5]}"),
             tithi_pravesha_json=_record_json(tithi_pravesha, "tithiPravesha", "{'through': 40}"),
-            masa_pravesha_json=_record_json(masa_pravesha, "masaPravesha", "{'year': 30, 'month': 4}"),
+            masa_pravesha_json=_masa_pravesha_json(masa_pravesha),
             dossier_json=_record_json(dossier, "dossier", "{'sections': ['GRAHAS', 'DASHAS'], 'at': 2460676.5}"),
             rectification_json=_record_json(rectification, "rectification", "{'purify': {'minutes': 30}}"),
         )
@@ -9702,6 +9705,59 @@ class MasaPraveshaRequest(TypedDict, total=False):
     reading: Literal["SIDEREAL", "TROPICAL"]
     """The zodiac the year divides in; `SIDEREAL` when left out. The mean
     year places no Sun."""
+    place: Union[Literal["birth"], "VarshaPlace"]
+    """Where each month's chart is founded, as `VarshaRequest.place` is
+    written; given, each month carries its `masesha`. The year's months
+    only: a day's lord is not built, so a `month` beside it is refused."""
+    masesha: "MaseshaRules"
+    """The readings the month's lord parts on; the verse's own by default."""
+
+
+class MaseshaRules(TypedDict, total=False):
+    """The readings the month's lord parts on (`03-design/varshesha.md`,
+    "The month's lord").
+
+    >>> others: MaseshaRules = {"reading": "LAGNA_LORD"}
+    """
+
+    reading: Literal["CHAIN", "LAGNA_LORD"]
+    """`CHAIN`, the year lord's chain over the six (the verse's own), or
+    `LAGNA_LORD`, the month lagna's lord (v. 5's "others")."""
+    muntha: Literal["SIGN_START", "NATAL_DEGREE"]
+    """Where the Muntha stands inside its sign; the year's own default."""
+    chain: "VarsheshaRules"
+    """The year lord's readings, which the chain takes "as for the year"."""
+
+
+@dataclass(frozen=True)
+class MonthBearers:
+    """The six office-bearers of one month."""
+
+    masa_lagna: Graha
+    muntha: Graha
+    """The Muntha's sign's lord, the Muntha moved on 2°30′ a month."""
+    janma_lagna: Graha
+    tri_rashi: Graha
+    """The month lagna's triplicity lord, by day or by night."""
+    dina_ratri: Graha
+    """The lord of the Sun's sign by day, of the Moon's by night."""
+    varsha_lagna: Graha
+    by_day: bool
+    """Whether the month opened by day, which chose two of them."""
+
+
+@dataclass(frozen=True)
+class Masesha:
+    """The lord of one month, and the chain it was read beside."""
+
+    graha: Graha
+    """The lord under `reading`."""
+    reading: Literal["CHAIN", "LAGNA_LORD"]
+    bearers: MonthBearers
+    """The six it was chosen among."""
+    chain: YearLord
+    """The chain over the six, carried under either reading so a reader
+    sees where the two part."""
 
 
 @dataclass(frozen=True)
@@ -9722,6 +9778,8 @@ class MasaPravesha:
     """The instant, a Julian day (UTC)."""
     sun_deg: float
     """Where the Sun stands then, degrees in the year's zodiac."""
+    masesha: Optional[Masesha] = None
+    """The month's lord, where the request named a `place`."""
 
 
 DossierSection = Literal[
@@ -12027,13 +12085,55 @@ def _tithi_pravesha(raw: Mapping[str, Any]) -> TithiPravesha:
 
 
 def _masa_pravesha(raw: Mapping[str, Any]) -> MasaPravesha:
-    """One instant from the `masa_pravesha` section's JSON."""
+    """One instant from the `masa_pravesha` section's JSON, with its
+    month's lord where one was read."""
+    lord = raw.get("masesha")
     return MasaPravesha(
         year=raw["year"],
         month=raw["month"],
         day=raw["day"],
         at=raw["at"],
         sun_deg=raw["sunDeg"],
+        masesha=None if lord is None else _masesha(lord),
+    )
+
+
+def _masesha(raw: Mapping[str, Any]) -> Masesha:
+    """A month's lord from the section's JSON, its keys made members and
+    its strengths read as the year lord's are."""
+    bearers, chain = raw["bearers"], raw["chain"]
+
+    def graha(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    return Masesha(
+        graha=graha(raw["graha"]),
+        reading=raw["reading"],
+        bearers=MonthBearers(
+            masa_lagna=graha(bearers["masaLagna"]),
+            muntha=graha(bearers["muntha"]),
+            janma_lagna=graha(bearers["janmaLagna"]),
+            tri_rashi=graha(bearers["triRashi"]),
+            dina_ratri=graha(bearers["dinaRatri"]),
+            varsha_lagna=graha(bearers["varshaLagna"]),
+            by_day=bearers["byDay"],
+        ),
+        chain=YearLord(
+            graha=graha(chain["graha"]),
+            chosen=_member(VarsheshaChosen, chain["chosen"]),
+            vishwa=_bala(chain["vishwa"]),
+            moon_passed_over=chain["moonPassedOver"],
+            claims=[
+                YearClaim(
+                    graha=graha(claim["graha"]),
+                    vishwa=_bala(claim["vishwa"]),
+                    portfolios=claim["portfolios"],
+                    aspects_lagna=claim["aspectsLagna"],
+                )
+                for claim in chain["claims"]
+            ],
+        ),
     )
 
 
@@ -13343,6 +13443,22 @@ def _camel_keys(record: Mapping[str, Any]) -> Dict[str, Any]:
         camel(key): _camel_keys(value) if isinstance(value, Mapping) else value
         for key, value in record.items()
     }
+
+
+def _masa_pravesha_json(asked: Optional[MasaPraveshaRequest]) -> Optional[str]:
+    """The month or day charts as the JSON the boundary reads, or nothing
+    for none; a residence and the chain's readings are written in the
+    boundary's words, as `_varsha_json` writes the year's."""
+    example = "{'year': 30, 'month': 4}"
+    if not isinstance(asked, Mapping):
+        return _record_json(asked, "masaPravesha", example)
+    written: Dict[str, Any] = dict(asked)
+    if isinstance(written.get("place"), Mapping):
+        written["place"] = _annual_place(written["place"])
+    masesha = written.get("masesha")
+    if isinstance(masesha, Mapping) and isinstance(masesha.get("chain"), Mapping):
+        written["masesha"] = {**masesha, "chain": _camel_keys(masesha["chain"])}
+    return _record_json(written, "masaPravesha", example)
 
 
 def _annual_place(place: Mapping[str, Any]) -> Dict[str, Any]:
