@@ -709,6 +709,7 @@ final class ChartArea extends _Area {
     PrashnaRequest? prashna,
     RemedyRequest? remedies,
     LalKitabRequest? lalkitab,
+    SarvatobhadraRequest? sarvatobhadra,
     RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
@@ -758,6 +759,7 @@ final class ChartArea extends _Area {
     prashna: prashna,
     remedies: remedies,
     lalkitab: lalkitab,
+    sarvatobhadra: sarvatobhadra,
     rectification: rectification,
     aspects: aspects,
     points: points,
@@ -827,6 +829,7 @@ final class ChartArea extends _Area {
     PrashnaRequest? prashna,
     RemedyRequest? remedies,
     LalKitabRequest? lalkitab,
+    SarvatobhadraRequest? sarvatobhadra,
     RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
@@ -903,6 +906,7 @@ final class ChartArea extends _Area {
             remediesJson: remedies?._json,
             rectificationJson: rectification?._json,
             lalkitabJson: lalkitab?._json,
+            sarvatobhadraJson: sarvatobhadra?._json,
           ),
         ),
       ),
@@ -14883,6 +14887,594 @@ PrashnaGraded _prashnaGraded(Map<String, Object?> raw) {
   );
 }
 
+/// The sixteen vowels in the order the Sarvatobhadra chakra lays them, a
+/// to the visarga (`03-design/gochar.md` §8).
+enum ChakraVowel implements _Keyed {
+  a('A'),
+  aa('AA'),
+  i('I'),
+  ii('II'),
+  u('U'),
+  uu('UU'),
+  ri('RI'),
+  rii('RII'),
+  li('LI'),
+  lii('LII'),
+  e('E'),
+  ai('AI'),
+  o('O'),
+  au('AU'),
+  am('AM'),
+  ah('AH');
+
+  const ChakraVowel(this.key);
+
+  @override
+  final String key;
+}
+
+/// A graha's motion as v. 15 sorts it: fast looks left, mean ahead,
+/// retrograde right.
+enum VedhaMotion implements _Keyed {
+  fast('FAST'),
+  mean('MEAN'),
+  retrograde('RETROGRADE');
+
+  const VedhaMotion(this.key);
+
+  @override
+  final String key;
+}
+
+/// One of a graha's three lines of sight, as it sees them facing the
+/// chakra's centre.
+enum VedhaLine implements _Keyed {
+  left('LEFT'),
+  front('FRONT'),
+  right('RIGHT');
+
+  const VedhaLine(this.key);
+
+  @override
+  final String key;
+}
+
+/// A native's point a vedha can strike: v. 28's five and the weekday.
+enum VedhaPoint implements _Keyed {
+  nakshatra('NAKSHATRA'),
+  letter('LETTER'),
+  vowel('VOWEL'),
+  tithi('TITHI'),
+  rashi('RASHI'),
+  vara('VARA');
+
+  const VedhaPoint(this.key);
+
+  @override
+  final String key;
+}
+
+/// A graha's nature in the chakra (v. 12, v. 30).
+enum VedhaNature implements _Keyed {
+  benefic('BENEFIC'),
+  malefic('MALEFIC');
+
+  const VedhaNature(this.key);
+
+  @override
+  final String key;
+}
+
+/// What a graha's front strikes (C429).
+enum FrontVedha implements _Keyed {
+  /// The star at its far end alone, as every worked example prints it;
+  /// the default.
+  starOnly('STAR_ONLY'),
+
+  /// Every cell it passes, v. 13 read alone.
+  everyCell('EVERY_CELL');
+
+  const FrontVedha(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which lines a graha looks along (C430).
+enum VedhaSight implements _Keyed {
+  /// The five by their motion, the Sun, the Moon and the nodes along all
+  /// three (vv. 15, 19); the default.
+  text('TEXT'),
+
+  /// Every graha along all three.
+  allThree('ALL_THREE'),
+
+  /// The five by their motion, the luminaries left and the nodes right.
+  oneEach('ONE_EACH');
+
+  const VedhaSight(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which vowels a graha at a corner's juncture strikes (v. 26, C431).
+enum CornerVedha implements _Keyed {
+  /// The four on the corner's diagonal; the default.
+  fourVowels('FOUR_VOWELS'),
+
+  /// The outermost alone.
+  outerVowel('OUTER_VOWEL');
+
+  const CornerVedha(this.key);
+
+  @override
+  final String key;
+}
+
+/// A name's sounds as the chakra reads them.
+final class NameSounds extends _Value {
+  const NameSounds({required this.letter, required this.vowel});
+
+  /// The first letter in Devanagari: a conjunct's first consonant, or the
+  /// vowel a name begins with.
+  final String letter;
+
+  /// The vowel of its first syllable.
+  final ChakraVowel vowel;
+
+  @override
+  List<Object?> get _fields => [letter, vowel];
+
+  Map<String, Object?> get _record => {'letter': letter, 'vowel': vowel.key};
+}
+
+/// The readings the texts leave open (C429 to C431), each defaulting to
+/// `03-design/gochar.md` §8's.
+final class SarvatobhadraRules extends _Value {
+  const SarvatobhadraRules({
+    this.front = FrontVedha.starOnly,
+    this.sight = VedhaSight.text,
+    this.corner = CornerVedha.fourVowels,
+  });
+
+  final FrontVedha front;
+  final VedhaSight sight;
+  final CornerVedha corner;
+
+  @override
+  List<Object?> get _fields => [front, sight, corner];
+
+  Map<String, Object?> get _record => {
+    'front': front.key,
+    'sight': sight.key,
+    'corner': corner.key,
+  };
+}
+
+/// Where the five from Mars take the motion their sight follows (C430).
+final class SarvatobhadraMotion extends _Value {
+  const SarvatobhadraMotion._(this.key, this.given);
+
+  /// Each speed against its mean motion; the default.
+  static const sky = SarvatobhadraMotion._('SKY', null);
+
+  /// vv. 16–18's rule by the Sun's sign, the sky's where the verses are
+  /// silent.
+  static const sun = SarvatobhadraMotion._('SUN', null);
+
+  /// The caller's, for Mars, Mercury, Jupiter, Venus and Saturn.
+  factory SarvatobhadraMotion.given(List<VedhaMotion> five) {
+    if (five.length != 5) {
+      throw ArgumentError.value(five, 'five', 'five motions, Mars to Saturn');
+    }
+    return SarvatobhadraMotion._('GIVEN', List.unmodifiable(five));
+  }
+
+  final String key;
+
+  /// The five motions, for [SarvatobhadraMotion.given]; otherwise null.
+  final List<VedhaMotion>? given;
+
+  @override
+  List<Object?> get _fields => [key, given];
+
+  Object get _record =>
+      given == null
+          ? key
+          : {
+            'GIVEN': [for (final one in given!) one.key],
+          };
+}
+
+/// The Sarvatobhadra chakra to read against every chart
+/// (`03-design/gochar.md` §8): at each instant, the native's star and
+/// sign the natal Moon's, the tithi and weekday the birth's.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ sarvatobhadra: SarvatobhadraRequest(instants: [2460676.5]),
+/// );
+/// final struck = chart.sarvatobhadra!.first.maleficPoints;
+/// ```
+final class SarvatobhadraRequest {
+  const SarvatobhadraRequest({
+    required this.instants,
+    this.name,
+    this.motion = SarvatobhadraMotion.sky,
+    this.rules = const SarvatobhadraRules(),
+  });
+
+  /// The instants, UTC Julian days: at least one, or the SDK refuses the
+  /// request by `sarvatobhadra.instants`.
+  final List<double> instants;
+
+  /// The name whose first letter and vowel are points too.
+  final NameSounds? name;
+
+  /// Where the five's motion comes from.
+  final SarvatobhadraMotion motion;
+
+  /// The readings of the texts.
+  final SarvatobhadraRules rules;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'instants': instants,
+    if (name != null) 'name': name!._record,
+    'motion': motion._record,
+    'rules': rules._record,
+  });
+}
+
+/// A star of the chakra's 28: one of the 27, or Abhijit.
+final class ChakraStar extends _Value {
+  const ChakraStar(this.nakshatra);
+
+  /// The nakshatra; null for Abhijit.
+  final Nakshatra? nakshatra;
+
+  /// Whether it is Abhijit, between Uttarashadha and Shravana.
+  bool get abhijit => nakshatra == null;
+
+  @override
+  List<Object?> get _fields => [nakshatra];
+}
+
+/// What a chakra's cell holds.
+enum ChakraCellKind implements _Keyed {
+  star('STAR'),
+  vowel('VOWEL'),
+  letter('LETTER'),
+  rashi('RASHI'),
+  tithi('TITHI');
+
+  const ChakraCellKind(this.key);
+
+  @override
+  final String key;
+}
+
+/// One cell of the chakra; only its [kind]'s member is set.
+final class ChakraCell extends _Value {
+  const ChakraCell({
+    required this.kind,
+    this.star,
+    this.vowel,
+    this.letter,
+    this.rashi,
+    this.tithiClass,
+  });
+
+  final ChakraCellKind kind;
+  final ChakraStar? star;
+  final ChakraVowel? vowel;
+
+  /// One of the twenty letters, in Devanagari.
+  final String? letter;
+  final Rashi? rashi;
+  final TithiClass? tithiClass;
+
+  @override
+  List<Object?> get _fields => [kind, star, vowel, letter, rashi, tithiClass];
+}
+
+/// How a graha reaches what it strikes.
+enum VedhaBy implements _Keyed {
+  /// Along a line of sight.
+  line('LINE'),
+
+  /// From a corner's juncture (v. 26).
+  corner('CORNER'),
+
+  /// By standing in the star whose pada a letter is (v. 24), no cell.
+  stands('STANDS');
+
+  const VedhaBy(this.key);
+
+  @override
+  final String key;
+}
+
+/// How a graha reaches one thing it strikes.
+final class VedhaReach extends _Value {
+  const VedhaReach({required this.by, this.line, this.cell});
+
+  final VedhaBy by;
+
+  /// The line, when [by] is [VedhaBy.line].
+  final VedhaLine? line;
+
+  /// The cell struck; null when [by] is [VedhaBy.stands].
+  final ChakraCell? cell;
+
+  @override
+  List<Object?> get _fields => [by, line, cell];
+}
+
+/// Where a graha stands: the chakra's star, and the nakshatra and pada of
+/// the 27.
+final class ChakraPlace extends _Value {
+  const ChakraPlace({
+    required this.star,
+    required this.nakshatra,
+    required this.pada,
+  });
+
+  final ChakraStar star;
+  final Nakshatra nakshatra;
+  final int pada;
+
+  @override
+  List<Object?> get _fields => [star, nakshatra, pada];
+}
+
+/// A native's point one graha strikes, with every way it does.
+final class PointStrike extends _Value {
+  const PointStrike({required this.point, required this.by});
+
+  final VedhaPoint point;
+  final List<VedhaReach> by;
+
+  @override
+  List<Object?> get _fields => [point, by];
+}
+
+/// What one transiting graha strikes.
+final class GrahaVedha extends _Value {
+  const GrahaVedha({
+    required this.graha,
+    required this.place,
+    required this.motion,
+    required this.lines,
+    required this.nature,
+    required this.waning,
+    required this.joinedBy,
+    required this.cells,
+    required this.points,
+  });
+
+  final Graha graha;
+  final ChakraPlace place;
+  final VedhaMotion motion;
+  final List<VedhaLine> lines;
+  final VedhaNature nature;
+
+  /// For the Moon, whether it wanes, which makes it malefic (v. 12).
+  final bool waning;
+
+  /// For a benefic, the malefics in its sign, which make it malefic.
+  final List<Graha> joinedBy;
+  final List<VedhaReach> cells;
+  final List<PointStrike> points;
+
+  @override
+  List<Object?> get _fields => [
+    graha,
+    place,
+    motion,
+    lines,
+    nature,
+    waning,
+    joinedBy,
+    cells,
+    points,
+  ];
+}
+
+/// Who strikes one of the native's points.
+final class PointVedha extends _Value {
+  const PointVedha({
+    required this.point,
+    required this.malefics,
+    required this.benefics,
+  });
+
+  final VedhaPoint point;
+  final List<Graha> malefics;
+  final List<Graha> benefics;
+
+  @override
+  List<Object?> get _fields => [point, malefics, benefics];
+}
+
+/// The native's points: the natal Moon's star and sign, the birth's tithi
+/// and weekday, and the name when given.
+final class SarvatobhadraNative extends _Value {
+  const SarvatobhadraNative({
+    required this.nakshatra,
+    required this.rashi,
+    required this.tithi,
+    required this.vara,
+    this.name,
+  });
+
+  final Nakshatra nakshatra;
+  final Rashi rashi;
+  final Tithi tithi;
+  final Vara vara;
+  final NameSounds? name;
+
+  @override
+  List<Object?> get _fields => [nakshatra, rashi, tithi, vara, name];
+}
+
+/// The Sarvatobhadra chakra at one instant against the native
+/// (`03-design/gochar.md` §8): clauses, scored by nothing.
+final class Sarvatobhadra extends _Value {
+  const Sarvatobhadra({
+    required this.rules,
+    required this.native,
+    required this.grahas,
+    required this.points,
+    required this.maleficPoints,
+  });
+
+  final SarvatobhadraRules rules;
+  final SarvatobhadraNative native;
+
+  /// Each graha's, the Sun to Ketu.
+  final List<GrahaVedha> grahas;
+  final List<PointVedha> points;
+
+  /// How many of v. 28's five (star, letter, vowel, tithi, sign) a
+  /// malefic strikes.
+  final int maleficPoints;
+
+  @override
+  List<Object?> get _fields => [rules, native, grahas, points, maleficPoints];
+}
+
+/// Each batch's Sarvatobhadra readings, parsed once however many charts
+/// read them.
+final Expando<List<List<Sarvatobhadra>>> _sarvatobhadras =
+    Expando<List<List<Sarvatobhadra>>>('sarvatobhadra');
+
+List<List<Sarvatobhadra>> _sarvatobhadrasOf(Charts batch) =>
+    _sarvatobhadras[batch] ??=
+        batch.sarvatobhadra.isEmpty
+            ? const <List<Sarvatobhadra>>[]
+            : [
+              for (final chart
+                  in jsonDecode(batch.sarvatobhadra) as List<Object?>)
+                List<Sarvatobhadra>.unmodifiable([
+                  for (final one in chart! as List<Object?>)
+                    _sarvatobhadraFrom(one! as Map<String, Object?>),
+                ]),
+            ];
+
+/// One instant's chakra from the `sarvatobhadra` section's JSON.
+Sarvatobhadra _sarvatobhadraFrom(Map<String, Object?> raw) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  Iterable<Map<String, Object?>> rows(Object? value) =>
+      (value! as List<Object?>).map(at);
+  Graha graha(Object? key) => Graha.byKey(key! as String) ?? Graha.unknown;
+  List<Graha> grahas(Object? keys) => List<Graha>.unmodifiable([
+    for (final key in keys! as List<Object?>) graha(key),
+  ]);
+  Nakshatra nakshatra(Object? key) =>
+      Nakshatra.byKey(key! as String) ?? Nakshatra.unknown;
+  ChakraStar star(Object? value) {
+    final one = at(value);
+    return ChakraStar(
+      one['star'] == 'NAKSHATRA' ? nakshatra(one['nakshatra']) : null,
+    );
+  }
+
+  ChakraCell cell(Object? value) {
+    final one = at(value);
+    final kind = _keyedIn(ChakraCellKind.values, one['cell']);
+    return ChakraCell(
+      kind: kind,
+      star: kind == ChakraCellKind.star ? star(one['star']) : null,
+      vowel:
+          kind == ChakraCellKind.vowel
+              ? _keyedIn(ChakraVowel.values, one['vowel'])
+              : null,
+      letter: one['letter'] as String?,
+      rashi:
+          kind == ChakraCellKind.rashi
+              ? Rashi.byKey(one['rashi']! as String) ?? Rashi.unknown
+              : null,
+      tithiClass:
+          kind == ChakraCellKind.tithi
+              ? TithiClass.byKey(one['class']! as String) ?? TithiClass.unknown
+              : null,
+    );
+  }
+
+  List<VedhaReach> reaches(Object? value) => List<VedhaReach>.unmodifiable([
+    for (final one in rows(value))
+      VedhaReach(
+        by: _keyedIn(VedhaBy.values, one['by']),
+        line:
+            one['line'] == null
+                ? null
+                : _keyedIn(VedhaLine.values, one['line']),
+        cell: one['cell'] == null ? null : cell(one['cell']),
+      ),
+  ]);
+
+  final rules = at(raw['rules']);
+  final native = at(raw['native']);
+  final name = native['name'] == null ? null : at(native['name']);
+  return Sarvatobhadra(
+    rules: SarvatobhadraRules(
+      front: _keyedIn(FrontVedha.values, rules['front']),
+      sight: _keyedIn(VedhaSight.values, rules['sight']),
+      corner: _keyedIn(CornerVedha.values, rules['corner']),
+    ),
+    native: SarvatobhadraNative(
+      nakshatra: nakshatra(native['nakshatra']),
+      rashi: Rashi.byKey(native['rashi']! as String) ?? Rashi.unknown,
+      tithi: Tithi.byKey(native['tithi']! as String) ?? Tithi.unknown,
+      vara: Vara.byKey(native['vara']! as String) ?? Vara.unknown,
+      name:
+          name == null
+              ? null
+              : NameSounds(
+                letter: name['letter']! as String,
+                vowel: _keyedIn(ChakraVowel.values, name['vowel']),
+              ),
+    ),
+    grahas: List<GrahaVedha>.unmodifiable([
+      for (final one in rows(raw['grahas']))
+        GrahaVedha(
+          graha: graha(one['graha']),
+          place: ChakraPlace(
+            star: star(at(one['place'])['star']),
+            nakshatra: nakshatra(at(one['place'])['nakshatra']),
+            pada: at(one['place'])['pada']! as int,
+          ),
+          motion: _keyedIn(VedhaMotion.values, one['motion']),
+          lines: List<VedhaLine>.unmodifiable([
+            for (final line in one['lines']! as List<Object?>)
+              _keyedIn(VedhaLine.values, line),
+          ]),
+          nature: _keyedIn(VedhaNature.values, one['nature']),
+          waning: one['waning']! as bool,
+          joinedBy: grahas(one['joinedBy']),
+          cells: reaches(one['cells']),
+          points: List<PointStrike>.unmodifiable([
+            for (final strike in rows(one['points']))
+              PointStrike(
+                point: _keyedIn(VedhaPoint.values, strike['point']),
+                by: reaches(strike['by']),
+              ),
+          ]),
+        ),
+    ]),
+    points: List<PointVedha>.unmodifiable([
+      for (final one in rows(raw['points']))
+        PointVedha(
+          point: _keyedIn(VedhaPoint.values, one['point']),
+          malefics: grahas(one['malefics']),
+          benefics: grahas(one['benefics']),
+        ),
+    ]),
+    maleficPoints: raw['maleficPoints']! as int,
+  );
+}
+
 /// Each batch's Lal Kitab, parsed once however many charts read it.
 final Expando<List<LalKitab>> _lalkitabs = Expando<List<LalKitab>>('lalkitab');
 
@@ -24349,6 +24941,16 @@ final class Chart {
   /// for it (`03-design/lalkitab.md`).
   LalKitab? get lalkitab {
     final all = _lalkitabsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Sarvatobhadra chakra at each of the record's instants, in its
+  /// order: where each transiting graha stands among the chakra's stars,
+  /// the lines it looks along and every cell it strikes, and which of the
+  /// native's points the malefics and benefics strike. Null unless
+  /// `sarvatobhadra` asked (`03-design/gochar.md` §8).
+  List<Sarvatobhadra>? get sarvatobhadra {
+    final all = _sarvatobhadrasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

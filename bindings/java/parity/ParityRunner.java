@@ -483,6 +483,26 @@ public final class ParityRunner {
         return join("|", grahas, Graha::fullKey);
     }
 
+    /** A chart's Sarvatobhadra chakra, an instant's rows under {@code at}. */
+    private static void putSarvatobhadra(String at, List<Sarvatobhadra> readings) {
+        for (int k = 0; k < readings.size(); k++) {
+            Sarvatobhadra one = readings.get(k);
+            String key = at + "-" + k;
+            Sarvatobhadra.Native n = one.nativePoints();
+            put(key, one.maleficPoints() + " " + n.nakshatra().fullKey() + " " + n.rashi().fullKey() + " "
+                    + n.tithi().fullKey() + " " + n.vara().fullKey() + " "
+                    + orDash(join(",", one.points(),
+                            p -> p.point() + ":" + grahaKeys(p.malefics()) + "/" + grahaKeys(p.benefics()))));
+            for (Sarvatobhadra.GrahaVedha v : one.grahas()) {
+                String star = v.place().star().abhijit() ? "ABHIJIT" : v.place().star().nakshatra().fullKey();
+                put(key + "-" + v.graha().fullKey(), star + ":" + v.place().pada() + " " + v.motion() + " "
+                        + v.nature() + " " + orDash(String.join(",", v.lines())) + " " + grahaKeys(v.joinedBy())
+                        + " " + v.cells().size() + " "
+                        + orDash(join(",", v.points(), Sarvatobhadra.PointStrike::point)));
+            }
+        }
+    }
+
     /** A chart's Lal Kitab, each row under {@code at}. */
     private static void putLalKitab(String at, LalKitab lk) {
         LalKitab.Reading reading = lk.reading();
@@ -1472,6 +1492,9 @@ public final class ParityRunner {
                 .remedies(RemedyRequest.of(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA")))))
                 // A varshphal list with the book's structure and none of its numbers:
                 // year y sends natal house h to h + y - 1, round the twelve.
+                // Two instants, the verses' own motion, a name and every cell the front passes.
+                .sarvatobhadra(SarvatobhadraRequest.of(map("instants", List.of(2460676.5, 2460776.5), "motion", "SUN",
+                        "name", map("letter", "र", "vowel", "A"), "rules", map("front", "EVERY_CELL"))))
                 .lalkitab(LalKitabRequest.of(map("cycle", map("planet", "graha.VENUS", "year", 17), "year", 43,
                         "varshphal", map("rows", varshphalRotation()))))
                 .rectification(RectificationRequest.of(map("purify", map("minutes", 20), "conception", map(),
@@ -2024,6 +2047,7 @@ public final class ParityRunner {
         prashna(c, chart.prashna().orElseThrow());
         putRemedies(c + "-remedies", chart.remedies().orElseThrow());
         putLalKitab(c + "-lalkitab", chart.lalkitab().orElseThrow());
+        putSarvatobhadra(c + "-sarvatobhadra", chart.sarvatobhadra().orElseThrow());
         rectification(c + "-rectification", chart.rectification().orElseThrow());
         progressions(c, chart.progressions().orElseThrow());
         List<WesternAspectRow> westernAspects = chart.westernAspects().orElseThrow();

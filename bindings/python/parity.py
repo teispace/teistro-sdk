@@ -254,6 +254,29 @@ def listed_or_dash(items: Iterable[str]) -> str:
     return ",".join(items) or "-"
 
 
+def put_sarvatobhadra(at: str, readings: Any) -> None:
+    """A chart's Sarvatobhadra chakra, an instant's rows under `at`."""
+
+    def keys(grahas: Iterable[Any]) -> str:
+        return listed_or_dash(g.full_key for g in grahas)
+
+    for k, one in enumerate(readings):
+        key = f"{at}-{k}"
+        n = one.native
+        put(
+            key,
+            f"{one.malefic_points} {n.nakshatra.full_key} {n.rashi.full_key} {n.tithi.full_key} {n.vara.full_key} "
+            + listed_or_dash(f"{p.point}:{keys(p.malefics)}/{keys(p.benefics)}" for p in one.points),
+        )
+        for v in one.grahas:
+            star = "ABHIJIT" if v.place.star.abhijit else v.place.star.nakshatra.full_key
+            put(
+                f"{key}-{v.graha.full_key}",
+                f"{star}:{v.place.pada} {v.motion} {v.nature} {listed_or_dash(v.lines)} {keys(v.joined_by)}"
+                f" {len(v.cells)} {listed_or_dash(s.point for s in v.points)}",
+            )
+
+
 def put_lalkitab(at: str, lk: Any) -> None:
     """A chart's Lal Kitab, each row under `at`."""
 
@@ -1233,6 +1256,14 @@ def main() -> None:
             remedies={"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
             # A varshphal list with the book's structure and none of its
             # numbers: year y sends natal house h to h + y - 1, round the twelve.
+            # Two instants, the verses' own motion, a name and every cell the
+            # front passes.
+            sarvatobhadra={
+                "instants": [2460676.5, 2460776.5],
+                "motion": "SUN",
+                "name": {"letter": "र", "vowel": "A"},
+                "rules": {"front": "EVERY_CELL"},
+            },
             lalkitab={
                 "cycle": {"planet": "graha.VENUS", "year": 17},
                 "year": 43,
@@ -1955,6 +1986,9 @@ def main() -> None:
             lk = chart.lalkitab
             assert lk is not None
             put_lalkitab(f"chart-{i}-lalkitab", lk)
+            chakra = chart.sarvatobhadra
+            assert chakra is not None
+            put_sarvatobhadra(f"chart-{i}-sarvatobhadra", chakra)
             rc = chart.rectification
             assert rc is not None
             put_rectification(f"chart-{i}-rectification", rc)

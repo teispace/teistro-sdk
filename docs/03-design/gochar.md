@@ -384,7 +384,12 @@ the sky's wherever they do not.
 for every chart at one place and of one kind; the record widens the
 request with the panchanga it reads. Section 135, `sarvatobhadra`,
 carries the readings across the C boundary as canonical JSON, a list of
-readings a chart (`tests/abi.rs` holds it to the façade's own).
+readings a chart (`tests/abi.rs` holds it to the façade's own). Every
+binding takes the record as a chart option and reads the section back as
+typed values (`chart.sarvatobhadra`; Java's `chart.sarvatobhadra()`),
+the chakra's own small words (`FAST`, `LEFT`, `MALEFIC`) as each
+language's enums or literals; the parity example holds the four and Rust
+to one printing.
 
 ### 8.6 Left unbuilt
 

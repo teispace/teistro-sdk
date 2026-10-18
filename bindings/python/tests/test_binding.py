@@ -1766,6 +1766,64 @@ class AnEngine(WithLibrary):
                 stepped(0.0)
             self.assertEqual(refused.exception.field, "uncertaintyStepMinutes")
 
+    def test_a_chart_reads_the_sarvatobhadra_chakra(self) -> None:
+        """The Sarvatobhadra chakra crosses whole (`03-design/gochar.md`
+        §8): every transit read back from a chart founded at its instant,
+        the sky's motion from that chart's speed, the native's points from
+        the natal Moon, and a request refused by its record's name."""
+        from teistro import SarvatobhadraRequest, TeistroError, VedhaMotion
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        instants = [2460676.5, 2460776.5, 2460876.5]
+        five = (Graha.MARS, Graha.MERCURY, Graha.JUPITER, Graha.VENUS, Graha.SATURN)
+
+        def star(longitude: float) -> object:
+            return list(Nakshatra)[int(longitude * 27 // 360)]
+
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).sarvatobhadra)
+            natal = ctx.chart.found(instant=instant, sarvatobhadra={"instants": instants}, **at)
+            read = natal.sarvatobhadra
+            assert read is not None
+            self.assertEqual(len(read), len(instants))
+            moon = next(g for g in natal.grahas if g.graha is Graha.MOON).longitude_deg
+            for one, when in zip(read, instants):
+                self.assertEqual(one.native.nakshatra, star(moon))
+                self.assertEqual(one.native.rashi, list(Rashi)[int(moon // 30)])
+                sky = ctx.chart.found(instant=when, place=observer, utc_offset_seconds=0).grahas
+                self.assertEqual([g.graha for g in one.grahas], [g.graha for g in sky])
+                for vedha, placed in zip(one.grahas, sky):
+                    self.assertEqual(vedha.place.nakshatra, star(placed.longitude_deg))
+                    if vedha.graha in five:
+                        self.assertEqual(vedha.motion == "RETROGRADE", placed.retrograde, vedha.graha)
+                self.assertEqual((one.grahas[0].motion, one.grahas[8].motion), ("FAST", "RETROGRADE"))
+                five28 = ("NAKSHATRA", "LETTER", "VOWEL", "TITHI", "RASHI")
+                self.assertEqual(one.malefic_points, sum(1 for p in one.points if p.point in five28 and p.malefics))
+                for vedha in one.grahas:
+                    for reach in vedha.cells:
+                        self.assertEqual(reach.cell is None, reach.by == "STANDS")
+            given: list[VedhaMotion] = ["RETROGRADE", "MEAN", "FAST", "MEAN", "RETROGRADE"]
+            request: SarvatobhadraRequest = {
+                "instants": instants,
+                "motion": {"GIVEN": given},
+                "name": {"letter": "र", "vowel": "A"},
+                "rules": {"sight": "ALL_THREE"},
+            }
+            asked = ctx.chart.found(instant=instant, sarvatobhadra=request, **at).sarvatobhadra
+            assert asked is not None
+            first = asked[0]
+            self.assertEqual([next(g.motion for g in first.grahas if g.graha is graha) for graha in five], given)
+            self.assertTrue(all(len(g.lines) == 3 for g in first.grahas))
+            self.assertEqual(first.native.name, {"letter": "र", "vowel": "A"})
+            self.assertEqual(
+                [p.point for p in first.points], ["NAKSHATRA", "LETTER", "VOWEL", "TITHI", "RASHI", "VARA"]
+            )
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, sarvatobhadra={"instants": []}, **at)
+            self.assertEqual(refused.exception.field, "sarvatobhadra.instants")
+
     def test_a_chart_carries_its_lalkitab(self) -> None:
         """Lal Kitab crosses whole, its grahas made members, the cycle from
         the book's general start unless asked, the year and its annual teva

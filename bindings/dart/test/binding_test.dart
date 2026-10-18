@@ -5250,6 +5250,121 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart reads the Sarvatobhadra chakra', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const instant = 2447995.4895833335;
+    const instants = [2460676.5, 2460776.5, 2460876.5];
+    Chart found(SarvatobhadraRequest? asked) => ctx.chart.found(
+      instant: instant,
+      place: place,
+      utcOffsetSeconds: 20700,
+      sarvatobhadra: asked,
+    );
+    expect(found(null).sarvatobhadra, isNull);
+
+    final natal = found(const SarvatobhadraRequest(instants: instants));
+    final read = natal.sarvatobhadra!;
+    expect(read, hasLength(instants.length));
+    Nakshatra star(double longitude) =>
+        Nakshatra.values
+            .where((n) => n != Nakshatra.unknown)
+            .toList()[(longitude * 27 ~/ 360)];
+    final moon =
+        natal.grahas.firstWhere((g) => g.graha == Graha.moon).longitudeDeg;
+    const five = [
+      Graha.mars,
+      Graha.mercury,
+      Graha.jupiter,
+      Graha.venus,
+      Graha.saturn,
+    ];
+    for (final (k, one) in read.indexed) {
+      expect(one.native.nakshatra, star(moon));
+      final sky =
+          ctx.chart
+              .found(instant: instants[k], place: place, utcOffsetSeconds: 0)
+              .grahas;
+      expect(
+        [for (final g in one.grahas) g.graha],
+        [for (final g in sky) g.graha],
+      );
+      for (final (n, vedha) in one.grahas.indexed) {
+        expect(vedha.place.nakshatra, star(sky[n].longitudeDeg));
+        if (five.contains(vedha.graha)) {
+          expect(
+            vedha.motion == VedhaMotion.retrograde,
+            sky[n].speedDegPerDay < 0,
+            reason: '${vedha.graha} by the sky',
+          );
+        }
+        for (final reach in vedha.cells) {
+          expect(reach.cell == null, reach.by == VedhaBy.stands);
+        }
+      }
+      expect(one.grahas.first.motion, VedhaMotion.fast);
+      expect(one.grahas.last.motion, VedhaMotion.retrograde);
+      const five28 = [
+        VedhaPoint.nakshatra,
+        VedhaPoint.letter,
+        VedhaPoint.vowel,
+        VedhaPoint.tithi,
+        VedhaPoint.rashi,
+      ];
+      expect(
+        one.maleficPoints,
+        one.points
+            .where((p) => five28.contains(p.point) && p.malefics.isNotEmpty)
+            .length,
+      );
+    }
+
+    const given = [
+      VedhaMotion.retrograde,
+      VedhaMotion.mean,
+      VedhaMotion.fast,
+      VedhaMotion.mean,
+      VedhaMotion.retrograde,
+    ];
+    final asked =
+        found(
+          SarvatobhadraRequest(
+            instants: instants,
+            motion: SarvatobhadraMotion.given(given),
+            name: const NameSounds(letter: 'र', vowel: ChakraVowel.a),
+            rules: const SarvatobhadraRules(sight: VedhaSight.allThree),
+          ),
+        ).sarvatobhadra!.first;
+    expect([
+      for (final graha in five)
+        asked.grahas.firstWhere((g) => g.graha == graha).motion,
+    ], given);
+    expect(asked.grahas.every((g) => g.lines.length == 3), isTrue);
+    expect(
+      asked.native.name,
+      const NameSounds(letter: 'र', vowel: ChakraVowel.a),
+    );
+    expect(asked.rules, const SarvatobhadraRules(sight: VedhaSight.allThree));
+    expect([for (final p in asked.points) p.point], VedhaPoint.values);
+    expect(
+      () => found(const SarvatobhadraRequest(instants: [])),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'sarvatobhadra.instants',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its Lal Kitab', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

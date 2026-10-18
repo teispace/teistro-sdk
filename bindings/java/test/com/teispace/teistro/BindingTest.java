@@ -665,6 +665,68 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart reads the Sarvatobhadra chakra", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                double instant = 2_447_995.489_583_333_5;
+                List<Double> instants = List.of(2_460_676.5, 2_460_776.5, 2_460_876.5);
+                check(sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder().build()).sarvatobhadra()
+                        .isEmpty(), "none unless asked");
+                Chart natal = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .sarvatobhadra(SarvatobhadraRequest.of(Map.of("instants", instants))).build());
+                List<Sarvatobhadra> read = natal.sarvatobhadra().orElseThrow();
+                same(instants.size(), read.size(), "a reading an instant");
+                double moon = natal.grahas().stream().filter(g -> g.graha() == Graha.MOON).findFirst().orElseThrow()
+                        .longitudeDeg();
+                List<Graha> five = List.of(Graha.MARS, Graha.MERCURY, Graha.JUPITER, Graha.VENUS, Graha.SATURN);
+                List<String> five28 = List.of("NAKSHATRA", "LETTER", "VOWEL", "TITHI", "RASHI");
+                for (int k = 0; k < read.size(); k++) {
+                    Sarvatobhadra one = read.get(k);
+                    same(Nakshatra.of((int) (moon * 27 / 360)), one.nativePoints().nakshatra(), "the natal Moon's star");
+                    List<PlacedGraha> placed = sky.chart().found(instants.get(k), kathmandu, 0,
+                            ChartOptions.builder().build()).grahas();
+                    for (int n = 0; n < one.grahas().size(); n++) {
+                        Sarvatobhadra.GrahaVedha vedha = one.grahas().get(n);
+                        same(placed.get(n).graha(), vedha.graha(), "the nine in order");
+                        same(Nakshatra.of((int) (placed.get(n).longitudeDeg() * 27 / 360)), vedha.place().nakshatra(),
+                                "each transit's star");
+                        if (five.contains(vedha.graha())) {
+                            same(placed.get(n).speedDegPerDay() < 0, "RETROGRADE".equals(vedha.motion()),
+                                    "the sky's motion");
+                        }
+                        for (Sarvatobhadra.Reach reach : vedha.cells()) {
+                            same("STANDS".equals(reach.by()), reach.cell() == null, "a cell unless standing");
+                        }
+                    }
+                    same("FAST", one.grahas().get(0).motion(), "the Sun fast");
+                    same("RETROGRADE", one.grahas().get(8).motion(), "Ketu retrograde");
+                    same((int) one.points().stream()
+                            .filter(p -> five28.contains(p.point()) && !p.malefics().isEmpty()).count(),
+                            one.maleficPoints(), "v. 28's five a malefic strikes");
+                }
+                List<String> given = List.of("RETROGRADE", "MEAN", "FAST", "MEAN", "RETROGRADE");
+                Sarvatobhadra asked = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .sarvatobhadra(SarvatobhadraRequest.of(Map.of("instants", instants,
+                                "motion", Map.of("GIVEN", given),
+                                "name", Map.of("letter", "र", "vowel", "A"),
+                                "rules", Map.of("sight", "ALL_THREE"))))
+                        .build()).sarvatobhadra().orElseThrow().get(0);
+                List<String> motions = new ArrayList<>();
+                for (Graha graha : five) {
+                    motions.add(asked.grahas().stream().filter(g -> g.graha() == graha).findFirst().orElseThrow()
+                            .motion());
+                }
+                same(given, motions, "the caller's five");
+                check(asked.grahas().stream().allMatch(g -> g.lines().size() == 3), "all three lines");
+                same(new Sarvatobhadra.Name("र", "A"), asked.nativePoints().name(), "the name");
+                same("ALL_THREE", asked.rules().sight(), "the rules read back");
+                TeistroException refused = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().sarvatobhadra(SarvatobhadraRequest.of(Map.of("instants", List.of())))
+                                .build()));
+                same("sarvatobhadra.instants", refused.field(), "a refusal names its field");
+            }
+        });
+
         tests.put("a chart carries its Lal Kitab", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));

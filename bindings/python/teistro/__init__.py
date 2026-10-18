@@ -785,6 +785,23 @@ __all__ = [
     "AmatyaDevatas",
     "IshtaDevata",
     "Devotion",
+    # The Sarvatobhadra chakra, gochar's second layer.
+    "SarvatobhadraRequest",
+    "SarvatobhadraRules",
+    "NameSounds",
+    "ChakraVowel",
+    "VedhaMotion",
+    "VedhaLine",
+    "VedhaPoint",
+    "Sarvatobhadra",
+    "SarvatobhadraNative",
+    "GrahaVedha",
+    "ChakraPlace",
+    "ChakraStar",
+    "ChakraCell",
+    "VedhaReach",
+    "PointStrike",
+    "PointVedha",
     # Lal Kitab: the 1952 edition's teva, its reading and the 35-year cycle.
     "LalKitabRequest",
     "LalKitabCycle",
@@ -1913,6 +1930,7 @@ class ChartArea(_Area):
         prashna: Optional[PrashnaRequest] = None,
         remedies: Optional[RemedyRequest] = None,
         lalkitab: Optional[LalKitabRequest] = None,
+        sarvatobhadra: Optional[SarvatobhadraRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
@@ -1976,6 +1994,7 @@ class ChartArea(_Area):
             prashna=prashna,
             remedies=remedies,
             lalkitab=lalkitab,
+            sarvatobhadra=sarvatobhadra,
             rectification=rectification,
             aspects=aspects,
             points=points,
@@ -2029,6 +2048,7 @@ class ChartArea(_Area):
         prashna: Optional[PrashnaRequest] = None,
         remedies: Optional[RemedyRequest] = None,
         lalkitab: Optional[LalKitabRequest] = None,
+        sarvatobhadra: Optional[SarvatobhadraRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
@@ -2124,6 +2144,7 @@ class ChartArea(_Area):
             prashna_json=_record_json(prashna, "prashna", "{'question': {'house': 7}}"),
             remedies_json=_record_json(remedies, "remedies", "{'at': 2460676.5}"),
             lalkitab_json=_lalkitab_json(lalkitab),
+            sarvatobhadra_json=_record_json(sarvatobhadra, "sarvatobhadra", "{'instants': [2460676.5]}"),
             rectification_json=_record_json(rectification, "rectification", "{'purify': {'minutes': 30}}"),
         )
         return ChartBatch(
@@ -9566,6 +9587,177 @@ class LalKitab:
     """The year asked for; `None` unless the request named one."""
 
 
+ChakraVowel = Literal["A", "AA", "I", "II", "U", "UU", "RI", "RII", "LI", "LII", "E", "AI", "O", "AU", "AM", "AH"]
+"""The sixteen vowels in the order the Sarvatobhadra chakra lays them, a to
+the visarga."""
+
+VedhaMotion = Literal["FAST", "MEAN", "RETROGRADE"]
+"""A graha's motion as v. 15 sorts it: fast looks left, mean ahead,
+retrograde right."""
+
+VedhaLine = Literal["LEFT", "FRONT", "RIGHT"]
+"""One of a graha's three lines of sight."""
+
+VedhaPoint = Literal["NAKSHATRA", "LETTER", "VOWEL", "TITHI", "RASHI", "VARA"]
+"""A native's point a vedha can strike."""
+
+
+class NameSounds(TypedDict):
+    """A name's sounds as the chakra reads them: the first letter in
+    Devanagari (a conjunct's first consonant, or the vowel a name begins
+    with) and the vowel of its first syllable.
+
+    >>> rama: NameSounds = {"letter": "र", "vowel": "A"}
+    """
+
+    letter: str
+    vowel: ChakraVowel
+
+
+class SarvatobhadraRules(TypedDict, total=False):
+    """The readings the texts leave open (C429 to C431), each defaulting to
+    `03-design/gochar.md` §8's."""
+
+    front: Literal["STAR_ONLY", "EVERY_CELL"]
+    """What the front strikes: the star at its far end alone, or every cell."""
+    sight: Literal["TEXT", "ALL_THREE", "ONE_EACH"]
+    """Which lines a graha looks along."""
+    corner: Literal["FOUR_VOWELS", "OUTER_VOWEL"]
+    """What a graha at a corner's juncture strikes."""
+
+
+SarvatobhadraRequest = TypedDict(
+    "SarvatobhadraRequest",
+    {
+        "instants": Required[Sequence[float]],
+        "name": NameSounds,
+        "motion": Union[Literal["SKY", "SUN"], Mapping[Literal["GIVEN"], Sequence[VedhaMotion]]],
+        "rules": SarvatobhadraRules,
+    },
+    total=False,
+)
+SarvatobhadraRequest.__doc__ = """The Sarvatobhadra chakra to read in every chart
+(`03-design/gochar.md` §8): `instants`, UTC Julian days, at least one;
+`name`, whose first letter and vowel are points too; `motion`, where the five
+from Mars take theirs — `"SKY"` (the default, each speed against its mean
+motion), `"SUN"` (vv. 16–18's rule, the sky's where the verses are silent) or
+`{"GIVEN": [...]}` for Mars, Mercury, Jupiter, Venus and Saturn (C430); and
+`rules`.
+
+>>> asked: SarvatobhadraRequest = {"instants": [2460676.5], "motion": "SUN"}
+"""
+
+
+@dataclass(frozen=True)
+class ChakraStar:
+    """A star of the chakra's 28: one of the 27, or Abhijit."""
+
+    nakshatra: Optional[Nakshatra]
+    """The nakshatra; `None` for Abhijit."""
+
+    @property
+    def abhijit(self) -> bool:
+        """Whether it is Abhijit, which the chakra sets between
+        Uttarashadha and Shravana."""
+        return self.nakshatra is None
+
+
+@dataclass(frozen=True)
+class ChakraCell:
+    """One cell of the chakra, tagged by `kind`; only that kind's member is
+    set."""
+
+    kind: Literal["STAR", "VOWEL", "LETTER", "RASHI", "TITHI"]
+    star: Optional[ChakraStar] = None
+    vowel: Optional[ChakraVowel] = None
+    letter: Optional[str] = None
+    """One of the twenty letters, in Devanagari."""
+    rashi: Optional[Rashi] = None
+    tithi_class: Optional[TithiClass] = None
+
+
+@dataclass(frozen=True)
+class VedhaReach:
+    """How a graha reaches what it strikes: along a `line`, from a corner's
+    juncture, or by standing in the star whose pada a letter is (v. 24),
+    which has no cell."""
+
+    by: Literal["LINE", "CORNER", "STANDS"]
+    line: Optional[VedhaLine]
+    cell: Optional[ChakraCell]
+
+
+@dataclass(frozen=True)
+class ChakraPlace:
+    """Where a graha stands: the chakra's star, and the nakshatra and pada
+    of the 27."""
+
+    star: ChakraStar
+    nakshatra: Nakshatra
+    pada: int
+
+
+@dataclass(frozen=True)
+class PointStrike:
+    """A native's point one graha strikes, with every way it does."""
+
+    point: VedhaPoint
+    by: Tuple[VedhaReach, ...]
+
+
+@dataclass(frozen=True)
+class GrahaVedha:
+    """What one transiting graha strikes."""
+
+    graha: Graha
+    place: ChakraPlace
+    motion: VedhaMotion
+    lines: Tuple[VedhaLine, ...]
+    nature: Literal["BENEFIC", "MALEFIC"]
+    waning: bool
+    """For the Moon, whether it wanes, which makes it malefic (v. 12)."""
+    joined_by: Tuple[Graha, ...]
+    """For a benefic, the malefics in its sign, which make it malefic."""
+    cells: Tuple[VedhaReach, ...]
+    points: Tuple[PointStrike, ...]
+
+
+@dataclass(frozen=True)
+class PointVedha:
+    """Who strikes one of the native's points."""
+
+    point: VedhaPoint
+    malefics: Tuple[Graha, ...]
+    benefics: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class SarvatobhadraNative:
+    """The native's points: the natal Moon's star and sign, the birth's
+    tithi and weekday, and the name when given."""
+
+    nakshatra: Nakshatra
+    rashi: Rashi
+    tithi: Tithi
+    vara: Vara
+    name: Optional[NameSounds]
+
+
+@dataclass(frozen=True)
+class Sarvatobhadra:
+    """The Sarvatobhadra chakra at one instant against the native
+    (`03-design/gochar.md` §8): clauses, scored by nothing."""
+
+    rules: SarvatobhadraRules
+    native: SarvatobhadraNative
+    grahas: Tuple[GrahaVedha, ...]
+    """Each graha's, the Sun to Ketu."""
+    points: Tuple[PointVedha, ...]
+    malefic_points: int
+    """How many of v. 28's five (star, letter, vowel, tithi, sign) a
+    malefic strikes."""
+
+
 PurifierNative = Literal["HUMAN", "BEAST", "BIRD", "CREEPER"]
 """What the native is, which decides the houses that purify, a
 `PurifierRules` `native`."""
@@ -11591,6 +11783,73 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
             readings=tuple(reading(one) for one in period["readings"]),
         ),
         baseline=None if baseline is None else tuple(score(one) for one in baseline),
+    )
+
+
+def _sarvatobhadra(raw: Mapping[str, Any]) -> Sarvatobhadra:
+    """One instant's chakra from the `sarvatobhadra` section's JSON, its
+    catalogue keys made members."""
+
+    def graha(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    def star(one: Mapping[str, Any]) -> ChakraStar:
+        return ChakraStar(nakshatra=_member(Nakshatra, one["nakshatra"]) if one["star"] == "NAKSHATRA" else None)
+
+    def cell(one: Mapping[str, Any]) -> ChakraCell:
+        kind = one["cell"]
+        return ChakraCell(
+            kind=kind,
+            star=star(one["star"]) if kind == "STAR" else None,
+            vowel=one.get("vowel"),
+            letter=one.get("letter"),
+            rashi=_member(Rashi, one["rashi"]) if kind == "RASHI" else None,
+            tithi_class=_member(TithiClass, one["class"]) if kind == "TITHI" else None,
+        )
+
+    def reach(one: Mapping[str, Any]) -> VedhaReach:
+        return VedhaReach(by=one["by"], line=one.get("line"), cell=cell(one["cell"]) if "cell" in one else None)
+
+    native = raw["native"]
+    return Sarvatobhadra(
+        rules=raw["rules"],
+        native=SarvatobhadraNative(
+            nakshatra=_member(Nakshatra, native["nakshatra"]),
+            rashi=_member(Rashi, native["rashi"]),
+            tithi=_member(Tithi, native["tithi"]),
+            vara=_member(Vara, native["vara"]),
+            name=native.get("name"),
+        ),
+        grahas=tuple(
+            GrahaVedha(
+                graha=graha(g["graha"]),
+                place=ChakraPlace(
+                    star=star(g["place"]["star"]),
+                    nakshatra=_member(Nakshatra, g["place"]["nakshatra"]),
+                    pada=g["place"]["pada"],
+                ),
+                motion=g["motion"],
+                lines=tuple(g["lines"]),
+                nature=g["nature"],
+                waning=g["waning"],
+                joined_by=tuple(graha(key) for key in g["joinedBy"]),
+                cells=tuple(reach(one) for one in g["cells"]),
+                points=tuple(
+                    PointStrike(point=p["point"], by=tuple(reach(one) for one in p["by"])) for p in g["points"]
+                ),
+            )
+            for g in raw["grahas"]
+        ),
+        points=tuple(
+            PointVedha(
+                point=p["point"],
+                malefics=tuple(graha(key) for key in p["malefics"]),
+                benefics=tuple(graha(key) for key in p["benefics"]),
+            )
+            for p in raw["points"]
+        ),
+        malefic_points=raw["maleficPoints"],
     )
 
 
@@ -13874,6 +14133,16 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def sarvatobhadra(self) -> Optional[Tuple[Sarvatobhadra, ...]]:
+        """The Sarvatobhadra chakra at each of the record's instants, in its
+        order: where each transiting graha stands among the chakra's stars,
+        the lines it looks along and every cell it strikes, and which of the
+        native's points the malefics and benefics strike. `None` unless
+        `sarvatobhadra=` asked (`03-design/gochar.md` §8)."""
+        parsed = self.batch._sarvatobhadras
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def rectification(self) -> Optional[Rectification]:
         """The chart read as a birth time to rectify, its instant the time on
         record: what the purifier of BPHS ch. 2 vv. 67–78 leaves standing of
@@ -14592,6 +14861,13 @@ class ChartBatch:
         for."""
         text = self.decoded.lalkitab
         return [_lalkitab(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _sarvatobhadras(self) -> list[Tuple[Sarvatobhadra, ...]]:
+        """Every chart's Sarvatobhadra readings, parsed once; empty when none
+        was asked for."""
+        text = self.decoded.sarvatobhadra
+        return [tuple(_sarvatobhadra(raw) for raw in chart) for chart in json.loads(text)] if text else []
 
     @cached_property
     def _rectifications(self) -> list[Rectification]:

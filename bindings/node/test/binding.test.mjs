@@ -4603,6 +4603,74 @@ test('a study counts and tests its rules over a batch of births', () => {
   );
 });
 
+/**
+ * The Sarvatobhadra chakra crosses whole (`03-design/gochar.md` §8): every
+ * transit read back from a chart founded at its instant, the sky's motion
+ * from that chart's speed, the native's points from the natal Moon.
+ */
+test('a chart reads the Sarvatobhadra chakra', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2447995.4895833335;
+  assert.equal(ctx.chart.found({ instant, ...at }).sarvatobhadra, null);
+
+  const instants = [2460676.5, 2460776.5, 2460876.5];
+  const natal = ctx.chart.found({ instant, ...at, sarvatobhadra: { instants } });
+  const read = natal.sarvatobhadra;
+  assert.equal(read.length, instants.length);
+  assert.ok(Object.isFrozen(read[0].grahas), 'frozen to its leaves');
+  const star = (lon) => catalogue.NakshatraById.get(Math.floor((lon * 27) / 360));
+  const moon = natal.grahas.find((g) => g.graha === 'graha.MOON').longitudeDeg;
+  const five = ['graha.MARS', 'graha.MERCURY', 'graha.JUPITER', 'graha.VENUS', 'graha.SATURN'];
+  read.forEach((one, k) => {
+    assert.equal(one.native.nakshatra, star(moon));
+    assert.equal(one.native.rashi, RashiById.get(Math.floor(moon / 30)));
+    assert.ok(one.native.tithi.startsWith('tithi.') && one.native.vara.startsWith('vara.'));
+    const sky = ctx.chart.found({ instant: instants[k], place: at.place, utcOffsetSeconds: 0 }).grahas;
+    assert.deepEqual(
+      one.grahas.map((g) => g.graha),
+      sky.map((g) => g.graha),
+      'the nine, the Sun to Ketu',
+    );
+    one.grahas.forEach((g, n) => {
+      assert.equal(g.place.nakshatra, star(sky[n].longitudeDeg), g.graha);
+      if (five.includes(g.graha)) {
+        assert.equal(g.motion === 'RETROGRADE', sky[n].retrograde, `${g.graha} by the sky`);
+      }
+    });
+    assert.equal(one.grahas[0].motion, 'FAST');
+    assert.equal(one.grahas[8].motion, 'RETROGRADE');
+    // The count is of v. 28's five a malefic strikes.
+    const five28 = ['NAKSHATRA', 'LETTER', 'VOWEL', 'TITHI', 'RASHI'];
+    assert.equal(
+      one.maleficPoints,
+      one.points.filter((p) => five28.includes(p.point) && p.malefics.length > 0).length,
+    );
+  });
+
+  const given = ['RETROGRADE', 'MEAN', 'FAST', 'MEAN', 'RETROGRADE'];
+  const asked = ctx.chart.found({
+    instant,
+    ...at,
+    sarvatobhadra: { instants, motion: { GIVEN: given }, name: { letter: 'र', vowel: 'A' }, rules: { sight: 'ALL_THREE' } },
+  }).sarvatobhadra[0];
+  assert.deepEqual(
+    five.map((graha) => asked.grahas.find((g) => g.graha === graha).motion),
+    given,
+  );
+  assert.ok(asked.grahas.every((g) => g.lines.length === 3), 'all three under ALL_THREE');
+  assert.deepEqual(asked.native.name, { letter: 'र', vowel: 'A' });
+  assert.deepEqual(
+    asked.points.map((p) => p.point),
+    ['NAKSHATRA', 'LETTER', 'VOWEL', 'TITHI', 'RASHI', 'VARA'],
+  );
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, sarvatobhadra: { instants: [] } }),
+    (error) => error.field === 'sarvatobhadra.instants',
+  );
+});
+
 test('a chart carries its Lal Kitab', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };

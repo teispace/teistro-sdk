@@ -16,6 +16,7 @@ import com.teispace.teistro.request.HitRequest;
 import com.teispace.teistro.request.HouseRequest;
 import com.teispace.teistro.request.KpRequest;
 import com.teispace.teistro.request.LalKitabRequest;
+import com.teispace.teistro.request.SarvatobhadraRequest;
 import com.teispace.teistro.request.LotRequest;
 import com.teispace.teistro.request.MidpointRequest;
 import com.teispace.teistro.request.ParallelRequest;
@@ -600,6 +601,18 @@ public record ChartOptions(
          */
         public Builder lalkitab(LalKitabRequest request) {
             return json("lalkitab_json", request);
+        }
+
+        /**
+         * The Sarvatobhadra chakra at each of the request's instants, as
+         * {@code SarvatobhadraRequest.of(Map.of("instants", List.of(2460676.5), "motion", "SUN"))}
+         * ({@code 03-design/gochar.md} §8).
+         *
+         * @param request the request; null takes it away
+         * @return this builder
+         */
+        public Builder sarvatobhadra(SarvatobhadraRequest request) {
+            return json("sarvatobhadra_json", request);
         }
 
         /**
