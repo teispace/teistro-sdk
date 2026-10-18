@@ -156,3 +156,19 @@ fn the_checked_in_schema_is_what_the_types_generate() {
     // asked where a crate-only `cargo test --features schema` sees it.
     assert_eq!(teistro_serial::schema::generate().unwrap(), DOCUMENT);
 }
+
+#[test]
+fn the_members_a_document_lists_are_the_schemas_properties() {
+    let schema: Value = serde_json::from_str(DOCUMENT).unwrap();
+    // The schema describes the sealed envelope; the document is its value.
+    let mut properties: Vec<&str> = schema["$defs"]["Document"]["properties"]
+        .as_object()
+        .expect("the document is an object")
+        .keys()
+        .map(String::as_str)
+        .collect();
+    properties.sort_unstable();
+    let mut members = teistro_serial::Document::MEMBERS.to_vec();
+    members.sort_unstable();
+    assert_eq!(members, properties);
+}
