@@ -30,6 +30,13 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
+**Saravali's yogas of the luminaries, chs. 13 and 14** (`rules-engine.md`).
+**Numbers:** none moved; this adds 36 rules. Sunapha, Anapha and Durudhara
+around the Moon and veshi, voshi and ubhayachari around the Sun, read in the
+1907 Nirnaya Sagar print, each in general and then graha by graha: what
+Mars, Mercury, Jupiter, Venus and Saturn give second or twelfth from either
+luminary, and what each pair gives with the Moon between them. Crux C480.
+
 **Saravali's sets of grahas together, chs. 15 to 19** (`rules-engine.md`).
 **Numbers:** none moved; this adds 119 rules. Kalyana Varma's readings of
 every pair, three, four, five and six of the seven grahas sharing a sign

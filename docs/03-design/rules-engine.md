@@ -753,6 +753,19 @@ computed sky misses have a fixture on the cofiring page: the two eclipses
 at a place that sees the luminary just risen, and the two placements on an
 early day of 1800 to 2400.
 
+**Saravali chs. 13 and 14, the grahas either side of the luminaries, built
+(2026-10-19).** `classical-saravali-luminaries.json`, 36 rules in the nabhasa
+set: Sunapha, Anapha and Durudhara around the Moon (ch. 13 vv. 4 to 6) and
+veshi, voshi and ubhayachari around the Sun (ch. 14 vv. 2, 6, 11 and 12), each
+in general, and then graha by graha as the chapters read them: the five
+grahas' Sunapha and Anapha (vv. 10 to 19), the ten pairs that hold the Moon
+between them (vv. 20 to 29), and the five grahas' veshi and voshi (ch. 14
+vv. 3 to 9). Each chapter's first verse names the three yogas by the second,
+the twelfth and both, in that order, so each excludes the next, as
+Phaladeepika's do; the grahas are Mars to Saturn. A test holds each yoga in
+general to hold on exactly the charts where one of its grahas' readings does.
+Ch. 13 v. 2's Kemadruma and vv. 30 to 32 are not built (C480).
+
 **Saravali ch. 35's raja yogas, vv. 7 to 185, built (2026-10-19).** The
 chapter on the birth of kings, read in the 1907 Nirnaya Sagar print off
 the page images, ships as `classical-saravali-raja.json`, 98 rules in the

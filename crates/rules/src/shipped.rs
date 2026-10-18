@@ -115,6 +115,9 @@ const BJ_ANISHTA: &str = include_str!("../rules/classical-bj-anishta.json");
 /// the Moon aspected and in her navamshas, the Yavanas' houses, the
 /// yogas of the royal-born and the closing verses' nakshatras.
 const SARAVALI_RAJA: &str = include_str!("../rules/classical-saravali-raja.json");
+/// Saravali chs. 13 and 14: Sunapha, Anapha and Durudhara around the Moon and
+/// veshi, voshi and ubhayachari around the Sun, in general and graha by graha.
+const SARAVALI_LUMINARIES: &str = include_str!("../rules/classical-saravali-luminaries.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -167,6 +170,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(BJ_RAJA));
     rules.append(&mut read(BJ_ANISHTA));
     rules.append(&mut read(SARAVALI_RAJA));
+    rules.append(&mut read(SARAVALI_LUMINARIES));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -406,7 +410,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 2321);
+        assert_eq!(rules.len(), 2357);
         for rule in &rules {
             let rank = rule
                 .source
