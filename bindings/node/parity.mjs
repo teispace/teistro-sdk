@@ -383,8 +383,6 @@ const charts = geo.chart.foundMany({
   perfection: { house: 7, rules: { horizonDays: 120 } },
   prashna: { question: { house: 7, number: 14, tense: 'FUTURE' }, rules: { score: 'BASELINE', graded: 'TAJIKA' } },
   remedies: { at: 2460676.5, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
-  // A varshphal list with the book's structure and none of its numbers:
-  // year y sends natal house h to h + y − 1, round the twelve.
   // Two instants, the verses' own motion, a name and every cell the front
   // passes.
   sarvatobhadra: {
@@ -393,6 +391,10 @@ const charts = geo.chart.foundMany({
     name: { letter: 'र', vowel: 'A' },
     rules: { front: 'EVERY_CELL' },
   },
+  // Three years under the practice's rule.
+  tithiPravesha: { through: 3 },
+  // A varshphal list with the book's structure and none of its numbers:
+  // year y sends natal house h to h + y − 1, round the twelve.
   lalkitab: {
     cycle: { planet: 'graha.VENUS', year: 17 },
     year: 43,
@@ -1188,6 +1190,13 @@ for (const chart of charts) {
       );
     }
   });
+  put(`chart-${i}-tithi-pravesha-count`, String(chart.tithiPravesha.length));
+  for (const year of chart.tithiPravesha) {
+    put(
+      `chart-${i}-tithi-pravesha-${year.year}`,
+      `${number(year.at)} ${number(year.solarReturn)} ${number(year.elongationDeg)} ${year.rule} ${year.picked} ${year.inSign}`,
+    );
+  }
   const {
     progressed: pg,
     directed: dr,

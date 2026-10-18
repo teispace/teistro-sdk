@@ -419,6 +419,10 @@ chart is the caller's to found where the native is. A chart request's
 `rule`) finds them for every chart in a batch, a refusal named as
 `tithiPravesha.through`; section 136 carries each chart's years across
 the C boundary as canonical JSON, and the agent server reads the record.
+Node, Python, Dart and Java read each chart's years as typed values
+(`chart.tithiPravesha`, `chart.tithi_pravesha`, Java's
+`chart.tithiPravesha()`), with `fellBack` beside the two rules, and the
+shared parity example prints three years alike in all five.
 
 **Half- and quarter-returns.** **Numbers:** none moved. `returns`,
 `BodyReturn` and the hit list are unchanged, and offset 0 of the new call

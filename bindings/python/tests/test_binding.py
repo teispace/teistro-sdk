@@ -1824,6 +1824,47 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, sarvatobhadra={"instants": []}, **at)
             self.assertEqual(refused.exception.field, "sarvatobhadra.instants")
 
+    def test_a_chart_reads_its_tithi_praveshas(self) -> None:
+        """The tithi praveshas cross whole (`03-design/tithi-pravesha.md`):
+        a year a row, `1` up, each instant read back from a chart founded
+        at it, the rival rule within a half month of the solar return, and
+        a request refused by its record's name."""
+        from teistro import TeistroError, TithiPraveshaRequest
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+
+        def elongation(chart: Any) -> float:
+            place = {g.graha: g.longitude_deg for g in chart.grahas}
+            return float((place[Graha.MOON] - place[Graha.SUN]) % 360)
+
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).tithi_pravesha)
+            natal = ctx.chart.found(instant=instant, tithi_pravesha={"through": 3}, **at)
+            years = natal.tithi_pravesha
+            assert years is not None
+            self.assertEqual([y.year for y in years], [1, 2, 3])
+            born = elongation(natal)
+            for year in years:
+                self.assertEqual(year.rule, "NATAL_SIGN")
+                self.assertEqual(year.fell_back, year.rule != year.picked)
+                self.assertAlmostEqual(year.elongation_deg, born, places=9)
+                self.assertLess(abs(year.at - year.solar_return), 33)
+                self.assertIn(year.in_sign, (0, 1, 2))
+                then = elongation(ctx.chart.found(instant=year.at, **at))
+                self.assertAlmostEqual(then, born, delta=1e-3)
+            request: TithiPraveshaRequest = {"through": 3, "rule": "NEAREST_RETURN"}
+            nearest = ctx.chart.found(instant=instant, tithi_pravesha=request, **at).tithi_pravesha
+            assert nearest is not None
+            for year in nearest:
+                self.assertEqual(year.picked, "NEAREST_RETURN")
+                self.assertFalse(year.fell_back)
+                self.assertLess(abs(year.at - year.solar_return), 16)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, tithi_pravesha={"through": 0}, **at)
+            self.assertEqual(refused.exception.field, "tithiPravesha.through")
+
     def test_a_chart_carries_its_lalkitab(self) -> None:
         """Lal Kitab crosses whole, its grahas made members, the cycle from
         the book's general start unless asked, the year and its annual teva

@@ -4671,6 +4671,51 @@ test('a chart reads the Sarvatobhadra chakra', () => {
   );
 });
 
+test('a chart reads its tithi praveshas', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2447995.4895833335;
+  assert.equal(ctx.chart.found({ instant, ...at }).tithiPravesha, null);
+
+  const natal = ctx.chart.found({ instant, ...at, tithiPravesha: { through: 3 } });
+  const years = natal.tithiPravesha;
+  assert.deepEqual(
+    years.map((y) => y.year),
+    [1, 2, 3],
+  );
+  assert.ok(Object.isFrozen(years[0]), 'frozen');
+  const sun = natal.grahas.find((g) => g.graha === 'graha.SUN').longitudeDeg;
+  const moon = natal.grahas.find((g) => g.graha === 'graha.MOON').longitudeDeg;
+  const born = (((moon - sun) % 360) + 360) % 360;
+  for (const year of years) {
+    assert.equal(year.rule, 'NATAL_SIGN');
+    assert.equal(year.fellBack, year.rule !== year.picked);
+    assert.ok(Math.abs(year.elongationDeg - born) < 1e-9, 'the birth elongation');
+    assert.ok(Math.abs(year.at - year.solarReturn) < 33, 'inside the window');
+    assert.ok(year.inSign >= 0 && year.inSign <= 2);
+    // Read back: the year's chart holds the birth's elongation.
+    const sky = ctx.chart.found({ instant: year.at, ...at }).grahas;
+    const then =
+      (((sky.find((g) => g.graha === 'graha.MOON').longitudeDeg - sky.find((g) => g.graha === 'graha.SUN').longitudeDeg) %
+        360) +
+        360) %
+      360;
+    assert.ok(Math.abs(then - born) < 1e-3, `year ${year.year}: ${then} against ${born}`);
+  }
+
+  const nearest = ctx.chart.found({ instant, ...at, tithiPravesha: { through: 3, rule: 'NEAREST_RETURN' } });
+  for (const year of nearest.tithiPravesha) {
+    assert.equal(year.picked, 'NEAREST_RETURN');
+    assert.equal(year.fellBack, false);
+    assert.ok(Math.abs(year.at - year.solarReturn) < 16, 'within a half month');
+  }
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, tithiPravesha: { through: 0 } }),
+    (error) => error.field === 'tithiPravesha.through',
+  );
+});
+
 test('a chart carries its Lal Kitab', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };

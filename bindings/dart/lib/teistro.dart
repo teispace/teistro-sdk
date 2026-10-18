@@ -710,6 +710,7 @@ final class ChartArea extends _Area {
     RemedyRequest? remedies,
     LalKitabRequest? lalkitab,
     SarvatobhadraRequest? sarvatobhadra,
+    TithiPraveshaRequest? tithiPravesha,
     RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
@@ -760,6 +761,7 @@ final class ChartArea extends _Area {
     remedies: remedies,
     lalkitab: lalkitab,
     sarvatobhadra: sarvatobhadra,
+    tithiPravesha: tithiPravesha,
     rectification: rectification,
     aspects: aspects,
     points: points,
@@ -830,6 +832,7 @@ final class ChartArea extends _Area {
     RemedyRequest? remedies,
     LalKitabRequest? lalkitab,
     SarvatobhadraRequest? sarvatobhadra,
+    TithiPraveshaRequest? tithiPravesha,
     RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
@@ -907,6 +910,7 @@ final class ChartArea extends _Area {
             rectificationJson: rectification?._json,
             lalkitabJson: lalkitab?._json,
             sarvatobhadraJson: sarvatobhadra?._json,
+            tithiPraveshaJson: tithiPravesha?._json,
           ),
         ),
       ),
@@ -15344,6 +15348,141 @@ final class Sarvatobhadra extends _Value {
   List<Object?> get _fields => [rules, native, grahas, points, maleficPoints];
 }
 
+/// Which phase return of a year is its tithi pravesha
+/// (`03-design/tithi-pravesha.md`).
+enum TithiRule implements _Keyed {
+  /// The practice's own: the return while the Sun is in its natal sign,
+  /// the nearer of two, the nearest when the sign holds none (C444 to
+  /// C446).
+  natalSign('NATAL_SIGN'),
+
+  /// The return nearest the year's solar return, whatever the sign.
+  nearestReturn('NEAREST_RETURN');
+
+  const TithiRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// The tithi praveshas to find for every chart's years
+/// (`03-design/tithi-pravesha.md`).
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ tithiPravesha: const TithiPraveshaRequest(through: 40),
+/// );
+/// for (final year in chart.tithiPravesha!) {
+///   // The year's chart, founded where the native is.
+///   final annual = ctx.chart.found(instant: year.at, /* … */);
+/// }
+/// ```
+final class TithiPraveshaRequest {
+  const TithiPraveshaRequest({
+    required this.through,
+    this.rule = TithiRule.natalSign,
+  });
+
+  /// The last year, 1 to 200, counted as [Pravesha.year] counts it; the
+  /// SDK refuses another by `tithiPravesha.through`.
+  final int through;
+
+  /// Which phase return of each year is taken.
+  final TithiRule rule;
+
+  String get _json =>
+      jsonEncode(<String, Object?>{'through': through, 'rule': rule.key});
+}
+
+/// One year's tithi pravesha: the instant the Moon's elongation from the
+/// Sun returns to the birth's, the solar return it was chosen around and
+/// which rule chose it.
+final class TithiPravesha extends _Value {
+  const TithiPravesha({
+    required this.year,
+    required this.at,
+    required this.solarReturn,
+    required this.elongationDeg,
+    required this.rule,
+    required this.picked,
+    required this.inSign,
+  });
+
+  /// The year, `1` the first return, a year after birth, as
+  /// [Pravesha.year] counts it.
+  final int year;
+
+  /// The instant the elongation returns, a Julian day (UTC): found the
+  /// year's chart here.
+  final double at;
+
+  /// The year's sidereal solar return, a Julian day (UTC): what "nearest"
+  /// is measured from.
+  final double solarReturn;
+
+  /// The birth's elongation returned to, the Moon less the Sun, degrees in
+  /// `[0, 360)`.
+  final double elongationDeg;
+
+  /// The rule asked for.
+  final TithiRule rule;
+
+  /// The rule that chose this instant: [TithiRule.nearestReturn] where
+  /// [TithiRule.natalSign] found no phase return in the sign (C446).
+  final TithiRule picked;
+
+  /// How many phase returns fell while the Sun was in its natal sign: 0,
+  /// 1 or 2.
+  final int inSign;
+
+  /// Whether the year fell back: [rule] and [picked] differ.
+  bool get fellBack => rule != picked;
+
+  @override
+  List<Object?> get _fields => [
+    year,
+    at,
+    solarReturn,
+    elongationDeg,
+    rule,
+    picked,
+    inSign,
+  ];
+}
+
+/// Each batch's tithi praveshas, parsed once however many charts read
+/// them.
+final Expando<List<List<TithiPravesha>>> _tithiPraveshas =
+    Expando<List<List<TithiPravesha>>>('tithiPravesha');
+
+List<List<TithiPravesha>> _tithiPraveshasOf(Charts batch) =>
+    _tithiPraveshas[batch] ??=
+        batch.tithiPravesha.isEmpty
+            ? const <List<TithiPravesha>>[]
+            : [
+              for (final chart
+                  in jsonDecode(batch.tithiPravesha) as List<Object?>)
+                List<TithiPravesha>.unmodifiable([
+                  for (final one in chart! as List<Object?>)
+                    _tithiPraveshaFrom(one! as Map<String, Object?>),
+                ]),
+            ];
+
+/// One year from the `tithi_pravesha` section's JSON.
+TithiPravesha _tithiPraveshaFrom(Map<String, Object?> raw) {
+  TithiRule rule(Object? key) =>
+      TithiRule.values.firstWhere((one) => one.key == key);
+  return TithiPravesha(
+    year: raw['year']! as int,
+    at: (raw['at']! as num).toDouble(),
+    solarReturn: (raw['solarReturn']! as num).toDouble(),
+    elongationDeg: (raw['elongationDeg']! as num).toDouble(),
+    rule: rule(raw['rule']),
+    picked: rule(raw['picked']),
+    inSign: raw['inSign']! as int,
+  );
+}
+
 /// Each batch's Sarvatobhadra readings, parsed once however many charts
 /// read them.
 final Expando<List<List<Sarvatobhadra>>> _sarvatobhadras =
@@ -24951,6 +25090,16 @@ final class Chart {
   /// `sarvatobhadra` asked (`03-design/gochar.md` §8).
   List<Sarvatobhadra>? get sarvatobhadra {
     final all = _sarvatobhadrasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The tithi praveshas of the chart's years, `1` up: each year's instant
+  /// the Moon's elongation from the Sun returns to the birth's, chosen
+  /// around that year's solar return. Fewer than asked for where the
+  /// ephemeris ends first; null unless `tithiPravesha` asked
+  /// (`03-design/tithi-pravesha.md`).
+  List<TithiPravesha>? get tithiPravesha {
+    final all = _tithiPraveshasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

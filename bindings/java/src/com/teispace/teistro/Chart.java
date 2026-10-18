@@ -319,6 +319,18 @@ public final class Chart {
     }
 
     /**
+     * The tithi praveshas of the chart's years, {@code 1} up, when they were asked for: each year's
+     * instant the Moon's elongation from the Sun returns to the birth's, chosen around that year's
+     * solar return; fewer than asked for where the ephemeris ends first
+     * ({@code 03-design/tithi-pravesha.md}).
+     *
+     * @return the years, empty when they were not asked for
+     */
+    public Optional<List<TithiPravesha>> tithiPravesha() {
+        return TithiPraveshaReads.tithiPravesha(this);
+    }
+
+    /**
      * The rectification readings, when they were asked for: each member
      * empty unless the request named it.
      *

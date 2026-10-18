@@ -1140,6 +1140,19 @@ export class Chart {
   }
 
   /**
+   * The tithi praveshas of the chart's years, `1` up (`tithiPravesha: {
+   * through: 40 }`): each year's instant the Moon's elongation from the
+   * Sun returns to the birth's, chosen around that year's solar return.
+   * Fewer than asked for where the ephemeris ends first; `null` unless
+   * asked (`03-design/tithi-pravesha.md`).
+   *
+   * @returns {object[]|null}
+   */
+  get tithiPravesha() {
+    return tithiPraveshasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The chart read as a birth time to rectify (`rectification: { purify:
    * { minutes: 30 } }`): what BPHS ch. 2's purifier leaves standing of the
    * minutes either side, the conception the birth counts back to, *Brihat
@@ -2789,6 +2802,11 @@ export class ChartArea extends Area {
           request.sarvatobhadra,
           'sarvatobhadra',
           "a Sarvatobhadra request record, e.g. { instants: [2460676.5] } or { instants: [2460676.5], motion: 'SUN', name: { letter: 'र', vowel: 'A' } }",
+        ),
+        tithiPraveshaJson: recordJson(
+          request.tithiPravesha,
+          'tithiPravesha',
+          "a tithi pravesha request record, e.g. { through: 40 } or { through: 40, rule: 'NEAREST_RETURN' }",
         ),
         rectificationJson: recordJson(
           request.rectification,
@@ -5327,6 +5345,23 @@ function lalkitabFrom({ reading, cycle, periods, year }) {
             annual: year.annual === null ? null : tevaFrom(year.annual),
           },
   };
+}
+
+/** Each batch's tithi praveshas, parsed once however many charts read them. */
+const TITHI_PRAVESHA = new WeakMap();
+
+/**
+ * Every chart's tithi praveshas in a batch: the `tithi_pravesha`
+ * section's JSON, a list of years a chart, each with `fellBack`, whether
+ * the natal sign held no phase return and the nearest was taken (C446).
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function tithiPraveshasOf(batch) {
+  return sectionOf(TITHI_PRAVESHA, batch, 'tithiPravesha', (chart) =>
+    chart.map((year) => ({ ...year, fellBack: year.rule !== year.picked })),
+  );
 }
 
 /** Each batch's Sarvatobhadra readings, parsed once however many charts read them. */

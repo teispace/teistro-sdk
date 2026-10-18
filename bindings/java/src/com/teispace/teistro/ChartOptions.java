@@ -17,6 +17,7 @@ import com.teispace.teistro.request.HouseRequest;
 import com.teispace.teistro.request.KpRequest;
 import com.teispace.teistro.request.LalKitabRequest;
 import com.teispace.teistro.request.SarvatobhadraRequest;
+import com.teispace.teistro.request.TithiPraveshaRequest;
 import com.teispace.teistro.request.LotRequest;
 import com.teispace.teistro.request.MidpointRequest;
 import com.teispace.teistro.request.ParallelRequest;
@@ -613,6 +614,18 @@ public record ChartOptions(
          */
         public Builder sarvatobhadra(SarvatobhadraRequest request) {
             return json("sarvatobhadra_json", request);
+        }
+
+        /**
+         * The tithi praveshas of every chart's years, as
+         * {@code TithiPraveshaRequest.builder().through(40).build()}
+         * ({@code 03-design/tithi-pravesha.md}).
+         *
+         * @param request the request; null takes it away
+         * @return this builder
+         */
+        public Builder tithiPravesha(TithiPraveshaRequest request) {
+            return json("tithi_pravesha_json", request);
         }
 
         /**
