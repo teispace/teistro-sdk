@@ -1265,7 +1265,7 @@ def main() -> None:
             # Three years under the practice's rule.
             tithi_pravesha={"through": 3},
             # The second year's third month, a row a day.
-            masa_pravesha={"year": 2, "month": 3},
+            masa_pravesha={"year": 2, "place": "birth"},
             dossier={
                 "sections": ["CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES", "GOCHAR"],
                 "at": 2460676.5,
@@ -2014,7 +2014,18 @@ def main() -> None:
             assert masa is not None
             put(f"chart-{i}-masa-pravesha-count", str(len(masa)))
             for mp in masa:
-                put(f"chart-{i}-masa-pravesha-{mp.year}-{mp.month}-{mp.day}", f"{number(mp.at)} {number(mp.sun_deg)}")
+                key = f"chart-{i}-masa-pravesha-{mp.year}-{mp.month}-{mp.day}"
+                put(key, f"{number(mp.at)} {number(mp.sun_deg)}")
+                if mp.masesha is not None:
+                    lord, six = mp.masesha, mp.masesha.bearers
+                    bearers = (
+                        six.masa_lagna, six.muntha, six.janma_lagna, six.tri_rashi, six.dina_ratri, six.varsha_lagna
+                    )
+                    put(
+                        f"{key}-masesha",
+                        f"{lord.graha.full_key} {lord.reading} {lord.chain.chosen.key} {lord.chain.vishwa} "
+                        f"{','.join(g.full_key for g in bearers)} {int(six.by_day)}",
+                    )
             dossier = chart.dossier
             assert dossier is not None
             put(f"chart-{i}-dossier", f"{len(dossier.encode('utf-8'))} {fnv(dossier)}")

@@ -1878,6 +1878,7 @@ fn one_document_beside(
     offset: UtcOffset,
 ) {
     the_progressions(report, geo, index, document, bare);
+    the_masa_pravesha(report, geo, index, document, offset);
     the_western_aspects(report, geo, index, document);
     the_western_configurations(report, geo, index, document);
     the_parallels(report, geo, index, document);
@@ -1912,7 +1913,6 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_lalkitab(report, geo, index, document);
     the_sarvatobhadra(report, geo, index, document);
     the_tithi_pravesha(report, geo, index, document);
-    the_masa_pravesha(report, geo, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2622,36 +2622,68 @@ fn the_tithi_pravesha(
     }
 }
 
-/// The month's days every runner asks for: the second year's third month,
-/// which finds the year's months to reach it, each day's instant and the
-/// Sun's longitude (`03-design/annual-chart.md`).
-const MASA_PRAVESHA_JSON: &str = r#"{"year":2,"month":3}"#;
+/// The months every runner asks for: the second year's twelve, each
+/// founded at the birth's own place and its lord read under the verse's
+/// own chain, so the instants, the Sun and the month's lord all cross
+/// (`03-design/annual-chart.md`, `03-design/varshesha.md`).
+const MASA_PRAVESHA_JSON: &str = r#"{"year":2,"place":"birth"}"#;
 
 fn the_masa_pravesha(
     report: &mut Report,
     sdk: &Context,
     index: usize,
     document: &teistro::Document,
+    offset: UtcOffset,
 ) {
     let asked =
         teistro::MasaPraveshaRequest::from_json(MASA_PRAVESHA_JSON).expect("a valid request");
-    let days = sdk
+    let months = sdk
         .chart()
-        .masa_pravesha(document, &asked)
+        .masa_pravesha(document, offset, &asked)
         .expect("the test provider");
     put(
         report,
         &format!("chart-{index}-masa-pravesha-count"),
-        days.len().to_string(),
+        months.len().to_string(),
     );
-    for one in &days {
+    for one in &months {
+        let entry = &one.entry;
+        let key = format!(
+            "chart-{index}-masa-pravesha-{}-{}-{}",
+            entry.year, entry.month, entry.day
+        );
         put(
             report,
-            &format!(
-                "chart-{index}-masa-pravesha-{}-{}-{}",
-                one.year, one.month, one.day
+            &key,
+            format!("{} {}", number(entry.at.get()), number(entry.sun_deg)),
+        );
+        let Some(lord) = &one.masesha else {
+            continue;
+        };
+        let b = &lord.bearers;
+        let bearers: Vec<&str> = [
+            b.masa_lagna,
+            b.muntha,
+            b.janma_lagna,
+            b.tri_rashi,
+            b.dina_ratri,
+            b.varsha_lagna,
+        ]
+        .iter()
+        .map(|graha| graha.full_key())
+        .collect();
+        put(
+            report,
+            &format!("{key}-masesha"),
+            format!(
+                "{} {} {} {} {} {}",
+                lord.graha.full_key(),
+                wire_key(&lord.reading),
+                wire_key(&lord.chain.chosen),
+                lord.chain.vishwa,
+                bearers.join(","),
+                u8::from(b.by_day)
             ),
-            format!("{} {}", number(one.at.get()), number(one.sun_deg)),
         );
     }
 }

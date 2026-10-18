@@ -530,6 +530,10 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
             json!({"year": 2, "month": 3, "reading": "TROPICAL"}),
         ),
         (
+            "masaPravesha",
+            json!({"year": 2, "place": "birth", "masesha": {"reading": "LAGNA_LORD", "muntha": "NATAL_DEGREE"}}),
+        ),
+        (
             "westernConfigurations",
             json!({"aspects": ["TRINE", "SQUARE"], "orbs": {"model": "LEO"}, "stelliumLeast": 4}),
         ),

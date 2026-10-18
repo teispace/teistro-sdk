@@ -95,6 +95,7 @@ pub struct MonthCharts {
 /// The six office-bearers of one month.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct MonthBearers {
     /// The lord of the month lagna.
     pub masa_lagna: Graha,

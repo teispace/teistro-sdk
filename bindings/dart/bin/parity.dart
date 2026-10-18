@@ -1161,7 +1161,7 @@ void main() {
     // Three years under the practice's rule.
     tithiPravesha: const TithiPraveshaRequest(through: 3),
     // The second year's third month, a row a day.
-    masaPravesha: const MasaPraveshaRequest(year: 2, month: 3),
+    masaPravesha: const MasaPraveshaRequest(year: 2, place: AnnualPlace.birth),
     dossier: const DossierRequest(
       sections: [
         DossierSection.chart,
@@ -2054,10 +2054,25 @@ void main() {
     final masa = chart.masaPravesha!;
     put('chart-$i-masa-pravesha-count', '${masa.length}');
     for (final one in masa) {
-      put(
-        'chart-$i-masa-pravesha-${one.year}-${one.month}-${one.day}',
-        '${number(one.at)} ${number(one.sunDeg)}',
-      );
+      final key = 'chart-$i-masa-pravesha-${one.year}-${one.month}-${one.day}';
+      put(key, '${number(one.at)} ${number(one.sunDeg)}');
+      if (one.masesha case final lord?) {
+        final six = lord.bearers;
+        final bearers = [
+          six.masaLagna,
+          six.muntha,
+          six.janmaLagna,
+          six.triRashi,
+          six.dinaRatri,
+          six.varshaLagna,
+        ];
+        put(
+          '$key-masesha',
+          '${lord.graha.fullKey} ${lord.reading.key} ${lord.chain.chosen.key} '
+              '${lord.chain.vishwa} ${bearers.map((g) => g.fullKey).join(',')} '
+              '${six.byDay ? 1 : 0}',
+        );
+      }
     }
     final dossier = chart.dossier!;
     put('chart-$i-dossier', '${utf8.encode(dossier).length} ${fnv(dossier)}');

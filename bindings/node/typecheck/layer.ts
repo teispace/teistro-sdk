@@ -519,7 +519,12 @@ function masaPravesha(): string {
   const sun: number = day.sunDeg;
   // @ts-expect-error the mean year places no Sun, so it divides into nothing
   const mean: MasaPraveshaRequest = { year: 30, reading: 'MEAN' };
-  return `${at} ${sun} ${day.month} ${day.day} ${mean.year}`;
+  const lords = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, masaPravesha: { year: 30, place: 'birth', masesha: { reading: 'LAGNA_LORD' } } });
+  const lord: Graha | undefined = lords.masaPravesha![0]!.masesha?.graha;
+  const tie: string | undefined = lords.masaPravesha![0]!.masesha?.chain.chosen;
+  // @ts-expect-error the readings are the verse's and the others'
+  const third: MasaPraveshaRequest = { year: 30, masesha: { reading: 'STRONGEST' } };
+  return `${at} ${sun} ${day.month} ${day.day} ${mean.year} ${lord} ${tie} ${third.year}`;
 }
 
 void masaPravesha;

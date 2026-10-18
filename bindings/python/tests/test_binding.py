@@ -1904,6 +1904,29 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, masa_pravesha={"year": 3, "month": 13}, **at)
             self.assertEqual(refused.exception.field, "masaPravesha.month")
 
+            # A place founds each month and reads its lord; the first month's
+            # is the year's.
+            self.assertIsNone(months[0].masesha)
+            years = ctx.chart.found(instant=instant, varsha={"through": 3, "place": "birth"}, **at).praveshas
+            third = years[2].annual
+            assert third is not None
+            lords = ctx.chart.found(instant=instant, masa_pravesha={"year": 3, "place": "birth"}, **at).masa_pravesha
+            assert lords is not None and lords[0].masesha is not None
+            self.assertEqual(len(lords), 12)
+            self.assertEqual(lords[0].masesha.graha, third.year_lord.graha)
+            for row in lords:
+                assert row.masesha is not None
+                self.assertEqual(row.masesha.reading, "CHAIN")
+                self.assertEqual(row.masesha.graha, row.masesha.chain.graha)
+                self.assertTrue(all(claim.vishwa.total > 0 for claim in row.masesha.chain.claims))
+            others: MasaPraveshaRequest = {"year": 3, "place": "birth", "masesha": {"reading": "LAGNA_LORD"}}
+            for row in ctx.chart.found(instant=instant, masa_pravesha=others, **at).masa_pravesha or ():
+                assert row.masesha is not None
+                self.assertEqual(row.masesha.graha, row.masesha.bearers.masa_lagna)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, masa_pravesha={"year": 3, "month": 2, "place": "birth"}, **at)
+            self.assertEqual(refused.exception.field, "masaPravesha.place")
+
     def test_a_chart_writes_its_dossier(self) -> None:
         """The dossier crosses as text (`03-design/dossier.md`): the record
         widens the request with the sections it names, writes on the

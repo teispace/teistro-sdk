@@ -15608,6 +15608,8 @@ final class MasaPraveshaRequest {
     required this.year,
     this.month,
     this.reading = VarshaReading.sidereal,
+    this.place,
+    this.masesha = const MaseshaRules(),
   });
 
   /// The year divided, 1 to 200, counted as [Pravesha.year] counts it; the
@@ -15622,11 +15624,140 @@ final class MasaPraveshaRequest {
   /// and the SDK refuses it by `masaPravesha.reading`.
   final VarshaReading reading;
 
+  /// Where each month's chart is founded, as [VarshaRequest.place] is;
+  /// given, each month carries its [MasaPravesha.masesha]. The year's
+  /// months only: a day's lord is not built, so the SDK refuses it beside
+  /// a [month] by `masaPravesha.place`.
+  final AnnualPlace? place;
+
+  /// The readings the month's lord parts on; the verse's own by default.
+  final MaseshaRules masesha;
+
   String get _json => jsonEncode(<String, Object?>{
     'year': year,
     if (month != null) 'month': month,
     'reading': reading.key,
+    if (place case final place?) 'place': place._json,
+    'masesha': masesha._json,
   });
+}
+
+/// Which reading makes a planet the month's lord.
+enum MaseshaReading implements _Keyed {
+  /// The year lord's chain over the six: the verse's own, the default.
+  chain('CHAIN'),
+
+  /// The month lagna's lord outright, which v. 5 gives to "others".
+  lagnaLord('LAGNA_LORD');
+
+  const MaseshaReading(this.key);
+
+  @override
+  final String key;
+}
+
+/// The readings the month's lord parts on (`03-design/varshesha.md`, "The
+/// month's lord").
+final class MaseshaRules {
+  const MaseshaRules({
+    this.reading = MaseshaReading.chain,
+    this.muntha,
+    this.chain = const VarsheshaRules(),
+  });
+
+  final MaseshaReading reading;
+
+  /// Where the Muntha stands inside its sign; the year's own default when
+  /// null.
+  final MunthaDegree? muntha;
+
+  /// The year lord's readings, which the chain takes "as for the year".
+  final VarsheshaRules chain;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    'reading': reading.key,
+    if (muntha case final muntha?) 'muntha': muntha.key,
+    'chain': chain._json,
+  };
+}
+
+/// The six office-bearers of one month.
+final class MonthBearers extends _Value {
+  const MonthBearers({
+    required this.masaLagna,
+    required this.muntha,
+    required this.janmaLagna,
+    required this.triRashi,
+    required this.dinaRatri,
+    required this.varshaLagna,
+    required this.byDay,
+  });
+
+  final Graha masaLagna;
+
+  /// The Muntha's sign's lord, the Muntha moved on 2°30′ a month.
+  final Graha muntha;
+  final Graha janmaLagna;
+
+  /// The month lagna's triplicity lord, by day or by night.
+  final Graha triRashi;
+
+  /// The lord of the Sun's sign by day, of the Moon's by night.
+  final Graha dinaRatri;
+  final Graha varshaLagna;
+
+  /// Whether the month opened by day, which chose two of them.
+  final bool byDay;
+
+  @override
+  List<Object?> get _fields => [
+    masaLagna,
+    muntha,
+    janmaLagna,
+    triRashi,
+    dinaRatri,
+    varshaLagna,
+    byDay,
+  ];
+}
+
+/// The lord of one month, and the chain it was read beside.
+final class Masesha extends _Value {
+  const Masesha({
+    required this.graha,
+    required this.reading,
+    required this.bearers,
+    required this.chain,
+  });
+
+  /// The lord under [reading].
+  final Graha graha;
+  final MaseshaReading reading;
+
+  /// The six it was chosen among.
+  final MonthBearers bearers;
+
+  /// The chain over the six, carried under either reading so a reader
+  /// sees where the two part.
+  final YearLord chain;
+
+  /// The chain by what it holds, since a [YearLord] compares by identity.
+  @override
+  List<Object?> get _fields => [
+    graha,
+    reading,
+    bearers,
+    chain.graha,
+    chain.chosen,
+    chain.vishwa.total,
+    chain.moonPassedOver,
+    for (final claim in chain.claims) ...[
+      claim.graha,
+      claim.vishwa.total,
+      claim.portfolios,
+      claim.aspectsLagna,
+    ],
+  ];
 }
 
 /// One month's or one day's chart instant: the annual Sun a sign further
@@ -15639,6 +15770,7 @@ final class MasaPravesha extends _Value {
     required this.day,
     required this.at,
     required this.sunDeg,
+    this.masesha,
   });
 
   /// The year, as [Pravesha.year] counts it.
@@ -15657,8 +15789,11 @@ final class MasaPravesha extends _Value {
   /// Where the Sun stands then, degrees in the year's zodiac.
   final double sunDeg;
 
+  /// The month's lord, where the request named a place; null otherwise.
+  final Masesha? masesha;
+
   @override
-  List<Object?> get _fields => [year, month, day, at, sunDeg];
+  List<Object?> get _fields => [year, month, day, at, sunDeg, masesha];
 }
 
 /// Each batch's month and day charts, parsed once however many charts
@@ -15679,14 +15814,60 @@ List<List<MasaPravesha>> _masaPraveshasOf(Charts batch) =>
                 ]),
             ];
 
-/// One instant from the `masa_pravesha` section's JSON.
+/// One instant from the `masa_pravesha` section's JSON, with its month's
+/// lord where one was read.
 MasaPravesha _masaPraveshaFrom(Map<String, Object?> raw) => MasaPravesha(
   year: raw['year']! as int,
   month: raw['month']! as int,
   day: raw['day']! as int,
   at: (raw['at']! as num).toDouble(),
   sunDeg: (raw['sunDeg']! as num).toDouble(),
+  masesha: switch (raw['masesha']) {
+    final Map<String, Object?> lord => _maseshaFrom(lord),
+    _ => null,
+  },
 );
+
+/// A month's lord from the section's JSON, its keys made members and its
+/// strengths read as the year lord's are.
+Masesha _maseshaFrom(Map<String, Object?> raw) {
+  Graha graha(Object? key) => _key(key, Graha.byKey, Graha.unknown);
+  final bearers = raw['bearers']! as Map<String, Object?>;
+  final chain = raw['chain']! as Map<String, Object?>;
+  return Masesha(
+    graha: graha(raw['graha']),
+    reading: _keyedIn(MaseshaReading.values, raw['reading']),
+    bearers: MonthBearers(
+      masaLagna: graha(bearers['masaLagna']),
+      muntha: graha(bearers['muntha']),
+      janmaLagna: graha(bearers['janmaLagna']),
+      triRashi: graha(bearers['triRashi']),
+      dinaRatri: graha(bearers['dinaRatri']),
+      varshaLagna: graha(bearers['varshaLagna']),
+      byDay: bearers['byDay']! as bool,
+    ),
+    chain: YearLord(
+      graha: graha(chain['graha']),
+      chosen:
+          VarsheshaChosen.byKey(chain['chosen']! as String) ??
+          (throw StateError(
+            'a spelling this build does not know: ${chain['chosen']}',
+          )),
+      vishwa: Bala(chain['vishwa']! as int),
+      moonPassedOver: chain['moonPassedOver']! as bool,
+      claims: List<YearClaim>.unmodifiable([
+        for (final claim in chain['claims']! as List<Object?>)
+          if (claim case final Map<String, Object?> claim)
+            YearClaim(
+              graha: graha(claim['graha']),
+              vishwa: Bala(claim['vishwa']! as int),
+              portfolios: claim['portfolios']! as int,
+              aspectsLagna: claim['aspectsLagna']! as bool,
+            ),
+      ]),
+    ),
+  );
+}
 
 /// A section of a chart's dossier, in the dossier's own order
 /// (`03-design/dossier.md`).

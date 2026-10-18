@@ -5556,6 +5556,58 @@ void _engineTests() {
         ),
       ),
     );
+
+    // A place founds each month and reads its lord; the first month's is
+    // the year's.
+    expect(months.first.masesha, isNull);
+    final third =
+        ctx.chart
+            .found(
+              instant: instant,
+              place: place,
+              utcOffsetSeconds: 20700,
+              varsha: const VarshaRequest(through: 3, place: AnnualPlace.birth),
+            )
+            .praveshas[2]
+            .annual!;
+    final lords =
+        found(
+          instant,
+          const MasaPraveshaRequest(year: 3, place: AnnualPlace.birth),
+        ).masaPravesha!;
+    expect(lords, hasLength(12));
+    expect(lords.first.masesha!.graha, third.yearLord.graha);
+    for (final row in lords) {
+      final lord = row.masesha!;
+      expect(lord.reading, MaseshaReading.chain);
+      expect(lord.graha, lord.chain.graha);
+      expect(lord.chain.claims.every((c) => c.vishwa.total > 0), isTrue);
+    }
+    final others =
+        found(
+          instant,
+          const MasaPraveshaRequest(
+            year: 3,
+            place: AnnualPlace.birth,
+            masesha: MaseshaRules(reading: MaseshaReading.lagnaLord),
+          ),
+        ).masaPravesha!;
+    for (final row in others) {
+      expect(row.masesha!.graha, row.masesha!.bearers.masaLagna);
+    }
+    expect(
+      () => found(
+        instant,
+        const MasaPraveshaRequest(year: 3, month: 2, place: AnnualPlace.birth),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'masaPravesha.place',
+        ),
+      ),
+    );
     ctx.dispose();
   });
 

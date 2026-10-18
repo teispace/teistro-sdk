@@ -5,14 +5,18 @@
 //! A month's chart is its own first day's, as the *Tajika Nilakanthi*'s
 //! commentary says, so both answers are rows of one shape,
 //! [`DinaPravesha`]: the twelve months as their first days, or the thirty
-//! days of the month asked for.
+//! days of the month asked for. Given a `place`, each month's chart is
+//! founded there and its lord, the [`Masesha`], read beside it.
 
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
+use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
-use teistro_tajika::{DinaPravesha, Reading};
+use teistro_tajika::{DinaPravesha, MasaPravesha, Masesha, MaseshaRules, Reading};
 
 use crate::area::ChartArea;
+use crate::reading::ChartRequest;
+use crate::varsha::AnnualPlace;
 
 /// One year's months, or one month's days, of a birth.
 ///
@@ -29,7 +33,7 @@ use crate::area::ChartArea;
 /// assert_eq!(refused.field(), Some("masaPravesha.month"));
 /// # Ok::<(), teistro::Error>(())
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MasaPraveshaRequest {
@@ -45,17 +49,57 @@ pub struct MasaPraveshaRequest {
     /// the year's twelve months are, each as its first day.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub month: Option<u8>,
+    /// Where each month's chart is founded, `"birth"` or a residence, as
+    /// [`VarshaRequest::place`](crate::VarshaRequest::place) is written;
+    /// given, each month's row carries its lord. Absent, the rows are the
+    /// instants only. The year's own months only: a day's lord is not
+    /// built.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub place: Option<AnnualPlace>,
+    /// The readings the month's lord parts on; the verse's own by default.
+    #[serde(default)]
+    pub masesha: MaseshaRules,
+}
+
+/// One row of a `masaPravesha` answer: a month or a day, and, for a month
+/// whose chart was founded, its lord.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct MasaRow {
+    /// The month or the day.
+    #[serde(flatten)]
+    pub entry: DinaPravesha,
+    /// The month's lord, when the request named a `place`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub masesha: Option<Masesha>,
 }
 
 impl MasaPraveshaRequest {
     /// The twelve months of `year`, in the sidereal year.
     #[must_use]
-    pub const fn new(year: u16) -> MasaPraveshaRequest {
+    pub fn new(year: u16) -> MasaPraveshaRequest {
         MasaPraveshaRequest {
             reading: Reading::Sidereal,
             year,
             month: None,
+            place: None,
+            masesha: MaseshaRules::default(),
         }
+    }
+
+    /// The same months, each founded at `place` with its lord read.
+    #[must_use]
+    pub const fn at(mut self, place: AnnualPlace) -> MasaPraveshaRequest {
+        self.place = Some(place);
+        self
+    }
+
+    /// The same request, the month's lord read under `rules`.
+    #[must_use]
+    pub const fn with_masesha(mut self, rules: MaseshaRules) -> MasaPraveshaRequest {
+        self.masesha = rules;
+        self
     }
 
     /// The same year's `month`'s thirty days instead.
@@ -91,11 +135,19 @@ impl MasaPraveshaRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` naming `year` outside one to two hundred, `month`
-    /// outside one to twelve, or `reading` for the mean year.
+    /// outside one to twelve, `place` beside a `month` (a day's lord is
+    /// not built), or `reading` for the mean year.
     pub fn check(&self) -> Result<(), Error> {
         year_of(self.year)?;
         if let Some(month) = self.month {
             month_of(month)?;
+            if self.place.is_some() {
+                return Err(Error::invalid_arg(
+                    "a place founds the year's month charts for their lords, and a day's lord is not built",
+                )
+                .with_field("place")
+                .with_hint("leave `month` out for the twelve months and their lords"));
+            }
         }
         teistro_tajika::divided(self.reading).map(|_| ())
     }
@@ -140,22 +192,60 @@ impl ChartArea<'_> {
     /// What `asked` asks of one birth: the year's twelve months, each as
     /// its first day, or the month's thirty days
     /// ([`ChartArea::masa_praveshas`], [`ChartArea::dina_praveshas`]).
+    /// With a `place`, the year's chart and each month's are founded there
+    /// (the birth's own place on `clock` for `"birth"`), and each month
+    /// carries its [`ChartArea::masesha`].
     ///
     /// # Errors
     ///
-    /// As [`ChartArea::dina_praveshas`].
+    /// As [`ChartArea::dina_praveshas`] and [`ChartArea::masesha`].
     pub fn masa_pravesha(
         self,
         birth: &Document,
+        clock: UtcOffset,
         asked: &MasaPraveshaRequest,
-    ) -> Result<Vec<DinaPravesha>, Error> {
-        match asked.month {
-            Some(month) => self.dina_praveshas(birth, asked.reading, asked.year, month),
-            None => Ok(self
-                .masa_praveshas(birth, asked.reading, asked.year)?
+    ) -> Result<Vec<MasaRow>, Error> {
+        let bare = |entry: DinaPravesha| MasaRow {
+            entry,
+            masesha: None,
+        };
+        if let Some(month) = asked.month {
+            let days = self.dina_praveshas(birth, asked.reading, asked.year, month)?;
+            return Ok(days.into_iter().map(bare).collect());
+        }
+        let months = self.masa_praveshas(birth, asked.reading, asked.year)?;
+        let Some(place) = asked.place else {
+            return Ok(months
                 .into_iter()
                 .map(DinaPravesha::from)
-                .collect()),
-        }
+                .map(bare)
+                .collect());
+        };
+        let request = match place {
+            AnnualPlace::Birth => ChartRequest::at(birth.foundation.place, clock),
+            AnnualPlace::At { place, offset } => ChartRequest::at(place, offset),
+        };
+        let found = |entry: &MasaPravesha| Ok::<_, Error>(self.reading(entry.at, &request)?.value);
+        // The first month's entry is the year's own, so its chart is the
+        // year's chart.
+        let Some(first) = months.first() else {
+            return Ok(Vec::new());
+        };
+        let annual = found(first)?;
+        months
+            .iter()
+            .map(|entry| {
+                let month = if entry.month == 1 {
+                    annual.clone()
+                } else {
+                    found(entry)?
+                };
+                let lord = self.masesha(birth, &annual, &month, entry, asked.masesha)?;
+                Ok(MasaRow {
+                    entry: DinaPravesha::from(*entry),
+                    masesha: Some(lord),
+                })
+            })
+            .collect()
     }
 }

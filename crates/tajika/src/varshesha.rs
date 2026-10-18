@@ -211,6 +211,7 @@ impl Chosen {
 /// One office-bearer's claim on the year.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Claim {
     /// Whose claim it is.
     pub graha: Graha,
@@ -225,6 +226,7 @@ pub struct Claim {
 /// The lord of the year, and what made it so.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Varshesha {
     /// The lord of the year.
     pub graha: Graha,

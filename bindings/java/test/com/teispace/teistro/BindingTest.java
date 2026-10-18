@@ -812,6 +812,34 @@ public final class BindingTest {
                         ChartOptions.builder().masaPravesha(MasaPraveshaRequest.builder().year(3).month(13).build())
                                 .build()));
                 same("masaPravesha.month", refused.field(), "a refusal names its field");
+
+                // A place founds each month and reads its lord; the first month's is the year's.
+                check(months.get(0).masesha() == null, "no lord without a place");
+                YearLord third = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .varsha(VarshaRequest.builder().through(3).place(AnnualPlace.BIRTH).build()).build())
+                        .praveshas().get(2).annual().yearLord();
+                List<MasaPravesha> lords = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .masaPravesha(MasaPraveshaRequest.builder().year(3).place(AnnualPlace.BIRTH).build()).build())
+                        .masaPravesha().orElseThrow();
+                same(12, lords.size(), "twelve months");
+                same(third.graha(), lords.get(0).masesha().graha(), "the first month's lord is the year's");
+                for (MasaPravesha row : lords) {
+                    Masesha lord = row.masesha();
+                    same(MaseshaReading.CHAIN, lord.reading(), "the verse's own reading");
+                    same(lord.chain().graha(), lord.graha(), "the chain's lord");
+                    check(lord.chain().claims().stream().allMatch(c -> c.vishwa().total() > 0), "every claim weighed");
+                }
+                List<MasaPravesha> others = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .masaPravesha(MasaPraveshaRequest.builder().year(3).place(AnnualPlace.BIRTH)
+                                .masesha(MaseshaRules.builder().reading(MaseshaReading.LAGNA_LORD).build()).build())
+                        .build()).masaPravesha().orElseThrow();
+                for (MasaPravesha row : others) {
+                    same(row.masesha().bearers().masaLagna(), row.masesha().graha(), "the others' reading");
+                }
+                TeistroException placed = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().masaPravesha(MasaPraveshaRequest.builder().year(3).month(2)
+                                .place(AnnualPlace.BIRTH).build()).build()));
+                same("masaPravesha.place", placed.field(), "a day's lord is not built");
             }
         });
 

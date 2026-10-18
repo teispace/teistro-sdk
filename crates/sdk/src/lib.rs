@@ -530,7 +530,7 @@ pub use crate::returns::{BodyReturn, OffsetReturn};
 // One year's months, or one month's days, as a chart request asks for
 // them (`03-design/annual-chart.md`).
 #[cfg(feature = "tajika")]
-pub use crate::masa_pravesha::MasaPraveshaRequest;
+pub use crate::masa_pravesha::{MasaPraveshaRequest, MasaRow};
 // Each year's instant the birth's tithi returns around the solar return,
 // chosen by a named rule (`03-design/tithi-pravesha.md`).
 #[cfg(feature = "tajika")]

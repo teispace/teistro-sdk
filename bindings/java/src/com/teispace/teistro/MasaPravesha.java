@@ -11,6 +11,7 @@ package com.teispace.teistro;
  * @param day The day, 1 (the month's chart itself) to 30; 1 on every row of a year's months.
  * @param at The instant, a Julian day (UTC).
  * @param sunDeg Where the Sun stands then, degrees in the year's zodiac.
+ * @param masesha The month's lord, where the request named a {@code place}; null otherwise.
  */
-public record MasaPravesha(int year, int month, int day, double at, double sunDeg) {
+public record MasaPravesha(int year, int month, int day, double at, double sunDeg, Masesha masesha) {
 }

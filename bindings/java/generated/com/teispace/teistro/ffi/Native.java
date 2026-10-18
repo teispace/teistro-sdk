@@ -2802,13 +2802,17 @@ public final class Native {
          * annual chart's years are; optionally `month`, 1 to 12, for that
          * month's thirty days instead of the year's twelve months; and
          * optionally `reading`, `"SIDEREAL"` (the default) or `"TROPICAL"`,
-         * the zodiac the year divides in. The instants come back in the
-         * `masa_pravesha` section, the months each as its first day; a year
-         * past the ephemeris's end comes back empty. Null for none
-         * (`03-design/annual-chart.md`, "The month's and the day's chart").
-         * Refusals are named from the record every binding calls
-         * `masaPravesha`, as `masaPravesha.month`.
-         * Example: {"year":30,"month":4}. May be null.
+         * the zodiac the year divides in. Without `month`, optionally
+         * `place`, `"birth"` or `{latitudeDeg, longitudeDeg, altitudeM,
+         * utcOffsetSeconds}` as `varsha_json` writes it, where each month's
+         * chart is founded and its lord read, under optionally `masesha`,
+         * `{reading, muntha, chain}` (`03-design/varshesha.md`, "The month's
+         * lord"). The instants come back in the `masa_pravesha` section, the
+         * months each as its first day; a year past the ephemeris's end comes
+         * back empty. Null for none (`03-design/annual-chart.md`, "The
+         * month's and the day's chart"). Refusals are named from the record
+         * every binding calls `masaPravesha`, as `masaPravesha.month`.
+         * Example: {"year":30,"place":"birth"}. May be null.
          */
         public static final long MASA_PRAVESHA_JSON_OFFSET = 344;
 

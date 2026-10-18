@@ -11,11 +11,13 @@ import java.util.Objects;
 /**
  * One year's months, or one month's days, of a birth.
  *
+ * @param masesha The readings the month's lord parts on; the verse's own by default. Null leaves the SDK's default.
  * @param month The month whose thirty days are asked for, one to twelve; absent, the year's twelve months are, each as its first day. Null leaves the SDK's default.
+ * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord. Absent, the rows are the instants only. The year's own months only: a day's lord is not built. Null leaves the SDK's default.
  * @param reading Which longitude the year's Sun returns to, and so which zodiac the year divides in; the tradition's, sidereal, by default. The mean year places no Sun and is refused. Null leaves the SDK's default.
  * @param year The year divided, one to two hundred, counted as `Pravesha::year` counts it.
  */
-public record MasaPraveshaRequest(Integer month, ReturnLongitude reading, int year) implements RequestJson {
+public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPlace place, ReturnLongitude reading, int year) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -42,11 +44,24 @@ public record MasaPraveshaRequest(Integer month, ReturnLongitude reading, int ye
 
     /** Builds a {@link MasaPraveshaRequest} a field at a time. */
     public static final class Builder {
+        private MaseshaRules masesha;
         private Integer month;
+        private AnnualPlace place;
         private ReturnLongitude reading;
         private Integer year;
 
         private Builder() {}
+
+        /**
+         * Sets {@code masesha}.
+         *
+         * @param masesha The readings the month's lord parts on; the verse's own by default. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder masesha(MaseshaRules masesha) {
+            this.masesha = masesha;
+            return this;
+        }
 
         /**
          * Sets {@code month}.
@@ -56,6 +71,17 @@ public record MasaPraveshaRequest(Integer month, ReturnLongitude reading, int ye
          */
         public Builder month(int month) {
             this.month = month;
+            return this;
+        }
+
+        /**
+         * Sets {@code place}.
+         *
+         * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord. Absent, the rows are the instants only. The year's own months only: a day's lord is not built. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder place(AnnualPlace place) {
+            this.place = place;
             return this;
         }
 
@@ -88,7 +114,7 @@ public record MasaPraveshaRequest(Integer month, ReturnLongitude reading, int ye
          * @throws NullPointerException naming a required field left unset
          */
         public MasaPraveshaRequest build() {
-            return new MasaPraveshaRequest(month, reading, Objects.requireNonNull(year, "`MasaPraveshaRequest.year` is required"));
+            return new MasaPraveshaRequest(masesha, month, place, reading, Objects.requireNonNull(year, "`MasaPraveshaRequest.year` is required"));
         }
     }
 
@@ -102,7 +128,9 @@ public record MasaPraveshaRequest(Integer month, ReturnLongitude reading, int ye
     public static MasaPraveshaRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "MasaPraveshaRequest");
         return new MasaPraveshaRequest(
+            Read.orNull(json.get("masesha"), present -> MaseshaRules.of(present)),
             Read.orNull(json.get("month"), present -> Read.int32(present, "MasaPraveshaRequest.month")),
+            Read.orNull(json.get("place"), present -> AnnualPlace.of(present)),
             Read.orNull(json.get("reading"), present -> Read.member(present, "MasaPraveshaRequest.reading", ReturnLongitude::byKey)),
             Read.int32(Read.required(json.get("year"), "MasaPraveshaRequest.year"), "MasaPraveshaRequest.year"));
     }
@@ -110,8 +138,14 @@ public record MasaPraveshaRequest(Integer month, ReturnLongitude reading, int ye
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (masesha != null) {
+            json.put("masesha", masesha.toJson());
+        }
         if (month != null) {
             json.put("month", month);
+        }
+        if (place != null) {
+            json.put("place", place.toJson());
         }
         if (reading != null) {
             json.put("reading", reading.toJson());

@@ -393,8 +393,8 @@ const charts = geo.chart.foundMany({
   },
   // Three years under the practice's rule.
   tithiPravesha: { through: 3 },
-  // The second year's third month, a row a day.
-  masaPravesha: { year: 2, month: 3 },
+  // The second year's months, each founded at birth and its lord read.
+  masaPravesha: { year: 2, place: 'birth' },
   dossier: { sections: ['CHART', 'NOW', 'GRAHAS', 'VARGAS', 'DASHAS', 'RULES', 'GOCHAR'], at: 2460676.5, dashaDepth: 2, utcOffsetSeconds: 20700 },
   // A varshphal list with the book's structure and none of its numbers:
   // year y sends natal house h to h + y − 1, round the twelve.
@@ -1204,7 +1204,15 @@ for (const chart of charts) {
   }
   put(`chart-${i}-masa-pravesha-count`, String(chart.masaPravesha.length));
   for (const one of chart.masaPravesha) {
-    put(`chart-${i}-masa-pravesha-${one.year}-${one.month}-${one.day}`, `${number(one.at)} ${number(one.sunDeg)}`);
+    const key = `chart-${i}-masa-pravesha-${one.year}-${one.month}-${one.day}`;
+    put(key, `${number(one.at)} ${number(one.sunDeg)}`);
+    if (one.masesha === undefined) continue;
+    const { graha, reading, bearers: b, chain } = one.masesha;
+    const bearers = [b.masaLagna, b.muntha, b.janmaLagna, b.triRashi, b.dinaRatri, b.varshaLagna];
+    put(
+      `${key}-masesha`,
+      `${graha} ${reading} ${chain.chosen} ${chain.vishwa.toString()} ${bearers.join(',')} ${b.byDay ? 1 : 0}`,
+    );
   }
   put(`chart-${i}-dossier`, `${Buffer.byteLength(chart.dossier)} ${fnv(chart.dossier)}`);
   const {

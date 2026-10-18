@@ -3361,6 +3361,50 @@ export interface MasaPraveshaRequest {
   readonly month?: number;
   /** The zodiac the year divides in; `SIDEREAL` by default. The mean year places no Sun. */
   readonly reading?: Exclude<VarshaReading, 'MEAN'>;
+  /**
+   * Where each month's chart is founded, as `varsha.place` is written; given,
+   * each month carries its `masesha`. The year's months only: a day's lord
+   * is not built, so a `month` beside it is refused.
+   */
+  readonly place?: 'birth' | AnnualPlace;
+  /** The readings the month's lord parts on; the verse's own by default. */
+  readonly masesha?: MaseshaRules;
+}
+
+/** The readings the month's lord parts on (`03-design/varshesha.md`, "The month's lord"). */
+export interface MaseshaRules {
+  /** `CHAIN`, the year lord's chain over the six (the verse's own), or `LAGNA_LORD`, the month lagna's lord (v. 5's "others"). */
+  readonly reading?: 'CHAIN' | 'LAGNA_LORD';
+  /** Where the Muntha stands inside its sign; the year's own default. */
+  readonly muntha?: MunthaDegree;
+  /** The year lord's readings, which the chain takes "as for the year". */
+  readonly chain?: VarsheshaRules;
+}
+
+/** The six office-bearers of one month. */
+export interface MonthBearers {
+  readonly masaLagna: Graha;
+  /** The Muntha's sign's lord, the Muntha moved on 2°30′ a month. */
+  readonly muntha: Graha;
+  readonly janmaLagna: Graha;
+  /** The month lagna's triplicity lord, by day or by night. */
+  readonly triRashi: Graha;
+  /** The lord of the Sun's sign by day, of the Moon's by night. */
+  readonly dinaRatri: Graha;
+  readonly varshaLagna: Graha;
+  /** Whether the month opened by day, which chose two of them. */
+  readonly byDay: boolean;
+}
+
+/** The lord of one month, and the chain it was read beside. */
+export interface Masesha {
+  /** The lord under `reading`. */
+  readonly graha: Graha;
+  readonly reading: 'CHAIN' | 'LAGNA_LORD';
+  /** The six it was chosen among. */
+  readonly bearers: MonthBearers;
+  /** The chain over the six, carried under either reading so a reader sees where the two part. */
+  readonly chain: YearLord;
 }
 
 /** One month's or one day's chart instant: the Sun a sign further each month, a degree further each day. */
@@ -3375,6 +3419,8 @@ export interface MasaPravesha {
   readonly at: number;
   /** Where the Sun stands then, degrees in the year's zodiac. */
   readonly sunDeg: number;
+  /** The month's lord, where the request named a `place`; absent otherwise. */
+  readonly masesha?: Masesha;
 }
 
 /** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */
