@@ -366,6 +366,10 @@ name = "tithi_pravesha"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "masa_pravesha"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "matching"
 required-features = ["builtin-ephemeris"]
 

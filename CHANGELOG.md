@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The month's and the day's chart (Maasa and Dina Pravesha)**
+(`annual-chart.md`). **Numbers:** none moved; this adds answers.
+`sdk.chart().masa_praveshas(&birth, reading, year)` answers the twelve
+instants at which the Sun stands one sign further than at the year's return.
+`dina_praveshas(&birth, reading, year, month)` answers the thirty instants
+at which it stands one degree further than at the month's start. The rule
+is the *Tajika Nilakanthi*'s (Saṃjñā Tantra, the monthly and daily entry,
+v. 1), and its commentary's worked example is asserted. Each instant is read
+back through a chart founded at it. The mean year, which places no Sun, is
+refused as `reading`; a month outside one to twelve is refused as `month`.
+
 **The dossier: a chart as text for a language model** (`dossier.md`).
 **Numbers:** none moved; nothing computed changes. `teistro::dossier::dossier(&document, &options, &[])`
 writes a chart document as compact text a model reads in a prompt: the

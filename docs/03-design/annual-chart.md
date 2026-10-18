@@ -93,6 +93,38 @@ a step in.
 | **built** | `teistro_tajika::praveshas` and `mean_praveshas`; `sdk.chart().praveshas(&document, reading, through)` for the instants and `sdk.chart().annual(&document, reading, year, &request)` for the chart a year opens. A year past what the provider covers comes back as **fewer instants**, not as the provider's own `OutOfRange` naming a day the caller never mentioned; a year outside one to two hundred is refused by `through` **before** any capping, because capping a nonsense year to zero would answer an empty list where the caller wanted to be told |
 | **not built** | the Varshesha by Pancha Vargeeya Bala and the four office-bearers besides the Muntha; the Tajika aspects with their deeptamsha orbs; the sixteen yogas; the sahams (built since, [`tajika-sahams.md`](tajika-sahams.md)); the Mudda and Patyayini dashas (built since, with the Varsha Yogini, [`annual-dashas.md`](annual-dashas.md)). Each is a step above this one and none of them can be built before it. **The Muntha and its lord are built** ([`muntha.md`](muntha.md)), and they are the one office-bearer that can ride with the instant, because only they need nothing but the birth |
 
+## The month's and the day's chart
+
+The year divides by the Sun alone. *Tajika Nilakanthi*, Saṃjñā Tantra,
+the monthly and daily entry, v. 1 (rank 1, with Gangadhara Mishra's
+commentary): the month's chart is cast when the Sun stands at the annual
+chart's degree, minute and second **one sign further** each month, and
+the day's chart when it stands **one degree further** each solar day. The
+first month's chart and the first day's chart are the chart they divide.
+The commentary's worked example puts the annual Sun at 0s 12°57′50″, the
+second month's at 1s 12°57′50″ and the ninth day of the fourth month at
+3s 20°57′50″. The unit test numbering the divisions asserts those three
+figures.
+
+So both are the one crossing search the return already uses, run on a
+lattice instead of a single longitude: an origin at the annual Sun, and a
+step of 30° for the months and 1° for the days. The sampling step is ten
+days for the months, because a sign takes about thirty, and half a day
+for the days, because the Sun moves 0.95° to 1.02° a day, so neither step
+can pass two crossings. The crossings are read in the zodiac the year was
+read in:
+
+- the **sidereal** year divides on the sidereal Sun;
+- the **tropical** year divides on the tropical Sun;
+- the **mean** year places no Sun, so it divides into nothing and is
+  refused as `reading`.
+
+| | |
+|---|---|
+| **built** | `teistro_tajika::masa_praveshas` and `dina_praveshas`; `sdk.chart().masa_praveshas(&document, reading, year)` for the twelve months and `sdk.chart().dina_praveshas(&document, reading, year, month)` for the thirty days. A year outside one to two hundred is refused as `year` and a month outside one to twelve as `month`. A year past the provider's coverage comes back empty, as the returns do |
+| **checked** | `crates/sdk/tests/masa_pravesha.rs` founds a chart at every month's instant and at every day's instant of one month. It reads the Sun back from each to within 10⁻⁴° of the annual Sun plus whole signs or degrees, and checks that months fall 29 to 32 days apart and days 0.95 to 1.06 days apart |
+| **not built** | a chart-request record and its crossing to the bindings; the month's and the day's lords (the Masesha and Dinesha); the Tajika rules read on a month's chart. The crossing waits for a consumer's request, since the instant is already answered in Rust |
+
 ## What the corpus cannot settle
 
 The conformance repository records **no annual chart of any kind**. So
