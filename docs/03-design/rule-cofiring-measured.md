@@ -2,11 +2,11 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2357 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2202 rules hold at least once and 155 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2378 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2220 rules hold at least once and 158 never do.
 
-Rules holding on the same 5 or more charts form 196 groups, and each is explained. Below that, 17 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 200 groups, and each is explained. Below that, 19 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
-- **154 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
+- **158 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
 - **6 groups: one text says it twice**, where the table below says.
 
@@ -69,6 +69,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | charts | rules |
 |---:|---|
 | 3053 | `DWIGRAHA_SUN_MERCURY`<br>`PARIJATA_TOGETHER_SUN_MERCURY`<br>`SARAVALI_TOGETHER_SUN_MERCURY` |
+| 2447 | `PARASHARA_SANKHA`<br>`PARIJATA_SANKHA` |
 | 2079 | `SARAVALI_UBHAYACHARI`<br>`SOLAR_UBHAYACHARI` |
 | 2013 | `LUNAR_MOON_IN_APOKLIMA_FROM_THE_SUN`<br>`PHALADEEPIKA_VARISHTHA` |
 | 2013 | `LUNAR_MOON_IN_KENDRA_FROM_THE_SUN`<br>`PHALADEEPIKA_ADHAMA` |
@@ -190,6 +191,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 36 | `PARIJATA_TOGETHER_MOON_JUPITER_SATURN`<br>`SARAVALI_TOGETHER_MOON_JUPITER_SATURN` |
 | 36 | `PARIJATA_TOGETHER_SUN_MARS_MERCURY_SATURN`<br>`SARAVALI_TOGETHER_SUN_MARS_MERCURY_SATURN` |
 | 35 | `PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY`<br>`SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY` |
+| 22 | `PARASHARA_SRINATHA`<br>`PARIJATA_SRINATHA` |
 | 22 | `PARIJATA_TOGETHER_MARS_MERCURY_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_MARS_MERCURY_JUPITER_VENUS` |
 | 22 | `PARIJATA_TOGETHER_SUN_MERCURY_JUPITER_SATURN`<br>`SARAVALI_TOGETHER_SUN_MERCURY_JUPITER_SATURN` |
 | 22 | `PARIJATA_TOGETHER_SUN_MOON_MERCURY_SATURN`<br>`SARAVALI_TOGETHER_SUN_MOON_MERCURY_SATURN` |
@@ -199,12 +201,14 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 20 | `PARIJATA_TOGETHER_SUN_MARS_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_SUN_MARS_JUPITER_VENUS` |
 | 19 | `PARIJATA_TOGETHER_SUN_MARS_VENUS_SATURN`<br>`SARAVALI_TOGETHER_SUN_MARS_VENUS_SATURN` |
 | 19 | `PARIJATA_TOGETHER_SUN_MOON_MERCURY_JUPITER`<br>`SARAVALI_TOGETHER_SUN_MOON_MERCURY_JUPITER` |
+| 18 | `PARASHARA_KHADGA`<br>`PARIJATA_KHADGA` |
 | 18 | `PARIJATA_TOGETHER_SUN_JUPITER_VENUS_SATURN`<br>`SARAVALI_TOGETHER_SUN_JUPITER_VENUS_SATURN` |
 | 17 | `PARIJATA_TOGETHER_SUN_MOON_MARS_VENUS`<br>`SARAVALI_TOGETHER_SUN_MOON_MARS_VENUS` |
 | 13 | `PARIJATA_TOGETHER_MARS_JUPITER_VENUS_SATURN`<br>`SARAVALI_TOGETHER_MARS_JUPITER_VENUS_SATURN` |
 | 11 | `PARIJATA_TOGETHER_MOON_MERCURY_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_MOON_MERCURY_JUPITER_VENUS` |
 | 11 | `PARIJATA_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS` |
 | 11 | `PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS`<br>`SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS` |
+| 10 | `PARASHARA_TRIMURTHI_HARI`<br>`PARIJATA_HARIHARABRAHMA_FROM_THE_SECOND_LORD` |
 | 10 | `PARIJATA_TOGETHER_MOON_MARS_VENUS_SATURN`<br>`SARAVALI_TOGETHER_MOON_MARS_VENUS_SATURN` |
 | 10 | `PARIJATA_TOGETHER_MOON_MERCURY_VENUS_SATURN`<br>`SARAVALI_TOGETHER_MOON_MERCURY_VENUS_SATURN` |
 | 9 | `ARISHTA_SATURN_MARS_SUN_IN_FIFTH`<br>`PARIJATA_SATURN_MARS_SUN_IN_FIFTH` |
@@ -291,6 +295,9 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `PARIJATA_JUPITER_SATURN_ONE_NAVAMSHA_IN_THE_NINTH_OR_TENTH_SUN_RISING` | 2429878.5 | 27.7172, 82.5 |
 | `PARIJATA_JUPITER_GOPURA_IN_A_KENDRA_VENUS_PARAVATA_IN_A_TRINE_CANCER_RISING` | 2473202.25 | 27.7172, -68.985 |
 | `PARIJATA_SAGITTARIUS_RISING_IN_ARIES_NAVAMSHA_WITH_JUPITER_VENUS_SEVENTH_MOON_IN_VIRGO` | 2380915 | 27.7172, 41.087 |
+| `PARIJATA_MALIKA_FROM_THE_SECOND` | 2379544.9722 | 27.7172, 85.324 |
+| `PARIJATA_SARADA` | 2390777.2222 | 27.7172, 85.324 |
+| `PARIJATA_KURMA` | 2547710.3125 | 27.7172, 85.324 |
 | `PHALADEEPIKA_MAHAPURUSHA_FIVE` | 2545713 | 27.7172, 85.324 |
 | `PHALADEEPIKA_DURYOGA_OF_THE_LORDS` | 2386911.0833 | 27.7172, 85.324 |
 | `PHALADEEPIKA_KING_BY_THE_LORDS` | 2438440.1668 | 27.7172, 85.324 |

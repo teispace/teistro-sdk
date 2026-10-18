@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-3014 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1339 in `READINGS`, 805 in `NABHASAS`, 657 in `the corpus's own`. Their 12 063 conditions are written 4476 ways, which say 4472 things, and the renderer gives those 4472 sentences.
+3035 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1339 in `READINGS`, 826 in `NABHASAS`, 657 in `the corpus's own`. Their 12 200 conditions are written 4547 ways, which say 4543 things, and the renderer gives those 4543 sentences.
 
-The 2357 shipped rules are what a consumer evaluates; the corpus's own
+The 2378 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 4472 disagree |
-| every condition of every rule renders | **holds** | 0 of 12063 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 4543 disagree |
+| every condition of every rule renders | **holds** | 0 of 12200 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -44,30 +44,30 @@ a change to what a rule asks changes its prose.
 
 | kind | occurrences | as it reads |
 |---|---|---|
-| `and` | 942 | MOON aspects VENUS and VENUS aspects MOON |
-| `or` | 562 | MARS is combust or MARS is retrograde |
-| `not` | 479 | it is not the case that MARS is combust |
-| `planet-in-house` | 1353 | SUN stands in the 1st house |
-| `planet-in-sign` | 1221 | SUN stands in LEO |
-| `planet-dignity` | 403 | the dignity of SUN is exalted |
-| `planet-in-kendra` | 181 | SUN stands in a kendra |
-| `planet-in-trikona` | 15 | SUN stands in a trikona |
-| `planet-in-kendra-from` | 34 | MARS stands in a kendra from MOON |
-| `lord-of-house-in-kendra` | 67 | the lord of the 1st house stands in a kendra |
-| `lord-of-house-in-house` | 482 | the lord of the 1st house stands in the 1st house |
+| `and` | 957 | MOON aspects VENUS and VENUS aspects MOON |
+| `or` | 577 | MARS is combust or MARS is retrograde |
+| `not` | 484 | it is not the case that MARS is combust |
+| `planet-in-house` | 1364 | SUN stands in the 1st house |
+| `planet-in-sign` | 1224 | SUN stands in LEO |
+| `planet-dignity` | 413 | the dignity of SUN is exalted |
+| `planet-in-kendra` | 186 | SUN stands in a kendra |
+| `planet-in-trikona` | 16 | SUN stands in a trikona |
+| `planet-in-kendra-from` | 39 | MARS stands in a kendra from MOON |
+| `lord-of-house-in-kendra` | 68 | the lord of the 1st house stands in a kendra |
+| `lord-of-house-in-house` | 487 | the lord of the 1st house stands in the 1st house |
 | `planet-conjunct` | 477 | MARS and SUN share a sign |
-| `planet-in-house-from` | 478 | MARS stands in the 1st from SUN |
+| `planet-in-house-from` | 487 | MARS stands in the 1st from SUN |
 | `no-planet-in-houses-from` | 22 | no graha stands in the 2nd from SUN, excepting MOON |
-| `mutual-exchange` | 126 | the lords of the 1st and 2nd houses stand each in the other's sign |
-| `lord-conjunct-lord` | 39 | the lord of the 1st house shares a sign with the lord of the 5th |
+| `mutual-exchange` | 127 | the lords of the 1st and 2nd houses stand each in the other's sign |
+| `lord-conjunct-lord` | 40 | the lord of the 1st house shares a sign with the lord of the 5th |
 | `all-planets-between-nodes` | 14 | the seven classical grahas all stand between the nodes |
-| `occupied-sign-count` | 14 | SUN, MOON, MARS, MERCURY, JUPITER, VENUS and SATURN occupy exactly 1 sign |
-| `all-classical-grahas-in-houses` | 54 | the seven classical grahas stand only in the 1st or 4th house, filling every one of them |
+| `occupied-sign-count` | 16 | SUN, VENUS and MARS occupy exactly 3 signs |
+| `all-classical-grahas-in-houses` | 58 | the seven classical grahas stand only in the 1st or 4th house, filling every one of them |
 | `n-grahas-conjunct-with` | 15 | at least 4 classical grahas share the sign of SUN, it among them |
 | `chara-karaka-in-house` | 34 | the AK stands in the 1st house |
 | `planet-combust` | 61 | SUN is combust |
 | `planet-retrograde` | 24 | MARS is retrograde |
-| `planet-aspects-planet` | 912 | KETU aspects SUN |
+| `planet-aspects-planet` | 917 | KETU aspects SUN |
 | `planet-aspects-house` | 121 | SUN aspects the 1st house |
 | `planet-at-table-degree` | 12 | SUN stands at the degree MRITYU_BHAGA gives it in its sign |
 | `planet-in-table-sign` | 7 | SUN stands in a sign DAGDHA_RASHI gives the birth tithi |
@@ -76,7 +76,7 @@ a change to what a rule asks changes its prose.
 | `lord-of-house-strong` | 8 | the lord of the 4th house is exalted, in its own sign or in its mooltrikona |
 | `lord-of-house-is` | 15 | the lord of the 5th house is SUN |
 | `lord-of-house-conjunct-planet` | 2 | the lord of the 5th house shares a sign with KETU |
-| `lagna-in-sign` | 75 | the lagna rises in LEO |
+| `lagna-in-sign` | 77 | the lagna rises in LEO |
 | `planet-in-house-and-sign` | 26 | SUN stands in the 1st house and in LEO |
 | `planet-at-gandanta` | 4 | SUN stands at a gandanta junction, within the usual 3°20′ |
 | `planet-in-degrees` | 441 | MOON stands between 0° and 5° of its sign |
@@ -91,26 +91,26 @@ a change to what a rule asks changes its prose.
 | `transit-in-house` | 0 | in no pack |
 | `planet-in-nakshatra` | 30 | MOON stands in the nakshatra PUSHYA |
 | `same-nakshatra` | 1 | MOON and KETU stand in one nakshatra |
-| `planet-strong` | 92 | SUN is strong |
+| `planet-strong` | 100 | SUN is strong |
 | `planet-weak` | 35 | SUN is weak |
 | `planet-stronger-than` | 23 | MOON is stronger than SUN |
 | `rashi-aspects` | 2 | the AK aspects the PK by rashi drishti |
 | `argala` | 16 | an intervention from the 5th, unobstructed from the 9th, stands on the pada of house 1 |
 | `vipareeta-argala` | 0 | in no pack |
-| `for-any` | 202 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
-| `count-of` | 35 | at least 4 of the nine grahas meet: the body found aspects MOON |
+| `for-any` | 209 | some one of the nine grahas meets: the body found stands in the 1st house |
+| `count-of` | 36 | at least 4 of the nine grahas meet: the body found aspects MOON |
 | `n-of` | 12 | exactly 1 of these hold: the rule PHALADEEPIKA_RUCHAKA holds, the rule PHALADEEPIKA_BHADRA holds, the rule PHALADEEPIKA_HAMSA holds, the rule PHALADEEPIKA_MALAVYA holds and the rule PHALADEEPIKA_SASA holds |
-| `in-varga` | 75 | in the D2, the lagna rises in CANCER |
-| `count-in-houses` | 471 | at least 1 malefic stands in the 7th from SUN |
+| `in-varga` | 76 | in the D2, the lagna rises in CANCER |
+| `count-in-houses` | 480 | at least 1 malefic stands in the 7th from SUN |
 | `count-aspecting` | 28 | at least 1 malefic aspects SUN |
 | `rule` | 1567 | the rule NABHASA_GADA holds |
 | `at-limb-edge` | 22 | the birth falls within the last 2 ghatikas of the tithi |
 | `limb-part` | 33 | the birth falls in the 1st of 6 equal parts of the tithi |
 | `birth-by-day` | 12 | the birth fell by day |
-| `same-sign` | 200 | SUN and MOON stand in one sign |
-| `same-body` | 217 | MARS and MOON are one body |
-| `planet-is` | 92 | SUN is a malefic |
-| `natural-relation` | 42 | SUN counts the body found a friend |
+| `same-sign` | 203 | SUN and MOON stand in one sign |
+| `same-body` | 220 | MARS and MOON are one body |
+| `planet-is` | 95 | SUN is a malefic |
+| `natural-relation` | 44 | SUN counts the body found a friend |
 
 2 kinds of the language occur in no pack at all: `transit-in-house`, `vipareeta-argala`. The corpus cannot falsify their prose, so the golden test in `crates/rules/src/prose.rs` is their only reader.
 

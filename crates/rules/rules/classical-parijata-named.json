@@ -1,0 +1,1423 @@
+{
+  "rules": [
+    {
+      "key": "PARIJATA_PARVATA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "128-129",
+        "rank": 1,
+        "note": "Benefics in the kendras while the sixth and the eighth are empty or hold benefics alone, the plural read as one benefic at least; or the lords of the lagna and the twelfth, two grahas, in kendras from each other, each aspected by a natural friend. BPHS ch. 36 keeps the seventh and the eighth empty and has no second clause. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    1,
+                    4,
+                    7,
+                    10
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "count-in-houses",
+                    "planets": "any-malefic",
+                    "houses": [
+                      6,
+                      8
+                    ],
+                    "atLeast": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 1
+                    },
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                },
+                {
+                  "type": "planet-in-kendra-from",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "reference": {
+                    "lordOf": 12
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": {
+                          "lordOf": 1
+                        },
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "lordOf": 1
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": {
+                          "lordOf": 12
+                        },
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "lordOf": 12
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "prosperous, given to learning, liberal, amorous, energetic, famous and the head of a city"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_KAHALA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "130-131",
+        "rank": 1,
+        "note": "The lords of the fourth and the ninth, two grahas, in kendras from each other while the lagna lord is strong; or the lord of the fourth exalted or in its own sign, joined or aspected by the lord of the tenth. The verse's guru is read, with the translation and Jatakadesha's parallel, as the ninth; BPHS ch. 36 reads Jupiter and asks the tenth lord's company only. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 4
+                    },
+                    "as": {
+                      "lordOf": 9
+                    }
+                  }
+                },
+                {
+                  "type": "planet-in-kendra-from",
+                  "planet": {
+                    "lordOf": 4
+                  },
+                  "reference": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "planet-strong",
+                  "planet": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 4
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 4
+                      },
+                      "as": {
+                        "lordOf": 10
+                      }
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 10
+                      },
+                      "target": {
+                        "lordOf": 4
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "vigorous, daring and unlearned, with a full army, the lord of a few villages"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_FIRST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "132",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the first on, one to a house. The garland from the fifth on stands on pp. 456 and 457, which the scan lacks (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king with many elephants and horses"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_SECOND",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "132",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the second on, one to a house. The garland from the fifth on stands on pp. 456 and 457, which the scan lacks (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king with hoards of wealth, devoted to his parents, resolute, stern and of eminent virtue"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_THIRD",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "133",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the third on, one to a house. The garland from the fifth on stands on pp. 456 and 457, which the scan lacks (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "heroic and wealthy but sickly"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_FOURTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "133",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the fourth on, one to a house. The garland from the fifth on stands on pp. 456 and 457, which the scan lacks (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a liberal sovereign, fortunate in ruling many lands"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SANKHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "138-139",
+        "rank": 1,
+        "note": "The lords of the fifth and the sixth in kendras from each other while the lagna lord is strong; or the lords of the lagna and the tenth in movable signs while the lord of the ninth is strong: BPHS ch. 36 vv. 13 and 14's yoga, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-strong",
+                  "planet": {
+                    "lordOf": 1
+                  }
+                },
+                {
+                  "type": "planet-in-kendra-from",
+                  "planet": {
+                    "lordOf": 5
+                  },
+                  "reference": {
+                    "lordOf": 6
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": {
+                    "lordOf": 10
+                  },
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-strong",
+                  "planet": {
+                    "lordOf": 9
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "enjoying, compassionate, with wife, sons, wealth and lands, virtuous, learned in the scriptures and beneficent; he lives 81 years"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHERI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "140-141",
+        "rank": 1,
+        "note": "The second, the twelfth, the lagna and the seventh each holding a graha while the tenth lord is strong; or Venus and the lagna lord, Jupiter not being the lord, in kendras from Jupiter while the ninth lord is strong. BPHS ch. 36 asks the ninth lord's strength of the first and Venus, Jupiter and the lagna lord in kendras from the lagna. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "for-any",
+                  "then": {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      2
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "then": {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      12
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "then": {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "then": {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      7
+                    ]
+                  }
+                },
+                {
+                  "type": "planet-strong",
+                  "planet": {
+                    "lordOf": 10
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-kendra-from",
+                  "planet": "VENUS",
+                  "reference": "JUPITER"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 1
+                    },
+                    "as": "JUPITER"
+                  }
+                },
+                {
+                  "type": "planet-in-kendra-from",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "reference": "JUPITER"
+                },
+                {
+                  "type": "planet-strong",
+                  "planet": {
+                    "lordOf": 9
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "lords of men, well born and long-lived, free of disease and danger, with much wealth, land, sons and wives, renowned, happy in their conduct, valiant and wise in the world's ways"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MRIDANGA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "142",
+        "rank": 1,
+        "note": "A graha exalted whose navamsha's lord stands in a kendra or a trikona, exalted or in its own sign, and strong, while the lagna lord is strong. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED"
+                ]
+              },
+              {
+                "type": "planet-in-house",
+                "planet": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "houses": [
+                  1,
+                  4,
+                  5,
+                  7,
+                  9,
+                  10
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "dignities": [
+                  "EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              },
+              {
+                "type": "planet-strong",
+                "planet": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "noble, with the fame that is a sovereign's fortune"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SRINATHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "143",
+        "rank": 1,
+        "note": "The lord of the seventh in the tenth while the lord of the tenth is exalted and joined by the lord of the ninth: BPHS ch. 36 v. 18's yoga, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 7,
+          "houseOccupied": 10
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 10
+          },
+          "dignities": [
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "lord-conjunct-lord",
+          "house1": 10,
+          "house2": 9
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "like Indra, the king of the gods"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SARADA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "144-145",
+        "rank": 1,
+        "note": "The lord of the tenth in the fifth, Mercury in a kendra, the Sun in his own sign and strong, Mars in a trikona from Mercury, and Jupiter in a trikona from the Moon or in the eleventh from Mercury, as the translation reads the last quarter. BPHS ch. 36 has the Sun in Leo with no Mars, or a second yoga of Jupiter or Mercury from the Moon and Mars in the eleventh. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 10,
+          "houseOccupied": 5
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "MERCURY"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SUN",
+          "dignities": [
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SUN"
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "MERCURY",
+          "houses": [
+            1,
+            5,
+            9
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "MOON",
+              "houses": [
+                1,
+                5,
+                9
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "MERCURY",
+              "houses": [
+                11
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "devoted to wife, sons, kin, comfort, beauty and virtue, favoured by kings, reverent to teachers, Brahmins and the gods, delighting in learning, amiable, strong, and attentive to their duties"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MATSYA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "146-147",
+        "rank": 1,
+        "note": "A malefic in the ninth, benefics and malefics together in the fifth, and a malefic in the fourth or the eighth. The translation reads the verse's lagna-dharma as the ninth from the lagna; read as the lagna and the ninth, it would ask a malefic in the lagna too (C481). BPHS ch. 36 has benefics in the lagna and the ninth. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            9
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4,
+            8
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an astrologer, very compassionate, with virtue, intelligence, strength, beauty, fame, learning and religious merit"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_KURMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "148-149",
+        "rank": 1,
+        "note": "Every one of the seven, the benefics in the fifth, sixth or seventh and the malefics in the lagna, third or eleventh, each in a sign or navamsha of its own, its exaltation or a friend's, benefic and malefic as the readings class them. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "atLeast": 7,
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-is",
+                        "planet": "SELF",
+                        "class": "benefic"
+                      },
+                      {
+                        "type": "planet-in-house",
+                        "planet": "SELF",
+                        "houses": [
+                          5,
+                          6,
+                          7
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-is",
+                        "planet": "SELF",
+                        "class": "malefic"
+                      },
+                      {
+                        "type": "planet-in-house",
+                        "planet": "SELF",
+                        "houses": [
+                          1,
+                          3,
+                          11
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED",
+                      "MOOLTRIKONA",
+                      "OWN_SIGN",
+                      "GREAT_FRIEND",
+                      "FRIEND"
+                    ]
+                  },
+                  {
+                    "type": "in-varga",
+                    "varga": "D9",
+                    "condition": {
+                      "type": "planet-dignity",
+                      "planet": "SELF",
+                      "dignities": [
+                        "EXALTED",
+                        "MOOLTRIKONA",
+                        "OWN_SIGN",
+                        "GREAT_FRIEND",
+                        "FRIEND"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "widely famous, enjoying royal comforts, of great virtue and goodness, steady and happy, speaking for others before the sovereign, or a sovereign himself"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_KHADGA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "150-151",
+        "rank": 1,
+        "note": "The lords of the second and the ninth in each other's sign while the lagna lord stands in a kendra or a trikona: BPHS ch. 36 vv. 25 and 26's yoga, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "mutual-exchange",
+          "house1": 2,
+          "house2": 9
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lord-of-house-in-kendra",
+              "houseRuled": 1
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 1,
+              "houseOccupied": 1
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 1,
+              "houseOccupied": 5
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 1,
+              "houseOccupied": 9
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "given to the Vedas, polity and tradition, their truth and practice, keeping rank, power and happiness, free of envy, esteemed for courage, clever and grateful"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_KUSUMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "154-155",
+        "rank": 1,
+        "note": "A fixed sign rising, Venus in a kendra, the Moon in a trikona and no benefic, and Saturn in the tenth. The verse's shubhetare, other than a benefic, is read of the Moon, as the translation reads it, so under the readings a waning Moon; BPHS ch. 36 has the Moon joined by a benefic. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "VENUS"
+        },
+        {
+          "type": "planet-in-trikona",
+          "planet": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-is",
+            "planet": "MOON",
+            "class": "benefic"
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a powerful sovereign of wide fame, foremost among kings of royal line, of great enjoyments, bowed to by rulers and bountiful"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_PARIJATA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "156-157",
+        "rank": 1,
+        "note": "The lord of the sign the lagna lord's dispositor stands in, or the lord of that lord's navamsha, in a kendra, a trikona or its exaltation. Phaladeepika ch. 6's Parijata is another yoga, of the eleventh house. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "lordOf": {
+                      "lordOf": {
+                        "lordOf": 1
+                      }
+                    }
+                  },
+                  "houses": [
+                    1,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10
+                  ]
+                },
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": {
+                      "lordOf": {
+                        "lordOf": 1
+                      }
+                    }
+                  },
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "lordOf": {
+                      "navamsha": {
+                        "lordOf": {
+                          "lordOf": {
+                            "lordOf": 1
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "houses": [
+                    1,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10
+                  ]
+                },
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": {
+                      "navamsha": {
+                        "lordOf": {
+                          "lordOf": {
+                            "lordOf": 1
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a sovereign happy in the middle and end of life, honoured by kings, fond of war, with elephants and horses, attentive to his duties and compassionate"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_KALANIDHI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "158-159",
+        "rank": 1,
+        "note": "Jupiter in the second or the fifth, joined or aspected by Mercury and by Venus, or in a sign of either. BPHS ch. 36 asks the two aspects alone. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2,
+            5
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": "MERCURY",
+                      "as": "JUPITER"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "MERCURY",
+                      "target": "JUPITER"
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": "VENUS",
+                      "as": "JUPITER"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "VENUS",
+                      "target": "JUPITER"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": "JUPITER",
+              "signs": [
+                "TAURUS",
+                "GEMINI",
+                "LIBRA",
+                "VIRGO"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "gallant and of many virtues, greeted by great kings, with an army, horses, elephants, conch, drum and martial music, free of disease, danger and foes"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_AMSAVATARA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "160-161",
+        "rank": 1,
+        "note": "Venus and Jupiter in kendras, Saturn exalted in a kendra, and a movable sign rising. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "VENUS"
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "SATURN"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SATURN",
+          "dignities": [
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of a king's majesty and good name, a pilgrim, versed in the arts, amorous, shaping his age, self-mastered, knowing the Vedanta and fit to expound the scriptures"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_HARIHARABRAHMA_FROM_THE_SECOND_LORD",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "162-163",
+        "rank": 1,
+        "note": "Benefics in the second, the twelfth and the eighth from the lord of the second, one in each at least. One of v. 162's three Hariharabrahma yogas. The verse names the houses beside the grahas without saying 'respectively', so they are read as filled one to a house in any order. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1,
+          "from": {
+            "lordOf": 2
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1,
+          "from": {
+            "lordOf": 2
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1,
+          "from": {
+            "lordOf": 2
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "versed in all sacred lore, truthful, with every comfort, pleasing in speech, gallant, victorious over his foes, kind to every creature and virtuous"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_HARIHARABRAHMA_FROM_THE_SEVENTH_LORD",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "162-163",
+        "rank": 1,
+        "note": "Jupiter, the Moon and Mercury in the fourth, the ninth and the eighth from the lord of the seventh. One of v. 162's three Hariharabrahma yogas. The verse names the houses beside the grahas without saying 'respectively', so they are read as filled one to a house in any order. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": {
+            "lordOf": 7
+          },
+          "houses": [
+            4,
+            9,
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": {
+            "lordOf": 7
+          },
+          "houses": [
+            4,
+            9,
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": {
+            "lordOf": 7
+          },
+          "houses": [
+            4,
+            9,
+            8
+          ]
+        },
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "JUPITER",
+            "MOON",
+            "MERCURY"
+          ],
+          "count": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "versed in all sacred lore, truthful, with every comfort, pleasing in speech, gallant, victorious over his foes, kind to every creature and virtuous"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_HARIHARABRAHMA_FROM_THE_LAGNA_LORD",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "162-163",
+        "rank": 1,
+        "note": "The Sun, Venus and Mars in the fourth, the tenth and the eleventh from the lagna lord. One of v. 162's three Hariharabrahma yogas. The verse names the houses beside the grahas without saying 'respectively', so they are read as filled one to a house in any order. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": {
+            "lordOf": 1
+          },
+          "houses": [
+            4,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": {
+            "lordOf": 1
+          },
+          "houses": [
+            4,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": {
+            "lordOf": 1
+          },
+          "houses": [
+            4,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "VENUS",
+            "MARS"
+          ],
+          "count": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "versed in all sacred lore, truthful, with every comfort, pleasing in speech, gallant, victorious over his foes, kind to every creature and virtuous"
+        }
+      ]
+    }
+  ]
+}
