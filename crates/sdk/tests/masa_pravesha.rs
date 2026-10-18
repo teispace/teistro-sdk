@@ -284,11 +284,7 @@ fn a_place_founds_each_month_and_carries_its_lord() {
     let bare = teistro::MasaPraveshaRequest::new(30);
     let rows = sdk.chart().masa_pravesha(&natal, clock, &bare).unwrap();
     assert!(rows.iter().all(|row| row.masesha.is_none()));
-    // A place beside a month is refused: a day's lord is not built.
-    let refused =
-        teistro::MasaPraveshaRequest::from_json(r#"{"year": 30, "month": 2, "place": "birth"}"#)
-            .unwrap_err();
-    assert_eq!(refused.field(), Some("masaPravesha.place"));
+
     // The section's wire spelling, camelCase to the leaves.
     let wire = serde_json::to_value(&rows_with_lords(&sdk, &natal, clock)[0]).unwrap();
     assert!(wire["masesha"]["bearers"]["masaLagna"].is_string());
@@ -371,4 +367,64 @@ fn each_months_results_are_read_from_its_chart_beside_its_lord() {
     assert!(wire["results"]["houses"][0]["amshaLord"].is_string());
     assert!(wire["results"]["houses"][0]["seenByMoon"].is_array());
     assert!(wire["results"]["lords"][0]["office"].is_string());
+}
+
+#[test]
+fn a_place_beside_a_month_founds_each_day_and_its_lord() {
+    let sdk = context();
+    let natal = chart(&sdk, BIRTH);
+    let clock = UtcOffset::try_from_seconds(20_700).unwrap();
+    let asked =
+        teistro::MasaPraveshaRequest::from_json(r#"{"year": 30, "month": 4, "place": "birth"}"#)
+            .unwrap();
+    let rows = sdk.chart().masa_pravesha(&natal, clock, &asked).unwrap();
+    assert_eq!(rows.len(), 30);
+    let months = sdk
+        .chart()
+        .masa_praveshas(&natal, Reading::Sidereal, 30)
+        .unwrap();
+    let year = chart(&sdk, months[0].at.get());
+    let month = chart(&sdk, months[3].at.get());
+    let month_lord = sdk
+        .chart()
+        .masesha(&natal, &year, &month, &months[3], MaseshaRules::default())
+        .unwrap();
+    for row in &rows {
+        assert!(row.masesha.is_none() && row.results.is_none());
+        let lord = row.dinesha.as_ref().unwrap();
+        let day = chart(&sdk, row.entry.at.get());
+        let read = sdk
+            .chart()
+            .dinesha(
+                &natal,
+                &year,
+                &month,
+                &day,
+                &row.entry,
+                MaseshaRules::default(),
+            )
+            .unwrap();
+        assert_eq!(lord, &read, "day {}", row.entry.day);
+        assert_eq!(lord.graha, lord.chain.graha);
+        assert_eq!(lord.bearers.masa_lagna, month_lord.bearers.masa_lagna);
+        assert_eq!(lord.bearers.varsha_lagna, month_lord.bearers.varsha_lagna);
+    }
+    // The first day is the month's own chart, so its lord is the month's.
+    assert_eq!(rows[0].dinesha.as_ref().unwrap().graha, month_lord.graha);
+    // The month's chart handed in as the fifth day's is refused by name.
+    let refused = sdk
+        .chart()
+        .dinesha(
+            &natal,
+            &year,
+            &month,
+            &month,
+            &rows[4].entry,
+            MaseshaRules::default(),
+        )
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("day"));
+    let wire = serde_json::to_value(&rows[1]).unwrap();
+    assert!(wire["dinesha"]["bearers"]["dinaLagna"].is_string());
+    assert!(wire.get("masesha").is_none());
 }

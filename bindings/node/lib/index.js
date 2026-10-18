@@ -5427,11 +5427,11 @@ const MASA_PRAVESHA = new WeakMap();
  */
 function masaPraveshasOf(batch) {
   return sectionOf(MASA_PRAVESHA, batch, 'masaPravesha', (chart) =>
-    chart.map((row) =>
-      row.masesha === undefined
-        ? row
-        : { ...row, masesha: maseshaFrom(row.masesha), results: masaPhalaFrom(row.results) },
-    ),
+    chart.map((row) => {
+      if (row.dinesha !== undefined) return { ...row, dinesha: dineshaFrom(row.dinesha) };
+      if (row.masesha === undefined) return row;
+      return { ...row, masesha: maseshaFrom(row.masesha), results: masaPhalaFrom(row.results) };
+    }),
   );
 }
 
@@ -5461,19 +5461,46 @@ function masaPhalaFrom({ houses, lords }) {
  * @returns {object}
  */
 function maseshaFrom({ graha, reading, bearers, chain }) {
+  return lordFrom({ graha, reading, chain }, bearersFrom(bearers));
+}
+
+/**
+ * A day's lord as the section writes it, read as the month's lord is.
+ *
+ * @param {object} raw
+ * @returns {object}
+ */
+function dineshaFrom({ graha, reading, bearers, chain }) {
+  return lordFrom({ graha, reading, chain }, bearersFrom(bearers));
+}
+
+/**
+ * Office-bearers as the section writes them, each lord a full key and
+ * `byDay` as it is.
+ *
+ * @param {object} raw
+ * @returns {object}
+ */
+function bearersFrom(raw) {
+  return Object.fromEntries(
+    Object.entries(raw).map(([office, holder]) => [office, office === 'byDay' ? holder : `graha.${holder}`]),
+  );
+}
+
+/**
+ * A month's or a day's lord beside its bearers, the chain read as the
+ * year lord's is.
+ *
+ * @param {object} raw
+ * @param {object} bearers
+ * @returns {object}
+ */
+function lordFrom({ graha, reading, chain }, bearers) {
   const full = (key) => `graha.${key}`;
   return {
     graha: full(graha),
     reading,
-    bearers: {
-      masaLagna: full(bearers.masaLagna),
-      muntha: full(bearers.muntha),
-      janmaLagna: full(bearers.janmaLagna),
-      triRashi: full(bearers.triRashi),
-      dinaRatri: full(bearers.dinaRatri),
-      varshaLagna: full(bearers.varshaLagna),
-      byDay: bearers.byDay,
-    },
+    bearers,
     chain: {
       graha: full(chain.graha),
       chosen: chain.chosen,

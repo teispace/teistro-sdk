@@ -4831,10 +4831,18 @@ test('a chart reads its month and day charts', () => {
   const others = ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, place: 'birth', masesha: { reading: 'LAGNA_LORD' } } })
     .masaPravesha;
   others.forEach(({ masesha }) => assert.equal(masesha.graha, masesha.bearers.masaLagna));
-  assert.throws(
-    () => ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, month: 2, place: 'birth' } }),
-    (error) => error.field === 'masaPravesha.place',
-  );
+  // Beside a month, a place founds each day and reads its lord; the first
+  // day's is the month's.
+  const daysWithLords = ctx.chart.found({ instant, ...at, masaPravesha: { year: 3, month: 2, place: 'birth' } })
+    .masaPravesha;
+  assert.equal(daysWithLords.length, 30);
+  assert.equal(daysWithLords[0].dinesha.graha, lords[1].masesha.graha, "the first day's lord is the month's");
+  for (const { dinesha, masesha } of daysWithLords) {
+    assert.equal(masesha, undefined);
+    assert.equal(dinesha.graha, dinesha.chain.graha);
+    assert.equal(dinesha.bearers.masaLagna, lords[1].masesha.bearers.masaLagna);
+    assert.ok(dinesha.bearers.dinaLagna.startsWith('graha.') && typeof dinesha.bearers.byDay === 'boolean');
+  }
 
   // Each month's results beside its lord: twelve houses, five lords.
   assert.equal(months[0].results, undefined, 'no results without a place');

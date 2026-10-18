@@ -22,6 +22,8 @@ import type {
   MonthLord,
   MonthLordPlace,
   MonthLordClause,
+  Dinesha,
+  DayBearers,
   WesternConfiguration,
   WesternConfigurationRequest,
   DossierRequest,
@@ -538,9 +540,13 @@ function masaPravesha(): string {
   const seen: readonly MonthLord[] | undefined = first?.seenByMoon;
   const office: MonthLordPlace | undefined = results?.lords[0];
   const placed: MonthLordClause | undefined = office?.clauses[0];
+  const daily = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, masaPravesha: { year: 30, month: 4, place: 'birth' } });
+  const dayLord: Dinesha | undefined = daily.masaPravesha![0]!.dinesha;
+  const dayBearers: DayBearers | undefined = dayLord?.bearers;
+  const dinaLagna: Graha | undefined = dayBearers?.dinaLagna;
   // @ts-expect-error a house clause is a closed set
   const wrong: MonthHouseClause = 'BENEFIC';
-  return `${at} ${sun} ${day.month} ${day.day} ${mean.year} ${lord} ${tie} ${third.year} ${floors.year} ${clause} ${amsha} ${seen?.length} ${office?.house} ${placed} ${wrong}`;
+  return `${at} ${sun} ${day.month} ${day.day} ${mean.year} ${lord} ${tie} ${third.year} ${floors.year} ${clause} ${amsha} ${seen?.length} ${office?.house} ${placed} ${wrong} ${dinaLagna}`;
 }
 
 void masaPravesha;

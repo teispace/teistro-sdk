@@ -3363,11 +3363,11 @@ export interface MasaPraveshaRequest {
   readonly reading?: Exclude<VarshaReading, 'MEAN'>;
   /**
    * Where each month's chart is founded, as `varsha.place` is written; given,
-   * each month carries its `masesha` and its `results`. The year's months
-   * only: a day's lord is not built, so a `month` beside it is refused.
+   * each month carries its `masesha` and its `results`, and beside a
+   * `month` each day carries its `dinesha`.
    */
   readonly place?: 'birth' | AnnualPlace;
-  /** The readings the month's lord parts on; the verse's own by default. */
+  /** The readings the month's lord, and the day's, part on; the verse's own by default. */
   readonly masesha?: MaseshaRules;
   /** The floors the month's results judge strong and weak by; the year yogas' own by default. */
   readonly results?: MasaPhalaRules;
@@ -3433,6 +3433,42 @@ export interface MasaPravesha {
   readonly masesha?: Masesha;
   /** The month's results, where the request named a `place`; absent otherwise. */
   readonly results?: MasaPhala;
+  /** The day's lord, where the request named a `month` and a `place`; absent otherwise. */
+  readonly dinesha?: Dinesha;
+}
+
+/** The seven office-bearers of one day (*Tajika Nilakanthi*, Varsha Tantra, v. 17). */
+export interface DayBearers {
+  /** The Muntha's sign's lord, the Muntha moved on 5′ a day. */
+  readonly muntha: Graha;
+  readonly janmaLagna: Graha;
+  /** The day lagna's triplicity lord, by day or by night. */
+  readonly triRashi: Graha;
+  /** The lord of the Sun's sign by day, of the Moon's by night. */
+  readonly dinaRatri: Graha;
+  readonly dinaLagna: Graha;
+  readonly masaLagna: Graha;
+  readonly varshaLagna: Graha;
+  /** Whether the day opened by day, which chose two of them. */
+  readonly byDay: boolean;
+}
+
+/**
+ * The lord of one day, and the chain it was read beside
+ * (`03-design/varshesha.md`, "The day's lord").
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, masaPravesha: { year: 30, month: 4, place: 'birth' } });
+ * const lords = (chart.masaPravesha ?? []).map((day) => day.dinesha?.graha);
+ */
+export interface Dinesha {
+  /** The lord under `reading`. */
+  readonly graha: Graha;
+  readonly reading: 'CHAIN' | 'LAGNA_LORD';
+  /** The seven it was chosen among. */
+  readonly bearers: DayBearers;
+  /** The chain over the seven, carried under either reading. */
+  readonly chain: YearLord;
 }
 
 /**

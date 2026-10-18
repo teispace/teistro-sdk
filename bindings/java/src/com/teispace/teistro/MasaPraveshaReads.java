@@ -39,7 +39,9 @@ final class MasaPraveshaReads {
                             row instanceof Map<?, ?> fields && fields.get("masesha") != null
                                     ? masesha(fields.get("masesha")) : null,
                             row instanceof Map<?, ?> fields && fields.get("results") != null
-                                    ? results(fields.get("results")) : null));
+                                    ? results(fields.get("results")) : null,
+                            row instanceof Map<?, ?> fields && fields.get("dinesha") != null
+                                    ? dinesha(fields.get("dinesha")) : null));
                 }
                 charts.add(List.copyOf(one));
             }
@@ -50,15 +52,6 @@ final class MasaPraveshaReads {
     /** A month's lord, its keys made members and its strengths read as the year lord's are. */
     private static Masesha masesha(Object raw) {
         Object six = JsonRead.at(raw, "bearers");
-        Object chain = JsonRead.at(raw, "chain");
-        List<YearClaim> claims = new ArrayList<>();
-        for (Object claim : JsonRead.list(JsonRead.at(chain, "claims"))) {
-            claims.add(new YearClaim(
-                    graha(JsonRead.at(claim, "graha")),
-                    TajikaReads.bala(JsonRead.integer(JsonRead.at(claim, "vishwa"))),
-                    JsonRead.integer(JsonRead.at(claim, "portfolios")),
-                    JsonRead.bool(JsonRead.at(claim, "aspectsLagna"))));
-        }
         return new Masesha(
                 graha(JsonRead.at(raw, "graha")),
                 JsonRead.member(MaseshaReading::byKey, "MaseshaReading", JsonRead.at(raw, "reading")),
@@ -70,12 +63,43 @@ final class MasaPraveshaReads {
                         graha(JsonRead.at(six, "dinaRatri")),
                         graha(JsonRead.at(six, "varshaLagna")),
                         JsonRead.bool(JsonRead.at(six, "byDay"))),
-                new YearLord(
-                        graha(JsonRead.at(chain, "graha")),
-                        JsonRead.member(VarsheshaChosen::byKey, "VarsheshaChosen", JsonRead.at(chain, "chosen")),
-                        TajikaReads.bala(JsonRead.integer(JsonRead.at(chain, "vishwa"))),
-                        JsonRead.bool(JsonRead.at(chain, "moonPassedOver")),
-                        List.copyOf(claims)));
+                chain(JsonRead.at(raw, "chain")));
+    }
+
+    /** A day's lord, read as the month's lord is. */
+    private static Dinesha dinesha(Object raw) {
+        Object seven = JsonRead.at(raw, "bearers");
+        return new Dinesha(
+                graha(JsonRead.at(raw, "graha")),
+                JsonRead.member(MaseshaReading::byKey, "MaseshaReading", JsonRead.at(raw, "reading")),
+                new DayBearers(
+                        graha(JsonRead.at(seven, "muntha")),
+                        graha(JsonRead.at(seven, "janmaLagna")),
+                        graha(JsonRead.at(seven, "triRashi")),
+                        graha(JsonRead.at(seven, "dinaRatri")),
+                        graha(JsonRead.at(seven, "dinaLagna")),
+                        graha(JsonRead.at(seven, "masaLagna")),
+                        graha(JsonRead.at(seven, "varshaLagna")),
+                        JsonRead.bool(JsonRead.at(seven, "byDay"))),
+                chain(JsonRead.at(raw, "chain")));
+    }
+
+    /** A month's or a day's chain, its strengths read as the year lord's are. */
+    private static YearLord chain(Object chain) {
+        List<YearClaim> claims = new ArrayList<>();
+        for (Object claim : JsonRead.list(JsonRead.at(chain, "claims"))) {
+            claims.add(new YearClaim(
+                    graha(JsonRead.at(claim, "graha")),
+                    TajikaReads.bala(JsonRead.integer(JsonRead.at(claim, "vishwa"))),
+                    JsonRead.integer(JsonRead.at(claim, "portfolios")),
+                    JsonRead.bool(JsonRead.at(claim, "aspectsLagna"))));
+        }
+        return new YearLord(
+                graha(JsonRead.at(chain, "graha")),
+                JsonRead.member(VarsheshaChosen::byKey, "VarsheshaChosen", JsonRead.at(chain, "chosen")),
+                TajikaReads.bala(JsonRead.integer(JsonRead.at(chain, "vishwa"))),
+                JsonRead.bool(JsonRead.at(chain, "moonPassedOver")),
+                List.copyOf(claims));
     }
 
     /** A month's results, their grahas members. */
