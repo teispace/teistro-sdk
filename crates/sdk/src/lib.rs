@@ -264,7 +264,8 @@ pub use crate::found_request::FoundRequest;
 // (`03-design/annual-chart.md`).
 #[cfg(feature = "chart")]
 pub use crate::rule_request::{
-    Longevity, Present, RuleReadings, RuleRequest, RuleSet, RulesReading, ShippedRules,
+    Longevity, Present, RuleReadings, RuleRequest, RuleSet, RulesReading, RulesSection,
+    ShippedRules,
 };
 #[cfg(feature = "chart")]
 pub use crate::rules_bridge::{

@@ -393,7 +393,7 @@ const charts = geo.chart.foundMany({
   },
   // Three years under the practice's rule.
   tithiPravesha: { through: 3 },
-  dossier: { sections: ['CHART', 'NOW', 'GRAHAS', 'VARGAS', 'DASHAS'], at: 2460676.5, dashaDepth: 2, utcOffsetSeconds: 20700 },
+  dossier: { sections: ['CHART', 'NOW', 'GRAHAS', 'VARGAS', 'DASHAS', 'RULES'], at: 2460676.5, dashaDepth: 2, utcOffsetSeconds: 20700 },
   // A varshphal list with the book's structure and none of its numbers:
   // year y sends natal house h to h + y − 1, round the twelve.
   lalkitab: {

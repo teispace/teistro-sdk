@@ -997,6 +997,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     for (index, document) in read.value.iter().enumerate() {
         one_document(report, &geo, index, document);
         one_document_beside(report, &geo, index, document, &bare, offset);
+        the_dossier(report, index, document, by_rule.get(index));
     }
     the_partners(report, &geo, &read.value, offset);
     // **One call, as the other three make one.** The foundations are the
@@ -1910,7 +1911,6 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_lalkitab(report, geo, index, document);
     the_sarvatobhadra(report, geo, index, document);
     the_tithi_pravesha(report, geo, index, document);
-    the_dossier(report, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2621,13 +2621,22 @@ fn the_tithi_pravesha(
 }
 
 /// The dossier every runner asks for: sections the shared request carries
-/// without widening, dated so the running periods are marked, printed as
-/// its length and hash (`03-design/dossier.md`).
-const DOSSIER_JSON: &str = r#"{"sections":["CHART","NOW","GRAHAS","VARGAS","DASHAS"],"at":2460676.5,"dashaDepth":2,"utcOffsetSeconds":20700}"#;
+/// without widening and the rules that held, dated so the running periods
+/// are marked, printed as its length and hash (`03-design/dossier.md`).
+const DOSSIER_JSON: &str = r#"{"sections":["CHART","NOW","GRAHAS","VARGAS","DASHAS","RULES"],"at":2460676.5,"dashaDepth":2,"utcOffsetSeconds":20700}"#;
 
-fn the_dossier(report: &mut Report, index: usize, document: &teistro::Document) {
-    let asked = teistro::dossier::DossierOptions::from_json(DOSSIER_JSON).expect("a valid request");
-    let text = teistro::dossier::dossier(document, &asked, &[]).expect("every section carried");
+fn the_dossier(
+    report: &mut Report,
+    index: usize,
+    document: &teistro::Document,
+    by_rule: Option<&teistro::RulesReading<'_>>,
+) {
+    let rules = teistro::RulesSection::new(by_rule);
+    let asked =
+        teistro::dossier::DossierOptions::from_json(DOSSIER_JSON, &[teistro::RulesSection::KEY])
+            .expect("a valid request");
+    let text =
+        teistro::dossier::dossier(document, &asked, &[&rules]).expect("every section carried");
     put(
         report,
         &format!("chart-{index}-dossier"),

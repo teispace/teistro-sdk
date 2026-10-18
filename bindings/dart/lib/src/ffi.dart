@@ -531,7 +531,7 @@ final class ProviderVtableStruct extends ffi.Struct {
 
 }
 
-/// A string the library allocated: UTF-8, NUL-terminated at `datalen`,
+/// A string the library allocated: UTF-8, NUL-terminated at `data[len]`,
 /// `len` bytes before the NUL, freed by `ts_string_free`.
 final class StringStruct extends ffi.Struct {
   /// The bytes; null when empty.
@@ -1048,7 +1048,7 @@ final class ChartRequestStruct extends ffi.Struct {
   /// sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
   /// (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
   /// default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
-  /// `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+  /// `{"TABLE": [...]}`, twelve signs of five `{lord, end}` from Aries;
   /// the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
   /// `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
   /// `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
@@ -1355,7 +1355,7 @@ final class ChartRequestStruct extends ffi.Struct {
   /// object: `instants`, UTC Julian days, at least one, and optionally
   /// `name` (`{letter, vowel}`: the name's first letter in Devanagari
   /// and the vowel of its first syllable), `motion` (`"SKY"`, the
-  /// default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+  /// default, `"SUN"`, or `{"GIVEN": [five motions]}` for Mars,
   /// Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
   /// corner}`; C429 to C431). Every chart is founded with its panchanga,
   /// which the birth's tithi and weekday are read from. Each chart's
@@ -1382,15 +1382,16 @@ final class ChartRequestStruct extends ffi.Struct {
   /// object: optionally `sections` (keys, written in the dossier's own
   /// order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
   /// `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
-  /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
-  /// section one flag computes widens the request with it), `preset`
+  /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`, and
+  /// `RULES`, what held under the `rules_json` record; a section one
+  /// flag computes widens the request with it), `preset`
   /// (`"FULL"`, the default, every section the chart carries, or
   /// `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
   /// marked and their branch expanded; date-free when left out),
   /// `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
   /// left out). Each chart's text comes back in the `dossier` section.
   /// Null for none (`03-design/dossier.md`). Refusals are named from the
-  /// record every binding calls `dossier`, as `dossier.sections0`.
+  /// record every binding calls `dossier`, as `dossier.sections[0]`.
   /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
   external ffi.Pointer<ffi.Char> dossierJson;
 
@@ -3670,7 +3671,7 @@ final class ChartRequest {
   /// sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
   /// (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
   /// default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
-  /// `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+  /// `{"TABLE": [...]}`, twelve signs of five `{lord, end}` from Aries;
   /// the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
   /// `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
   /// `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
@@ -3977,7 +3978,7 @@ final class ChartRequest {
   /// object: `instants`, UTC Julian days, at least one, and optionally
   /// `name` (`{letter, vowel}`: the name's first letter in Devanagari
   /// and the vowel of its first syllable), `motion` (`"SKY"`, the
-  /// default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+  /// default, `"SUN"`, or `{"GIVEN": [five motions]}` for Mars,
   /// Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
   /// corner}`; C429 to C431). Every chart is founded with its panchanga,
   /// which the birth's tithi and weekday are read from. Each chart's
@@ -4004,15 +4005,16 @@ final class ChartRequest {
   /// object: optionally `sections` (keys, written in the dossier's own
   /// order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
   /// `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
-  /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
-  /// section one flag computes widens the request with it), `preset`
+  /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`, and
+  /// `RULES`, what held under the `rules_json` record; a section one
+  /// flag computes widens the request with it), `preset`
   /// (`"FULL"`, the default, every section the chart carries, or
   /// `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
   /// marked and their branch expanded; date-free when left out),
   /// `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
   /// left out). Each chart's text comes back in the `dossier` section.
   /// Null for none (`03-design/dossier.md`). Refusals are named from the
-  /// record every binding calls `dossier`, as `dossier.sections0`.
+  /// record every binding calls `dossier`, as `dossier.sections[0]`.
   /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
   final String? dossierJson;
 

@@ -315,3 +315,52 @@ fn a_record_widens_the_request_and_writes_on_its_clock() {
         .unwrap();
     assert_eq!(none.dossier, Vec::<String>::new());
 }
+
+#[test]
+fn a_rules_record_writes_what_held_as_its_own_section() {
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a built context");
+    let instants = [JulianDay::<Utc>::literal(BIRTH)];
+    let compose = |dossier: &str, rules: Option<&str>| {
+        let mut records = ChartRecords::default();
+        records.read("dossier", dossier)?;
+        if let Some(rules) = rules {
+            records.read("rules", rules)?;
+        }
+        let records = records.checked()?;
+        sdk.chart()
+            .compose(&instants, &kathmandu(), &records)
+            .map(|composed| composed.dossier)
+    };
+    let yogas = r#"{"shipped": ["YOGAS", "DOSHAS"]}"#;
+    let texts = compose(r#"{"sections": ["RULES", "GRAHAS"]}"#, Some(yogas)).unwrap();
+    let text = &texts[0];
+    assert_eq!(
+        banners(text),
+        ["LEGEND", "GRAHAS", "RULES"],
+        "after the built-in ones"
+    );
+    assert!(text.contains("# RULES: rule|category|status|grahas|houses|severity|source"));
+    let rows: Vec<&str> = text
+        .split("== RULES ==\n# rule|category|status|grahas|houses|severity|source\n")
+        .nth(1)
+        .unwrap()
+        .lines()
+        .collect();
+    assert!(!rows.is_empty(), "some rule holds on any chart");
+    for row in &rows {
+        assert_eq!(row.split('|').count(), 7, "{row}");
+    }
+    // A full dossier carries it when the chart was read under rules.
+    let full = compose("{}", Some(yogas)).unwrap();
+    assert_eq!(banners(&full[0]).last(), Some(&"RULES"));
+    assert!(!banners(&compose("{}", None).unwrap()[0]).contains(&"RULES"));
+    // Named without the rules record, it is refused with what would carry it.
+    let unread = compose(r#"{"sections": ["RULES"]}"#, None).unwrap_err();
+    assert_eq!(unread.field(), Some("dossier.sections[0]"));
+    // A section the record does not know is still refused by its place.
+    let unknown = compose(r#"{"sections": ["YOGAS"]}"#, Some(yogas)).unwrap_err();
+    assert_eq!(unknown.field(), Some("dossier.sections[0]"));
+}

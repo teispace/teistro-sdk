@@ -10346,7 +10346,8 @@ fn a_chart_request_answers_the_dossier() {
         )
         .unwrap()
         .value;
-    let mut options = teistro::dossier::DossierOptions::from_json(text).unwrap();
+    let mut options =
+        teistro::dossier::DossierOptions::from_json(text, &[teistro::RulesSection::KEY]).unwrap();
     options.utc_offset_seconds = Some(20_700);
     let expected: Vec<String> = natal
         .iter()

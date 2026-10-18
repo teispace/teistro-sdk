@@ -15471,7 +15471,10 @@ enum DossierSection implements _Keyed {
   jaimini('JAIMINI'),
   points('POINTS'),
   aspects('ASPECTS'),
-  avakahada('AVAKAHADA');
+  avakahada('AVAKAHADA'),
+
+  /// What held under the request's `rules` record, a row a rule.
+  rules('RULES');
 
   const DossierSection(this.key);
 

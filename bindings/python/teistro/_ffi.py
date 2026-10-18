@@ -540,7 +540,7 @@ class _CapabilitiesStruct(ctypes.Structure):
 
 
 class _StringStruct(ctypes.Structure):
-    """A string the library allocated: UTF-8, NUL-terminated at `datalen`,
+    """A string the library allocated: UTF-8, NUL-terminated at `data[len]`,
     `len` bytes before the NUL, freed by `ts_string_free`.
 
     The C layout, field for field. `String` is the value class over it.
@@ -2452,7 +2452,7 @@ class ChartRequest:
     sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
     (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
     default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
-    `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+    `{"TABLE": [...]}`, twelve signs of five `{lord, end}` from Aries;
     the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
     `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
     `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
@@ -2563,9 +2563,9 @@ class ChartRequest:
     `"SEMI_SEXTILE"`, `"SEMI_SQUARE"`, `"SEXTILE"`, `"SQUARE"`,
     `"TRINE"`, `"SESQUIQUADRATE"`, `"QUINCUNX"`, `"OPPOSITION"`; Leo's
     nine when left out), and `orbs`, the model: `{"model": "LEO"}` by
-    default (C240), `{"model": "MOIETIES", "orbs": {"graha": "SUN",
-    "orbDeg": 17}, …}`, or `{"model": "BY_ASPECT", "orbs": {"aspect":
-    "TRINE", "orbDeg": 6}, …}`. The pairs are the chart's planets: the
+    default (C240), `{"model": "MOIETIES", "orbs": [{"graha": "SUN",
+    "orbDeg": 17}, …]}`, or `{"model": "BY_ASPECT", "orbs": [{"aspect":
+    "TRINE", "orbDeg": 6}, …]}`. The pairs are the chart's planets: the
     seven, and the outer three when `TS_CHART_OUTER` placed them. The
     answers come back in `western_aspects` and `western_aspect_rows`.
     Null for none, which costs nothing (`03-design/western-aspects.md`).
@@ -2777,7 +2777,7 @@ class ChartRequest:
     object: `instants`, UTC Julian days, at least one, and optionally
     `name` (`{letter, vowel}`: the name's first letter in Devanagari
     and the vowel of its first syllable), `motion` (`"SKY"`, the
-    default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+    default, `"SUN"`, or `{"GIVEN": [five motions]}` for Mars,
     Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
     corner}`; C429 to C431). Every chart is founded with its panchanga,
     which the birth's tithi and weekday are read from. Each chart's
@@ -2806,15 +2806,16 @@ class ChartRequest:
     object: optionally `sections` (keys, written in the dossier's own
     order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
     `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
-    `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
-    section one flag computes widens the request with it), `preset`
+    `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`, and
+    `RULES`, what held under the `rules_json` record; a section one
+    flag computes widens the request with it), `preset`
     (`"FULL"`, the default, every section the chart carries, or
     `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
     marked and their branch expanded; date-free when left out),
     `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
     left out). Each chart's text comes back in the `dossier` section.
     Null for none (`03-design/dossier.md`). Refusals are named from the
-    record every binding calls `dossier`, as `dossier.sections0`.
+    record every binding calls `dossier`, as `dossier.sections[0]`.
     Example: {"preset":"FULL","dashaDepth":2}. May be null.
     """
 
