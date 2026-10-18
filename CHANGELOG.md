@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Shodashottari and Shattrimsha-sama** (`dasha-kernels.md`). **Numbers:**
+none moved; two dashas the catalogue named are computed, 31 in all. BPHS
+ch. 46 vv. 24 to 26: from Pushya, by eight, the Sun to Venus without
+Rahu, eleven to eighteen years; vv. 42 and 43: from Shravana, by eight,
+Yogini's lords and years, which seat the same lord as Yogini on only 6 of
+the 27 nakshatras. Each verse's condition (the lagna's hora by the
+fortnight, or by day and night) is recorded on its row.
+
 **The month's dasha** (`varshesha.md`). **Numbers:** none moved; a
 `masaPravesha` month row with a `place` now carries `dasha`. The *Tajika
 Nilakanthi*'s v. 14: the Hudda lords of the stronger of the Muntha's

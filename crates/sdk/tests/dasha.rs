@@ -155,8 +155,9 @@ fn a_temporal_balance_searches_the_moon_s_nakshatra_in_the_chart_s_frame() {
 #[test]
 fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
     let recorded = fixture("dasha-systems/charts/c001-kathmandu-1990-04-14.json");
-    // Every built system the corpus records; Shashtihayani is built from
-    // the text alone, and the recording engine has none.
+    // Every built system the corpus records; Shodashottari, Shattrimsha-sama
+    // and Shashtihayani are built from the text alone, and the recording
+    // engine has none of them.
     let systems: Vec<DashaSystem> = teistro::dasha::ROWS
         .iter()
         .filter_map(|row| row.system.catalogued())
@@ -167,7 +168,7 @@ fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
                     .is_some()
         })
         .collect();
-    assert_eq!(systems.len(), teistro::dasha::ROWS.len() - 1);
+    assert_eq!(systems.len(), teistro::dasha::ROWS.len() - 3);
     for (patch, method, fraction) in [
         ("{}", "spatial", SPATIAL_FRACTION),
         (

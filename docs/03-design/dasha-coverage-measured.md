@@ -6,7 +6,7 @@ Status: `generated` by `cargo xtask dasha-coverage` over
 regenerates this page and fails on any difference. The design it
 measures is [`dasha-kernels.md`](dasha-kernels.md).
 
-The catalogue names 45 dasha systems and this build computes 29. The 16
+The catalogue names 45 dasha systems and this build computes 31. The 14
 left are **not** a backlog of unwritten code: every one of them is
 blocked on something that is not typing, and this page is the list of
 what, grouped by the blocker that would have to go first.
@@ -24,7 +24,7 @@ a natal chart asked for one is refused, and 3 of those refusals name
 that call in the hint rather than leaving the caller at a list of the
 natal systems.
 
-## 12 systems: the text is not settled
+## 10 systems: the text is not settled
 
 What closes them is a cited source read by someone who reads it.
 Building is not what is missing: every row here is one line of table
@@ -33,8 +33,6 @@ and all of them are listed.
 
 | system | why it is not computed |
 |---|---|
-| `SHODASHOTTARI` | the row is stated — from Pushya, eight lords, 116 years — and its verse numbers in BPHS ch. 46 are to be confirmed before it ships |
-| `SHATTRIMSHA_SAMA` | the same verse numbers to confirm. Its table is Yogini's, lord for lord and year for year, differing only in the reference nakshatra and the offset — so shipping it on a guess would ship Yogini twice |
 | `TITHI_ASHTOTTARI` | Ashtottari's table seeded by the **tithi**. The reference index does not carry over from the nakshatra rows because the cycles differ, 30 against 27, so the seat is unknown |
 | `TITHI_YOGINI` | Yogini's table on the same thirty-fold cycle, blocked by the same unknown seat |
 | `YOGA_VIMSHOTTARI` | Vimshottari's table seeded by the **yoga**, on a twenty-seven-fold cycle whose reference is not the nakshatra's |
@@ -63,7 +61,7 @@ at a time.
 
 ## Asking for one
 
-Every one of the 16 unbuilt systems was asked of a real founded chart.
+Every one of the 14 unbuilt systems was asked of a real founded chart.
 None of them answered: each came back refused, naming the system asked
 for and hinting with every system this build does compute. That is what
 makes the gap a declared one rather than a dead end — a member that
@@ -71,7 +69,7 @@ answered an empty reading would be indistinguishable from a bug, and
 nothing but a call can tell the two apart.
 
 ```text
-unsupported: SHODASHOTTARI is a dasha the catalogue names and this build does not compute yet (field `dashas[0]`); the dashas built are VIMSHOTTARI, ASHTOTTARI, DWADASHOTTARI, PANCHOTTARI, SHATABDIKA, CHATURASHITI_SAMA, DWISAPTATI_SAMA, YOGINI, TRIBHAGI, SHASHTIHAYANI, CHARA, NARAYANA, PADANADHAMSA, TRIKONA, DRIG, SHOOLA, NIRYANA_SHOOLA, MANDOOKA, STHIRA, YOGARDHA, KALACHAKRA, RELEASING_FORTUNE, RELEASING_DAIMON, PROFECTION, FIRDARIA, DECENNIALS
+unsupported: TITHI_ASHTOTTARI is a dasha the catalogue names and this build does not compute yet (field `dashas[0]`); the dashas built are VIMSHOTTARI, ASHTOTTARI, DWADASHOTTARI, PANCHOTTARI, SHATABDIKA, CHATURASHITI_SAMA, DWISAPTATI_SAMA, YOGINI, TRIBHAGI, SHODASHOTTARI, SHATTRIMSHA_SAMA, SHASHTIHAYANI, CHARA, NARAYANA, PADANADHAMSA, TRIKONA, DRIG, SHOOLA, NIRYANA_SHOOLA, MANDOOKA, STHIRA, YOGARDHA, KALACHAKRA, RELEASING_FORTUNE, RELEASING_DAIMON, PROFECTION, FIRDARIA, DECENNIALS
 ```
 
 ## Who can supply one
@@ -82,19 +80,17 @@ reference, or where a system starts, the order it visits the signs in
 and how long a sign runs — each checked by the same row validation a
 shipped system passes. So a consumer holding the text registers the
 system on their context and asks for it by key, today, with no change
-here. That covers 2 of the 16 systems left.
+here. That covers 0 of the 14 systems left.
 
-| system | the kernel it arrives as | what is still missing |
-|---|---|---|
-| `SHODASHOTTARI` | nakshatra-seeded | the row is stated — from Pushya, eight lords, 116 years — and its verse numbers in BPHS ch. 46 are to be confirmed before it ships |
-| `SHATTRIMSHA_SAMA` | nakshatra-seeded | the same verse numbers to confirm. Its table is Yogini's, lord for lord and year for year, differing only in the reference nakshatra and the offset — so shipping it on a guess would ship Yogini twice |
+None is left that only wants its numbers: the last two, `SHODASHOTTARI`
+and `SHATTRIMSHA_SAMA`, ship from BPHS ch. 46.
 
 The path is walked once per kernel rather than cited:
 `DEMO_SHODASHOTTARI`, 8 lords and 116 years from Pushya, the
 nakshatra-seeded kernel and `DEMO_RASHI`, every sign from the lagna for
 seven, eight or nine years by modality, the sign-based kernel.
 
-**The other 14 cannot be supplied by anyone**, and each for a reason in
+**The 14 left cannot be supplied by anyone**, and each for a reason in
 its own row rather than for want of an arm: `SUDASA` starts from the
 karakamsha and `VARNADA` from the Varnada lagna, which are places
 `Start` does not name; the tithi, yoga and karana seeds want a reference
@@ -108,12 +104,12 @@ difference is what this section exists to keep visible.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 16 disagree |
-| no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 16 disagree |
-| every reason names a system the catalogue names | **holds** | 0 of 16 disagree |
-| every system said to be registrable is one this build does not compute | **holds** | 0 of 2 disagree |
-| asking for an unbuilt system is refused and never answered | **holds** | 0 of 16 disagree |
-| the refusal names the system asked for | **holds** | 0 of 16 disagree |
-| the refusal names every system this build does compute | **holds** | 0 of 16 disagree |
-| the counts on this page are read from the types and not written down | **holds** | `DashaSystem::ALL` 45, `teistro::dasha::systems()` 29 |
+| every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 14 disagree |
+| no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 14 disagree |
+| every reason names a system the catalogue names | **holds** | 0 of 14 disagree |
+| every system said to be registrable is one this build does not compute | untested | nothing tests it |
+| asking for an unbuilt system is refused and never answered | **holds** | 0 of 14 disagree |
+| the refusal names the system asked for | **holds** | 0 of 14 disagree |
+| the refusal names every system this build does compute | **holds** | 0 of 14 disagree |
+| the counts on this page are read from the types and not written down | **holds** | `DashaSystem::ALL` 45, `teistro::dasha::systems()` 31 |
 

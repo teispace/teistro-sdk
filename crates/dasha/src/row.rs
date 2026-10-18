@@ -676,6 +676,54 @@ pub const SHASHTIHAYANI: UduRow = UduRow {
     wheel: Wheel::WithAbhijit,
 };
 
+/// Shodashottari, BPHS ch. 46 vv. 24 to 26: counted from Pushya to the
+/// birth nakshatra and taken by eight (*gajataṣṭitā*), the Sun, Mars,
+/// Jupiter, Saturn, Ketu, the Moon, Mercury and Venus, Rahu left out, of
+/// eleven years rising by one to eighteen (*rudrādy ekottarāḥ … dhṛtyantam*),
+/// 116 in all. v. 24 reads it for a lagna in the Moon's hora in the dark
+/// fortnight or the Sun's in the bright.
+pub const SHODASHOTTARI: UduRow = UduRow {
+    system: DashaName::Catalogued(DashaSystem::Shodashottari),
+    lords: Cow::Borrowed(&[
+        lord(Graha::Sun, 11),
+        lord(Graha::Mars, 12),
+        lord(Graha::Jupiter, 13),
+        lord(Graha::Saturn, 14),
+        lord(Graha::Ketu, 15),
+        lord(Graha::Moon, 16),
+        lord(Graha::Mercury, 17),
+        lord(Graha::Venus, 18),
+    ]),
+    reference: 7,
+    count: Count::FromReference,
+    span: 1,
+    offset: 0,
+    repeats: true,
+    scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
+};
+
+/// Shattrimsha-sama, BPHS ch. 46 vv. 42 and 43: counted from Shravana to the
+/// birth nakshatra and taken by eight (*vasuvibhājitā*), the Moon, the Sun,
+/// Jupiter, Mars, Mercury, Saturn, Venus and Rahu of one year rising by one,
+/// 36 in all. v. 43 reads it for a birth by day with the lagna in the Sun's
+/// hora, or by night in the Moon's. Yogini's lords and years, counted from
+/// another nakshatra round a circle eight does not divide, so the two
+/// differ on most births.
+pub const SHATTRIMSHA_SAMA: UduRow = UduRow {
+    system: DashaName::Catalogued(DashaSystem::ShattrimshaSama),
+    lords: YOGINI.lords,
+    reference: 21,
+    count: Count::FromReference,
+    span: 1,
+    offset: 0,
+    repeats: true,
+    scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
+};
+
 /// Every row this build implements, in the catalogue's order. A system
 /// the catalogue names and no row implements is refused by name.
 pub const ROWS: &[UduRow] = &[
@@ -688,6 +736,8 @@ pub const ROWS: &[UduRow] = &[
     DWISAPTATI_SAMA,
     YOGINI,
     TRIBHAGI,
+    SHODASHOTTARI,
+    SHATTRIMSHA_SAMA,
     SHASHTIHAYANI,
 ];
 
@@ -867,7 +917,10 @@ mod tests {
             row.validate().unwrap();
         }
         let totals: Vec<u32> = ROWS.iter().map(UduRow::total_years).collect();
-        assert_eq!(totals, [120, 108, 112, 105, 100, 84, 72, 36, 120, 60]);
+        assert_eq!(
+            totals,
+            [120, 108, 112, 105, 100, 84, 72, 36, 120, 116, 36, 60]
+        );
         assert_eq!(VIMSHOTTARI.total_years(), u32::from(VIMSHOTTARI_YEARS));
         ASHTOTTARI_BPHS.validate().unwrap();
         assert_eq!(ASHTOTTARI_BPHS.total_years(), 108);
@@ -906,6 +959,38 @@ mod tests {
         assert_eq!(YOGINI.lords[YOGINI.seat(0).lord].graha, Graha::Mars);
         assert_eq!(DWADASHOTTARI.seat(26).lord, 0);
         assert_eq!(DWADASHOTTARI.seat(25).lord, 1);
+    }
+
+    /// BPHS ch. 46 vv. 25 and 42: the count from Pushya, or from Shravana,
+    /// to the birth nakshatra, taken by eight, names the lord, the
+    /// reference itself the first and a remainder of none the eighth.
+    #[test]
+    fn shodashottari_and_shattrimsha_count_from_pushya_and_shravana() {
+        let lord = |row: &UduRow, place: u8| row.lords[row.seat(place).lord].graha;
+        // Pushya the Sun; Ashlesha Mars; Punarvasu the twenty-seventh, by
+        // eight the third, Jupiter.
+        assert_eq!(lord(&SHODASHOTTARI, 7), Graha::Sun);
+        assert_eq!(lord(&SHODASHOTTARI, 8), Graha::Mars);
+        assert_eq!(lord(&SHODASHOTTARI, 6), Graha::Jupiter);
+        // The eighth from Pushya, Swati, is Venus; the ninth, Vishakha, the Sun.
+        assert_eq!(lord(&SHODASHOTTARI, 14), Graha::Venus);
+        assert_eq!(lord(&SHODASHOTTARI, 15), Graha::Sun);
+        assert_eq!(SHODASHOTTARI.total_years(), 116);
+        assert!(
+            SHODASHOTTARI
+                .lords
+                .iter()
+                .all(|one| one.graha != Graha::Rahu)
+        );
+        // Shravana the Moon; Ashvini the seventh from it, Venus.
+        assert_eq!(lord(&SHATTRIMSHA_SAMA, 21), Graha::Moon);
+        assert_eq!(lord(&SHATTRIMSHA_SAMA, 0), Graha::Venus);
+        assert_eq!(SHATTRIMSHA_SAMA.total_years(), 36);
+        // Yogini's table from another place: the two agree on six seeds.
+        let same = (0..27)
+            .filter(|&place| lord(&YOGINI, place) == lord(&SHATTRIMSHA_SAMA, place))
+            .count();
+        assert_eq!(same, 6);
     }
 
     /// BPHS ch. 46, the translation's note 2 to v. 23: a birth in
