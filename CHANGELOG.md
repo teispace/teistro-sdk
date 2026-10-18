@@ -35,7 +35,10 @@ a string (`chart.dossier`; Java's `chart.dossier()`), the sections typed
 as a closed set in Node, Python and Dart, and the parity example holds
 the four, wasm and Rust to the same bytes of a dated dossier. A `RULES`
 section writes every rule that held under the request's `rules` record
-(`RulesSection`, passed by a Rust caller as an extra section), and the
+(`RulesSection`, passed by a Rust caller as an extra section), a
+`GOCHAR` section each graha's transit at the `gochar` record's instants
+(`GocharSection`), the dossier's `fixed`, `word` and `civil` writers are
+public for a consumer's own section, and the
 API description no longer drops a bracket inside a code span
 (`data[len]` had read `datalen`).
 

@@ -172,3 +172,93 @@ pub(crate) fn reading(
     read.ashtakavarga = prastara.map(|prastara| ashtakavarga::transits(prastara, &transits, rules));
     read
 }
+
+/// The `GOCHAR` section of a chart's dossier: each graha's transit at each
+/// of the `gochar` record's instants, a row a graha an instant
+/// (`03-design/dossier.md`). A chart request writes it from its `gochar`
+/// record; a caller of [`crate::dossier::dossier`] passes it as an extra
+/// section with the instants and the chart's own readings.
+#[derive(Clone, Copy, Debug)]
+pub struct GocharSection<'a> {
+    instants: &'a [JulianDay<Utc>],
+    readings: Option<&'a [GocharReading]>,
+}
+
+impl<'a> GocharSection<'a> {
+    /// The section's key, as a dossier record names it.
+    pub const KEY: &'static str = "GOCHAR";
+
+    /// The section of `readings`, one an instant of `instants`; `None`, a
+    /// chart read at no instant, whose dossier has no `GOCHAR` to write.
+    #[must_use]
+    pub const fn new(
+        instants: &'a [JulianDay<Utc>],
+        readings: Option<&'a [GocharReading]>,
+    ) -> GocharSection<'a> {
+        GocharSection { instants, readings }
+    }
+}
+
+impl crate::dossier::DossierSection for GocharSection<'_> {
+    fn key(&self) -> &'static str {
+        GocharSection::KEY
+    }
+    fn columns(&self) -> &[crate::dossier::Column] {
+        use crate::dossier::{Column, column};
+        const COLUMNS: [Column; 9] = [
+            column("at", "the instant, on the dossier's clock"),
+            column("graha", "the graha in transit"),
+            column("sign", "the sign it transits"),
+            column("deg", "degrees in the sign, two decimals"),
+            column(
+                "house",
+                "its house from the natal Moon's sign, or the reference the record names",
+            ),
+            column(
+                "verdict",
+                "GOOD, OBSTRUCTED or NOT_GOOD (Phaladeepika ch. 26)",
+            ),
+            column("vedha", "the house whose occupant would obstruct it"),
+            column("obstructed", "the grahas there that do, `,`-separated"),
+            column("fruitful", "whether it stands in its decanate of fruition"),
+        ];
+        &COLUMNS
+    }
+    fn asked_by(&self) -> &'static str {
+        "the `gochar` record on the chart request"
+    }
+    fn rows(&self, _: &crate::Document, view: &crate::dossier::View) -> Option<Vec<Vec<String>>> {
+        use crate::dossier::{civil, fixed, word};
+        let dash = || String::from("-");
+        Some(
+            self.readings?
+                .iter()
+                .zip(self.instants)
+                .flat_map(|(reading, instant)| {
+                    let at = civil(*instant, view.utc_offset_seconds);
+                    reading.grahas.iter().map(move |one| {
+                        vec![
+                            at.clone(),
+                            one.graha.key().to_owned(),
+                            one.transit.sign.key().to_owned(),
+                            fixed(one.transit.degrees, 2),
+                            one.house.to_string(),
+                            word(&one.verdict),
+                            one.vedha_house.map_or_else(dash, |house| house.to_string()),
+                            if one.obstructed_by.is_empty() {
+                                dash()
+                            } else {
+                                one.obstructed_by
+                                    .iter()
+                                    .map(|graha| graha.key())
+                                    .collect::<Vec<_>>()
+                                    .join(",")
+                            },
+                            one.fruitful_now.to_string(),
+                        ]
+                    })
+                })
+                .collect(),
+        )
+    }
+}

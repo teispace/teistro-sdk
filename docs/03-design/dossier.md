@@ -107,7 +107,7 @@ In this order, each present when the document carries it:
 | `ASPECTS` | `aspects` | each graha's drishti onto houses |
 | `AVAKAHADA` | `avakahada` | the Moon's star and pada, the naming syllable, the koota readings of one native |
 
-After them comes `RULES`, the one section the SDK adds itself: every
+After them come the two sections the SDK adds itself. `RULES` writes every
 rule that held on the chart under the request's `rules` record, a row a
 rule — its key, its category, its status after its cancellations, the
 bodies it consulted, their houses, its severity and the text, chapter and
@@ -119,6 +119,19 @@ record it is refused by its place with that record as the hint; a
 `FULL` dossier carries it whenever the chart was read under rules. The
 twelve house readings and the longevity spans a rules reading can carry
 are not written yet.
+
+`GOCHAR` writes each graha's transit at each of the `gochar` record's
+instants, a row a graha an instant: the instant on the dossier's clock,
+the sign and degrees, the house from the reference, the verdict of
+*Phaladeepika* ch. 26, the vedha house and the grahas obstructing from
+it, and whether the graha stands in its decanate of fruition.
+`GocharSection` is the trait over the instants and the chart's readings,
+passed the way `RULES` is, refused the same way without its record. The
+Ashtakavarga's judgement of the seven's transits is not written yet.
+
+Both write numbers and instants with the dossier's own writers, `fixed`,
+`word` and `civil`, which are public so a consumer's section writes the
+same bytes.
 
 A section a consumer adds (below) comes after these, in the order added.
 
@@ -157,7 +170,7 @@ documented the way a built-in one is.
 ## Across the boundary
 
 A chart request's `dossier` record (`{sections?, preset?, at?,
-dashaDepth?, utcOffsetSeconds?}`, `DossierOptions::from_json`, which knows `RULES` there) writes
+dashaDepth?, utcOffsetSeconds?}`, `DossierOptions::from_json`, which knows `RULES` and `GOCHAR` there) writes
 each chart's dossier on the request's own clock, and section 137,
 `dossier`, carries them as a JSON array of strings, one a chart
 (`tests/abi.rs` holds it to the façade's own). A section the record
@@ -180,7 +193,7 @@ reads the record, so a model can ask a chart for its own dossier.
 |---|---|
 | **decided** | bare catalogue keys, not codes; presets choose sections and never thin them, and a named section the document lacks is refused; one column table writes the header and the legend; date-free unless `at` |
 | **a setting** | `sections`, `preset`, `at`, `dasha_depth`, `utc_offset_seconds` |
-| **not built** | the gochar overlay (a transit section from the `gochar` record's readings); a rules reading's house readings and longevity spans; a localised legend |
+| **not built** | a rules reading's house readings and longevity spans; the Ashtakavarga's transit judgement; a localised legend |
 
 ## What will be measured
 

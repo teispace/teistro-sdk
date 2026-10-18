@@ -364,3 +364,54 @@ fn a_rules_record_writes_what_held_as_its_own_section() {
     let unknown = compose(r#"{"sections": ["YOGAS"]}"#, Some(yogas)).unwrap_err();
     assert_eq!(unknown.field(), Some("dossier.sections[0]"));
 }
+
+#[test]
+fn a_gochar_record_writes_each_transit_on_the_dossier_clock() {
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a built context");
+    let instants = [JulianDay::<Utc>::literal(BIRTH)];
+    let compose = |dossier: &str, gochar: Option<&str>| {
+        let mut records = ChartRecords::default();
+        records.read("dossier", dossier)?;
+        if let Some(gochar) = gochar {
+            records.read("gochar", gochar)?;
+        }
+        let records = records.checked()?;
+        sdk.chart()
+            .compose(&instants, &kathmandu(), &records)
+            .map(|composed| (composed.dossier, composed.gochar))
+    };
+    let two = r#"{"instants": [2460676.5, 2460736.5]}"#;
+    let both = compose(r#"{"sections": ["GOCHAR", "RULES"]}"#, Some(two)).unwrap_err();
+    assert_eq!(
+        both.field(),
+        Some("dossier.sections[1]"),
+        "RULES needs its own record"
+    );
+    let (texts, readings) = compose(r#"{"sections": ["GOCHAR"]}"#, Some(two)).unwrap();
+    let text = &texts[0];
+    assert_eq!(banners(text), ["LEGEND", "GOCHAR"]);
+    let header = "# at|graha|sign|deg|house|verdict|vedha|obstructed|fruitful";
+    let rows: Vec<Vec<&str>> = text
+        .split(&format!("== GOCHAR ==\n{header}\n"))
+        .nth(1)
+        .unwrap()
+        .lines()
+        .map(|row| row.split('|').collect())
+        .collect();
+    assert_eq!(rows.len(), 18, "nine grahas at each of two instants");
+    // The instants on the request's clock, 2460676.5 being 2025-01-01 00:00 UTC.
+    assert_eq!(rows[0][0], "2025-01-01 05:45");
+    assert_eq!(rows[9][0], "2025-03-02 05:45");
+    for (row, one) in rows
+        .iter()
+        .zip(readings[0].iter().flat_map(|r| r.grahas.iter()))
+    {
+        assert_eq!(row[1], one.graha.key());
+        assert_eq!(row[4], one.house.to_string());
+    }
+    let unread = compose(r#"{"sections": ["GOCHAR"]}"#, None).unwrap_err();
+    assert_eq!(unread.field(), Some("dossier.sections[0]"));
+}

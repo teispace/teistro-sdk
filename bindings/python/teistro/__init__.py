@@ -9639,6 +9639,7 @@ DossierSection = Literal[
     "ASPECTS",
     "AVAKAHADA",
     "RULES",
+    "GOCHAR",
 ]
 """A section of a chart's dossier, in the dossier's own order
 (`03-design/dossier.md`)."""
