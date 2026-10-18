@@ -259,6 +259,9 @@ jobs:
   flutter-ios:
     name: flutter (ios)
     runs-on: macos-latest
+    # About twenty minutes when it passes; a simulator that hangs once ran
+    # five hours.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
         with:
