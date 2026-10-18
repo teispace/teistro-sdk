@@ -9,7 +9,7 @@
 )]
 
 use teistro::catalogue::{DashaSystem, Varga};
-use teistro::dossier::{DossierOptions, DossierPreset, dossier};
+use teistro::dossier::{DOSSIER_FORMAT, DossierOptions, DossierPreset, dossier};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{ChartRecords, ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
@@ -64,7 +64,9 @@ fn banners(text: &str) -> Vec<&str> {
 fn a_dossier_writes_every_section_the_chart_carries_and_the_same_bytes_twice() {
     let document = full();
     let text = dossier(&document, &on_clock(), &[]).unwrap();
-    assert!(text.starts_with("# teistro dossier 1\n== LEGEND ==\n"));
+    assert!(text.starts_with(&format!(
+        "# teistro dossier {DOSSIER_FORMAT}\n== LEGEND ==\n"
+    )));
     assert_eq!(
         banners(&text),
         ["LEGEND", "CHART", "GRAHAS", "VARGAS", "DASHAS", "PANCHANGA"]
@@ -342,7 +344,10 @@ fn a_rules_record_writes_what_held_as_its_own_section() {
         ["LEGEND", "GRAHAS", "RULES"],
         "after the built-in ones"
     );
-    assert!(text.contains("# RULES: rule|category|status|grahas|houses|severity|source"));
+    assert!(
+        text.contains("# RULES\n#   rule: the rule's key\n"),
+        "its legend"
+    );
     let rows: Vec<&str> = text
         .split("== RULES ==\n# rule|category|status|grahas|houses|severity|source\n")
         .nth(1)

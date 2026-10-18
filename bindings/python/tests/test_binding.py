@@ -1880,7 +1880,7 @@ class AnEngine(WithLibrary):
             self.assertIsNone(ctx.chart.found(instant=instant, **at).dossier)
             text = ctx.chart.found(instant=instant, dossier=asked, **at).dossier
             assert text is not None
-            self.assertTrue(text.startswith("# teistro dossier 1\n== LEGEND ==\n"))
+            self.assertRegex(text, r"\A# teistro dossier \d+\n== LEGEND ==\n")
             banners = [line[3:-3] for line in text.split("\n") if line.startswith("== ")]
             self.assertEqual(banners, ["LEGEND", "CHART", "GRAHAS", "SHADBALA"])
             self.assertIn("+05:45", text)

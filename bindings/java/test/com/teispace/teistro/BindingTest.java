@@ -786,7 +786,7 @@ public final class BindingTest {
                         .build();
                 String text = sky.chart().found(instant, kathmandu, 20_700,
                         ChartOptions.builder().dossier(asked).build()).dossier().orElseThrow();
-                check(text.startsWith("# teistro dossier 1\n== LEGEND ==\n"), "the format line, then the legend");
+                check(text.matches("(?s)# teistro dossier \\d+\n== LEGEND ==\n.*"), "the format line, then the legend");
                 List<String> banners = text.lines().filter(line -> line.startsWith("== "))
                         .map(line -> line.substring(3, line.length() - 3)).toList();
                 same(List.of("LEGEND", "CHART", "GRAHAS", "SHADBALA"), banners, "the record widened the request");

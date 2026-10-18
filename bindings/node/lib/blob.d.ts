@@ -5878,7 +5878,7 @@ export interface Charts {
    */
   readonly tithiPravesha: string;
   /**
-   * UTF-8 JSON, canonical: an array with one string per chart, its dossier for a language model (`03-design/dossier.md`): the line `# teistro dossier 1`, a legend of the sections written, then each section as a `== NAME ==` banner, a `#` header naming its `|`-separated columns, and its rows. The same chart under the same record is the same text. Empty when `dossier_json` asked for none.
+   * UTF-8 JSON, canonical: an array with one string per chart, its dossier for a language model (`03-design/dossier.md`): the line `# teistro dossier N`, `N` the format's version, a legend of the sections written, then each section as a `== NAME ==` banner, a `#` header naming its `|`-separated columns, and its rows. The same chart under the same record is the same text. Empty when `dossier_json` asked for none.
    */
   readonly dossier: string;
 }

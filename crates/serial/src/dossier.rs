@@ -14,7 +14,7 @@
 //! # fn main() -> Result<(), teistro_core::error::Error> {
 //! # if false {
 //! let text = dossier(&chart(), &DossierOptions::default(), &[])?;
-//! assert!(text.starts_with("# teistro dossier 1\n"));
+//! assert!(text.starts_with("# teistro dossier 2\n"));
 //! # }
 //! # Ok(())
 //! # }
@@ -35,7 +35,7 @@ use crate::document::Document;
 /// The format's version, written on the first line. Raised by any change
 /// to a byte the dossier writes: a column, a legend line, a number's
 /// decimals.
-pub const DOSSIER_FORMAT: u32 = 1;
+pub const DOSSIER_FORMAT: u32 = 2;
 
 /// One column of a section: its name in the header line and what it is,
 /// in the legend. The one table both are written from.
@@ -340,16 +340,8 @@ fn legend<'a>(sections: impl Iterator<Item = &'a dyn DossierSection>) -> String 
     );
     for section in sections {
         let columns = section.columns();
-        let _ = writeln!(
-            out,
-            "# {}: {}",
-            section.key(),
-            columns
-                .iter()
-                .map(|one| one.name)
-                .collect::<Vec<_>>()
-                .join("|")
-        );
+        // The columns themselves are the section's own header line.
+        let _ = writeln!(out, "# {}", section.key());
         for one in columns {
             let _ = writeln!(out, "#   {}: {}", one.name, one.meaning);
         }
@@ -1207,11 +1199,8 @@ impl DossierSection for AvakahadaSection {
     }
     fn columns(&self) -> &[Column] {
         const COLUMNS: [Column; 2] = [
-            column(
-                "field",
-                "nakshatra, pada, rashi, their lords, varna, yoni, gana, nadi: the Moon's",
-            ),
-            column("value", "its value"),
+            column("field", "which of the Moon's readings"),
+            column("value", "the reading"),
         ];
         &COLUMNS
     }

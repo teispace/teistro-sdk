@@ -4677,7 +4677,7 @@ test('a chart writes its dossier', () => {
   const instant = 2447995.4895833335;
   assert.equal(ctx.chart.found({ instant, ...at }).dossier, null);
   const text = ctx.chart.found({ instant, ...at, dossier: { sections: ['CHART', 'GRAHAS', 'SHADBALA'] } }).dossier;
-  assert.ok(text.startsWith('# teistro dossier 1\n== LEGEND ==\n'));
+  assert.match(text, /^# teistro dossier \d+\n== LEGEND ==\n/);
   const banners = text.split('\n').filter((line) => line.startsWith('== ')).map((line) => line.slice(3, -3));
   assert.deepEqual(banners, ['LEGEND', 'CHART', 'GRAHAS', 'SHADBALA'], 'the record widened the request');
   assert.ok(text.includes('+05:45'), "the request's clock");
