@@ -2,13 +2,13 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2147 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2012 rules hold at least once and 135 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2188 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2043 rules hold at least once and 145 never do.
 
-Rules holding on the same 5 or more charts form 121 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 122 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
 - **81 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
-- **4 groups: one text says it twice**, where the table below says.
+- **5 groups: one text says it twice**, where the table below says.
 
 A group of one text that is none of these fails the gate, and so does a listed group that no longer holds together.
 
@@ -20,6 +20,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 38 | `SARAVALI_MERCURY_AND_JUPITER_IN_THE_SEVENTH`<br>`SARAVALI_MERCURY_JUPITER_IN_BHAVA_7` | Saravali reads Mercury and Jupiter in the seventh in ch. 34 v. 47 (one wife), and again among two grahas in an angle |
 | 113 | `SARAVALI_MERCURY_AND_VENUS_IN_THE_SEVENTH`<br>`SARAVALI_MERCURY_VENUS_IN_BHAVA_7` | Saravali reads Mercury and Venus in the seventh in ch. 34, and again among two grahas in an angle |
 | 1008 | `PHALADEEPIKA_KETU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH`<br>`PHALADEEPIKA_RAHU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH` | Phaladeepika ch. 14 vv. 13 and 15 give each node its own death; the nodes stand opposite and aspect by the seventh alone, so one in the eighth or the second puts both on it |
+| 512 | `SARAVALI_MOON_IN_TAURUS`<br>`SARAVALI_RAJA_MOON_EXALTED` | Saravali reads the Moon in Taurus in ch. 23 among her signs, and again in ch. 35 v. 106 as the exalted Moon that makes a king even when waning |
 
 ## One aspect from both grahas
 
@@ -253,6 +254,13 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `SARAVALI_RAJA_VENUS_MOON_SUN_THIRD_MARS_SEVENTH_JUPITER_NINTH` | 2413189.3194 | 27.7172, 85.324 |
 | `SARAVALI_RAJA_VENUS_RISING_IN_A_SIGN_OF_JUPITER_MERCURY_EXALTED` | 2404003.6875 | 27.7172, 85.324 |
 | `SARAVALI_RAJA_MOON_SIGN_LORD_IN_AN_UPACHAYA_FROM_THE_MOON` | 2379895.2586 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_BENEFICS_SECOND_MOON_AND_MARS_SEVENTH` | 2400648.3194 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_CAPRICORN_MARS_RISING_SATURN_NINTH_LUMINARIES_SEVENTH` | 2412303.0694 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_CAPRICORN_RISING_MARS_RISING_BENEFICS_FOURTH` | 2395064.2222 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_CAPRICORN_SATURN_RISING_SUN_SEVENTH_VENUS_EIGHTH` | 2480990.0208 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_MARS_TENTH_MOON_AND_VENUS_NINTH_EXALTED_SUN_ELEVENTH` | 2525076.6597 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_MOON_AND_JUPITER_IN_THE_FIRST_FIVE_DEGREES_OF_CANCER` | 2378916.2569 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_SATURN_AND_MOON_RISING_JUPITER_SEVENTH_MERCURY_EXALTED` | 2411977.4931 | 27.7172, 85.324 |
 
 ### Held nowhere searched
 
@@ -296,6 +304,9 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `SARAVALI_RAJA_LEO_SUN_RISING_FIGURE` | No sky from 1801 to 2398 has its five grahas in those signs, searched four times a day. |
 | `SARAVALI_RAJA_SATURN_LATE_CAPRICORN_FIGURE` | No sky from 1801 to 2398 has its seven grahas in those signs with Saturn in the latter half of Capricorn, searched four times a day. |
 | `SARAVALI_RAJA_VIRGO_MERCURY_RISING_MOON_ELEVENTH` | No sky from 1801 to 2398 has its six grahas in those signs, searched four times a day. |
+| `SARAVALI_RAJA_ARIES_FIGURE_JUPITER_NINTH_IN_OWN_NAVAMSHA` | No sky from 1801 to 2398 has its seven grahas in those signs, searched every ten minutes of a day they allow. |
+| `SARAVALI_RAJA_BENEFICS_FIFTH_SUN_SIXTH_MARS_EXALTED_SATURN_NINTH` | No sky from 1801 to 2398 has Venus, Mercury and Jupiter together with the Sun a sign on, Mars exalted and Saturn four signs on from them, searched every ten minutes of a day they allow. |
+| `SARAVALI_RAJA_VIRGO_MERCURY_RISING_JUPITER_PISCES_SATURN_SIXTH` | Venus in Sagittarius three signs from Mercury in Virgo needs both near their greatest elongations on either side of the Sun, and no sky from 1801 to 2398 has it with Jupiter in Pisces and Saturn in Aquarius. |
 
 ## Held on every chart
 
