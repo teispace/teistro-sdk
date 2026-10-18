@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Phaladeepika ch. 7's Maharaja yogas** (`rules-engine.md`). **Numbers:**
+none moved; this adds 46 rules. The chapter's figures that make a king,
+read in Sastri's 1937 translation, join the nabhasa set: grahas dignified
+in kendras, a debilitated graha bright and retrograde, dig bala by ch. 2
+v. 6's houses, the vargottama lagna and Moon, the full Moon's figures by
+ch. 19 v. 8's ten middle days, the figures of named signs, a graha at ch. 1
+v. 6's highest exaltation, v. 24's four yogas of the learned, and vv. 26 to
+30's five kinds of the debilitated graha lifted, which settle part of C87.
+Cruxes C472 to C474.
+
 **Phaladeepika ch. 6's yogas** (`rules-engine.md`). **Numbers:** none
 moved; this adds 76 rules. The book's catalogue of named yogas, read in
 Sastri's 1937 translation with the Sanskrit beside it, joins the nabhasa
@@ -24,8 +34,8 @@ Srinatha and Virinchi; the 66 exchanges of lords as Dainya, Khala and
 Maha; Parvata, Kahala, Raja, Sankha and Adhi; and the twelve houses' good
 and ill yogas, Chamara to Musala and Ava to Vimala, and v. 70's two
 figures from the lords of the evil and the good houses. Every rule holds
-on some computed sky but all five great men at once, which an October 2257
-instant fixes. Cruxes C464 to C471.
+on some computed sky but three, all five great men at once and v. 70's
+two, which instants in 2257, 1823 and 1964 fix. Cruxes C464 to C471.
 
 **The day's results** (`varshesha.md`). **Numbers:** none moved; this
 adds answers. `teistro_tajika::dina_phala` and `sdk.chart().dina_phala`
