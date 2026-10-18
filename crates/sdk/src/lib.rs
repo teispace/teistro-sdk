@@ -417,7 +417,9 @@ pub use western_aspects::{PartnerReading, PartnerSynastry};
 // grand cross, yod, kite, mystic rectangle and stellium
 // (`03-design/western-configurations.md`).
 #[cfg(feature = "western")]
-pub use teistro_western::{Configuration, ConfigurationKind, ConfigurationRules};
+pub use teistro_western::{
+    Configuration, ConfigurationKind, ConfigurationRequest, ConfigurationRules,
+};
 // The declinations a chart's points stand at and Leo's parallels among
 // its planets (`03-design/western-declinations.md`).
 #[cfg(feature = "western")]

@@ -22,7 +22,12 @@ earlier text states them, so the geometry is the definition and nothing
 interpretive ships. A stellium is counted by tropical sign, three by
 default (`ConfigurationRules::stellium_least`). A smaller shape names the
 larger ones it is inside, rather than being dropped. Edward VII's nativity
-holds two T-squares, each read back from his aspect table.
+holds two T-squares, each read back from his aspect table. The shapes cross
+the boundary as the chart-request record `westernConfigurations` (`aspects`,
+`orbs` and `stelliumLeast`, laid flat, each optional), read back as every
+chart's `westernConfigurations` in Node, Python, Dart and Java, with the
+bodies, apex and sign as each binding's own members. The refusal of a
+stellium under three names `stelliumLeast`, the field as written.
 
 **The month's lord (Masesha)** (`varshesha.md`). **Numbers:** none moved;
 the year's lord is the same chain through a trait. `sdk.chart().masesha`

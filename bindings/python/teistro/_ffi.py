@@ -291,7 +291,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 352,
+    "ts_chart_request": 360,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -321,7 +321,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 200,
+    "ts_chart_request": 208,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -747,6 +747,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("tithi_pravesha_json", ctypes.c_char_p),
         ("dossier_json", ctypes.c_char_p),
         ("masa_pravesha_json", ctypes.c_char_p),
+        ("western_configurations_json", ctypes.c_char_p),
     ]
 
 
@@ -2836,6 +2837,20 @@ class ChartRequest:
     Example: {"year":30,"month":4}. May be null.
     """
 
+    western_configurations_json: Optional[str] = None
+    """The aspect configurations to find in every chart, as a JSON
+    object: optionally `aspects` and `orbs`, as `western_aspects_json`
+    reads them (Leo's nine under his orbs by default), and
+    `stelliumLeast`, the bodies in one tropical sign that make a
+    stellium, three or more (three by default). The shapes come back in
+    the `western_configurations` section, made only of aspects the
+    chart holds under those orbs. Null for none
+    (`03-design/western-configurations.md`). Refusals are named from
+    the record every binding calls `westernConfigurations`, as
+    `westernConfigurations.stelliumLeast`.
+    Example: {"stelliumLeast":4}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2965,6 +2980,9 @@ class ChartRequest:
         _masa_pravesha_json = None if self.masa_pravesha_json is None else self.masa_pravesha_json.encode("utf-8")
         owned.append(_masa_pravesha_json)
         raw.masa_pravesha_json = _masa_pravesha_json
+        _western_configurations_json = None if self.western_configurations_json is None else self.western_configurations_json.encode("utf-8")
+        owned.append(_western_configurations_json)
+        raw.western_configurations_json = _western_configurations_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -3032,6 +3050,7 @@ class ChartRequest:
             tithi_pravesha_json=_text(raw.tithi_pravesha_json),
             dossier_json=_text(raw.dossier_json),
             masa_pravesha_json=_text(raw.masa_pravesha_json),
+            western_configurations_json=_text(raw.western_configurations_json),
         )
 
 

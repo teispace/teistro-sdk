@@ -1,7 +1,9 @@
 # The aspect configurations (the `western` module)
 
 Status: `built`, 2026-10-18, in Rust (`teistro_western::configurations`,
-`sdk.chart().western_configurations`); not yet across the boundary.
+`sdk.chart().western_configurations`) and across the boundary as the
+chart-request record `westernConfigurations`, read back as each chart's
+`westernConfigurations` in every binding.
 
 A Western reader looks at a chart's aspects one pair at a time
 ([`western-aspects.md`](western-aspects.md)) and then at the shapes
@@ -48,7 +50,7 @@ it.
   chart was founded in, since this is Western doctrine. Its count is the
   knob `ConfigurationRules::stellium_least`, three by default, the
   commonest modern count; some authors ask four. Under three is refused,
-  naming `stellium_least`, because two bodies in a sign are a
+  naming `stelliumLeast`, because two bodies in a sign are a
   conjunction's business. A stellium by house, which some authors also
   use, is not built.
 - **A shape inside a larger one is reported, and names it.** A grand cross
@@ -66,7 +68,7 @@ it.
   a grand cross and its four T-squares, each marked inside it; a kite and
   its grand trine; a yod's apex; a mystic rectangle; a trine 9° wide
   making no grand trine under Leo's 8°; a stellium of three by sign that
-  four refuses; `stellium_least` of two refused by name.
+  four refuses; `stelliumLeast` of two refused by name.
 - **A real chart** (`crates/sdk/tests/western_aspects.rs`): Edward VII's
   nativity, Leo's own fixture. It holds two T-squares, Moon–Uranus with
   Jupiter at the apex and Venus–Pluto with Mars at the apex, and each is
@@ -78,5 +80,6 @@ it.
 |---|---|
 | **decided** | each shape's geometry, as above; the request's own orbs; a stellium by tropical sign; containment reported, not resolved |
 | **a setting** | `ConfigurationRules::stellium_least`; the `AspectRequest` the aspects are read under |
+| **across the boundary** | the record `westernConfigurations`, `{aspects, orbs, stelliumLeast}`, each optional and laid flat (`ConfigurationRequest`), so `{}` is Leo's nine under his orbs with a stellium of three; a refusal names its field under the root (`westernConfigurations.stelliumLeast`). The shapes come back in the `western_configurations` section as canonical JSON, bare catalogue keys, which every binding reads into its own members (`graha.SUN` in Node, `Graha.SUN` elsewhere). Proved by a test in each binding on Edward VII's two T-squares and by every parity runner |
 | **not decided** | the stellium's count, which the modern sources differ on, and whether by sign or house. No text in reach settles either, so the count is a knob |
-| **not built** | the shapes across the boundary (a chart-request record, as `westernAspects` has); a stellium by house; the shapes Marc Edmund Jones named for a whole chart's distribution (bowl, bucket, locomotive and the rest), which are a different question from a shape of aspects |
+| **not built** | a stellium by house; the shapes Marc Edmund Jones named for a whole chart's distribution (bowl, bucket, locomotive and the rest), which are a different question from a shape of aspects |

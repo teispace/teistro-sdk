@@ -557,6 +557,9 @@ __all__ = [
     "MutualContact",
     # The Western aspects.
     "WesternAspectRequest",
+    "WesternConfigurationRequest",
+    "WesternConfigurationKind",
+    "WesternConfiguration",
     "WesternAspectRow",
     "Declinations",
     "Declined",
@@ -1930,6 +1933,7 @@ class ChartArea(_Area):
         perfection: Optional[PerfectionRequest] = None,
         progressions: Optional[ProgressionsRequest] = None,
         western_aspects: Optional[WesternAspectRequest] = None,
+        western_configurations: Optional[WesternConfigurationRequest] = None,
         synastry: Optional[SynastryRequest] = None,
         parallels: Optional[ParallelRequest] = None,
         antiscia: Optional[AntisciaRequest] = None,
@@ -1997,6 +2001,7 @@ class ChartArea(_Area):
             perfection=perfection,
             progressions=progressions,
             western_aspects=western_aspects,
+            western_configurations=western_configurations,
             synastry=synastry,
             parallels=parallels,
             antiscia=antiscia,
@@ -2054,6 +2059,7 @@ class ChartArea(_Area):
         perfection: Optional[PerfectionRequest] = None,
         progressions: Optional[ProgressionsRequest] = None,
         western_aspects: Optional[WesternAspectRequest] = None,
+        western_configurations: Optional[WesternConfigurationRequest] = None,
         synastry: Optional[SynastryRequest] = None,
         parallels: Optional[ParallelRequest] = None,
         antiscia: Optional[AntisciaRequest] = None,
@@ -2149,6 +2155,7 @@ class ChartArea(_Area):
             perfection_json=_perfection_json(perfection),
             progressions_json=_progressions_json(progressions),
             western_aspects_json=_western_aspects_json(western_aspects),
+            western_configurations_json=_western_configurations_json(western_configurations),
             synastry_json=_synastry_json(synastry),
             parallels_json=_record_json(parallels, "parallels", "{'orbDeg': 1}"),
             antiscia_json=_antiscia_json(antiscia),
@@ -5119,6 +5126,56 @@ class WesternAspectRow:
 
     applying: bool
     """Whether the faster planet is closing on the exact angle."""
+
+
+class WesternConfigurationRequest(WesternAspectRequest, total=False):
+    """The aspect configurations to find in every chart
+    (`03-design/western-configurations.md`): the aspect table the shapes
+    are made of, as `WesternAspectRequest` spells it, and `stelliumLeast`,
+    the bodies in one tropical sign that make a stellium, three or more
+    (three by default).
+
+    >>> leo: WesternConfigurationRequest = {}
+    >>> four: WesternConfigurationRequest = {"stelliumLeast": 4}
+    """
+
+    stelliumLeast: int
+
+
+WesternConfigurationKind = Literal[
+    "GRAND_TRINE",
+    "T_SQUARE",
+    "GRAND_CROSS",
+    "YOD",
+    "KITE",
+    "MYSTIC_RECTANGLE",
+    "STELLIUM",
+]
+"""Which aspect configuration a shape is."""
+
+
+@dataclass(frozen=True)
+class WesternConfiguration:
+    """One shape a chart's planets make, of aspects the chart holds
+    (`03-design/western-configurations.md`)."""
+
+    kind: WesternConfigurationKind
+    bodies: Tuple[Graha, ...]
+    """Its bodies, in the order the chart's planets are read."""
+
+    apex: Optional[Graha]
+    """The graha a T-square, yod or kite points at; `None` for the others."""
+
+    sign: Optional[Rashi]
+    """The tropical rashi a stellium stands in; `None` for the others."""
+
+    widest_from_exact_deg: Optional[float]
+    """How far from exact its loosest aspect is, degrees; `None` for a
+    stellium."""
+
+    inside: Tuple[int, ...]
+    """The positions in the chart's tuple of the larger shapes this one
+    is wholly inside; empty when it stands alone."""
 
 
 class WesternHouseRequest(TypedDict, total=False):
@@ -11581,6 +11638,16 @@ def _western_aspects_json(asked: Optional[WesternAspectRequest]) -> Optional[str
     return _record_json(_aspect_table(asked), "westernAspects", example)
 
 
+def _western_configurations_json(asked: Optional[WesternConfigurationRequest]) -> Optional[str]:
+    """The aspect configurations as the JSON the boundary reads, or
+    nothing for none; members are written as their keys, and the SDK
+    refuses the rest, naming the field from `westernConfigurations`."""
+    example = "{'stelliumLeast': 4}"
+    if not isinstance(asked, Mapping):
+        return _record_json(asked, "westernConfigurations", example)
+    return _record_json(_aspect_table(asked), "westernConfigurations", example)
+
+
 def _midpoint_cells(
     rows: Union[ChartsMidpointRows, ChartsSynastryMidpointRows], at: int
 ) -> Tuple[Graha, Graha, Graha, bool, float, float, float]:
@@ -11967,6 +12034,20 @@ def _masa_pravesha(raw: Mapping[str, Any]) -> MasaPravesha:
         day=raw["day"],
         at=raw["at"],
         sun_deg=raw["sunDeg"],
+    )
+
+
+def _western_configuration(raw: Mapping[str, Any]) -> WesternConfiguration:
+    """One shape from the `western_configurations` section's JSON, its
+    catalogue keys made members."""
+    apex, sign, widest = raw["apex"], raw["sign"], raw["widestFromExactDeg"]
+    return WesternConfiguration(
+        kind=raw["kind"],
+        bodies=tuple(_member(Graha, key) for key in raw["bodies"]),
+        apex=None if apex is None else _member(Graha, apex),
+        sign=None if sign is None else _member(Rashi, sign),
+        widest_from_exact_deg=widest,
+        inside=tuple(raw["inside"]),
     )
 
 
@@ -14337,6 +14418,15 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def western_configurations(self) -> Optional[Tuple[WesternConfiguration, ...]]:
+        """The aspect configurations the chart's planets make, each of
+        aspects the chart holds under the request's orbs; `None` unless
+        `western_configurations=` asked
+        (`03-design/western-configurations.md`)."""
+        parsed = self.batch._western_configurations
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def masa_pravesha(self) -> Optional[Tuple[MasaPravesha, ...]]:
         """The year's twelve month charts, each as its first day, or the
         month's thirty day charts: the Sun a sign further each month, a
@@ -15086,6 +15176,13 @@ class ChartBatch:
         for."""
         text = self.decoded.dossier
         return [str(chart) for chart in json.loads(text)] if text else []
+
+    @cached_property
+    def _western_configurations(self) -> list[Tuple[WesternConfiguration, ...]]:
+        """Every chart's aspect configurations, parsed once; empty when
+        none were asked for."""
+        text = self.decoded.western_configurations
+        return [tuple(_western_configuration(raw) for raw in chart) for chart in json.loads(text)] if text else []
 
     @cached_property
     def _masa_praveshas(self) -> list[Tuple[MasaPravesha, ...]]:

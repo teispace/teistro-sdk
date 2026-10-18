@@ -1304,6 +1304,21 @@ export class Chart {
   }
 
   /**
+   * The aspect configurations the chart's planets make
+   * (`westernConfigurations: { aspects, orbs, stelliumLeast }`, Leo's nine
+   * under his orbs and a stellium of three by default); `null` unless
+   * asked for (`03-design/western-configurations.md`).
+   *
+   * Each shape is `{ kind, bodies, apex, sign, widestFromExactDeg, inside }`:
+   * `kind` such as `'T_SQUARE'`; `apex` the graha a T-square, yod or kite
+   * points at; `sign` the tropical rashi a stellium stands in; `inside`
+   * the positions of the larger shapes this one is wholly inside.
+   */
+  get westernConfigurations() {
+    return westernConfigurationsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Western aspects between this chart and the partner's
    * (`synastry: { partner: { instant, place, utcOffsetSeconds }, aspects,
    * orbs, lagna, zodiac }`, Leo's nine under his orbs in the tropical
@@ -2790,6 +2805,11 @@ export class ChartArea extends Area {
           request.westernAspects,
           'westernAspects',
           'a western aspects request record, e.g. {} or { aspects: ["TRINE", "SQUARE"] }',
+        ),
+        westernConfigurationsJson: recordJson(
+          request.westernConfigurations,
+          'westernConfigurations',
+          'a western configurations request record, e.g. {} or { stelliumLeast: 4 }',
         ),
         parallelsJson: recordJson(
           request.parallels,
@@ -5407,6 +5427,29 @@ const MASA_PRAVESHA = new WeakMap();
  */
 function masaPraveshasOf(batch) {
   return sectionOf(MASA_PRAVESHA, batch, 'masaPravesha');
+}
+
+/** Each batch's aspect configurations, parsed once however many charts read them. */
+const WESTERN_CONFIGURATIONS = new WeakMap();
+
+/**
+ * Every chart's aspect configurations in a batch: the
+ * `western_configurations` section's JSON, a list of shapes a chart,
+ * catalogue keys in full.
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function westernConfigurationsOf(batch) {
+  const graha = (key) => `graha.${key}`;
+  return sectionOf(WESTERN_CONFIGURATIONS, batch, 'westernConfigurations', (chart) =>
+    chart.map((shape) => ({
+      ...shape,
+      bodies: shape.bodies.map(graha),
+      apex: shape.apex === null ? null : graha(shape.apex),
+      sign: shape.sign === null ? null : `rashi.${shape.sign}`,
+    })),
+  );
 }
 
 /** Each batch's tithi praveshas, parsed once however many charts read them. */

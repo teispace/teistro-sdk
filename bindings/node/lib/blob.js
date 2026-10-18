@@ -1888,6 +1888,10 @@ export function decodeCharts(bytes) {
     const at = section(blob, 138, 'masa_pravesha');
     out.masaPravesha = text(blob, at);
   }
+  {
+    const at = section(blob, 139, 'western_configurations');
+    out.westernConfigurations = text(blob, at);
+  }
   return out;
 }
 

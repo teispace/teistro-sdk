@@ -184,3 +184,33 @@ fn king_edwards_shapes_hold_on_his_own_aspects() {
         assert!(rows.iter().all(|row| row.from_exact_deg <= row.orb_deg) && widest <= 10.0);
     }
 }
+
+#[test]
+fn a_composed_batch_carries_the_shapes_the_facade_answers() {
+    let sdk = context();
+    let mut records = teistro::ChartRecords::default();
+    records
+        .read("westernConfigurations", r#"{"stelliumLeast": 3}"#)
+        .unwrap();
+    let instant = JulianDay::<Utc>::try_new(BIRTH).unwrap();
+    let composed = sdk
+        .chart()
+        .compose(&[instant], &request(), &records)
+        .unwrap();
+    assert_eq!(
+        composed.western.configurations,
+        [sdk.chart()
+            .western_configurations(
+                &birth(&sdk),
+                &AspectRequest::default(),
+                teistro::ConfigurationRules::default(),
+            )
+            .unwrap()]
+    );
+    // A refusal is named under the record's root.
+    let mut two = teistro::ChartRecords::default();
+    let refused = two
+        .read("westernConfigurations", r#"{"stelliumLeast": 2}"#)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("westernConfigurations.stelliumLeast"));
+}

@@ -55,7 +55,9 @@ pub use aspects::{
     aspects,
 };
 pub use composite::{ChartPoints, Composite, composite};
-pub use configuration::{Configuration, ConfigurationKind, ConfigurationRules, configurations};
+pub use configuration::{
+    Configuration, ConfigurationKind, ConfigurationRequest, ConfigurationRules, configurations,
+};
 pub use declination::{
     Declined, LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG, ParallelRequest, ParallelRow, parallels,
 };

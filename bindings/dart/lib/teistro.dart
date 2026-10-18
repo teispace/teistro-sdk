@@ -699,6 +699,7 @@ final class ChartArea extends _Area {
     PerfectionRequest? perfection,
     ProgressionsRequest? progressions,
     WesternAspectRequest? westernAspects,
+    WesternConfigurationRequest? westernConfigurations,
     SynastryRequest? synastry,
     ParallelRequest? parallels,
     AntisciaRequest? antiscia,
@@ -752,6 +753,7 @@ final class ChartArea extends _Area {
     perfection: perfection,
     progressions: progressions,
     westernAspects: westernAspects,
+    westernConfigurations: westernConfigurations,
     synastry: synastry,
     parallels: parallels,
     antiscia: antiscia,
@@ -825,6 +827,7 @@ final class ChartArea extends _Area {
     PerfectionRequest? perfection,
     ProgressionsRequest? progressions,
     WesternAspectRequest? westernAspects,
+    WesternConfigurationRequest? westernConfigurations,
     SynastryRequest? synastry,
     ParallelRequest? parallels,
     AntisciaRequest? antiscia,
@@ -904,6 +907,7 @@ final class ChartArea extends _Area {
             perfectionJson: perfection?._json,
             progressionsJson: progressions?._json,
             westernAspectsJson: westernAspects?._json,
+            westernConfigurationsJson: westernConfigurations?._json,
             synastryJson: synastry?._json,
             parallelsJson: parallels?._json,
             antisciaJson: antiscia?._json,
@@ -8862,6 +8866,135 @@ final class WesternAspectRequest {
 
   String get _json => jsonEncode(_record);
 }
+
+/// The aspect configurations to find in every chart
+/// (`03-design/western-configurations.md`): the aspect table the shapes
+/// are made of, as a [WesternAspectRequest], and how many bodies in one
+/// tropical sign make a stellium.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ outerPlanets: true,
+///   westernConfigurations: const WesternConfigurationRequest(stelliumLeast: 4),
+/// );
+/// for (final shape in chart.westernConfigurations!) {
+///   if (shape.inside.isEmpty) print('${shape.kind.key} ${shape.bodies}');
+/// }
+/// ```
+final class WesternConfigurationRequest {
+  const WesternConfigurationRequest({
+    this.aspects = const WesternAspectRequest(),
+    this.stelliumLeast = 3,
+  });
+
+  /// The aspects the shapes are made of, under their orbs.
+  final WesternAspectRequest aspects;
+
+  /// The bodies in one sign that make a stellium, three or more; the SDK
+  /// refuses fewer by `westernConfigurations.stelliumLeast`.
+  final int stelliumLeast;
+
+  String get _json => jsonEncode(<String, Object?>{
+    ...aspects._record,
+    'stelliumLeast': stelliumLeast,
+  });
+}
+
+/// Which aspect configuration a shape is.
+enum WesternConfigurationKind implements _Keyed {
+  grandTrine('GRAND_TRINE'),
+  tSquare('T_SQUARE'),
+  grandCross('GRAND_CROSS'),
+  yod('YOD'),
+  kite('KITE'),
+  mysticRectangle('MYSTIC_RECTANGLE'),
+  stellium('STELLIUM');
+
+  const WesternConfigurationKind(this.key);
+
+  @override
+  final String key;
+}
+
+/// One shape a chart's planets make, of aspects the chart holds
+/// (`03-design/western-configurations.md`).
+final class WesternConfiguration extends _Value {
+  const WesternConfiguration({
+    required this.kind,
+    required this.bodies,
+    required this.apex,
+    required this.sign,
+    required this.widestFromExactDeg,
+    required this.inside,
+  });
+
+  final WesternConfigurationKind kind;
+
+  /// Its bodies, in the order the chart's planets are read.
+  final List<Graha> bodies;
+
+  /// The graha a T-square, yod or kite points at; null for the others.
+  final Graha? apex;
+
+  /// The tropical rashi a stellium stands in; null for the others.
+  final Rashi? sign;
+
+  /// How far from exact its loosest aspect is, degrees; null for a
+  /// stellium.
+  final double? widestFromExactDeg;
+
+  /// The positions in the chart's list of the larger shapes this one is
+  /// wholly inside; empty when it stands alone.
+  final List<int> inside;
+
+  @override
+  List<Object?> get _fields => [
+    kind,
+    ...bodies,
+    apex,
+    sign,
+    widestFromExactDeg,
+    ...inside,
+  ];
+}
+
+/// Each batch's aspect configurations, parsed once however many charts
+/// read them.
+final Expando<List<List<WesternConfiguration>>> _westernConfigurations =
+    Expando<List<List<WesternConfiguration>>>('westernConfigurations');
+
+List<List<WesternConfiguration>> _westernConfigurationsOf(Charts batch) =>
+    _westernConfigurations[batch] ??=
+        batch.westernConfigurations.isEmpty
+            ? const <List<WesternConfiguration>>[]
+            : [
+              for (final chart
+                  in jsonDecode(batch.westernConfigurations) as List<Object?>)
+                List<WesternConfiguration>.unmodifiable([
+                  for (final one in chart! as List<Object?>)
+                    _westernConfigurationFrom(one! as Map<String, Object?>),
+                ]),
+            ];
+
+/// One shape from the `western_configurations` section's JSON, its
+/// catalogue keys made members.
+WesternConfiguration _westernConfigurationFrom(Map<String, Object?> raw) =>
+    WesternConfiguration(
+      kind: _keyedIn(WesternConfigurationKind.values, raw['kind']),
+      bodies: _keys(raw['bodies'], Graha.byKey, Graha.unknown),
+      apex:
+          raw['apex'] == null
+              ? null
+              : _key(raw['apex'], Graha.byKey, Graha.unknown),
+      sign:
+          raw['sign'] == null
+              ? null
+              : _key(raw['sign'], Rashi.byKey, Rashi.unknown),
+      widestFromExactDeg: (raw['widestFromExactDeg'] as num?)?.toDouble(),
+      inside: List<int>.unmodifiable([
+        for (final at in raw['inside']! as List<Object?>) at! as int,
+      ]),
+    );
 
 /// The point an equal varna earns (C259).
 enum EqualVarna {
@@ -25395,6 +25528,14 @@ final class Chart {
   /// (`03-design/western-aspects.md`).
   List<WesternAspectRow>? get westernAspects {
     final all = _westernAspectsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The aspect configurations the chart's planets make, each of aspects
+  /// the chart holds under the request's orbs; null unless
+  /// `westernConfigurations` asked (`03-design/western-configurations.md`).
+  List<WesternConfiguration>? get westernConfigurations {
+    final all = _westernConfigurationsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

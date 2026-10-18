@@ -815,6 +815,40 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart carries its aspect configurations", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("western-tropical-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer palace = new Observer(new Longitude(-0.142), new Latitude(51.501), new Altitude(0));
+                double birth = 2_393_783.95;
+                check(sky.chart().found(birth, palace, 0, ChartOptions.builder().build()).westernConfigurations()
+                        .isEmpty(), "none unless asked");
+                Chart chart = sky.chart().found(birth, palace, 0, ChartOptions.builder().outerPlanets(true)
+                        .westernAspects(AspectRequest.of(Map.of()))
+                        .westernConfigurations(ConfigurationRequest.builder().build()).build());
+                List<WesternConfiguration> shapes = chart.westernConfigurations().orElseThrow();
+                // Edward VII's two T-squares, as the SDK's own test pins them.
+                same(List.of(
+                        new WesternConfiguration(WesternConfigurationKind.T_SQUARE,
+                                List.of(Graha.MOON, Graha.JUPITER, Graha.URANUS), Graha.JUPITER, null,
+                                shapes.get(0).widestFromExactDeg(), List.of()),
+                        new WesternConfiguration(WesternConfigurationKind.T_SQUARE,
+                                List.of(Graha.MARS, Graha.VENUS, Graha.PLUTO), Graha.MARS, null,
+                                shapes.get(1).widestFromExactDeg(), List.of())), shapes, "his two T-squares");
+                List<WesternAspectRow> rows = chart.westernAspects().orElseThrow();
+                java.util.function.BiPredicate<Graha, Graha> square = (a, b) -> rows.stream().anyMatch(row ->
+                        row.aspect() == WesternAspect.SQUARE && java.util.Set.of(row.first(), row.second()).equals(java.util.Set.of(a, b)));
+                for (WesternConfiguration shape : shapes) {
+                    List<Graha> ends = shape.bodies().stream().filter(g -> g != shape.apex()).toList();
+                    check(square.test(shape.apex(), ends.get(0)) && square.test(shape.apex(), ends.get(1)),
+                            "the apex square to both ends");
+                    check(shape.widestFromExactDeg() > 0 && shape.widestFromExactDeg() <= 10, "inside the orbs");
+                }
+                TeistroException refused = refusal(() -> sky.chart().found(birth, palace, 0, ChartOptions.builder()
+                        .westernConfigurations(ConfigurationRequest.builder().stelliumLeast(2).build()).build()));
+                same("westernConfigurations.stelliumLeast", refused.field(), "a refusal names its field");
+            }
+        });
+
         tests.put("a chart writes its dossier", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));

@@ -529,6 +529,10 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
             "masaPravesha",
             json!({"year": 2, "month": 3, "reading": "TROPICAL"}),
         ),
+        (
+            "westernConfigurations",
+            json!({"aspects": ["TRINE", "SQUARE"], "orbs": {"model": "LEO"}, "stelliumLeast": 4}),
+        ),
     ];
     let mut server = Server::new(Engine::Builtin).with_detail(Detail::Full);
     let tool = listed(&mut server)

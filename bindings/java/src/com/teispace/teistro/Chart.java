@@ -611,6 +611,17 @@ public final class Chart {
     }
 
     /**
+     * The aspect configurations the chart's planets make, when they were asked for: each of
+     * aspects the chart holds under the request's orbs
+     * ({@code 03-design/western-configurations.md}).
+     *
+     * @return the shapes, empty when they were not asked for
+     */
+    public Optional<List<WesternConfiguration>> westernConfigurations() {
+        return WesternConfigurationReads.westernConfigurations(this);
+    }
+
+    /**
      * The declinations, when they were asked for.
      *
      * @return the reading, empty when it was not asked for

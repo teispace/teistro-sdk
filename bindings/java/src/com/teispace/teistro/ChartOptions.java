@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.teispace.teistro.request.AntisciaRequest;
 import com.teispace.teistro.request.AspectRequest;
+import com.teispace.teistro.request.ConfigurationRequest;
 import com.teispace.teistro.request.DignityRequest;
 import com.teispace.teistro.request.FortitudeRequest;
 import com.teispace.teistro.request.GocharRequest;
@@ -502,6 +503,19 @@ public record ChartOptions(
          */
         public Builder westernAspects(AspectRequest request) {
             return json("western_aspects_json", request);
+        }
+
+        /**
+         * The aspect configurations, as
+         * {@code ConfigurationRequest.builder().stelliumLeast(4).build()}: the aspects and orbs
+         * the shapes are made of, Leo's nine under his orbs by default, and the bodies in one
+         * tropical sign that make a stellium ({@code 03-design/western-configurations.md}).
+         *
+         * @param request the request; null takes it away
+         * @return this builder
+         */
+        public Builder westernConfigurations(ConfigurationRequest request) {
+            return json("western_configurations_json", request);
         }
 
         /**

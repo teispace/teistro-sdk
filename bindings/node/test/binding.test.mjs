@@ -2709,6 +2709,49 @@ test('a chart carries its Western aspects', () => {
   ctx.dispose();
 });
 
+test('a chart carries its aspect configurations', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const palace = { place: { latitude: 51.501, longitude: -0.142, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2393783.95;
+  assert.equal(ctx.chart.found({ instant: birth, ...palace }).westernConfigurations, null);
+
+  const chart = ctx.chart.found({ instant: birth, ...palace, outerPlanets: true, westernAspects: {}, westernConfigurations: {} });
+  const shapes = chart.westernConfigurations;
+  assert.ok(Object.isFrozen(shapes[0].bodies), 'frozen to its leaves');
+  // Edward VII's two T-squares, as the SDK's own test pins them.
+  assert.deepEqual(
+    shapes.map((shape) => [shape.kind, shape.bodies, shape.apex, shape.sign, shape.inside]),
+    [
+      ['T_SQUARE', ['graha.MOON', 'graha.JUPITER', 'graha.URANUS'], 'graha.JUPITER', null, []],
+      ['T_SQUARE', ['graha.MARS', 'graha.VENUS', 'graha.PLUTO'], 'graha.MARS', null, []],
+    ],
+  );
+  // Each read back from the chart's own aspect table.
+  const holds = (a, aspect, b) =>
+    chart.westernAspects.some((row) => row.aspect === aspect && [row.first, row.second].sort().join() === [a, b].sort().join());
+  for (const shape of shapes) {
+    const [x, y] = shape.bodies.filter((body) => body !== shape.apex);
+    assert.ok(holds(x, 'OPPOSITION', y) && holds(shape.apex, 'SQUARE', x) && holds(shape.apex, 'SQUARE', y));
+    assert.ok(shape.widestFromExactDeg > 0 && shape.widestFromExactDeg <= 10);
+  }
+  // Without the squares no T-square holds.
+  const trines = ctx.chart.found({ instant: birth, ...palace, outerPlanets: true, westernConfigurations: { aspects: ['TRINE'] } });
+  assert.ok(trines.westernConfigurations.every((shape) => shape.kind !== 'T_SQUARE'));
+
+  for (const [request, field] of [
+    [{ stelliumLeast: 2 }, 'westernConfigurations.stelliumLeast'],
+    [{ aspects: [] }, 'westernConfigurations.aspects'],
+    [{ stellium: 3 }, 'westernConfigurations.stellium'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...palace, westernConfigurations: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
 test('a chart carries its declinations and parallels', () => {
   // King George V (Leo, How to Judge a Nativity, p. 130), whose
   // declinations the SDK's test holds against a Moshier recast.

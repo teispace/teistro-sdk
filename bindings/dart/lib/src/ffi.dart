@@ -1410,6 +1410,19 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"year":30,"month":4}. May be null.
   external ffi.Pointer<ffi.Char> masaPraveshaJson;
 
+  /// The aspect configurations to find in every chart, as a JSON
+  /// object: optionally `aspects` and `orbs`, as `western_aspects_json`
+  /// reads them (Leo's nine under his orbs by default), and
+  /// `stelliumLeast`, the bodies in one tropical sign that make a
+  /// stellium, three or more (three by default). The shapes come back in
+  /// the `western_configurations` section, made only of aspects the
+  /// chart holds under those orbs. Null for none
+  /// (`03-design/western-configurations.md`). Refusals are named from
+  /// the record every binding calls `westernConfigurations`, as
+  /// `westernConfigurations.stelliumLeast`.
+  /// Example: {"stelliumLeast":4}. May be null.
+  external ffi.Pointer<ffi.Char> westernConfigurationsJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3489,7 +3502,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson, this.tithiPraveshaJson, this.dossierJson, this.masaPraveshaJson});
+  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson, this.tithiPraveshaJson, this.dossierJson, this.masaPraveshaJson, this.westernConfigurationsJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -4048,8 +4061,21 @@ final class ChartRequest {
   /// Example: {"year":30,"month":4}. May be null.
   final String? masaPraveshaJson;
 
+  /// The aspect configurations to find in every chart, as a JSON
+  /// object: optionally `aspects` and `orbs`, as `western_aspects_json`
+  /// reads them (Leo's nine under his orbs by default), and
+  /// `stelliumLeast`, the bodies in one tropical sign that make a
+  /// stellium, three or more (three by default). The shapes come back in
+  /// the `western_configurations` section, made only of aspects the
+  /// chart holds under those orbs. Null for none
+  /// (`03-design/western-configurations.md`). Refusals are named from
+  /// the record every binding calls `westernConfigurations`, as
+  /// `westernConfigurations.stelliumLeast`.
+  /// Example: {"stelliumLeast":4}. May be null.
+  final String? westernConfigurationsJson;
+
   /// This value with the fields given replaced, and the rest kept.
-  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson, String? tithiPraveshaJson, String? dossierJson, String? masaPraveshaJson}) => ChartRequest(
+  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson, String? tithiPraveshaJson, String? dossierJson, String? masaPraveshaJson, String? westernConfigurationsJson}) => ChartRequest(
     kind: kind ?? this.kind,
     lilith: lilith ?? this.lilith,
     instants: instants ?? this.instants,
@@ -4091,6 +4117,7 @@ final class ChartRequest {
     tithiPraveshaJson: tithiPraveshaJson ?? this.tithiPraveshaJson,
     dossierJson: dossierJson ?? this.dossierJson,
     masaPraveshaJson: masaPraveshaJson ?? this.masaPraveshaJson,
+    westernConfigurationsJson: westernConfigurationsJson ?? this.westernConfigurationsJson,
   );
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -4223,6 +4250,9 @@ final class ChartRequest {
     raw.masaPraveshaJson = masaPraveshaJson == null
         ? ffi.nullptr
         : masaPraveshaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.westernConfigurationsJson = westernConfigurationsJson == null
+        ? ffi.nullptr
+        : westernConfigurationsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -4339,6 +4369,9 @@ final class ChartRequest {
         masaPraveshaJson: raw.masaPraveshaJson == ffi.nullptr
             ? null
             : raw.masaPraveshaJson.cast<pkg_ffi.Utf8>().toDartString(),
+        westernConfigurationsJson: raw.westernConfigurationsJson == ffi.nullptr
+            ? null
+            : raw.westernConfigurationsJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

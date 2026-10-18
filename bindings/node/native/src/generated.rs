@@ -2333,6 +2333,18 @@ pub struct ChartRequest {
     /// `masaPravesha`, as `masaPravesha.month`.
     /// Example: {"year":30,"month":4}. May be null.
     pub masa_pravesha_json: Option<String>,
+    /// The aspect configurations to find in every chart, as a JSON
+    /// object: optionally `aspects` and `orbs`, as `western_aspects_json`
+    /// reads them (Leo's nine under his orbs by default), and
+    /// `stelliumLeast`, the bodies in one tropical sign that make a
+    /// stellium, three or more (three by default). The shapes come back in
+    /// the `western_configurations` section, made only of aspects the
+    /// chart holds under those orbs. Null for none
+    /// (`03-design/western-configurations.md`). Refusals are named from
+    /// the record every binding calls `westernConfigurations`, as
+    /// `westernConfigurations.stelliumLeast`.
+    /// Example: {"stelliumLeast":4}. May be null.
+    pub western_configurations_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2379,6 +2391,7 @@ pub struct HeldChartRequest {
     tithi_pravesha_json: Option<std::ffi::CString>,
     dossier_json: Option<std::ffi::CString>,
     masa_pravesha_json: Option<std::ffi::CString>,
+    western_configurations_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2506,6 +2519,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             masa_pravesha_json: self
                 .masa_pravesha_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            western_configurations_json: self
+                .western_configurations_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2681,6 +2698,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            western_configurations_json: self
+                .western_configurations_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2745,6 +2767,7 @@ impl ChartRequest {
             tithi_pravesha_json: unsafe { lent_text(raw.tithi_pravesha_json) },
             dossier_json: unsafe { lent_text(raw.dossier_json) },
             masa_pravesha_json: unsafe { lent_text(raw.masa_pravesha_json) },
+            western_configurations_json: unsafe { lent_text(raw.western_configurations_json) },
         }
     }
 }

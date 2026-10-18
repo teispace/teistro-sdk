@@ -3496,6 +3496,80 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its aspect configurations', () {
+    // King Edward VII's nativity: his two T-squares as the SDK pins them,
+    // each read back from the chart's own aspect table, and refusals
+    // named in the record (`03-design/western-configurations.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final palace = Observer(
+      latitudeDeg: Latitude(51.501),
+      longitudeDeg: Longitude(-0.142),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2393783.95;
+    Chart found({WesternConfigurationRequest? asked}) => ctx.chart.found(
+      instant: birth,
+      place: palace,
+      utcOffsetSeconds: 0,
+      outerPlanets: true,
+      westernAspects: const WesternAspectRequest(),
+      westernConfigurations: asked,
+    );
+    expect(found().westernConfigurations, isNull);
+
+    final chart = found(asked: const WesternConfigurationRequest());
+    final shapes = chart.westernConfigurations!;
+    expect(
+      [
+        for (final shape in shapes)
+          '${shape.kind.key} ${shape.bodies.map((b) => b.key).join(',')} '
+              '${shape.apex?.key} ${shape.sign} ${shape.inside}',
+      ],
+      [
+        'T_SQUARE MOON,JUPITER,URANUS JUPITER null []',
+        'T_SQUARE MARS,VENUS,PLUTO MARS null []',
+      ],
+    );
+    bool holds(Graha a, WesternAspect aspect, Graha b) =>
+        chart.westernAspects!.any(
+          (row) =>
+              row.aspect == aspect &&
+              {row.first, row.second}.containsAll({a, b}),
+        );
+    for (final shape in shapes) {
+      final apex = shape.apex!;
+      final [x, y] = [
+        for (final body in shape.bodies)
+          if (body != apex) body,
+      ];
+      expect(holds(x, WesternAspect.opposition, y), isTrue);
+      expect(holds(apex, WesternAspect.square, x), isTrue);
+      expect(holds(apex, WesternAspect.square, y), isTrue);
+      expect(shape.widestFromExactDeg, inInclusiveRange(0, 10));
+    }
+    for (final (asked, field) in [
+      (
+        const WesternConfigurationRequest(stelliumLeast: 2),
+        'westernConfigurations.stelliumLeast',
+      ),
+      (
+        const WesternConfigurationRequest(
+          aspects: WesternAspectRequest(aspects: []),
+        ),
+        'westernConfigurations.aspects',
+      ),
+    ]) {
+      expect(
+        () => found(asked: asked),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its declinations and parallels', () {
     // King George V (Leo, *How to Judge a Nativity*, p. 130): the recast's
     // declinations, his four parallels, a batch the charts one at a time,

@@ -1879,6 +1879,7 @@ fn one_document_beside(
 ) {
     the_progressions(report, geo, index, document, bare);
     the_western_aspects(report, geo, index, document);
+    the_western_configurations(report, geo, index, document);
     the_parallels(report, geo, index, document);
     the_antiscia(report, geo, index, document);
     the_western_houses(report, geo, index, document);
@@ -3193,6 +3194,52 @@ fn the_western_aspects(
                 number(row.from_exact_deg),
                 number(row.orb_deg),
                 u8::from(row.applying)
+            ),
+        );
+    }
+}
+
+/// The aspect configurations as the other runners print them, under the
+/// record every one sends, `{}`: Leo's nine under his orbs, a stellium of
+/// three. Its length, then each shape's kind, bodies, apex, sign, widest
+/// aspect and the larger shapes it is inside.
+fn the_western_configurations(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+) {
+    let asked = teistro::ConfigurationRequest::from_json("{}").expect("a valid request");
+    let shapes = sdk
+        .chart()
+        .western_configurations(document, &asked.aspect_request(), asked.rules())
+        .expect("Leo's orbs reach every planet");
+    put(
+        report,
+        &format!("chart-{index}-western-configuration-count"),
+        shapes.len().to_string(),
+    );
+    let or_dash = |text: String| {
+        if text.is_empty() {
+            String::from("-")
+        } else {
+            text
+        }
+    };
+    for (n, shape) in shapes.iter().enumerate() {
+        let bodies: Vec<&str> = shape.bodies.iter().map(|body| body.full_key()).collect();
+        let inside: Vec<String> = shape.inside.iter().map(ToString::to_string).collect();
+        put(
+            report,
+            &format!("chart-{index}-western-configuration-{n}"),
+            format!(
+                "{} {} {} {} {} {}",
+                shape.kind.key(),
+                bodies.join(","),
+                shape.apex.map_or("-", |apex| apex.full_key()),
+                shape.sign.map_or("-", |sign| sign.full_key()),
+                number_or_dash(shape.widest_from_exact_deg),
+                or_dash(inside.join(",")),
             ),
         );
     }

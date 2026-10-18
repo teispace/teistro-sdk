@@ -1187,6 +1187,8 @@ void main() {
       ],
     ),
     rectification: rectificationAsked,
+    // Leo's nine under his orbs, a stellium of three.
+    westernConfigurations: const WesternConfigurationRequest(),
     westernAspects: const WesternAspectRequest(
       aspects: [
         WesternAspect.conjunction,
@@ -2121,6 +2123,18 @@ void main() {
         '${row.first.fullKey} ${row.second.fullKey} ${row.aspect.key} '
             '${number(row.apartDeg)} ${number(row.fromExactDeg)} '
             '${number(row.orbDeg)} ${row.applying ? 1 : 0}',
+      );
+    }
+    final shapes = chart.westernConfigurations!;
+    put('chart-$i-western-configuration-count', '${shapes.length}');
+    for (final (n, shape) in shapes.indexed) {
+      final widest = shape.widestFromExactDeg;
+      put(
+        'chart-$i-western-configuration-$n',
+        '${shape.kind.key} ${shape.bodies.map((b) => b.fullKey).join(',')} '
+            '${shape.apex?.fullKey ?? '-'} ${shape.sign?.fullKey ?? '-'} '
+            '${widest == null ? '-' : number(widest)} '
+            '${shape.inside.isEmpty ? '-' : shape.inside.join(',')}',
       );
     }
     final declined = chart.declinations!;
