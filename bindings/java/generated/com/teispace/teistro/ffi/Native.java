@@ -1983,11 +1983,12 @@ public final class Native {
             ADDRESS.withName("prashna_json"),
             ADDRESS.withName("remedies_json"),
             ADDRESS.withName("rectification_json"),
-            ADDRESS.withName("lalkitab_json")
+            ADDRESS.withName("lalkitab_json"),
+            ADDRESS.withName("sarvatobhadra_json")
         ).withName("ts_chart_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 320;
+        public static final long SIZE = 328;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -2730,6 +2731,26 @@ public final class Native {
 
         /** The handle that reads and writes `lalkitab_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle LALKITAB_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lalkitab_json"));
+
+        /**
+         * The offset of `sarvatobhadra_json`. The Sarvatobhadra chakra to read against every chart, as a JSON
+         * object: `instants`, UTC Julian days, at least one, and optionally
+         * `name` (`{letter, vowel}`: the name's first letter in Devanagari
+         * and the vowel of its first syllable), `motion` (`"SKY"`, the
+         * default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+         * Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
+         * corner}`; C429 to C431). Every chart is founded with its panchanga,
+         * which the birth's tithi and weekday are read from. Each chart's
+         * readings come back in the `sarvatobhadra` section, the transit
+         * charts founded once for the batch. Null for none
+         * (`03-design/gochar.md` §8). Refusals are named from the record
+         * every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
+         * Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
+         */
+        public static final long SARVATOBHADRA_JSON_OFFSET = 320;
+
+        /** The handle that reads and writes `sarvatobhadra_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle SARVATOBHADRA_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("sarvatobhadra_json"));
 
     }
 

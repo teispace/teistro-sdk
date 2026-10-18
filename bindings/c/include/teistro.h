@@ -8465,6 +8465,22 @@ struct ts_chart_request {
      * Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
      */
     const char * lalkitab_json;
+    /**
+     * The Sarvatobhadra chakra to read against every chart, as a JSON
+     * object: `instants`, UTC Julian days, at least one, and optionally
+     * `name` (`{letter, vowel}`: the name's first letter in Devanagari
+     * and the vowel of its first syllable), `motion` (`"SKY"`, the
+     * default, `"SUN"`, or `{"GIVEN": five motions}` for Mars,
+     * Mercury, Jupiter, Venus and Saturn) and `rules` (`{front, sight,
+     * corner}`; C429 to C431). Every chart is founded with its panchanga,
+     * which the birth's tithi and weekday are read from. Each chart's
+     * readings come back in the `sarvatobhadra` section, the transit
+     * charts founded once for the batch. Null for none
+     * (`03-design/gochar.md` §8). Refusals are named from the record
+     * every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
+     * Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
+     */
+    const char * sarvatobhadra_json;
 };
 
 /**
@@ -9513,7 +9529,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 320, "ts_chart_request is 320 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 328, "ts_chart_request is 328 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

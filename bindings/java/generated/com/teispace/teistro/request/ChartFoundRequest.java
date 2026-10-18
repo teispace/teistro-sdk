@@ -50,6 +50,7 @@ import java.util.Objects;
  * @param remedies What a chart's remedies are read under: the instant whose running daśā names subjects, when one is asked about, and the readings. Null leaves the SDK's default.
  * @param rules What a chart reading is asked to answer by rule. Null leaves the SDK's default.
  * @param sadeSati `SadeSatiRequest` as the bindings write it, camel-cased as every request record is; every field but `from` is optional. Null leaves the SDK's default.
+ * @param sarvatobhadra `SarvatobhadraRequest` as the bindings write it. Null leaves the SDK's default.
  * @param shadbala The {@code shadbala} field. Null leaves the SDK's default.
  * @param state The {@code state} field. Null leaves the SDK's default.
  * @param synastry What a synastry is asked: the aspects and orbs a chart's own table reads, whether each chart's lagna joins its planets, and the zodiac. Null leaves the SDK's default.
@@ -62,7 +63,7 @@ import java.util.Objects;
  * @param westernAspects What an aspect table is asked: which aspects, under which orbs. Null leaves the SDK's default.
  * @param westernHouses What a chart's Western houses are asked with. Null leaves the SDK's default.
  */
-public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, PartnerMatching matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, HouseRequest westernHouses) implements RequestJson {
+public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, PartnerMatching matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, HouseRequest westernHouses) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -128,6 +129,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         private RemedyRequest remedies;
         private RuleRequest rules;
         private SadeSatiRequest sadeSati;
+        private SarvatobhadraRequest sarvatobhadra;
         private Boolean shadbala;
         private Boolean state;
         private PartnerSynastry synastry;
@@ -572,6 +574,17 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         }
 
         /**
+         * Sets {@code sarvatobhadra}.
+         *
+         * @param sarvatobhadra `SarvatobhadraRequest` as the bindings write it. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder sarvatobhadra(SarvatobhadraRequest sarvatobhadra) {
+            this.sarvatobhadra = sarvatobhadra;
+            return this;
+        }
+
+        /**
          * Sets {@code shadbala}.
          *
          * @param shadbala The {@code shadbala} field. Null leaves the SDK's default.
@@ -699,7 +712,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          * @throws NullPointerException naming a required field left unset
          */
         public ChartFoundRequest build() {
-            return new ChartFoundRequest(altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, Objects.requireNonNull(latitudeDeg, "`ChartFoundRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ChartFoundRequest.longitudeDeg` is required"), lots, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, shadbala, state, synastry, theme, Objects.requireNonNull(utcOffsetSeconds, "`ChartFoundRequest.utcOffsetSeconds` is required"), vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernHouses);
+            return new ChartFoundRequest(altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, Objects.requireNonNull(latitudeDeg, "`ChartFoundRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ChartFoundRequest.longitudeDeg` is required"), lots, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, Objects.requireNonNull(utcOffsetSeconds, "`ChartFoundRequest.utcOffsetSeconds` is required"), vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernHouses);
         }
     }
 
@@ -752,6 +765,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.orNull(json.get("remedies"), present -> RemedyRequest.of(present)),
             Read.orNull(json.get("rules"), present -> RuleRequest.of(present)),
             Read.orNull(json.get("sadeSati"), present -> SadeSatiRequest.of(present)),
+            Read.orNull(json.get("sarvatobhadra"), present -> SarvatobhadraRequest.of(present)),
             Read.orNull(json.get("shadbala"), present -> Read.bool(present, "ChartFoundRequest.shadbala")),
             Read.orNull(json.get("state"), present -> Read.bool(present, "ChartFoundRequest.state")),
             Read.orNull(json.get("synastry"), present -> PartnerSynastry.of(present)),
@@ -880,6 +894,9 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         }
         if (sadeSati != null) {
             json.put("sadeSati", sadeSati.toJson());
+        }
+        if (sarvatobhadra != null) {
+            json.put("sarvatobhadra", sarvatobhadra.toJson());
         }
         if (shadbala != null) {
             json.put("shadbala", shadbala);

@@ -1381,6 +1381,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1537,6 +1538,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1691,6 +1693,7 @@ fn a_chart_request_answers_the_transits() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1900,6 +1903,7 @@ fn hit_list_request(births: &[f64; 2], hits: &CString) -> TsChartRequest {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -2177,6 +2181,7 @@ fn a_chart_request_answers_sade_sati() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2444,6 +2449,7 @@ fn a_chart_request_answers_the_dignities() {
                 remedies_json: ptr::null(),
                 rectification_json: ptr::null(),
                 lalkitab_json: ptr::null(),
+                sarvatobhadra_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2815,6 +2821,7 @@ fn a_chart_request_answers_the_fortitudes() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4127,6 +4134,7 @@ fn a_chart_request_answers_kp() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4332,6 +4340,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4449,6 +4458,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4595,6 +4605,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4746,6 +4757,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5528,6 +5540,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5647,6 +5660,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5835,6 +5849,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
             lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6129,6 +6144,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 remedies_json: ptr::null(),
                 rectification_json: ptr::null(),
                 lalkitab_json: ptr::null(),
+                sarvatobhadra_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -10061,6 +10077,108 @@ fn a_chart_request_answers_lalkitab() {
     );
     assert_eq!(refused, Err(Status::InvalidArg));
     assert_eq!(ctx.last_error().2.as_deref(), Some("lalkitab.year"));
+}
+
+/// A chart request's `sarvatobhadra_json` reads every chart's chakra
+/// through the façade, the transit charts founded once for the batch, the
+/// section carrying what the façade answers and spelled as its
+/// description says; a refusal names the field under `sarvatobhadra`
+/// (`03-design/gochar.md` §8).
+#[test]
+fn a_chart_request_answers_the_sarvatobhadra() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0];
+    let base = chart_request(&births, (27.7172, 85.324), 20_700);
+    let text =
+        r#"{"instants":[2460676.5,2460776.5],"motion":"SUN","name":{"letter":"र","vowel":"A"}}"#;
+    let json = CString::new(text).unwrap();
+    let section = |asked: &TsChartRequest| {
+        let bytes = chart_blob(&ctx, asked)
+            .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+        let schema = schemas::charts();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        String::from_utf8(reader.bytes("sarvatobhadra").unwrap().to_vec()).unwrap()
+    };
+    let crossed: serde_json::Value = serde_json::from_str(&section(&TsChartRequest {
+        sarvatobhadra_json: json.as_ptr(),
+        ..base
+    }))
+    .unwrap();
+
+    // The façade's own, each natal chart founded with its panchanga.
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(20_700).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(place, clock).with_panchanga(),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::SarvatobhadraRequest::from_json(text).unwrap();
+    let expected: Vec<_> = natal
+        .iter()
+        .map(|document| sdk.chart().sarvatobhadra(document, &asked).unwrap().value)
+        .collect();
+    let canonical: serde_json::Value =
+        serde_json::from_str(&teistro_core::envelope::canonical_json(&expected)).unwrap();
+    assert_eq!(crossed, canonical);
+
+    // Spelled as the section says: a chart's readings, an instant each.
+    let keys = |value: &serde_json::Value| {
+        let mut keys: Vec<String> = value.as_object().unwrap().keys().cloned().collect();
+        keys.sort();
+        keys
+    };
+    assert_eq!(crossed.as_array().unwrap().len(), 2);
+    assert_eq!(crossed[0].as_array().unwrap().len(), 2);
+    let one = &crossed[0][0];
+    assert_eq!(
+        keys(one),
+        ["grahas", "maleficPoints", "native", "points", "rules"]
+    );
+    assert_eq!(keys(&one["rules"]), ["corner", "front", "sight"]);
+    assert_eq!(
+        keys(&one["native"]),
+        ["nakshatra", "name", "rashi", "tithi", "vara"]
+    );
+    assert_eq!(keys(&one["native"]["name"]), ["letter", "vowel"]);
+    assert_eq!(one["grahas"].as_array().unwrap().len(), 9);
+    assert_eq!(
+        keys(&one["grahas"][0]),
+        [
+            "cells", "graha", "joinedBy", "lines", "motion", "nature", "place", "points", "waning"
+        ]
+    );
+    assert_eq!(one["grahas"][0]["graha"], "SUN");
+    assert_eq!(
+        keys(&one["grahas"][0]["place"]),
+        ["nakshatra", "pada", "star"]
+    );
+    assert_eq!(keys(&one["points"][0]), ["benefics", "malefics", "point"]);
+
+    // None asked is an empty section.
+    assert_eq!(section(&base), "");
+
+    // A refusal names the field under the record.
+    let bad = CString::new(r#"{"instants":[]}"#).unwrap();
+    let refused = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            sarvatobhadra_json: bad.as_ptr(),
+            ..base
+        },
+    );
+    assert_eq!(refused, Err(Status::InvalidArg));
+    assert_eq!(
+        ctx.last_error().2.as_deref(),
+        Some("sarvatobhadra.instants")
+    );
 }
 
 fn rashifal_json(ctx: &Ctx, request: &str) -> Result<String, Status> {

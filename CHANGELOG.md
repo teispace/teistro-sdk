@@ -460,7 +460,19 @@ clauses and scores nothing. The front strikes only the star at its far
 end, as every worked example prints it (C429); three knobs keep the
 rivals. Phaladeepika ch. 26 vv. 26–28, which `gochar.md` had named as this
 chakra, are the saptashalaka and the taras, and v. 48 is the chakra's
-verse (C428). The Rust surface only: no façade call or blob section yet.
+verse (C428). Through the façade, `sdk.chart().sarvatobhadra(&natal,
+&SarvatobhadraRequest)` reads it at many instants, the transit charts
+founded in one batch: the native's star and sign the natal Moon's, the
+tithi and weekday the birth's from the document's panchanga, the name's
+letter and vowel the request's. The five's motion is the sky's by
+default, each speed against the *Surya Siddhanta*'s mean motion
+(`Motion::by_speed`), since the tika gives vv. 16–18 as the motion
+"without computing the grahas"; `SarvatobhadraMotion::Sun` is the
+verses' own rule, the sky's where they are silent (a graha in the Sun's
+sign), and `Given` the caller's (C430). A chart request's
+`sarvatobhadra` record reads it for every chart in a batch, the transit
+charts founded once, and section 135 carries the readings across the C
+boundary as canonical JSON; the agent server reads the record too.
 
 **The fixed significators: sthira karakas and karaka bhavas**
 (`jaimini-significators.md` §7, C408 to C412). **Numbers:** none moved;

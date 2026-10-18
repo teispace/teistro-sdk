@@ -19,8 +19,9 @@ use crate::{
     ChartArea, ChartRequest, ConsiderationRules, Considerations, Dignities, DignityRequest,
     FortitudeRequest, Fortitudes, GocharRequest, Hit, HitRequest, Lot, LotReading, LotRequest,
     Matched, Matter, PartnerMatching, PerfectionRequest, PerfectionRules, PlanInputs, PlanRequest,
-    Plans, RuleRequest, RuleSet, RulesReading, SadeSatiRequest,
+    Plans, RuleRequest, RuleSet, RulesReading, SadeSatiRequest, SarvatobhadraRequest,
 };
+use teistro_gochar::sarvatobhadra::SarvatobhadraReading;
 
 /// The records a chart request carries beside its sections, each read and
 /// checked by its own reader before anything is founded, so a bad record
@@ -38,6 +39,8 @@ pub struct ChartRecords {
     pub gochar: Option<GocharRequest>,
     /// The hit list searched against every chart.
     pub hits: Option<HitRequest>,
+    /// The Sarvatobhadra chakra read against every chart.
+    pub sarvatobhadra: Option<SarvatobhadraRequest>,
     /// The essential dignities.
     pub dignities: Option<DignityRequest>,
     /// The accidental fortitudes, with their own essential dignities.
@@ -134,7 +137,7 @@ impl ChartRecords {
     /// The records a chart request names, as every binding writes them:
     /// the key in a JSON chart request ([`FoundRequest`](crate::FoundRequest))
     /// and the name [`ChartRecords::read`] takes.
-    pub const NAMES: [&'static str; 26] = [
+    pub const NAMES: [&'static str; 27] = [
         "theme",
         "rules",
         "interpret",
@@ -161,6 +164,7 @@ impl ChartRecords {
         "westernHouses",
         "harmonic",
         "matching",
+        "sarvatobhadra",
     ];
 
     /// The records with `name`'s read from `json` by its own reader, which
@@ -211,6 +215,7 @@ impl ChartRecords {
             "sadeSati" => self.sade_sati = Some(SadeSatiRequest::from_json(json)?),
             "gochar" => self.gochar = Some(GocharRequest::from_json(json)?),
             "hits" => self.hits = Some(HitRequest::from_json(json)?),
+            "sarvatobhadra" => self.sarvatobhadra = Some(SarvatobhadraRequest::from_json(json)?),
             "dignities" => self.dignities = Some(DignityRequest::from_json(json)?),
             "fortitudes" => self.fortitudes = Some(FortitudeRequest::from_json(json)?),
             "lots" => self.lots = Some(LotRequest::from_json(json)?),
@@ -316,6 +321,9 @@ impl ChartRecords {
             "sadeSati" => Some(generator.subschema_for::<crate::sade_sati_request::Asked>()),
             "gochar" => Some(generator.subschema_for::<crate::gochar_request::Asked>()),
             "hits" => Some(generator.subschema_for::<crate::hit_request::Asked>()),
+            "sarvatobhadra" => {
+                Some(generator.subschema_for::<crate::sarvatobhadra_request::Asked>())
+            }
             "dignities" => Some(generator.subschema_for::<DignityRequest>()),
             "fortitudes" => Some(generator.subschema_for::<FortitudeRequest>()),
             "lots" => Some(generator.subschema_for::<LotRequest>()),
@@ -369,6 +377,12 @@ impl ChartRecords {
         let request = match self.lots {
             Some(rules) => request.with_lot_rules(rules),
             None => request,
+        };
+        // The chakra reads the birth's tithi and weekday off the panchanga.
+        let request = if self.sarvatobhadra.is_some() {
+            request.with_panchanga()
+        } else {
+            request
         };
         #[cfg(feature = "prashna")]
         let request = if self.prashna.is_some() {
@@ -439,6 +453,9 @@ pub struct Composed<'r> {
     pub gochar: Vec<Vec<GocharReading>>,
     /// Every chart's hit list.
     pub hits: Vec<Vec<Hit>>,
+    /// Every chart's Sarvatobhadra chakra at each of the record's
+    /// instants.
+    pub sarvatobhadra: Vec<Vec<SarvatobhadraReading>>,
     /// Every chart's essential dignities.
     pub dignities: Vec<Dignities>,
     /// Every chart's accidental fortitudes.
@@ -531,6 +548,7 @@ impl ChartArea<'_> {
             sade_sati,
             gochar,
             hits: self.hits_of(documents, records.hits.as_ref())?,
+            sarvatobhadra: self.sarvatobhadra_of(documents, records.sarvatobhadra.as_ref())?,
             dignities: each(documents, records.dignities.as_ref(), |document, asked| {
                 self.dignities(document, asked)
             })?,
@@ -680,6 +698,22 @@ impl ChartArea<'_> {
                 |document, asked| self.harmonic(document, asked),
             )?,
         })
+    }
+
+    /// Every chart's Sarvatobhadra chakra, the transit charts founded once
+    /// for the batch; a refusal is named under `sarvatobhadra`.
+    fn sarvatobhadra_of(
+        self,
+        documents: &[Document],
+        asked: Option<&SarvatobhadraRequest>,
+    ) -> Result<Vec<Vec<SarvatobhadraReading>>, Error> {
+        match asked {
+            Some(asked) if !documents.is_empty() => Ok(self
+                .sarvatobhadra_many(documents, asked)
+                .map_err(|error| error.under("sarvatobhadra"))?
+                .value),
+            _ => Ok(Vec::new()),
+        }
     }
 
     /// Every chart's hit list in **one batch**, which scans the sky once

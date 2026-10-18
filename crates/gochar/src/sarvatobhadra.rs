@@ -547,6 +547,33 @@ impl Motion {
             _ => None,
         }
     }
+
+    /// The motion v. 15 sorts a computed speed into, against the graha's
+    /// mean daily motion: backwards, retrograde; faster than the mean,
+    /// fast; otherwise mean, which takes in the slow (मन्द), "less than
+    /// the even and the mean" as the tika on vv. 16–18 has it. The tika
+    /// gives vv. 16–18's rule as the motion "without computing the
+    /// grahas" (ग्रहगणितं विना), so a computed speed is what the rule
+    /// stands in for (C430).
+    ///
+    /// ```
+    /// use teistro_gochar::sarvatobhadra::Motion;
+    ///
+    /// // Mars's mean motion is about 0.524° a day.
+    /// assert_eq!(Motion::by_speed(0.7, 0.524), Motion::Fast);
+    /// assert_eq!(Motion::by_speed(0.3, 0.524), Motion::Mean);
+    /// assert_eq!(Motion::by_speed(-0.2, 0.524), Motion::Retrograde);
+    /// ```
+    #[must_use]
+    pub fn by_speed(speed_deg_per_day: f64, mean_deg_per_day: f64) -> Motion {
+        if speed_deg_per_day < 0.0 {
+            Motion::Retrograde
+        } else if speed_deg_per_day > mean_deg_per_day {
+            Motion::Fast
+        } else {
+            Motion::Mean
+        }
+    }
 }
 
 /// Where a graha stands among the stars: the chakra's star, and the star
@@ -628,6 +655,7 @@ fn juncture(place: StarPlace) -> Option<usize> {
 /// A graha's nature in the chakra (v. 12, v. 30; C432).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "VedhaNature"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Nature {
     /// Its vedha brings good (Phaladeepika ch. 26 v. 48).

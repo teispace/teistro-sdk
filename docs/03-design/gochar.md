@@ -221,8 +221,8 @@ Python and Dart suites hold the refusal and the shape across the boundary.
 
 ## 8. The Sarvatobhadra chakra: the second layer
 
-Status: `built` 2026-10-17 in the kernel (`teistro_gochar::sarvatobhadra`);
-the façade is described below and not wired. Cruxes C428 to C432.
+Status: `built` 2026-10-17 in the kernel (`teistro_gochar::sarvatobhadra`),
+the façade 2026-10-18 (§8.5). Cruxes C428 to C432.
 
 ### 8.1 What the texts say
 
@@ -340,18 +340,51 @@ strike the point; `malefic_points` counts v. 28's five a malefic strikes.
 `chakra()` is the grid, `sight(star, line)` a line's cells, `varas(class)`
 a tithi cell's weekdays.
 
-### 8.5 The façade (not built)
+### 8.5 The façade
 
-`sdk.chart().sarvatobhadra(&natal, at, name, rules)`, beside `gochar`:
-the native's star and sign from the natal Moon, the tithi and weekday
-from the natal chart's panchanga, the transits placed by
-`Founder::longitudes` as gochar's batch places them. Two things wait on a
-decision before it is wired. The five's motion: vv. 16 to 18's rule is
-the text's and needs only the Sun, but makes Mercury and Venus never
-retrograde (§8.2); an ephemeris's speed gives retrograde but no line
-between fast and mean, and needs the founder's speed request (C430). And
-the three knobs belong in the settings' `gochar` group, which changes
-`teistro-core`'s settings and every generated page that lists them.
+Built 2026-10-18. `sdk.chart().sarvatobhadra(&natal, &request)` beside
+`gochar`, one reading an instant, every transit chart founded at the
+natal place in one batch. The native's star and sign are the natal
+Moon's; the tithi and weekday the birth's, from the document's panchanga,
+which the rules read the same limbs from (`tithi_at`, `vara`), so a
+document without it is refused on `panchanga`; the name's letter and
+vowel are the request's (`SarvatobhadraRequest::named`). The three knobs
+are the request's (`with_rules`), not the settings': they shape this one
+reading, and the kernel's `SarvatobhadraRules` already reads and writes
+them, so no profile or generated settings page moves.
+
+**The five's motion** (C430), read on the page image (p. 57): the tika
+introduces vv. 16–18 as the motion "without computing the grahas"
+(ग्रहगणितं विना), and defines the slow as "less than the even and the
+mean". So the default, `SarvatobhadraMotion::Sky`, computes it: each
+transit chart's speed against the graha's mean daily motion
+(`Motion::by_speed`), retrograde below zero, fast above the mean, mean
+otherwise. The mean is the *Surya Siddhanta*'s, its revolutions over an
+age's civil days (`teistro_siddhanta::Parameters::TEXT`, I.29 to 37), and
+Mercury's and Venus's the Sun's, as I.29 makes them. `Sun` is the verses'
+rule (`Motion::by_the_sun`); a graha in the Sun's own sign is unseen (v.
+18) and the verses give it no motion, so it takes the sky's, which is
+where an inferior planet's retrograde falls. v. 20's "fast" says the fast
+keep their own nature; it is not read as making the unseen fast. `Given`
+is the caller's five.
+
+The tests (`crates/sdk/tests/sarvatobhadra.rs`) read every answer back
+elsewhere, over every fourth day of 2025 and 2026: the native's points
+from the natal Moon and the birth's almanac; each reading equal to the
+kernel's over a chart founded at its instant; the sky's motion equal to
+`by_speed` on each chart's speed, with all five retrograde somewhere and
+Mercury and Venus seen in all three motions; the Sun's equal to the
+verses wherever they speak, Mercury and Venus never retrograde there, and
+the sky's wherever they do not.
+
+**The record.** A chart request's `sarvatobhadra` record
+(`SarvatobhadraRequest::from_json`: `instants`, and optionally `name`,
+`motion`, `rules`) reads it for every chart in a batch through
+`ChartArea::sarvatobhadra_many`, which founds the transit charts once
+for every chart at one place and of one kind; the record widens the
+request with the panchanga it reads. Section 135, `sarvatobhadra`,
+carries the readings across the C boundary as canonical JSON, a list of
+readings a chart (`tests/abi.rs` holds it to the façade's own).
 
 ### 8.6 Left unbuilt
 

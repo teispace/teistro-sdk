@@ -136,6 +136,8 @@ mod rule_request;
 mod rules_bridge;
 #[cfg(feature = "chart")]
 mod sade_sati_request;
+#[cfg(feature = "chart")]
+mod sarvatobhadra_request;
 #[cfg(feature = "tajika")]
 mod tithi_pravesha;
 #[cfg(feature = "tajika")]
@@ -282,6 +284,10 @@ pub use crate::gochar_request::GocharRequest;
 pub use crate::hit_request::{HitKind, HitRequest};
 #[cfg(feature = "chart")]
 pub use crate::sade_sati_request::SadeSatiRequest;
+// Gochar's second layer, the Sarvatobhadra chakra's vedhas
+// (`03-design/gochar.md` §8).
+#[cfg(feature = "chart")]
+pub use crate::sarvatobhadra_request::{SarvatobhadraMotion, SarvatobhadraRequest};
 // Muhurta: an activity's windows over a range, judged clause by clause
 // (`03-design/muhurta.md`), and how asta is seen.
 pub use crate::festival_request::{FestivalPack, FestivalRequest};

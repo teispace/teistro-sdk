@@ -489,6 +489,7 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
         "varsha" => json!({"through": 1}),
         "progressions" => json!({"at": 2_460_676.5}),
         "harmonic" => json!({"number": 5}),
+        "sarvatobhadra" => json!({"instants": [2_460_676.5]}),
         _ => json!({}),
     };
     let full = [
@@ -507,6 +508,15 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
         ("theme", json!({"extends": "DARK", "style": {}})),
         ("interpret", json!({"placements": true})),
         ("kp", json!({"clock": 20_700})),
+        (
+            "sarvatobhadra",
+            json!({
+                "instants": [2_460_676.5],
+                "name": {"letter": "र", "vowel": "A"},
+                "motion": {"GIVEN": ["MEAN", "FAST", "MEAN", "MEAN", "RETROGRADE"]},
+                "rules": {"front": "EVERY_CELL", "sight": "ALL_THREE", "corner": "OUTER_VOWEL"},
+            }),
+        ),
     ];
     let mut server = Server::new(Engine::Builtin).with_detail(Detail::Full);
     let tool = listed(&mut server)
