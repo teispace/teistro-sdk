@@ -110,9 +110,10 @@ const REVIEWED: [(&[&str], &str); 4] = [
 
 /// Rules the sky never holds, each with an instant (a Julian day in UT)
 /// and a place, its latitude and longitude, where it does: rare rules,
-/// shown alive. Each was found at Kathmandu's latitude, on the meridian
-/// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 80] = [
+/// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
+/// or on the meridian that puts the lagna the rule asks for on the horizon,
+/// except an eclipse, found where it is seen with the luminary just risen.
+const FIXTURES: [(&str, f64, f64, f64); 97] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -460,10 +461,107 @@ const FIXTURES: [(&str, f64, f64, f64); 80] = [
         27.7172,
         -97.355,
     ),
+    (
+        "SARAVALI_RAJA_ALL_VARGOTTAMA_OR_AT_HOME",
+        2_414_577.972_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_ARIES_RISING_WITH_MOON_MARS_AND_JUPITER",
+        2_382_242.534_7,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_BENEFICS_IN_THE_FIRST_FOURTH_SEVENTH_MALEFICS_THIRD_NINTH_ELEVENTH",
+        2_383_809.312_5,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_EXALTED_SUN_TENTH_WITH_JUPITER_VENUS_NINTH",
+        2_386_658.715_3,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_FULL_MOON_IN_A_TAURUS_NAVAMSHA_ASPECTED_BY_ALL",
+        2_409_719.152_8,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_JUPITER_AND_MOON_FIFTH_THREE_IN_OWN_NAVAMSHAS",
+        2_385_461.138_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_JUPITER_FOURTH_AT_HOME_FULL_MOON_NINTH",
+        2_554_453.493_1,
+        27.7172,
+        85.324,
+    ),
+    ("SARAVALI_RAJA_KALASHA", 2_387_002.743_1, 27.7172, 85.324),
+    (
+        "SARAVALI_RAJA_LUMINARIES_EARLY_SAGITTARIUS_SATURN_RISING",
+        2_387_615.888_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_MERCURY_RISING_JUPITER_SEVENTH_MOON_FOURTH_IN_CANCER",
+        2_436_292.555_6,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_MOON_AT_HIGHEST_EXALTATION_ASPECTED_BY_VENUS",
+        2_384_649.555_6,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_SUN_AT_HIGHEST_EXALTATION_RISING",
+        2_378_971.5,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_TAURUS_RISING_JUPITER_AND_MOON",
+        2_391_343.694_4,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_VENUS_MERCURY_MARS_RISING_MOON_AND_JUPITER_SEVENTH",
+        2_392_442.493_1,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_VENUS_MOON_SUN_THIRD_MARS_SEVENTH_JUPITER_NINTH",
+        2_413_189.319_4,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_VENUS_RISING_IN_A_SIGN_OF_JUPITER_MERCURY_EXALTED",
+        2_404_003.687_5,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_MOON_SIGN_LORD_IN_AN_UPACHAYA_FROM_THE_MOON",
+        2_379_895.258_6,
+        27.7172,
+        85.324,
+    ),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 32] = [
+const UNSEEN: [(&str, &str); 38] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -592,6 +690,30 @@ const UNSEEN: [(&str, &str); 32] = [
     (
         "SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY",
         "Mercury casts only the seventh aspect and keeps near the Sun, so the Moon he aspects is near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there.",
+    ),
+    (
+        "SARAVALI_RAJA_ARIES_RISING_JUPITER_AND_SUN_IN_LEO_FIGURE",
+        "No sky from 1801 to 2398 has its seven grahas in those signs, searched four times a day.",
+    ),
+    (
+        "SARAVALI_RAJA_CANCER_MOON_RISING_FIGURE",
+        "No sky from 1801 to 2398 has its seven grahas in those houses with Cancer rising, searched four times a day.",
+    ),
+    (
+        "SARAVALI_RAJA_EXALTED_MOON_RISING_FIGURE",
+        "No sky from 1801 to 2398 has its six grahas in those signs, searched four times a day.",
+    ),
+    (
+        "SARAVALI_RAJA_LEO_SUN_RISING_FIGURE",
+        "No sky from 1801 to 2398 has its five grahas in those signs, searched four times a day.",
+    ),
+    (
+        "SARAVALI_RAJA_SATURN_LATE_CAPRICORN_FIGURE",
+        "No sky from 1801 to 2398 has its seven grahas in those signs with Saturn in the latter half of Capricorn, searched four times a day.",
+    ),
+    (
+        "SARAVALI_RAJA_VIRGO_MERCURY_RISING_MOON_ELEVENTH",
+        "No sky from 1801 to 2398 has its six grahas in those signs, searched four times a day.",
     ),
 ];
 

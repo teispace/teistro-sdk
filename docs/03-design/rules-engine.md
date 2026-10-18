@@ -753,6 +753,37 @@ computed sky misses have a fixture on the cofiring page: the two eclipses
 at a place that sees the luminary just risen, and the two placements on an
 early day of 1800 to 2400.
 
+**Saravali ch. 35's raja yogas, vv. 7 to 102, built (2026-10-19).** The
+chapter on the birth of kings, read in the 1907 Nirnaya Sagar print off
+the page images, ships as `classical-saravali-raja.json`, 43 rules in the
+nabhasa set under the keys `SARAVALI_RAJA_*`:
+- **the figures:** a sign rising with named grahas in named signs or
+  houses: Aries with the Moon, Mars and Jupiter (v. 7); Virgo with Mercury
+  (v. 9); Cancer with the Moon (v. 10); Leo with the Sun (v. 99); Taurus
+  with the exalted Moon (vv. 40, 102); and the figures of vv. 17, 24, 37,
+  72 to 74, 77, 84 and 89.
+- **the Moon:** full and rising with Mars (v. 15); aspected by every graha
+  (vv. 48, 56) or by Jupiter alone (vv. 54, 55, 71); at her highest
+  exaltation aspected by Venus (v. 34); in Cancer's last decanate (v. 67);
+  in a watery navamsha in the sixth (v. 27).
+- **the dignities:** three vargottama in kendras (v. 29), one exalted and
+  vargottama under a friend's aspect (v. 30), all seven vargottama or at
+  home (v. 38), the Sun at his highest exaltation rising (v. 26).
+- **the lords:** the lagna lord in a kendra under a friend's aspect
+  (v. 39), the lords of the lagna and the Moon's sign in kendras (v. 43),
+  the Moon sign's lord in an upachaya from her (v. 32).
+- **the Yavanas' houses:** all seven in the third, fourth, fifth and tenth
+  (v. 93), benefics in the kendras with malefics in the third, ninth and
+  eleventh (v. 95), and Kalasha (v. 96).
+
+The verses that restate Brihat Jataka ch. 11, or that Phaladeepika ch. 7
+takes over, ship once under the text that already carries them. Those that
+ask what no sky holds, and those that name no placement, are not built
+(C478). Of the 23 rules the computed sky misses, 17 have a fixture at
+Kathmandu on the cofiring page. The figures of vv. 9, 10, 24, 37, 99 and
+102 hold on no sky from 1801 to 2398 and are listed with that. vv. 103
+onward, the yogas for the royal-born, are the chapter's second part.
+
 **BPHS ch. 83's curses, built (2026-10-14).** The chapter reads, from the
 fifth house, the curse in a former birth that denies a son, and gives each
 curse its remedy. As `classical-bphs-shapa.json`, 76 rules join the
