@@ -350,6 +350,31 @@ navamsha sign; they are not built rather than guessed.
 | **decided** | the chapter's malefics (C460), v. 18's two conditions (C461), the scissors by motion (C462), v. 19's "joined" (C463) |
 | **not built** | vv. 22–25, above |
 
+## The month's dasha
+
+Verse 14 of the same chapter (rank 1) gives the month a dasha "as some say
+from the tradition": of the Muntha's lord and the month lagna's lord,
+whichever's sign is the stronger, the Hudda lords of that sign are the
+month's dasha lords, each "by days equal to its own degrees"
+(*svāṃśa-tulya-ahaiḥ*). A sign's five Huddas fill its thirty degrees, so
+the five run the month. Verse 15 records that others reject it, since the
+Sun and the Moon hold no Hudda and so get no share, and read a month in the
+Patyayini's antardasha instead; the annual dasha already carries those, so
+that reading is answered by what is built.
+
+| | the reading | the knob |
+|---|---|---|
+| the stronger | the lord with the greater Vishwa bala on the month chart, which every strength of the chapter reads; a tie, or one graha holding both offices, is the Muntha's lord, whom the verse names first | none |
+| the sign | where the stronger lord stands on the month chart (the default), or the sign it rules here, the Muntha's or the month lagna (C477) | `dasha.sign`: `OCCUPIED`, `OWNED` |
+| the day | a degree of the Sun from the month's opening, the "solar day" the year's dasha counts (C122) and the day the Dina Pravesha opens, so the month ends as the next opens; or an equal share of the month; or a civil day, thirty from the opening (C477) | `dasha.clock`: `SUN_DEGREES`, `EVEN`, `DAYS` |
+| the terms | the Nilakanthi's table or Charak's (C109) | `dasha.table`: `NILAKANTHI`, `CHARAK` |
+
+| | |
+|---|---|
+| **built** | `teistro_tajika::{masa_dasha, MasaDasha, MasaDashaPeriod, MasaDashaRules, MasaDashaSign, MonthClock, month_knots, hudda_terms}`; `sdk.chart().month_knots(&birth, reading, &entry)`, the thirty-one instants the Sun stands none to thirty degrees on from the month's opening, found in the sky the months were; and `sdk.chart().masa_dasha(&birth, &year, &month, &entry, &knots, muntha, rules)`, which needs no ephemeris given the knots. Every month row the `masaPravesha` record founds carries `dasha`, under the record's `dasha` rules, in Node, Python, Dart and Java. Tests: the stronger lord's Huddas end to end, the two signs, the three clocks, one lord of both, the refusals (`crates/tajika/src/masa_dasha.rs`); twelve founded months read back through the Sun at a period's edge and the next month's opening (`crates/sdk/tests/masa_pravesha.rs`) |
+| **decided** | the sign and the day (C477) |
+| **not built** | nothing of v. 14; v. 15 is the annual dasha |
+
 ## The strength crosses as an integer
 
 A `Bala` crosses as **sub-sub units**, 3600 to a unit, in an `i32` — not

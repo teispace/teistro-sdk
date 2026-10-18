@@ -15611,6 +15611,7 @@ final class MasaPraveshaRequest {
     this.place,
     this.masesha = const MaseshaRules(),
     this.results = const MasaPhalaRules(),
+    this.dasha = const MasaDashaRules(),
   });
 
   /// The year divided, 1 to 200, counted as [Pravesha.year] counts it; the
@@ -15626,9 +15627,10 @@ final class MasaPraveshaRequest {
   final VarshaReading reading;
 
   /// Where each month's chart is founded, as [VarshaRequest.place] is;
-  /// given, each month carries its [MasaPravesha.masesha] and its
-  /// [MasaPravesha.results], and beside a [month] each day carries its
-  /// [MasaPravesha.dinesha].
+  /// given, each month carries its [MasaPravesha.masesha], its
+  /// [MasaPravesha.results] and its [MasaPravesha.dasha], and beside a
+  /// [month] each day carries its [MasaPravesha.dinesha] and its
+  /// [MasaPravesha.dayResults].
   final AnnualPlace? place;
 
   /// The readings the month's lord, and the day's, part on; the verse's
@@ -15639,6 +15641,10 @@ final class MasaPraveshaRequest {
   /// yogas' own by default.
   final MasaPhalaRules results;
 
+  /// The readings each month's dasha is computed under; the verse's own by
+  /// default.
+  final MasaDashaRules dasha;
+
   String get _json => jsonEncode(<String, Object?>{
     'year': year,
     if (month != null) 'month': month,
@@ -15646,7 +15652,71 @@ final class MasaPraveshaRequest {
     if (place case final place?) 'place': place._json,
     'masesha': masesha._json,
     'results': results._json,
+    'dasha': dasha._json,
   });
+}
+
+/// Which sign of the stronger lord a month's dasha is read in (C477).
+enum MasaDashaSign implements _Keyed {
+  /// The sign it stands in on the month chart; the default.
+  occupied('OCCUPIED'),
+
+  /// The sign it rules here: the Muntha's own, or the month lagna.
+  owned('OWNED');
+
+  const MasaDashaSign(this.key);
+
+  @override
+  final String key;
+}
+
+/// What a Hudda's degree is in time (C477).
+enum MonthClock implements _Keyed {
+  /// The Sun's motion through it from the month's opening; the default.
+  sunDegrees('SUN_DEGREES'),
+
+  /// An equal share of the time from the month's opening to the next.
+  even('EVEN'),
+
+  /// A civil day from the month's opening.
+  days('DAYS');
+
+  const MonthClock(this.key);
+
+  @override
+  final String key;
+}
+
+/// The readings a month's dasha is computed under
+/// (`03-design/varshesha.md`, "The month's dasha").
+///
+/// ```dart
+/// const civil = MasaDashaRules(clock: MonthClock.days);
+/// ```
+final class MasaDashaRules extends _Value {
+  const MasaDashaRules({
+    this.sign = MasaDashaSign.occupied,
+    this.clock = MonthClock.sunDegrees,
+    this.table = HuddaTable.nilakanthi,
+  });
+
+  /// Which sign of the stronger lord its Huddas are read in.
+  final MasaDashaSign sign;
+
+  /// What a degree is in time.
+  final MonthClock clock;
+
+  /// Which printing of the Hudda table.
+  final HuddaTable table;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    'sign': sign.key,
+    'clock': clock.key,
+    'table': table.key,
+  };
+
+  @override
+  List<Object?> get _fields => [sign, clock, table];
 }
 
 /// The floors the month's results judge strong and weak by
@@ -15809,6 +15879,7 @@ final class MasaPravesha extends _Value {
     required this.sunDeg,
     this.masesha,
     this.results,
+    this.dasha,
     this.dinesha,
     this.dayResults,
   });
@@ -15835,6 +15906,9 @@ final class MasaPravesha extends _Value {
   /// The month's results, where the request named a place; null otherwise.
   final MasaPhala? results;
 
+  /// The month's dasha, where the request named a place; null otherwise.
+  final MasaDasha? dasha;
+
   /// The day's lord, where the request named a month and a place; null
   /// otherwise.
   final Dinesha? dinesha;
@@ -15852,6 +15926,7 @@ final class MasaPravesha extends _Value {
     sunDeg,
     masesha,
     results,
+    dasha,
     dinesha,
     dayResults,
   ];
@@ -16098,6 +16173,89 @@ final class MasaPhala extends _Value {
 
   @override
   List<Object?> get _fields => [...houses, ...lords];
+}
+
+/// The six portfolios of a month, in the verse's order (*Tajika
+/// Nilakanthi*, Varsha Tantra, vv. 3–5).
+enum MonthOffice implements _Keyed {
+  /// The lord of the month chart's lagna.
+  masaLagna('MASA_LAGNA'),
+
+  /// The lord of the Muntha's sign, the Muntha moved on 2°30′ a month.
+  muntha('MUNTHA'),
+
+  /// The lord of the birth chart's lagna.
+  janmaLagna('JANMA_LAGNA'),
+
+  /// The month lagna's triplicity lord, by day or by night.
+  triRashi('TRI_RASHI'),
+
+  /// The lord of the Sun's sign by day, of the Moon's by night.
+  dinaRatri('DINA_RATRI'),
+
+  /// The lord of the year chart's lagna.
+  varshaLagna('VARSHA_LAGNA');
+
+  const MonthOffice(this.key);
+
+  @override
+  final String key;
+}
+
+/// One Hudda lord's run of a month.
+final class MasaDashaPeriod extends _Value {
+  const MasaDashaPeriod({
+    required this.lord,
+    required this.degrees,
+    required this.starts,
+    required this.ends,
+  });
+
+  /// The Hudda's lord.
+  final Graha lord;
+
+  /// The Hudda's width, degrees: the solar days it runs.
+  final int degrees;
+
+  /// When it begins, a Julian day (UTC).
+  final double starts;
+
+  /// When it ends, a Julian day (UTC): where the next begins.
+  final double ends;
+
+  @override
+  List<Object?> get _fields => [lord, degrees, starts, ends];
+}
+
+/// A month's dasha (*Tajika Nilakanthi*, Varsha Tantra, v. 14): the five
+/// Huddas of the stronger lord's sign, each running its degrees in days.
+final class MasaDasha extends _Value {
+  const MasaDasha({
+    required this.office,
+    required this.graha,
+    required this.sign,
+    required this.rules,
+    required this.periods,
+  });
+
+  /// Whose lord was the stronger: [MonthOffice.muntha] or
+  /// [MonthOffice.masaLagna].
+  final MonthOffice office;
+
+  /// That lord.
+  final Graha graha;
+
+  /// The sign whose Huddas run the month.
+  final Rashi sign;
+
+  /// The readings it was computed under.
+  final MasaDashaRules rules;
+
+  /// The sign's five Huddas, in order from the month's opening.
+  final List<MasaDashaPeriod> periods;
+
+  @override
+  List<Object?> get _fields => [office, graha, sign, rules, ...periods];
 }
 
 /// The Moon's twelve states within a sign, 2°30′ each, in the gloss's
@@ -16349,6 +16507,10 @@ MasaPravesha _masaPraveshaFrom(Map<String, Object?> raw) => MasaPravesha(
     final Map<String, Object?> results => _masaPhalaFrom(results),
     _ => null,
   },
+  dasha: switch (raw['dasha']) {
+    final Map<String, Object?> dasha => _masaDashaFrom(dasha),
+    _ => null,
+  },
   dinesha: switch (raw['dinesha']) {
     final Map<String, Object?> lord => _dineshaFrom(lord),
     _ => null,
@@ -16364,6 +16526,32 @@ List<T> _keyedList<T extends _Keyed>(List<T> values, Object? list) =>
     List<T>.unmodifiable([
       for (final key in list! as List<Object?>) _keyedIn(values, key),
     ]);
+
+/// A month's dasha from the section's JSON, its keys made members.
+MasaDasha _masaDashaFrom(Map<String, Object?> raw) {
+  Graha graha(Object? key) => _key(key, Graha.byKey, Graha.unknown);
+  final rules = raw['rules']! as Map<String, Object?>;
+  return MasaDasha(
+    office: _keyedIn(MonthOffice.values, raw['office']),
+    graha: graha(raw['graha']),
+    sign: _rashi(raw['sign']),
+    rules: MasaDashaRules(
+      sign: _keyedIn(MasaDashaSign.values, rules['sign']),
+      clock: _keyedIn(MonthClock.values, rules['clock']),
+      table: _keyedIn(HuddaTable.values, rules['table']),
+    ),
+    periods: List<MasaDashaPeriod>.unmodifiable([
+      for (final one in raw['periods']! as List<Object?>)
+        if (one case final Map<String, Object?> one)
+          MasaDashaPeriod(
+            lord: graha(one['lord']),
+            degrees: one['degrees']! as int,
+            starts: (one['starts']! as num).toDouble(),
+            ends: (one['ends']! as num).toDouble(),
+          ),
+    ]),
+  );
+}
 
 /// A day's results from the section's JSON, its keys made members.
 DinaPhala _dinaPhalaFrom(Map<String, Object?> raw) {

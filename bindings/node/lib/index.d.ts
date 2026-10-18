@@ -3363,14 +3363,58 @@ export interface MasaPraveshaRequest {
   readonly reading?: Exclude<VarshaReading, 'MEAN'>;
   /**
    * Where each month's chart is founded, as `varsha.place` is written; given,
-   * each month carries its `masesha` and its `results`, and beside a
-   * `month` each day carries its `dinesha` and its `dayResults`.
+   * each month carries its `masesha`, its `results` and its `dasha`, and
+   * beside a `month` each day carries its `dinesha` and its `dayResults`.
    */
   readonly place?: 'birth' | AnnualPlace;
   /** The readings the month's lord, and the day's, part on; the verse's own by default. */
   readonly masesha?: MaseshaRules;
   /** The floors the month's and the day's results judge strong and weak by; the year yogas' own by default. */
   readonly results?: MasaPhalaRules;
+  /** The readings each month's dasha is computed under; the verse's own by default. */
+  readonly dasha?: MasaDashaRules;
+}
+
+/** The readings a month's dasha is computed under (`03-design/varshesha.md`, "The month's dasha", C477). */
+export interface MasaDashaRules {
+  /** `OCCUPIED`, the sign the stronger lord stands in (the default), or `OWNED`, the sign it rules here: the Muntha's or the month lagna. */
+  readonly sign?: 'OCCUPIED' | 'OWNED';
+  /** What a Hudda's degree is in time: `SUN_DEGREES`, the Sun's motion through it (the default); `EVEN`, an equal share of the month; or `DAYS`, a civil day. */
+  readonly clock?: 'SUN_DEGREES' | 'EVEN' | 'DAYS';
+  /** Which printing of the Hudda table (C109): `NILAKANTHI` by default. */
+  readonly table?: 'NILAKANTHI' | 'CHARAK';
+}
+
+/** One Hudda lord's run of a month. */
+export interface MasaDashaPeriod {
+  readonly lord: Graha;
+  /** The Hudda's width, degrees: the solar days it runs. */
+  readonly degrees: number;
+  /** When it begins, a Julian day (UTC). */
+  readonly starts: number;
+  /** When it ends, a Julian day (UTC): where the next begins. */
+  readonly ends: number;
+}
+
+/**
+ * A month's dasha (*Tajika Nilakanthi*, Varsha Tantra, v. 14): the five
+ * Huddas of the stronger lord's sign, each running its degrees in days.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, masaPravesha: { year: 30, place: 'birth' } });
+ * for (const month of chart.masaPravesha ?? []) {
+ *   const first = month.dasha?.periods[0].lord;
+ * }
+ */
+export interface MasaDasha {
+  /** Whose lord was the stronger: the Muntha's or the month lagna's. */
+  readonly office: 'MUNTHA' | 'MASA_LAGNA';
+  readonly graha: Graha;
+  /** The sign whose Huddas run the month. */
+  readonly sign: Rashi;
+  readonly rules: Required<MasaDashaRules>;
+  /** The sign's five Huddas, in order from the month's opening. */
+  readonly periods: readonly MasaDashaPeriod[];
 }
 
 /** The floors the month's and the day's results judge strong and weak by (`03-design/varshesha.md`, "The month's results"). */
@@ -3435,6 +3479,8 @@ export interface MasaPravesha {
   readonly masesha?: Masesha;
   /** The month's results, where the request named a `place`; absent otherwise. */
   readonly results?: MasaPhala;
+  /** The month's dasha, where the request named a `place`; absent otherwise. */
+  readonly dasha?: MasaDasha;
   /** The day's lord, where the request named a `month` and a `place`; absent otherwise. */
   readonly dinesha?: Dinesha;
   /** The day's results, where the request named a `month` and a `place`; absent otherwise. */

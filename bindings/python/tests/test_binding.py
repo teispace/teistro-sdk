@@ -1935,6 +1935,24 @@ class AnEngine(WithLibrary):
                 self.assertEqual(row.results.lords[2].graha, third.year_lord.graha)
                 self.assertEqual(row.results.lords[3].graha, row.masesha.bearers.masa_lagna)
                 self.assertIsInstance(row.results.houses[0].amsha_lord, Graha)
+            # Each month's dasha: the five Huddas of the stronger lord's sign,
+            # end to end from the month's opening to the next's.
+            self.assertIsNone(months[0].dasha)
+            for index, row in enumerate(lords):
+                assert row.masesha is not None and row.dasha is not None
+                bearers = row.masesha.bearers
+                lord = bearers.muntha if row.dasha.office == "MUNTHA" else bearers.masa_lagna
+                self.assertEqual(row.dasha.graha, lord)
+                self.assertIsInstance(row.dasha.sign, Rashi)
+                self.assertEqual(sum(one.degrees for one in row.dasha.periods), 30)
+                self.assertEqual(row.dasha.periods[0].starts, row.at)
+                if index < 11:
+                    self.assertAlmostEqual(row.dasha.periods[4].ends, lords[index + 1].at, delta=1e-6)
+            civil: MasaPraveshaRequest = {"year": 3, "place": "birth", "dasha": {"clock": "DAYS"}}
+            first = (ctx.chart.found(instant=instant, masa_pravesha=civil, **at).masa_pravesha or ())[0]
+            assert first.dasha is not None
+            self.assertEqual(first.dasha.rules, {"sign": "OCCUPIED", "clock": "DAYS", "table": "NILAKANTHI"})
+            self.assertAlmostEqual(first.dasha.periods[4].ends - first.at, 30.0, delta=1e-9)
             floors: MasaPraveshaRequest = {
                 "year": 3, "place": "birth", "results": {"weak_below": 9 * 3600, "strong_from": 3600},
             }

@@ -5607,6 +5607,36 @@ void _engineTests() {
       expect(results.lords[3].graha, row.masesha!.bearers.masaLagna);
       expect(results.houses.first.house, 1);
     }
+    // Each month's dasha: the five Huddas of the stronger lord's sign, end
+    // to end from the month's opening to the next's.
+    expect(months.first.dasha, isNull);
+    for (final (index, row) in lords.indexed) {
+      final dasha = row.dasha!;
+      final bearers = row.masesha!.bearers;
+      expect(
+        dasha.graha,
+        dasha.office == MonthOffice.muntha ? bearers.muntha : bearers.masaLagna,
+      );
+      expect(dasha.periods.fold<int>(0, (sum, one) => sum + one.degrees), 30);
+      expect(dasha.periods.first.starts, row.at);
+      if (index < 11) {
+        expect(dasha.periods.last.ends, closeTo(lords[index + 1].at, 1e-6));
+      }
+    }
+    final civil =
+        found(
+          instant,
+          const MasaPraveshaRequest(
+            year: 3,
+            place: AnnualPlace.birth,
+            dasha: MasaDashaRules(clock: MonthClock.days),
+          ),
+        ).masaPravesha!.first.dasha!;
+    expect(civil.rules, const MasaDashaRules(clock: MonthClock.days));
+    expect(
+      civil.periods.last.ends - civil.periods.first.starts,
+      closeTo(30, 1e-9),
+    );
     expect(
       () => found(
         instant,

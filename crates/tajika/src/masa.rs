@@ -137,6 +137,47 @@ pub fn dina_praveshas<S: Longitudes + ?Sized>(
     reading: Reading,
     month: &MasaPravesha,
 ) -> Result<Vec<DinaPravesha>, Error> {
+    // The thirtieth day's degree at the Sun's slowest is under 30.5 days
+    // on, and the next month's start, a sign on, past 31.
+    degrees_on(tropical, zodiac, reading, month, DAYS, 30.6)
+}
+
+/// The month's thirty-one knots: the instants the Sun stands a whole
+/// number of degrees, none to thirty, on from where `month` opened. The
+/// first is the month's own instant and the last the next month's, or the
+/// next year's return after the twelfth; a degree between is a "solar
+/// day", which is what the month's dasha counts its lords' degrees in.
+///
+/// # Errors
+///
+/// As [`masa_praveshas`]; fewer than thirty-one when the source's coverage
+/// ends inside the month.
+pub fn month_knots<S: Longitudes + ?Sized>(
+    tropical: &S,
+    zodiac: Zodiac,
+    reading: Reading,
+    month: &MasaPravesha,
+) -> Result<Vec<JulianDay<Utc>>, Error> {
+    // A sign on at the Sun's slowest, under a degree a day, is under 31.6
+    // days on.
+    Ok(
+        degrees_on(tropical, zodiac, reading, month, DAYS + 1, 31.8)?
+            .into_iter()
+            .map(|day| day.at)
+            .collect(),
+    )
+}
+
+/// The instants the Sun stands `1` (the month's own) to `last` degrees'
+/// ordinals on from where `month` opened, searched up to `reach` days on.
+fn degrees_on<S: Longitudes + ?Sized>(
+    tropical: &S,
+    zodiac: Zodiac,
+    reading: Reading,
+    month: &MasaPravesha,
+    last: u8,
+    reach: f64,
+) -> Result<Vec<DinaPravesha>, Error> {
     divided(reading)?;
     let origin = month.sun_deg;
     let first = DinaPravesha {
@@ -146,9 +187,6 @@ pub fn dina_praveshas<S: Longitudes + ?Sized>(
         at: month.at,
         sun_deg: origin,
     };
-    // The thirtieth day's degree at the Sun's slowest is under 30.5 days
-    // on, and the next month's start, a sign on, past 31.
-    let to = month.at.get() + 30.6;
     let found = crossings(
         tropical,
         zodiac,
@@ -157,14 +195,14 @@ pub fn dina_praveshas<S: Longitudes + ?Sized>(
             origin_deg: origin,
             step_deg: 1.0,
         },
-        (month.at.get() + 0.25, to, DAY_STEP_DAYS),
+        (month.at.get() + 0.25, month.at.get() + reach, DAY_STEP_DAYS),
     )?;
     let mut days = vec![first];
     days.extend(
         found
             .into_iter()
             .map(|(at, sun_deg)| (ordinal(sun_deg, origin, 1.0), at, sun_deg))
-            .filter(|(day, _, _)| *day > 1 && *day <= DAYS)
+            .filter(|(day, _, _)| *day > 1 && *day <= last)
             .map(|(day, at, sun_deg)| DinaPravesha {
                 year: month.year,
                 month: month.month,

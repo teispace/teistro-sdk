@@ -13,6 +13,7 @@ package com.teispace.teistro;
  * @param sunDeg Where the Sun stands then, degrees in the year's zodiac.
  * @param masesha The month's lord, where the request named a {@code place}; null otherwise.
  * @param results The month's results, where the request named a {@code place}; null otherwise.
+ * @param dasha The month's dasha, where the request named a {@code place}; null otherwise.
  * @param dinesha The day's lord, where the request named a {@code month} and a {@code place}; null
  *     otherwise.
  * @param dayResults The day's results, where the request named a {@code month} and a {@code
@@ -26,6 +27,7 @@ public record MasaPravesha(
         double sunDeg,
         Masesha masesha,
         MasaPhala results,
+        MasaDasha dasha,
         Dinesha dinesha,
         DinaPhala dayResults) {
 }

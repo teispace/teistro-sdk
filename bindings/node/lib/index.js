@@ -5432,7 +5432,12 @@ function masaPraveshasOf(batch) {
         return { ...row, dinesha: dineshaFrom(row.dinesha), dayResults: dinaPhalaFrom(row.dayResults) };
       }
       if (row.masesha === undefined) return row;
-      return { ...row, masesha: maseshaFrom(row.masesha), results: masaPhalaFrom(row.results) };
+      return {
+        ...row,
+        masesha: maseshaFrom(row.masesha),
+        results: masaPhalaFrom(row.results),
+        dasha: masaDashaFrom(row.dasha),
+      };
     }),
   );
 }
@@ -5452,6 +5457,23 @@ function masaPhalaFrom({ houses, lords }) {
       lordAmshaLord: full(one.lordAmshaLord),
     })),
     lords: lords.map((one) => ({ ...one, graha: full(one.graha) })),
+  };
+}
+
+/**
+ * A month's dasha as the section writes it, its grahas and its sign full
+ * keys and its instants UTC Julian days.
+ *
+ * @param {object} raw
+ * @returns {object}
+ */
+function masaDashaFrom({ office, graha, sign, rules, periods }) {
+  return {
+    office,
+    graha: `graha.${graha}`,
+    sign: `rashi.${sign}`,
+    rules,
+    periods: periods.map((one) => ({ ...one, lord: `graha.${one.lord}` })),
   };
 }
 

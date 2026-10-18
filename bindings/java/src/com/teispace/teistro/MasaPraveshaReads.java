@@ -6,7 +6,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.teispace.teistro.request.HuddaTable;
+import com.teispace.teistro.request.MasaDashaRules;
+import com.teispace.teistro.request.MasaDashaSign;
 import com.teispace.teistro.request.MaseshaReading;
+import com.teispace.teistro.request.MonthClock;
 
 /**
  * The {@code masa_pravesha} section parsed once a batch into {@link MasaPravesha} records, as
@@ -40,6 +44,8 @@ final class MasaPraveshaReads {
                                     ? masesha(fields.get("masesha")) : null,
                             row instanceof Map<?, ?> fields && fields.get("results") != null
                                     ? results(fields.get("results")) : null,
+                            row instanceof Map<?, ?> fields && fields.get("dasha") != null
+                                    ? dasha(fields.get("dasha")) : null,
                             row instanceof Map<?, ?> fields && fields.get("dinesha") != null
                                     ? dinesha(fields.get("dinesha")) : null,
                             row instanceof Map<?, ?> fields && fields.get("dayResults") != null
@@ -125,6 +131,28 @@ final class MasaPraveshaReads {
                     keys(JsonRead.at(one, "clauses"), MonthLordClause::valueOf)));
         }
         return new MasaPhala(List.copyOf(houses), List.copyOf(lords));
+    }
+
+    /** A month's dasha, its keys made members. */
+    private static MasaDasha dasha(Object raw) {
+        Object rules = JsonRead.at(raw, "rules");
+        List<MasaDashaPeriod> periods = new ArrayList<>();
+        for (Object one : JsonRead.list(JsonRead.at(raw, "periods"))) {
+            periods.add(new MasaDashaPeriod(
+                    graha(JsonRead.at(one, "lord")),
+                    JsonRead.integer(JsonRead.at(one, "degrees")),
+                    JsonRead.decimal(JsonRead.at(one, "starts")),
+                    JsonRead.decimal(JsonRead.at(one, "ends"))));
+        }
+        return new MasaDasha(
+                MonthOffice.valueOf(JsonRead.text(JsonRead.at(raw, "office"))),
+                graha(JsonRead.at(raw, "graha")),
+                JsonRead.member(Rashi::byKey, "Rashi", JsonRead.at(raw, "sign")),
+                new MasaDashaRules(
+                        JsonRead.member(MonthClock::byKey, "MonthClock", JsonRead.at(rules, "clock")),
+                        JsonRead.member(MasaDashaSign::byKey, "MasaDashaSign", JsonRead.at(rules, "sign")),
+                        JsonRead.member(HuddaTable::byKey, "HuddaTable", JsonRead.at(rules, "table"))),
+                List.copyOf(periods));
     }
 
     /** A day's results, their grahas members. */
