@@ -219,21 +219,7 @@ pub fn tri_rashi_lord(lagna: Rashi, by_day: bool) -> Graha {
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 pub fn office_bearers(year: &YearCharts) -> Result<OfficeBearers, Error> {
-    let sign = |field: &str, longitude: f64| -> Result<Rashi, Error> {
-        if !longitude.is_finite() {
-            return Err(
-                Error::invalid_arg(format!("{field} is a longitude that is not a number"))
-                    .with_field(field.to_owned()),
-            );
-        }
-        #[expect(
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss,
-            reason = "a longitude folded into 0..360 divides by thirty into 0..12"
-        )]
-        let index = (longitude.rem_euclid(360.0) / 30.0) as u16 % 12;
-        Rashi::from_id(index).ok_or_else(|| Error::internal("a sign index below twelve is a sign"))
-    };
+    let sign = sign_at;
     let natal = sign("natal_lagna_deg", year.natal_lagna_deg)?;
     let annual = sign("annual_lagna_deg", year.annual_lagna_deg)?;
     let sun = sign("annual_sun_deg", year.annual_sun_deg)?;
@@ -253,6 +239,24 @@ pub fn office_bearers(year: &YearCharts) -> Result<OfficeBearers, Error> {
         dina_ratri: if year.by_day { sun } else { moon }.attributes().lord,
         by_day: year.by_day,
     })
+}
+
+/// The sign a longitude stands in, refused by `field` where it is not a
+/// number.
+pub(crate) fn sign_at(field: &str, longitude: f64) -> Result<Rashi, Error> {
+    if !longitude.is_finite() {
+        return Err(
+            Error::invalid_arg(format!("{field} is a longitude that is not a number"))
+                .with_field(field.to_owned()),
+        );
+    }
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a longitude folded into 0..360 divides by thirty into 0..12"
+    )]
+    let index = (longitude.rem_euclid(360.0) / 30.0) as u16 % 12;
+    Rashi::from_id(index).ok_or_else(|| Error::internal("a sign index below twelve is a sign"))
 }
 
 #[cfg(test)]

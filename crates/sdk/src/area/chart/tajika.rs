@@ -17,10 +17,10 @@ use teistro_serial::Document;
 use teistro_state::state;
 use teistro_tajika::{
     Affliction, AnnualDasha, AnnualDashaRules, AnnualSky, AnnualStates, Between, DrishtiRules,
-    Favour, Harsha, HarshaRules, MuddaBalance, Muntha, MunthaDegree, Natal, OfficeBearers,
-    Panchavargiya, Pravesha, Qualification, Reading, SEVEN, Saham, SahamFormula, SahamPlace,
-    SahamReading, SahamRules, SahamSky, SahamStrength, SahamStrengthRules, Strength, Varshesha,
-    VarsheshaRules, YearCharts, YearYogas, YogaRules,
+    Favour, Harsha, HarshaRules, Masesha, MaseshaRules, MonthCharts, MuddaBalance, Muntha,
+    MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN,
+    Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength,
+    SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
 };
 
 use super::ChartArea;
@@ -588,6 +588,86 @@ impl ChartArea<'_> {
             &sky,
             &strengths,
             annual.foundation.lagna_deg,
+            rules,
+        )
+    }
+
+    /// The **Masesha**, the lord of one month of the year, from the birth
+    /// chart, the year's chart and the month's chart you founded
+    /// (*Tajika Nilakanthi*, Varsha Tantra, the month's and the day's
+    /// results, vv. 3–5; `03-design/varshesha.md`).
+    ///
+    /// Six planets hold office at a month's entry: the lords of the month
+    /// lagna, of the Muntha's sign (moved on 2°30′ a month), of the birth
+    /// lagna, of the month lagna's Tri-Rashi, of the Sun's or the Moon's
+    /// sign by day or night, and of the year lagna. The strongest that
+    /// aspects the month lagna is lord, by the year lord's chain; the
+    /// "others" of v. 5 are
+    /// [`MaseshaReading::LagnaLord`](teistro_tajika::MaseshaReading::LagnaLord). `entry` is the
+    /// month's own answer from [`ChartArea::masa_praveshas`], which names
+    /// the year and the month; found `month` at its instant, where the
+    /// native is.
+    ///
+    /// It needs **no ephemeris**: the three charts are already founded.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Document, Ephemeris};
+    /// # use teistro::tajika::{MaseshaRules, Reading};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (birth, request): (Document, ChartRequest) = todo!();
+    /// let months = sdk.chart().masa_praveshas(&birth, Reading::Sidereal, 30)?;
+    /// let year = sdk.chart().reading(months[0].at, &request)?.value;
+    /// for entry in &months {
+    ///     let month = sdk.chart().reading(entry.at, &request)?.value;
+    ///     let lord = sdk.chart().masesha(&birth, &year, &month, entry, MaseshaRules::default())?;
+    ///     println!("month {}: {:?}", entry.month, lord.graha);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A month chart not founded at `entry`'s instant, named `month`; a
+    /// chart that does not place one of the seven; as
+    /// [`ChartArea::varshesha`].
+    pub fn masesha(
+        self,
+        natal: &Document,
+        annual: &Document,
+        month: &Document,
+        entry: &teistro_tajika::MasaPravesha,
+        rules: MaseshaRules,
+    ) -> Result<Masesha, Error> {
+        let opened = &month.foundation;
+        // A second apart is a different chart; a swapped pair of charts is
+        // days or months apart.
+        if (opened.instant.get() - entry.at.get()).abs() > 1.0 / 86_400.0 {
+            return Err(Error::invalid_arg(format!(
+                "the month chart is founded at {}, not at month {}'s entry, {}",
+                opened.instant.get(),
+                entry.month,
+                entry.at.get()
+            ))
+            .with_field("month")
+            .with_hint("found the month's chart at the entry's `at`"));
+        }
+        let sky = Self::sky_of(month)?;
+        let strengths = teistro_tajika::panchavargiya(&sky)?;
+        teistro_tajika::masesha(
+            &MonthCharts {
+                natal_lagna_deg: natal.foundation.lagna_deg,
+                completed_years: entry.year,
+                month: entry.month,
+                annual_lagna_deg: annual.foundation.lagna_deg,
+                month_lagna_deg: opened.lagna_deg,
+                month_sun_deg: sky.sun_deg,
+                month_moon_deg: sky.moon_deg,
+                by_day: opened.day.part.is_daylight(),
+            },
+            &sky,
+            &strengths,
             rules,
         )
     }

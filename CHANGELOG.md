@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The month's lord (Masesha)** (`varshesha.md`). **Numbers:** none moved;
+the year's lord is the same chain through a trait. `sdk.chart().masesha`
+reads the month's lord from the birth, year and month charts after the
+*Tajika Nilakanthi*, Varsha Tantra, vv. 3–5. The six office-bearers are
+the lords of the month lagna, the Muntha (moved 2°30′ a month), the birth
+lagna, the Tri-Rashi, the Sun's or Moon's sign and the year lagna. Of
+these, the strongest that aspects the month lagna is lord. The reading
+that "others" hold, the month lagna's lord outright, is
+`MaseshaReading::LagnaLord`. `teistro_tajika::Bearers` lets the one chain
+choose among any set of office-bearers. The commentary's month example,
+which supposes a Muntha only the natal-degree reading gives, is recorded
+under crux C107 as evidence; the default is unchanged.
+
 **The month's and the day's chart (Maasa and Dina Pravesha)**
 (`annual-chart.md`). **Numbers:** none moved; this adds answers.
 `sdk.chart().masa_praveshas(&birth, reading, year)` answers the twelve
