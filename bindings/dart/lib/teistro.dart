@@ -3037,6 +3037,8 @@ final class JaiminiReading {
     required this.karakamsha,
     required this.brahma,
     required this.grahaArudhas,
+    required this.sthiraKarakas,
+    required this.karakaBhavas,
   });
 
   /// The karakamsha, with every graha's house from it in both charts.
@@ -3049,6 +3051,66 @@ final class JaiminiReading {
   /// `jaimini.graha_arudha_exception`; null for a node that owns no sign
   /// under `jaimini.node_co_lordship`.
   final List<Rashi?> grahaArudhas;
+
+  /// The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten in the table's
+  /// order: the father's and the mother's the stronger of their pair (C408,
+  /// C409), and [SthiraKaraka.chosenBy] says how.
+  ///
+  /// ```dart
+  /// final father = chart.jaimini!.sthiraKarakas
+  ///     .firstWhere((k) => k.signification == Signification.father);
+  /// ```
+  final List<SthiraKaraka> sthiraKarakas;
+
+  /// The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven: the house
+  /// counted from a graha's sign, whole signs in the rasi chart, and the
+  /// sign it falls in.
+  final List<KarakaBhava> karakaBhavas;
+}
+
+/// One sthira karaka of a chart (`03-design/jaimini-significators.md` §7).
+final class SthiraKaraka {
+  const SthiraKaraka({
+    required this.signification,
+    required this.candidates,
+    required this.graha,
+    required this.chosenBy,
+  });
+
+  /// What it signifies.
+  final Signification signification;
+
+  /// The grahas the verse names for it, in id order: one, or the pair the
+  /// stronger is taken of.
+  final List<Graha> candidates;
+
+  /// The karaka.
+  final Graha graha;
+
+  /// How it was chosen.
+  final ChosenBy chosenBy;
+}
+
+/// One karaka bhava of a chart: a house counted from a graha.
+final class KarakaBhava {
+  const KarakaBhava({
+    required this.graha,
+    required this.house,
+    required this.signification,
+    required this.sign,
+  });
+
+  /// The graha counted from.
+  final Graha graha;
+
+  /// The house counted from its sign, 1 to 12.
+  final int house;
+
+  /// What that house shows.
+  final Signification signification;
+
+  /// The sign it falls in.
+  final Rashi sign;
 }
 
 /// A chart's dasha phala, read under `dasha.shanta_sign`.
@@ -6376,6 +6438,8 @@ List<JaiminiReading> _jaiminisOf(Charts batch) =>
 List<JaiminiReading> _decodeJaiminis(Charts batch) {
   final c = batch.jaimini;
   final h = batch.jaiminiGrahas;
+  final s = batch.jaiminiSthiraKarakas;
+  final kb = batch.jaiminiKarakaBhavas;
   List<int> houses(List<int> column, int chart) =>
       List<int>.unmodifiable(column.sublist(chart * 9, chart * 9 + 9));
   return List<JaiminiReading>.generate(c.length, (chart) {
@@ -6402,6 +6466,24 @@ List<JaiminiReading> _decodeJaiminis(Charts batch) {
       grahaArudhas: List<Rashi?>.unmodifiable([
         for (var row = chart * 9; row < chart * 9 + 9; row++)
           h.arudhaPresent[row] == 1 ? Rashi.byId(h.arudha[row]) : null,
+      ]),
+      sthiraKarakas: List<SthiraKaraka>.unmodifiable([
+        for (var row = chart * 10; row < chart * 10 + 10; row++)
+          SthiraKaraka(
+            signification: Signification.byId(s.signification[row]),
+            candidates: List<Graha>.unmodifiable(_nine(s.candidates[row])),
+            graha: Graha.byId(s.graha[row]),
+            chosenBy: ChosenBy.byId(s.chosenBy[row]),
+          ),
+      ]),
+      karakaBhavas: List<KarakaBhava>.unmodifiable([
+        for (var row = chart * 7; row < chart * 7 + 7; row++)
+          KarakaBhava(
+            graha: Graha.byId(kb.graha[row]),
+            house: kb.house[row],
+            signification: Signification.byId(kb.signification[row]),
+            sign: Rashi.byId(kb.sign[row]),
+          ),
       ]),
     );
   }, growable: false);

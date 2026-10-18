@@ -1506,6 +1506,20 @@ void main() {
       'chart-$i-graha-arudhas',
       jr.grahaArudhas.map((sign) => sign?.fullKey ?? '-').join(','),
     );
+    // The sthira karakas and karaka bhavas (BPHS ch. 32 vv. 18 to 24).
+    for (final (at, s) in jr.sthiraKarakas.indexed) {
+      put(
+        'chart-$i-sthira-$at',
+        '${s.signification.key} ${s.candidates.map((g) => g.fullKey).join(',')} '
+            '${s.graha.fullKey} ${s.chosenBy.key}',
+      );
+    }
+    for (final (at, b) in jr.karakaBhavas.indexed) {
+      put(
+        'chart-$i-karaka-bhava-$at',
+        '${b.graha.fullKey} ${b.house} ${b.signification.key} ${b.sign.fullKey}',
+      );
+    }
     final birth = chart.avakahada!;
     put(
       'chart-$i-avakahada',

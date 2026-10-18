@@ -101,6 +101,8 @@ import {
   NatureById,
   BrahmaRuleById,
   BrahmaOutcomeById,
+  ChosenByById,
+  SignificationById,
   AshtakavargaGoodFromById,
   FruitionById,
   GocharFromById,
@@ -3160,7 +3162,10 @@ function jaiminisOf(batch) {
   if (decoded === undefined) {
     const c = batch.decoded.jaimini;
     const h = batch.decoded.jaiminiGrahas;
+    const s = batch.decoded.jaiminiSthiraKarakas;
+    const kb = batch.decoded.jaiminiKarakaBhavas;
     const graha = (id) => GrahaById.get(id) ?? 'unknown';
+    const signification = (id) => SignificationById.get(id) ?? 'unknown';
     decoded = Array.from({ length: c.atmakaraka.length }, (_, chart) => {
       const houses = (column) =>
         Object.freeze(Array.from({ length: 9 }, (_, g) => column[chart * 9 + g]));
@@ -3184,6 +3189,28 @@ function jaiminisOf(batch) {
           Array.from({ length: 9 }, (_, g) => {
             const row = chart * 9 + g;
             return h.arudhaPresent[row] !== 0 ? (RashiById.get(h.arudha[row]) ?? 'unknown') : null;
+          }),
+        ),
+        sthiraKarakas: Object.freeze(
+          Array.from({ length: 10 }, (_, k) => {
+            const row = chart * 10 + k;
+            return Object.freeze({
+              signification: signification(s.signification[row]),
+              candidates: Object.freeze(membersOf(s.candidates[row], GrahaById)),
+              graha: graha(s.graha[row]),
+              chosenBy: ChosenByById.get(s.chosenBy[row]) ?? 'unknown',
+            });
+          }),
+        ),
+        karakaBhavas: Object.freeze(
+          Array.from({ length: 7 }, (_, k) => {
+            const row = chart * 7 + k;
+            return Object.freeze({
+              graha: graha(kb.graha[row]),
+              house: kb.house[row],
+              signification: signification(kb.signification[row]),
+              sign: RashiById.get(kb.sign[row]) ?? 'unknown',
+            });
           }),
         ),
       });

@@ -6581,6 +6581,124 @@ export declare const BrahmaOutcome: {
 export declare const BrahmaOutcomeById: ReadonlyMap<number, BrahmaOutcome>;
 
 /**
+ * What a fixed significator signifies (BPHS ch. 32 vv. 18 to 24): a
+ * relative, or death (`03-design/jaimini-significators.md` §7).
+ */
+export type Signification =
+  | 'FATHER'
+  | 'MOTHER'
+  | 'SISTER'
+  | 'WIFES_BROTHER'
+  | 'YOUNGER_BROTHER'
+  | 'BROTHER'
+  | 'MATERNAL_RELATIVES'
+  | 'MATERNAL_UNCLE'
+  | 'PATERNAL_GRANDFATHER'
+  | 'HUSBAND'
+  | 'SON'
+  | 'WIFE'
+  | 'DEATH';
+
+/** Every Signification by name; the values are the strings the union accepts. */
+export declare const Signification: {
+  /**
+   * The father (v. 18; the 9th from the Sun, v. 22).
+   */
+  readonly Father: 'FATHER';
+  /**
+   * The mother (v. 19; the 4th from the Moon, v. 22).
+   */
+  readonly Mother: 'MOTHER';
+  /**
+   * A sister (v. 19, from Mars).
+   */
+  readonly Sister: 'SISTER';
+  /**
+   * The wife's brother (v. 19, from Mars).
+   */
+  readonly WifesBrother: 'WIFES_BROTHER';
+  /**
+   * A younger brother (v. 19, from Mars).
+   */
+  readonly YoungerBrother: 'YOUNGER_BROTHER';
+  /**
+   * A brother (the 3rd from Mars, v. 23).
+   */
+  readonly Brother: 'BROTHER';
+  /**
+   * The mother's kin (v. 20, from Mercury).
+   */
+  readonly MaternalRelatives: 'MATERNAL_RELATIVES';
+  /**
+   * The maternal uncle and his kin (v. 20 from Mercury; the 6th from
+   * Mercury, v. 23).
+   */
+  readonly MaternalUncle: 'MATERNAL_UNCLE';
+  /**
+   * The paternal grandfather (v. 20, from Jupiter).
+   */
+  readonly PaternalGrandfather: 'PATERNAL_GRANDFATHER';
+  /**
+   * The husband, the e-text's पितः read as पतिः (v. 20, from Venus; C410).
+   */
+  readonly Husband: 'HUSBAND';
+  /**
+   * A son (v. 20 from Saturn; the 5th from Jupiter, v. 23).
+   */
+  readonly Son: 'SON';
+  /**
+   * The wife (the 7th from Venus, v. 23).
+   */
+  readonly Wife: 'WIFE';
+  /**
+   * Death, of the father and the others (the 8th from Saturn, v. 24).
+   */
+  readonly Death: 'DEATH';
+};
+
+/**
+ * Every Signification by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SignificationById: ReadonlyMap<number, Signification>;
+
+/**
+ * How a sthira karaka was chosen (C408, C409), so a reader checks the
+ * choice against the chart rather than trusting it.
+ */
+export type ChosenBy = 'ALONE' | 'SIGN' | 'DIGNITY' | 'FIRST_NAMED' | 'CALLER';
+
+/** Every ChosenBy by name; the values are the strings the union accepts. */
+export declare const ChosenBy: {
+  /**
+   * The verse names one graha.
+   */
+  readonly Alone: 'ALONE';
+  /**
+   * The two stand in signs BPHS ch. 46 vv. 158 to 166 part.
+   */
+  readonly Sign: 'SIGN';
+  /**
+   * Their signs are equal by that ladder, and one's dignity is higher.
+   */
+  readonly Dignity: 'DIGNITY';
+  /**
+   * Nothing parts them, and the graha the verse names first is taken.
+   */
+  readonly FirstNamed: 'FIRST_NAMED';
+  /**
+   * The caller's own comparison.
+   */
+  readonly Caller: 'CALLER';
+};
+
+/**
+ * Every ChosenBy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ChosenByById: ReadonlyMap<number, ChosenBy>;
+
+/**
  * What a gochar reading counted its houses from (crux C139).
  */
 export type GocharFrom = 'MOON' | 'LAGNA';

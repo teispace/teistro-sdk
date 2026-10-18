@@ -3866,6 +3866,58 @@ class AnEngine(WithLibrary):
         self.assertIn(BrahmaOutcome.FOUND, outcomes)
         self.assertGreater(len(outcomes), 1, outcomes)
 
+    def test_a_chart_carries_its_sthira_karakas_and_karaka_bhavas(self) -> None:
+        """BPHS ch. 32 vv. 18 to 24 as `03-design/jaimini-significators.md`
+        §7 tabulates them: the table's order, the verse's candidates, a
+        pair's stronger chosen and saying how, and each house counted from
+        its graha."""
+        from teistro import ChosenBy, Signification
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        g = Graha
+        sthira = [
+            (Signification.FATHER, (g.SUN, g.VENUS)),
+            (Signification.MOTHER, (g.MOON, g.MARS)),
+            (Signification.SISTER, (g.MARS,)),
+            (Signification.WIFES_BROTHER, (g.MARS,)),
+            (Signification.YOUNGER_BROTHER, (g.MARS,)),
+            (Signification.MATERNAL_RELATIVES, (g.MERCURY,)),
+            (Signification.MATERNAL_UNCLE, (g.MERCURY,)),
+            (Signification.PATERNAL_GRANDFATHER, (g.JUPITER,)),
+            (Signification.HUSBAND, (g.VENUS,)),
+            (Signification.SON, (g.SATURN,)),
+        ]
+        bhavas = [
+            (g.SUN, 9, Signification.FATHER),
+            (g.MOON, 4, Signification.MOTHER),
+            (g.MARS, 3, Signification.BROTHER),
+            (g.MERCURY, 6, Signification.MATERNAL_UNCLE),
+            (g.JUPITER, 5, Signification.SON),
+            (g.VENUS, 7, Signification.WIFE),
+            (g.SATURN, 8, Signification.DEATH),
+        ]
+        chosen = set()
+        for step in range(40):
+            chart = self.ctx.chart.found(
+                instant=2451545.0 + step * 2.9, place=observer, utc_offset_seconds=20700, jaimini=True
+            )
+            reading = chart.jaimini
+            assert reading is not None
+            self.assertEqual([(k.signification, k.candidates) for k in reading.sthira_karakas], sthira)
+            for k in reading.sthira_karakas:
+                self.assertIn(k.graha, k.candidates)
+                self.assertEqual(k.chosen_by is ChosenBy.ALONE, len(k.candidates) == 1, k)
+                if len(k.candidates) == 2:
+                    chosen.add(k.chosen_by)
+            self.assertEqual([(b.graha, b.house, b.signification) for b in reading.karaka_bhavas], bhavas)
+            for b in reading.karaka_bhavas:
+                own = int(chart.grahas[int(b.graha)].longitude_deg // 30)
+                self.assertEqual(int(b.sign), (own + b.house - 1) % 12, b)
+        self.assertIn(ChosenBy.SIGN, chosen)
+        self.assertGreater(len(chosen), 1, chosen)
+
     def test_a_chart_carries_its_dasha_phala_and_the_shadbala_its_rays(self) -> None:
         """A chart's dasha phala crosses whole: the nine grahas' Subhankas within
         each varga's share and complementary in total, a nature and a phase

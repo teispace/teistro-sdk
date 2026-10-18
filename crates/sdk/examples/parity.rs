@@ -5324,6 +5324,34 @@ fn the_jaimini(report: &mut Report, index: usize, document: &teistro::Document) 
         &format!("chart-{index}-graha-arudhas"),
         arudhas.join(","),
     );
+    // The sthira karakas and karaka bhavas (BPHS ch. 32 vv. 18 to 24).
+    for (at, karaka) in reading.sthira_karakas.iter().enumerate() {
+        let candidates: Vec<&str> = karaka.candidates.iter().map(|g| g.full_key()).collect();
+        put(
+            report,
+            &format!("chart-{index}-sthira-{at}"),
+            format!(
+                "{} {} {} {}",
+                wire_key(&karaka.signification),
+                candidates.join(","),
+                karaka.graha.full_key(),
+                wire_key(&karaka.chosen_by)
+            ),
+        );
+    }
+    for (at, bhava) in reading.karaka_bhavas.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-karaka-bhava-{at}"),
+            format!(
+                "{} {} {} {}",
+                bhava.graha.full_key(),
+                bhava.house.get(),
+                wire_key(&bhava.signification),
+                bhava.sign.full_key()
+            ),
+        );
+    }
     let qualified: Vec<&str> = b.qualified.iter().map(|g| g.full_key()).collect();
     put(
         report,

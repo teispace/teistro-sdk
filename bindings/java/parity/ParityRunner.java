@@ -1743,6 +1743,17 @@ public final class ParityRunner {
         put(c + "-jaimini", karakamsha.atmakaraka().fullKey() + " " + karakamsha.sign().fullKey() + " "
                 + ints(",", karakamsha.inRasi()) + " " + ints(",", karakamsha.inNavamsha()));
         put(c + "-graha-arudhas", join(",", jr.grahaArudhas(), sign -> sign != null ? sign.fullKey() : "-"));
+        // The sthira karakas and karaka bhavas (BPHS ch. 32 vv. 18 to 24).
+        for (int at = 0; at < jr.sthiraKarakas().size(); at += 1) {
+            SthiraKaraka s = jr.sthiraKarakas().get(at);
+            put(c + "-sthira-" + at, s.signification().key() + " " + join(",", s.candidates(), Graha::fullKey) + " "
+                    + s.graha().fullKey() + " " + s.chosenBy().key());
+        }
+        for (int at = 0; at < jr.karakaBhavas().size(); at += 1) {
+            KarakaBhava b = jr.karakaBhavas().get(at);
+            put(c + "-karaka-bhava-" + at, b.graha().fullKey() + " " + b.house() + " " + b.signification().key()
+                    + " " + b.sign().fullKey());
+        }
         Avakahada birth = chart.avakahada().orElseThrow();
         put(c + "-avakahada", birth.nakshatra().fullKey() + " " + birth.pada() + " " + birth.rashi().fullKey() + " "
                 + birth.nakshatraLord().fullKey() + " " + birth.rashiLord().fullKey() + " " + birth.varna().fullKey()

@@ -595,6 +595,8 @@ final class VedicReads {
     private static List<JaiminiReading> jaiminis(Charts decoded) {
         Charts.Jaimini c = decoded.jaimini();
         Charts.JaiminiGrahas h = decoded.jaiminiGrahas();
+        Charts.JaiminiSthiraKarakas s = decoded.jaiminiSthiraKarakas();
+        Charts.JaiminiKarakaBhavas kb = decoded.jaiminiKarakaBhavas();
         Graha[] nine = grahaIds(9);
         List<JaiminiReading> out = new ArrayList<>(c.length());
         for (int chart = 0; chart < c.length(); chart += 1) {
@@ -608,6 +610,16 @@ final class VedicReads {
                 inNavamsha.add(h.inNavamsha(row));
                 arudhas.add(h.arudhaPresent(row) == 1 ? Rashi.of(h.arudha(row)) : null);
             }
+            List<SthiraKaraka> sthira = new ArrayList<>(10);
+            for (int row = chart * 10; row < chart * 10 + 10; row += 1) {
+                sthira.add(new SthiraKaraka(Signification.of(s.signification(row)), members(s.candidates(row), nine),
+                        Graha.of(s.graha(row)), ChosenBy.of(s.chosenBy(row))));
+            }
+            List<KarakaBhava> bhavas = new ArrayList<>(7);
+            for (int row = chart * 7; row < chart * 7 + 7; row += 1) {
+                bhavas.add(new KarakaBhava(Graha.of(kb.graha(row)), kb.house(row),
+                        Signification.of(kb.signification(row)), Rashi.of(kb.sign(row))));
+            }
             out.add(new JaiminiReading(
                     new Karakamsha(Graha.of(c.atmakaraka(chart)), Rashi.of(c.karakamsha(chart)), inRasi, inNavamsha),
                     new Brahma(
@@ -617,7 +629,7 @@ final class VedicReads {
                             found ? Graha.of(c.brahma(chart)) : null,
                             c.passedFromPresent(chart) == 1 ? Graha.of(c.passedFrom(chart)) : null,
                             found ? null : outcome),
-                    Collections.unmodifiableList(arudhas)));
+                    Collections.unmodifiableList(arudhas), sthira, bhavas));
         }
         return List.copyOf(out);
     }

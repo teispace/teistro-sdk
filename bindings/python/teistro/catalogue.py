@@ -3914,6 +3914,74 @@ class BrahmaOutcome(Member):
     """
 
 
+class Signification(Member):
+    """What a fixed significator signifies (BPHS ch. 32 vv. 18 to 24): a
+    relative, or death (`03-design/jaimini-significators.md` §7).
+    """
+
+    FATHER = 0
+    """The father (v. 18; the 9th from the Sun, v. 22)."""
+
+    MOTHER = 1
+    """The mother (v. 19; the 4th from the Moon, v. 22)."""
+
+    SISTER = 2
+    """A sister (v. 19, from Mars)."""
+
+    WIFES_BROTHER = 3
+    """The wife's brother (v. 19, from Mars)."""
+
+    YOUNGER_BROTHER = 4
+    """A younger brother (v. 19, from Mars)."""
+
+    BROTHER = 5
+    """A brother (the 3rd from Mars, v. 23)."""
+
+    MATERNAL_RELATIVES = 6
+    """The mother's kin (v. 20, from Mercury)."""
+
+    MATERNAL_UNCLE = 7
+    """The maternal uncle and his kin (v. 20 from Mercury; the 6th from
+    Mercury, v. 23).
+    """
+
+    PATERNAL_GRANDFATHER = 8
+    """The paternal grandfather (v. 20, from Jupiter)."""
+
+    HUSBAND = 9
+    """The husband, the e-text's पितः read as पतिः (v. 20, from Venus; C410)."""
+
+    SON = 10
+    """A son (v. 20 from Saturn; the 5th from Jupiter, v. 23)."""
+
+    WIFE = 11
+    """The wife (the 7th from Venus, v. 23)."""
+
+    DEATH = 12
+    """Death, of the father and the others (the 8th from Saturn, v. 24)."""
+
+
+class ChosenBy(Member):
+    """How a sthira karaka was chosen (C408, C409), so a reader checks the
+    choice against the chart rather than trusting it.
+    """
+
+    ALONE = 0
+    """The verse names one graha."""
+
+    SIGN = 1
+    """The two stand in signs BPHS ch. 46 vv. 158 to 166 part."""
+
+    DIGNITY = 2
+    """Their signs are equal by that ladder, and one's dignity is higher."""
+
+    FIRST_NAMED = 3
+    """Nothing parts them, and the graha the verse names first is taken."""
+
+    CALLER = 4
+    """The caller's own comparison."""
+
+
 class GocharFrom(Member):
     """What a gochar reading counted its houses from (crux C139)."""
 
@@ -6681,6 +6749,28 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "NO_LORD_QUALIFIES",
         2: "NO_PLANET_IN_THE_SIXTH",
         3: "NO_PLANET_QUALIFIES",
+    },
+    "Signification": {
+        0: "FATHER",
+        1: "MOTHER",
+        2: "SISTER",
+        3: "WIFES_BROTHER",
+        4: "YOUNGER_BROTHER",
+        5: "BROTHER",
+        6: "MATERNAL_RELATIVES",
+        7: "MATERNAL_UNCLE",
+        8: "PATERNAL_GRANDFATHER",
+        9: "HUSBAND",
+        10: "SON",
+        11: "WIFE",
+        12: "DEATH",
+    },
+    "ChosenBy": {
+        0: "ALONE",
+        1: "SIGN",
+        2: "DIGNITY",
+        3: "FIRST_NAMED",
+        4: "CALLER",
     },
     "GocharFrom": {
         0: "MOON",

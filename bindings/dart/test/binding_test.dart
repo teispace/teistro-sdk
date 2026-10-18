@@ -5625,6 +5625,74 @@ void _engineTests() {
     },
   );
 
+  test('a chart carries its sthira karakas and karaka bhavas', () {
+    // BPHS ch. 32 vv. 18 to 24 as `03-design/jaimini-significators.md` §7
+    // tabulates them: the table's order, the verse's candidates, a pair's
+    // stronger chosen and saying how, and each house counted from its graha.
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const sthira = [
+      (Signification.father, [Graha.sun, Graha.venus]),
+      (Signification.mother, [Graha.moon, Graha.mars]),
+      (Signification.sister, [Graha.mars]),
+      (Signification.wifesBrother, [Graha.mars]),
+      (Signification.youngerBrother, [Graha.mars]),
+      (Signification.maternalRelatives, [Graha.mercury]),
+      (Signification.maternalUncle, [Graha.mercury]),
+      (Signification.paternalGrandfather, [Graha.jupiter]),
+      (Signification.husband, [Graha.venus]),
+      (Signification.son, [Graha.saturn]),
+    ];
+    const bhavas = [
+      (Graha.sun, 9, Signification.father),
+      (Graha.moon, 4, Signification.mother),
+      (Graha.mars, 3, Signification.brother),
+      (Graha.mercury, 6, Signification.maternalUncle),
+      (Graha.jupiter, 5, Signification.son),
+      (Graha.venus, 7, Signification.wife),
+      (Graha.saturn, 8, Signification.death),
+    ];
+    final chosen = <ChosenBy>{};
+    for (var step = 0; step < 40; step++) {
+      final chart = ctx.chart.found(
+        instant: 2451545.0 + step * 2.9,
+        place: place,
+        utcOffsetSeconds: 20700,
+        jaimini: true,
+      );
+      final reading = chart.jaimini!;
+      // A record's list compares by identity, so the two fields apart.
+      expect(
+        [for (final k in reading.sthiraKarakas) k.signification],
+        [for (final (of, _) in sthira) of],
+      );
+      expect(
+        [for (final k in reading.sthiraKarakas) k.candidates],
+        [for (final (_, from) in sthira) from],
+      );
+      for (final k in reading.sthiraKarakas) {
+        expect(k.candidates, contains(k.graha));
+        expect(k.chosenBy == ChosenBy.alone, k.candidates.length == 1);
+        if (k.candidates.length == 2) chosen.add(k.chosenBy);
+      }
+      expect([
+        for (final b in reading.karakaBhavas)
+          (b.graha, b.house, b.signification),
+      ], bhavas);
+      for (final b in reading.karakaBhavas) {
+        final own = chart.grahas[b.graha.id].longitudeDeg ~/ 30;
+        expect(b.sign.id, (own + b.house - 1) % 12);
+      }
+    }
+    expect(chosen, contains(ChosenBy.sign));
+    expect(chosen.length, greaterThan(1));
+    ctx.dispose();
+  });
+
   test('a chart carries its karakamsha and its Brahma graha, or why not', () {
     final ctx = context();
     final place = Observer(

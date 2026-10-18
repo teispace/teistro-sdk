@@ -30,11 +30,11 @@ use teistro_core::settings;
 use teistro_ffi::calendar::TsResolution;
 use teistro_ffi::chart::{TsAshtakavargaGoodFrom, TsKakshyaLord, TsSarvaStanding};
 use teistro_ffi::chart::{
-    TsBalance, TsBrahmaOutcome, TsBrahmaRule, TsBurning, TsDashaPhase, TsEkadhipatya, TsFruition,
-    TsGocharFrom, TsGocharVerdict, TsHarshaGrade, TsNodeObstruction, TsNodeVedha, TsQuadrant,
-    TsReading, TsSaham, TsSahamStrong, TsSahamWeak, TsShodhana, TsStrength, TsTajikaDrishti,
-    TsTajikaRelation, TsTajikaYoga, TsVarsheshaChosen, TsVimshopakaScoring, TsWesternAspect,
-    TsYearYoga,
+    TsBalance, TsBrahmaOutcome, TsBrahmaRule, TsBurning, TsChosenBy, TsDashaPhase, TsEkadhipatya,
+    TsFruition, TsGocharFrom, TsGocharVerdict, TsHarshaGrade, TsNodeObstruction, TsNodeVedha,
+    TsQuadrant, TsReading, TsSaham, TsSahamStrong, TsSahamWeak, TsShodhana, TsSignification,
+    TsStrength, TsTajikaDrishti, TsTajikaRelation, TsTajikaYoga, TsVarsheshaChosen,
+    TsVimshopakaScoring, TsWesternAspect, TsYearYoga,
 };
 use teistro_ffi::day::{
     TsDayPart, TsDayState, TsGhatiReckoning, TsHoraReckoning, TsPolarDayPolicy, TsPolarKind,
@@ -437,6 +437,18 @@ fn chart(api: &Api) -> Vec<&'static str> {
             id(TsBrahmaRule::from(*r) as u8)
         }),
         brahma_outcome(api),
+        unit(
+            api,
+            "TsSignification",
+            |s: &teistro::dasha::jaimini::Signification| {
+                Some(i64::from(TsSignification::from(*s) as u16))
+            },
+        ),
+        unit(
+            api,
+            "TsChosenBy",
+            |c: &teistro::dasha::jaimini::ChosenBy| id(TsChosenBy::from(*c) as u8),
+        ),
         unit(api, "TsDayPart", |p: &teistro_chart::day::DayPart| {
             id(TsDayPart::from(*p) as u8)
         }),

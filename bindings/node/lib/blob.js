@@ -1812,6 +1812,26 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 128, 'jaimini_sthira_karakas');
+    out.jaiminiSthiraKarakas = {
+      signification: column(blob, at, 0, 'u16', at.count),
+      candidates: column(blob, at, 1, 'u16', at.count),
+      graha: column(blob, at, 2, 'u16', at.count),
+      chosenBy: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 129, 'jaimini_karaka_bhavas');
+    out.jaiminiKarakaBhavas = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      house: column(blob, at, 1, 'u8', at.count),
+      signification: column(blob, at, 2, 'u16', at.count),
+      sign: column(blob, at, 3, 'u16', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

@@ -4902,6 +4902,64 @@ final class ChartsLilith {
   final int length;
 }
 
+/// The `jaimini_sthira_karakas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.
+final class ChartsJaiminiSthiraKarakas {
+  const ChartsJaiminiSthiraKarakas({
+    required this.signification,
+    required this.candidates,
+    required this.graha,
+    required this.chosenBy,
+    required this.length,
+  });
+
+  /// What it signifies.
+  final Uint16List signification;
+
+  /// The grahas the verse names for it, a bit set: bit `n` is the graha with id `n`; one, or the pair the stronger is taken of.
+  final Uint16List candidates;
+
+  /// The karaka.
+  final Uint16List graha;
+
+  /// How it was chosen.
+  final Uint8List chosenBy;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `jaimini_karaka_bhavas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
+final class ChartsJaiminiKarakaBhavas {
+  const ChartsJaiminiKarakaBhavas({
+    required this.graha,
+    required this.house,
+    required this.signification,
+    required this.sign,
+    required this.length,
+  });
+
+  /// The graha counted from.
+  final Uint16List graha;
+
+  /// The house counted from its sign, 1 to 12.
+  final Uint8List house;
+
+  /// What that house shows.
+  final Uint16List signification;
+
+  /// The sign it falls in.
+  final Uint16List sign;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5425,6 +5483,8 @@ final class Charts {
     required this.progressedParallels,
     required this.progressedMutualContacts,
     required this.lilith,
+    required this.jaiminiSthiraKarakas,
+    required this.jaiminiKarakaBhavas,
   });
 
   /// What kind of chart these are.
@@ -5852,6 +5912,12 @@ final class Charts {
   /// The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).
   final ChartsLilith lilith;
 
+  /// The sthira karakas of BPHS ch. 32 vv. 18 to 20, ten a chart in the table's order, charts outermost: row `i * 10 + k` is the `i`th chart in `jaimini`, karaka `k`. The father's and the mother's are the stronger of their pair (C408, C409); `chosen_by` says how. Empty when the Jaimini reading was not asked for.
+  final ChartsJaiminiSthiraKarakas jaiminiSthiraKarakas;
+
+  /// The karaka bhavas of BPHS ch. 32 vv. 22 to 24, seven a chart in the table's order, charts outermost: row `i * 7 + k` is the `i`th chart in `jaimini`, row `k`. Each is the house counted from a graha's sign, whole signs in the rasi chart, and the sign it falls in. Empty when the Jaimini reading was not asked for.
+  final ChartsJaiminiKarakaBhavas jaiminiKarakaBhavas;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5986,6 +6052,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atProgressedParallels = blob.section(125, 'progressed_parallels');
   final atProgressedMutualContacts = blob.section(126, 'progressed_mutual_contacts');
   final atLilith = blob.section(127, 'lilith');
+  final atJaiminiSthiraKarakas = blob.section(128, 'jaimini_sthira_karakas');
+  final atJaiminiKarakaBhavas = blob.section(129, 'jaimini_karaka_bhavas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -10713,6 +10781,52 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atLilith, 13) + atLilith.count * 8,
       ),
       length: atLilith.count,
+    ),
+    jaiminiSthiraKarakas: ChartsJaiminiSthiraKarakas(
+      signification: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiSthiraKarakas, 0),
+        blob.columnOffset(atJaiminiSthiraKarakas, 0) + atJaiminiSthiraKarakas.count * 2,
+      ),
+      candidates: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiSthiraKarakas, 1),
+        blob.columnOffset(atJaiminiSthiraKarakas, 1) + atJaiminiSthiraKarakas.count * 2,
+      ),
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiSthiraKarakas, 2),
+        blob.columnOffset(atJaiminiSthiraKarakas, 2) + atJaiminiSthiraKarakas.count * 2,
+      ),
+      chosenBy: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiSthiraKarakas, 3),
+        blob.columnOffset(atJaiminiSthiraKarakas, 3) + atJaiminiSthiraKarakas.count * 1,
+      ),
+      length: atJaiminiSthiraKarakas.count,
+    ),
+    jaiminiKarakaBhavas: ChartsJaiminiKarakaBhavas(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiKarakaBhavas, 0),
+        blob.columnOffset(atJaiminiKarakaBhavas, 0) + atJaiminiKarakaBhavas.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiKarakaBhavas, 1),
+        blob.columnOffset(atJaiminiKarakaBhavas, 1) + atJaiminiKarakaBhavas.count * 1,
+      ),
+      signification: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiKarakaBhavas, 2),
+        blob.columnOffset(atJaiminiKarakaBhavas, 2) + atJaiminiKarakaBhavas.count * 2,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiKarakaBhavas, 3),
+        blob.columnOffset(atJaiminiKarakaBhavas, 3) + atJaiminiKarakaBhavas.count * 2,
+      ),
+      length: atJaiminiKarakaBhavas.count,
     ),
   );
 }

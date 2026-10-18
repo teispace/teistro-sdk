@@ -289,6 +289,171 @@ impl From<Option<teistro::dasha::jaimini::NoBrahma>> for TsBrahmaOutcome {
     }
 }
 
+/// What a fixed significator signifies (BPHS ch. 32 vv. 18 to 24): a
+/// relative, or death (`03-design/jaimini-significators.md` §7).
+#[repr(u16)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSignification {
+    /// The father (v. 18; the 9th from the Sun, v. 22).
+    Father = 0,
+    /// The mother (v. 19; the 4th from the Moon, v. 22).
+    Mother = 1,
+    /// A sister (v. 19, from Mars).
+    Sister = 2,
+    /// The wife's brother (v. 19, from Mars).
+    WifesBrother = 3,
+    /// A younger brother (v. 19, from Mars).
+    YoungerBrother = 4,
+    /// A brother (the 3rd from Mars, v. 23).
+    Brother = 5,
+    /// The mother's kin (v. 20, from Mercury).
+    MaternalRelatives = 6,
+    /// The maternal uncle and his kin (v. 20 from Mercury; the 6th from
+    /// Mercury, v. 23).
+    MaternalUncle = 7,
+    /// The paternal grandfather (v. 20, from Jupiter).
+    PaternalGrandfather = 8,
+    /// The husband, the e-text's पितः read as पतिः (v. 20, from Venus; C410).
+    Husband = 9,
+    /// A son (v. 20 from Saturn; the 5th from Jupiter, v. 23).
+    Son = 10,
+    /// The wife (the 7th from Venus, v. 23).
+    Wife = 11,
+    /// Death, of the father and the others (the 8th from Saturn, v. 24).
+    Death = 12,
+}
+
+impl From<teistro::dasha::jaimini::Signification> for TsSignification {
+    fn from(of: teistro::dasha::jaimini::Signification) -> TsSignification {
+        use teistro::dasha::jaimini::Signification as S;
+        match of {
+            S::Father => TsSignification::Father,
+            S::Mother => TsSignification::Mother,
+            S::Sister => TsSignification::Sister,
+            S::WifesBrother => TsSignification::WifesBrother,
+            S::YoungerBrother => TsSignification::YoungerBrother,
+            S::Brother => TsSignification::Brother,
+            S::MaternalRelatives => TsSignification::MaternalRelatives,
+            S::MaternalUncle => TsSignification::MaternalUncle,
+            S::PaternalGrandfather => TsSignification::PaternalGrandfather,
+            S::Husband => TsSignification::Husband,
+            S::Son => TsSignification::Son,
+            S::Wife => TsSignification::Wife,
+            S::Death => TsSignification::Death,
+        }
+    }
+}
+
+/// How a sthira karaka was chosen (C408, C409), so a reader checks the
+/// choice against the chart rather than trusting it.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsChosenBy {
+    /// The verse names one graha.
+    Alone = 0,
+    /// The two stand in signs BPHS ch. 46 vv. 158 to 166 part.
+    Sign = 1,
+    /// Their signs are equal by that ladder, and one's dignity is higher.
+    Dignity = 2,
+    /// Nothing parts them, and the graha the verse names first is taken.
+    FirstNamed = 3,
+    /// The caller's own comparison.
+    Caller = 4,
+}
+
+impl From<teistro::dasha::jaimini::ChosenBy> for TsChosenBy {
+    fn from(by: teistro::dasha::jaimini::ChosenBy) -> TsChosenBy {
+        use teistro::dasha::jaimini::ChosenBy as C;
+        match by {
+            C::Alone => TsChosenBy::Alone,
+            C::Sign => TsChosenBy::Sign,
+            C::Dignity => TsChosenBy::Dignity,
+            C::FirstNamed => TsChosenBy::FirstNamed,
+            C::Caller => TsChosenBy::Caller,
+        }
+    }
+}
+
+/// Every chart's sthira karakas, ten a chart, and its karaka bhavas, seven
+/// a chart, each chart one that asked for the Jaimini reading
+/// (BPHS ch. 32 vv. 18 to 24; `03-design/jaimini-significators.md` §7).
+struct KarakaColumns {
+    /// The `jaimini_sthira_karakas` section.
+    signification: Vec<u16>,
+    candidates: Vec<u16>,
+    graha: Vec<u16>,
+    chosen_by: Vec<u8>,
+    /// The `jaimini_karaka_bhavas` section.
+    bhava_graha: Vec<u16>,
+    bhava_house: Vec<u8>,
+    bhava_signification: Vec<u16>,
+    bhava_sign: Vec<u16>,
+}
+
+impl KarakaColumns {
+    fn of(documents: &[Document]) -> KarakaColumns {
+        let readings: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.jaimini.as_ref())
+            .collect();
+        let (sthira, bhavas) = (readings.len() * 10, readings.len() * 7);
+        let mut columns = KarakaColumns {
+            signification: Vec::with_capacity(sthira),
+            candidates: Vec::with_capacity(sthira),
+            graha: Vec::with_capacity(sthira),
+            chosen_by: Vec::with_capacity(sthira),
+            bhava_graha: Vec::with_capacity(bhavas),
+            bhava_house: Vec::with_capacity(bhavas),
+            bhava_signification: Vec::with_capacity(bhavas),
+            bhava_sign: Vec::with_capacity(bhavas),
+        };
+        for reading in readings {
+            for karaka in &reading.sthira_karakas {
+                columns
+                    .signification
+                    .push(TsSignification::from(karaka.signification) as u16);
+                columns.candidates.push(graha_mask(&karaka.candidates));
+                columns.graha.push(karaka.graha.id());
+                columns
+                    .chosen_by
+                    .push(TsChosenBy::from(karaka.chosen_by) as u8);
+            }
+            for bhava in &reading.karaka_bhavas {
+                columns.bhava_graha.push(bhava.graha.id());
+                columns.bhava_house.push(bhava.house.get());
+                columns
+                    .bhava_signification
+                    .push(TsSignification::from(bhava.signification) as u16);
+                columns.bhava_sign.push(bhava.sign.id());
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "jaimini_sthira_karakas",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.signification),
+                ColumnData::U16(&self.candidates),
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.chosen_by),
+            ],
+        )?;
+        writer.columns(
+            "jaimini_karaka_bhavas",
+            self.bhava_graha.len(),
+            &[
+                ColumnData::U16(&self.bhava_graha),
+                ColumnData::U8(&self.bhava_house),
+                ColumnData::U16(&self.bhava_signification),
+                ColumnData::U16(&self.bhava_sign),
+            ],
+        )
+    }
+}
+
 /// What a gochar reading counted its houses from (crux C139).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -5265,6 +5430,7 @@ pub fn encode(
     let western = crate::family::western::Columns::of(&composed, charts.len())?;
     let tables = AspectTables::of(&composed, charts.len())?;
     let lilith = GrahaColumns::lilith(charts)?;
+    let karakas = KarakaColumns::of(documents);
     let summary = summary_values(
         place,
         kind,
@@ -5327,6 +5493,7 @@ pub fn encode(
         by.avakahada.write(&mut writer)?;
         by.moment.write(&mut writer)?;
         lilith.write(&mut writer, "lilith")?;
+        karakas.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
