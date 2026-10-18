@@ -1,0 +1,1966 @@
+{
+  "rules": [
+    {
+      "key": "SARAVALI_SUNAPHA",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "4",
+        "rank": 1,
+        "note": "Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              2
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "glorious, wealthy by his own arm, of much dharma, versed in the scriptures' meaning, of wide fame, calm and happy, a ruler or a minister, and of broad intellect"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_ANAPHA",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "5",
+        "rank": 1,
+        "note": "Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              12
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "eloquent, a lord, wealthy and healthy, of good character, enjoying food, drink, flowers, clothes and women, famous, contented and well dressed"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "6",
+        "rank": 1,
+        "note": "Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              2
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              12
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "famed on earth for speech, intellect and valour, enjoying independence, comfort, wealth, vehicles and pleasures, generous, wearied by keeping his family and his wealth, of good conduct, and bearing burdens"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_SUNAPHA_MARS",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "10",
+        "rank": 1,
+        "note": "Sunapha made by Mars: Mars in the second from the Moon and no graha in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "MOON",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "mostly of valour and wealth, harsh of speech, a ruler, fierce, violent, and set against pretence"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_SUNAPHA_MERCURY",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "11",
+        "rank": 1,
+        "note": "Sunapha made by Mercury: Mercury in the second from the Moon and no graha in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "MOON",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "skilled in the Veda, the sciences and song, devoted to dharma, a poet, high-minded, good to all, and handsome"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_SUNAPHA_JUPITER",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "12",
+        "rank": 1,
+        "note": "Sunapha made by Jupiter: Jupiter in the second from the Moon and no graha in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "MOON",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous teacher of learning, a king or dear to a king, with a good family, and rich"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_SUNAPHA_VENUS",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "13",
+        "rank": 1,
+        "note": "Sunapha made by Venus: Venus in the second from the Moon and no graha in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "MOON",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "rich in wives, fields, wealth, prosperity and cattle, valiant, honoured by kings, wise, steadfast and capable"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_SUNAPHA_SATURN",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "14",
+        "rank": 1,
+        "note": "Sunapha made by Saturn: Saturn in the second from the Moon and no graha in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "MOON",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of clever mind, always honoured by villagers and townsfolk, rich, close in his dealings, and steadfast"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_ANAPHA_MARS",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "15",
+        "rank": 1,
+        "note": "Anapha made by Mars: Mars in the twelfth from the Moon and no graha in the second. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a master of thieves, bold, self-controlled, proud, fierce in battle, wrathful, eminent, praised, handsome and of good gains"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_ANAPHA_MERCURY",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "16",
+        "rank": 1,
+        "note": "Anapha made by Mercury: Mercury in the twelfth from the Moon and no graha in the second. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "skilled in music, dance and writing, a poet and a speaker, honoured by kings, handsome, and of renowned deeds"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_ANAPHA_JUPITER",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "17",
+        "rank": 1,
+        "note": "Anapha made by Jupiter: Jupiter in the twelfth from the Moon and no graha in the second. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "deep, courageous and intelligent, steadfast, wise, famous with kings, and knowing the truth"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_ANAPHA_VENUS",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "18",
+        "rank": 1,
+        "note": "Anapha made by Venus: Venus in the twelfth from the Moon and no graha in the second. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very fortunate with young women, a favourite of the king, a lord of cattle, handsome, and rich in gold"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_ANAPHA_SATURN",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "19",
+        "rank": 1,
+        "note": "Anapha made by Saturn: Saturn in the twelfth from the Moon and no graha in the second. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long-armed, a leader whose word is taken, rich in cattle, the husband of an ill-mannered woman, and of good qualities"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_MARS_MERCURY",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "20",
+        "rank": 1,
+        "note": "Durudhara made by Mars and Mercury: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "untruthful, very wealthy, skilled, very cunning, greedy, attached to an old and unchaste woman, and foremost in his family"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_MARS_JUPITER",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "21",
+        "rank": 1,
+        "note": "Durudhara made by Mars and Jupiter: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "famous, prosperous in his works, at enmity with many, intolerant, cheerful, guarding his family, and given to hoarding"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_MARS_VENUS",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "22",
+        "rank": 1,
+        "note": "Durudhara made by Mars and Venus: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "with fine women, fortunate, quarrelsome, pure, skilled, given to exercise, and brave in battle"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_MARS_SATURN",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "23",
+        "rank": 1,
+        "note": "Durudhara made by Mars and Saturn: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of base women, a wanderer, gathering much, ruined by vices, wrathful, a slanderer, and with enemies"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_MERCURY_JUPITER",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "24",
+        "rank": 1,
+        "note": "Durudhara made by Mercury and Jupiter: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "devoted to dharma, versed in the scriptures, talkative, a good poet with wealth, generous and famous"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_MERCURY_VENUS",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "25",
+        "rank": 1,
+        "note": "Durudhara made by Mercury and Venus: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sweet-spoken, fortunate, handsome, fond of dance and song, waited on, brave, and a minister"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_MERCURY_SATURN",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "26",
+        "rank": 1,
+        "note": "Durudhara made by Mercury and Saturn: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "going from land to land, intent on wealth, of no great learning, honoured by others, and opposed to his own people"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_JUPITER_VENUS",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "27",
+        "rank": 1,
+        "note": "Durudhara made by Jupiter and Venus: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of firmness, intellect and courage, politic, full of gold and gems, famous, and doing the king's work"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_JUPITER_SATURN",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "28",
+        "rank": 1,
+        "note": "Durudhara made by Jupiter and Saturn: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "with happiness, policy and learning, sweet-spoken, learned, a bearer of burdens, calm, rich and handsome"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_DURUDHARA_VENUS_SATURN",
+      "category": "chandra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "13",
+        "verse": "29",
+        "rank": 1,
+        "note": "Durudhara made by Venus and Saturn: the Moon between them, one in the second from her and the other in the twelfth. Ch. 13 v. 1 names the yogas by a graha other than the Sun in the second from the Moon, in the twelfth, or in both, in that order, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of an old man's ways, foremost in his family, skilled, dear to women, honoured by kings, and very wealthy"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VESHI",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "2",
+        "rank": 1,
+        "note": "Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "SUN",
+            "houses": [
+              2
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "slow of glance, steady of speech, untiring in toil, and stooping in the upper body, as the Yavana master says"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VESHI_MARS",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "4",
+        "rank": 1,
+        "note": "Veshi made by Mars: Mars in the second from the Sun and no graha in the twelfth. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a quick traveller, and helpful to others"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VESHI_MERCURY",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "4",
+        "rank": 1,
+        "note": "Veshi made by Mercury: Mercury in the second from the Sun and no graha in the twelfth. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a servant, poor, gentle, modest and bashful"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VESHI_JUPITER",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "3",
+        "rank": 1,
+        "note": "Veshi made by Jupiter: Jupiter in the second from the Sun and no graha in the twelfth. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a gatherer of riches, wealthy, and a good friend"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VESHI_VENUS",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "3",
+        "rank": 1,
+        "note": "Veshi made by Venus: Venus in the second from the Sun and no graha in the twelfth. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "timid, anxious in his work, of light conduct, and dependent"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VESHI_SATURN",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "5",
+        "rank": 1,
+        "note": "Veshi made by Saturn: Saturn in the second from the Sun and no graha in the twelfth. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "given to others' wives, cruel, old-looking, wicked and hateful, and yet wealthy"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VOSHI",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "6",
+        "rank": 1,
+        "note": "Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "SUN",
+            "houses": [
+              12
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "free of speech, of good memory, industrious, looking sideways, stout in the fore-body, like a king, and of a pure nature"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VOSHI_MARS",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "8",
+        "rank": 1,
+        "note": "Voshi made by Mars: Mars in the twelfth from the Sun and no graha in the second. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "SUN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "famed in battle, and heeding no one's word"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VOSHI_MERCURY",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "8",
+        "rank": 1,
+        "note": "Voshi made by Mercury: Mercury in the twelfth from the Sun and no graha in the second. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "SUN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sweet-spoken, handsome, and doing as others bid"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VOSHI_JUPITER",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "7",
+        "rank": 1,
+        "note": "Voshi made by Jupiter: Jupiter in the twelfth from the Sun and no graha in the second. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "SUN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of firmness, courage and intellect, and of weighty speech"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VOSHI_VENUS",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "7",
+        "rank": 1,
+        "note": "Voshi made by Venus: Venus in the twelfth from the Sun and no graha in the second. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "SUN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "brave, famous, virtuous and renowned"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_VOSHI_SATURN",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "9",
+        "rank": 1,
+        "note": "Voshi made by Saturn: Saturn in the twelfth from the Sun and no graha in the second. Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "SUN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a trader true to his family's ways, taking others' wealth, hating his elders, and very cruel"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_UBHAYACHARI",
+      "category": "surya",
+      "source": {
+        "text": "Saravali",
+        "chapter": "14",
+        "verse": "11-12",
+        "rank": 1,
+        "note": "Ch. 14 v. 1 names the yogas by a graha other than the Moon in the second from the Sun, in the twelfth, or in both, so each excludes the next; the grahas are Mars to Saturn, the verse naming no node. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "SUN",
+            "houses": [
+              2
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "SUN",
+            "houses": [
+              12
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "enduring all, of even body, steady, of great courage, not too tall, learned, fortunate, with many servants and much wealth, a support to his kin, like a king, ever zealous, cheerful, and enjoying pleasures"
+        }
+      ]
+    }
+  ]
+}

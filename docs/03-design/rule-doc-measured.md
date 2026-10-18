@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2978 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1339 in `READINGS`, 769 in `NABHASAS`, 657 in `the corpus's own`. Their 11 885 conditions are written 4443 ways, which say 4439 things, and the renderer gives those 4439 sentences.
+3014 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1339 in `READINGS`, 805 in `NABHASAS`, 657 in `the corpus's own`. Their 12 063 conditions are written 4476 ways, which say 4472 things, and the renderer gives those 4472 sentences.
 
-The 2321 shipped rules are what a consumer evaluates; the corpus's own
+The 2357 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 4439 disagree |
-| every condition of every rule renders | **holds** | 0 of 11885 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 4472 disagree |
+| every condition of every rule renders | **holds** | 0 of 12063 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -44,9 +44,9 @@ a change to what a rule asks changes its prose.
 
 | kind | occurrences | as it reads |
 |---|---|---|
-| `and` | 922 | MOON aspects VENUS and VENUS aspects MOON |
-| `or` | 552 | MARS is combust or MARS is retrograde |
-| `not` | 455 | it is not the case that MARS is combust |
+| `and` | 942 | MOON aspects VENUS and VENUS aspects MOON |
+| `or` | 562 | MARS is combust or MARS is retrograde |
+| `not` | 479 | it is not the case that MARS is combust |
 | `planet-in-house` | 1353 | SUN stands in the 1st house |
 | `planet-in-sign` | 1221 | SUN stands in LEO |
 | `planet-dignity` | 403 | the dignity of SUN is exalted |
@@ -56,7 +56,7 @@ a change to what a rule asks changes its prose.
 | `lord-of-house-in-kendra` | 67 | the lord of the 1st house stands in a kendra |
 | `lord-of-house-in-house` | 482 | the lord of the 1st house stands in the 1st house |
 | `planet-conjunct` | 477 | MARS and SUN share a sign |
-| `planet-in-house-from` | 386 | MARS stands in the 1st from SUN |
+| `planet-in-house-from` | 478 | MARS stands in the 1st from SUN |
 | `no-planet-in-houses-from` | 22 | no graha stands in the 2nd from SUN, excepting MOON |
 | `mutual-exchange` | 126 | the lords of the 1st and 2nd houses stand each in the other's sign |
 | `lord-conjunct-lord` | 39 | the lord of the 1st house shares a sign with the lord of the 5th |
@@ -97,7 +97,7 @@ a change to what a rule asks changes its prose.
 | `rashi-aspects` | 2 | the AK aspects the PK by rashi drishti |
 | `argala` | 16 | an intervention from the 5th, unobstructed from the 9th, stands on the pada of house 1 |
 | `vipareeta-argala` | 0 | in no pack |
-| `for-any` | 170 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
+| `for-any` | 202 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
 | `count-of` | 35 | at least 4 of the nine grahas meet: the body found aspects MOON |
 | `n-of` | 12 | exactly 1 of these hold: the rule PHALADEEPIKA_RUCHAKA holds, the rule PHALADEEPIKA_BHADRA holds, the rule PHALADEEPIKA_HAMSA holds, the rule PHALADEEPIKA_MALAVYA holds and the rule PHALADEEPIKA_SASA holds |
 | `in-varga` | 75 | in the D2, the lagna rises in CANCER |
