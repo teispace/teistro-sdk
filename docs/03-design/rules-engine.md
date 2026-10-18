@@ -753,9 +753,9 @@ computed sky misses have a fixture on the cofiring page: the two eclipses
 at a place that sees the luminary just risen, and the two placements on an
 early day of 1800 to 2400.
 
-**Saravali ch. 35's raja yogas, vv. 7 to 163, built (2026-10-19).** The
+**Saravali ch. 35's raja yogas, vv. 7 to 185, built (2026-10-19).** The
 chapter on the birth of kings, read in the 1907 Nirnaya Sagar print off
-the page images, ships as `classical-saravali-raja.json`, 84 rules in the
+the page images, ships as `classical-saravali-raja.json`, 98 rules in the
 nabhasa set under the keys `SARAVALI_RAJA_*`:
 - **the figures:** a sign rising with named grahas in named signs or
   houses: Aries with the Moon, Mars and Jupiter (v. 7); Virgo with Mercury
@@ -781,6 +781,14 @@ nabhasa set under the keys `SARAVALI_RAJA_*`:
   the lords and Pushkala (vv. 114, 145, 147, 150); the nakshatras of the
   Sun rising and of Venus (vv. 148, 149); and the degrees of vv. 157 to
   163.
+- **the closing verses, vv. 164 to 185:** the Moon in Pushya or
+  vargottama in Ashvini (v. 164), Mars in Ashvini, Anuradha or Dhanishtha
+  (v. 165), the figures of vv. 166, 170, 182 and 183, every graha in an
+  upachaya from the Moon (v. 167), the grahas placed from Venus and from
+  Saturn (vv. 171, 172), the lagna lord bright with the malefics in the
+  eleventh (v. 174) or in the upachayas (v. 175), Jupiter in Aries or Leo
+  with Mars at home (v. 176), and the Moon at home or exalted under five
+  aspects (v. 185).
 
 The verses that restate Brihat Jataka ch. 11, or that Phaladeepika ch. 7
 takes over, ship once under the text that already carries them. Those that
@@ -788,9 +796,11 @@ ask what no sky holds, and those that name no placement, are not built
 (C478). Of the 23 rules the computed sky misses, 17 have a fixture at
 Kathmandu on the cofiring page, and so do 7 of the 10 of vv. 103 to 163.
 The figures of vv. 9, 10, 24, 37, 99, 102, 133, 134 and 136 hold on no
-sky from 1801 to 2398 and are listed with that. The
-chapter runs on past v. 163, to the nakshatras and vargottamas of v. 164
-onward, which are its third part.
+sky from 1801 to 2398 and are listed with that, and so do those of
+vv. 166, 170 and 172; vv. 171 and 174 have fixtures. Verses 169, 173, 179
+to 181, 184 and 186 ask what no sky holds, since Mercury and Venus keep
+near the Sun and Jupiter's aspects never meet on the two signs they name,
+and the chapter closes at v. 186.
 
 **BPHS ch. 83's curses, built (2026-10-14).** The chapter reads, from the
 fifth house, the curse in a former birth that denies a son, and gives each
