@@ -229,7 +229,7 @@ const FIVE: [Graha; 5] = [
 ];
 
 /// A graha's mean daily motion, degrees: the *Surya Siddhanta*'s
-/// revolutions over the civil days of an age (I.29 to 37), Mercury's and
+/// revolutions (I.29 to 34) over the civil days of an age (I.37), Mercury's and
 /// Venus's being the Sun's (I.29).
 fn mean_motion(graha: Graha) -> f64 {
     let planet = match graha {
