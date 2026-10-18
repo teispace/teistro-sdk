@@ -2003,6 +2003,21 @@ export class AlmanacDay {
     return this.#spans('varjyam', NakshatraById);
   }
 
+  /** The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (crux C402). */
+  get nakshatraShool() {
+    return this.#spans('nakshatraShool', DirectionById);
+  }
+
+  /** The chandra vasa: the direction the Moon dwells in, by the sign it stands in (crux C403). */
+  get chandraVasa() {
+    return this.#spans('chandraVasa', DirectionById);
+  }
+
+  /** Whose chandrashtama the day holds: each member a natal Moon sign (crux C404). */
+  get chandrashtama() {
+    return this.#spans('chandrashtama', RashiById);
+  }
+
   /** The signs the Moon stood in. */
   get moonSigns() {
     return this.#spans('moonSigns', RashiById);
@@ -2053,6 +2068,7 @@ export class AlmanacDay {
       from: c.from[i],
       to: c.to[i],
       daylight: c.daylight[i] === 1,
+      durmuhurta: c.durmuhurta[i] === 1,
     }));
   }
 

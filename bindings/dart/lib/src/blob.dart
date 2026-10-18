@@ -10687,6 +10687,9 @@ final class PanchangaCounts {
     required this.moonEvents,
     required this.muhurtaYogas,
     required this.varjyam,
+    required this.nakshatraShool,
+    required this.chandraVasa,
+    required this.chandrashtama,
     required this.length,
   });
 
@@ -10731,6 +10734,15 @@ final class PanchangaCounts {
 
   /// How many rows of `varjyam` belong to this day.
   final Uint32List varjyam;
+
+  /// How many rows of `nakshatra_shool` belong to this day.
+  final Uint32List nakshatraShool;
+
+  /// How many rows of `chandra_vasa` belong to this day.
+  final Uint32List chandraVasa;
+
+  /// How many rows of `chandrashtama` belong to this day.
+  final Uint32List chandrashtama;
 
   /// The number of rows every column holds.
   final int length;
@@ -11175,6 +11187,7 @@ final class PanchangaMuhurtas {
     required this.from,
     required this.to,
     required this.daylight,
+    required this.durmuhurta,
     required this.length,
   });
 
@@ -11186,6 +11199,9 @@ final class PanchangaMuhurtas {
 
   /// 1 when it is one of the fifteen of the daylight, 0 for one of the night.
   final Uint8List daylight;
+
+  /// 1 when the day's vara censures it under `panchanga.durmuhurta` (`03-design/panchanga-day.md` §21, crux C398), 0 otherwise.
+  final Uint8List durmuhurta;
 
   /// The number of rows every column holds.
   final int length;
@@ -11302,6 +11318,153 @@ final class PanchangaVarjyam {
   final int length;
 }
 
+/// The `nakshatra_shool` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402). Empty on a day the Moon crosses none of the four. The vara's own direction is `days.disha_shool`.
+final class PanchangaNakshatraShool {
+  const PanchangaNakshatraShool({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The direction not to travel in.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `chandra_vasa` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The chandra vasa: the direction the Moon dwells in, by the sign it stands in (the commentary's sign directions on Yatra Prakarana v. 34, crux C403), one span for each sign the Moon stood in over the day.
+final class PanchangaChandraVasa {
+  const PanchangaChandraVasa({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The direction the Moon dwells in.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `chandrashtama` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.
+final class PanchangaChandrashtama {
+  const PanchangaChandrashtama({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The natal Moon sign the span is chandrashtama for.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -11338,6 +11501,9 @@ final class Panchanga {
     required this.eclipses,
     required this.nepalSambat,
     required this.varjyam,
+    required this.nakshatraShool,
+    required this.chandraVasa,
+    required this.chandrashtama,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -11433,6 +11599,15 @@ final class Panchanga {
   /// The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). `whole` is the window itself, four sixtieths of the star from the table's ghati, and `inside` the part of it in the day; empty under `NONE`.
   final PanchangaVarjyam varjyam;
 
+  /// The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402). Empty on a day the Moon crosses none of the four. The vara's own direction is `days.disha_shool`.
+  final PanchangaNakshatraShool nakshatraShool;
+
+  /// The chandra vasa: the direction the Moon dwells in, by the sign it stands in (the commentary's sign directions on Yatra Prakarana v. 34, crux C403), one span for each sign the Moon stood in over the day.
+  final PanchangaChandraVasa chandraVasa;
+
+  /// Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.
+  final PanchangaChandrashtama chandrashtama;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -11466,6 +11641,9 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atEclipses = blob.section(24, 'eclipses');
   final atNepalSambat = blob.section(25, 'nepal_sambat');
   final atVarjyam = blob.section(26, 'varjyam');
+  final atNakshatraShool = blob.section(27, 'nakshatra_shool');
+  final atChandraVasa = blob.section(28, 'chandra_vasa');
+  final atChandrashtama = blob.section(29, 'chandrashtama');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -11651,6 +11829,21 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atCounts, 13),
         blob.columnOffset(atCounts, 13) + atCounts.count * 4,
+      ),
+      nakshatraShool: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 14),
+        blob.columnOffset(atCounts, 14) + atCounts.count * 4,
+      ),
+      chandraVasa: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 15),
+        blob.columnOffset(atCounts, 15) + atCounts.count * 4,
+      ),
+      chandrashtama: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 16),
+        blob.columnOffset(atCounts, 16) + atCounts.count * 4,
       ),
       length: atCounts.count,
     ),
@@ -12178,6 +12371,11 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atMuhurtas, 2),
         blob.columnOffset(atMuhurtas, 2) + atMuhurtas.count * 1,
       ),
+      durmuhurta: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtas, 3),
+        blob.columnOffset(atMuhurtas, 3) + atMuhurtas.count * 1,
+      ),
       length: atMuhurtas.count,
     ),
     moonEvents: PanchangaMoonEvents(
@@ -12286,6 +12484,150 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atVarjyam, 8) + atVarjyam.count * 1,
       ),
       length: atVarjyam.count,
+    ),
+    nakshatraShool: PanchangaNakshatraShool(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 0),
+        blob.columnOffset(atNakshatraShool, 0) + atNakshatraShool.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 1),
+        blob.columnOffset(atNakshatraShool, 1) + atNakshatraShool.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 2),
+        blob.columnOffset(atNakshatraShool, 2) + atNakshatraShool.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 3),
+        blob.columnOffset(atNakshatraShool, 3) + atNakshatraShool.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 4),
+        blob.columnOffset(atNakshatraShool, 4) + atNakshatraShool.count * 8,
+      ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 5),
+        blob.columnOffset(atNakshatraShool, 5) + atNakshatraShool.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 6),
+        blob.columnOffset(atNakshatraShool, 6) + atNakshatraShool.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 7),
+        blob.columnOffset(atNakshatraShool, 7) + atNakshatraShool.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatraShool, 8),
+        blob.columnOffset(atNakshatraShool, 8) + atNakshatraShool.count * 1,
+      ),
+      length: atNakshatraShool.count,
+    ),
+    chandraVasa: PanchangaChandraVasa(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 0),
+        blob.columnOffset(atChandraVasa, 0) + atChandraVasa.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 1),
+        blob.columnOffset(atChandraVasa, 1) + atChandraVasa.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 2),
+        blob.columnOffset(atChandraVasa, 2) + atChandraVasa.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 3),
+        blob.columnOffset(atChandraVasa, 3) + atChandraVasa.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 4),
+        blob.columnOffset(atChandraVasa, 4) + atChandraVasa.count * 8,
+      ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 5),
+        blob.columnOffset(atChandraVasa, 5) + atChandraVasa.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 6),
+        blob.columnOffset(atChandraVasa, 6) + atChandraVasa.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 7),
+        blob.columnOffset(atChandraVasa, 7) + atChandraVasa.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandraVasa, 8),
+        blob.columnOffset(atChandraVasa, 8) + atChandraVasa.count * 1,
+      ),
+      length: atChandraVasa.count,
+    ),
+    chandrashtama: PanchangaChandrashtama(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 0),
+        blob.columnOffset(atChandrashtama, 0) + atChandrashtama.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 1),
+        blob.columnOffset(atChandrashtama, 1) + atChandrashtama.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 2),
+        blob.columnOffset(atChandrashtama, 2) + atChandrashtama.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 3),
+        blob.columnOffset(atChandrashtama, 3) + atChandrashtama.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 4),
+        blob.columnOffset(atChandrashtama, 4) + atChandrashtama.count * 8,
+      ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 5),
+        blob.columnOffset(atChandrashtama, 5) + atChandrashtama.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 6),
+        blob.columnOffset(atChandrashtama, 6) + atChandrashtama.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 7),
+        blob.columnOffset(atChandrashtama, 7) + atChandrashtama.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChandrashtama, 8),
+        blob.columnOffset(atChandrashtama, 8) + atChandrashtama.count * 1,
+      ),
+      length: atChandrashtama.count,
     ),
   );
 }

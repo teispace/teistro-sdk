@@ -26,7 +26,8 @@ public final class Almanac extends AbstractList<AlmanacDay> {
     /** The per-day lists, by the names {@link #range} takes. */
     private static final List<String> LISTS = List.of(
             "tithi", "nakshatra", "yoga", "karana", "panchaka", "moon_signs", "sun_signs", "kaalas", "choghadiya",
-            "horas", "muhurtas", "moon_events", "muhurta_yogas", "varjyam");
+            "horas", "muhurtas", "moon_events", "muhurta_yogas", "varjyam", "nakshatra_shool", "chandra_vasa",
+            "chandrashtama");
 
     private final Panchanga decoded;
     private final Map<String, int[]> starts = new HashMap<>();
@@ -61,6 +62,9 @@ public final class Almanac extends AbstractList<AlmanacDay> {
                 case "moon_events" -> counts::moonEvents;
                 case "muhurta_yogas" -> counts::muhurtaYogas;
                 case "varjyam" -> counts::varjyam;
+                case "nakshatra_shool" -> counts::nakshatraShool;
+                case "chandra_vasa" -> counts::chandraVasa;
+                case "chandrashtama" -> counts::chandrashtama;
                 default -> throw new IllegalStateException(name);
             };
             starts.put(name, Reads.starts(counts.length(), column));

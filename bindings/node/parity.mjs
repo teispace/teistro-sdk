@@ -1534,12 +1534,18 @@ for (const day of week) {
   put(`day-${i}-sun-sign-count`, day.sunSigns.length);
   put(`day-${i}-muhurta-yoga-count`, day.muhurtaYogas.length);
   put(`day-${i}-varjyam-count`, day.varjyam.length);
+  put(`day-${i}-nakshatra-shool-count`, day.nakshatraShool.length);
+  put(`day-${i}-chandra-vasa-count`, day.chandraVasa.length);
+  put(`day-${i}-chandrashtama-count`, day.chandrashtama.length);
   for (const [limb, spans] of [
     ['tithi', day.tithi],
     ['nakshatra', day.nakshatra],
     ['yoga', day.yoga],
     ['karana', day.karana],
     ['varjyam', day.varjyam],
+    ['nakshatra-shool', day.nakshatraShool],
+    ['chandra-vasa', day.chandraVasa],
+    ['chandrashtama', day.chandrashtama],
   ]) {
     spans.forEach((span, j) => {
       put(`day-${i}-${limb}-${j}`, span.member);
@@ -1560,6 +1566,15 @@ for (const day of week) {
   put(`day-${i}-choghadiya-0-daytime`, day.choghadiya[0].daytime);
   put(`day-${i}-muhurta-0-from`, day.muhurtas[0].from);
   put(`day-${i}-muhurta-last-daylight`, day.muhurtas[day.muhurtas.length - 1].daylight);
+  {
+    const daylight = day.muhurtas.filter((m) => m.daylight).length;
+    put(
+      `day-${i}-durmuhurtas`,
+      day.muhurtas
+        .flatMap((m, k) => (m.durmuhurta ? [m.daylight ? `D${k + 1}` : `N${k + 1 - daylight}`] : []))
+        .join(' '),
+    );
+  }
   day.moonEvents.forEach((event, j) => {
     put(`day-${i}-moon-${j}-kind`, event.kind);
     put(`day-${i}-moon-${j}-instant`, event.instant);

@@ -5782,6 +5782,18 @@ export interface PanchangaCounts {
    * How many rows of `varjyam` belong to this day.
    */
   readonly varjyam: Uint32Array;
+  /**
+   * How many rows of `nakshatra_shool` belong to this day.
+   */
+  readonly nakshatraShool: Uint32Array;
+  /**
+   * How many rows of `chandra_vasa` belong to this day.
+   */
+  readonly chandraVasa: Uint32Array;
+  /**
+   * How many rows of `chandrashtama` belong to this day.
+   */
+  readonly chandrashtama: Uint32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6233,6 +6245,10 @@ export interface PanchangaMuhurtas {
    * 1 when it is one of the fifteen of the daylight, 0 for one of the night.
    */
   readonly daylight: Uint8Array;
+  /**
+   * 1 when the day's vara censures it under `panchanga.durmuhurta` (`03-design/panchanga-day.md` §21, crux C398), 0 otherwise.
+   */
+  readonly durmuhurta: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6311,6 +6327,153 @@ export interface PanchangaVarjyam {
   /**
    * Whose varjyam it is.
    * The values are `Nakshatra` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `nakshatra_shool` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402). Empty on a day the Moon crosses none of the four. The vara's own direction is `days.disha_shool`.
+ */
+export interface PanchangaNakshatraShool {
+  /**
+   * The direction not to travel in.
+   * The values are `Direction` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `chandra_vasa` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The chandra vasa: the direction the Moon dwells in, by the sign it stands in (the commentary's sign directions on Yatra Prakarana v. 34, crux C403), one span for each sign the Moon stood in over the day.
+ */
+export interface PanchangaChandraVasa {
+  /**
+   * The direction the Moon dwells in.
+   * The values are `Direction` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `chandrashtama` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.
+ */
+export interface PanchangaChandrashtama {
+  /**
+   * The natal Moon sign the span is chandrashtama for.
+   * The values are `Rashi` ids.
    */
   readonly member: Uint16Array;
   /**
@@ -6482,6 +6645,18 @@ export interface Panchanga {
    * The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). `whole` is the window itself, four sixtieths of the star from the table's ghati, and `inside` the part of it in the day; empty under `NONE`.
    */
   readonly varjyam: PanchangaVarjyam;
+  /**
+   * The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402). Empty on a day the Moon crosses none of the four. The vara's own direction is `days.disha_shool`.
+   */
+  readonly nakshatraShool: PanchangaNakshatraShool;
+  /**
+   * The chandra vasa: the direction the Moon dwells in, by the sign it stands in (the commentary's sign directions on Yatra Prakarana v. 34, crux C403), one span for each sign the Moon stood in over the day.
+   */
+  readonly chandraVasa: PanchangaChandraVasa;
+  /**
+   * Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.
+   */
+  readonly chandrashtama: PanchangaChandrashtama;
 }
 
 /**

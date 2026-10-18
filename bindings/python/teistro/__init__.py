@@ -15689,6 +15689,10 @@ class Muhurta:
     daylight: bool
     """Whether it is one of the fifteen of the daylight."""
 
+    durmuhurta: bool
+    """Whether the day's vara censures it under `panchanga.durmuhurta`
+    (crux C398)."""
+
 
 @dataclass(frozen=True)
 class MoonEvent:
@@ -15853,6 +15857,32 @@ class AlmanacDay:
         return self._spans("varjyam", self.batch.decoded.varjyam, Nakshatra)
 
     @property
+    def nakshatra_shool(self) -> list[Span[Direction]]:
+        """The nakshatra shool: while the Moon is in one of the four
+        nakshatras that block a direction, that direction (Muhurta
+        Chintamani, Yatra Prakarana v. 10, crux C402).
+
+        Empty on a day the Moon crosses none of them. The vara's own
+        direction is ``disha_shool``.
+        """
+        return self._spans("nakshatra_shool", self.batch.decoded.nakshatra_shool, Direction)
+
+    @property
+    def chandra_vasa(self) -> list[Span[Direction]]:
+        """The chandra vasa: the direction the Moon dwells in, by the sign
+        she stands in (crux C403)."""
+        return self._spans("chandra_vasa", self.batch.decoded.chandra_vasa, Direction)
+
+    @property
+    def chandrashtama(self) -> list[Span[Rashi]]:
+        """Whose chandrashtama the day holds (Kalaprakasika, crux C404).
+
+        Each member is a **natal** Moon sign, and its intervals the Moon's
+        own run through the eighth sign from it.
+        """
+        return self._spans("chandrashtama", self.batch.decoded.chandrashtama, Rashi)
+
+    @property
     def moon_signs(self) -> list[Span[Rashi]]:
         """The signs the Moon stood in."""
         return self._spans("moon_signs", self.batch.decoded.moon_signs, Rashi)
@@ -15911,6 +15941,7 @@ class AlmanacDay:
             lambda i: Muhurta(
                 at=Interval(columns.from_[i], columns.to[i]),
                 daylight=bool(columns.daylight[i]),
+                durmuhurta=bool(columns.durmuhurta[i]),
             ),
         )
 
@@ -15994,6 +16025,9 @@ class Almanac:
             "moon_events",
             "muhurta_yogas",
             "varjyam",
+            "nakshatra_shool",
+            "chandra_vasa",
+            "chandrashtama",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

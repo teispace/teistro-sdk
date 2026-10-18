@@ -2487,11 +2487,17 @@ public final class ParityRunner {
             put(d + "-sun-sign-count", almanacDay.sunSigns().size());
             put(d + "-muhurta-yoga-count", almanacDay.muhurtaYogas().size());
             put(d + "-varjyam-count", almanacDay.varjyam().size());
+            put(d + "-nakshatra-shool-count", almanacDay.nakshatraShool().size());
+            put(d + "-chandra-vasa-count", almanacDay.chandraVasa().size());
+            put(d + "-chandrashtama-count", almanacDay.chandrashtama().size());
             putSpans(d + "-tithi", almanacDay.tithi(), Tithi::fullKey);
             putSpans(d + "-nakshatra", almanacDay.nakshatra(), Nakshatra::fullKey);
             putSpans(d + "-yoga", almanacDay.yoga(), Yoga::fullKey);
             putSpans(d + "-karana", almanacDay.karana(), Karana::fullKey);
             putSpans(d + "-varjyam", almanacDay.varjyam(), Nakshatra::fullKey);
+            putSpans(d + "-nakshatra-shool", almanacDay.nakshatraShool(), Direction::fullKey);
+            putSpans(d + "-chandra-vasa", almanacDay.chandraVasa(), Direction::fullKey);
+            putSpans(d + "-chandrashtama", almanacDay.chandrashtama(), Rashi::fullKey);
             for (int j = 0; j < almanacDay.kaalas().size(); j += 1) {
                 KaalaPeriod kaala = almanacDay.kaalas().get(j);
                 put(d + "-kaala-" + j, kaala.kaala().fullKey());
@@ -2507,6 +2513,14 @@ public final class ParityRunner {
             List<Muhurta> muhurtas = almanacDay.muhurtas();
             put(d + "-muhurta-0-from", muhurtas.get(0).at().fromJd());
             put(d + "-muhurta-last-daylight", muhurtas.get(muhurtas.size() - 1).daylight());
+            long daylight = muhurtas.stream().filter(Muhurta::daylight).count();
+            List<String> censured = new ArrayList<>();
+            for (int k = 0; k < muhurtas.size(); k += 1) {
+                if (muhurtas.get(k).durmuhurta()) {
+                    censured.add(muhurtas.get(k).daylight() ? "D" + (k + 1) : "N" + (k + 1 - daylight));
+                }
+            }
+            put(d + "-durmuhurtas", String.join(" ", censured));
             for (int j = 0; j < almanacDay.moonEvents().size(); j += 1) {
                 MoonEventMoment event = almanacDay.moonEvents().get(j);
                 put(d + "-moon-" + j + "-kind", event.rise() ? "RISE" : "SET");

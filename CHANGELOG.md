@@ -530,8 +530,13 @@ printed (crux C398). `Panchanga::is_durmuhurta` asks one instant.
 `Panchanga::nakshatra_shool` (Yatra Prakarana v. 10, crux C402),
 `Panchanga::chandra_vasa` (C403) and `Panchanga::chandrashtama`
 (Kalaprakasika, counted inclusively, C404) read the spans the day
-already carries. The Rust surface only: no section reaches the blob or
-a binding yet. Amrita kalam, Vijaya muhurta and Godhuli's span wait on a
+already carries. All four cross the C boundary: the `muhurtas` section
+gains a `durmuhurta` column, each binding's `Muhurta` a `durmuhurta`
+flag, and the blob three span sections, `nakshatra_shool`,
+`chandra_vasa` and `chandrashtama`, which Node, Python, Dart and Java
+read as a day's `nakshatraShool`, `chandraVasa` and `chandrashtama`
+(`nakshatra_shool`, `chandra_vasa` in Python) with the span reader they
+already have. Amrita kalam, Vijaya muhurta and Godhuli's span wait on a
 text (C399 to C401).
 
 **A day's varjyam.** **Numbers:** every almanac day gains its stars'

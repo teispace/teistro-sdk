@@ -2050,6 +2050,88 @@ void _engineTests() {
     ], List.filled(7, 0));
   });
 
+  test('a day marks its durmuhurtas and carries the shool, the chandra vasa '
+      'and the chandrashtama', () {
+    // 15 to 21 June 2024 at Kathmandu, Saturday first (crux C398): Muhurta
+    // Chintamani's Tuesday names Agni, who presides over no muhurta of the
+    // daylight, so its second is the night's seventh; Raman's is the 11th.
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    List<AlmanacDay> week([Map<String, Object?>? settings]) {
+      final ctx = teistro.context(
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+        settings: settings,
+      );
+      final days = ctx.almanac.of(
+        from: gregorian(2024, 6, 15),
+        to: gregorian(2024, 6, 21),
+        place: place,
+        utcOffsetSeconds: 20700,
+      );
+      final read = [for (var i = 0; i < days.length; i += 1) days.at(i)];
+      // A batch owns its decoded columns, so its days outlive the context.
+      ctx.dispose();
+      return read;
+    }
+
+    List<String> censured(AlmanacDay day) {
+      final muhurtas = day.muhurtas;
+      final daylight = muhurtas.where((m) => m.daylight).length;
+      return [
+        for (var k = 0; k < muhurtas.length; k += 1)
+          if (muhurtas[k].durmuhurta)
+            muhurtas[k].daylight ? 'D${k + 1}' : 'N${k + 1 - daylight}',
+      ];
+    }
+
+    final texts = week();
+    expect(texts.map(censured).toList(), [
+      ['D1', 'D2'],
+      ['D14'],
+      ['D9', 'D12'],
+      ['D4', 'N7'],
+      ['D8'],
+      ['D6', 'D12'],
+      ['D4', 'D9'],
+    ]);
+    expect(
+      censured(
+        week({
+          'panchanga': {'durmuhurta': 'RAMAN'},
+        })[3],
+      ),
+      ['D4', 'D11'],
+    );
+
+    var shools = 0;
+    for (final day in texts) {
+      final signs = day.moonSigns;
+      expect(day.chandraVasa.length, signs.length);
+      expect(day.chandrashtama.length, signs.length);
+      for (var k = 0; k < signs.length; k += 1) {
+        expect(day.chandraVasa[k].whole.from, signs[k].whole.from);
+        expect(day.chandrashtama[k].whole.to, signs[k].whole.to);
+        // The Moon stands in the eighth sign from the natal one.
+        expect((day.chandrashtama[k].member.id + 7) % 12, signs[k].member.id);
+      }
+      for (final shool in day.nakshatraShool) {
+        expect(
+          day.nakshatra.any(
+            (star) =>
+                star.whole.from == shool.whole.from &&
+                star.whole.to == shool.whole.to,
+          ),
+          isTrue,
+        );
+        shools += 1;
+      }
+    }
+    expect(shools, inInclusiveRange(1, 3));
+  });
+
   test('an almanac carries the eclipses it was asked for', () {
     final place = Observer(
       latitudeDeg: Latitude(27.7172),
