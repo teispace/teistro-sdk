@@ -703,6 +703,33 @@ share, and the retrograde graha at ch. 7 v. 3, but not the own navamsha,
 the navamsha exaltation or a benefic's drishti, which neither ch. 6 nor
 ch. 7 carries.
 
+**Brihat Jataka ch. 11's raja yogas, built (2026-10-18).** Varahamihira's
+chapter on the birth of kings, read in N. Chidambaram Iyer's 1885
+translation (public domain, Wellcome Collection's scan), ships as
+`classical-bj-raja.json`, 30 rules in the nabhasa set under the keys
+`BJ_RAJA_*`:
+- **vv. 1 to 3:** three malefics exalted, a cruel king as the Yavanas and
+  Varahamihira hold it; v. 2's 32 yogas of Mars, Saturn, the Sun and Jupiter
+  exalted with one of them rising, as two counts; v. 3's 44, a vargottama
+  lagna or Moon aspected by four or more, as two.
+- **vv. 4 to 11:** fourteen figures of named signs and houses, each a king
+  though low-born, as v. 12 says.
+- **vv. 13 to 18:** three and five grahas strong and dignified, and seven
+  figures that make a king of the royal-born and leave others rich.
+- **v. 20:** two figures of comfort and of a robber chief (C475).
+
+v. 19 times the kingdom by antardashas and is a reading of the dasha, not
+a yoga, so it is not a rule. The figures of named signs hold on few skies:
+eight the computed sky misses have a fixture on the cofiring page, an
+early instant of 1800 to 2400 with each, and eleven no sky of the built-in
+ephemeris holds. Three of those ask Mercury two signs from the Sun, which
+his 28° never reach; two ask Venus three signs from Mercury, both at their
+greatest elongations; three were last seen in 980 BC, 483 BC and AD 1250,
+and three not from 1000 BC to AD 2400. Varahamihira gives the yogas of
+the ancients and says himself (ch. 12 v. 6, Iyer's note) that his task is
+to state them, so they ship as written and the cofiring page says why each
+cannot be seen.
+
 **BPHS ch. 83's curses, built (2026-10-14).** The chapter reads, from the
 fifth house, the curse in a former birth that denies a son, and gives each
 curse its remedy. As `classical-bphs-shapa.json`, 76 rules join the

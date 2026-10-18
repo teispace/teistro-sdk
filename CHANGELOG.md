@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Brihat Jataka ch. 11's raja yogas** (`rules-engine.md`). **Numbers:**
+none moved; this adds 30 rules. Varahamihira's chapter on the birth of
+kings, read in Chidambaram Iyer's 1885 translation, joins the nabhasa set:
+exalted malefics, v. 2's 32 yogas of four exalted grahas as two counts,
+v. 3's vargottama lagna and Moon aspected by four, the fourteen figures of
+named signs that make a king of the low-born, the seven that make one of
+the royal-born, and v. 20's two. Eleven figures no sky of 1800 to 2400
+holds, and the cofiring page says why of each. Crux C475.
+
 **Phaladeepika ch. 7's Maharaja yogas** (`rules-engine.md`). **Numbers:**
 none moved; this adds 46 rules. The chapter's figures that make a king,
 read in Sastri's 1937 translation, join the nabhasa set: grahas dignified

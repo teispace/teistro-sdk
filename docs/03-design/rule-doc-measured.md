@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-2689 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1220 in `READINGS`, 599 in `NABHASAS`, 657 in `the corpus's own`. Their 10 791 conditions are written 4143 ways, which say 4139 things, and the renderer gives those 4139 sentences.
+2719 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1220 in `READINGS`, 629 in `NABHASAS`, 657 in `the corpus's own`. Their 10 967 conditions are written 4175 ways, which say 4171 things, and the renderer gives those 4171 sentences.
 
-The 2032 shipped rules are what a consumer evaluates; the corpus's own
+The 2062 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 4139 disagree |
-| every condition of every rule renders | **holds** | 0 of 10791 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 4171 disagree |
+| every condition of every rule renders | **holds** | 0 of 10967 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -44,12 +44,12 @@ a change to what a rule asks changes its prose.
 
 | kind | occurrences | as it reads |
 |---|---|---|
-| `and` | 873 | MOON aspects VENUS and VENUS aspects MOON |
-| `or` | 515 | MARS is combust or MARS is retrograde |
+| `and` | 880 | MOON aspects VENUS and VENUS aspects MOON |
+| `or` | 517 | MARS is combust or MARS is retrograde |
 | `not` | 393 | it is not the case that MOON is combust |
-| `planet-in-house` | 1084 | SUN stands in the 1st house |
-| `planet-in-sign` | 1052 | SUN stands in LEO |
-| `planet-dignity` | 356 | the dignity of SUN is exalted |
+| `planet-in-house` | 1142 | SUN stands in the 1st house |
+| `planet-in-sign` | 1116 | SUN stands in LEO |
+| `planet-dignity` | 364 | the dignity of SUN is exalted |
 | `planet-in-kendra` | 165 | SUN stands in a kendra |
 | `planet-in-trikona` | 15 | SUN stands in a trikona |
 | `planet-in-kendra-from` | 30 | MARS stands in a kendra from MOON |
@@ -67,8 +67,8 @@ a change to what a rule asks changes its prose.
 | `chara-karaka-in-house` | 34 | the AK stands in the 1st house |
 | `planet-combust` | 54 | SUN is combust |
 | `planet-retrograde` | 24 | MARS is retrograde |
-| `planet-aspects-planet` | 818 | KETU aspects SUN |
-| `planet-aspects-house` | 114 | SUN aspects the 8th house |
+| `planet-aspects-planet` | 819 | KETU aspects SUN |
+| `planet-aspects-house` | 115 | SUN aspects the 8th house |
 | `planet-at-table-degree` | 12 | SUN stands at the degree MRITYU_BHAGA gives it in its sign |
 | `planet-in-table-sign` | 7 | SUN stands in a sign DAGDHA_RASHI gives the birth tithi |
 | `lord-of-house-debilitated` | 5 | the lord of the 1st house is debilitated |
@@ -76,10 +76,10 @@ a change to what a rule asks changes its prose.
 | `lord-of-house-strong` | 8 | the lord of the 4th house is exalted, in its own sign or in its mooltrikona |
 | `lord-of-house-is` | 15 | the lord of the 5th house is SUN |
 | `lord-of-house-conjunct-planet` | 2 | the lord of the 5th house shares a sign with KETU |
-| `lagna-in-sign` | 38 | the lagna rises in LEO |
+| `lagna-in-sign` | 57 | the lagna rises in LEO |
 | `planet-in-house-and-sign` | 26 | SUN stands in the 1st house and in LEO |
 | `planet-at-gandanta` | 4 | SUN stands at a gandanta junction, within the usual 3°20′ |
-| `planet-in-degrees` | 421 | MOON stands between 2° and 3° of its sign |
+| `planet-in-degrees` | 422 | MOON stands between 2° and 3° of its sign |
 | `panchanga-tithi` | 27 | the birth tithi is AMAVASYA |
 | `panchanga-paksha` | 22 | the birth falls in the SHUKLA paksha |
 | `panchanga-vara` | 10 | the birth weekday is GURUVARA |
@@ -91,14 +91,14 @@ a change to what a rule asks changes its prose.
 | `transit-in-house` | 0 | in no pack |
 | `planet-in-nakshatra` | 25 | MOON stands in the nakshatra JYESHTHA |
 | `same-nakshatra` | 1 | MOON and KETU stand in one nakshatra |
-| `planet-strong` | 67 | SUN is strong |
+| `planet-strong` | 70 | SUN is strong |
 | `planet-weak` | 32 | MOON is weak |
 | `planet-stronger-than` | 23 | MOON is stronger than SUN |
 | `rashi-aspects` | 2 | the AK aspects the PK by rashi drishti |
 | `argala` | 16 | an intervention from the 5th, unobstructed from the 9th, stands on the pada of house 1 |
 | `vipareeta-argala` | 0 | in no pack |
-| `for-any` | 159 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
-| `count-of` | 23 | at least 4 of the nine grahas meet: the body found aspects MOON |
+| `for-any` | 161 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
+| `count-of` | 30 | at least 4 of the nine grahas meet: the body found aspects MOON |
 | `n-of` | 12 | exactly 1 of these hold: the rule PHALADEEPIKA_RUCHAKA holds, the rule PHALADEEPIKA_BHADRA holds, the rule PHALADEEPIKA_HAMSA holds, the rule PHALADEEPIKA_MALAVYA holds and the rule PHALADEEPIKA_SASA holds |
 | `in-varga` | 74 | in the D2, the lagna rises in CANCER |
 | `count-in-houses` | 449 | at least 1 malefic stands in the 7th from SUN |
@@ -107,9 +107,9 @@ a change to what a rule asks changes its prose.
 | `at-limb-edge` | 22 | the birth falls within the last 2 ghatikas of the tithi |
 | `limb-part` | 33 | the birth falls in the 1st of 6 equal parts of the tithi |
 | `birth-by-day` | 11 | the birth fell by day |
-| `same-sign` | 168 | MOON and KETU stand in one sign |
+| `same-sign` | 170 | MOON and KETU stand in one sign |
 | `same-body` | 214 | MARS and MOON are one body |
-| `planet-is` | 90 | SUN is a malefic |
+| `planet-is` | 91 | SUN is a malefic |
 | `natural-relation` | 34 | SUN counts the body found a friend |
 
 2 kinds of the language occur in no pack at all: `transit-in-house`, `vipareeta-argala`. The corpus cannot falsify their prose, so the golden test in `crates/rules/src/prose.rs` is their only reader.

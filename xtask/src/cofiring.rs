@@ -112,7 +112,58 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// and a place, its latitude and longitude, where it does: rare rules,
 /// shown alive. Each was found at Kathmandu's latitude, on the meridian
 /// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 68] = [
+const FIXTURES: [(&str, f64, f64, f64); 76] = [
+    // Brihat Jataka ch. 11's figures the computed sky misses: an early day of
+    // 1800 to 2400 with each, narrowed on placements and read back through
+    // `cofiring-probe` (Venus at home in the fourth on 6 of 43 so narrowed).
+    (
+        "BJ_RAJA_VENUS_AT_HOME_IN_THE_FOURTH",
+        2_409_098.236_1,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_RAJA_ARIES_SUN_AND_MOON_RISING_FIGURE",
+        2_406_723.513_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_RAJA_ARIES_SUN_RISING_FIGURE",
+        2_380_808.472_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_RAJA_CANCER_JUPITER_RISING_FIGURE",
+        2_387_738.736_1,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_RAJA_CAPRICORN_MARS_AND_MOON_FIGURE",
+        2_381_415.652_7,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_RAJA_CAPRICORN_MARS_AND_SATURN_FIGURE",
+        2_405_512.638_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_RAJA_SAGITTARIUS_MOON_AND_JUPITER_FIGURE",
+        2_406_714.506_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_RAJA_TAURUS_MOON_RISING_FIGURE",
+        2_384_950.194_4,
+        27.7172,
+        85.324,
+    ),
     (
         "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
         2_415_023.166_67,
@@ -383,10 +434,54 @@ const FIXTURES: [(&str, f64, f64, f64); 68] = [
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 21] = [
+const UNSEEN: [(&str, &str); 32] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
+    ),
+    (
+        "BJ_RAJA_AQUARIUS_ARIES_TAURUS_FIGURE",
+        "It puts the Sun in Aries and Mercury in Gemini, two signs on, more than 30 degrees from the Sun, and Mercury never stands 28 degrees from him.",
+    ),
+    (
+        "BJ_RAJA_CAPRICORN_SATURN_RISING_FIGURE",
+        "No sky from 1801 to 2398 has it; the nearest a search from 1000 BC found is in 483 BC.",
+    ),
+    (
+        "BJ_RAJA_CAPRICORN_SATURN_RISING_LORDS_AT_HOME_FIGURE",
+        "It puts the Sun in Leo and Mercury in Gemini, two signs back, more than 30 degrees from the Sun, and Mercury never stands 28 degrees from him.",
+    ),
+    (
+        "BJ_RAJA_JUPITER_RISING_MOON_TENTH",
+        "It puts Mercury in the second and the Sun in the fourth, more than 30 degrees apart, and Mercury never stands 28 degrees from the Sun.",
+    ),
+    (
+        "BJ_RAJA_LIBRA_TAURUS_FIGURE",
+        "No sky from 1000 BC to AD 2400 has its seven grahas so with Libra or Taurus rising, searched day by day and every ten minutes of a day its slow grahas allow.",
+    ),
+    (
+        "BJ_RAJA_MARS_AND_SATURN_RISING",
+        "No sky from 1000 BC to AD 2400 has its seven grahas in those houses, searched day by day and every ten minutes of a day its slow grahas allow.",
+    ),
+    (
+        "BJ_RAJA_PISCES_MOON_RISING_FIGURE",
+        "No sky from 1801 to 2398 has it; the nearest a search from 1000 BC found is in 980 BC.",
+    ),
+    (
+        "BJ_RAJA_SATURN_RISING_LUMINARIES_TENTH",
+        "No sky from 1801 to 2398 has it; the nearest a search from 1000 BC found is in AD 1250.",
+    ),
+    (
+        "BJ_RAJA_TAURUS_MOON_RISING_OTHERS_ELEVENTH",
+        "No sky from 1000 BC to AD 2400 has its seven grahas in those houses, searched day by day and every ten minutes of a day its slow grahas allow.",
+    ),
+    (
+        "BJ_RAJA_VIRGO_MERCURY_RISING_FIFTH_AND_FOURTH_FIGURE",
+        "Venus three signs from Mercury needs both near their greatest elongations on either side of the Sun, and no sky from 1000 BC to AD 2400 has it with the other five so.",
+    ),
+    (
+        "BJ_RAJA_VIRGO_MERCURY_RISING_PISCES_FIGURE",
+        "Venus in Gemini three signs from Mercury in Virgo needs both near their greatest elongations on either side of the Sun, and no sky from 1000 BC to AD 2400 has it with the other five so.",
     ),
     (
         "BPHS_BRAHMIN_CURSE_1",

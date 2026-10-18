@@ -1,0 +1,1852 @@
+{
+  "rules": [
+    {
+      "key": "BJ_RAJA_AQUARIUS_ARIES_TAURUS_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "4",
+        "rank": 1,
+        "note": "Saturn in Aquarius, the Sun in Aries, the Moon in Taurus, Mercury in Gemini, Jupiter in Leo and Mars in Scorpio, with Aquarius, Aries or Taurus rising. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "GEMINI"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "AQUARIUS",
+            "ARIES",
+            "TAURUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_ARIES_SUN_AND_MOON_RISING_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "14",
+        "rank": 1,
+        "note": "The Sun and the Moon in Aries rising, Mars in Capricorn, Saturn in Aquarius and Jupiter in Sagittarius; the reading that puts the Sun in Leo is not built (C475). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king when born to a royal family, and otherwise rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_ARIES_SUN_RISING_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "5",
+        "rank": 1,
+        "note": "The Sun in Aries rising, Saturn and the Moon in Libra and Jupiter in Sagittarius. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_BENEFICS_SIGN_RISING_SATURN_SEVENTH_SUN_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "20",
+        "rank": 1,
+        "note": "A sign of Jupiter, Venus or Mercury rising, Saturn in the seventh and the Sun in the tenth. The verse's plainer reading, those three in the lagna, cannot hold with the Sun in the tenth, as the translator's note says, so the reading his note proposes is built (C475). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SAGITTARIUS",
+            "PISCES",
+            "TAURUS",
+            "LIBRA",
+            "GEMINI",
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "great comfort and luxury"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_BENEFIC_SIGNS_IN_THE_KENDRAS_MALEFICS_IN_MALEFIC_SIGNS",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "20",
+        "rank": 1,
+        "note": "The kendras signs of benefics, which only a dual sign rising gives, and the Sun, Mars and Saturn each in a sign of the Sun, Mars or Saturn; the verse's 'powerful' signs are not asked apart (C475). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES",
+            "LEO",
+            "SCORPIO",
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "ARIES",
+            "LEO",
+            "SCORPIO",
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "ARIES",
+            "LEO",
+            "SCORPIO",
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "rich, and the chief of hunters and robbers"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_CANCER_JUPITER_RISING_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "9",
+        "rank": 1,
+        "note": "Jupiter in Cancer rising, the Moon, Venus and Mercury in Taurus and the Sun in Aries: a powerful king. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_CAPRICORN_MARS_AND_MOON_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "5",
+        "rank": 1,
+        "note": "Mars and the Moon in Capricorn rising, and the Sun in Sagittarius. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_CAPRICORN_MARS_AND_SATURN_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "5",
+        "rank": 1,
+        "note": "Mars and Saturn in Capricorn rising, and the Sun and the Moon in Sagittarius. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_CAPRICORN_SATURN_RISING_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "6",
+        "rank": 1,
+        "note": "Saturn in Capricorn rising, the Moon in the third, Mars in the sixth, Mercury in the ninth and Jupiter in the twelfth: a virtuous and famous king. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_CAPRICORN_SATURN_RISING_LORDS_AT_HOME_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "10",
+        "rank": 1,
+        "note": "Saturn in Capricorn rising, Aries, Cancer and Leo held by their lords (Mars, the Moon and the Sun), Mercury in Gemini and Venus in Libra: a famous king. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "GEMINI"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "LIBRA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_FIVE_STRONG_AND_DIGNIFIED",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "13",
+        "rank": 1,
+        "note": "Five or more grahas strong, each in its own sign, exaltation or moolatrikona. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            ]
+          },
+          "atLeast": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_JUPITER_RISING_MOON_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "18",
+        "rank": 1,
+        "note": "The Moon in the tenth, Saturn in the eleventh, Jupiter in the lagna, Mercury and Mars in the second, and the Sun and Venus in the fourth. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king when born to a royal family, and otherwise rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_LIBRA_TAURUS_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "4",
+        "rank": 1,
+        "note": "Saturn and Venus in Libra, the Moon in Taurus, the Sun and Mercury in Virgo, Mars in Aries and Jupiter in Cancer, with Libra or Taurus rising. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "LIBRA",
+            "TAURUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_MARS_AND_SATURN_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "18",
+        "rank": 1,
+        "note": "Mars and Saturn in the lagna, the Moon in the fourth, Jupiter in the seventh, Venus in the ninth, the Sun in the tenth and Mercury in the eleventh. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king when born to a royal family, and otherwise rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_MARS_IN_ARIES_JUPITER_IN_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "8",
+        "rank": 1,
+        "note": "Mars in Aries and Jupiter in Cancer, with Aries or Cancer rising. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES",
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_ONE_OR_TWO_OF_FOUR_EXALTED_ONE_RISING_MOON_IN_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "2",
+        "rank": 1,
+        "note": "One or two of Mars, Saturn, the Sun and Jupiter exalted, one of them in the lagna, and the Moon in Cancer: the verse's second sixteen. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "MARS",
+            "SATURN",
+            "SUN",
+            "JUPITER"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "EXALTED"
+            ]
+          },
+          "atLeast": 1,
+          "atMost": 2
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "SATURN",
+            "SUN",
+            "JUPITER"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED"
+                ]
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_PISCES_MOON_RISING_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in Pisces rising, Saturn in Aquarius, Mars in Capricorn and the Sun in Leo. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "LEO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_SAGITTARIUS_MOON_AND_JUPITER_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "7",
+        "rank": 1,
+        "note": "The Moon and Jupiter in Sagittarius and Mars in the first half of Capricorn, with Venus rising in Pisces or Mercury rising in Virgo. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "MARS",
+          "from": 0,
+          "to": 15
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "VENUS",
+                  "houses": [
+                    1
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "VIRGO"
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "MERCURY",
+                  "houses": [
+                    1
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_SATURN_RISING_LUMINARIES_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "17",
+        "rank": 1,
+        "note": "Jupiter in the fourth, the Sun and the Moon in the tenth, Saturn in the lagna, and Mars, Mercury and Venus in the eleventh. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king when born to a royal family, and otherwise rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_STRONG_MERCURY_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "16",
+        "rank": 1,
+        "note": "Mercury strong in the lagna, Jupiter or Venus in the ninth, and the Sun, the Moon, Mars and Saturn each in the second, third, sixth, ninth, tenth or eleventh, as the commentator reads 'the others' (C475). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "MERCURY"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                9
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                9
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            2,
+            3,
+            6,
+            9,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            2,
+            3,
+            6,
+            9,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2,
+            3,
+            6,
+            9,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            2,
+            3,
+            6,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a virtuous king when born to a royal family, and otherwise rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_TAURUS_MOON_RISING_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in Taurus rising, the Sun in Leo, Jupiter in Scorpio and Saturn in Aquarius. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "TAURUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_TAURUS_MOON_RISING_OTHERS_ELEVENTH",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "17",
+        "rank": 1,
+        "note": "The Moon in Taurus rising, Jupiter in the second, Saturn in the sixth, and the Sun, Mars, Mercury and Venus in the eleventh. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king when born to a royal family, and otherwise rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_THREE_MALEFICS_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "1",
+        "rank": 1,
+        "note": "Three or more malefics exalted, as the Yavanas read it and Varahamihira holds; Jivasharma gives such a native wealth and power but no throne. The malefics are the readings' own. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED"
+                ]
+              }
+            ]
+          },
+          "atLeast": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a cruel king"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_THREE_OF_FOUR_EXALTED_ONE_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "2",
+        "rank": 1,
+        "note": "Three or all four of Mars, Saturn, the Sun and Jupiter exalted, one of them in the lagna: the verse's first sixteen. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "MARS",
+            "SATURN",
+            "SUN",
+            "JUPITER"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "EXALTED"
+            ]
+          },
+          "atLeast": 3
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "SATURN",
+            "SUN",
+            "JUPITER"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED"
+                ]
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_THREE_STRONG_AND_DIGNIFIED",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "13",
+        "rank": 1,
+        "note": "Three or four grahas strong, each in its own sign, exaltation or moolatrikona; fewer leave the native only rich. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            ]
+          },
+          "atLeast": 3,
+          "atMost": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king when born to a royal family, and otherwise rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_VARGOTTAMA_LAGNA_ASPECTED_BY_FOUR",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna vargottama and aspected by four or more of the six grahas besides the Moon: the verse's 22 groups of four, five and six. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "LAGNA",
+          "as": {
+            "navamsha": "LAGNA"
+          }
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-house",
+            "from": "SELF",
+            "houseRuled": 1
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_VARGOTTAMA_MOON_ASPECTED_BY_FOUR",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "3",
+        "rank": 1,
+        "note": "The Moon vargottama and aspected by four or more of the six grahas besides her. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "navamsha": "MOON"
+          }
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": "MOON"
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_VENUS_AT_HOME_IN_THE_FOURTH",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "15",
+        "rank": 1,
+        "note": "Venus in his own sign in the fourth, the Moon in the ninth, and the other five each in the third, the lagna or the eleventh; Iyer's note finds it on Aquarius or Cancer rising. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "VENUS",
+          "dignities": [
+            "OWN_SIGN",
+            "MOOLTRIKONA"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1,
+            3,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1,
+            3,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            1,
+            3,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1,
+            3,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1,
+            3,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king when born to a royal family, and otherwise rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_VIRGO_MERCURY_RISING_FIFTH_AND_FOURTH_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "7",
+        "rank": 1,
+        "note": "Mercury in Virgo rising, Mars and Saturn in the fifth, and the Moon, Jupiter and Venus in the fourth. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_RAJA_VIRGO_MERCURY_RISING_PISCES_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "11",
+        "verse": "11",
+        "rank": 1,
+        "note": "Mercury in Virgo rising, Venus in Gemini, the Moon and Jupiter in Pisces, and Mars and Saturn in Capricorn. V. 12 makes each a king though low-born. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "GEMINI"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in a low family"
+        }
+      ]
+    }
+  ]
+}
