@@ -1150,8 +1150,6 @@ void main() {
       at: 2460676.5,
       rules: RemedyRules(shanti: ShantiRules(rik: RikSource.yajnavalkya)),
     ),
-    // A varshphal list with the book's structure and none of its numbers:
-    // year y sends natal house h to h + y − 1, round the twelve.
     // Two instants, the verses' own motion, a name and every cell the
     // front passes.
     sarvatobhadra: const SarvatobhadraRequest(
@@ -1160,6 +1158,10 @@ void main() {
       name: NameSounds(letter: 'र', vowel: ChakraVowel.a),
       rules: SarvatobhadraRules(front: FrontVedha.everyCell),
     ),
+    // Three years under the practice's rule.
+    tithiPravesha: const TithiPraveshaRequest(through: 3),
+    // A varshphal list with the book's structure and none of its numbers:
+    // year y sends natal house h to h + y − 1, round the twelve.
     lalkitab: LalKitabRequest(
       cycle: const LalKitabCycle(planet: Graha.venus, year: 17),
       year: 43,
@@ -2021,6 +2023,16 @@ void main() {
     putRemedies('chart-$i-remedies', chart.remedies!);
     putLalKitab('chart-$i-lalkitab', chart.lalkitab!);
     putSarvatobhadra('chart-$i-sarvatobhadra', chart.sarvatobhadra!);
+    final years = chart.tithiPravesha!;
+    put('chart-$i-tithi-pravesha-count', '${years.length}');
+    for (final year in years) {
+      put(
+        'chart-$i-tithi-pravesha-${year.year}',
+        '${number(year.at)} ${number(year.solarReturn)} '
+            '${number(year.elongationDeg)} ${year.rule.key} ${year.picked.key} '
+            '${year.inSign}',
+      );
+    }
     putRectification('chart-$i-rectification', chart.rectification!);
     final pr = chart.progressions!;
     final pg = pr.progressed!;

@@ -5365,6 +5365,64 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart reads its tithi praveshas', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const instant = 2447995.4895833335;
+    Chart found(double at, [TithiPraveshaRequest? asked]) => ctx.chart.found(
+      instant: at,
+      place: place,
+      utcOffsetSeconds: 20700,
+      tithiPravesha: asked,
+    );
+    double elongation(Chart chart) {
+      double of(Graha graha) =>
+          chart.grahas.firstWhere((g) => g.graha == graha).longitudeDeg;
+      return (of(Graha.moon) - of(Graha.sun)) % 360;
+    }
+
+    expect(found(instant).tithiPravesha, isNull);
+    final natal = found(instant, const TithiPraveshaRequest(through: 3));
+    final years = natal.tithiPravesha!;
+    expect([for (final y in years) y.year], [1, 2, 3]);
+    final born = elongation(natal);
+    for (final year in years) {
+      expect(year.rule, TithiRule.natalSign);
+      expect(year.fellBack, year.rule != year.picked);
+      expect(year.elongationDeg, closeTo(born, 1e-9));
+      expect((year.at - year.solarReturn).abs(), lessThan(33));
+      expect(year.inSign, inInclusiveRange(0, 2));
+      expect(elongation(found(year.at)), closeTo(born, 1e-3));
+    }
+    final nearest =
+        found(
+          instant,
+          const TithiPraveshaRequest(through: 3, rule: TithiRule.nearestReturn),
+        ).tithiPravesha!;
+    for (final year in nearest) {
+      expect(year.picked, TithiRule.nearestReturn);
+      expect(year.fellBack, isFalse);
+      expect((year.at - year.solarReturn).abs(), lessThan(16));
+    }
+    expect(
+      () => found(instant, const TithiPraveshaRequest(through: 0)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'tithiPravesha.through',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its Lal Kitab', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

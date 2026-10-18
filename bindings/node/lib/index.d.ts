@@ -3207,6 +3207,52 @@ export interface Sarvatobhadra {
   readonly maleficPoints: number;
 }
 
+/**
+ * Which phase return of a year is its tithi pravesha
+ * (`03-design/tithi-pravesha.md`): `NATAL_SIGN`, the practice's own, the
+ * return while the Sun is in its natal sign (C444 to C446), or
+ * `NEAREST_RETURN`, the return nearest the solar return whatever the sign.
+ */
+export type TithiRule = 'NATAL_SIGN' | 'NEAREST_RETURN';
+
+/**
+ * The tithi praveshas to find for every chart's years
+ * (`03-design/tithi-pravesha.md`).
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, tithiPravesha: { through: 40 } });
+ * for (const year of chart.tithiPravesha ?? []) {
+ *   // The year's chart, founded where the native is.
+ *   const annual = ctx.chart.found({ instant: year.at, place: residence, utcOffsetSeconds });
+ * }
+ */
+export interface TithiPraveshaRequest {
+  /** The last year, 1 to 200, counted as `Pravesha.year` counts it. */
+  readonly through: number;
+  /** Which phase return of each year is taken; `NATAL_SIGN` when left out. */
+  readonly rule?: TithiRule;
+}
+
+/** One year's tithi pravesha: the instant, the solar return it was chosen around and which rule chose it. */
+export interface TithiPravesha {
+  /** The year, `1` the first return, a year after birth, as `Pravesha.year` counts it. */
+  readonly year: number;
+  /** The instant the elongation returns, a Julian day (UTC): found the year's chart here. */
+  readonly at: number;
+  /** The year's sidereal solar return, a Julian day (UTC): what "nearest" is measured from. */
+  readonly solarReturn: number;
+  /** The birth's elongation returned to, the Moon less the Sun, degrees in `[0, 360)`. */
+  readonly elongationDeg: number;
+  /** The rule asked for. */
+  readonly rule: TithiRule;
+  /** The rule that chose this instant: `NEAREST_RETURN` where `NATAL_SIGN` found none in the sign (C446). */
+  readonly picked: TithiRule;
+  /** How many phase returns fell while the Sun was in its natal sign: 0, 1 or 2. */
+  readonly inSign: number;
+  /** Whether the year fell back: `rule` and `picked` differ. */
+  readonly fellBack: boolean;
+}
+
 /** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */
 export interface LalKitabRequest {
   /** Where the 35-year cycle starts; the book's general table (Saturn from the first year) when left out. */
@@ -5532,6 +5578,12 @@ export declare class Chart {
    */
   readonly sarvatobhadra: readonly Sarvatobhadra[] | null;
   /**
+   * The tithi praveshas of the chart's years, `1` up; fewer than asked for
+   * where the ephemeris ends first, `null` unless `tithiPravesha` asked
+   * (`03-design/tithi-pravesha.md`).
+   */
+  readonly tithiPravesha: readonly TithiPravesha[] | null;
+  /**
    * The chart read as a birth time to rectify: the purifier's runs, the
    * conception, the circumstances and the baseline's cascade, each `null`
    * unless asked; the whole `null` unless `rectification` asked
@@ -6880,6 +6932,12 @@ export interface ChartRequest {
    * (`03-design/gochar.md` §8). None by default.
    */
   readonly sarvatobhadra?: SarvatobhadraRequest;
+  /**
+   * The tithi praveshas to find for every chart's years, read back as each
+   * chart's `tithiPravesha` (`03-design/tithi-pravesha.md`). None by
+   * default.
+   */
+  readonly tithiPravesha?: TithiPraveshaRequest;
   /**
    * A birth time to rectify, read around every chart's instant and read
    * back as each chart's `rectification` (`03-design/rectification.md`).

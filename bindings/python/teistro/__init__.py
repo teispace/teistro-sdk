@@ -802,6 +802,10 @@ __all__ = [
     "VedhaReach",
     "PointStrike",
     "PointVedha",
+    # The tithi pravesha: each year's lunar-day birthday.
+    "TithiPraveshaRequest",
+    "TithiRule",
+    "TithiPravesha",
     # Lal Kitab: the 1952 edition's teva, its reading and the 35-year cycle.
     "LalKitabRequest",
     "LalKitabCycle",
@@ -1931,6 +1935,7 @@ class ChartArea(_Area):
         remedies: Optional[RemedyRequest] = None,
         lalkitab: Optional[LalKitabRequest] = None,
         sarvatobhadra: Optional[SarvatobhadraRequest] = None,
+        tithi_pravesha: Optional[TithiPraveshaRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
@@ -1995,6 +2000,7 @@ class ChartArea(_Area):
             remedies=remedies,
             lalkitab=lalkitab,
             sarvatobhadra=sarvatobhadra,
+            tithi_pravesha=tithi_pravesha,
             rectification=rectification,
             aspects=aspects,
             points=points,
@@ -2049,6 +2055,7 @@ class ChartArea(_Area):
         remedies: Optional[RemedyRequest] = None,
         lalkitab: Optional[LalKitabRequest] = None,
         sarvatobhadra: Optional[SarvatobhadraRequest] = None,
+        tithi_pravesha: Optional[TithiPraveshaRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
@@ -2145,6 +2152,7 @@ class ChartArea(_Area):
             remedies_json=_record_json(remedies, "remedies", "{'at': 2460676.5}"),
             lalkitab_json=_lalkitab_json(lalkitab),
             sarvatobhadra_json=_record_json(sarvatobhadra, "sarvatobhadra", "{'instants': [2460676.5]}"),
+            tithi_pravesha_json=_record_json(tithi_pravesha, "tithiPravesha", "{'through': 40}"),
             rectification_json=_record_json(rectification, "rectification", "{'purify': {'minutes': 30}}"),
         )
         return ChartBatch(
@@ -9587,6 +9595,59 @@ class LalKitab:
     """The year asked for; `None` unless the request named one."""
 
 
+TithiRule = Literal["NATAL_SIGN", "NEAREST_RETURN"]
+"""Which phase return of a year is its tithi pravesha
+(`03-design/tithi-pravesha.md`): `NATAL_SIGN`, the practice's own, the
+return while the Sun is in its natal sign (C444 to C446), or
+`NEAREST_RETURN`, the return nearest the solar return whatever the sign."""
+
+
+class TithiPraveshaRequest(TypedDict, total=False):
+    """The tithi praveshas to find for every chart's years
+    (`03-design/tithi-pravesha.md`).
+
+    >>> asked: TithiPraveshaRequest = {"through": 40, "rule": "NEAREST_RETURN"}
+    """
+
+    through: Required[int]
+    """The last year, 1 to 200, counted as `Pravesha.year` counts it."""
+    rule: TithiRule
+    """Which phase return of each year is taken; `NATAL_SIGN` when left out."""
+
+
+@dataclass(frozen=True)
+class TithiPravesha:
+    """One year's tithi pravesha: the instant the Moon's elongation from the
+    Sun returns to the birth's, the solar return it was chosen around and
+    which rule chose it. Found the year's chart at `at`, where the native
+    is."""
+
+    year: int
+    """The year, `1` the first return, a year after birth, as
+    `Pravesha.year` counts it."""
+    at: float
+    """The instant the elongation returns, a Julian day (UTC)."""
+    solar_return: float
+    """The year's sidereal solar return, a Julian day (UTC): what "nearest"
+    is measured from."""
+    elongation_deg: float
+    """The birth's elongation returned to, the Moon less the Sun, degrees in
+    `[0, 360)`."""
+    rule: TithiRule
+    """The rule asked for."""
+    picked: TithiRule
+    """The rule that chose this instant: `NEAREST_RETURN` where `NATAL_SIGN`
+    found no phase return in the sign (C446)."""
+    in_sign: int
+    """How many phase returns fell while the Sun was in its natal sign: 0, 1
+    or 2."""
+
+    @property
+    def fell_back(self) -> bool:
+        """Whether the year fell back: `rule` and `picked` differ."""
+        return self.rule != self.picked
+
+
 ChakraVowel = Literal["A", "AA", "I", "II", "U", "UU", "RI", "RII", "LI", "LII", "E", "AI", "O", "AU", "AM", "AH"]
 """The sixteen vowels in the order the Sarvatobhadra chakra lays them, a to
 the visarga."""
@@ -11783,6 +11844,19 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
             readings=tuple(reading(one) for one in period["readings"]),
         ),
         baseline=None if baseline is None else tuple(score(one) for one in baseline),
+    )
+
+
+def _tithi_pravesha(raw: Mapping[str, Any]) -> TithiPravesha:
+    """One year from the `tithi_pravesha` section's JSON."""
+    return TithiPravesha(
+        year=raw["year"],
+        at=raw["at"],
+        solar_return=raw["solarReturn"],
+        elongation_deg=raw["elongationDeg"],
+        rule=raw["rule"],
+        picked=raw["picked"],
+        in_sign=raw["inSign"],
     )
 
 
@@ -14143,6 +14217,16 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def tithi_pravesha(self) -> Optional[Tuple[TithiPravesha, ...]]:
+        """The tithi praveshas of the chart's years, `1` up: each year's
+        instant the Moon's elongation from the Sun returns to the birth's,
+        chosen around that year's solar return. Fewer than asked for where
+        the ephemeris ends first; `None` unless `tithi_pravesha=` asked
+        (`03-design/tithi-pravesha.md`)."""
+        parsed = self.batch._tithi_praveshas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def rectification(self) -> Optional[Rectification]:
         """The chart read as a birth time to rectify, its instant the time on
         record: what the purifier of BPHS ch. 2 vv. 67–78 leaves standing of
@@ -14868,6 +14952,13 @@ class ChartBatch:
         was asked for."""
         text = self.decoded.sarvatobhadra
         return [tuple(_sarvatobhadra(raw) for raw in chart) for chart in json.loads(text)] if text else []
+
+    @cached_property
+    def _tithi_praveshas(self) -> list[Tuple[TithiPravesha, ...]]:
+        """Every chart's tithi praveshas, parsed once; empty when none was
+        asked for."""
+        text = self.decoded.tithi_pravesha
+        return [tuple(_tithi_pravesha(raw) for raw in chart) for chart in json.loads(text)] if text else []
 
     @cached_property
     def _rectifications(self) -> list[Rectification]:

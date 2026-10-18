@@ -1254,8 +1254,6 @@ def main() -> None:
             perfection={"house": 7, "rules": {"horizonDays": 120}},
             prashna={"question": {"house": 7, "number": 14, "tense": "FUTURE"}, "rules": {"score": "BASELINE", "graded": "TAJIKA"}},
             remedies={"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
-            # A varshphal list with the book's structure and none of its
-            # numbers: year y sends natal house h to h + y - 1, round the twelve.
             # Two instants, the verses' own motion, a name and every cell the
             # front passes.
             sarvatobhadra={
@@ -1264,6 +1262,10 @@ def main() -> None:
                 "name": {"letter": "र", "vowel": "A"},
                 "rules": {"front": "EVERY_CELL"},
             },
+            # Three years under the practice's rule.
+            tithi_pravesha={"through": 3},
+            # A varshphal list with the book's structure and none of its
+            # numbers: year y sends natal house h to h + y - 1, round the twelve.
             lalkitab={
                 "cycle": {"planet": "graha.VENUS", "year": 17},
                 "year": 43,
@@ -1989,6 +1991,15 @@ def main() -> None:
             chakra = chart.sarvatobhadra
             assert chakra is not None
             put_sarvatobhadra(f"chart-{i}-sarvatobhadra", chakra)
+            praveshas = chart.tithi_pravesha
+            assert praveshas is not None
+            put(f"chart-{i}-tithi-pravesha-count", str(len(praveshas)))
+            for tp in praveshas:
+                put(
+                    f"chart-{i}-tithi-pravesha-{tp.year}",
+                    f"{number(tp.at)} {number(tp.solar_return)} {number(tp.elongation_deg)}"
+                    f" {tp.rule} {tp.picked} {tp.in_sign}",
+                )
             rc = chart.rectification
             assert rc is not None
             put_rectification(f"chart-{i}-rectification", rc)

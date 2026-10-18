@@ -106,7 +106,11 @@ record (`tithiPravesha.through`), and answers each chart in the batch what
 as canonical JSON, a list of years a chart (`tests/abi.rs` holds it to the
 façade's own), and the agent server reads the record as it reads the
 others. A chart whose years run past the ephemeris holds fewer rows, as
-the call answers fewer.
+the call answers fewer. Every binding takes the record as a chart option
+and reads the section back as typed values with `fellBack` beside the two
+rules (`chart.tithiPravesha`; Python's `chart.tithi_pravesha`, Java's
+`chart.tithiPravesha()`), and the parity example holds the four and Rust
+to one printing of three years.
 
 ## What is decided and what is not
 
@@ -116,7 +120,7 @@ the call answers fewer.
 | **a setting** | `TithiRule`: `NATAL_SIGN` (default) or `NEAREST_RETURN`; how many years, one to two hundred (`through`) |
 | **not decided** | where the year's chart is cast, the caller's, as for the Varsha Pravesha |
 | **built** | `TithiRule`, `TithiPravesha`, `TithiPraveshaRequest`, `TITHI_WINDOW_DAYS`, `ChartArea::tithi_praveshas` (`crates/sdk/src/tithi_pravesha.rs`); `crates/sdk/tests/tithi_pravesha.rs` reads every instant back through charts founded a second either side of it; the `tithiPravesha` record and section 136 |
-| **not built** | the lunar-month rival; the yoga and nakshatra praveshas the research row names beside it (the Moon plus the Sun, the Moon alone: the same choice over another quantity); monthly tithi praveshas; the bindings' typed readers |
+| **not built** | the lunar-month rival; the yoga and nakshatra praveshas the research row names beside it (the Moon plus the Sun, the Moon alone: the same choice over another quantity); monthly tithi praveshas |
 
 ## What the corpus cannot settle
 

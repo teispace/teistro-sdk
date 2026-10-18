@@ -1909,6 +1909,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_remedies(report, geo, index, document);
     the_lalkitab(report, geo, index, document);
     the_sarvatobhadra(report, geo, index, document);
+    the_tithi_pravesha(report, geo, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2581,6 +2582,46 @@ const SARVATOBHADRA_JSON: &str = r#"{"instants":[2460676.5,2460776.5],"motion":"
 /// The Sarvatobhadra chakra as every runner prints it: each instant's
 /// native, count and points, then each graha's place, motion, nature,
 /// lines, how many cells it strikes and the points among them.
+/// The tithi praveshas every runner asks for: three years under the
+/// practice's rule, each year's instant, its solar return, the birth's
+/// elongation, the rule asked and the one that chose, and the count in
+/// the sign (`03-design/tithi-pravesha.md`).
+const TITHI_PRAVESHA_JSON: &str = r#"{"through":3}"#;
+
+fn the_tithi_pravesha(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+) {
+    let asked =
+        teistro::TithiPraveshaRequest::from_json(TITHI_PRAVESHA_JSON).expect("a valid request");
+    let years = sdk
+        .chart()
+        .tithi_praveshas(document, asked.rule, asked.through)
+        .expect("the test provider");
+    put(
+        report,
+        &format!("chart-{index}-tithi-pravesha-count"),
+        years.len().to_string(),
+    );
+    for one in &years {
+        put(
+            report,
+            &format!("chart-{index}-tithi-pravesha-{}", one.year),
+            format!(
+                "{} {} {} {} {} {}",
+                number(one.at.get()),
+                number(one.solar_return.get()),
+                number(one.elongation_deg),
+                one.rule.key(),
+                one.picked.key(),
+                one.in_sign
+            ),
+        );
+    }
+}
+
 fn the_sarvatobhadra(
     report: &mut Report,
     sdk: &Context,

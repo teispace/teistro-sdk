@@ -727,6 +727,55 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart reads its tithi praveshas", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                double instant = 2_447_995.489_583_333_5;
+                check(sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder().build()).tithiPravesha()
+                        .isEmpty(), "none unless asked");
+                java.util.function.ToDoubleFunction<Chart> elongation = chart -> {
+                    double sun = 0;
+                    double moon = 0;
+                    for (PlacedGraha g : chart.grahas()) {
+                        if (g.graha() == Graha.SUN) {
+                            sun = g.longitudeDeg();
+                        } else if (g.graha() == Graha.MOON) {
+                            moon = g.longitudeDeg();
+                        }
+                    }
+                    return ((moon - sun) % 360 + 360) % 360;
+                };
+                Chart natal = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .tithiPravesha(TithiPraveshaRequest.builder().through(3).build()).build());
+                List<TithiPravesha> years = natal.tithiPravesha().orElseThrow();
+                same(List.of(1, 2, 3), years.stream().map(TithiPravesha::year).toList(), "a year a row, 1 up");
+                double born = elongation.applyAsDouble(natal);
+                for (TithiPravesha year : years) {
+                    same(TithiRule.NATAL_SIGN, year.rule(), "the default rule");
+                    same(year.rule() != year.picked(), year.fellBack(), "fell back when the rules differ");
+                    check(Math.abs(year.elongationDeg() - born) < 1e-9, "the birth's elongation");
+                    check(Math.abs(year.at() - year.solarReturn()) < 33, "inside the window");
+                    check(year.inSign() >= 0 && year.inSign() <= 2, "at most two in the sign");
+                    double then = elongation.applyAsDouble(
+                            sky.chart().found(year.at(), kathmandu, 20_700, ChartOptions.builder().build()));
+                    check(Math.abs(then - born) < 1e-3, "year " + year.year() + " reads back");
+                }
+                List<TithiPravesha> nearest = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .tithiPravesha(TithiPraveshaRequest.builder().through(3).rule(TithiRule.NEAREST_RETURN)
+                                .build())
+                        .build()).tithiPravesha().orElseThrow();
+                for (TithiPravesha year : nearest) {
+                    same(TithiRule.NEAREST_RETURN, year.picked(), "the rival picks itself");
+                    check(!year.fellBack(), "the rival never falls back");
+                    check(Math.abs(year.at() - year.solarReturn()) < 16, "within a half month");
+                }
+                TeistroException refused = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().tithiPravesha(TithiPraveshaRequest.builder().through(0).build())
+                                .build()));
+                same("tithiPravesha.through", refused.field(), "a refusal names its field");
+            }
+        });
+
         tests.put("a chart carries its Lal Kitab", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));

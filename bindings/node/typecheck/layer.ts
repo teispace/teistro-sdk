@@ -12,6 +12,9 @@ import type {
   GrahaVedha,
   Sarvatobhadra,
   SarvatobhadraRequest,
+  TithiPravesha,
+  TithiPraveshaRequest,
+  TithiRule,
   VedhaMotion,
   VedhaReach,
   KarakaBhava,
@@ -481,6 +484,24 @@ function sarvatobhadra(): string {
 }
 
 void sarvatobhadra;
+
+/** The tithi praveshas, typed: a year a row, the rule a word of two. */
+function tithiPravesha(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const asked: TithiPraveshaRequest = { through: 40, rule: 'NEAREST_RETURN' };
+  const chart = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, tithiPravesha: asked });
+  const year: TithiPravesha = chart.tithiPravesha![0]!;
+  const picked: TithiRule = year.picked;
+  const at: number = year.at;
+  const fell: boolean = year.fellBack;
+  // @ts-expect-error a year is asked for by the last one, not a range
+  const range: TithiPraveshaRequest = { from: 1, to: 40 };
+  // @ts-expect-error the rule is one of two
+  const lunar: TithiRule = 'JANMA_MASA';
+  return `${picked} ${at} ${fell} ${range} ${lunar}`;
+}
+
+void tithiPravesha;
 
 /** The almanac layer, typed: a range of days and one of them. */
 function almanac(): string {

@@ -1490,11 +1490,13 @@ public final class ParityRunner {
                 .perfection(PerfectionRequest.of(map("house", 7, "rules", map("horizonDays", 120))))
                 .prashna(PrashnaRequest.of(map("question", map("house", 7, "number", 14, "tense", "FUTURE"), "rules", map("score", "BASELINE", "graded", "TAJIKA"))))
                 .remedies(RemedyRequest.of(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA")))))
-                // A varshphal list with the book's structure and none of its numbers:
-                // year y sends natal house h to h + y - 1, round the twelve.
                 // Two instants, the verses' own motion, a name and every cell the front passes.
                 .sarvatobhadra(SarvatobhadraRequest.of(map("instants", List.of(2460676.5, 2460776.5), "motion", "SUN",
                         "name", map("letter", "र", "vowel", "A"), "rules", map("front", "EVERY_CELL"))))
+                // Three years under the practice's rule.
+                .tithiPravesha(TithiPraveshaRequest.builder().through(3).build())
+                // A varshphal list with the book's structure and none of its numbers:
+                // year y sends natal house h to h + y - 1, round the twelve.
                 .lalkitab(LalKitabRequest.of(map("cycle", map("planet", "graha.VENUS", "year", 17), "year", 43,
                         "varshphal", map("rows", varshphalRotation()))))
                 .rectification(RectificationRequest.of(map("purify", map("minutes", 20), "conception", map(),
@@ -2048,6 +2050,13 @@ public final class ParityRunner {
         putRemedies(c + "-remedies", chart.remedies().orElseThrow());
         putLalKitab(c + "-lalkitab", chart.lalkitab().orElseThrow());
         putSarvatobhadra(c + "-sarvatobhadra", chart.sarvatobhadra().orElseThrow());
+        List<TithiPravesha> years = chart.tithiPravesha().orElseThrow();
+        put(c + "-tithi-pravesha-count", String.valueOf(years.size()));
+        for (TithiPravesha year : years) {
+            put(c + "-tithi-pravesha-" + year.year(), number(year.at()) + " " + number(year.solarReturn()) + " "
+                    + number(year.elongationDeg()) + " " + year.rule().key() + " " + year.picked().key() + " "
+                    + year.inSign());
+        }
         rectification(c + "-rectification", chart.rectification().orElseThrow());
         progressions(c, chart.progressions().orElseThrow());
         List<WesternAspectRow> westernAspects = chart.westernAspects().orElseThrow();
