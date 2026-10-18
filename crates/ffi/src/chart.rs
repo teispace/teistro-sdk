@@ -5487,6 +5487,9 @@ pub struct Composed<'a> {
     /// Every chart's tithi praveshas, as canonical JSON
     /// (`tithi-pravesha.md`); empty when none was asked for.
     pub tithi_pravesha: &'a str,
+    /// Every chart's month or day charts' instants, as canonical JSON
+    /// (`annual-chart.md`); empty when none was asked for.
+    pub masa_pravesha: &'a str,
     /// Every chart's dossier, as canonical JSON: a string a chart
     /// (`dossier.md`); empty when none was asked for.
     pub dossier: &'a str,
@@ -5514,6 +5517,7 @@ impl Composed<'_> {
             ("rectification", self.rectification),
             ("sarvatobhadra", self.sarvatobhadra),
             ("tithi_pravesha", self.tithi_pravesha),
+            ("masa_pravesha", self.masa_pravesha),
             ("dossier", self.dossier),
         ] {
             writer.bytes(name, text.as_bytes())?;
@@ -6531,6 +6535,11 @@ impl AskedRecords {
                 "tithi_pravesha_json",
             ),
             ("dossier", asked.dossier_json, "dossier_json"),
+            (
+                "masaPravesha",
+                asked.masa_pravesha_json,
+                "masa_pravesha_json",
+            ),
         ];
         let mut records = ChartRecords::default();
         for (name, text, field) in fields {
@@ -6652,6 +6661,7 @@ pub unsafe extern "C" fn ts_chart_found(
             composed.rectification
         );
         let tithi_pravesha = section!("tajika", records.tithi_pravesha, composed.tithi_pravesha);
+        let masa_pravesha = section!("tajika", records.masa_pravesha, composed.masa_pravesha);
         let encoded = encode(
             &founded.value,
             &place,
@@ -6692,6 +6702,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 rectification: &rectification,
                 sarvatobhadra: &section(records.sarvatobhadra.is_some(), &composed.sarvatobhadra),
                 tithi_pravesha: &tithi_pravesha,
+                masa_pravesha: &masa_pravesha,
                 dossier: &section(records.dossier.is_some(), &composed.dossier),
                 hashes: &composed.hashes,
             },

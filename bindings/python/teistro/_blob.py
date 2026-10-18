@@ -4839,6 +4839,9 @@ class Charts:
     dossier: str
     """UTF-8 JSON, canonical: an array with one string per chart, its dossier for a language model (`03-design/dossier.md`): the line `# teistro dossier N`, `N` the format's version, a legend of the sections written, then each section as a `== NAME ==` banner, a `#` header naming its `|`-separated columns, and its rows. The same chart under the same record is the same text. Empty when `dossier_json` asked for none."""
 
+    masa_pravesha: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each an array of rows in order (`03-design/annual-chart.md`, "The month's and the day's chart"). A row is `{year, month, day, at, sunDeg}`: `year` counted as `praveshas.year` counts it; `month` 1 to 12; `day` 1 to 30; `at` the instant, a UTC Julian day, where the chart is founded; `sunDeg` where the Sun stands then in the year's zodiac, the annual Sun a sign further each month and the month's Sun a degree further each day (*Tajika Nilakanthi*, Saṃjñā Tantra, the monthly and daily entry, v. 1). Without `month` the rows are the year's twelve months, each as its first day, `day` 1; with it, that month's thirty days. A chart holds no rows where the ephemeris ends before the year does. Empty when `masa_pravesha_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4985,6 +4988,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_sarvatobhadra = blob.section(135, "sarvatobhadra")
     at_tithi_pravesha = blob.section(136, "tithi_pravesha")
     at_dossier = blob.section(137, "dossier")
+    at_masa_pravesha = blob.section(138, "masa_pravesha")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7765,6 +7769,7 @@ def decode_charts(raw: bytes) -> Charts:
         sarvatobhadra=blob.text(at_sarvatobhadra),
         tithi_pravesha=blob.text(at_tithi_pravesha),
         dossier=blob.text(at_dossier),
+        masa_pravesha=blob.text(at_masa_pravesha),
     )
 
 

@@ -63,6 +63,20 @@ pub struct DinaPravesha {
     pub sun_deg: f64,
 }
 
+impl From<MasaPravesha> for DinaPravesha {
+    /// The month's chart as its own first day's, which the commentary
+    /// says it is.
+    fn from(month: MasaPravesha) -> DinaPravesha {
+        DinaPravesha {
+            year: month.year,
+            month: month.month,
+            day: 1,
+            at: month.at,
+            sun_deg: month.sun_deg,
+        }
+    }
+}
+
 /// The search's step for the months, in days: a sign is about thirty days,
 /// so ten cannot pass two.
 const MONTH_STEP_DAYS: f64 = 10.0;

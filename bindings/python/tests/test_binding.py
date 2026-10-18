@@ -1865,6 +1865,45 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, tithi_pravesha={"through": 0}, **at)
             self.assertEqual(refused.exception.field, "tithiPravesha.through")
 
+    def test_a_chart_reads_its_month_and_day_charts(self) -> None:
+        """The Maasa and Dina Pravesha cross whole
+        (`03-design/annual-chart.md`): the year's months each as its first
+        day, a month's thirty days, the Sun read back from a chart founded
+        at one of each, and a request refused by its record's name."""
+        from teistro import MasaPraveshaRequest, TeistroError
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+
+        def apart(a: float, b: float) -> float:
+            d = (a - b) % 360
+            return float(min(d, 360 - d))
+
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+
+            def sun(when: float) -> float:
+                chart = ctx.chart.found(instant=when, **at)
+                return float(next(g.longitude_deg for g in chart.grahas if g.graha == Graha.SUN))
+
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).masa_pravesha)
+            born = sun(instant)
+            months = ctx.chart.found(instant=instant, masa_pravesha={"year": 3}, **at).masa_pravesha
+            assert months is not None
+            self.assertEqual([(m.year, m.month, m.day) for m in months], [(3, m, 1) for m in range(1, 13)])
+            for month in months:
+                self.assertLess(apart(month.sun_deg, born + 30 * (month.month - 1)), 1e-9)
+            self.assertLess(apart(sun(months[4].at), months[4].sun_deg), 1e-4)
+            request: MasaPraveshaRequest = {"year": 3, "month": 5}
+            days = ctx.chart.found(instant=instant, masa_pravesha=request, **at).masa_pravesha
+            assert days is not None
+            self.assertEqual(len(days), 30)
+            self.assertEqual(days[0].at, months[4].at)
+            self.assertLess(apart(sun(days[9].at), months[4].sun_deg + 9), 1e-4)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, masa_pravesha={"year": 3, "month": 13}, **at)
+            self.assertEqual(refused.exception.field, "masaPravesha.month")
+
     def test_a_chart_writes_its_dossier(self) -> None:
         """The dossier crosses as text (`03-design/dossier.md`): the record
         widens the request with the sections it names, writes on the

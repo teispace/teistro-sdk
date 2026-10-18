@@ -145,13 +145,7 @@ impl ChartArea<'_> {
         year: u16,
         month: u8,
     ) -> Result<Vec<teistro_tajika::DinaPravesha>, Error> {
-        if !(1..=teistro_tajika::MONTHS).contains(&month) {
-            return Err(Error::invalid_arg(format!(
-                "a year divides into months 1 to {}, not {month}",
-                teistro_tajika::MONTHS
-            ))
-            .with_field("month"));
-        }
+        crate::masa_pravesha::month_of(month)?;
         self.year_of(
             document,
             reading,
@@ -180,13 +174,7 @@ impl ChartArea<'_> {
             &Pravesha,
         ) -> Result<Vec<T>, Error>,
     ) -> Result<Vec<T>, Error> {
-        let year = teistro_tajika::years(year).map_err(|_| {
-            Error::invalid_arg(format!(
-                "a year is asked for by the returns it completes, 1 to {}, not {year}",
-                teistro_tajika::MOST_YEARS
-            ))
-            .with_field("year")
-        })?;
+        let year = crate::masa_pravesha::year_of(year)?;
         // Refused before a provider is needed, as the year is.
         teistro_tajika::divided(reading)?;
         self.sun_sky(document, |longitudes, zodiac, natal, covered| {

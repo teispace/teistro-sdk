@@ -8513,6 +8513,21 @@ struct ts_chart_request {
      * Example: {"preset":"FULL","dashaDepth":2}. May be null.
      */
     const char * dossier_json;
+    /**
+     * One year's month charts, or one month's day charts, to find for
+     * every chart, as a JSON object: `year`, 1 to 200, counted as the
+     * annual chart's years are; optionally `month`, 1 to 12, for that
+     * month's thirty days instead of the year's twelve months; and
+     * optionally `reading`, `"SIDEREAL"` (the default) or `"TROPICAL"`,
+     * the zodiac the year divides in. The instants come back in the
+     * `masa_pravesha` section, the months each as its first day; a year
+     * past the ephemeris's end comes back empty. Null for none
+     * (`03-design/annual-chart.md`, "The month's and the day's chart").
+     * Refusals are named from the record every binding calls
+     * `masaPravesha`, as `masaPravesha.month`.
+     * Example: {"year":30,"month":4}. May be null.
+     */
+    const char * masa_pravesha_json;
 };
 
 /**
@@ -9561,7 +9576,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 344, "ts_chart_request is 344 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 352, "ts_chart_request is 352 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

@@ -1911,6 +1911,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_lalkitab(report, geo, index, document);
     the_sarvatobhadra(report, geo, index, document);
     the_tithi_pravesha(report, geo, index, document);
+    the_masa_pravesha(report, geo, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2616,6 +2617,40 @@ fn the_tithi_pravesha(
                 one.picked.key(),
                 one.in_sign
             ),
+        );
+    }
+}
+
+/// The month's days every runner asks for: the second year's third month,
+/// which finds the year's months to reach it, each day's instant and the
+/// Sun's longitude (`03-design/annual-chart.md`).
+const MASA_PRAVESHA_JSON: &str = r#"{"year":2,"month":3}"#;
+
+fn the_masa_pravesha(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+) {
+    let asked =
+        teistro::MasaPraveshaRequest::from_json(MASA_PRAVESHA_JSON).expect("a valid request");
+    let days = sdk
+        .chart()
+        .masa_pravesha(document, &asked)
+        .expect("the test provider");
+    put(
+        report,
+        &format!("chart-{index}-masa-pravesha-count"),
+        days.len().to_string(),
+    );
+    for one in &days {
+        put(
+            report,
+            &format!(
+                "chart-{index}-masa-pravesha-{}-{}-{}",
+                one.year, one.month, one.day
+            ),
+            format!("{} {}", number(one.at.get()), number(one.sun_deg)),
         );
     }
 }

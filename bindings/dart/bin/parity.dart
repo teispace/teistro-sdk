@@ -1160,6 +1160,8 @@ void main() {
     ),
     // Three years under the practice's rule.
     tithiPravesha: const TithiPraveshaRequest(through: 3),
+    // The second year's third month, a row a day.
+    masaPravesha: const MasaPraveshaRequest(year: 2, month: 3),
     dossier: const DossierRequest(
       sections: [
         DossierSection.chart,
@@ -2045,6 +2047,14 @@ void main() {
         '${number(year.at)} ${number(year.solarReturn)} '
             '${number(year.elongationDeg)} ${year.rule.key} ${year.picked.key} '
             '${year.inSign}',
+      );
+    }
+    final masa = chart.masaPravesha!;
+    put('chart-$i-masa-pravesha-count', '${masa.length}');
+    for (final one in masa) {
+      put(
+        'chart-$i-masa-pravesha-${one.year}-${one.month}-${one.day}',
+        '${number(one.at)} ${number(one.sunDeg)}',
       );
     }
     final dossier = chart.dossier!;

@@ -14,6 +14,8 @@ import type {
   SarvatobhadraRequest,
   TithiPravesha,
   TithiPraveshaRequest,
+  MasaPravesha,
+  MasaPraveshaRequest,
   DossierRequest,
   TithiRule,
   VedhaMotion,
@@ -503,6 +505,21 @@ function tithiPravesha(): string {
 }
 
 void tithiPravesha;
+
+/** The month and day charts, typed: a row each, the mean year refused by its type. */
+function masaPravesha(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const asked: MasaPraveshaRequest = { year: 30, month: 4, reading: 'TROPICAL' };
+  const chart = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, masaPravesha: asked });
+  const day: MasaPravesha = chart.masaPravesha![0]!;
+  const at: number = day.at;
+  const sun: number = day.sunDeg;
+  // @ts-expect-error the mean year places no Sun, so it divides into nothing
+  const mean: MasaPraveshaRequest = { year: 30, reading: 'MEAN' };
+  return `${at} ${sun} ${day.month} ${day.day} ${mean.year}`;
+}
+
+void masaPravesha;
 
 /** The dossier, typed: a string a chart, its sections a closed set. */
 function dossierText(): string {

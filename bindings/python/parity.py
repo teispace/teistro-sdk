@@ -1264,6 +1264,8 @@ def main() -> None:
             },
             # Three years under the practice's rule.
             tithi_pravesha={"through": 3},
+            # The second year's third month, a row a day.
+            masa_pravesha={"year": 2, "month": 3},
             dossier={
                 "sections": ["CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES", "GOCHAR"],
                 "at": 2460676.5,
@@ -2006,6 +2008,11 @@ def main() -> None:
                     f"{number(tp.at)} {number(tp.solar_return)} {number(tp.elongation_deg)}"
                     f" {tp.rule} {tp.picked} {tp.in_sign}",
                 )
+            masa = chart.masa_pravesha
+            assert masa is not None
+            put(f"chart-{i}-masa-pravesha-count", str(len(masa)))
+            for mp in masa:
+                put(f"chart-{i}-masa-pravesha-{mp.year}-{mp.month}-{mp.day}", f"{number(mp.at)} {number(mp.sun_deg)}")
             dossier = chart.dossier
             assert dossier is not None
             put(f"chart-{i}-dossier", f"{len(dossier.encode('utf-8'))} {fnv(dossier)}")

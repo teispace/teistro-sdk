@@ -38,6 +38,7 @@ import java.util.Objects;
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param lots How a chart's lots are read: its sect's rule and Fortune's by night. Null leaves the SDK's default.
+ * @param masaPravesha One year's months, or one month's days, of a birth. Null leaves the SDK's default.
  * @param matching A match against a partner's birth, as a binding asks it: the partner, the side the partner stands on, every chart of the batch on the other, and the rules of each system. Null leaves the SDK's default.
  * @param midpoints What the equal distances are asked: how far from the axis a planet may stand. Null leaves the SDK's default.
  * @param moment The {@code moment} field. Null leaves the SDK's default.
@@ -65,7 +66,7 @@ import java.util.Objects;
  * @param westernAspects What an aspect table is asked: which aspects, under which orbs. Null leaves the SDK's default.
  * @param westernHouses What a chart's Western houses are asked with. Null leaves the SDK's default.
  */
-public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, DossierOptions dossier, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, PartnerMatching matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, TithiPraveshaRequest tithiPravesha, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, HouseRequest westernHouses) implements RequestJson {
+public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, DossierOptions dossier, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, MasaPraveshaRequest masaPravesha, PartnerMatching matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, TithiPraveshaRequest tithiPravesha, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, HouseRequest westernHouses) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -119,6 +120,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         private Double latitudeDeg;
         private Double longitudeDeg;
         private LotRequest lots;
+        private MasaPraveshaRequest masaPravesha;
         private PartnerMatching matching;
         private MidpointRequest midpoints;
         private Boolean moment;
@@ -446,6 +448,17 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         }
 
         /**
+         * Sets {@code masaPravesha}.
+         *
+         * @param masaPravesha One year's months, or one month's days, of a birth. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder masaPravesha(MasaPraveshaRequest masaPravesha) {
+            this.masaPravesha = masaPravesha;
+            return this;
+        }
+
+        /**
          * Sets {@code matching}.
          *
          * @param matching A match against a partner's birth, as a binding asks it: the partner, the side the partner stands on, every chart of the batch on the other, and the rules of each system. Null leaves the SDK's default.
@@ -738,7 +751,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          * @throws NullPointerException naming a required field left unset
          */
         public ChartFoundRequest build() {
-            return new ChartFoundRequest(altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, Objects.requireNonNull(latitudeDeg, "`ChartFoundRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ChartFoundRequest.longitudeDeg` is required"), lots, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, Objects.requireNonNull(utcOffsetSeconds, "`ChartFoundRequest.utcOffsetSeconds` is required"), vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernHouses);
+            return new ChartFoundRequest(altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, Objects.requireNonNull(latitudeDeg, "`ChartFoundRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ChartFoundRequest.longitudeDeg` is required"), lots, masaPravesha, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, Objects.requireNonNull(utcOffsetSeconds, "`ChartFoundRequest.utcOffsetSeconds` is required"), vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernHouses);
         }
     }
 
@@ -779,6 +792,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.number(Read.required(json.get("latitudeDeg"), "ChartFoundRequest.latitudeDeg"), "ChartFoundRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "ChartFoundRequest.longitudeDeg"), "ChartFoundRequest.longitudeDeg"),
             Read.orNull(json.get("lots"), present -> LotRequest.of(present)),
+            Read.orNull(json.get("masaPravesha"), present -> MasaPraveshaRequest.of(present)),
             Read.orNull(json.get("matching"), present -> PartnerMatching.of(present)),
             Read.orNull(json.get("midpoints"), present -> MidpointRequest.of(present)),
             Read.orNull(json.get("moment"), present -> Read.bool(present, "ChartFoundRequest.moment")),
@@ -886,6 +900,9 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         json.put("longitudeDeg", longitudeDeg);
         if (lots != null) {
             json.put("lots", lots.toJson());
+        }
+        if (masaPravesha != null) {
+            json.put("masaPravesha", masaPravesha.toJson());
         }
         if (matching != null) {
             json.put("matching", matching.toJson());

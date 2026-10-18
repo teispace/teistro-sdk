@@ -171,6 +171,7 @@ chart_slots!(
     sarvatobhadra_json,
     tithi_pravesha_json,
     dossier_json,
+    masa_pravesha_json,
 );
 
 /// The entry points beside the chart request that read a caller's JSON,

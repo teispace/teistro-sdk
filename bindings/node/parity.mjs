@@ -393,6 +393,8 @@ const charts = geo.chart.foundMany({
   },
   // Three years under the practice's rule.
   tithiPravesha: { through: 3 },
+  // The second year's third month, a row a day.
+  masaPravesha: { year: 2, month: 3 },
   dossier: { sections: ['CHART', 'NOW', 'GRAHAS', 'VARGAS', 'DASHAS', 'RULES', 'GOCHAR'], at: 2460676.5, dashaDepth: 2, utcOffsetSeconds: 20700 },
   // A varshphal list with the book's structure and none of its numbers:
   // year y sends natal house h to h + y − 1, round the twelve.
@@ -1197,6 +1199,10 @@ for (const chart of charts) {
       `chart-${i}-tithi-pravesha-${year.year}`,
       `${number(year.at)} ${number(year.solarReturn)} ${number(year.elongationDeg)} ${year.rule} ${year.picked} ${year.inSign}`,
     );
+  }
+  put(`chart-${i}-masa-pravesha-count`, String(chart.masaPravesha.length));
+  for (const one of chart.masaPravesha) {
+    put(`chart-${i}-masa-pravesha-${one.year}-${one.month}-${one.day}`, `${number(one.at)} ${number(one.sunDeg)}`);
   }
   put(`chart-${i}-dossier`, `${Buffer.byteLength(chart.dossier)} ${fnv(chart.dossier)}`);
   const {

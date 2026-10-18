@@ -22,6 +22,11 @@ is the *Tajika Nilakanthi*'s (Saṃjñā Tantra, the monthly and daily entry,
 v. 1), and its commentary's worked example is asserted. Each instant is read
 back through a chart founded at it. The mean year, which places no Sun, is
 refused as `reading`; a month outside one to twelve is refused as `month`.
+A chart request's `masaPravesha` record (`{year, month?, reading?}`) carries
+it across the boundary to Node, Python, Dart and Java. The answer is rows of
+`{year, month, day, at, sunDeg}`, with a year's months each as its first day.
+The Node and Python types refuse the mean year at compile and type-check
+time.
 
 **The dossier: a chart as text for a language model** (`dossier.md`).
 **Numbers:** none moved; nothing computed changes. `teistro::dossier::dossier(&document, &options, &[])`

@@ -123,7 +123,8 @@ read in:
 |---|---|
 | **built** | `teistro_tajika::masa_praveshas` and `dina_praveshas`; `sdk.chart().masa_praveshas(&document, reading, year)` for the twelve months and `sdk.chart().dina_praveshas(&document, reading, year, month)` for the thirty days. A year outside one to two hundred is refused as `year` and a month outside one to twelve as `month`. A year past the provider's coverage comes back empty, as the returns do |
 | **checked** | `crates/sdk/tests/masa_pravesha.rs` founds a chart at every month's instant and at every day's instant of one month. It reads the Sun back from each to within 10⁻⁴° of the annual Sun plus whole signs or degrees, and checks that months fall 29 to 32 days apart and days 0.95 to 1.06 days apart |
-| **not built** | a chart-request record and its crossing to the bindings; the month's and the day's lords (the Masesha and Dinesha); the Tajika rules read on a month's chart. The crossing waits for a consumer's request, since the instant is already answered in Rust |
+| **across the boundary** | `TsChartRequest.masa_pravesha_json` carries a `MasaPraveshaRequest`, `{year, month?, reading?}`. Without `month` it answers the year's twelve months; with it, that month's thirty days. Both come back in the `masa_pravesha` section as rows of one shape, `{year, month, day, at, sunDeg}`, with each month as its own first day, which is what the commentary says a month's chart is. Node, Python, Dart and Java read it as `masaPravesha`/`masa_pravesha`, and every parity runner prints the second year's third month day by day |
+| **not built** | the month's and the day's lords (the Masesha and Dinesha); the Tajika rules read on a month's chart |
 
 ## What the corpus cannot settle
 

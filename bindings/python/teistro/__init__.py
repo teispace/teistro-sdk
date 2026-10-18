@@ -806,6 +806,9 @@ __all__ = [
     "TithiPraveshaRequest",
     "TithiRule",
     "TithiPravesha",
+    # The month's and the day's chart: the Sun a sign, or a degree, further.
+    "MasaPraveshaRequest",
+    "MasaPravesha",
     # The dossier: a chart as text for a language model.
     "DossierRequest",
     "DossierSection",
@@ -1939,6 +1942,7 @@ class ChartArea(_Area):
         lalkitab: Optional[LalKitabRequest] = None,
         sarvatobhadra: Optional[SarvatobhadraRequest] = None,
         tithi_pravesha: Optional[TithiPraveshaRequest] = None,
+        masa_pravesha: Optional[MasaPraveshaRequest] = None,
         dossier: Optional[DossierRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
@@ -2005,6 +2009,7 @@ class ChartArea(_Area):
             lalkitab=lalkitab,
             sarvatobhadra=sarvatobhadra,
             tithi_pravesha=tithi_pravesha,
+            masa_pravesha=masa_pravesha,
             dossier=dossier,
             rectification=rectification,
             aspects=aspects,
@@ -2061,6 +2066,7 @@ class ChartArea(_Area):
         lalkitab: Optional[LalKitabRequest] = None,
         sarvatobhadra: Optional[SarvatobhadraRequest] = None,
         tithi_pravesha: Optional[TithiPraveshaRequest] = None,
+        masa_pravesha: Optional[MasaPraveshaRequest] = None,
         dossier: Optional[DossierRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
@@ -2159,6 +2165,7 @@ class ChartArea(_Area):
             lalkitab_json=_lalkitab_json(lalkitab),
             sarvatobhadra_json=_record_json(sarvatobhadra, "sarvatobhadra", "{'instants': [2460676.5]}"),
             tithi_pravesha_json=_record_json(tithi_pravesha, "tithiPravesha", "{'through': 40}"),
+            masa_pravesha_json=_record_json(masa_pravesha, "masaPravesha", "{'year': 30, 'month': 4}"),
             dossier_json=_record_json(dossier, "dossier", "{'sections': ['GRAHAS', 'DASHAS'], 'at': 2460676.5}"),
             rectification_json=_record_json(rectification, "rectification", "{'purify': {'minutes': 30}}"),
         )
@@ -9622,6 +9629,44 @@ class TithiPraveshaRequest(TypedDict, total=False):
     """Which phase return of each year is taken; `NATAL_SIGN` when left out."""
 
 
+class MasaPraveshaRequest(TypedDict, total=False):
+    """One year's month charts, or one month's day charts, to find for
+    every chart (`03-design/annual-chart.md`, "The month's and the day's
+    chart").
+
+    >>> asked: MasaPraveshaRequest = {"year": 30, "month": 4}
+    """
+
+    year: Required[int]
+    """The year divided, 1 to 200, counted as `Pravesha.year` counts it."""
+    month: int
+    """The month whose thirty days are wanted, 1 to 12; the year's twelve
+    months when left out."""
+    reading: Literal["SIDEREAL", "TROPICAL"]
+    """The zodiac the year divides in; `SIDEREAL` when left out. The mean
+    year places no Sun."""
+
+
+@dataclass(frozen=True)
+class MasaPravesha:
+    """One month's or one day's chart instant: the annual Sun a sign
+    further each month, the month's Sun a degree further each day (*Tajika
+    Nilakanthi*, Saṃjñā Tantra, the monthly and daily entry, v. 1). Found
+    the chart at `at`, where the native is."""
+
+    year: int
+    """The year, as `Pravesha.year` counts it."""
+    month: int
+    """The month, 1 (the annual chart itself) to 12."""
+    day: int
+    """The day, 1 (the month's chart itself) to 30; 1 on every row of a
+    year's months."""
+    at: float
+    """The instant, a Julian day (UTC)."""
+    sun_deg: float
+    """Where the Sun stands then, degrees in the year's zodiac."""
+
+
 DossierSection = Literal[
     "CHART",
     "NOW",
@@ -11911,6 +11956,17 @@ def _tithi_pravesha(raw: Mapping[str, Any]) -> TithiPravesha:
         rule=raw["rule"],
         picked=raw["picked"],
         in_sign=raw["inSign"],
+    )
+
+
+def _masa_pravesha(raw: Mapping[str, Any]) -> MasaPravesha:
+    """One instant from the `masa_pravesha` section's JSON."""
+    return MasaPravesha(
+        year=raw["year"],
+        month=raw["month"],
+        day=raw["day"],
+        at=raw["at"],
+        sun_deg=raw["sunDeg"],
     )
 
 
@@ -14281,6 +14337,15 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def masa_pravesha(self) -> Optional[Tuple[MasaPravesha, ...]]:
+        """The year's twelve month charts, each as its first day, or the
+        month's thirty day charts: the Sun a sign further each month, a
+        degree further each day. Empty where the ephemeris ends first;
+        `None` unless `masa_pravesha=` asked (`03-design/annual-chart.md`)."""
+        parsed = self.batch._masa_praveshas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def dossier(self) -> Optional[str]:
         """The chart written as a dossier for a language model: the same
         chart under the same record is the same text. `None` unless
@@ -15021,6 +15086,13 @@ class ChartBatch:
         for."""
         text = self.decoded.dossier
         return [str(chart) for chart in json.loads(text)] if text else []
+
+    @cached_property
+    def _masa_praveshas(self) -> list[Tuple[MasaPravesha, ...]]:
+        """Every chart's month or day charts, parsed once; empty when none
+        was asked for."""
+        text = self.decoded.masa_pravesha
+        return [tuple(_masa_pravesha(raw) for raw in chart) for chart in json.loads(text)] if text else []
 
     @cached_property
     def _tithi_praveshas(self) -> list[Tuple[TithiPravesha, ...]]:

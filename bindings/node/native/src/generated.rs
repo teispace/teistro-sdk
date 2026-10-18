@@ -2320,6 +2320,19 @@ pub struct ChartRequest {
     /// record every binding calls `dossier`, as `dossier.sections[0]`.
     /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
     pub dossier_json: Option<String>,
+    /// One year's month charts, or one month's day charts, to find for
+    /// every chart, as a JSON object: `year`, 1 to 200, counted as the
+    /// annual chart's years are; optionally `month`, 1 to 12, for that
+    /// month's thirty days instead of the year's twelve months; and
+    /// optionally `reading`, `"SIDEREAL"` (the default) or `"TROPICAL"`,
+    /// the zodiac the year divides in. The instants come back in the
+    /// `masa_pravesha` section, the months each as its first day; a year
+    /// past the ephemeris's end comes back empty. Null for none
+    /// (`03-design/annual-chart.md`, "The month's and the day's chart").
+    /// Refusals are named from the record every binding calls
+    /// `masaPravesha`, as `masaPravesha.month`.
+    /// Example: {"year":30,"month":4}. May be null.
+    pub masa_pravesha_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2365,6 +2378,7 @@ pub struct HeldChartRequest {
     sarvatobhadra_json: Option<std::ffi::CString>,
     tithi_pravesha_json: Option<std::ffi::CString>,
     dossier_json: Option<std::ffi::CString>,
+    masa_pravesha_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2488,6 +2502,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             dossier_json: self
                 .dossier_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            masa_pravesha_json: self
+                .masa_pravesha_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2658,6 +2676,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            masa_pravesha_json: self
+                .masa_pravesha_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2721,6 +2744,7 @@ impl ChartRequest {
             sarvatobhadra_json: unsafe { lent_text(raw.sarvatobhadra_json) },
             tithi_pravesha_json: unsafe { lent_text(raw.tithi_pravesha_json) },
             dossier_json: unsafe { lent_text(raw.dossier_json) },
+            masa_pravesha_json: unsafe { lent_text(raw.masa_pravesha_json) },
         }
     }
 }
