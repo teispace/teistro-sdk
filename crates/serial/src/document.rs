@@ -254,57 +254,43 @@ impl Document {
         self
     }
 
+    /// Every member a document can carry, in the order it is written:
+    /// the one list [`Document::sections`] reads, held to the document
+    /// schema's properties by a test, so a section added to the type
+    /// cannot be one this leaves out.
+    pub const MEMBERS: [&'static str; 18] = [
+        "foundation",
+        "panchanga",
+        "vargas",
+        "state",
+        "aspects",
+        "points",
+        "houses",
+        "ashtakavarga",
+        "vimshopaka",
+        "vaiseshikamsa",
+        "shadbala",
+        "bhava_bala",
+        "dasha_phala",
+        "jaimini",
+        "avakahada",
+        "moment",
+        "drawings",
+        "dashas",
+    ];
+
     /// Which sections this document carries, in the order they are
-    /// written — what a consumer checks before reading one.
+    /// written — what a consumer checks before reading one. A section is
+    /// carried when the document writes it, so the answer is the JSON's.
     #[must_use]
     pub fn sections(&self) -> Vec<&'static str> {
-        let mut found = vec!["foundation"];
-        if self.panchanga.is_some() {
-            found.push("panchanga");
-        }
-        if !self.vargas.is_empty() {
-            found.push("vargas");
-        }
-        if self.state.is_some() {
-            found.push("state");
-        }
-        if self.aspects.is_some() {
-            found.push("aspects");
-        }
-        if self.points.is_some() {
-            found.push("points");
-        }
-        if self.houses.is_some() {
-            found.push("houses");
-        }
-        if self.ashtakavarga.is_some() {
-            found.push("ashtakavarga");
-        }
-        if self.vimshopaka.is_some() {
-            found.push("vimshopaka");
-        }
-        if self.vaiseshikamsa.is_some() {
-            found.push("vaiseshikamsa");
-        }
-        if self.shadbala.is_some() {
-            found.push("shadbala");
-        }
-        if self.bhava_bala.is_some() {
-            found.push("bhava_bala");
-        }
-        if self.dasha_phala.is_some() {
-            found.push("dasha_phala");
-        }
-        if self.jaimini.is_some() {
-            found.push("jaimini");
-        }
-        if !self.drawings.is_empty() {
-            found.push("drawings");
-        }
-        if !self.dashas.is_empty() {
-            found.push("dashas");
-        }
-        found
+        let Ok(serde_json::Value::Object(written)) = serde_json::to_value(self) else {
+            return vec!["foundation"];
+        };
+        Document::MEMBERS
+            .into_iter()
+            .filter(|member| written.contains_key(*member))
+            .collect()
     }
 
     /// The document sealed with the provenance that produced it, which
