@@ -15,9 +15,10 @@ import java.util.Objects;
  * @param month The month whose thirty days are asked for, one to twelve; absent, the year's twelve months are, each as its first day. Null leaves the SDK's default.
  * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord. Absent, the rows are the instants only. The year's own months only: a day's lord is not built. Null leaves the SDK's default.
  * @param reading Which longitude the year's Sun returns to, and so which zodiac the year divides in; the tradition's, sidereal, by default. The mean year places no Sun and is refused. Null leaves the SDK's default.
+ * @param results The floors the month's results judge strong and weak by; the year yogas' own by default. Null leaves the SDK's default.
  * @param year The year divided, one to two hundred, counted as `Pravesha::year` counts it.
  */
-public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPlace place, ReturnLongitude reading, int year) implements RequestJson {
+public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPlace place, ReturnLongitude reading, MasaPhalaRules results, int year) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -48,6 +49,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
         private Integer month;
         private AnnualPlace place;
         private ReturnLongitude reading;
+        private MasaPhalaRules results;
         private Integer year;
 
         private Builder() {}
@@ -97,6 +99,17 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
         }
 
         /**
+         * Sets {@code results}.
+         *
+         * @param results The floors the month's results judge strong and weak by; the year yogas' own by default. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder results(MasaPhalaRules results) {
+            this.results = results;
+            return this;
+        }
+
+        /**
          * Sets {@code year}.
          *
          * @param year The year divided, one to two hundred, counted as `Pravesha::year` counts it.
@@ -114,7 +127,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
          * @throws NullPointerException naming a required field left unset
          */
         public MasaPraveshaRequest build() {
-            return new MasaPraveshaRequest(masesha, month, place, reading, Objects.requireNonNull(year, "`MasaPraveshaRequest.year` is required"));
+            return new MasaPraveshaRequest(masesha, month, place, reading, results, Objects.requireNonNull(year, "`MasaPraveshaRequest.year` is required"));
         }
     }
 
@@ -132,6 +145,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
             Read.orNull(json.get("month"), present -> Read.int32(present, "MasaPraveshaRequest.month")),
             Read.orNull(json.get("place"), present -> AnnualPlace.of(present)),
             Read.orNull(json.get("reading"), present -> Read.member(present, "MasaPraveshaRequest.reading", ReturnLongitude::byKey)),
+            Read.orNull(json.get("results"), present -> MasaPhalaRules.of(present)),
             Read.int32(Read.required(json.get("year"), "MasaPraveshaRequest.year"), "MasaPraveshaRequest.year"));
     }
 
@@ -149,6 +163,9 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
         }
         if (reading != null) {
             json.put("reading", reading.toJson());
+        }
+        if (results != null) {
+            json.put("results", results.toJson());
         }
         json.put("year", year);
         return json;

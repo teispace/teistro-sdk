@@ -1923,6 +1923,24 @@ class AnEngine(WithLibrary):
             for row in ctx.chart.found(instant=instant, masa_pravesha=others, **at).masa_pravesha or ():
                 assert row.masesha is not None
                 self.assertEqual(row.masesha.graha, row.masesha.bearers.masa_lagna)
+            self.assertIsNone(months[0].results)
+            for row in lords:
+                assert row.masesha is not None and row.results is not None
+                self.assertEqual(len(row.results.houses), 12)
+                self.assertEqual(
+                    [one.office for one in row.results.lords],
+                    ["VARSHA_LAGNA", "MASESHA", "VARSHESHA", "MASA_LAGNA", "MUNTHA"],
+                )
+                self.assertEqual(row.results.lords[1].graha, row.masesha.graha)
+                self.assertEqual(row.results.lords[2].graha, third.year_lord.graha)
+                self.assertEqual(row.results.lords[3].graha, row.masesha.bearers.masa_lagna)
+                self.assertIsInstance(row.results.houses[0].amsha_lord, Graha)
+            floors: MasaPraveshaRequest = {
+                "year": 3, "place": "birth", "results": {"weak_below": 9 * 3600, "strong_from": 3600},
+            }
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, masa_pravesha=floors, **at)
+            self.assertEqual(refused.exception.field, "masaPravesha.results.strongFrom")
             with self.assertRaises(TeistroError) as refused:
                 ctx.chart.found(instant=instant, masa_pravesha={"year": 3, "month": 2, "place": "birth"}, **at)
             self.assertEqual(refused.exception.field, "masaPravesha.place")

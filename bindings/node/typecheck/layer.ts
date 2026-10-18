@@ -16,6 +16,12 @@ import type {
   TithiPraveshaRequest,
   MasaPravesha,
   MasaPraveshaRequest,
+  MasaPhala,
+  MonthHouse,
+  MonthHouseClause,
+  MonthLord,
+  MonthLordPlace,
+  MonthLordClause,
   WesternConfiguration,
   WesternConfigurationRequest,
   DossierRequest,
@@ -524,7 +530,17 @@ function masaPravesha(): string {
   const tie: string | undefined = lords.masaPravesha![0]!.masesha?.chain.chosen;
   // @ts-expect-error the readings are the verse's and the others'
   const third: MasaPraveshaRequest = { year: 30, masesha: { reading: 'STRONGEST' } };
-  return `${at} ${sun} ${day.month} ${day.day} ${mean.year} ${lord} ${tie} ${third.year}`;
+  const floors: MasaPraveshaRequest = { year: 30, place: 'birth', results: { strongFrom: 9 * 3600 } };
+  const results: MasaPhala | undefined = lords.masaPravesha![0]!.results;
+  const first: MonthHouse | undefined = results?.houses[0];
+  const clause: MonthHouseClause | undefined = first?.clauses[0];
+  const amsha: Graha | undefined = first?.amshaLord;
+  const seen: readonly MonthLord[] | undefined = first?.seenByMoon;
+  const office: MonthLordPlace | undefined = results?.lords[0];
+  const placed: MonthLordClause | undefined = office?.clauses[0];
+  // @ts-expect-error a house clause is a closed set
+  const wrong: MonthHouseClause = 'BENEFIC';
+  return `${at} ${sun} ${day.month} ${day.day} ${mean.year} ${lord} ${tie} ${third.year} ${floors.year} ${clause} ${amsha} ${seen?.length} ${office?.house} ${placed} ${wrong}`;
 }
 
 void masaPravesha;

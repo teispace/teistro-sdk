@@ -2026,6 +2026,22 @@ def main() -> None:
                         f"{lord.graha.full_key} {lord.reading} {lord.chain.chosen.key} {lord.chain.vishwa} "
                         f"{','.join(g.full_key for g in bearers)} {int(six.by_day)}",
                     )
+                if mp.results is not None:
+                    put(
+                        f"{key}-results-houses",
+                        " ".join(
+                            f"{h.amsha_lord.full_key}/{h.lord_amsha_lord.full_key}/{'+'.join(h.clauses) or '-'}"
+                            f"/{'+'.join(h.seen_by_amsha_lord) or '-'}/{'+'.join(h.seen_by_moon) or '-'}"
+                            for h in mp.results.houses
+                        ),
+                    )
+                    put(
+                        f"{key}-results-lords",
+                        " ".join(
+                            f"{lp.office}/{lp.graha.full_key}/{lp.house}/{'+'.join(lp.clauses) or '-'}"
+                            for lp in mp.results.lords
+                        ),
+                    )
             dossier = chart.dossier
             assert dossier is not None
             put(f"chart-{i}-dossier", f"{len(dossier.encode('utf-8'))} {fnv(dossier)}")

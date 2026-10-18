@@ -6,7 +6,7 @@ use teistro_astro::completion::Completion;
 use teistro_astro::precession::PrecessionModel;
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
-use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra};
+use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra, Rashi};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::house::House;
@@ -17,10 +17,11 @@ use teistro_serial::Document;
 use teistro_state::state;
 use teistro_tajika::{
     Affliction, AnnualDasha, AnnualDashaRules, AnnualSky, AnnualStates, Between, DrishtiRules,
-    Favour, Harsha, HarshaRules, Masesha, MaseshaRules, MonthCharts, MuddaBalance, Muntha,
-    MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN,
-    Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength,
-    SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
+    Favour, Harsha, HarshaRules, MasaPhala, MasaPhalaRules, Masesha, MaseshaRules, MonthCharts,
+    MonthLords, MuddaBalance, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha,
+    Qualification, Reading, SEVEN, Saham, SahamFormula, SahamPlace, SahamReading, SahamRules,
+    SahamSky, SahamStrength, SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts,
+    YearYogas, YogaRules,
 };
 
 use super::ChartArea;
@@ -668,6 +669,66 @@ impl ChartArea<'_> {
             },
             &sky,
             &strengths,
+            rules,
+        )
+    }
+
+    /// The **month's results** from the month's chart you founded and its
+    /// lord (*Tajika Nilakanthi*, Varsha Tantra, the month's and the day's
+    /// results, vv. 7–13; `03-design/varshesha.md`): each house read
+    /// through its navamsha lord and its lord's navamsha lord, and the
+    /// month's lords judged where they stand, as the clauses that hold.
+    ///
+    /// `masesha` is the month's own answer from [`ChartArea::masesha`],
+    /// which names the year lagna's, the month lagna's and the Muntha's
+    /// lords; `varshesha` is the year's lord. It needs **no ephemeris**.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document};
+    /// # use teistro::tajika::{MasaPhalaRules, Masesha};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().build()?;
+    /// # let (month, lord, year_lord): (Document, Masesha, teistro::catalogue::Graha) = todo!();
+    /// let results = sdk.chart().masa_phala(&month, &lord, year_lord, MasaPhalaRules::default())?;
+    /// let afflicted = results.lords.iter().filter(|one| one.afflicted()).count();
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A month chart whose lagna's lord is not `masesha`'s month lagna
+    /// lord, named `month`; a chart that does not place one of the seven;
+    /// as [`teistro_tajika::masa_phala`].
+    pub fn masa_phala(
+        self,
+        month: &Document,
+        masesha: &Masesha,
+        varshesha: Graha,
+        rules: MasaPhalaRules,
+    ) -> Result<MasaPhala, Error> {
+        let lagna_deg = month.foundation.lagna_deg;
+        let bearers = &masesha.bearers;
+        let lagna_lord = Rashi::of_longitude(lagna_deg).attributes().lord;
+        if lagna_lord != bearers.masa_lagna {
+            return Err(Error::invalid_arg(format!(
+                "the month chart's lagna is {lagna_lord:?}'s, but the month's lord was read with {:?}'s",
+                bearers.masa_lagna
+            ))
+            .with_field("month")
+            .with_hint("pass the chart the Masesha was read from"));
+        }
+        teistro_tajika::masa_phala(
+            lagna_deg,
+            &Self::sky_of(month)?,
+            &self.annual_states(month)?,
+            &MonthLords {
+                varsha_lagna: bearers.varsha_lagna,
+                masesha: masesha.graha,
+                varshesha,
+                masa_lagna: bearers.masa_lagna,
+                muntha: bearers.muntha,
+            },
             rules,
         )
     }

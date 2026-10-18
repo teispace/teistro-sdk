@@ -605,7 +605,7 @@ impl Strength {
 /// The Panchavargiya bala is computed **once** for the chart and shared,
 /// because every planet's strength is read from the same five divisions
 /// and a per-planet call would recompute all seven to answer for one.
-fn strengths(sky: &AnnualSky, rules: YogaRules) -> Result<[Strength; 7], Error> {
+pub(crate) fn strengths(sky: &AnnualSky, rules: YogaRules) -> Result<[Strength; 7], Error> {
     let rules = rules.check()?;
     // `map` over the array keeps the length a type fact, and
     // `Panchavargiya` already carries the sign it was read in, so the

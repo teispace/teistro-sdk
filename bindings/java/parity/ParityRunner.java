@@ -105,6 +105,11 @@ public final class ParityRunner {
         return Boolean.compare(i < a.length(), j < b.length());
     }
 
+    /** A list of keys joined by {@code +}, or {@code -} when empty, as every runner prints one. */
+    static String plus(List<String> keys) {
+        return keys.isEmpty() ? "-" : String.join("+", keys);
+    }
+
     /** Python's {@code number} on an int: {@code str(value)}. */
     static String number(long value) {
         return Long.toString(value);
@@ -2077,6 +2082,19 @@ public final class ParityRunner {
                         + lord.chain().chosen().key() + " " + lord.chain().vishwa() + " "
                         + String.join(",", bearers.stream().map(Graha::fullKey).toList()) + " "
                         + (six.byDay() ? 1 : 0));
+            }
+            MasaPhala results = one.results();
+            if (results != null) {
+                put(key + "-results-houses", String.join(" ", results.houses().stream()
+                        .map(h -> h.amshaLord().fullKey() + "/" + h.lordAmshaLord().fullKey() + "/"
+                                + plus(h.clauses().stream().map(MonthHouseClause::key).toList()) + "/"
+                                + plus(h.seenByAmshaLord().stream().map(MonthLord::key).toList()) + "/"
+                                + plus(h.seenByMoon().stream().map(MonthLord::key).toList()))
+                        .toList()));
+                put(key + "-results-lords", String.join(" ", results.lords().stream()
+                        .map(l -> l.office().key() + "/" + l.graha().fullKey() + "/" + l.house() + "/"
+                                + plus(l.clauses().stream().map(MonthLordClause::key).toList()))
+                        .toList()));
             }
         }
         String dossier = chart.dossier().orElseThrow();

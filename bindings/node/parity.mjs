@@ -1213,6 +1213,15 @@ for (const chart of charts) {
       `${key}-masesha`,
       `${graha} ${reading} ${chain.chosen} ${chain.vishwa.toString()} ${bearers.join(',')} ${b.byDay ? 1 : 0}`,
     );
+    const list = (keys) => (keys.length === 0 ? '-' : keys.join('+'));
+    const { houses, lords } = one.results;
+    put(
+      `${key}-results-houses`,
+      houses
+        .map((h) => `${h.amshaLord}/${h.lordAmshaLord}/${list(h.clauses)}/${list(h.seenByAmshaLord)}/${list(h.seenByMoon)}`)
+        .join(' '),
+    );
+    put(`${key}-results-lords`, lords.map((l) => `${l.office}/${l.graha}/${l.house}/${list(l.clauses)}`).join(' '));
   }
   put(`chart-${i}-dossier`, `${Buffer.byteLength(chart.dossier)} ${fnv(chart.dossier)}`);
   const {

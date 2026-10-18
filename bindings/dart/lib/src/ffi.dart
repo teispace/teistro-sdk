@@ -1404,14 +1404,15 @@ final class ChartRequestStruct extends ffi.Struct {
   /// the zodiac the year divides in. Without `month`, optionally
   /// `place`, `"birth"` or `{latitudeDeg, longitudeDeg, altitudeM,
   /// utcOffsetSeconds}` as `varsha_json` writes it, where each month's
-  /// chart is founded and its lord read, under optionally `masesha`,
-  /// `{reading, muntha, chain}` (`03-design/varshesha.md`, "The month's
-  /// lord"). The instants come back in the `masa_pravesha` section, the
+  /// chart is founded and its lord and results read, under optionally
+  /// `masesha`, `{reading, muntha, chain}` (`03-design/varshesha.md`,
+  /// "The month's lord"), and `results`, `{weakBelow, strongFrom}` in
+  /// sub-sub-units ("The month's results"). The instants come back in the `masa_pravesha` section, the
   /// months each as its first day; a year past the ephemeris's end comes
   /// back empty. Null for none (`03-design/annual-chart.md`, "The
   /// month's and the day's chart"). Refusals are named from the record
   /// every binding calls `masaPravesha`, as `masaPravesha.month`.
-  /// Example: {"year":30,"place":"birth"}. May be null.
+  /// Example: {"year":30,"place":"birth","results":{"strongFrom":32400}}. May be null.
   external ffi.Pointer<ffi.Char> masaPraveshaJson;
 
   /// The aspect configurations to find in every chart, as a JSON
@@ -4059,14 +4060,15 @@ final class ChartRequest {
   /// the zodiac the year divides in. Without `month`, optionally
   /// `place`, `"birth"` or `{latitudeDeg, longitudeDeg, altitudeM,
   /// utcOffsetSeconds}` as `varsha_json` writes it, where each month's
-  /// chart is founded and its lord read, under optionally `masesha`,
-  /// `{reading, muntha, chain}` (`03-design/varshesha.md`, "The month's
-  /// lord"). The instants come back in the `masa_pravesha` section, the
+  /// chart is founded and its lord and results read, under optionally
+  /// `masesha`, `{reading, muntha, chain}` (`03-design/varshesha.md`,
+  /// "The month's lord"), and `results`, `{weakBelow, strongFrom}` in
+  /// sub-sub-units ("The month's results"). The instants come back in the `masa_pravesha` section, the
   /// months each as its first day; a year past the ephemeris's end comes
   /// back empty. Null for none (`03-design/annual-chart.md`, "The
   /// month's and the day's chart"). Refusals are named from the record
   /// every binding calls `masaPravesha`, as `masaPravesha.month`.
-  /// Example: {"year":30,"place":"birth"}. May be null.
+  /// Example: {"year":30,"place":"birth","results":{"strongFrom":32400}}. May be null.
   final String? masaPraveshaJson;
 
   /// The aspect configurations to find in every chart, as a JSON

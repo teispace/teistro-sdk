@@ -15610,6 +15610,7 @@ final class MasaPraveshaRequest {
     this.reading = VarshaReading.sidereal,
     this.place,
     this.masesha = const MaseshaRules(),
+    this.results = const MasaPhalaRules(),
   });
 
   /// The year divided, 1 to 200, counted as [Pravesha.year] counts it; the
@@ -15625,13 +15626,17 @@ final class MasaPraveshaRequest {
   final VarshaReading reading;
 
   /// Where each month's chart is founded, as [VarshaRequest.place] is;
-  /// given, each month carries its [MasaPravesha.masesha]. The year's
-  /// months only: a day's lord is not built, so the SDK refuses it beside
-  /// a [month] by `masaPravesha.place`.
+  /// given, each month carries its [MasaPravesha.masesha] and its
+  /// [MasaPravesha.results]. The year's months only: a day's lord is not
+  /// built, so the SDK refuses it beside a [month] by `masaPravesha.place`.
   final AnnualPlace? place;
 
   /// The readings the month's lord parts on; the verse's own by default.
   final MaseshaRules masesha;
+
+  /// The floors the month's results judge strong and weak by; the year
+  /// yogas' own by default.
+  final MasaPhalaRules results;
 
   String get _json => jsonEncode(<String, Object?>{
     'year': year,
@@ -15639,7 +15644,33 @@ final class MasaPraveshaRequest {
     'reading': reading.key,
     if (place case final place?) 'place': place._json,
     'masesha': masesha._json,
+    'results': results._json,
   });
+}
+
+/// The floors the month's results judge strong and weak by
+/// (`03-design/varshesha.md`, "The month's results"), in **sub-sub units**,
+/// 3600 to a unit; the year yogas' own when null.
+///
+/// ```dart
+/// const floors = MasaPhalaRules(strongFrom: 9 * 3600);
+/// ```
+final class MasaPhalaRules {
+  const MasaPhalaRules({this.weakBelow, this.strongFrom});
+
+  /// The strength below which a planet with no dignity is weak; `5 * 3600`
+  /// when null.
+  final int? weakBelow;
+
+  /// The strength from which a planet is strong; `10 * 3600` when null,
+  /// and the SDK refuses one below [weakBelow] by
+  /// `masaPravesha.results.strongFrom`.
+  final int? strongFrom;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    if (weakBelow case final weakBelow?) 'weakBelow': weakBelow,
+    if (strongFrom case final strongFrom?) 'strongFrom': strongFrom,
+  };
 }
 
 /// Which reading makes a planet the month's lord.
@@ -15771,6 +15802,7 @@ final class MasaPravesha extends _Value {
     required this.at,
     required this.sunDeg,
     this.masesha,
+    this.results,
   });
 
   /// The year, as [Pravesha.year] counts it.
@@ -15792,8 +15824,171 @@ final class MasaPravesha extends _Value {
   /// The month's lord, where the request named a place; null otherwise.
   final Masesha? masesha;
 
+  /// The month's results, where the request named a place; null otherwise.
+  final MasaPhala? results;
+
   @override
-  List<Object?> get _fields => [year, month, day, at, sunDeg, masesha];
+  List<Object?> get _fields => [year, month, day, at, sunDeg, masesha, results];
+}
+
+/// A clause of vv. 7–11 about one house (*Tajika Nilakanthi*, Varsha
+/// Tantra, the month's results).
+enum MonthHouseClause implements _Keyed {
+  /// The house's navamsha lord aspected by the lord's navamsha lord with a
+  /// friendly aspect, or sharing its sign.
+  friendly('FRIENDLY'),
+
+  /// The Moon aspecting both with a friendly aspect.
+  moonFriendly('MOON_FRIENDLY'),
+
+  /// The two in an inimical aspect, the 4th, 7th or 10th.
+  inimical('INIMICAL'),
+
+  /// The Moon aspecting both with an inimical aspect.
+  moonInimical('MOON_INIMICAL'),
+
+  /// One debilitated, the other combust.
+  lowAndSet('LOW_AND_SET'),
+
+  /// Both debilitated.
+  bothLow('BOTH_LOW'),
+
+  /// Both combust.
+  bothSet('BOTH_SET'),
+
+  /// The two one planet, so no clause about the pair holds.
+  onePlanet('ONE_PLANET'),
+
+  /// The house's navamsha lord strong.
+  strong('STRONG'),
+
+  /// The house's navamsha lord weak.
+  weak('WEAK');
+
+  const MonthHouseClause(this.key);
+
+  @override
+  final String key;
+}
+
+/// The month's lords the results read.
+enum MonthLord implements _Keyed {
+  varshaLagna('VARSHA_LAGNA'),
+  masesha('MASESHA'),
+  varshesha('VARSHESHA'),
+  masaLagna('MASA_LAGNA'),
+  muntha('MUNTHA');
+
+  const MonthLord(this.key);
+
+  @override
+  final String key;
+}
+
+/// A clause of vv. 12–13 about one of the month's lords.
+enum MonthLordClause implements _Keyed {
+  /// In the 6th, 8th or 12th from the month lagna.
+  trika('TRIKA'),
+
+  /// Sharing a sign with Mars or Saturn.
+  withMalefic('WITH_MALEFIC'),
+
+  /// Aspected by Mars or Saturn with an inimical aspect.
+  maleficInimical('MALEFIC_INIMICAL'),
+
+  /// Strong, by dignity or Vishwa bala.
+  strong('STRONG'),
+
+  /// In a kendra, a trikona or the 11th.
+  wellPlaced('WELL_PLACED');
+
+  const MonthLordClause(this.key);
+
+  @override
+  final String key;
+}
+
+/// One house of the month, read through its two planets.
+final class MonthHouse extends _Value {
+  const MonthHouse({
+    required this.house,
+    required this.amshaLord,
+    required this.lordAmshaLord,
+    required this.clauses,
+    required this.seenByAmshaLord,
+    required this.seenByMoon,
+  });
+
+  /// The house, 1 to 12 by whole signs from the month lagna.
+  final int house;
+
+  /// The lord of the navamsha the house's point falls in.
+  final Graha amshaLord;
+
+  /// The lord of the navamsha the house's sign lord stands in.
+  final Graha lordAmshaLord;
+
+  /// The clauses that hold, in the verses' order.
+  final List<MonthHouseClause> clauses;
+
+  /// The lords of v. 10 the house's navamsha lord sees.
+  final List<MonthLord> seenByAmshaLord;
+
+  /// The lords of v. 10 the Moon sees.
+  final List<MonthLord> seenByMoon;
+
+  /// The lists by what they hold, since a [List] compares by identity.
+  @override
+  List<Object?> get _fields => [
+    house,
+    amshaLord,
+    lordAmshaLord,
+    clauses.map((one) => one.key).join(','),
+    seenByAmshaLord.map((one) => one.key).join(','),
+    seenByMoon.map((one) => one.key).join(','),
+  ];
+}
+
+/// Where one of the month's lords stands.
+final class MonthLordPlace extends _Value {
+  const MonthLordPlace({
+    required this.office,
+    required this.graha,
+    required this.house,
+    required this.clauses,
+  });
+
+  final MonthLord office;
+  final Graha graha;
+
+  /// The house it stands in, 1 to 12 from the month lagna.
+  final int house;
+
+  /// The clauses that hold, in the verses' order.
+  final List<MonthLordClause> clauses;
+
+  @override
+  List<Object?> get _fields => [
+    office,
+    graha,
+    house,
+    clauses.map((one) => one.key).join(','),
+  ];
+}
+
+/// The month's results (`03-design/varshesha.md`, "The month's results"):
+/// the clauses that hold, no verdict.
+final class MasaPhala extends _Value {
+  const MasaPhala({required this.houses, required this.lords});
+
+  /// The twelve houses, first to twelfth.
+  final List<MonthHouse> houses;
+
+  /// The five lords, in [MonthLord]'s order.
+  final List<MonthLordPlace> lords;
+
+  @override
+  List<Object?> get _fields => [...houses, ...lords];
 }
 
 /// Each batch's month and day charts, parsed once however many charts
@@ -15826,7 +16021,44 @@ MasaPravesha _masaPraveshaFrom(Map<String, Object?> raw) => MasaPravesha(
     final Map<String, Object?> lord => _maseshaFrom(lord),
     _ => null,
   },
+  results: switch (raw['results']) {
+    final Map<String, Object?> results => _masaPhalaFrom(results),
+    _ => null,
+  },
 );
+
+/// A month's results from the section's JSON, its keys made members.
+MasaPhala _masaPhalaFrom(Map<String, Object?> raw) {
+  Graha graha(Object? key) => _key(key, Graha.byKey, Graha.unknown);
+  List<T> keyed<T extends _Keyed>(List<T> values, Object? list) =>
+      List<T>.unmodifiable([
+        for (final key in list! as List<Object?>) _keyedIn(values, key),
+      ]);
+  return MasaPhala(
+    houses: List<MonthHouse>.unmodifiable([
+      for (final one in raw['houses']! as List<Object?>)
+        if (one case final Map<String, Object?> one)
+          MonthHouse(
+            house: one['house']! as int,
+            amshaLord: graha(one['amshaLord']),
+            lordAmshaLord: graha(one['lordAmshaLord']),
+            clauses: keyed(MonthHouseClause.values, one['clauses']),
+            seenByAmshaLord: keyed(MonthLord.values, one['seenByAmshaLord']),
+            seenByMoon: keyed(MonthLord.values, one['seenByMoon']),
+          ),
+    ]),
+    lords: List<MonthLordPlace>.unmodifiable([
+      for (final one in raw['lords']! as List<Object?>)
+        if (one case final Map<String, Object?> one)
+          MonthLordPlace(
+            office: _keyedIn(MonthLord.values, one['office']),
+            graha: graha(one['graha']),
+            house: one['house']! as int,
+            clauses: keyed(MonthLordClause.values, one['clauses']),
+          ),
+    ]),
+  );
+}
 
 /// A month's lord from the section's JSON, its keys made members and its
 /// strengths read as the year lord's are.

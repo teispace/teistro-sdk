@@ -840,6 +840,24 @@ public final class BindingTest {
                         ChartOptions.builder().masaPravesha(MasaPraveshaRequest.builder().year(3).month(2)
                                 .place(AnnualPlace.BIRTH).build()).build()));
                 same("masaPravesha.place", placed.field(), "a day's lord is not built");
+
+                // Each month's results beside its lord: twelve houses, five lords.
+                check(months.get(0).results() == null, "no results without a place");
+                for (MasaPravesha row : lords) {
+                    MasaPhala results = row.results();
+                    same(12, results.houses().size(), "twelve houses");
+                    same(List.of(MonthLord.values()), results.lords().stream().map(MonthLordPlace::office).toList(),
+                            "the five lords in order");
+                    same(row.masesha().graha(), results.lords().get(1).graha(), "the Masesha");
+                    same(third.graha(), results.lords().get(2).graha(), "the year lord read on the year chart");
+                    same(row.masesha().bearers().masaLagna(), results.lords().get(3).graha(), "the month lagna's lord");
+                }
+                TeistroException floors = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().masaPravesha(MasaPraveshaRequest.builder().year(3)
+                                .place(AnnualPlace.BIRTH)
+                                .results(MasaPhalaRules.builder().weakBelow(9 * 3600).strongFrom(3600).build())
+                                .build()).build()));
+                same("masaPravesha.results.strongFrom", floors.field(), "floors refused by their wire name");
             }
         });
 

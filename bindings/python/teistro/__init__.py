@@ -815,6 +815,13 @@ __all__ = [
     "MaseshaRules",
     "MonthBearers",
     "Masesha",
+    "MasaPhalaRules",
+    "MonthHouseClause",
+    "MonthLord",
+    "MonthLordClause",
+    "MonthHouse",
+    "MonthLordPlace",
+    "MasaPhala",
     # The dossier: a chart as text for a language model.
     "DossierRequest",
     "DossierSection",
@@ -9707,10 +9714,29 @@ class MasaPraveshaRequest(TypedDict, total=False):
     year places no Sun."""
     place: Union[Literal["birth"], "VarshaPlace"]
     """Where each month's chart is founded, as `VarshaRequest.place` is
-    written; given, each month carries its `masesha`. The year's months
-    only: a day's lord is not built, so a `month` beside it is refused."""
+    written; given, each month carries its `masesha` and its `results`.
+    The year's months only: a day's lord is not built, so a `month` beside
+    it is refused."""
     masesha: "MaseshaRules"
     """The readings the month's lord parts on; the verse's own by default."""
+    results: "MasaPhalaRules"
+    """The floors the month's results judge strong and weak by; the year
+    yogas' own by default."""
+
+
+class MasaPhalaRules(TypedDict, total=False):
+    """The floors the month's results judge strong and weak by
+    (`03-design/varshesha.md`, "The month's results").
+
+    >>> floors: MasaPhalaRules = {"strong_from": 9 * 3600}
+    """
+
+    weak_below: int
+    """The strength below which a planet with no dignity is weak, in
+    **sub-sub units**, 3600 to a unit: `5 * 3600` by default."""
+    strong_from: int
+    """The strength from which a planet is strong, sub-sub units;
+    `10 * 3600` by default, never below `weak_below`."""
 
 
 class MaseshaRules(TypedDict, total=False):
@@ -9780,6 +9806,71 @@ class MasaPravesha:
     """Where the Sun stands then, degrees in the year's zodiac."""
     masesha: Optional[Masesha] = None
     """The month's lord, where the request named a `place`."""
+    results: Optional["MasaPhala"] = None
+    """The month's results, where the request named a `place`."""
+
+
+MonthHouseClause = Literal[
+    "FRIENDLY",
+    "MOON_FRIENDLY",
+    "INIMICAL",
+    "MOON_INIMICAL",
+    "LOW_AND_SET",
+    "BOTH_LOW",
+    "BOTH_SET",
+    "ONE_PLANET",
+    "STRONG",
+    "WEAK",
+]
+"""A clause of vv. 7–11 about one house (*Tajika Nilakanthi*, Varsha
+Tantra, the month's results)."""
+
+MonthLord = Literal["VARSHA_LAGNA", "MASESHA", "VARSHESHA", "MASA_LAGNA", "MUNTHA"]
+"""The month's lords the results read."""
+
+MonthLordClause = Literal["TRIKA", "WITH_MALEFIC", "MALEFIC_INIMICAL", "STRONG", "WELL_PLACED"]
+"""A clause of vv. 12–13 about one of the month's lords."""
+
+
+@dataclass(frozen=True)
+class MonthHouse:
+    """One house of the month, read through its two planets."""
+
+    house: int
+    """The house, 1 to 12 by whole signs from the month lagna."""
+    amsha_lord: Graha
+    """The lord of the navamsha the house's point falls in."""
+    lord_amsha_lord: Graha
+    """The lord of the navamsha the house's sign lord stands in."""
+    clauses: Tuple[MonthHouseClause, ...]
+    """The clauses that hold, in the verses' order."""
+    seen_by_amsha_lord: Tuple[MonthLord, ...]
+    """The lords of v. 10 the house's navamsha lord sees."""
+    seen_by_moon: Tuple[MonthLord, ...]
+    """The lords of v. 10 the Moon sees."""
+
+
+@dataclass(frozen=True)
+class MonthLordPlace:
+    """Where one of the month's lords stands."""
+
+    office: MonthLord
+    graha: Graha
+    house: int
+    """The house it stands in, 1 to 12 from the month lagna."""
+    clauses: Tuple[MonthLordClause, ...]
+    """The clauses that hold, in the verses' order."""
+
+
+@dataclass(frozen=True)
+class MasaPhala:
+    """The month's results (`03-design/varshesha.md`, "The month's
+    results"): the clauses that hold, no verdict."""
+
+    houses: Tuple[MonthHouse, ...]
+    """The twelve houses, first to twelfth."""
+    lords: Tuple[MonthLordPlace, ...]
+    """The five lords, in `MonthLord`'s order."""
 
 
 DossierSection = Literal[
@@ -12095,6 +12186,33 @@ def _masa_pravesha(raw: Mapping[str, Any]) -> MasaPravesha:
         at=raw["at"],
         sun_deg=raw["sunDeg"],
         masesha=None if lord is None else _masesha(lord),
+        results=None if lord is None else _masa_phala(raw["results"]),
+    )
+
+
+def _masa_phala(raw: Mapping[str, Any]) -> MasaPhala:
+    """A month's results from the section's JSON, its grahas members."""
+    return MasaPhala(
+        houses=tuple(
+            MonthHouse(
+                house=one["house"],
+                amsha_lord=_member(Graha, one["amshaLord"]),
+                lord_amsha_lord=_member(Graha, one["lordAmshaLord"]),
+                clauses=tuple(one["clauses"]),
+                seen_by_amsha_lord=tuple(one["seenByAmshaLord"]),
+                seen_by_moon=tuple(one["seenByMoon"]),
+            )
+            for one in raw["houses"]
+        ),
+        lords=tuple(
+            MonthLordPlace(
+                office=one["office"],
+                graha=_member(Graha, one["graha"]),
+                house=one["house"],
+                clauses=tuple(one["clauses"]),
+            )
+            for one in raw["lords"]
+        ),
     )
 
 
@@ -13458,6 +13576,8 @@ def _masa_pravesha_json(asked: Optional[MasaPraveshaRequest]) -> Optional[str]:
     masesha = written.get("masesha")
     if isinstance(masesha, Mapping) and isinstance(masesha.get("chain"), Mapping):
         written["masesha"] = {**masesha, "chain": _camel_keys(masesha["chain"])}
+    if isinstance(written.get("results"), Mapping):
+        written["results"] = _camel_keys(written["results"])
     return _record_json(written, "masaPravesha", example)
 
 
