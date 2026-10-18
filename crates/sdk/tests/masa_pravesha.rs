@@ -12,7 +12,7 @@
 
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::tajika::Reading;
+use teistro::tajika::{MaseshaReading, MaseshaRules, Reading, VarsheshaRules};
 use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 const BIRTH: f64 = 2_447_995.489_583_333_5;
@@ -199,4 +199,60 @@ fn what_cannot_be_divided_is_refused_by_name() {
         .as_deref(),
         Some("year")
     );
+}
+
+#[test]
+fn each_month_has_its_lord_and_the_first_is_the_years() {
+    let sdk = context();
+    let natal = chart(&sdk, BIRTH);
+    let months = sdk
+        .chart()
+        .masa_praveshas(&natal, Reading::Sidereal, 30)
+        .unwrap();
+    let year = chart(&sdk, months[0].at.get());
+    let year_lord = sdk
+        .chart()
+        .varshesha(&natal, &year, 30, VarsheshaRules::default())
+        .unwrap();
+    for entry in &months {
+        let month = chart(&sdk, entry.at.get());
+        let lord = sdk
+            .chart()
+            .masesha(&natal, &year, &month, entry, MaseshaRules::default())
+            .unwrap();
+        assert_eq!(lord.reading, MaseshaReading::Chain);
+        assert_eq!(lord.graha, lord.chain.graha);
+        let rashi = teistro::catalogue::Rashi::of_longitude;
+        assert_eq!(
+            lord.bearers.masa_lagna,
+            rashi(month.foundation.lagna_deg).attributes().lord
+        );
+        assert_eq!(
+            lord.bearers.varsha_lagna,
+            rashi(year.foundation.lagna_deg).attributes().lord
+        );
+        if entry.month == 1 {
+            assert_eq!(lord.graha, year_lord.graha, "the first month is the year");
+        }
+        let others = sdk
+            .chart()
+            .masesha(
+                &natal,
+                &year,
+                &month,
+                entry,
+                MaseshaRules {
+                    reading: MaseshaReading::LagnaLord,
+                    ..MaseshaRules::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(others.graha, lord.bearers.masa_lagna);
+    }
+    // The year's chart handed in as the third month's is refused by name.
+    let refused = sdk
+        .chart()
+        .masesha(&natal, &year, &year, &months[2], MaseshaRules::default())
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("month"));
 }

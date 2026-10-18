@@ -190,6 +190,80 @@ given to the Moon**, against the source. The Nilakanthi's reading changes
 | **built** | `teistro_tajika::varshesha`; `sdk.chart().varshesha`, which composes the office-bearers and the strengths and needs **no ephemeris** |
 | **not built** | the sixteen yogas, which need the Tajika aspects with their deeptamsha orbs — a different thing from the aspect this rule uses |
 
+## The month's lord
+
+*Tajika Nilakanthi*, Varsha Tantra, the chapter on the month's and the
+day's results, vv. 3–5 (rank 1), says the month chart is drawn up like the
+year's, and six planets hold office at the entry. They are the lords of:
+
+1. the month chart's lagna;
+2. the Muntha's sign;
+3. the birth lagna;
+4. the month lagna's Tri-Rashi;
+5. the Sun's sign by day, or the Moon's by night;
+6. the year chart's lagna.
+
+The strongest of the six that **aspects the month's lagna** is the
+**Masesha**. The commentary is explicit that a strong planet which does
+not aspect the lagna is not lord, and that the rest is as for the year,
+"there five office-bearers, here six". So the month's lord is this page's
+chain, read on the month chart over six: `teistro_tajika::masesha` runs
+`varshesha` through a `Bearers` trait that both sets of office-bearers
+implement. A consumer's own set of office-bearers can implement it too.
+
+Verse 5 gives "others" a second reading: the month lagna's lord is the
+month's lord outright. That is `MaseshaReading::LagnaLord`, a named
+reading and not a silence. The answer carries the chain under either
+reading, so a reader sees where the two part.
+
+The Muntha moves on 2°30′ a month, so the second office can change hands
+inside the year. The commentary shows it doing so with a Muntha at
+2s 28°20′40″. That can only happen when the Muntha carries the natal
+lagna's degree (crux C107), so `MaseshaRules::muntha` is the reading on
+which the month's lord turns.
+
+| | |
+|---|---|
+| **built** | `teistro_tajika::{month_bearers, masesha}` and `sdk.chart().masesha(&birth, &year, &month, &entry, rules)`, which needs no ephemeris. `entry` is the month's `MasaPravesha`, which names the year and the month. A month chart not founded at the entry's instant is refused as `month`, since the three charts are all `Document`s and a swapped pair would otherwise answer. Tests: Charak's worked year read as the first month gives his year lord, the Sun, among the same claimants; the commentary's Muntha changes lord a month on only under `NatalDegree`; twelve founded months of one birth give a lord each, the first the year's |
+| **not built** | the **Dinesha**, the day's lord. The verses give the day lagna's lord only as the "others'" reading and do not say what the day's office-bearers are under the chain, so building one would invent a sixth office. Also not built: the month's results (vv. 7 onwards, read from the month lagna's navamsha lord and the Moon) and the month's lord across the boundary |
+
+## The month's lord
+
+*Tajika Nilakanthi*, Varsha Tantra, the chapter on the month's and the
+day's results, vv. 3–5 (rank 1), says the month chart is drawn up like the
+year's, and six planets hold office at the entry. They are the lords of:
+
+1. the month chart's lagna;
+2. the Muntha's sign;
+3. the birth lagna;
+4. the month lagna's Tri-Rashi;
+5. the Sun's sign by day, or the Moon's by night;
+6. the year chart's lagna.
+
+The strongest of the six that **aspects the month's lagna** is the
+**Masesha**. The commentary is explicit that a strong planet which does
+not aspect the lagna is not lord, and that the rest is as for the year,
+"there five office-bearers, here six". So the month's lord is this page's
+chain, read on the month chart over six: `teistro_tajika::masesha` runs
+`varshesha` through a `Bearers` trait that both sets of office-bearers
+implement. A consumer's own set of office-bearers can implement it too.
+
+Verse 5 gives "others" a second reading: the month lagna's lord is the
+month's lord outright. That is `MaseshaReading::LagnaLord`, a named
+reading and not a silence. The answer carries the chain under either
+reading, so a reader sees where the two part.
+
+The Muntha moves on 2°30′ a month, so the second office can change hands
+inside the year. The commentary shows it doing so with a Muntha at
+2s 28°20′40″. That can only happen when the Muntha carries the natal
+lagna's degree (crux C107), so `MaseshaRules::muntha` is the reading on
+which the month's lord turns.
+
+| | |
+|---|---|
+| **built** | `teistro_tajika::{month_bearers, masesha}` and `sdk.chart().masesha(&birth, &year, &month, &entry, rules)`, which needs no ephemeris. `entry` is the month's `MasaPravesha`, which names the year and the month. A month chart not founded at the entry's instant is refused as `month`, since the three charts are all `Document`s and a swapped pair would otherwise answer. Tests: Charak's worked year read as the first month gives his year lord, the Sun, among the same claimants; the commentary's Muntha changes lord a month on only under `NatalDegree`; twelve founded months of one birth give a lord each, the first the year's |
+| **not built** | the **Dinesha**, the day's lord. The verses give the day lagna's lord only as the reading "others" hold, and do not say what the day's office-bearers are under the chain, so building one would invent a sixth office. Also not built: the month's results (vv. 7 onwards, read from the month lagna's navamsha lord and the Moon) and the month's lord across the boundary |
+
 ## The strength crosses as an integer
 
 A `Bala` crosses as **sub-sub units**, 3600 to a unit, in an `i32` — not

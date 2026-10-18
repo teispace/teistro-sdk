@@ -241,6 +241,49 @@ pub struct Varshesha {
     pub moon_passed_over: bool,
 }
 
+/// The office-bearers a lord is chosen among: the year's five
+/// ([`OfficeBearers`]), the month's six
+/// ([`MonthBearers`](crate::MonthBearers)), or a consumer's own set.
+///
+/// The chain reads only these four things of them, so one chain chooses
+/// every lord; the *Tajika Nilakanthi* says of the month's lord that the
+/// rest is "as for the year".
+pub trait Bearers {
+    /// The distinct planets holding a portfolio, each once.
+    fn claimants(&self) -> Vec<Graha>;
+    /// How many portfolios `graha` holds: the tie-break.
+    fn portfolio_count(&self, graha: Graha) -> u8;
+    /// The Muntha's lord, every fallback's answer.
+    fn muntha_lord(&self) -> Graha;
+    /// The lord of the lagna the claimants must aspect, which
+    /// [`NoneAspects::AnnualLagnaLord`] gives the office to.
+    fn lagna_lord(&self) -> Graha;
+    /// The Dina-Ratri Pati, which [`Tied::DinaRatriPati`] gives it to.
+    fn dina_ratri_lord(&self) -> Graha;
+}
+
+impl Bearers for OfficeBearers {
+    fn claimants(&self) -> Vec<Graha> {
+        OfficeBearers::claimants(self)
+    }
+
+    fn portfolio_count(&self, graha: Graha) -> u8 {
+        u8::try_from(self.portfolios(graha).len()).unwrap_or(u8::MAX)
+    }
+
+    fn muntha_lord(&self) -> Graha {
+        self.holder(Office::Muntha)
+    }
+
+    fn lagna_lord(&self) -> Graha {
+        self.holder(Office::VarshaLagna)
+    }
+
+    fn dina_ratri_lord(&self) -> Graha {
+        self.holder(Office::DinaRatri)
+    }
+}
+
 /// Whether a planet in `graha_sign` gives the Tajika aspect to
 /// `lagna_sign`.
 ///
@@ -269,8 +312,8 @@ pub fn aspects(graha_sign: Rashi, lagna_sign: Rashi) -> bool {
 /// strength table that does not carry an office-bearer or a planet the
 /// Moon is in Ithasala with, named `strengths`; a sky that places a planet
 /// at no longitude.
-pub fn varshesha(
-    bearers: &OfficeBearers,
+pub fn varshesha<B: Bearers + ?Sized>(
+    bearers: &B,
     sky: &AnnualSky,
     strengths: &[Panchavargiya],
     annual_lagna_deg: f64,
@@ -291,7 +334,7 @@ pub fn varshesha(
             graha,
             vishwa,
             aspects_lagna: aspects(sign, lagna),
-            portfolios: u8::try_from(bearers.portfolios(graha).len()).unwrap_or(u8::MAX),
+            portfolios: bearers.portfolio_count(graha),
         });
     }
     // Strongest first, and on a tie the one holding more portfolios, which
@@ -337,12 +380,12 @@ impl Strengths<'_> {
 /// The chain over the ranked claims, before the Moon's own rule: the year
 /// lord, the step that chose it, and whether the Moon stepped down for the
 /// next one that aspects.
-fn chain(
+fn chain<B: Bearers + ?Sized>(
     claims: &[Claim],
-    bearers: &OfficeBearers,
+    bearers: &B,
     rules: VarsheshaRules,
 ) -> (Graha, Chosen, bool) {
-    let muntha_lord = bearers.holder(Office::Muntha);
+    let muntha_lord = bearers.muntha_lord();
     // 1. Every office-bearer too weak to hold the year at all.
     if claims.iter().all(|claim| claim.vishwa < WEAK_BELOW) {
         return (muntha_lord, Chosen::MunthaLordAllWeak, false);
@@ -364,10 +407,9 @@ fn chain(
     let Some(best) = aspecting.first().copied() else {
         let (graha, chosen) = match rules.none_aspects {
             NoneAspects::MunthaLord => (muntha_lord, Chosen::MunthaLordUnaspected),
-            NoneAspects::AnnualLagnaLord => (
-                bearers.holder(Office::VarshaLagna),
-                Chosen::AnnualLagnaLordUnaspected,
-            ),
+            NoneAspects::AnnualLagnaLord => {
+                (bearers.lagna_lord(), Chosen::AnnualLagnaLordUnaspected)
+            }
             // The claims are ranked, so the first is the strongest.
             NoneAspects::Strongest => claims
                 .first()
@@ -390,8 +432,8 @@ fn chain(
 /// sources name no tie-break for that, so an exact tie goes to the first
 /// in [`SEVEN`]'s weekday order, which keeps the answer independent of how
 /// the strength table is ordered.
-fn successor(
-    bearers: &OfficeBearers,
+fn successor<B: Bearers + ?Sized>(
+    bearers: &B,
     sky: &AnnualSky,
     table: &Strengths<'_>,
     rules: VarsheshaRules,
@@ -427,10 +469,10 @@ fn successor(
 /// Its own function because the chain's last three steps read as one
 /// decision — strength, then portfolios, then the reading of an outright
 /// tie — and beside the two fallbacks above they obscured each other.
-fn break_the_tie(
+fn break_the_tie<B: Bearers + ?Sized>(
     aspecting: &[&Claim],
     best: &Claim,
-    bearers: &OfficeBearers,
+    bearers: &B,
     rules: VarsheshaRules,
 ) -> (Graha, Chosen) {
     let tied: Vec<&&Claim> = aspecting
@@ -447,8 +489,8 @@ fn break_the_tie(
         (Some(winner), None) => (winner.graha, Chosen::MostPortfolios),
         // Tied on strength, aspect and portfolios alike.
         _ => match rules.tied {
-            Tied::MunthaLord => (bearers.holder(Office::Muntha), Chosen::MunthaLordTied),
-            Tied::DinaRatriPati => (bearers.holder(Office::DinaRatri), Chosen::DinaRatriTied),
+            Tied::MunthaLord => (bearers.muntha_lord(), Chosen::MunthaLordTied),
+            Tied::DinaRatriPati => (bearers.dina_ratri_lord(), Chosen::DinaRatriTied),
         },
     }
 }

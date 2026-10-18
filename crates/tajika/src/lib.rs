@@ -35,6 +35,7 @@ mod drishti;
 mod harsha;
 mod kamboola;
 mod masa;
+mod masesha;
 mod moon;
 mod muntha;
 mod office;
@@ -66,6 +67,10 @@ pub use kamboola::{
     Offices, kamboola_grade, offices,
 };
 pub use masa::{DAYS, DinaPravesha, MONTHS, MasaPravesha, dina_praveshas, divided, masa_praveshas};
+pub use masesha::{
+    Masesha, MaseshaReading, MaseshaRules, MonthBearers, MonthCharts, MonthOffice, masesha,
+    month_bearers,
+};
 pub use moon::{KshinaRule, MoonClause, MoonRules, MoonWeakness, moon_weakness, shunya_marga};
 pub use muntha::{DAILY_DEG, MONTHLY_DEG, Muntha, MunthaDegree, muntha};
 pub use office::{Office, OfficeBearers, YearCharts, office_bearers, tri_rashi_lord};
@@ -84,7 +89,7 @@ pub use varsha::{
     years,
 };
 pub use varshesha::{
-    Chosen, Claim, MoonMayRule, MoonPartner, NoneAspects, Tied, Varshesha, VarsheshaRules,
+    Bearers, Chosen, Claim, MoonMayRule, MoonPartner, NoneAspects, Tied, Varshesha, VarsheshaRules,
     WEAK_BELOW, aspects, varshesha,
 };
 pub use weak::{
