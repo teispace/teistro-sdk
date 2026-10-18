@@ -72,7 +72,15 @@ const SPAN_DAYS: f64 = 73_049.0;
 const SUPPORT: usize = 5;
 
 /// One text stating one condition twice, each with where it does.
-const REVIEWED: [(&[&str], &str); 5] = [
+const REVIEWED: [(&[&str], &str); 6] = [
+    (
+        &[
+            "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
+            "SARAVALI_TOGETHER_SUN_MOON_SATURN",
+        ],
+        "Saravali reads Saturn with both luminaries twice: ch. 10 vv. 6 and 7 among the deaths \
+         of children, ch. 16 v. 5 among the sets of three",
+    ),
     (
         &[
             "BPHS_ARMY_CHIEF_BY_MALEFICS_THIRD_AND_SIXTH_FROM_ATMAKARAKA",
@@ -118,7 +126,7 @@ const REVIEWED: [(&[&str], &str); 5] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 106] = [
+const FIXTURES: [(&str, f64, f64, f64); 111] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -616,6 +624,36 @@ const FIXTURES: [(&str, f64, f64, f64); 106] = [
         2_403_424.361_1,
         27.7172,
         85.324,
+    ),
+    (
+        "SARAVALI_TOGETHER_MOON_MARS_MERCURY_JUPITER_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "SARAVALI_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "SARAVALI_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "SARAVALI_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
+    ),
+    (
+        "SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN",
+        2_437_699.083_33,
+        27.7172,
+        -37.399,
     ),
 ];
 

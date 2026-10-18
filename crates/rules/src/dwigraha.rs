@@ -5,7 +5,8 @@
 //! Brihat Jataka ch. 14 reads every pair of the seven grahas sharing a sign;
 //! Phaladeepika ch. 18 the Moon in every sign under one graha's aspect; Jataka
 //! Parijata every combination of the seven from two to six sharing a sign; and
-//! Saravali a graha in each of the twelve signs (chs. 22 to 29), the same
+//! Saravali the same combinations (chs. 15 to 19), a graha in each of the
+//! twelve signs (chs. 22 to 29), the same
 //! graha there under each other graha's aspect, and a graha in each of the
 //! twelve bhavas (ch. 30). None of them grades anything: each verse says
 //! in words what follows, so every rule here carries an [`Outcome::Effect`]
@@ -30,6 +31,7 @@ pub(crate) struct Table {
     dwigraha: Dwigraha,
     moon_aspected: MoonAspected,
     together: Together,
+    saravali_together: SaravaliTogether,
     in_rasi: InRasi,
     aspected_in_rasi: AspectedInRasi,
     in_bhava: InBhava,
@@ -96,6 +98,36 @@ struct Set {
     /// Which section of the appendix prints it.
     section: String,
     effects: Vec<String>,
+}
+
+/// Saravali chs. 15 to 19: two to six of the seven sharing one sign, a
+/// chapter for each size.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SaravaliTogether {
+    #[serde(flatten)]
+    family: Family,
+    chapters: Vec<Listed>,
+}
+
+/// One chapter's sets. Its verses name their grahas, and ch. 18's do not
+/// keep the combinations' order, so each reading carries its grahas rather
+/// than taking them from its place.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Listed {
+    chapter: String,
+    readings: Vec<Named>,
+}
+
+/// One verse, the grahas it names in the seven's own order, and what it says
+/// of the native.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Named {
+    verse: String,
+    planets: Vec<Body>,
+    effect: String,
 }
 
 /// Saravali's chapters of a graha in the twelve signs.
@@ -327,6 +359,7 @@ impl Table {
         pairs
             .chain(moon)
             .chain(self.together())
+            .chain(self.saravali_together())
             .chain(self.in_rasi())
             .chain(self.aspected_in_rasi())
             .chain(self.in_bhava())
@@ -358,6 +391,31 @@ impl Table {
                     )
                 })
         })
+    }
+}
+
+impl Table {
+    /// Saravali's sets, one rule for each verse, named by its grahas.
+    fn saravali_together(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.saravali_together.family;
+        self.saravali_together
+            .chapters
+            .iter()
+            .flat_map(move |listed| {
+                listed.readings.iter().map(move |reading| {
+                    let keys: Vec<&str> = reading.planets.iter().map(|body| body.key()).collect();
+                    stating(
+                        format!("SARAVALI_TOGETHER_{}", keys.join("_")),
+                        "grahas-together",
+                        family.in_chapter(Some(listed.chapter.clone()), &reading.verse),
+                        vec![Condition::PlanetConjunct {
+                            planets: reading.planets.iter().copied().map(BodyRef::Body).collect(),
+                            max_orb: None,
+                        }],
+                        &reading.effect,
+                    )
+                })
+            })
     }
 }
 
@@ -604,4 +662,41 @@ fn combinations(bodies: &[Body], size: usize) -> Vec<Vec<Body>> {
         rest = after;
     }
     built
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::expect_used,
+        reason = "tests unwrap what they read and fail by panicking"
+    )]
+
+    use super::*;
+
+    /// Each of Saravali's chapters reads one size and names every combination
+    /// of the seven of that size once, each in the seven's own order, so that
+    /// its key is the one the combination is known by.
+    #[test]
+    fn saravali_names_every_set_of_each_size_once() {
+        let table: Table = serde_json::from_str(include_str!("../rules/classical-readings.json"))
+            .expect("the dwigraha table reads");
+        let mut sizes = Vec::new();
+        for listed in &table.saravali_together.chapters {
+            let size = listed
+                .readings
+                .first()
+                .map_or(0, |reading| reading.planets.len());
+            let mut named: Vec<Vec<Body>> = listed
+                .readings
+                .iter()
+                .map(|reading| reading.planets.clone())
+                .collect();
+            named.sort();
+            let mut every = combinations(&Body::SEVEN, size);
+            every.sort();
+            assert_eq!(named, every, "ch. {}", listed.chapter);
+            sizes.push(size);
+        }
+        assert_eq!(sizes, [2, 3, 4, 5, 6]);
+    }
 }
