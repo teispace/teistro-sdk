@@ -393,6 +393,7 @@ pub fn charts() -> BlobSchema {
         .chain([
             chart_sarvatobhadra_section(135),
             chart_tithi_pravesha_section(136),
+            chart_dossier_section(137),
         ])
         .collect(),
     }
@@ -2291,6 +2292,15 @@ fn chart_sarvatobhadra_section(id: u32) -> SectionSchema {
         id,
         "sarvatobhadra",
         "UTF-8 JSON, canonical: an array with one entry per chart, each an array with one reading per instant of the record, in its order (`03-design/gochar.md` §8). A reading is `{rules, native, grahas, points, maleficPoints}`. `rules` is `{front, sight, corner}`. `native` is `{nakshatra, rashi, tithi, vara, name}`, `name` `{letter, vowel}` and left out when the record named none. `grahas` is the nine, the Sun to Ketu, each `{graha, place, motion, lines, nature, waning, joinedBy, cells, points}`: `place` `{star, nakshatra, pada}` with `star` `{star: \"NAKSHATRA\", nakshatra}` or `{star: \"ABHIJIT\"}`; `motion` `FAST`, `MEAN` or `RETROGRADE`; `lines` among `LEFT`, `FRONT` and `RIGHT`; `nature` `BENEFIC` or `MALEFIC`; `cells` each reach `{by: \"LINE\", line, cell}`, `{by: \"CORNER\", cell}` or `{by: \"STANDS\"}`, a cell tagged by `cell` as `STAR` (`star`), `VOWEL` (`vowel`), `LETTER` (`letter`, one Devanagari character), `RASHI` (`rashi`) or `TITHI` (`class`); and `points` each `{point, by}`. `points` is each of the native's points `{point, malefics, benefics}`, `point` among `NAKSHATRA`, `LETTER`, `VOWEL`, `TITHI`, `RASHI` and `VARA`. `maleficPoints` counts v. 28's five a malefic strikes. Catalogue members are bare keys. Empty when `sarvatobhadra_json` asked for none.",
+    )
+}
+
+/// Every chart's dossier (`03-design/dossier.md`).
+fn chart_dossier_section(id: u32) -> SectionSchema {
+    SectionSchema::bytes(
+        id,
+        "dossier",
+        "UTF-8 JSON, canonical: an array with one string per chart, its dossier for a language model (`03-design/dossier.md`): the line `# teistro dossier 1`, a legend of the sections written, then each section as a `== NAME ==` banner, a `#` header naming its `|`-separated columns, and its rows. The same chart under the same record is the same text. Empty when `dossier_json` asked for none.",
     )
 }
 

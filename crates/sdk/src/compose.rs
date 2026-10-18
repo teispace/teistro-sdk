@@ -22,6 +22,7 @@ use crate::{
     Plans, RuleRequest, RuleSet, RulesReading, SadeSatiRequest, SarvatobhadraRequest,
 };
 use teistro_gochar::sarvatobhadra::SarvatobhadraReading;
+use teistro_serial::dossier::DossierOptions;
 
 /// The records a chart request carries beside its sections, each read and
 /// checked by its own reader before anything is founded, so a bad record
@@ -41,6 +42,8 @@ pub struct ChartRecords {
     pub hits: Option<HitRequest>,
     /// The Sarvatobhadra chakra read against every chart.
     pub sarvatobhadra: Option<SarvatobhadraRequest>,
+    /// Every chart written as a dossier for a language model.
+    pub dossier: Option<DossierOptions>,
     /// The essential dignities.
     pub dignities: Option<DignityRequest>,
     /// The accidental fortitudes, with their own essential dignities.
@@ -140,7 +143,7 @@ impl ChartRecords {
     /// The records a chart request names, as every binding writes them:
     /// the key in a JSON chart request ([`FoundRequest`](crate::FoundRequest))
     /// and the name [`ChartRecords::read`] takes.
-    pub const NAMES: [&'static str; 28] = [
+    pub const NAMES: [&'static str; 29] = [
         "theme",
         "rules",
         "interpret",
@@ -169,6 +172,7 @@ impl ChartRecords {
         "matching",
         "sarvatobhadra",
         "tithiPravesha",
+        "dossier",
     ];
 
     /// The records with `name`'s read from `json` by its own reader, which
@@ -220,6 +224,7 @@ impl ChartRecords {
             "gochar" => self.gochar = Some(GocharRequest::from_json(json)?),
             "hits" => self.hits = Some(HitRequest::from_json(json)?),
             "sarvatobhadra" => self.sarvatobhadra = Some(SarvatobhadraRequest::from_json(json)?),
+            "dossier" => self.dossier = Some(DossierOptions::from_json(json)?),
             "dignities" => self.dignities = Some(DignityRequest::from_json(json)?),
             "fortitudes" => self.fortitudes = Some(FortitudeRequest::from_json(json)?),
             "lots" => self.lots = Some(LotRequest::from_json(json)?),
@@ -334,6 +339,7 @@ impl ChartRecords {
             "sarvatobhadra" => {
                 Some(generator.subschema_for::<crate::sarvatobhadra_request::Asked>())
             }
+            "dossier" => Some(generator.subschema_for::<DossierOptions>()),
             "dignities" => Some(generator.subschema_for::<DignityRequest>()),
             "fortitudes" => Some(generator.subschema_for::<FortitudeRequest>()),
             "lots" => Some(generator.subschema_for::<LotRequest>()),
@@ -394,6 +400,7 @@ impl ChartRecords {
         } else {
             request
         };
+        let request = dossier_needs(self.dossier.as_ref(), request);
         #[cfg(feature = "prashna")]
         let request = if self.prashna.is_some() {
             request.with_shadbala()
@@ -466,6 +473,8 @@ pub struct Composed<'r> {
     /// Every chart's Sarvatobhadra chakra at each of the record's
     /// instants.
     pub sarvatobhadra: Vec<Vec<SarvatobhadraReading>>,
+    /// Every chart's dossier.
+    pub dossier: Vec<String>,
     /// Every chart's essential dignities.
     pub dignities: Vec<Dignities>,
     /// Every chart's accidental fortitudes.
@@ -562,6 +571,7 @@ impl ChartArea<'_> {
             gochar,
             hits: self.hits_of(documents, records.hits.as_ref())?,
             sarvatobhadra: self.sarvatobhadra_of(documents, records.sarvatobhadra.as_ref())?,
+            dossier: dossier_of(documents, records.dossier.as_ref(), request.offset())?,
             dignities: each(documents, records.dignities.as_ref(), |document, asked| {
                 self.dignities(document, asked)
             })?,
@@ -847,6 +857,54 @@ fn documents<S: serde::Serializer>(
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
     serde::Serialize::serialize(&founded.value, serializer)
+}
+
+/// The request widened by the sections a `dossier` record names that one
+/// flag computes; a named `VARGAS` or `DASHAS` names no list, so it is
+/// written when the request asks for one and refused when it does not.
+fn dossier_needs(asked: Option<&DossierOptions>, request: ChartRequest) -> ChartRequest {
+    let Some(sections) = asked.and_then(|asked| asked.sections.as_ref()) else {
+        return request;
+    };
+    sections
+        .iter()
+        .fold(request, |request, section| match section.as_str() {
+            "HOUSES" => request.with_houses(),
+            "PANCHANGA" => request.with_panchanga(),
+            "ASHTAKAVARGA" => request.with_ashtakavarga(),
+            "SHADBALA" => request.with_shadbala(),
+            "BHAVA_BALA" => request.with_bhava_bala(),
+            "VIMSHOPAKA" => request.with_vimshopaka(),
+            "JAIMINI" => request.with_jaimini(),
+            "POINTS" => request.with_points(),
+            "ASPECTS" => request.with_aspects(),
+            "AVAKAHADA" => request.with_avakahada(),
+            _ => request,
+        })
+}
+
+/// Every chart's dossier, on the request's clock unless the record named
+/// one; a refusal is named under `dossier` and the chart it came from.
+fn dossier_of(
+    documents: &[Document],
+    asked: Option<&DossierOptions>,
+    clock: teistro_core::time::UtcOffset,
+) -> Result<Vec<String>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    let options = DossierOptions {
+        utc_offset_seconds: asked.utc_offset_seconds.or(Some(clock.seconds())),
+        ..asked.clone()
+    };
+    documents
+        .iter()
+        .enumerate()
+        .map(|(at, document)| {
+            teistro_serial::dossier::dossier(document, &options, &[])
+                .map_err(|error| error.under("dossier").with_hint(format!("chart {at}")))
+        })
+        .collect()
 }
 
 #[cfg(any(feature = "tajika", feature = "western"))]

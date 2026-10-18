@@ -12,6 +12,26 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The dossier: a chart as text for a language model** (`dossier.md`).
+**Numbers:** none moved; nothing computed changes. `teistro::dossier::dossier(&document, &options, &[])`
+writes a chart document as compact text a model reads in a prompt: the
+line `# teistro dossier 1`, a legend of only the sections written, then
+each of fifteen sections (`CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`,
+`DASHAS`, `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+`VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`) as a banner, a
+header of `|`-separated columns and rows. A section declares its columns
+once and the header and the legend are both written from them, so no
+column goes undocumented; members are bare catalogue keys; no clock is
+read, so a chart under the same options is the same bytes, and only an
+`at` marks the running dasha periods and expands their branch. Presets
+choose sections (`FULL`, `FAMILY`) and never thin them; a section named
+that the chart lacks is refused by its place with what would compute it.
+`DossierSection` is a trait, so a consumer's section is written and
+documented the way a built-in one is. A chart request's `dossier` record
+writes every chart's dossier on the request's clock, widening the request
+with the sections it names, and section 137 carries them across the C
+boundary; the agent server reads the record.
+
 The conformance corpus moves to 0.12.0, which adds JPL's DE440 itself
 (CSPICE's geometric states, evidence rank 1), and every built-in tier is
 now scored against it (`kit::jpl`). No SDK number moved. The run measured

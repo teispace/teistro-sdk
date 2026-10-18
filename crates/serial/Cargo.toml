@@ -21,6 +21,7 @@ schema = ["dep:schemars", "teistro-aspect/schema", "teistro-chart/schema", "teis
 
 [dependencies]
 teistro-aspect = { path = "../aspect" }
+teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
 teistro-dasha = { path = "../dasha" }

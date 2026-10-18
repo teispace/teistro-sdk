@@ -5487,6 +5487,9 @@ pub struct Composed<'a> {
     /// Every chart's tithi praveshas, as canonical JSON
     /// (`tithi-pravesha.md`); empty when none was asked for.
     pub tithi_pravesha: &'a str,
+    /// Every chart's dossier, as canonical JSON: a string a chart
+    /// (`dossier.md`); empty when none was asked for.
+    pub dossier: &'a str,
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -5511,6 +5514,7 @@ impl Composed<'_> {
             ("rectification", self.rectification),
             ("sarvatobhadra", self.sarvatobhadra),
             ("tithi_pravesha", self.tithi_pravesha),
+            ("dossier", self.dossier),
         ] {
             writer.bytes(name, text.as_bytes())?;
         }
@@ -6526,6 +6530,7 @@ impl AskedRecords {
                 asked.tithi_pravesha_json,
                 "tithi_pravesha_json",
             ),
+            ("dossier", asked.dossier_json, "dossier_json"),
         ];
         let mut records = ChartRecords::default();
         for (name, text, field) in fields {
@@ -6687,6 +6692,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 rectification: &rectification,
                 sarvatobhadra: &section(records.sarvatobhadra.is_some(), &composed.sarvatobhadra),
                 tithi_pravesha: &tithi_pravesha,
+                dossier: &section(records.dossier.is_some(), &composed.dossier),
                 hashes: &composed.hashes,
             },
             ctx.sdk().dashas(),

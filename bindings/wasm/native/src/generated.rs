@@ -2388,6 +2388,22 @@ pub struct ChartRequest {
     /// Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tithi_pravesha_json: Option<String>,
+    /// Every chart written as a dossier for a language model, as a JSON
+    /// object: optionally `sections` (keys, written in the dossier's own
+    /// order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
+    /// `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+    /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
+    /// section one flag computes widens the request with it), `preset`
+    /// (`"FULL"`, the default, every section the chart carries, or
+    /// `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
+    /// marked and their branch expanded; date-free when left out),
+    /// `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
+    /// left out). Each chart's text comes back in the `dossier` section.
+    /// Null for none (`03-design/dossier.md`). Refusals are named from the
+    /// record every binding calls `dossier`, as `dossier.sections0`.
+    /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dossier_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2432,6 +2448,7 @@ pub struct HeldChartRequest {
     lalkitab_json: Option<std::ffi::CString>,
     sarvatobhadra_json: Option<std::ffi::CString>,
     tithi_pravesha_json: Option<std::ffi::CString>,
+    dossier_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2551,6 +2568,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             tithi_pravesha_json: self
                 .tithi_pravesha_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            dossier_json: self
+                .dossier_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2716,6 +2737,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            dossier_json: self
+                .dossier_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2778,6 +2804,7 @@ impl ChartRequest {
             lalkitab_json: unsafe { lent_text(raw.lalkitab_json) },
             sarvatobhadra_json: unsafe { lent_text(raw.sarvatobhadra_json) },
             tithi_pravesha_json: unsafe { lent_text(raw.tithi_pravesha_json) },
+            dossier_json: unsafe { lent_text(raw.dossier_json) },
         }
     }
 }

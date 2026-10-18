@@ -291,7 +291,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 336,
+    "ts_chart_request": 344,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -321,7 +321,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 192,
+    "ts_chart_request": 200,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -745,6 +745,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("lalkitab_json", ctypes.c_char_p),
         ("sarvatobhadra_json", ctypes.c_char_p),
         ("tithi_pravesha_json", ctypes.c_char_p),
+        ("dossier_json", ctypes.c_char_p),
     ]
 
 
@@ -2800,6 +2801,23 @@ class ChartRequest:
     Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
     """
 
+    dossier_json: Optional[str] = None
+    """Every chart written as a dossier for a language model, as a JSON
+    object: optionally `sections` (keys, written in the dossier's own
+    order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
+    `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+    `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
+    section one flag computes widens the request with it), `preset`
+    (`"FULL"`, the default, every section the chart carries, or
+    `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
+    marked and their branch expanded; date-free when left out),
+    `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
+    left out). Each chart's text comes back in the `dossier` section.
+    Null for none (`03-design/dossier.md`). Refusals are named from the
+    record every binding calls `dossier`, as `dossier.sections0`.
+    Example: {"preset":"FULL","dashaDepth":2}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2923,6 +2941,9 @@ class ChartRequest:
         _tithi_pravesha_json = None if self.tithi_pravesha_json is None else self.tithi_pravesha_json.encode("utf-8")
         owned.append(_tithi_pravesha_json)
         raw.tithi_pravesha_json = _tithi_pravesha_json
+        _dossier_json = None if self.dossier_json is None else self.dossier_json.encode("utf-8")
+        owned.append(_dossier_json)
+        raw.dossier_json = _dossier_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2988,6 +3009,7 @@ class ChartRequest:
             lalkitab_json=_text(raw.lalkitab_json),
             sarvatobhadra_json=_text(raw.sarvatobhadra_json),
             tithi_pravesha_json=_text(raw.tithi_pravesha_json),
+            dossier_json=_text(raw.dossier_json),
         )
 
 

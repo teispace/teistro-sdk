@@ -233,6 +233,9 @@ pub use teistro_serial::{Document, Sealed};
 // check it before reading it back (`03-design/document-schema.md`).
 #[cfg(feature = "chart")]
 pub use teistro_serial::schema;
+// A chart as text for a language model (`03-design/dossier.md`).
+#[cfg(feature = "chart")]
+pub use teistro_serial::dossier;
 pub use teistro_state::{Anka, GrahaState, Sayanadi};
 pub use teistro_vargas::chart::{Axis, VargaChart};
 // Chart geometry: the layouts a chart is drawn in, a consumer's own, and a

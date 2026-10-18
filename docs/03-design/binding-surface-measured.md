@@ -69,21 +69,21 @@ a call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1795 | 2 | 0 | 0 | 0 |
-| TypeScript | 418 | 0 | 0 | 1 | 0 |
-| Python | 1795 | 0 | 1 | 2 | 0 |
-| Java | 1795 | 0 | 1 | 0 | 0 |
+| Dart | 1796 | 2 | 0 | 0 | 0 |
+| TypeScript | 419 | 0 | 0 | 1 | 0 |
+| Python | 1796 | 0 | 1 | 2 | 0 |
+| Java | 1796 | 0 | 1 | 0 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 1795 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 418 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1795 looked at |
-| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1795 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1795 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 418 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1795 disagree |
-| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1795 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 1796 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 419 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1796 looked at |
+| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1796 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1796 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 419 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1796 disagree |
+| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1796 disagree |
 
 What Dart renames:
 
@@ -147,7 +147,7 @@ against them on the machine the library was actually built for.
 | `ts_error` | 56 | 8 | 36 | yes |
 | `ts_frame` | 16 | 4 | same | no |
 | `ts_calendar_date` | 24 | 4 | same | no |
-| `ts_chart_request` | 336 | 8 | 192 | yes |
+| `ts_chart_request` | 344 | 8 | 200 | yes |
 | `ts_civil_time` | 12 | 4 | same | no |
 | `ts_civil_date_time` | 44 | 4 | same | no |
 | `ts_zone_spec` | 32 | 8 | same | yes |
@@ -204,7 +204,7 @@ the class of mistake a generated binding exists to make impossible.
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 227 of 227 visible struct fields
+much of that there is to reach for: 228 of 228 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
@@ -212,18 +212,18 @@ carry a doc comment.
 | `bitset` | 1 |
 | `brand` | 4 |
 | `enum` | 26 |
-| `example` | 121 |
+| `example` | 122 |
 | `flag` | 15 |
 | `len` | 17 |
-| `nullable` | 43 |
+| `nullable` | 44 |
 | `present_if` | 1 |
 | `range` | 35 |
 | `unit` | 48 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 227 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 227 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 228 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 228 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

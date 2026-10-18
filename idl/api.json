@@ -12823,6 +12823,21 @@
             "example": "{\"through\":40,\"rule\":\"NATAL_SIGN\"}",
             "nullable": true
           }
+        },
+        {
+          "name": "dossier_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart written as a dossier for a language model, as a JSON\nobject: optionally `sections` (keys, written in the dossier's own\norder: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,\n`PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,\n`VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a\nsection one flag computes widens the request with it), `preset`\n(`\"FULL\"`, the default, every section the chart carries, or\n`\"FAMILY\"`), `at` (a UTC Julian day: the running dasha periods\nmarked and their branch expanded; date-free when left out),\n`dashaDepth` and `utcOffsetSeconds` (the request's own clock when\nleft out). Each chart's text comes back in the `dossier` section.\nNull for none (`03-design/dossier.md`). Refusals are named from the\nrecord every binding calls `dossier`, as `dossier.sections0`.",
+          "meta": {
+            "example": "{\"preset\":\"FULL\",\"dashaDepth\":2}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart_request.rs"
@@ -22193,6 +22208,13 @@
           "id": 136,
           "name": "tithi_pravesha",
           "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each an array with one row per year found, `1` up, in order (`03-design/tithi-pravesha.md`). A row is `{year, at, solarReturn, elongationDeg, rule, picked, inSign}`: `year` counted as `praveshas.year` counts it; `at` the instant the Moon's elongation from the Sun returns to the birth's, a UTC Julian day, where the year's chart is founded; `solarReturn` the year's sidereal solar return, UTC; `elongationDeg` the birth's directed elongation, `[0, 360)`; `rule` the rule asked for and `picked` the rule that chose the instant, `NATAL_SIGN` or `NEAREST_RETURN`, which differ where the natal sign held no phase return (C446); `inSign` how many phase returns fell while the Sun was in its natal sign, 0 to 2. A chart can hold fewer rows than `through` asked for where the ephemeris ends first. Empty when `tithi_pravesha_json` asked for none.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 137,
+          "name": "dossier",
+          "doc": "UTF-8 JSON, canonical: an array with one string per chart, its dossier for a language model (`03-design/dossier.md`): the line `# teistro dossier 1`, a legend of the sections written, then each section as a `== NAME ==` banner, a `#` header naming its `|`-separated columns, and its rows. The same chart under the same record is the same text. Empty when `dossier_json` asked for none.",
           "kind": "bytes",
           "fields": []
         }

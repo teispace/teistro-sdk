@@ -1880,6 +1880,10 @@ export function decodeCharts(bytes) {
     const at = section(blob, 136, 'tithi_pravesha');
     out.tithiPravesha = text(blob, at);
   }
+  {
+    const at = section(blob, 137, 'dossier');
+    out.dossier = text(blob, at);
+  }
   return out;
 }
 

@@ -8494,6 +8494,23 @@ struct ts_chart_request {
      * Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
      */
     const char * tithi_pravesha_json;
+    /**
+     * Every chart written as a dossier for a language model, as a JSON
+     * object: optionally `sections` (keys, written in the dossier's own
+     * order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
+     * `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+     * `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
+     * section one flag computes widens the request with it), `preset`
+     * (`"FULL"`, the default, every section the chart carries, or
+     * `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
+     * marked and their branch expanded; date-free when left out),
+     * `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
+     * left out). Each chart's text comes back in the `dossier` section.
+     * Null for none (`03-design/dossier.md`). Refusals are named from the
+     * record every binding calls `dossier`, as `dossier.sections0`.
+     * Example: {"preset":"FULL","dashaDepth":2}. May be null.
+     */
+    const char * dossier_json;
 };
 
 /**
@@ -9542,7 +9559,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 336, "ts_chart_request is 336 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 344, "ts_chart_request is 344 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

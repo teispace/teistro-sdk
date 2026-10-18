@@ -1383,6 +1383,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1541,6 +1542,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1697,6 +1699,7 @@ fn a_chart_request_answers_the_transits() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1908,6 +1911,7 @@ fn hit_list_request(births: &[f64; 2], hits: &CString) -> TsChartRequest {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -2187,6 +2191,7 @@ fn a_chart_request_answers_sade_sati() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2456,6 +2461,7 @@ fn a_chart_request_answers_the_dignities() {
                 lalkitab_json: ptr::null(),
                 sarvatobhadra_json: ptr::null(),
                 tithi_pravesha_json: ptr::null(),
+                dossier_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2829,6 +2835,7 @@ fn a_chart_request_answers_the_fortitudes() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4143,6 +4150,7 @@ fn a_chart_request_answers_kp() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4350,6 +4358,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4469,6 +4478,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4617,6 +4627,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4770,6 +4781,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5554,6 +5566,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5675,6 +5688,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5865,6 +5879,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             lalkitab_json: ptr::null(),
             sarvatobhadra_json: ptr::null(),
             tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6161,6 +6176,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 lalkitab_json: ptr::null(),
                 sarvatobhadra_json: ptr::null(),
                 tithi_pravesha_json: ptr::null(),
+                dossier_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -10289,6 +10305,71 @@ fn a_chart_request_answers_the_tithi_praveshas() {
     );
     assert_eq!(refused, Err(Status::InvalidArg));
     assert_eq!(ctx.last_error().2.as_deref(), Some("tithiPravesha.through"));
+}
+
+/// A chart request's `dossier_json` writes every chart's dossier, the
+/// section carrying the façade's own text a chart; a refusal names the
+/// field under `dossier` (`03-design/dossier.md`).
+#[test]
+fn a_chart_request_answers_the_dossier() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0];
+    let base = chart_request(&births, (27.7172, 85.324), 20_700);
+    let text = r#"{"sections":["GRAHAS","ASHTAKAVARGA"]}"#;
+    let json = CString::new(text).unwrap();
+    let section = |asked: &TsChartRequest| {
+        let bytes = chart_blob(&ctx, asked)
+            .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+        let schema = schemas::charts();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        String::from_utf8(reader.bytes("dossier").unwrap().to_vec()).unwrap()
+    };
+    let crossed: Vec<String> = serde_json::from_str(&section(&TsChartRequest {
+        dossier_json: json.as_ptr(),
+        ..base
+    }))
+    .unwrap();
+
+    // The façade's own: the record widens the request with the
+    // ashtakavarga, and the clock is the request's.
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(20_700).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(place, clock).with_ashtakavarga(),
+        )
+        .unwrap()
+        .value;
+    let mut options = teistro::dossier::DossierOptions::from_json(text).unwrap();
+    options.utc_offset_seconds = Some(20_700);
+    let expected: Vec<String> = natal
+        .iter()
+        .map(|document| teistro::dossier::dossier(document, &options, &[]).unwrap())
+        .collect();
+    assert_eq!(crossed, expected);
+    assert!(crossed[0].starts_with("# teistro dossier 1\n"));
+    assert!(crossed[0].contains("== ASHTAKAVARGA ==\n"));
+
+    // None asked is an empty section.
+    assert_eq!(section(&base), "");
+
+    // A refusal names the field under the record.
+    let bad = CString::new(r#"{"sections":["PLANETS"]}"#).unwrap();
+    let refused = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            dossier_json: bad.as_ptr(),
+            ..base
+        },
+    );
+    assert_eq!(refused, Err(Status::InvalidArg));
+    assert_eq!(ctx.last_error().2.as_deref(), Some("dossier.sections[0]"));
 }
 
 fn rashifal_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
