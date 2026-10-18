@@ -797,7 +797,7 @@ fn every_envelope_is_sealed_with_the_hash_of_its_own_value() {
 
 /// Every section a reading asked for everything carries, in the document's
 /// order.
-const EVERY_SECTION: [&str; 15] = [
+const EVERY_SECTION: [&str; 16] = [
     "foundation",
     "panchanga",
     "vargas",
@@ -812,6 +812,7 @@ const EVERY_SECTION: [&str; 15] = [
     "bhava_bala",
     "dasha_phala",
     "jaimini",
+    "moment",
     "dashas",
 ];
 
@@ -861,7 +862,8 @@ fn a_reading_carries_the_sections_it_was_asked_for() {
     assert_eq!(
         whole.value.sections(),
         EVERY_SECTION,
-        "every section `teistro-serial`'s document declares but the drawings, which are named pairs"
+        "every section `teistro-serial`'s document declares but the drawings, which are named pairs, \
+         and the avakahada, which a tropical chart refuses"
     );
 
     // The foundation is the same chart either way: the sections are
