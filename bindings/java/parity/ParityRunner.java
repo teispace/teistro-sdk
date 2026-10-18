@@ -1495,6 +1495,8 @@ public final class ParityRunner {
                         "name", map("letter", "र", "vowel", "A"), "rules", map("front", "EVERY_CELL"))))
                 // Three years under the practice's rule.
                 .tithiPravesha(TithiPraveshaRequest.builder().through(3).build())
+                .dossier(DossierOptions.builder().sections(List.of("CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS"))
+                        .at(2460676.5).dashaDepth(2).utcOffsetSeconds(20_700).build())
                 // A varshphal list with the book's structure and none of its numbers:
                 // year y sends natal house h to h + y - 1, round the twelve.
                 .lalkitab(LalKitabRequest.of(map("cycle", map("planet", "graha.VENUS", "year", 17), "year", 43,
@@ -2057,6 +2059,8 @@ public final class ParityRunner {
                     + number(year.elongationDeg()) + " " + year.rule().key() + " " + year.picked().key() + " "
                     + year.inSign());
         }
+        String dossier = chart.dossier().orElseThrow();
+        put(c + "-dossier", dossier.getBytes(java.nio.charset.StandardCharsets.UTF_8).length + " " + fnv(dossier));
         rectification(c + "-rectification", chart.rectification().orElseThrow());
         progressions(c, chart.progressions().orElseThrow());
         List<WesternAspectRow> westernAspects = chart.westernAspects().orElseThrow();

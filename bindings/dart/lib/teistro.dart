@@ -711,6 +711,7 @@ final class ChartArea extends _Area {
     LalKitabRequest? lalkitab,
     SarvatobhadraRequest? sarvatobhadra,
     TithiPraveshaRequest? tithiPravesha,
+    DossierRequest? dossier,
     RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
@@ -762,6 +763,7 @@ final class ChartArea extends _Area {
     lalkitab: lalkitab,
     sarvatobhadra: sarvatobhadra,
     tithiPravesha: tithiPravesha,
+    dossier: dossier,
     rectification: rectification,
     aspects: aspects,
     points: points,
@@ -833,6 +835,7 @@ final class ChartArea extends _Area {
     LalKitabRequest? lalkitab,
     SarvatobhadraRequest? sarvatobhadra,
     TithiPraveshaRequest? tithiPravesha,
+    DossierRequest? dossier,
     RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
@@ -911,6 +914,7 @@ final class ChartArea extends _Area {
             lalkitabJson: lalkitab?._json,
             sarvatobhadraJson: sarvatobhadra?._json,
             tithiPraveshaJson: tithiPravesha?._json,
+            dossierJson: dossier?._json,
           ),
         ),
       ),
@@ -15450,6 +15454,105 @@ final class TithiPravesha extends _Value {
   ];
 }
 
+/// A section of a chart's dossier, in the dossier's own order
+/// (`03-design/dossier.md`).
+enum DossierSection implements _Keyed {
+  chart('CHART'),
+  now('NOW'),
+  grahas('GRAHAS'),
+  houses('HOUSES'),
+  vargas('VARGAS'),
+  dashas('DASHAS'),
+  panchanga('PANCHANGA'),
+  ashtakavarga('ASHTAKAVARGA'),
+  shadbala('SHADBALA'),
+  bhavaBala('BHAVA_BALA'),
+  vimshopaka('VIMSHOPAKA'),
+  jaimini('JAIMINI'),
+  points('POINTS'),
+  aspects('ASPECTS'),
+  avakahada('AVAKAHADA');
+
+  const DossierSection(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which sections a dossier writes when none are named.
+enum DossierPreset implements _Keyed {
+  /// Every section the chart carries.
+  full('FULL'),
+
+  /// Chart, grahas, dashas and panchanga, for a prompt holding several
+  /// people's charts.
+  family('FAMILY');
+
+  const DossierPreset(this.key);
+
+  @override
+  final String key;
+}
+
+/// How every chart is written as a dossier for a language model
+/// (`03-design/dossier.md`). Every member is optional: the default writes
+/// every section the chart carries, date-free, on the request's clock.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ dossier: const DossierRequest(
+///     sections: [DossierSection.grahas, DossierSection.shadbala],
+///   ),
+/// );
+/// final prompt = '$question\n\n${chart.dossier}';
+/// ```
+final class DossierRequest {
+  const DossierRequest({
+    this.sections,
+    this.preset,
+    this.at,
+    this.dashaDepth,
+    this.utcOffsetSeconds,
+  });
+
+  /// The sections, written in the dossier's own order; one a flag computes
+  /// widens the request with it.
+  final List<DossierSection>? sections;
+
+  /// The preset, [DossierPreset.full] when left out.
+  final DossierPreset? preset;
+
+  /// The "now", a UTC Julian day: the running dasha periods marked and
+  /// their branch expanded.
+  final double? at;
+
+  /// How many levels a dasha timeline is written to, 1 up.
+  final int? dashaDepth;
+
+  /// The clock instants are written in, seconds east of UTC; the
+  /// request's own when left out.
+  final int? utcOffsetSeconds;
+
+  String get _json => jsonEncode(<String, Object?>{
+    if (sections != null) 'sections': [for (final s in sections!) s.key],
+    if (preset != null) 'preset': preset!.key,
+    if (at != null) 'at': at,
+    if (dashaDepth != null) 'dashaDepth': dashaDepth,
+    if (utcOffsetSeconds != null) 'utcOffsetSeconds': utcOffsetSeconds,
+  });
+}
+
+/// Each batch's dossiers, parsed once however many charts read them.
+final Expando<List<String>> _dossiers = Expando<List<String>>('dossier');
+
+List<String> _dossiersOf(Charts batch) =>
+    _dossiers[batch] ??=
+        batch.dossier.isEmpty
+            ? const <String>[]
+            : List<String>.unmodifiable(
+              (jsonDecode(batch.dossier) as List<Object?>).cast<String>(),
+            );
+
 /// Each batch's tithi praveshas, parsed once however many charts read
 /// them.
 final Expando<List<List<TithiPravesha>>> _tithiPraveshas =
@@ -25100,6 +25203,14 @@ final class Chart {
   /// (`03-design/tithi-pravesha.md`).
   List<TithiPravesha>? get tithiPravesha {
     final all = _tithiPraveshasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart written as a dossier for a language model: the same chart
+  /// under the same record is the same text. Null unless `dossier` asked
+  /// (`03-design/dossier.md`).
+  String? get dossier {
+    final all = _dossiersOf(batch);
     return index < all.length ? all[index] : null;
   }
 

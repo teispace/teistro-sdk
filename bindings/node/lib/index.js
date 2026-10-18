@@ -1153,6 +1153,18 @@ export class Chart {
   }
 
   /**
+   * The chart written as a dossier for a language model
+   * (`dossier: { sections: ['GRAHAS', 'DASHAS'], at: 2460676.5 }`): the
+   * same chart under the same record is the same text. `null` unless asked
+   * (`03-design/dossier.md`).
+   *
+   * @returns {string|null}
+   */
+  get dossier() {
+    return dossiersOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The chart read as a birth time to rectify (`rectification: { purify:
    * { minutes: 30 } }`): what BPHS ch. 2's purifier leaves standing of the
    * minutes either side, the conception the birth counts back to, *Brihat
@@ -2802,6 +2814,11 @@ export class ChartArea extends Area {
           request.sarvatobhadra,
           'sarvatobhadra',
           "a Sarvatobhadra request record, e.g. { instants: [2460676.5] } or { instants: [2460676.5], motion: 'SUN', name: { letter: 'र', vowel: 'A' } }",
+        ),
+        dossierJson: recordJson(
+          request.dossier,
+          'dossier',
+          "a dossier request record, e.g. {} or { sections: ['GRAHAS', 'DASHAS'], at: 2460676.5 }",
         ),
         tithiPraveshaJson: recordJson(
           request.tithiPravesha,
@@ -5345,6 +5362,20 @@ function lalkitabFrom({ reading, cycle, periods, year }) {
             annual: year.annual === null ? null : tevaFrom(year.annual),
           },
   };
+}
+
+/** Each batch's dossiers, parsed once however many charts read them. */
+const DOSSIER = new WeakMap();
+
+/**
+ * Every chart's dossier in a batch: the `dossier` section's JSON, a string
+ * a chart.
+ *
+ * @param {Charts} batch
+ * @returns {string[]}
+ */
+function dossiersOf(batch) {
+  return sectionOf(DOSSIER, batch, 'dossier');
 }
 
 /** Each batch's tithi praveshas, parsed once however many charts read them. */

@@ -1160,6 +1160,18 @@ void main() {
     ),
     // Three years under the practice's rule.
     tithiPravesha: const TithiPraveshaRequest(through: 3),
+    dossier: const DossierRequest(
+      sections: [
+        DossierSection.chart,
+        DossierSection.now,
+        DossierSection.grahas,
+        DossierSection.vargas,
+        DossierSection.dashas,
+      ],
+      at: 2460676.5,
+      dashaDepth: 2,
+      utcOffsetSeconds: 20700,
+    ),
     // A varshphal list with the book's structure and none of its numbers:
     // year y sends natal house h to h + y − 1, round the twelve.
     lalkitab: LalKitabRequest(
@@ -2033,6 +2045,8 @@ void main() {
             '${year.inSign}',
       );
     }
+    final dossier = chart.dossier!;
+    put('chart-$i-dossier', '${utf8.encode(dossier).length} ${fnv(dossier)}');
     putRectification('chart-$i-rectification', chart.rectification!);
     final pr = chart.progressions!;
     final pg = pr.progressed!;

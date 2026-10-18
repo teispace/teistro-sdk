@@ -1910,6 +1910,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_lalkitab(report, geo, index, document);
     the_sarvatobhadra(report, geo, index, document);
     the_tithi_pravesha(report, geo, index, document);
+    the_dossier(report, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2579,9 +2580,6 @@ fn the_remedies(report: &mut Report, sdk: &Context, index: usize, document: &tei
 /// verses' own motion, a name and every cell the front passes.
 const SARVATOBHADRA_JSON: &str = r#"{"instants":[2460676.5,2460776.5],"motion":"SUN","name":{"letter":"र","vowel":"A"},"rules":{"front":"EVERY_CELL"}}"#;
 
-/// The Sarvatobhadra chakra as every runner prints it: each instant's
-/// native, count and points, then each graha's place, motion, nature,
-/// lines, how many cells it strikes and the points among them.
 /// The tithi praveshas every runner asks for: three years under the
 /// practice's rule, each year's instant, its solar return, the birth's
 /// elongation, the rule asked and the one that chose, and the count in
@@ -2622,6 +2620,24 @@ fn the_tithi_pravesha(
     }
 }
 
+/// The dossier every runner asks for: sections the shared request carries
+/// without widening, dated so the running periods are marked, printed as
+/// its length and hash (`03-design/dossier.md`).
+const DOSSIER_JSON: &str = r#"{"sections":["CHART","NOW","GRAHAS","VARGAS","DASHAS"],"at":2460676.5,"dashaDepth":2,"utcOffsetSeconds":20700}"#;
+
+fn the_dossier(report: &mut Report, index: usize, document: &teistro::Document) {
+    let asked = teistro::dossier::DossierOptions::from_json(DOSSIER_JSON).expect("a valid request");
+    let text = teistro::dossier::dossier(document, &asked, &[]).expect("every section carried");
+    put(
+        report,
+        &format!("chart-{index}-dossier"),
+        format!("{} {}", text.len(), fnv(&text)),
+    );
+}
+
+/// The Sarvatobhadra chakra as every runner prints it: each instant's
+/// native, count and points, then each graha's place, motion, nature,
+/// lines, how many cells it strikes and the points among them.
 fn the_sarvatobhadra(
     report: &mut Report,
     sdk: &Context,

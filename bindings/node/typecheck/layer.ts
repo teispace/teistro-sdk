@@ -14,6 +14,7 @@ import type {
   SarvatobhadraRequest,
   TithiPravesha,
   TithiPraveshaRequest,
+  DossierRequest,
   TithiRule,
   VedhaMotion,
   VedhaReach,
@@ -502,6 +503,18 @@ function tithiPravesha(): string {
 }
 
 void tithiPravesha;
+
+/** The dossier, typed: a string a chart, its sections a closed set. */
+function dossierText(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const asked: DossierRequest = { sections: ['GRAHAS', 'SHADBALA'], dashaDepth: 2 };
+  const text: string | null = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, dossier: asked }).dossier;
+  // @ts-expect-error a section is one of the dossier's own
+  const planets: DossierRequest = { sections: ['PLANETS'] };
+  return `${text} ${planets}`;
+}
+
+void dossierText;
 
 /** The almanac layer, typed: a range of days and one of them. */
 function almanac(): string {

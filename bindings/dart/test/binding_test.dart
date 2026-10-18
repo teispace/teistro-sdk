@@ -5423,6 +5423,54 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart writes its dossier', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    Chart found([DossierRequest? asked]) => ctx.chart.found(
+      instant: 2447995.4895833335,
+      place: place,
+      utcOffsetSeconds: 20700,
+      dossier: asked,
+    );
+    const asked = DossierRequest(
+      sections: [
+        DossierSection.chart,
+        DossierSection.grahas,
+        DossierSection.shadbala,
+      ],
+    );
+    expect(found().dossier, isNull);
+    final text = found(asked).dossier!;
+    expect(text, startsWith('# teistro dossier 1\n== LEGEND ==\n'));
+    expect(
+      [
+        for (final line in text.split('\n'))
+          if (line.startsWith('== ')) line.substring(3, line.length - 3),
+      ],
+      ['LEGEND', 'CHART', 'GRAHAS', 'SHADBALA'],
+      reason: 'the record widened the request',
+    );
+    expect(text, contains('+05:45'));
+    expect(found(asked).dossier, text, reason: 'the same bytes');
+    expect(
+      () => found(const DossierRequest(sections: [DossierSection.dashas])),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'dossier.sections[0]',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its Lal Kitab', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

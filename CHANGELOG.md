@@ -30,7 +30,10 @@ that the chart lacks is refused by its place with what would compute it.
 documented the way a built-in one is. A chart request's `dossier` record
 writes every chart's dossier on the request's clock, widening the request
 with the sections it names, and section 137 carries them across the C
-boundary; the agent server reads the record.
+boundary; the agent server reads the record. Every binding reads it as
+a string (`chart.dossier`; Java's `chart.dossier()`), the sections typed
+as a closed set in Node, Python and Dart, and the parity example holds
+the four, wasm and Rust to the same bytes of a dated dossier.
 
 The conformance corpus moves to 0.12.0, which adds JPL's DE440 itself
 (CSPICE's geometric states, evidence rank 1), and every built-in tier is

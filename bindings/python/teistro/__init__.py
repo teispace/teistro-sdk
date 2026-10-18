@@ -806,6 +806,9 @@ __all__ = [
     "TithiPraveshaRequest",
     "TithiRule",
     "TithiPravesha",
+    # The dossier: a chart as text for a language model.
+    "DossierRequest",
+    "DossierSection",
     # Lal Kitab: the 1952 edition's teva, its reading and the 35-year cycle.
     "LalKitabRequest",
     "LalKitabCycle",
@@ -1936,6 +1939,7 @@ class ChartArea(_Area):
         lalkitab: Optional[LalKitabRequest] = None,
         sarvatobhadra: Optional[SarvatobhadraRequest] = None,
         tithi_pravesha: Optional[TithiPraveshaRequest] = None,
+        dossier: Optional[DossierRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
@@ -2001,6 +2005,7 @@ class ChartArea(_Area):
             lalkitab=lalkitab,
             sarvatobhadra=sarvatobhadra,
             tithi_pravesha=tithi_pravesha,
+            dossier=dossier,
             rectification=rectification,
             aspects=aspects,
             points=points,
@@ -2056,6 +2061,7 @@ class ChartArea(_Area):
         lalkitab: Optional[LalKitabRequest] = None,
         sarvatobhadra: Optional[SarvatobhadraRequest] = None,
         tithi_pravesha: Optional[TithiPraveshaRequest] = None,
+        dossier: Optional[DossierRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
@@ -2153,6 +2159,7 @@ class ChartArea(_Area):
             lalkitab_json=_lalkitab_json(lalkitab),
             sarvatobhadra_json=_record_json(sarvatobhadra, "sarvatobhadra", "{'instants': [2460676.5]}"),
             tithi_pravesha_json=_record_json(tithi_pravesha, "tithiPravesha", "{'through': 40}"),
+            dossier_json=_record_json(dossier, "dossier", "{'sections': ['GRAHAS', 'DASHAS'], 'at': 2460676.5}"),
             rectification_json=_record_json(rectification, "rectification", "{'purify': {'minutes': 30}}"),
         )
         return ChartBatch(
@@ -9615,6 +9622,51 @@ class TithiPraveshaRequest(TypedDict, total=False):
     """Which phase return of each year is taken; `NATAL_SIGN` when left out."""
 
 
+DossierSection = Literal[
+    "CHART",
+    "NOW",
+    "GRAHAS",
+    "HOUSES",
+    "VARGAS",
+    "DASHAS",
+    "PANCHANGA",
+    "ASHTAKAVARGA",
+    "SHADBALA",
+    "BHAVA_BALA",
+    "VIMSHOPAKA",
+    "JAIMINI",
+    "POINTS",
+    "ASPECTS",
+    "AVAKAHADA",
+]
+"""A section of a chart's dossier, in the dossier's own order
+(`03-design/dossier.md`)."""
+
+
+class DossierRequest(TypedDict, total=False):
+    """How every chart is written as a dossier for a language model
+    (`03-design/dossier.md`). Every member is optional: `{}` writes every
+    section the chart carries, date-free, on the request's clock.
+
+    >>> asked: DossierRequest = {"sections": ["GRAHAS", "DASHAS", "SHADBALA"], "at": 2460676.5}
+    """
+
+    sections: Sequence[DossierSection]
+    """The sections, written in the dossier's own order; one a flag computes
+    widens the request with it."""
+    preset: Literal["FULL", "FAMILY"]
+    """`FULL`, every section the chart carries (the default), or `FAMILY`:
+    chart, grahas, dashas and panchanga."""
+    at: float
+    """The "now", a UTC Julian day: the running dasha periods marked and
+    their branch expanded."""
+    dashaDepth: int
+    """How many levels a dasha timeline is written to, 1 up."""
+    utcOffsetSeconds: int
+    """The clock instants are written in, seconds east of UTC; the request's
+    own when left out."""
+
+
 @dataclass(frozen=True)
 class TithiPravesha:
     """One year's tithi pravesha: the instant the Moon's elongation from the
@@ -14227,6 +14279,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def dossier(self) -> Optional[str]:
+        """The chart written as a dossier for a language model: the same
+        chart under the same record is the same text. `None` unless
+        `dossier=` asked (`03-design/dossier.md`)."""
+        parsed = self.batch._dossiers
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def rectification(self) -> Optional[Rectification]:
         """The chart read as a birth time to rectify, its instant the time on
         record: what the purifier of BPHS ch. 2 vv. 67–78 leaves standing of
@@ -14952,6 +15012,13 @@ class ChartBatch:
         was asked for."""
         text = self.decoded.sarvatobhadra
         return [tuple(_sarvatobhadra(raw) for raw in chart) for chart in json.loads(text)] if text else []
+
+    @cached_property
+    def _dossiers(self) -> list[str]:
+        """Every chart's dossier, parsed once; empty when none was asked
+        for."""
+        text = self.decoded.dossier
+        return [str(chart) for chart in json.loads(text)] if text else []
 
     @cached_property
     def _tithi_praveshas(self) -> list[Tuple[TithiPravesha, ...]]:
