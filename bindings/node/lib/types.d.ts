@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, Varga, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, Lilith, Varga, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -682,6 +682,16 @@ export interface ChartRequest {
    * @example 0
    */
   readonly kind: ChartKind;
+  /**
+   * Which lunar apogee to place as the Black Moon Lilith beside the
+   * nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
+   * as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
+   * (`03-design/lilith.md`). Each chart's comes back in the `lilith`
+   * section; any other value is refused naming `lilith`.
+   * @enum Lilith
+   * @example 0
+   */
+  readonly lilith: Lilith;
   /**
    * The instants, as Julian days on the UTC scale: one chart each.
    *

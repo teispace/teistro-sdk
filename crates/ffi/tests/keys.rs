@@ -381,6 +381,20 @@ fn hits(api: &Api) -> Vec<&'static str> {
         unit(api, "TsWesternAspect", |a: &teistro::WesternAspect| {
             TsWesternAspect::of(*a).and_then(|a| id(a as u8))
         }),
+        // A request's Lilith is an apogee or none, and `NONE` is no
+        // apogee's spelling: the absence a `lilith` of zero asks for.
+        spelled_as(
+            api,
+            "TsLilith",
+            "",
+            &teistro::Apogee::ALL,
+            |a| {
+                teistro_ffi::chart::TsLilith::try_from(*a)
+                    .ok()
+                    .map(|l| i64::from(l as u16))
+            },
+            &["NONE"],
+        ),
     ]
 }
 

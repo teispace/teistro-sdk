@@ -7908,6 +7908,32 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsLilith",
+      "doc": "Which lunar apogee a chart request places as the Black Moon Lilith, if\nany (`03-design/lilith.md`, C438 to C442): a choice between two, so a\nfield rather than two section bits a caller could set together.",
+      "repr": "u16",
+      "values": [
+        {
+          "name": "None",
+          "value": 0,
+          "doc": "None: the foundation the request has always had, to the byte.",
+          "key": "NONE"
+        },
+        {
+          "name": "Mean",
+          "value": 1,
+          "doc": "The mean lunar apogee, ELP2000-82B's mean perigee plus 180°.",
+          "key": "MEAN"
+        },
+        {
+          "name": "Osculating",
+          "value": 2,
+          "doc": "The osculating apogee, of the Moon's instantaneous ellipse: what\nlater practice calls the \"true\" Lilith.",
+          "key": "OSCULATING"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsMoonPhase",
       "doc": "A principal phase of the Moon, the Moon's elongation from the Sun a\nmultiple of 90° (C419).",
       "repr": "u8",
@@ -12045,13 +12071,16 @@
           }
         },
         {
-          "name": "reserved",
+          "name": "lilith",
           "ty": {
             "kind": "scalar",
             "scalar": "u16"
           },
-          "doc": "Reserved; write zero.",
-          "meta": {}
+          "doc": "Which lunar apogee to place as the Black Moon Lilith beside the\nnine: `TS_LILITH_NONE` (0, what every caller that wrote this field\nas reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`\n(`03-design/lilith.md`). Each chart's comes back in the `lilith`\nsection; any other value is refused naming `lilith`.",
+          "meta": {
+            "example": "0",
+            "enum": "TsLilith"
+          }
         },
         {
           "name": "instants",
@@ -21738,6 +21767,87 @@
               "name": "angle",
               "scalar": "u16",
               "doc": "The aspect's angle, a whole degree 0 to 180."
+            }
+          ]
+        },
+        {
+          "id": 127,
+          "name": "lilith",
+          "doc": "The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "apogee",
+              "scalar": "u16",
+              "doc": "Which lunar apogee.",
+              "enum": "TsLilith"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Its longitude in the chart's zodiac, degrees."
+            },
+            {
+              "name": "tropical_deg",
+              "scalar": "f64",
+              "doc": "Its longitude in the tropical zodiac, degrees."
+            },
+            {
+              "name": "latitude_deg",
+              "scalar": "f64",
+              "doc": "Its latitude, degrees."
+            },
+            {
+              "name": "distance_au",
+              "scalar": "f64",
+              "doc": "Its distance in astronomical units; zero for a point that has none."
+            },
+            {
+              "name": "speed_deg_per_day",
+              "scalar": "f64",
+              "doc": "Its longitude speed, degrees per day; negative when retrograde."
+            },
+            {
+              "name": "house_bhava",
+              "scalar": "u8",
+              "doc": "The bhava it stands in, 1 to 12."
+            },
+            {
+              "name": "house_method",
+              "scalar": "u16",
+              "doc": "The house system that produced that bhava.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "house_through",
+              "scalar": "f64",
+              "doc": "How far through the bhava it stands, 0 to 1."
+            },
+            {
+              "name": "house_from_madhya_deg",
+              "scalar": "f64",
+              "doc": "Its distance from the bhava's madhya, degrees."
+            },
+            {
+              "name": "placement_bhava",
+              "scalar": "u8",
+              "doc": "The bhava of the chart's chalit it stands in, 1 to 12."
+            },
+            {
+              "name": "placement_method",
+              "scalar": "u16",
+              "doc": "The house system that produced the chalit.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "placement_through",
+              "scalar": "f64",
+              "doc": "How far through that bhava it stands, 0 to 1."
+            },
+            {
+              "name": "placement_from_madhya_deg",
+              "scalar": "f64",
+              "doc": "Its distance from that bhava's madhya, degrees."
             }
           ]
         }

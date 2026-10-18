@@ -156,6 +156,7 @@ public final class Charts {
     private final Moment moment;
     private final ProgressedParallels progressedParallels;
     private final ProgressedMutualContacts progressedMutualContacts;
+    private final Lilith lilith;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -302,6 +303,7 @@ public final class Charts {
         this.moment = new Moment(blob, 124, "moment");
         this.progressedParallels = new ProgressedParallels(blob, 125, "progressed_parallels");
         this.progressedMutualContacts = new ProgressedMutualContacts(blob, 126, "progressed_mutual_contacts");
+        this.lilith = new Lilith(blob, 127, "lilith");
     }
 
     /**
@@ -1591,6 +1593,15 @@ public final class Charts {
      */
     public ProgressedMutualContacts progressedMutualContacts() {
         return progressedMutualContacts;
+    }
+
+    /**
+     * The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).
+     *
+     * @return the lilith
+     */
+    public Lilith lilith() {
+        return lilith;
     }
 
 
@@ -14741,6 +14752,219 @@ public final class Charts {
          */
         public int angle(int row) {
             return Short.toUnsignedInt(bytes.getShort(angleAt + Objects.checkIndex(row, length) * 2));
+        }
+    }
+
+    /**
+     * The `lilith` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).
+     */
+    public static final class Lilith {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int apogeeAt;
+        private final int longitudeDegAt;
+        private final int tropicalDegAt;
+        private final int latitudeDegAt;
+        private final int distanceAuAt;
+        private final int speedDegPerDayAt;
+        private final int houseBhavaAt;
+        private final int houseMethodAt;
+        private final int houseThroughAt;
+        private final int houseFromMadhyaDegAt;
+        private final int placementBhavaAt;
+        private final int placementMethodAt;
+        private final int placementThroughAt;
+        private final int placementFromMadhyaDegAt;
+
+        Lilith(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.apogeeAt = blob.column(at, 0, 2);
+            this.longitudeDegAt = blob.column(at, 1, 8);
+            this.tropicalDegAt = blob.column(at, 2, 8);
+            this.latitudeDegAt = blob.column(at, 3, 8);
+            this.distanceAuAt = blob.column(at, 4, 8);
+            this.speedDegPerDayAt = blob.column(at, 5, 8);
+            this.houseBhavaAt = blob.column(at, 6, 1);
+            this.houseMethodAt = blob.column(at, 7, 2);
+            this.houseThroughAt = blob.column(at, 8, 8);
+            this.houseFromMadhyaDegAt = blob.column(at, 9, 8);
+            this.placementBhavaAt = blob.column(at, 10, 1);
+            this.placementMethodAt = blob.column(at, 11, 2);
+            this.placementThroughAt = blob.column(at, 12, 8);
+            this.placementFromMadhyaDegAt = blob.column(at, 13, 8);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * Which lunar apogee.
+         *
+         * The id of a {@code Lilith}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int apogee(int row) {
+            return Short.toUnsignedInt(bytes.getShort(apogeeAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * Its longitude in the chart's zodiac, degrees.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double longitudeDeg(int row) {
+            return bytes.getDouble(longitudeDegAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Its longitude in the tropical zodiac, degrees.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double tropicalDeg(int row) {
+            return bytes.getDouble(tropicalDegAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Its latitude, degrees.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double latitudeDeg(int row) {
+            return bytes.getDouble(latitudeDegAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Its distance in astronomical units; zero for a point that has none.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double distanceAu(int row) {
+            return bytes.getDouble(distanceAuAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Its longitude speed, degrees per day; negative when retrograde.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double speedDegPerDay(int row) {
+            return bytes.getDouble(speedDegPerDayAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The bhava it stands in, 1 to 12.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int houseBhava(int row) {
+            return Byte.toUnsignedInt(bytes.get(houseBhavaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The house system that produced that bhava.
+         *
+         * The id of a {@code HouseSystem}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int houseMethod(int row) {
+            return Short.toUnsignedInt(bytes.getShort(houseMethodAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * How far through the bhava it stands, 0 to 1.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double houseThrough(int row) {
+            return bytes.getDouble(houseThroughAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Its distance from the bhava's madhya, degrees.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double houseFromMadhyaDeg(int row) {
+            return bytes.getDouble(houseFromMadhyaDegAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The bhava of the chart's chalit it stands in, 1 to 12.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int placementBhava(int row) {
+            return Byte.toUnsignedInt(bytes.get(placementBhavaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The house system that produced the chalit.
+         *
+         * The id of a {@code HouseSystem}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int placementMethod(int row) {
+            return Short.toUnsignedInt(bytes.getShort(placementMethodAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * How far through that bhava it stands, 0 to 1.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double placementThrough(int row) {
+            return bytes.getDouble(placementThroughAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Its distance from that bhava's madhya, degrees.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double placementFromMadhyaDeg(int row) {
+            return bytes.getDouble(placementFromMadhyaDegAt + Objects.checkIndex(row, length) * 8);
         }
     }
 }

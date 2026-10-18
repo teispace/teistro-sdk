@@ -126,6 +126,8 @@ import {
   WesternAspectById,
   AspectPhaseById,
   MoonPhaseById,
+  Lilith,
+  LilithById,
   SolarEclipseKindById,
   LunarEclipseKindById,
   KakshyaLordById,
@@ -403,6 +405,17 @@ function describeProvider(provider) {
     }
   };
   return [info, positions, thrown];
+}
+
+/**
+ * A request's Black Moon Lilith as the boundary names it: `NONE` when it
+ * asks for none, and a `TypeError` naming `lilith` for anything but the
+ * two apogees.
+ */
+function lilithOf(value) {
+  if (value === undefined || value === null || value === Lilith.None) return Lilith.None;
+  if (value === Lilith.Mean || value === Lilith.Osculating) return value;
+  throw new TypeError(`lilith: expected 'MEAN' or 'OSCULATING', got ${String(value)}`);
 }
 
 /** A finite number, or a `TypeError` naming the argument. */
@@ -1647,13 +1660,31 @@ export class Chart {
     return this.#placed(d.outer, count);
   }
 
-  /** One chart's stride of a placed-bodies section, a row a body. */
-  #placed(g, count) {
+  /**
+   * The Black Moon Lilith the request's `lilith` named, placed as the
+   * grahas are; `null` when it named none. The section holds a row a
+   * chart or none (`03-design/lilith.md`).
+   */
+  get lilith() {
+    const d = this.#batch.decoded;
+    const rows = d.lilith.apogee.length;
+    const charts = d.cast.instant.length;
+    if (rows === 0) return null;
+    if (rows !== charts) throw new Error(`lilith has ${rows} rows for ${charts} charts; it is one a chart or none`);
+    const [placed] = this.#placed(d.lilith, 1, (i) => ({ apogee: LilithById.get(d.lilith.apogee[i]) ?? 'unknown' }));
+    return placed;
+  }
+
+  /**
+   * One chart's stride of a placed-bodies section, a row a body, the
+   * body named by `which`: a graha for the nine and the outer three.
+   */
+  #placed(g, count, which = (i) => ({ graha: GrahaById.get(g.graha[i]) ?? 'unknown' })) {
     const base = this.#index * count;
     return Array.from({ length: count }, (_, j) => {
       const i = base + j;
       return {
-        graha: GrahaById.get(g.graha[i]) ?? 'unknown',
+        ...which(i),
         longitudeDeg: g.longitudeDeg[i],
         tropicalDeg: g.tropicalDeg[i],
         latitudeDeg: g.latitudeDeg[i],
@@ -2627,6 +2658,7 @@ export class ChartArea extends Area {
     const bytes = run(this, (inner) =>
       inner.chartFound({
         kind: request.kind ?? ChartKind.Natal,
+        lilith: lilithOf(request.lilith),
         instants: instants(request.instants, 'instants', { allowEmpty: true }),
         latitudeDeg: finite(place.latitude, 'place.latitude'),
         longitudeDeg: finite(place.longitude, 'place.longitude'),

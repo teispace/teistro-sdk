@@ -40,6 +40,12 @@ const numberOrDash = (value) => (value === null ? '-' : number(value));
 const point = (p) => (p.point === 'GRAHA' ? p.graha : p.point);
 
 /** FNV-1a over UTF-8 bytes, so a JSON section can be compared without a parser. */
+/** A chart's Black Moon Lilith as the report prints it, or `none`. */
+function lilithLine(lilith) {
+  if (lilith === null) return 'none';
+  return `${lilith.apogee} ${number(lilith.longitudeDeg)} ${number(lilith.latitudeDeg)} ${number(lilith.distanceAu)} ${number(lilith.speedDegPerDay)} ${lilith.house.bhava} ${lilith.placement.bhava}`;
+}
+
 function fnv(text) {
   const bytes = new TextEncoder().encode(text);
   let hash = 0x811c9dc5;
@@ -1365,6 +1371,12 @@ for (const chart of charts) {
       `${at.graha} ${number(at.longitudeDeg)} ${number(at.latitudeDeg)} ${number(at.speedDegPerDay)} ${at.house.bhava} ${at.placement.bhava}`,
     ),
   );
+  // The osculating Lilith: latitude, distance and a retrograde motion.
+  put(
+    `chart-${i}-lilith`,
+    // No Lilith, since the test provider places no apogee.
+    lilithLine(chart.lilith),
+  );
   chart.houses.forEach((bhava, k) => {
     put(`chart-${i}-house-${k}-madhya`, bhava.madhyaDeg);
     put(`chart-${i}-house-${k}-sandhi`, bhava.sandhiDeg);
@@ -1934,6 +1946,18 @@ for (const [name, rules] of [
   );
 }
 geo.dispose();
+
+// ── The Black Moon Lilith ──────────────────────────────────────────────
+// The osculating apogee of two charts over the built-in sky, which the test
+// provider cannot place: every column moves, and a wrong stride shows
+// (`03-design/lilith.md`).
+{
+  const sky = new Context({ profile: 'western-tropical-default', ephemeris: 'BUILTIN' });
+  const held = sky.chart.foundMany({ instants: [2451545.0, 2460676.5], place, utcOffsetSeconds: 20700, lilith: 'OSCULATING' });
+  let k = 0;
+  for (const chart of held) put(`lilith-${k++}`, lilithLine(chart.lilith));
+  sky.dispose();
+}
 
 // ── The eclipses ───────────────────────────────────────────────────────
 // September 2025 at Kathmandu over the built-in sky, which the test

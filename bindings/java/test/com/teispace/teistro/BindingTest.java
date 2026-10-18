@@ -704,6 +704,36 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart places the Black Moon Lilith its request names", () -> {
+            try (Context western = teistro.context(ContextOptions.builder().profile("western-tropical-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer london = new Observer(new Longitude(0), new Latitude(51.5), new Altitude(0));
+                Chart plain = western.chart().found(2_451_545.0, london, 0, ChartOptions.none());
+                check(plain.lilith().isEmpty(), "none unless the request names one");
+                Chart founded = western.chart().found(2_451_545.0, london, 0,
+                        ChartOptions.builder().lilith(Lilith.MEAN).build());
+                LilithPosition mean = founded.lilith().orElseThrow();
+                // ELP2000-82B's mean perigee at J2000 is 83.3532°, so the apogee
+                // stands half a circle on, in Sagittarius (Meeus, ch. 47).
+                same(Lilith.MEAN, mean.apogee(), "the mean apogee");
+                check(mean.longitudeDeg() > 263 && mean.longitudeDeg() < 264, "in Sagittarius: " + mean.longitudeDeg());
+                // The latitude is the frame's rounding, a ten-billionth of a degree.
+                check(Math.abs(mean.latitudeDeg()) < 1e-6 && mean.distanceAu() == 0, "on the ecliptic, no distance");
+                check(!mean.retrograde(), "direct");
+                check(mean.house().bhava() >= 1 && mean.house().bhava() <= 12, "in a bhava");
+                same(plain.grahas(), founded.grahas(), "the nine as they were, to the bit");
+                LilithPosition osculating = western.chart().found(2_451_545.0, london, 0,
+                        ChartOptions.builder().lilith(Lilith.OSCULATING).build()).lilith().orElseThrow();
+                same(Lilith.OSCULATING, osculating.apogee(), "the osculating apogee");
+                check(osculating.distanceAu() > 0.0026, "the far end of the ellipse");
+                // The two apogees part by no more than about thirty degrees.
+                double apart = Math.abs((osculating.longitudeDeg() - mean.longitudeDeg() + 540) % 360 - 180);
+                check(apart < 31, "within a month of the mean: " + apart);
+                check(refused(() -> ChartOptions.builder().lilith(Lilith.NONE).build(), western, london).getMessage()
+                        .contains("lilith"), "NONE is refused naming lilith");
+            }
+        });
+
         tests.put("a chart's progressions carry their parallels when the window asks them", () -> {
             try (Context leo = teistro.context(ContextOptions.builder().profile("western-tropical-default")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

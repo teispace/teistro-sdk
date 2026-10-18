@@ -5543,6 +5543,27 @@ typedef enum ts_aspect_phase {
 } ts_aspect_phase;
 
 /**
+ * Which lunar apogee a chart request places as the Black Moon Lilith, if
+ * any (`03-design/lilith.md`, C438 to C442): a choice between two, so a
+ * field rather than two section bits a caller could set together.
+ */
+typedef enum ts_lilith {
+    /**
+     * None: the foundation the request has always had, to the byte.
+     */
+    TS_LILITH_NONE = 0,
+    /**
+     * The mean lunar apogee, ELP2000-82B's mean perigee plus 180°.
+     */
+    TS_LILITH_MEAN = 1,
+    /**
+     * The osculating apogee, of the Moon's instantaneous ellipse: what
+     * later practice calls the "true" Lilith.
+     */
+    TS_LILITH_OSCULATING = 2,
+} ts_lilith;
+
+/**
  * A principal phase of the Moon, the Moon's elongation from the Sun a
  * multiple of 90° (C419).
  */
@@ -7788,9 +7809,14 @@ struct ts_chart_request {
      */
     uint16_t kind;
     /**
-     * Reserved; write zero.
+     * Which lunar apogee to place as the Black Moon Lilith beside the
+     * nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
+     * as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
+     * (`03-design/lilith.md`). Each chart's comes back in the `lilith`
+     * section; any other value is refused naming `lilith`.
+     * Enum: ts_lilith. Example: 0.
      */
-    uint16_t reserved;
+    uint16_t lilith;
     /**
      * The instants, as Julian days on the UTC scale: one chart each.
      *

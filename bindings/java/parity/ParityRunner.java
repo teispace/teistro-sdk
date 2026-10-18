@@ -54,6 +54,14 @@ public final class ParityRunner {
         void touch();
     }
 
+    /** A chart's Black Moon Lilith as the report prints it, or {@code none}. */
+    private static String lilithLine(Chart chart) {
+        return chart.lilith().map(lilith -> lilith.apogee().key() + " " + number(lilith.longitudeDeg()) + " "
+                + number(lilith.latitudeDeg()) + " " + number(lilith.distanceAu()) + " "
+                + number(lilith.speedDegPerDay()) + " " + lilith.house().bhava() + " " + lilith.placement().bhava())
+                .orElse("none");
+    }
+
     /**
      * Walks the scenario and prints the report, sorted by key, to standard
      * output in UTF-8.
@@ -1292,6 +1300,20 @@ public final class ParityRunner {
                 putResearch(geo);
             }
 
+            // ── The Black Moon Lilith ─────────────────────────────────────
+            // The osculating apogee of two charts over the built-in sky, which
+            // the test provider cannot place: every column moves, and a wrong
+            // stride shows (03-design/lilith.md).
+            try (Context western = teistro.context(ContextOptions.builder()
+                    .profile("western-tropical-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                ChartBatch held = western.chart().foundMany(new double[] {2_451_545.0, 2_460_676.5}, place, 20700,
+                        ChartOptions.builder().lilith(Lilith.OSCULATING).build());
+                int k = 0;
+                for (Chart chart : held) {
+                    put("lilith-" + k++, lilithLine(chart));
+                }
+            }
+
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar
             // eclipse seen whole and a partial solar one the place does not see.
@@ -1848,6 +1870,8 @@ public final class ParityRunner {
                     + number(outer.latitudeDeg()) + " " + number(outer.speedDegPerDay()) + " " + outer.house().bhava()
                     + " " + outer.placement().bhava());
         }
+        // No Lilith, since the test provider places no apogee.
+        put(c + "-lilith", lilithLine(chart));
         for (int k = 0; k < chart.houses().size(); k += 1) {
             put(c + "-house-" + k + "-madhya", chart.houses().get(k).madhyaDeg());
             put(c + "-house-" + k + "-sandhi", chart.houses().get(k).sandhiDeg());

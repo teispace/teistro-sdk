@@ -4833,6 +4833,75 @@ final class ChartsProgressedMutualContacts {
   final int length;
 }
 
+/// The `lilith` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).
+final class ChartsLilith {
+  const ChartsLilith({
+    required this.apogee,
+    required this.longitudeDeg,
+    required this.tropicalDeg,
+    required this.latitudeDeg,
+    required this.distanceAu,
+    required this.speedDegPerDay,
+    required this.houseBhava,
+    required this.houseMethod,
+    required this.houseThrough,
+    required this.houseFromMadhyaDeg,
+    required this.placementBhava,
+    required this.placementMethod,
+    required this.placementThrough,
+    required this.placementFromMadhyaDeg,
+    required this.length,
+  });
+
+  /// Which lunar apogee.
+  final Uint16List apogee;
+
+  /// Its longitude in the chart's zodiac, degrees.
+  final Float64List longitudeDeg;
+
+  /// Its longitude in the tropical zodiac, degrees.
+  final Float64List tropicalDeg;
+
+  /// Its latitude, degrees.
+  final Float64List latitudeDeg;
+
+  /// Its distance in astronomical units; zero for a point that has none.
+  final Float64List distanceAu;
+
+  /// Its longitude speed, degrees per day; negative when retrograde.
+  final Float64List speedDegPerDay;
+
+  /// The bhava it stands in, 1 to 12.
+  final Uint8List houseBhava;
+
+  /// The house system that produced that bhava.
+  final Uint16List houseMethod;
+
+  /// How far through the bhava it stands, 0 to 1.
+  final Float64List houseThrough;
+
+  /// Its distance from the bhava's madhya, degrees.
+  final Float64List houseFromMadhyaDeg;
+
+  /// The bhava of the chart's chalit it stands in, 1 to 12.
+  final Uint8List placementBhava;
+
+  /// The house system that produced the chalit.
+  final Uint16List placementMethod;
+
+  /// How far through that bhava it stands, 0 to 1.
+  final Float64List placementThrough;
+
+  /// Its distance from that bhava's madhya, degrees.
+  final Float64List placementFromMadhyaDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5355,6 +5424,7 @@ final class Charts {
     required this.moment,
     required this.progressedParallels,
     required this.progressedMutualContacts,
+    required this.lilith,
   });
 
   /// What kind of chart these are.
@@ -5779,6 +5849,9 @@ final class Charts {
   /// Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
   final ChartsProgressedMutualContacts progressedMutualContacts;
 
+  /// The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).
+  final ChartsLilith lilith;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5912,6 +5985,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atMoment = blob.section(124, 'moment');
   final atProgressedParallels = blob.section(125, 'progressed_parallels');
   final atProgressedMutualContacts = blob.section(126, 'progressed_mutual_contacts');
+  final atLilith = blob.section(127, 'lilith');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -10566,6 +10640,79 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atProgressedMutualContacts, 4) + atProgressedMutualContacts.count * 2,
       ),
       length: atProgressedMutualContacts.count,
+    ),
+    lilith: ChartsLilith(
+      apogee: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 0),
+        blob.columnOffset(atLilith, 0) + atLilith.count * 2,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 1),
+        blob.columnOffset(atLilith, 1) + atLilith.count * 8,
+      ),
+      tropicalDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 2),
+        blob.columnOffset(atLilith, 2) + atLilith.count * 8,
+      ),
+      latitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 3),
+        blob.columnOffset(atLilith, 3) + atLilith.count * 8,
+      ),
+      distanceAu: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 4),
+        blob.columnOffset(atLilith, 4) + atLilith.count * 8,
+      ),
+      speedDegPerDay: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 5),
+        blob.columnOffset(atLilith, 5) + atLilith.count * 8,
+      ),
+      houseBhava: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 6),
+        blob.columnOffset(atLilith, 6) + atLilith.count * 1,
+      ),
+      houseMethod: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 7),
+        blob.columnOffset(atLilith, 7) + atLilith.count * 2,
+      ),
+      houseThrough: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 8),
+        blob.columnOffset(atLilith, 8) + atLilith.count * 8,
+      ),
+      houseFromMadhyaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 9),
+        blob.columnOffset(atLilith, 9) + atLilith.count * 8,
+      ),
+      placementBhava: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 10),
+        blob.columnOffset(atLilith, 10) + atLilith.count * 1,
+      ),
+      placementMethod: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 11),
+        blob.columnOffset(atLilith, 11) + atLilith.count * 2,
+      ),
+      placementThrough: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 12),
+        blob.columnOffset(atLilith, 12) + atLilith.count * 8,
+      ),
+      placementFromMadhyaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLilith, 13),
+        blob.columnOffset(atLilith, 13) + atLilith.count * 8,
+      ),
+      length: atLilith.count,
     ),
   );
 }

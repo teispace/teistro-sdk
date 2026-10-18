@@ -3253,6 +3253,60 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart places the Black Moon Lilith its request names', () {
+    // The request's `lilith` places the apogee it names beside the nine and
+    // leaves the nine as they were (`03-design/lilith.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final london = Observer(
+      latitudeDeg: Latitude(51.5),
+      longitudeDeg: Longitude(0),
+      altitudeM: Altitude(0),
+    );
+    Chart found([Lilith? lilith]) => ctx.chart.found(
+      instant: 2451545.0,
+      place: london,
+      utcOffsetSeconds: 0,
+      lilith: lilith,
+    );
+    final plain = found();
+    expect(plain.lilith, isNull);
+
+    final founded = found(Lilith.mean);
+    final mean = founded.lilith!;
+    // ELP2000-82B's mean perigee at J2000 is 83.3532°, so the apogee stands
+    // half a circle on, in Sagittarius (Meeus, ch. 47).
+    expect(mean.apogee, Lilith.mean);
+    expect(mean.longitudeDeg, inExclusiveRange(263, 264));
+    // A direction on the ecliptic of date, with no distance: the latitude is
+    // the frame's rounding, a ten-billionth of a degree.
+    expect(mean.latitudeDeg.abs(), lessThan(1e-6));
+    expect(mean.distanceAu, 0);
+    expect(mean.retrograde, isFalse);
+    expect(mean.house.bhava, inInclusiveRange(1, 12));
+    // Asking for it leaves the nine as they were, to the bit.
+    expect(
+      [for (final g in founded.grahas) g.longitudeDeg],
+      [for (final g in plain.grahas) g.longitudeDeg],
+    );
+
+    final osculating = found(Lilith.osculating).lilith!;
+    expect(osculating.apogee, Lilith.osculating);
+    expect(osculating.distanceAu, greaterThan(0.0026));
+    // The two apogees part by no more than about thirty degrees.
+    final apart =
+        ((osculating.longitudeDeg - mean.longitudeDeg + 540) % 360 - 180).abs();
+    expect(apart, lessThan(31));
+
+    expect(
+      () => found(Lilith.none),
+      throwsA(isA<ArgumentError>().having((e) => e.name, 'name', 'lilith')),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its Western aspects', () {
     // King Edward VII's nativity: Leo's four (*How to Judge a Nativity*,
     // pp. 295–296) under his orbs, Lilly's moieties refusing the outer

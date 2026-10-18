@@ -85,6 +85,8 @@ from teistro import (
     DashaSystem,
     LayoutRow,
     Latitude,
+    LilithPosition,
+    Lilith,
     Longitude,
     NatalPoint,
     Observer,
@@ -111,6 +113,17 @@ from teistro import (
 
 report: dict[str, str] = {}
 
+
+
+def lilith_line(lilith: Optional[LilithPosition]) -> str:
+    """A chart's Black Moon Lilith as the report prints it, or `none`."""
+    if lilith is None:
+        return "none"
+    return (
+        f"{lilith.apogee.key} {number(lilith.longitude_deg)} {number(lilith.latitude_deg)} "
+        f"{number(lilith.distance_au)} {number(lilith.speed_deg_per_day)} "
+        f"{lilith.house.bhava} {lilith.placement.bhava}"
+    )
 
 def natal_key(point: NatalPoint) -> str:
     """A natal point as every runner prints it: `LAGNA`, `MIDHEAVEN`, or the
@@ -2173,6 +2186,8 @@ def main() -> None:
                     f"{outer.graha.full_key} {number(outer.longitude_deg)} {number(outer.latitude_deg)} "
                     f"{number(outer.speed_deg_per_day)} {outer.house.bhava} {outer.placement.bhava}",
                 )
+            # No Lilith, since the test provider places no apogee.
+            put(f"chart-{i}-lilith", lilith_line(chart.lilith))
             for k, bhava in enumerate(chart.houses):
                 put(f"chart-{i}-house-{k}-madhya", bhava.madhya_deg)
                 put(f"chart-{i}-house-{k}-sandhi", bhava.sandhi_deg)
@@ -2558,6 +2573,20 @@ def main() -> None:
         put_rashifal(geo, place)
         put_pakshi(geo)
         put_research(geo)
+
+    # ── The Black Moon Lilith ─────────────────────────────────────────
+    # The osculating apogee of two charts over the built-in sky, which the
+    # test provider cannot place: every column moves, and a wrong stride
+    # shows (`03-design/lilith.md`).
+    with teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as builtin:
+        lilith_charts = builtin.chart.found_many(
+            instants=[2451545.0, 2460676.5],
+            place=place,
+            utc_offset_seconds=20700,
+            lilith=Lilith.OSCULATING,
+        )
+        for k, chart in enumerate(lilith_charts):
+            put(f"lilith-{k}", lilith_line(chart.lilith))
 
     # ── The eclipses ──────────────────────────────────────────────────
     # September 2025 at Kathmandu over the built-in sky, which the test

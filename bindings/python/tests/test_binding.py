@@ -42,6 +42,7 @@ from teistro import (
     Ephemeris,
     EphemerisProvider,
     Latitude,
+    Lilith,
     Nakshatra,
     Observer,
     Plugin,
@@ -2450,6 +2451,44 @@ class AnEngine(WithLibrary):
                 with self.assertRaises(TeistroError) as caught:
                     ctx.chart.found(instant=birth, progressions=request, **london)  # type: ignore[arg-type]
                 self.assertEqual(caught.exception.field, field)
+
+    def test_a_chart_places_the_black_moon_lilith_its_request_names(self) -> None:
+        """The request's `lilith` places the apogee it names beside the
+        nine, and leaves the nine as they were (`03-design/lilith.md`)."""
+        london: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5), longitude_deg=Longitude(0), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            plain = ctx.chart.found(instant=2451545.0, **london)
+            self.assertIsNone(plain.lilith)
+
+            founded = ctx.chart.found(instant=2451545.0, lilith=Lilith.MEAN, **london)
+            mean = founded.lilith
+            assert mean is not None
+            # ELP2000-82B's mean perigee at J2000 is 83.3532°, so the apogee
+            # stands half a circle on, in Sagittarius (Meeus, ch. 47).
+            self.assertIs(mean.apogee, Lilith.MEAN)
+            self.assertTrue(263 < mean.longitude_deg < 264, mean.longitude_deg)
+            # A direction on the ecliptic of date, with no distance: the
+            # latitude is the frame's rounding, a ten-billionth of a degree.
+            self.assertLess(abs(mean.latitude_deg), 1e-6)
+            self.assertEqual(mean.distance_au, 0)
+            self.assertFalse(mean.retrograde)
+            self.assertTrue(1 <= mean.house.bhava <= 12)
+            # Asking for it leaves the nine as they were, to the bit.
+            self.assertEqual(founded.grahas, plain.grahas)
+
+            osculating = ctx.chart.found(instant=2451545.0, lilith=Lilith.OSCULATING, **london).lilith
+            assert osculating is not None
+            self.assertIs(osculating.apogee, Lilith.OSCULATING)
+            self.assertGreater(osculating.distance_au, 0.0026, "the far end of the ellipse")
+            # The two apogees part by no more than about thirty degrees.
+            apart = abs((osculating.longitude_deg - mean.longitude_deg + 540) % 360 - 180)
+            self.assertLess(apart, 31)
+
+            with self.assertRaisesRegex(ValueError, "lilith"):
+                ctx.chart.found(instant=2451545.0, lilith=Lilith.NONE, **london)
 
     def test_a_chart_carries_its_western_aspects(self) -> None:
         """The Western aspects cross whole on King Edward VII's nativity:

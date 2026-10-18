@@ -1,12 +1,13 @@
 # The Black Moon Lilith: the lunar apogee in a chart
 
-Status: `building`, 2026-10-17, written from the code and the references
-before the chart layer changed. Step 2 is built: a chart asked
+Status: `building`, 2026-10-18, written from the code and the references
+before the chart layer changed. Steps 2 and 4 are built: a chart asked
 `ChartRequest::with_lilith(Apogee::Mean)` or `(Apogee::Osculating)`
 places the apogee beside the nine in `ChartFoundation::lilith`, in the
 same request to the ephemeris, and the mean apogee is held to Meeus's
-worked example. The boundary, the bindings and the readers are steps 3
-to 5.
+worked example; the request's `lilith` field carries the choice across
+the boundary to every binding, each chart's coming back in the `lilith`
+section. The readers and the wheel are steps 3 and 5.
 
 The feature register lists the lunar apogee, mean and osculating, as P1
 for the chart (`01-research/feature-universe/01-vedic-parashari-core.md`)
@@ -152,5 +153,18 @@ the mean one never is.
 3. The readers: the Western aspects, the transit hit list and the later
    charts accept Lilith where the birth carries it, with the catalogue's
    `point` row their names need.
-4. The boundary and every binding, with the parity gate.
+4. The boundary and every binding, with the parity gate: the request's
+   `lilith` field (`TS_LILITH_NONE`, `_MEAN`, `_OSCULATING`, the field
+   that was reserved zero, so a caller that wrote zero is unchanged) and
+   the `lilith` section, its first column the apogee and the rest the
+   grahas' placed columns, a row a chart or none. Each binding takes
+   the choice as an option that refuses `NONE` (leaving it out says
+   that) and reads `Chart.lilith` as one placed position or none; the
+   ABI suite holds each apogee's columns to the document's to the bit
+   and the parity runners print `chart-{i}-lilith` (none, since the
+   test provider places no apogee) and `lilith-{k}`, two osculating
+   charts over the built-in sky. The wasm module's compact tier moves the
+   osculating apogee by a few hundredths of a degree, since it is read
+   off the Moon's velocity, so the wasm runner's `lilith-` lines are held
+   to their shape, as its eclipses are. **Built.**
 5. The wheel draws it, once a strict locale names it.

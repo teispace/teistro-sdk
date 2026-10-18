@@ -55,6 +55,7 @@ import com.teispace.teistro.ffi.Native;
  * its field's name as a map or its JSON, a newer library's among them.
  *
  * @param kind what kind of chart to found
+ * @param lilith the lunar apogee to place as the Black Moon Lilith, {@link Lilith#NONE} for none
  * @param sections the sections beside the foundation, as the boundary's bit set
  * @param vargas the divisional charts, in the order to answer them
  * @param dashas the dasha systems: a {@link DashaSystem}, or the full key of one the context registered
@@ -63,6 +64,7 @@ import com.teispace.teistro.ffi.Native;
  */
 public record ChartOptions(
         ChartKind kind,
+        Lilith lilith,
         long sections,
         List<Varga> vargas,
         List<Object> dashas,
@@ -72,6 +74,7 @@ public record ChartOptions(
     /** The options, copied, with nothing null. */
     public ChartOptions {
         kind = kind == null ? ChartKind.NATAL : kind;
+        lilith = lilith == null ? Lilith.NONE : lilith;
         vargas = List.copyOf(vargas);
         dashas = List.copyOf(dashas);
         drawings = List.copyOf(drawings);
@@ -108,6 +111,7 @@ public record ChartOptions(
     /** Builds {@link ChartOptions}, one choice at a time. */
     public static final class Builder {
         private ChartKind kind = ChartKind.NATAL;
+        private Lilith lilith = Lilith.NONE;
         private long sections;
         private final List<Varga> vargas = new ArrayList<>();
         private final List<Object> dashas = new ArrayList<>();
@@ -249,6 +253,23 @@ public record ChartOptions(
          */
         public Builder moment(boolean on) {
             return section(Native.TS_CHART_MOMENT, on);
+        }
+
+        /**
+         * The Black Moon Lilith beside the nine, read back as
+         * {@link Chart#lilith()} ({@code 03-design/lilith.md}).
+         *
+         * @param apogee {@link Lilith#MEAN} or {@link Lilith#OSCULATING}, or null for none
+         * @return this builder
+         * @throws IllegalArgumentException for {@link Lilith#NONE}, since null says that
+         */
+        public Builder lilith(Lilith apogee) {
+            if (apogee == Lilith.NONE) {
+                throw new IllegalArgumentException(
+                        "lilith: expected Lilith.MEAN or Lilith.OSCULATING; pass null for none");
+            }
+            this.lilith = apogee == null ? Lilith.NONE : apogee;
+            return this;
         }
 
         /**
@@ -598,7 +619,7 @@ public record ChartOptions(
          * @return the options
          */
         public ChartOptions build() {
-            return new ChartOptions(kind, sections, vargas, dashas, drawings, readings);
+            return new ChartOptions(kind, lilith, sections, vargas, dashas, drawings, readings);
         }
     }
 }

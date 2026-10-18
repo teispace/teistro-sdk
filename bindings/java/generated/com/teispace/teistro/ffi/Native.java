@@ -1942,7 +1942,7 @@ public final class Native {
         public static final StructLayout LAYOUT = MemoryLayout.structLayout(
             JAVA_INT.withName("struct_size"),
             JAVA_SHORT.withName("kind"),
-            JAVA_SHORT.withName("reserved"),
+            JAVA_SHORT.withName("lilith"),
             ADDRESS.withName("instants"),
             JAVA_LONG.withName("instant_count"),
             JAVA_DOUBLE.withName("latitude_deg"),
@@ -2010,12 +2010,17 @@ public final class Native {
         public static final VarHandle KIND = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("kind"));
 
         /**
-         * The offset of `reserved`. Reserved; write zero.
+         * The offset of `lilith`. Which lunar apogee to place as the Black Moon Lilith beside the
+         * nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
+         * as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
+         * (`03-design/lilith.md`). Each chart's comes back in the `lilith`
+         * section; any other value is refused naming `lilith`.
+         * Enum: TsLilith. Example: 0.
          */
-        public static final long RESERVED_OFFSET = 6;
+        public static final long LILITH_OFFSET = 6;
 
-        /** The handle that reads and writes `reserved`: coordinates {@code (MemorySegment, long)}. */
-        public static final VarHandle RESERVED = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("reserved"));
+        /** The handle that reads and writes `lilith`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle LILITH = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lilith"));
 
         /**
          * The offset of `instants`. The instants, as Julian days on the UTC scale: one chart each.

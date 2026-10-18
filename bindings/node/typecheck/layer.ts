@@ -4,6 +4,7 @@
 // application. Every `@ts-expect-error` is a proof, as in `consumer.ts`.
 
 import type {
+  LilithPosition,
   Air,
   Antiscia,
   AntisciaRequest,
@@ -399,6 +400,22 @@ function reading(): string {
 void reading;
 
 /** The almanac layer, typed: a range of days and one of them. */
+/** The Black Moon Lilith, typed: asked by its apogee, null unless asked. */
+function lilith(): string {
+  const place = { latitude: 51.5, longitude: 0, altitude: 0 };
+  const chart = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 0, lilith: 'OSCULATING' });
+  const at: LilithPosition | null = chart.lilith;
+  const apogee: string = at?.apogee ?? 'none';
+  const distance: number = at?.distanceAu ?? 0;
+  // @ts-expect-error `NONE` is the absence, which leaving the option out asks for
+  ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 0, lilith: 'NONE' });
+  // @ts-expect-error a Lilith has no graha
+  const graha: string = chart.lilith!.graha;
+  return `${apogee} ${distance} ${graha}`;
+}
+
+void lilith;
+
 function almanac(): string {
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
   const from: CalendarDate = someDate;

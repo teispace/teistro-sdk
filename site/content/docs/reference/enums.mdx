@@ -1973,6 +1973,16 @@ Where in an aspect's window a hit falls (C146).
 | `TS_ASPECT_PHASE_EXACT` | 1 | The aspect is exact. |
 | `TS_ASPECT_PHASE_LEAVING` | 2 | The transit passed out of the orb. |
 
+## ts_lilith
+
+Which lunar apogee a chart request places as the Black Moon Lilith, if any (`03-design/lilith.md`, C438 to C442): a choice between two, so a field rather than two section bits a caller could set together.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_LILITH_NONE` | 0 | None: the foundation the request has always had, to the byte. |
+| `TS_LILITH_MEAN` | 1 | The mean lunar apogee, ELP2000-82B's mean perigee plus 180°. |
+| `TS_LILITH_OSCULATING` | 2 | The osculating apogee, of the Moon's instantaneous ellipse: what later practice calls the "true" Lilith. |
+
 ## ts_moon_phase
 
 A principal phase of the Moon, the Moon's elongation from the Sun a multiple of 90° (C419).

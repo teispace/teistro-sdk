@@ -470,6 +470,15 @@ public final class Chart {
     }
 
     /**
+     * The Black Moon Lilith the request named, placed as the grahas are.
+     *
+     * @return the placement, empty when the request named none
+     */
+    public Optional<LilithPosition> lilith() {
+        return VedicReads.lilith(this);
+    }
+
+    /**
      * The twelve bhavas of the placement system.
      *
      * @return the rows

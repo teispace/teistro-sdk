@@ -233,7 +233,7 @@ pub(crate) fn chart_request(
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg,

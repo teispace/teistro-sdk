@@ -551,6 +551,28 @@ pub fn resolution_to_str(value: u8) -> String {
     .to_string()
 }
 
+/// A `Lilith` from the string `catalogue.js` names it by.
+pub fn lilith_from_str(value: &str) -> Result<u16> {
+    match value {
+        "NONE" => Ok(0),
+        "MEAN" => Ok(1),
+        "OSCULATING" => Ok(2),
+        other => Err(Error::from_reason(format!("`{other}` is not a Lilith"))),
+    }
+}
+
+/// The string for a `Lilith`; a value from a newer library is
+/// `unknown`.
+pub fn lilith_to_str(value: u16) -> String {
+    match value {
+        0 => "NONE",
+        1 => "MEAN",
+        2 => "OSCULATING",
+        _ => "unknown",
+    }
+    .to_string()
+}
+
 /// A `Scale` from the string `catalogue.js` names it by.
 pub fn scale_from_str(value: &str) -> Result<u32> {
     match value {
@@ -1798,6 +1820,13 @@ pub struct ChartRequest {
     /// What kind of chart to found.
     /// Enum: ChartKind. Example: 0.
     pub kind: String,
+    /// Which lunar apogee to place as the Black Moon Lilith beside the
+    /// nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
+    /// as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
+    /// (`03-design/lilith.md`). Each chart's comes back in the `lilith`
+    /// section; any other value is refused naming `lilith`.
+    /// Enum: TsLilith. Example: 0.
+    pub lilith: String,
     /// The instants, as Julian days on the UTC scale: one chart each.
     ///
     /// A grid, not a scalar, because the founder shares the settings and
@@ -2255,6 +2284,7 @@ pub struct ChartRequest {
 /// pointers point into, alive for as long as this value is.
 pub struct HeldChartRequest {
     kind: u16,
+    lilith: u16,
     instants: Vec<f64>,
     latitude_deg: f64,
     longitude_deg: f64,
@@ -2298,7 +2328,7 @@ impl HeldChartRequest {
         ffi::chart_request::TsChartRequest {
             struct_size: core::mem::size_of::<ffi::chart_request::TsChartRequest>() as u32,
             kind: self.kind,
-            reserved: Default::default(),
+            lilith: self.lilith,
             instants: self.instants.as_ptr(),
             instant_count: self.instants.len(),
             latitude_deg: self.latitude_deg,
@@ -2412,6 +2442,7 @@ impl ChartRequest {
     pub fn read(&self) -> Result<HeldChartRequest> {
         Ok(HeldChartRequest {
             kind: chart_kind_from_str(&self.kind)?,
+            lilith: lilith_from_str(&self.lilith)?,
             instants: self.instants.iter().map(|v| *v as f64).collect(),
             latitude_deg: self.latitude_deg as f64,
             longitude_deg: self.longitude_deg as f64,
@@ -2567,6 +2598,7 @@ impl ChartRequest {
     pub unsafe fn write(raw: &ffi::chart_request::TsChartRequest) -> Self {
         ChartRequest {
             kind: chart_kind_to_str(raw.kind),
+            lilith: lilith_to_str(raw.lilith),
             instants: unsafe { slice_or_empty(raw.instants, raw.instant_count) }
                 .iter()
                 .map(|v| *v as _)

@@ -19,6 +19,7 @@ import {
   RashiById,
   SahamById,
   ChartLayout,
+  Lilith,
   DashaSystem,
   Varga,
   altitude,
@@ -724,8 +725,9 @@ test('every catalogue enum has a complete id table', () => {
   // doshas' `TsDoshaSystem`, three, and `TsMatchRole`, two; 1341 since
   // naam milan's `TsNameVarga`, eight, and `TsVargaRelation`, three;
   // 1345 since the moment's `TsBirthEclipse`, four; 1354 since the hit
-  // list's five further `TsHitKind`s and `TsMoonPhase`, four.
-  assert.equal(entries, 1354, 'every member of every enum is in a table');
+  // list's five further `TsHitKind`s and `TsMoonPhase`, four; 1357 since
+  // the chart request's `TsLilith`, three.
+  assert.equal(entries, 1357, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2517,6 +2519,37 @@ test('a chart carries its progressions', () => {
  * one at a time, and refusals named in the record
  * (`03-design/western-aspects.md`).
  */
+test('a chart places the Black Moon Lilith its request names', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const london = { place: { latitude: 51.5, longitude: 0, altitude: 0 }, utcOffsetSeconds: 0 };
+  const plain = ctx.chart.found({ instant: 2451545.0, ...london });
+  assert.equal(plain.lilith, null);
+
+  const mean = ctx.chart.found({ instant: 2451545.0, ...london, lilith: Lilith.Mean });
+  // ELP2000-82B's mean perigee at J2000 is 83.3532°, so the apogee stands
+  // half a circle on, in Sagittarius (Meeus, ch. 47).
+  assert.equal(mean.lilith.apogee, 'MEAN');
+  assert.ok(mean.lilith.longitudeDeg > 263 && mean.lilith.longitudeDeg < 264, `${mean.lilith.longitudeDeg}`);
+  // A direction on the ecliptic of date, with no distance: the latitude
+  // is the frame's rounding, a ten-billionth of a degree.
+  assert.ok(Math.abs(mean.lilith.latitudeDeg) < 1e-6, `${mean.lilith.latitudeDeg}`);
+  assert.equal(mean.lilith.distanceAu, 0);
+  assert.equal(mean.lilith.retrograde, false);
+  assert.ok(mean.lilith.house.bhava >= 1 && mean.lilith.house.bhava <= 12);
+  // Asking for it leaves the nine as they were, to the bit.
+  assert.deepEqual(mean.grahas, plain.grahas);
+
+  const osculating = ctx.chart.found({ instant: 2451545.0, ...london, lilith: Lilith.Osculating });
+  assert.equal(osculating.lilith.apogee, 'OSCULATING');
+  assert.ok(osculating.lilith.distanceAu > 0.0026, 'the far end of the ellipse');
+  // The two apogees part by no more than about thirty degrees.
+  const apart = Math.abs(((osculating.lilith.longitudeDeg - mean.lilith.longitudeDeg + 540) % 360) - 180);
+  assert.ok(apart < 31, `${apart}`);
+
+  assert.throws(() => ctx.chart.found({ instant: 2451545.0, ...london, lilith: 'TRUE' }), /lilith/);
+  ctx.dispose();
+});
+
 test('a chart carries its Western aspects', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
   const palace = { place: { latitude: 51.501, longitude: -0.142, altitude: 0 }, utcOffsetSeconds: 0 };

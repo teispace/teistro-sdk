@@ -474,7 +474,15 @@ to about a degree (C441). The name is later practice; the record is the
 lunar apogee, not the asteroid (C442). Lilith is not a graha and not yet
 a catalogue point: the first reader that must name it adds the row
 (C438). A provider that cannot place the apogee is refused on `lilith`.
-The Rust surface only: no boundary section, binding or reader yet.
+At the boundary the request's reserved field becomes `lilith`
+(`TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`; zero is none, as it always
+was) and each chart's comes back in the new `lilith` section. Node's
+`found({ lilith: 'MEAN' })` and `chart.lilith`, Python's
+`found(lilith=Lilith.MEAN)` and `chart.lilith`, Dart's
+`found(lilith: Lilith.mean)` and `chart.lilith`, and Java's
+`ChartOptions.builder().lilith(Lilith.MEAN)` and `chart.lilith()` read it
+as one placed position or none, and each refuses `NONE` named, since
+leaving it out says that. No reader takes it yet.
 **The Nabhasa yogas read against Brihat Jataka and Saravali** (cruxes C448
 to C452). **Numbers:** over the 93 recorded charts the seven window yogas
 answer 58 times fewer (Nauka 18, Koota 3, Chatra 3, Chapa 2, Ardha Chandra

@@ -208,6 +208,7 @@ from .catalogue import (
     HouseSystem,
     Kaala,
     Karana,
+    Lilith,
     LunarMonth,
     Masa,
     MonthKind,
@@ -340,6 +341,7 @@ __all__ = [
     "Muhurta",
     "Observer",
     "PlacedGraha",
+    "LilithPosition",
     "Placement",
     "PositionAnswer",
     "PositionQuery",
@@ -1061,6 +1063,7 @@ __all__ = [
     "Kaala",
     "Karana",
     "Koota",
+    "Lilith",
     "LunarMonth",
     "Masa",
     "Modality",
@@ -1911,6 +1914,7 @@ class ChartArea(_Area):
         avakahada: bool = False,
         moment: bool = False,
         outer_planets: bool = False,
+        lilith: Optional[Lilith] = None,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1973,6 +1977,7 @@ class ChartArea(_Area):
             avakahada=avakahada,
             moment=moment,
             outer_planets=outer_planets,
+            lilith=lilith,
             shadbala=shadbala,
             bhava_bala=bhava_bala,
             state=state,
@@ -2025,6 +2030,7 @@ class ChartArea(_Area):
         avakahada: bool = False,
         moment: bool = False,
         outer_planets: bool = False,
+        lilith: Optional[Lilith] = None,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -2045,9 +2051,13 @@ class ChartArea(_Area):
         in the order to answer them. `dashas` names the dasha systems to
         compute, their periods to the settings' `dasha.depth`
         (`03-design/dasha-kernels.md`). `aspects` asks for the drishti.
+        `lilith` names the lunar apogee to place beside the nine,
+        `Lilith.MEAN` or `Lilith.OSCULATING`, each chart's read back as
+        `Chart.lilith` (`03-design/lilith.md`).
         """
         request = ChartRequest(
             kind=kind,
+            lilith=_lilith_of(lilith),
             instants=list(instants),
             latitude_deg=place.latitude_deg,
             longitude_deg=place.longitude_deg,
@@ -7863,6 +7873,44 @@ class PlacedGraha:
 
 
 @dataclass(frozen=True)
+class LilithPosition:
+    """The Black Moon Lilith of a chart, placed as the grahas are
+    (`03-design/lilith.md`): the mean apogee is a direction on the
+    ecliptic, its latitude zero to rounding and its distance zero, and the
+    osculating one's are the osculating orbit's.
+    """
+
+    apogee: Lilith
+    """Which lunar apogee the request named: never `Lilith.NONE`."""
+
+    longitude_deg: float
+    """Its longitude in the chart's zodiac, degrees."""
+
+    tropical_deg: float
+    """Its tropical longitude, degrees."""
+
+    latitude_deg: float
+    """Its ecliptic latitude, degrees."""
+
+    distance_au: float
+    """Its distance, astronomical units."""
+
+    speed_deg_per_day: float
+    """Its longitude speed, degrees per day."""
+
+    house: Placement
+    """The bhava for "which house is it in"."""
+
+    placement: Placement
+    """The bhava of the chart's chalit, which is a different question."""
+
+    @property
+    def retrograde(self) -> bool:
+        """Whether its longitude speed is negative."""
+        return self.speed_deg_per_day < 0
+
+
+@dataclass(frozen=True)
 class Bhava:
     """One of the twelve bhavas."""
 
@@ -13062,6 +13110,43 @@ def _drawing(raw: Mapping[str, Any], svg: Optional[str]) -> Drawing:
     )
 
 
+def _placed_fields(columns: Any, i: int) -> dict[str, Any]:
+    """Row `i` of a placed-bodies section, every field but the one naming
+    the body: what a graha, an outer planet and a Lilith share.
+    """
+    return dict(
+        longitude_deg=columns.longitude_deg[i],
+        tropical_deg=columns.tropical_deg[i],
+        latitude_deg=columns.latitude_deg[i],
+        distance_au=columns.distance_au[i],
+        speed_deg_per_day=columns.speed_deg_per_day[i],
+        house=Placement(
+            bhava=columns.house_bhava[i],
+            method=HouseSystem(columns.house_method[i]),
+            through=columns.house_through[i],
+            from_madhya_deg=columns.house_from_madhya_deg[i],
+        ),
+        placement=Placement(
+            bhava=columns.placement_bhava[i],
+            method=HouseSystem(columns.placement_method[i]),
+            through=columns.placement_through[i],
+            from_madhya_deg=columns.placement_from_madhya_deg[i],
+        ),
+    )
+
+
+def _lilith_of(lilith: Optional[Lilith]) -> Lilith:
+    """A request's Black Moon Lilith as the boundary names it: `NONE` when
+    it asks for none, and a `ValueError` naming `lilith` for anything but
+    the two apogees, `NONE` included, since leaving it out says that.
+    """
+    if lilith is None:
+        return Lilith.NONE
+    if lilith in (Lilith.MEAN, Lilith.OSCULATING):
+        return lilith
+    raise ValueError(f"lilith: expected Lilith.MEAN or Lilith.OSCULATING, got {lilith!r}")
+
+
 def _dasha_ids(dashas: Sequence[Union[DashaSystem, str]], registered: Mapping[str, int]) -> list[int]:
     """The dashas asked for, as the ids the boundary takes: a `DashaSystem`,
     or the `dasha_system.*` key of a system this context registered
@@ -14042,30 +14127,31 @@ class Chart:
             raise ValueError(f"outer has {rows} rows for {charts} charts")
         return self._placed(decoded.outer, count)
 
+    @property
+    def lilith(self) -> Optional[LilithPosition]:
+        """The Black Moon Lilith the request's `lilith` named, placed as
+        the grahas are; `None` when it named none. The section holds a
+        row a chart or none (`03-design/lilith.md`).
+
+        >>> # chart = ctx.chart.found(..., lilith=Lilith.MEAN)
+        >>> # sign = int(chart.lilith.longitude_deg // 30)
+        """
+        decoded = self.batch.decoded
+        columns = decoded.lilith
+        rows = len(columns.apogee)
+        charts = len(decoded.cast.instant)
+        if rows == 0:
+            return None
+        if rows != charts:
+            raise ValueError(f"lilith has {rows} rows for {charts} charts; it is one a chart or none")
+        i = self.index
+        return LilithPosition(apogee=Lilith(columns.apogee[i]), **_placed_fields(columns, i))
+
     def _placed(self, columns: Any, count: int) -> list[PlacedGraha]:
         """One chart's stride of a placed-bodies section, a row a body."""
         base = self.index * count
         return [
-            PlacedGraha(
-                graha=Graha(columns.graha[i]),
-                longitude_deg=columns.longitude_deg[i],
-                tropical_deg=columns.tropical_deg[i],
-                latitude_deg=columns.latitude_deg[i],
-                distance_au=columns.distance_au[i],
-                speed_deg_per_day=columns.speed_deg_per_day[i],
-                house=Placement(
-                    bhava=columns.house_bhava[i],
-                    method=HouseSystem(columns.house_method[i]),
-                    through=columns.house_through[i],
-                    from_madhya_deg=columns.house_from_madhya_deg[i],
-                ),
-                placement=Placement(
-                    bhava=columns.placement_bhava[i],
-                    method=HouseSystem(columns.placement_method[i]),
-                    through=columns.placement_through[i],
-                    from_madhya_deg=columns.placement_from_madhya_deg[i],
-                ),
-            )
+            PlacedGraha(graha=Graha(columns.graha[i]), **_placed_fields(columns, i))
             for i in range(base, base + count)
         ]
 

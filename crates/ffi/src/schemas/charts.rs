@@ -14,6 +14,7 @@ fn chart_grahas_section(id: u32) -> SectionSchema {
     chart_placed_section(
         id,
         "grahas",
+        graha_column("graha", "Which graha."),
         "One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, grahas in the catalogue's order. `house_*` is the bhava for \"which house is it in\"; `placement_*` is the chart's chalit, which is a different question and often a different answer.",
     )
 }
@@ -25,20 +26,33 @@ fn chart_outer_section(id: u32) -> SectionSchema {
     chart_placed_section(
         id,
         "outer",
+        graha_column("graha", "Which graha."),
         "Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.",
     )
 }
 
-/// A section of placed bodies, a row a body: the columns `grahas` and
-/// `outer` share.
+/// Each chart's Black Moon Lilith, where the request named an apogee
+/// (`03-design/lilith.md`).
 #[must_use]
-fn chart_placed_section(id: u32, name: &str, doc: &str) -> SectionSchema {
+fn chart_lilith_section(id: u32) -> SectionSchema {
+    chart_placed_section(
+        id,
+        "lilith",
+        ColumnDef::new("apogee", Scalar::U16, "Which lunar apogee.").of_enum("TsLilith"),
+        "The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).",
+    )
+}
+
+/// A section of placed bodies, a row a body: the columns `grahas`,
+/// `outer` and `lilith` share after the first, which says which body.
+#[must_use]
+fn chart_placed_section(id: u32, name: &str, which: ColumnDef, doc: &str) -> SectionSchema {
     SectionSchema::columns(
         id,
         name,
         doc,
         vec![
-            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            which,
             ColumnDef::new(
                 "longitude_deg",
                 Scalar::F64,
@@ -374,17 +388,24 @@ pub fn charts() -> BlobSchema {
         .chain(chart_matching_sections(111))
         .chain(chart_marriage_dosha_sections(116))
         .chain(chart_avakahada_sections(118))
-        .chain([
-            chart_prashna_section(120),
-            chart_remedies_section(121),
-            chart_rectification_section(122),
-            chart_lalkitab_section(123),
-            chart_moment_section(124),
-            progressed_parallels_section(125),
-            progressed_mutual_contacts_section(126),
-        ])
+        .chain(chart_later_sections(120))
         .collect(),
     }
+}
+
+/// The sections from `first` on, one a request field or a reading each,
+/// in the order they crossed.
+fn chart_later_sections(first: u32) -> [SectionSchema; 8] {
+    [
+        chart_prashna_section(first),
+        chart_remedies_section(first + 1),
+        chart_rectification_section(first + 2),
+        chart_lalkitab_section(first + 3),
+        chart_moment_section(first + 4),
+        progressed_parallels_section(first + 5),
+        progressed_mutual_contacts_section(first + 6),
+        chart_lilith_section(first + 7),
+    ]
 }
 
 /// The zodiac a chart batch is measured in, once for the batch.
