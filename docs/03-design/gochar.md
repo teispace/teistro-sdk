@@ -360,7 +360,7 @@ mean". So the default, `SarvatobhadraMotion::Sky`, computes it: each
 transit chart's speed against the graha's mean daily motion
 (`Motion::by_speed`), retrograde below zero, fast above the mean, mean
 otherwise. The mean is the *Surya Siddhanta*'s, its revolutions over an
-age's civil days (`teistro_siddhanta::Parameters::TEXT`, I.29 to 37), and
+age's civil days (`teistro_siddhanta::Parameters::TEXT`; I.29 to 34 over I.37), and
 Mercury's and Venus's the Sun's, as I.29 makes them. `Sun` is the verses'
 rule (`Motion::by_the_sun`); a graha in the Sun's own sign is unseen (v.
 18) and the verses give it no motion, so it takes the sky's, which is

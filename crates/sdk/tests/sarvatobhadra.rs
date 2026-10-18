@@ -132,7 +132,7 @@ fn the_skys_motion_is_the_speed_against_the_siddhantas_mean() {
         .sarvatobhadra(&natal, &SarvatobhadraRequest::over(days.clone()))
         .unwrap()
         .value;
-    // The Surya Siddhanta's mean motions (I.29 to 37), Mercury's and
+    // The Surya Siddhanta's mean motions (I.29 to 34 over I.37), Mercury's and
     // Venus's the Sun's.
     let mean = |graha: Graha| match graha {
         Graha::Mars => 0.524,
