@@ -307,6 +307,18 @@ public final class Chart {
     }
 
     /**
+     * The Sarvatobhadra chakra at each of the request's instants, in its order, when it was asked
+     * for: where each transiting graha stands among the chakra's stars, the lines it looks along and
+     * every cell it strikes, and which of the native's points the malefics and benefics strike
+     * ({@code 03-design/gochar.md} §8).
+     *
+     * @return the readings, empty when they were not asked for
+     */
+    public Optional<List<Sarvatobhadra>> sarvatobhadra() {
+        return SarvatobhadraReads.sarvatobhadra(this);
+    }
+
+    /**
      * The rectification readings, when they were asked for: each member
      * empty unless the request named it.
      *

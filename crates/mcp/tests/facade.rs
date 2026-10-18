@@ -481,7 +481,6 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
     })
     .unwrap();
     let least = |name: &str| match name {
-        "gochar" => json!({"instants": [2_460_676.5]}),
         "hits" | "sadeSati" => json!({"from": 2_460_676.5, "to": 2_460_680.5}),
         "perfection" => json!({"querent": "VENUS", "quesited": "MARS"}),
         "synastry" => json!({"partner": partner}),
@@ -489,7 +488,7 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
         "varsha" => json!({"through": 1}),
         "progressions" => json!({"at": 2_460_676.5}),
         "harmonic" => json!({"number": 5}),
-        "sarvatobhadra" => json!({"instants": [2_460_676.5]}),
+        "gochar" | "sarvatobhadra" => json!({"instants": [2_460_676.5]}),
         _ => json!({}),
     };
     let full = [

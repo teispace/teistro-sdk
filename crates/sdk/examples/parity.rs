@@ -1908,6 +1908,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_prashna(report, geo, index, document);
     the_remedies(report, geo, index, document);
     the_lalkitab(report, geo, index, document);
+    the_sarvatobhadra(report, geo, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2571,6 +2572,72 @@ fn the_remedies(report: &mut Report, sdk: &Context, index: usize, document: &tei
         );
     }
     remedies_rites(report, &key, &read);
+}
+
+/// The Sarvatobhadra chakra every runner asks for: two instants, the
+/// verses' own motion, a name and every cell the front passes.
+const SARVATOBHADRA_JSON: &str = r#"{"instants":[2460676.5,2460776.5],"motion":"SUN","name":{"letter":"र","vowel":"A"},"rules":{"front":"EVERY_CELL"}}"#;
+
+/// The Sarvatobhadra chakra as every runner prints it: each instant's
+/// native, count and points, then each graha's place, motion, nature,
+/// lines, how many cells it strikes and the points among them.
+fn the_sarvatobhadra(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+) {
+    let asked =
+        teistro::SarvatobhadraRequest::from_json(SARVATOBHADRA_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .sarvatobhadra(document, &asked)
+        .expect("the test provider")
+        .value;
+    for (at, one) in read.iter().enumerate() {
+        let key = format!("chart-{index}-sarvatobhadra-{at}");
+        let native = &one.native;
+        put(
+            report,
+            &key,
+            format!(
+                "{} {} {} {} {} {}",
+                one.malefic_points,
+                native.nakshatra.full_key(),
+                native.rashi.full_key(),
+                native.tithi.full_key(),
+                native.vara.full_key(),
+                dashed(one.points.iter().map(|point| format!(
+                    "{}:{}/{}",
+                    wire_key(&point.point),
+                    full_keys(&point.malefics),
+                    full_keys(&point.benefics)
+                )))
+            ),
+        );
+        for vedha in &one.grahas {
+            let star = match vedha.place.star {
+                teistro::gochar::sarvatobhadra::Star::Abhijit => String::from("ABHIJIT"),
+                teistro::gochar::sarvatobhadra::Star::Nakshatra { nakshatra } => {
+                    nakshatra.full_key().to_owned()
+                }
+            };
+            put(
+                report,
+                &format!("{key}-{}", vedha.graha.full_key()),
+                format!(
+                    "{star}:{} {} {} {} {} {} {}",
+                    vedha.place.pada,
+                    wire_key(&vedha.motion),
+                    wire_key(&vedha.nature),
+                    dashed(vedha.lines.iter().map(wire_key)),
+                    full_keys(&vedha.joined_by),
+                    vedha.cells.len(),
+                    dashed(vedha.points.iter().map(|strike| wire_key(&strike.point)))
+                ),
+            );
+        }
+    }
 }
 
 /// The Lal Kitab every runner asks for: the cycle from Venus in the 17th

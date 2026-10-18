@@ -473,6 +473,9 @@ sign), and `Given` the caller's (C430). A chart request's
 `sarvatobhadra` record reads it for every chart in a batch, the transit
 charts founded once, and section 135 carries the readings across the C
 boundary as canonical JSON; the agent server reads the record too.
+Node, Python, Dart and Java read it as typed values (`chart.sarvatobhadra`,
+`chart.sarvatobhadra()` in Java), one reading an instant, and the shared
+parity example prints each graha's strikes alike in all five.
 
 **The fixed significators: sthira karakas and karaka bhavas**
 (`jaimini-significators.md` §7, C408 to C412). **Numbers:** none moved;

@@ -7,6 +7,13 @@ import type {
   DispositorChain,
   DispositorEnd,
   Dispositions,
+  ChakraCell,
+  ChakraStar,
+  GrahaVedha,
+  Sarvatobhadra,
+  SarvatobhadraRequest,
+  VedhaMotion,
+  VedhaReach,
   KarakaBhava,
   LilithPosition,
   SthiraKaraka,
@@ -453,6 +460,27 @@ function karakas(): string {
 }
 
 void karakas;
+
+/** The Sarvatobhadra chakra, typed: a reading an instant, its cells tagged. */
+function sarvatobhadra(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const asked: SarvatobhadraRequest = { instants: [2460676.5], motion: { GIVEN: ['MEAN', 'MEAN', 'FAST', 'MEAN', 'RETROGRADE'] } };
+  const chart = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, sarvatobhadra: asked });
+  const read: Sarvatobhadra = chart.sarvatobhadra![0]!;
+  const sun: GrahaVedha = read.grahas[0]!;
+  const motion: VedhaMotion = sun.motion;
+  const reach: VedhaReach = sun.cells[0]!;
+  const cell: ChakraCell | null = reach.by === 'STANDS' ? null : reach.cell;
+  const star: ChakraStar | null = cell?.cell === 'STAR' ? cell.star : null;
+  const struck: number = read.maleficPoints;
+  // @ts-expect-error the motion is one of three
+  const crawling: VedhaMotion = 'CRAWLING';
+  // @ts-expect-error a request names five motions, not four
+  const four: SarvatobhadraRequest = { instants: [0], motion: { GIVEN: ['MEAN', 'MEAN', 'MEAN', 'MEAN'] } };
+  return `${motion} ${star?.star} ${struck} ${crawling} ${four.instants.length}`;
+}
+
+void sarvatobhadra;
 
 /** The almanac layer, typed: a range of days and one of them. */
 function almanac(): string {

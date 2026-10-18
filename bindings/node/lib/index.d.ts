@@ -91,6 +91,7 @@ import type {
   Status,
   Strength,
   Tithi,
+  TithiClass,
   TimeScale,
   Vara,
   Varga,
@@ -3095,6 +3096,117 @@ export interface PrashnaScore {
   readonly applyingTo: Graha | null;
 }
 
+/** A name's sounds as the Sarvatobhadra chakra reads them. */
+export interface NameSounds {
+  /** The first letter in Devanagari: a conjunct's first consonant, or the vowel a name begins with. */
+  readonly letter: string;
+  /** The vowel of its first syllable. */
+  readonly vowel: ChakraVowel;
+}
+
+/** The sixteen vowels in the order the chakra lays them, a to the visarga. */
+export type ChakraVowel =
+  | 'A' | 'AA' | 'I' | 'II' | 'U' | 'UU' | 'RI' | 'RII' | 'LI' | 'LII' | 'E' | 'AI' | 'O' | 'AU' | 'AM' | 'AH';
+
+/** A graha's motion as v. 15 sorts it: fast looks left, mean ahead, retrograde right. */
+export type VedhaMotion = 'FAST' | 'MEAN' | 'RETROGRADE';
+
+/** One of a graha's three lines of sight. */
+export type VedhaLine = 'LEFT' | 'FRONT' | 'RIGHT';
+
+/** A native's point a vedha can strike. */
+export type VedhaPoint = 'NAKSHATRA' | 'LETTER' | 'VOWEL' | 'TITHI' | 'RASHI' | 'VARA';
+
+/** The readings the texts leave open (C429 to C431), each defaulting to §8's. */
+export interface SarvatobhadraRules {
+  /** What the front strikes: the star at its far end alone, or every cell it passes. */
+  readonly front?: 'STAR_ONLY' | 'EVERY_CELL';
+  /** Which lines a graha looks along: the texts', all three for every graha, or one each. */
+  readonly sight?: 'TEXT' | 'ALL_THREE' | 'ONE_EACH';
+  /** What a graha at a corner's juncture strikes: the four vowels on the diagonal, or the outermost. */
+  readonly corner?: 'FOUR_VOWELS' | 'OUTER_VOWEL';
+}
+
+/**
+ * The Sarvatobhadra chakra to read in every chart (`03-design/gochar.md`
+ * §8): at each instant, the native's star and sign the natal Moon's, the
+ * tithi and weekday the birth's.
+ */
+export interface SarvatobhadraRequest {
+  /** The instants to read the chakra at, UTC Julian days; at least one. */
+  readonly instants: readonly number[];
+  /** The name whose first letter and vowel are points too; none by default. */
+  readonly name?: NameSounds;
+  /**
+   * Where the five from Mars take their motion: `'SKY'` (the default),
+   * each speed against its mean motion; `'SUN'`, vv. 16–18's rule by the
+   * Sun's sign, the sky's where the verses are silent; or
+   * `{ GIVEN: [...] }`, the caller's for Mars, Mercury, Jupiter, Venus
+   * and Saturn (C430).
+   */
+  readonly motion?: 'SKY' | 'SUN' | { readonly GIVEN: readonly [VedhaMotion, VedhaMotion, VedhaMotion, VedhaMotion, VedhaMotion] };
+  /** The readings of the texts; §8's by default. */
+  readonly rules?: SarvatobhadraRules;
+}
+
+/** A star of the chakra's 28: one of the 27, or Abhijit. */
+export type ChakraStar = { readonly star: 'NAKSHATRA'; readonly nakshatra: Nakshatra } | { readonly star: 'ABHIJIT' };
+
+/** One cell of the chakra. */
+export type ChakraCell =
+  | { readonly cell: 'STAR'; readonly star: ChakraStar }
+  | { readonly cell: 'VOWEL'; readonly vowel: ChakraVowel }
+  | { readonly cell: 'LETTER'; readonly letter: string }
+  | { readonly cell: 'RASHI'; readonly rashi: Rashi }
+  | { readonly cell: 'TITHI'; readonly class: TithiClass };
+
+/** How a graha reaches what it strikes: along a line, from a corner's juncture, or by standing in a letter's star (v. 24). */
+export type VedhaReach =
+  | { readonly by: 'LINE'; readonly line: VedhaLine; readonly cell: ChakraCell }
+  | { readonly by: 'CORNER'; readonly cell: ChakraCell }
+  | { readonly by: 'STANDS' };
+
+/** What one transiting graha strikes. */
+export interface GrahaVedha {
+  readonly graha: Graha;
+  /** Where it stands: the chakra's star, and the nakshatra and pada of the 27. */
+  readonly place: { readonly star: ChakraStar; readonly nakshatra: Nakshatra; readonly pada: number };
+  readonly motion: VedhaMotion;
+  /** The lines it looks along. */
+  readonly lines: readonly VedhaLine[];
+  readonly nature: 'BENEFIC' | 'MALEFIC';
+  /** For the Moon, whether it wanes, which makes it malefic (v. 12). */
+  readonly waning: boolean;
+  /** For a benefic, the malefics in its sign, which make it malefic. */
+  readonly joinedBy: readonly Graha[];
+  /** Every cell it strikes, and how. */
+  readonly cells: readonly VedhaReach[];
+  /** The native's points among them, with every way it strikes each. */
+  readonly points: readonly { readonly point: VedhaPoint; readonly by: readonly VedhaReach[] }[];
+}
+
+/**
+ * The Sarvatobhadra chakra at one instant against the native
+ * (`03-design/gochar.md` §8): clauses, scored by nothing.
+ */
+export interface Sarvatobhadra {
+  readonly rules: Required<SarvatobhadraRules>;
+  /** The native's points: the natal Moon's star and sign, the birth's tithi and weekday, and the name when given. */
+  readonly native: {
+    readonly nakshatra: Nakshatra;
+    readonly rashi: Rashi;
+    readonly tithi: Tithi;
+    readonly vara: Vara;
+    readonly name: NameSounds | null;
+  };
+  /** Each graha's, the Sun to Ketu. */
+  readonly grahas: readonly GrahaVedha[];
+  /** Each of the native's points with the malefics and benefics that strike it. */
+  readonly points: readonly { readonly point: VedhaPoint; readonly malefics: readonly Graha[]; readonly benefics: readonly Graha[] }[];
+  /** How many of v. 28's five (star, letter, vowel, tithi, sign) a malefic strikes. */
+  readonly maleficPoints: number;
+}
+
 /** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */
 export interface LalKitabRequest {
   /** Where the 35-year cycle starts; the book's general table (Saturn from the first year) when left out. */
@@ -5415,6 +5527,11 @@ export declare class Chart {
    */
   readonly lalkitab: LalKitab | null;
   /**
+   * The Sarvatobhadra chakra at each of the record's instants, in its
+   * order; `null` unless `sarvatobhadra` asked (`03-design/gochar.md` §8).
+   */
+  readonly sarvatobhadra: readonly Sarvatobhadra[] | null;
+  /**
    * The chart read as a birth time to rectify: the purifier's runs, the
    * conception, the circumstances and the baseline's cascade, each `null`
    * unless asked; the whole `null` unless `rectification` asked
@@ -6757,6 +6874,12 @@ export interface ChartRequest {
    * teva and the general cycle with no year.
    */
   readonly lalkitab?: LalKitabRequest;
+  /**
+   * The Sarvatobhadra chakra to read against every chart at each of its
+   * instants, read back as each chart's `sarvatobhadra`
+   * (`03-design/gochar.md` §8). None by default.
+   */
+  readonly sarvatobhadra?: SarvatobhadraRequest;
   /**
    * A birth time to rectify, read around every chart's instant and read
    * back as each chart's `rectification` (`03-design/rectification.md`).

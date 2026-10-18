@@ -1126,6 +1126,20 @@ export class Chart {
   }
 
   /**
+   * The Sarvatobhadra chakra at each of the record's instants
+   * (`sarvatobhadra: { instants: [2460676.5] }`), in its order: where each
+   * transiting graha stands among the chakra's stars, the lines it looks
+   * along and every cell it strikes, and which of the native's points the
+   * malefics and benefics strike. `null` unless asked
+   * (`03-design/gochar.md` §8).
+   *
+   * @returns {object[]|null}
+   */
+  get sarvatobhadra() {
+    return sarvatobhadrasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The chart read as a birth time to rectify (`rectification: { purify:
    * { minutes: 30 } }`): what BPHS ch. 2's purifier leaves standing of the
    * minutes either side, the conception the birth counts back to, *Brihat
@@ -2770,6 +2784,11 @@ export class ChartArea extends Area {
           request.lalkitab,
           'lalkitab',
           "a Lal Kitab request record, e.g. { year: 30 } or { cycle: { planet: 'graha.VENUS', year: 17 } }",
+        ),
+        sarvatobhadraJson: recordJson(
+          request.sarvatobhadra,
+          'sarvatobhadra',
+          "a Sarvatobhadra request record, e.g. { instants: [2460676.5] } or { instants: [2460676.5], motion: 'SUN', name: { letter: 'र', vowel: 'A' } }",
         ),
         rectificationJson: recordJson(
           request.rectification,
@@ -5307,6 +5326,70 @@ function lalkitabFrom({ reading, cycle, periods, year }) {
             thirds: year.thirds.map(graha),
             annual: year.annual === null ? null : tevaFrom(year.annual),
           },
+  };
+}
+
+/** Each batch's Sarvatobhadra readings, parsed once however many charts read them. */
+const SARVATOBHADRA = new WeakMap();
+
+/**
+ * Every chart's Sarvatobhadra chakra in a batch: the `sarvatobhadra`
+ * section's JSON, a list of readings a chart, an instant each, catalogue
+ * keys in full (`03-design/gochar.md` §8).
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function sarvatobhadrasOf(batch) {
+  return sectionOf(SARVATOBHADRA, batch, 'sarvatobhadra', (chart) => chart.map(sarvatobhadraFrom));
+}
+
+/** A chakra's star as the boundary writes it, its nakshatra a full key. */
+function chakraStarFrom(star) {
+  return star.star === 'NAKSHATRA' ? { star: 'NAKSHATRA', nakshatra: `nakshatra.${star.nakshatra}` } : star;
+}
+
+/** A chakra's cell as the boundary writes it, its members full keys. */
+function chakraCellFrom(cell) {
+  switch (cell.cell) {
+    case 'STAR':
+      return { cell: 'STAR', star: chakraStarFrom(cell.star) };
+    case 'RASHI':
+      return { cell: 'RASHI', rashi: `rashi.${cell.rashi}` };
+    case 'TITHI':
+      return { cell: 'TITHI', class: `tithi_class.${cell.class}` };
+    default:
+      return cell;
+  }
+}
+
+/** How a graha reaches what it strikes, its cell's members full keys. */
+function reachFrom(reach) {
+  return reach.by === 'STANDS' ? reach : { ...reach, cell: chakraCellFrom(reach.cell) };
+}
+
+/** One instant's chakra as the boundary writes it, its members full keys. */
+function sarvatobhadraFrom({ rules, native, grahas, points, maleficPoints }) {
+  const graha = (key) => `graha.${key}`;
+  return {
+    rules,
+    native: {
+      nakshatra: `nakshatra.${native.nakshatra}`,
+      rashi: `rashi.${native.rashi}`,
+      tithi: `tithi.${native.tithi}`,
+      vara: `vara.${native.vara}`,
+      name: native.name ?? null,
+    },
+    grahas: grahas.map((one) => ({
+      ...one,
+      graha: graha(one.graha),
+      place: { ...one.place, star: chakraStarFrom(one.place.star), nakshatra: `nakshatra.${one.place.nakshatra}` },
+      joinedBy: one.joinedBy.map(graha),
+      cells: one.cells.map(reachFrom),
+      points: one.points.map((strike) => ({ ...strike, by: strike.by.map(reachFrom) })),
+    })),
+    points: points.map((one) => ({ ...one, malefics: one.malefics.map(graha), benefics: one.benefics.map(graha) })),
+    maleficPoints,
   };
 }
 

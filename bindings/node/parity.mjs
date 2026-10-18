@@ -385,6 +385,14 @@ const charts = geo.chart.foundMany({
   remedies: { at: 2460676.5, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
   // A varshphal list with the book's structure and none of its numbers:
   // year y sends natal house h to h + y − 1, round the twelve.
+  // Two instants, the verses' own motion, a name and every cell the front
+  // passes.
+  sarvatobhadra: {
+    instants: [2460676.5, 2460776.5],
+    motion: 'SUN',
+    name: { letter: 'र', vowel: 'A' },
+    rules: { front: 'EVERY_CELL' },
+  },
   lalkitab: {
     cycle: { planet: 'graha.VENUS', year: 17 },
     year: 43,
@@ -1165,6 +1173,21 @@ for (const chart of charts) {
   );
   put(`chart-${i}-lalkitab-periods`, list(lk.periods.map((p) => `${p.planet}:${p.from}-${p.to}`)));
   put(`chart-${i}-lalkitab-annual`, list(lk.year.annual.planets.map((p) => `${p.graha}:${p.house}`)));
+  chart.sarvatobhadra.forEach((one, at) => {
+    const key = `chart-${i}-sarvatobhadra-${at}`;
+    const n = one.native;
+    put(
+      key,
+      `${one.maleficPoints} ${n.nakshatra} ${n.rashi} ${n.tithi} ${n.vara} ${list(one.points.map((p) => `${p.point}:${list(p.malefics)}/${list(p.benefics)}`))}`,
+    );
+    for (const v of one.grahas) {
+      const star = v.place.star.star === 'ABHIJIT' ? 'ABHIJIT' : v.place.star.nakshatra;
+      put(
+        `${key}-${v.graha}`,
+        `${star}:${v.place.pada} ${v.motion} ${v.nature} ${list(v.lines)} ${list(v.joinedBy)} ${v.cells.length} ${list(v.points.map((p) => p.point))}`,
+      );
+    }
+  });
   const {
     progressed: pg,
     directed: dr,
