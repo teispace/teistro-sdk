@@ -627,6 +627,7 @@ fn pass_with_arguments(command: &str, args: &[String]) -> Option<i32> {
             &repo_root(),
             args.get(1).map(String::as_str),
         )),
+        "cofiring-probe" => Some(cofiring::probe(args)),
         "conformance" | "check-conformance" => {
             Some(conformance::recorded(&repo_root(), command, args))
         }
@@ -774,7 +775,7 @@ fn usage() -> i32 {
          the generated pages, each written by its name and gated by `check-`:\n  \
          {}\n\n\
          everything else:\n  \
-         rule-doc PACK|CATEGORY|KEY | \
+         rule-doc PACK|CATEGORY|KEY | cofiring-probe FILE KEYS [LAT LON] | \
          vsop [DIR] | moon | wasm-crates [MODULE] | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \

@@ -1,0 +1,3685 @@
+{
+  "rules": [
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_BRIGHT_BENEFIC_IN_THE_NINTH",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "14",
+        "rank": 1,
+        "note": "Jupiter, Mercury, Venus or the Moon in the ninth, uncombust, aspected by or joined with a graha it counts a friend. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "JUPITER",
+                  "houses": [
+                    9
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": "JUPITER"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "JUPITER",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "or",
+                        "conditions": [
+                          {
+                            "type": "planet-aspects-planet",
+                            "from": "SELF",
+                            "target": "JUPITER"
+                          },
+                          {
+                            "type": "same-sign",
+                            "of": "SELF",
+                            "as": "JUPITER"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MERCURY",
+                  "houses": [
+                    9
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": "MERCURY"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MERCURY",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "or",
+                        "conditions": [
+                          {
+                            "type": "planet-aspects-planet",
+                            "from": "SELF",
+                            "target": "MERCURY"
+                          },
+                          {
+                            "type": "same-sign",
+                            "of": "SELF",
+                            "as": "MERCURY"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "VENUS",
+                  "houses": [
+                    9
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": "VENUS"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "VENUS",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "or",
+                        "conditions": [
+                          {
+                            "type": "planet-aspects-planet",
+                            "from": "SELF",
+                            "target": "VENUS"
+                          },
+                          {
+                            "type": "same-sign",
+                            "of": "SELF",
+                            "as": "VENUS"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    9
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": "MOON"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MOON",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "or",
+                        "conditions": [
+                          {
+                            "type": "planet-aspects-planet",
+                            "from": "SELF",
+                            "target": "MOON"
+                          },
+                          {
+                            "type": "same-sign",
+                            "of": "SELF",
+                            "as": "MOON"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a great king worshipped by his subjects like a deity"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_FIVE_DIGNIFIED_IN_KENDRAS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "1",
+        "rank": 1,
+        "note": "Five grahas or more exalted or in their own signs, each in a kendra. Own sign takes in the moolatrikona, which is a part of it, as ch. 6 reads it. Verse 2 gives three such to the royal-born and is the same figure, so it is not built again. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              },
+              {
+                "type": "planet-in-kendra",
+                "planet": "SELF"
+              }
+            ]
+          },
+          "atLeast": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king ruling the world with many elephants and horses, though born in an ordinary family"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_FOUR_WITH_DIG_BALA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "4",
+        "rank": 1,
+        "note": "Four grahas or more with dig bala; the verse's 'five, Saturn excepted' is one way of four or more and is not asked apart. Dig bala is ch. 2 v. 6's: the Sun and Mars in the tenth, the Moon and Venus in the fourth, Mercury and Jupiter in the lagna and Saturn in the seventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SUN"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      10
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MARS"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      10
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MOON"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "VENUS"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MERCURY"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "JUPITER"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SATURN"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      7
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born in an ordinary family"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "22",
+        "rank": 1,
+        "note": "The Moon full and exalted. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, in which ch. 19 v. 8 gives her full strength. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "EXALTED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, generous, charitable and praised by the good"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "7",
+        "rank": 1,
+        "note": "The Moon full in the fourth, the seventh or the tenth, a kendra other than the lagna. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, in which ch. 19 v. 8 gives her full strength. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            4,
+            7,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king with elephants and horses"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_IN_A_SOLAR_NAVAMSHA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "11",
+        "rank": 1,
+        "note": "The Moon full in a navamsha of Leo, the Sun's, and a benefic in a kendra with no malefic in its sign. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, in which ch. 19 v. 8 gives her full strength. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "MOON"
+          },
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-kendra",
+                "planet": "SELF"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    1
+                  ],
+                  "from": "SELF",
+                  "atLeast": 1
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king with many elephants"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_IN_PISCES",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "22",
+        "rank": 1,
+        "note": "The Moon full in Pisces, aspected by a graha she counts a friend. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, in which ch. 19 v. 8 gives her full strength. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "natural-relation",
+                "of": "MOON",
+                "to": "SELF",
+                "relations": [
+                  "friend"
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "MOON"
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king pre-eminent and delighting the world"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_THREE_IN_OWN_NAVAMSHAS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "12",
+        "rank": 1,
+        "note": "The Moon full, and three grahas other than her in their own navamshas, strong, aspected by a benefic, and not in their debilitation or an enemy's sign. The verse's 'vargas' are read as the sign. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, in which ch. 19 v. 8 gives her full strength. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-body",
+                "of": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "as": "SELF"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "planet-dignity",
+                  "planet": "SELF",
+                  "dignities": [
+                    "DEBILITATED",
+                    "ENEMY",
+                    "GREAT_ENEMY"
+                  ]
+                }
+              },
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "SELF"
+              }
+            ]
+          },
+          "atLeast": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who vanquishes all his enemies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_VARGOTTAMA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "17",
+        "rank": 1,
+        "note": "The Moon full and vargottama. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, in which ch. 19 v. 8 gives her full strength. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "navamsha": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a mighty ruler of immense fame, his horses' dust dimming the Sun"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_JUPITER_AND_MOON_IN_KENDRAS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "18",
+        "rank": 1,
+        "note": "Jupiter and the Moon each in a kendra and each aspected by Venus, and no graha debilitated. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-dignity",
+              "planet": "SELF",
+              "dignities": [
+                "DEBILITATED"
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of unparalleled fame"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_JUPITER_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "20",
+        "rank": 1,
+        "note": "Jupiter in the lagna in any sign but Capricorn. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-sign",
+            "planet": "JUPITER",
+            "signs": [
+              "CAPRICORN"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king with elephants in rut"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_LAGNA_AND_NINTH_LORDS_VARGOTTAMA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lagna lord vargottama in a kendra or the ninth, and the ninth lord vargottama in its own sign or exaltation. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 1
+          },
+          "as": {
+            "navamsha": {
+              "lordOf": 1
+            }
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            1,
+            4,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 9
+          },
+          "as": {
+            "navamsha": {
+              "lordOf": 9
+            }
+          }
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 9
+          },
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king carried at ease in a golden howdah on an elephant, with chowries at either side"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_MALEFICS_IN_UPACHAYAS_FROM_THE_LORDS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "24",
+        "rank": 1,
+        "note": "The malefics Sun, Mars and Saturn each in the third, sixth or eleventh from the sign of the lagna lord or of the Moon sign's lord (C472). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SUN",
+                  "reference": {
+                    "lordOf": 1
+                  },
+                  "houses": [
+                    3,
+                    6,
+                    11
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": {
+                    "lordOf": 1
+                  },
+                  "houses": [
+                    3,
+                    6,
+                    11
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": {
+                    "lordOf": 1
+                  },
+                  "houses": [
+                    3,
+                    6,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SUN",
+                  "reference": {
+                    "lordOf": "MOON"
+                  },
+                  "houses": [
+                    3,
+                    6,
+                    11
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": {
+                    "lordOf": "MOON"
+                  },
+                  "houses": [
+                    3,
+                    6,
+                    11
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": {
+                    "lordOf": "MOON"
+                  },
+                  "houses": [
+                    3,
+                    6,
+                    11
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_MARS_AND_MERCURY_SECOND",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "24",
+        "rank": 1,
+        "note": "Mars and Mercury in the second. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_MARS_RISING_IN_FIRE",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "9",
+        "rank": 1,
+        "note": "Mars in the lagna in Aries, Leo or Sagittarius, aspected by a graha he counts a friend. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "ARIES",
+            "LEO",
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "natural-relation",
+                "of": "MARS",
+                "to": "SELF",
+                "relations": [
+                  "friend"
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "MARS"
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler of the earth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_MARS_SATURN_JUPITER_TENTH_ELEVENTH_FIRST",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "24",
+        "rank": 1,
+        "note": "Mars in the tenth, Saturn in the eleventh and Jupiter in the lagna, in the verse's order. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_MOON_IN_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_JUPITER",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "23",
+        "rank": 1,
+        "note": "The Moon in the navamsha of a graha she counts a great friend, aspected by Jupiter. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": "MOON",
+            "dignities": [
+              "GREAT_FRIEND"
+            ]
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king ruling the entire earth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_MOON_IN_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_VENUS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "23",
+        "rank": 1,
+        "note": "The Moon in the navamsha of a graha she counts a great friend, aspected by Venus. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": "MOON",
+            "dignities": [
+              "GREAT_FRIEND"
+            ]
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of much wealth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_ASPECTED_BY_ITS_LORD",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "28",
+        "rank": 1,
+        "note": "A graha debilitated and aspected by the lord of that sign. Sastri's note to v. 30 counts five kinds of these cancellations; this is kind 3. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": {
+                  "lordOf": {
+                    "debilitationOf": "SELF"
+                  }
+                },
+                "target": "SELF"
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous ruler of the earth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_ASPECTED_BY_ITS_LORD_IN_A_GOOD_HOUSE",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "28",
+        "rank": 1,
+        "note": "The graha of the last so aspected, and in a house other than the sixth, eighth or twelfth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": {
+                      "lordOf": {
+                        "debilitationOf": "SELF"
+                      }
+                    },
+                    "target": "SELF"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1,
+                      2,
+                      3,
+                      4,
+                      5,
+                      7,
+                      9,
+                      10,
+                      11
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "beyond doubt a foremost king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_DEBILITATED_IN_A_KENDRA",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "30",
+        "rank": 1,
+        "note": "A graha debilitated in a kendra from the lagna or the Moon, as the note lets v. 30's 'one of them' be the debilitated graha. Sastri's note to v. 30 counts five kinds of these cancellations; this is kind 5. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-kendra",
+                    "planet": "SELF"
+                  },
+                  {
+                    "type": "planet-in-kendra-from",
+                    "planet": "SELF",
+                    "reference": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor saluted by other kings"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_EXALTED_ONE_IN_A_KENDRA",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "26",
+        "rank": 1,
+        "note": "A graha debilitated, and the graha exalted in that sign in a kendra from the lagna or the Moon, as v. 26's gloss reads 'its lord'. Sastri's note to v. 30 counts five kinds of these cancellations; this is kind 1. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-kendra",
+                    "planet": {
+                      "exaltedIn": {
+                        "debilitationOf": "SELF"
+                      }
+                    }
+                  },
+                  {
+                    "type": "planet-in-kendra-from",
+                    "planet": {
+                      "exaltedIn": {
+                        "debilitationOf": "SELF"
+                      }
+                    },
+                    "reference": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king and a just ruler"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_LORDS_IN_MUTUAL_KENDRAS",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "27",
+        "rank": 1,
+        "note": "A graha debilitated, and the lords of that sign and of its exaltation sign in kendras from each other. Sastri's note to v. 30 counts five kinds of these cancellations; this is kind 2. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "planet-in-kendra-from",
+                "planet": {
+                  "lordOf": {
+                    "debilitationOf": "SELF"
+                  }
+                },
+                "reference": {
+                  "lordOf": {
+                    "exaltationOf": "SELF"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor respected by all other kings"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_LORD_IN_A_KENDRA",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "26, 29",
+        "rank": 1,
+        "note": "A graha debilitated, and the lord of that sign or of its exaltation sign in a kendra from the lagna or the Moon; v. 29 repeats the figure and promises an emperor. Sastri's note to v. 30 counts five kinds of these cancellations; this is kind 4, and v. 30 asks the same of the two lords from the lagna. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "planet-in-kendra",
+                        "planet": {
+                          "lordOf": {
+                            "debilitationOf": "SELF"
+                          }
+                        }
+                      },
+                      {
+                        "type": "planet-in-kendra-from",
+                        "planet": {
+                          "lordOf": {
+                            "debilitationOf": "SELF"
+                          }
+                        },
+                        "reference": "MOON"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "planet-in-kendra",
+                        "planet": {
+                          "lordOf": {
+                            "exaltationOf": "SELF"
+                          }
+                        }
+                      },
+                      {
+                        "type": "planet-in-kendra-from",
+                        "planet": {
+                          "lordOf": {
+                            "exaltationOf": "SELF"
+                          }
+                        },
+                        "reference": "MOON"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king and a just ruler"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_NIGHT_MOON_IN_CANCER_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "16",
+        "rank": 1,
+        "note": "A birth by night with the Moon in Cancer in the tenth, and the benefics Mercury, Jupiter and Venus each debilitated or in an enemy's sign in the third, sixth or eleventh, or each in its highest exaltation, or each bright in a kendra (C472). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "birth-by-day"
+          }
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-dignity",
+                      "planet": "MERCURY",
+                      "dignities": [
+                        "DEBILITATED",
+                        "ENEMY",
+                        "GREAT_ENEMY"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MERCURY",
+                      "houses": [
+                        3,
+                        6,
+                        11
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-dignity",
+                      "planet": "JUPITER",
+                      "dignities": [
+                        "DEBILITATED",
+                        "ENEMY",
+                        "GREAT_ENEMY"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-house",
+                      "planet": "JUPITER",
+                      "houses": [
+                        3,
+                        6,
+                        11
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-dignity",
+                      "planet": "VENUS",
+                      "dignities": [
+                        "DEBILITATED",
+                        "ENEMY",
+                        "GREAT_ENEMY"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-house",
+                      "planet": "VENUS",
+                      "houses": [
+                        3,
+                        6,
+                        11
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-dignity",
+                      "planet": "MERCURY",
+                      "dignities": [
+                        "EXALTED"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-degrees",
+                      "planet": "MERCURY",
+                      "from": 14,
+                      "to": 15
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-dignity",
+                      "planet": "JUPITER",
+                      "dignities": [
+                        "EXALTED"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-degrees",
+                      "planet": "JUPITER",
+                      "from": 4,
+                      "to": 5
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-dignity",
+                      "planet": "VENUS",
+                      "dignities": [
+                        "EXALTED"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-degrees",
+                      "planet": "VENUS",
+                      "from": 26,
+                      "to": 27
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-kendra",
+                      "planet": "MERCURY"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-combust",
+                        "planet": "MERCURY"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-kendra",
+                      "planet": "JUPITER"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-combust",
+                        "planet": "JUPITER"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-kendra",
+                      "planet": "VENUS"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-combust",
+                        "planet": "VENUS"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor ruling the three worlds under one umbrella"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_NINTH_AND_TENTH_LORDS_EXCHANGED",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "9",
+        "rank": 1,
+        "note": "The tenth lord in the ninth and the ninth lord in the tenth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 10
+          },
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 9
+          },
+          "houses": [
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king extolled by his people"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_ONE_AT_HIGHEST_EXALTATION",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "21",
+        "rank": 1,
+        "note": "Exactly one graha at its highest exaltation, aspected by a graha it counts a friend. The highest exaltation is ch. 1 v. 6's degree: the Sun's tenth, the Moon's third, Mars's 28th, Mercury's 15th, Jupiter's fifth, Venus's 27th and Saturn's 20th, each the degree ending there. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SUN"
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED"
+                    ]
+                  },
+                  {
+                    "type": "planet-in-degrees",
+                    "planet": "SELF",
+                    "from": 9,
+                    "to": 10
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MOON"
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED"
+                    ]
+                  },
+                  {
+                    "type": "planet-in-degrees",
+                    "planet": "SELF",
+                    "from": 2,
+                    "to": 3
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MARS"
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED"
+                    ]
+                  },
+                  {
+                    "type": "planet-in-degrees",
+                    "planet": "SELF",
+                    "from": 27,
+                    "to": 28
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MERCURY"
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED"
+                    ]
+                  },
+                  {
+                    "type": "planet-in-degrees",
+                    "planet": "SELF",
+                    "from": 14,
+                    "to": 15
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "JUPITER"
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED"
+                    ]
+                  },
+                  {
+                    "type": "planet-in-degrees",
+                    "planet": "SELF",
+                    "from": 4,
+                    "to": 5
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "VENUS"
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED"
+                    ]
+                  },
+                  {
+                    "type": "planet-in-degrees",
+                    "planet": "SELF",
+                    "from": 26,
+                    "to": 27
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SATURN"
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED"
+                    ]
+                  },
+                  {
+                    "type": "planet-in-degrees",
+                    "planet": "SELF",
+                    "from": 19,
+                    "to": 20
+                  }
+                ]
+              }
+            ]
+          },
+          "atLeast": 1,
+          "atMost": 1
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": "SUN",
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 9,
+                  "to": 10
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "SUN",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "SUN"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": "MOON",
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 2,
+                  "to": 3
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MOON",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "MOON"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": "MARS",
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MARS",
+                  "from": 27,
+                  "to": 28
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MARS",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "MARS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": "MERCURY",
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MERCURY",
+                  "from": 14,
+                  "to": 15
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MERCURY",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "MERCURY"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": "JUPITER",
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "JUPITER",
+                  "from": 4,
+                  "to": 5
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "JUPITER",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "JUPITER"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": "VENUS",
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "VENUS",
+                  "from": 26,
+                  "to": 27
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "VENUS",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "VENUS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": "SATURN",
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SATURN",
+                  "from": 19,
+                  "to": 20
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "SATURN",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "SATURN"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_ONE_DEBILITATED_RETROGRADE",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "3",
+        "rank": 1,
+        "note": "Exactly one debilitated graha with bright rays (uncombust), retrograde and in a house other than the sixth, eighth or twelfth; only Mars to Saturn can be retrograde. This is the retrograde cancellation C87 asked the source of. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "planet-combust",
+                  "planet": "SELF"
+                }
+              },
+              {
+                "type": "planet-retrograde",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  7,
+                  9,
+                  10,
+                  11
+                ]
+              }
+            ]
+          },
+          "atLeast": 1,
+          "atMost": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the equal of a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_ONE_LORD_OF_GAIN_IN_A_KENDRA_FROM_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "25",
+        "rank": 1,
+        "note": "Exactly one of the lords of the eleventh, ninth and second in a kendra from the Moon, and Jupiter the lord of the second, fifth or eleventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 11
+              },
+              "reference": "MOON",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 9
+              },
+              "reference": "MOON",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "MOON",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            }
+          ],
+          "atLeast": 1,
+          "atMost": 1
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": "JUPITER",
+              "as": {
+                "lordOf": 2
+              }
+            },
+            {
+              "type": "same-body",
+              "of": "JUPITER",
+              "as": {
+                "lordOf": 5
+              }
+            },
+            {
+              "type": "same-body",
+              "of": "JUPITER",
+              "as": {
+                "lordOf": 11
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the ruler of a full-blown empire"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_PISCES_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "15",
+        "rank": 1,
+        "note": "Venus, Jupiter and Saturn in Pisces, the Moon exalted, the Sun aspected by Mars and Aries rising. The verse's Moon 'almost full' is not asked: a full Moon in Taurus puts the Sun near Scorpio, from where Venus cannot reach Pisces (C472). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MARS",
+          "target": "SUN"
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king whose marching army raises dust enough to hide the Sun"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_SAGITTARIUS_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "10",
+        "rank": 1,
+        "note": "The Sun and the Moon in Sagittarius, Saturn in the lagna and Mars exalted; Sastri's note lets Saturn rise in Sagittarius, Pisces or Libra. The Sun 'in the centre' of the sign and Mars 'of much power' are not asked apart (C472). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MARS",
+          "dignities": [
+            "EXALTED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a mighty king whose enemies, overwhelmed by his valour, pay him homage from afar"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_STRONG_LAGNA_LORD_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "20",
+        "rank": 1,
+        "note": "The lagna lord strong in a kendra. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler of men"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_STRONG_LAGNA_LORD_SECOND_WITH_VENUS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "8",
+        "rank": 1,
+        "note": "The lagna lord strong in the second, a sign neither its debilitation nor an enemy's, joined by Venus. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": {
+              "lordOf": 1
+            },
+            "dignities": [
+              "DEBILITATED",
+              "ENEMY",
+              "GREAT_ENEMY"
+            ]
+          }
+        },
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            {
+              "lordOf": 1
+            },
+            "VENUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_STRONG_MERCURY_IN_A_KENDRA_ASPECTED_BY_JUPITER",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "20",
+        "rank": 1,
+        "note": "Mercury strong in a kendra, as the lagna lord is in the same verse, and aspected by Jupiter. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "MERCURY"
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "MERCURY"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MERCURY"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "one whose orders kings obey"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_SUN_AND_VENUS_FOURTH",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "24",
+        "rank": 1,
+        "note": "The Sun and Venus in the fourth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_SUN_IN_OWN_NAVAMSHA_MOON_IN_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "21",
+        "rank": 1,
+        "note": "The Sun in a navamsha of Leo, his own, and the Moon in Cancer, hers. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SUN"
+          },
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king with horses and elephants"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_THREE_DIGNIFIED_IN_KENDRAS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "1",
+        "rank": 1,
+        "note": "Three or four grahas exalted or in their own signs, each in a kendra. Own sign takes in the moolatrikona, which is a part of it, as ch. 6 reads it. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              },
+              {
+                "type": "planet-in-kendra",
+                "planet": "SELF"
+              }
+            ]
+          },
+          "atLeast": 3,
+          "atMost": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of wide renown"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_TWO_DEBILITATED_RETROGRADE",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "3",
+        "rank": 1,
+        "note": "Two or three such grahas. A debilitated graha with bright rays (uncombust), retrograde and in a house other than the sixth, eighth or twelfth; only Mars to Saturn can be retrograde. This is the retrograde cancellation C87 asked the source of. The verse's 'many' in good signs or amsas, crowned with the insignia, is a larger count of the same and is not built apart. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "planet-combust",
+                  "planet": "SELF"
+                }
+              },
+              {
+                "type": "planet-retrograde",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  7,
+                  9,
+                  10,
+                  11
+                ]
+              }
+            ]
+          },
+          "atLeast": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_TWO_WITH_DIG_BALA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "4",
+        "rank": 1,
+        "note": "Two or three grahas with dig bala. Dig bala is ch. 2 v. 6's: the Sun and Mars in the tenth, the Moon and Venus in the fourth, Mercury and Jupiter in the lagna and Saturn in the seventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SUN"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      10
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MARS"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      10
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MOON"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "VENUS"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "MERCURY"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "JUPITER"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SATURN"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      7
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "atLeast": 2,
+          "atMost": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a victorious king, when born to a royal family"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_VARGOTTAMA_LAGNA_ASPECTED_BY_FOUR",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "5",
+        "rank": 1,
+        "note": "The lagna or the Moon vargottama, and four grahas other than the Moon aspecting the lagna. The verse's 'just rising' is read as the lagna's sign, which a whole-sign aspect reads. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": "LAGNA",
+              "as": {
+                "navamsha": "LAGNA"
+              }
+            },
+            {
+              "type": "same-sign",
+              "of": "MOON",
+              "as": {
+                "navamsha": "MOON"
+              }
+            }
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-house",
+            "from": "SELF",
+            "houseRuled": 1
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though born of a low family"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_VARGOTTAMA_MOON_ASPECTED_BY_A_STRONG_GRAHA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "13",
+        "rank": 1,
+        "note": "The Moon vargottama, aspected by a strong graha, and no malefic in the lagna. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "navamsha": "MOON"
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "MOON"
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor of beautiful body"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_VENUS_ASPECTED_BY_JUPITER",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "20",
+        "rank": 1,
+        "note": "Venus aspected by Jupiter. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "VENUS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, when born to a royal family"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_VENUS_IN_ASHVINI_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "8",
+        "rank": 1,
+        "note": "Venus in Ashvini in the lagna, aspected by three grahas or more. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "VENUS",
+          "nakshatras": [
+            "ASHWINI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": "VENUS"
+          },
+          "atLeast": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who destroys all his enemies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_WATERY_MOON_AWAY_FROM_THE_KENDRAS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "19",
+        "rank": 1,
+        "note": "The Moon so placed in a house other than a kendra, and no malefic in a kendra. The watery signs are ch. 1's: Cancer, Pisces and the latter half of Capricorn, the navamsha in any of the three. A benefic's varga is read as the sign of Mercury, Jupiter or Venus, and her own as Cancer or her exaltation (C472). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-kendra",
+            "planet": "MOON"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "CANCER",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-sign",
+                      "planet": "MOON",
+                      "signs": [
+                        "CAPRICORN"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-degrees",
+                      "planet": "MOON",
+                      "from": 15,
+                      "to": 30
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": {
+                    "navamsha": "MOON"
+                  },
+                  "signs": [
+                    "CANCER",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": "MOON",
+              "dignities": [
+                "EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": "MOON",
+              "signs": [
+                "TAURUS",
+                "GEMINI",
+                "VIRGO",
+                "LIBRA",
+                "SAGITTARIUS",
+                "PISCES"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king with many elephants who oppresses his people"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_WATERY_MOON_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "19",
+        "rank": 1,
+        "note": "The Moon in the lagna in a watery sign or navamsha, or in her own varga or a benefic's. The watery signs are ch. 1's: Cancer, Pisces and the latter half of Capricorn, the navamsha in any of the three. A benefic's varga is read as the sign of Mercury, Jupiter or Venus, and her own as Cancer or her exaltation (C472). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "CANCER",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-sign",
+                      "planet": "MOON",
+                      "signs": [
+                        "CAPRICORN"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-degrees",
+                      "planet": "MOON",
+                      "from": 15,
+                      "to": 30
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": {
+                    "navamsha": "MOON"
+                  },
+                  "signs": [
+                    "CANCER",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": "MOON",
+              "dignities": [
+                "EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": "MOON",
+              "signs": [
+                "TAURUS",
+                "GEMINI",
+                "VIRGO",
+                "LIBRA",
+                "SAGITTARIUS",
+                "PISCES"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king good to his subjects, with many elephants"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHARAJA_WHITE_MOON_ASPECTED_BY_A_DIGNIFIED_GRAHA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "7",
+        "verse": "7",
+        "rank": 1,
+        "note": "The Moon full, aspected by a graha exalted or in its own sign. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, in which ch. 19 v. 8 gives her full strength. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "MOON"
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, though low-born"
+        }
+      ]
+    }
+  ]
+}

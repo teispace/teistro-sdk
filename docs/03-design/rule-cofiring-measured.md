@@ -2,11 +2,11 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 1986 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1904 rules hold at least once and 82 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2032 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1943 rules hold at least once and 89 never do.
 
-Rules holding on the same 5 or more charts form 118 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 120 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
-- **78 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
+- **80 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
 - **4 groups: one text says it twice**, where the table below says.
 
@@ -70,6 +70,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 2013 | `LUNAR_MOON_IN_APOKLIMA_FROM_THE_SUN`<br>`PHALADEEPIKA_VARISHTHA` |
 | 2013 | `LUNAR_MOON_IN_KENDRA_FROM_THE_SUN`<br>`PHALADEEPIKA_ADHAMA` |
 | 1974 | `LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN`<br>`PHALADEEPIKA_SAMA` |
+| 1861 | `ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA`<br>`PHALADEEPIKA_MAHARAJA_STRONG_LAGNA_LORD_IN_A_KENDRA` |
 | 1515 | `DWIGRAHA_MERCURY_VENUS`<br>`PARIJATA_TOGETHER_MERCURY_VENUS` |
 | 1380 | `DWIGRAHA_SUN_VENUS`<br>`PARIJATA_TOGETHER_SUN_VENUS` |
 | 826 | `DWIGRAHA_MARS_VENUS`<br>`PARIJATA_TOGETHER_MARS_VENUS` |
@@ -135,6 +136,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 118 | `CHANDRA_IN_CANCER_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_CANCER_ASPECTED_BY_JUPITER` |
 | 118 | `CHANDRA_IN_SAGITTARIUS_ASPECTED_BY_SATURN`<br>`SARAVALI_MOON_IN_SAGITTARIUS_ASPECTED_BY_SATURN` |
 | 115 | `CHANDRA_IN_TAURUS_ASPECTED_BY_MARS`<br>`SARAVALI_MOON_IN_TAURUS_ASPECTED_BY_MARS` |
+| 115 | `PHALADEEPIKA_MAHARAJA_SUN_AND_VENUS_FOURTH`<br>`SARAVALI_SUN_VENUS_IN_BHAVA_4` |
 | 114 | `CHANDRA_IN_TAURUS_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_TAURUS_ASPECTED_BY_JUPITER` |
 | 112 | `CHANDRA_IN_LEO_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_LEO_ASPECTED_BY_JUPITER` |
 | 110 | `CHANDRA_IN_CANCER_ASPECTED_BY_MARS`<br>`SARAVALI_MOON_IN_CANCER_ASPECTED_BY_MARS` |
@@ -204,6 +206,12 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `PHALADEEPIKA_MAHAPURUSHA_FIVE` | 2545713 | 27.7172, 85.324 |
 | `PHALADEEPIKA_DURYOGA_OF_THE_LORDS` | 2386911.0833 | 27.7172, 85.324 |
 | `PHALADEEPIKA_KING_BY_THE_LORDS` | 2438440.1668 | 27.7172, 85.324 |
+| `PHALADEEPIKA_MAHARAJA_FIVE_DIGNIFIED_IN_KENDRAS` | 2426839.0139 | 27.7172, 85.324 |
+| `PHALADEEPIKA_MAHARAJA_FULL_MOON_THREE_IN_OWN_NAVAMSHAS` | 2379392.2917 | 27.7172, 85.324 |
+| `PHALADEEPIKA_MAHARAJA_MOON_IN_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_VENUS` | 2381876.4167 | 27.7172, 85.324 |
+| `PHALADEEPIKA_MAHARAJA_NIGHT_MOON_IN_CANCER_TENTH` | 2383287.25 | 27.7172, 85.324 |
+| `PHALADEEPIKA_MAHARAJA_SAGITTARIUS_FIGURE` | 2381414.3333 | 27.7172, 85.324 |
+| `PHALADEEPIKA_MAHARAJA_VENUS_IN_ASHVINI_RISING` | 2380836.4028 | 27.7172, 85.324 |
 | `PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON` | 2417139 | 27.7172, -89.502 |
 | `PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_LAGNA_LORD_EXALTED` | 2416949 | 27.7172, 48.39 |
 | `PARIJATA_SUN_SATURN_MARS_IN_LAGNA_WANING_MOON_IN_A_VENUS_SEVENTH` | 2425223.25 | 27.7172, 169.281 |
@@ -237,6 +245,7 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `PARIJATA_MOON_IN_LEO_SUN_AND_SATURN_EIGHTH_VENUS_ASPECTING` | Venus casts only the seventh aspect and never stands seventh from the Sun. The verse holds under the partial aspects Jataka Parijata ch. 2 counts, which the condition language does not read. |
 | `PARIJATA_SATURN_DEVALOKA_MARS_PARAVATA_JUPITER_SIMHASANA_RISING` | Saturn in seven or eight of his own vargas of the ten and Mars in six meet on about thirty days from 1800 to 2398 (the half-daily sky), and Jupiter then holds at most four of his, never the five the verse asks. |
 | `PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA` | A lagna's strength is its bhava bala, which has no required figure for it to fall short of, so no chart carries a weak lagna. |
+| `PHALADEEPIKA_MAHARAJA_PISCES_FIGURE` | Of the 68 days from 1801 to 2398 with Venus, Jupiter and Saturn in Pisces, the Moon stands in Taurus for 164 hours, and in none of them does Mars aspect the Sun. |
 | `SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA` | Four days from 1800 to 2400, all in 1895, have Jupiter in Cancer, Mercury and Saturn in Libra and the Sun, Mars and Venus as the rule asks, and on them the Moon is in Libra to Sagittarius, never Cancer. |
 | `SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON` | A Moon aspecting the second while the Sun stands in it is opposite the Sun, near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there. |
 | `SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY` | Mercury casts only the seventh aspect and keeps near the Sun, so the Moon he aspects is near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there. |

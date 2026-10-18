@@ -27,7 +27,9 @@
 //! included, so it runs in verify rather than fast-check.
 //!
 //! `cargo xtask cofiring` writes the page; `check-cofiring` regenerates it
-//! in memory and fails on any difference.
+//! in memory and fails on any difference. `cargo xtask cofiring-probe` finds
+//! a fixture: given instants narrowed elsewhere on placements alone, it says
+//! which the SDK holds a rule on.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
@@ -110,7 +112,7 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// and a place, its latitude and longitude, where it does: rare rules,
 /// shown alive. Each was found at Kathmandu's latitude, on the meridian
 /// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 62] = [
+const FIXTURES: [(&str, f64, f64, f64); 68] = [
     (
         "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
         2_415_023.166_67,
@@ -260,6 +262,58 @@ const FIXTURES: [(&str, f64, f64, f64); 62] = [
         27.7172,
         85.324,
     ),
+    // Phaladeepika ch. 7's figures the computed sky misses, each found by
+    // narrowing instants on placements and asking `cofiring-probe`.
+    // The Sun and Mars in Aries, the Moon and Jupiter in Cancer and Saturn in
+    // Capricorn, angular to one another: 47 quarter-days of 1801 to 2398 have
+    // five so, and an angular lagna 51 of their 216 twenty-minute steps here.
+    (
+        "PHALADEEPIKA_MAHARAJA_FIVE_DIGNIFIED_IN_KENDRAS",
+        2_426_839.013_9,
+        27.7172,
+        85.324,
+    ),
+    // The full Moon and three strong grahas in their own navamshas, each
+    // aspected by a benefic: 3 of 9000 instants narrowed on placements.
+    (
+        "PHALADEEPIKA_MAHARAJA_FULL_MOON_THREE_IN_OWN_NAVAMSHAS",
+        2_379_392.291_7,
+        27.7172,
+        85.324,
+    ),
+    // With Venus opposite the Moon the Sun is her temporary enemy, so only
+    // Mercury in the fourth or tenth from her, the Moon in his navamsha, makes
+    // its lord a great friend: 1865 of the 2057 half-hours so placed hold it.
+    (
+        "PHALADEEPIKA_MAHARAJA_MOON_IN_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_VENUS",
+        2_381_876.416_7,
+        27.7172,
+        85.324,
+    ),
+    // Mercury, Jupiter and Venus bright in kendras at night, the one state of
+    // the verse's three they can share: 25 of 1800 narrowed instants.
+    (
+        "PHALADEEPIKA_MAHARAJA_NIGHT_MOON_IN_CANCER_TENTH",
+        2_383_287.250_0,
+        27.7172,
+        85.324,
+    ),
+    // The Sun and the Moon in Sagittarius, Saturn rising and Mars exalted: 15
+    // of 1800 narrowed instants.
+    (
+        "PHALADEEPIKA_MAHARAJA_SAGITTARIUS_FIGURE",
+        2_381_414.333_3,
+        27.7172,
+        85.324,
+    ),
+    // Venus rising in Ashvini under the aspect of three of the Moon, Mars,
+    // Jupiter and Saturn: 5 of 1800 narrowed instants.
+    (
+        "PHALADEEPIKA_MAHARAJA_VENUS_IN_ASHVINI_RISING",
+        2_380_836.402_8,
+        27.7172,
+        85.324,
+    ),
     (
         "PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON",
         2_417_139.0,
@@ -329,7 +383,7 @@ const FIXTURES: [(&str, f64, f64, f64); 62] = [
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 20] = [
+const UNSEEN: [(&str, &str); 21] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -400,6 +454,10 @@ const UNSEEN: [(&str, &str); 20] = [
          of, so no chart carries a weak lagna.",
     ),
     (
+        "PHALADEEPIKA_MAHARAJA_PISCES_FIGURE",
+        "Of the 68 days from 1801 to 2398 with Venus, Jupiter and Saturn in Pisces, the Moon stands in Taurus for 164 hours, and in none of them does Mars aspect the Sun.",
+    ),
+    (
         "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA",
         "Four days from 1800 to 2400, all in 1895, have Jupiter in Cancer, Mercury and Saturn in Libra and the Sun, Mars and Venus as the rule asks, and on them the Moon is in Libra to Sagittarius, never Cancer.",
     ),
@@ -448,22 +506,30 @@ struct Sky {
     fixed: BTreeSet<String>,
 }
 
-fn sky() -> Result<Sky, String> {
-    let sdk = Context::builder()
+/// The context every chart of the page is cast in: the built-in ephemeris,
+/// as a consumer's default.
+fn context() -> Result<Context, String> {
+    Context::builder()
         .ephemeris([Ephemeris::Builtin])
         .build()
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())
+}
+
+/// A chart at a latitude and longitude, its clock UTC.
+fn request((latitude, longitude): (f64, f64)) -> Result<ChartRequest, String> {
+    let place = Place::new(
+        Latitude::try_new(latitude).map_err(|e| e.to_string())?,
+        Longitude::try_new(longitude).map_err(|e| e.to_string())?,
+        Altitude::try_new(0.0).map_err(|e| e.to_string())?,
+    );
+    Ok(ChartRequest::at(place, UtcOffset::UTC))
+}
+
+fn sky() -> Result<Sky, String> {
+    let sdk = context()?;
     let set = RuleRequest::shipped(ShippedRules::ALL)
         .rule_set()
         .map_err(|e| e.to_string())?;
-    let request = |(latitude, longitude): (f64, f64)| -> Result<ChartRequest, String> {
-        let place = Place::new(
-            Latitude::try_new(latitude).map_err(|e| e.to_string())?,
-            Longitude::try_new(longitude).map_err(|e| e.to_string())?,
-            Altitude::try_new(0.0).map_err(|e| e.to_string())?,
-        );
-        Ok(ChartRequest::at(place, UtcOffset::UTC))
-    };
     let mut held: BTreeMap<String, Vec<u32>> = BTreeMap::new();
     let mut chart = 0_u32;
     for (place, at) in PLACES.into_iter().zip(0..) {
@@ -667,7 +733,8 @@ fn unseen_refusals(sky: &Sky) -> Result<(), String> {
         if !sky.held.contains_key(key) && !listed.contains(&key) {
             found.push(format!(
                 "`{key}` holds on no chart of the sky; find an instant and a place where it holds \
-                 and list it in FIXTURES, or say in UNSEEN why none can"
+                 (`cargo xtask cofiring-probe` asks the SDK of candidate instants) and list it in \
+                 FIXTURES, or say in UNSEEN why none can"
             ));
         }
         let always = ALWAYS.iter().any(|(listed, _)| *listed == key);
@@ -855,6 +922,78 @@ fn page() -> Result<String, String> {
 
 fn outputs() -> Result<[Output; 1], String> {
     Ok([Output::new(PAGE, page()?)])
+}
+
+/// `cofiring-probe FILE KEYS [LATITUDE LONGITUDE]`: which of the instants in
+/// `FILE`, one Julian day (UTC) a line, hold each of the comma-separated
+/// rule `KEYS`, at Kathmandu unless a place is given. A fixture for a rule
+/// the sky misses is found by narrowing the instants elsewhere, on
+/// placements alone, and asking the SDK here which of them it holds on.
+pub(crate) fn probe(args: &[String]) -> i32 {
+    match probed(args) {
+        Ok(()) => 0,
+        Err(error) => {
+            eprintln!("cofiring-probe: {error}");
+            2
+        }
+    }
+}
+
+fn probed(args: &[String]) -> Result<(), String> {
+    let usage = "usage: cofiring-probe FILE KEYS [LATITUDE LONGITUDE]";
+    let [_, file, keys, ..] = args else {
+        return Err(usage.to_owned());
+    };
+    let place = match args.get(3..) {
+        Some([latitude, longitude]) => (
+            latitude
+                .parse()
+                .map_err(|_| format!("latitude {latitude}"))?,
+            longitude
+                .parse()
+                .map_err(|_| format!("longitude {longitude}"))?,
+        ),
+        Some([]) | None => PLACES[0],
+        Some(_) => return Err(usage.to_owned()),
+    };
+    let keys: BTreeSet<&str> = keys.split(',').collect();
+    let text = std::fs::read_to_string(file).map_err(|e| format!("{file}: {e}"))?;
+    let instants = text
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| {
+            line.trim()
+                .parse()
+                .map(JulianDay::literal)
+                .map_err(|_| format!("{file}: `{line}` is not a Julian day"))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let set = RuleRequest::shipped(ShippedRules::ALL)
+        .rule_set()
+        .map_err(|e| e.to_string())?;
+    let read = context()?
+        .chart()
+        .readings_with_rules(&instants, &request(place)?, &set)
+        .map_err(|e| e.to_string())?
+        .value;
+    let mut held: BTreeMap<&str, Vec<f64>> = keys.iter().map(|key| (*key, Vec::new())).collect();
+    for ((_, reading), at) in read.iter().zip(&instants) {
+        for present in &reading.present {
+            if let Some(list) = held.get_mut(present.rule.key.as_str()) {
+                list.push(at.get());
+            }
+        }
+    }
+    for (key, at) in held {
+        let first: Vec<String> = at.iter().take(5).map(|jd| format!("{jd:.4}")).collect();
+        println!(
+            "{key}: {} of {} [{}]",
+            at.len(),
+            instants.len(),
+            first.join(", ")
+        );
+    }
+    Ok(())
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {

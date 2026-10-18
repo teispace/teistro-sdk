@@ -671,6 +671,38 @@ page's fixture. v. 70's two need every lord placed and strong or weak as
 the verse asks: of 4820 instants with the places right, 108 have the
 Duryoga's strengths and 13 the king's, and one of each is a fixture.
 
+**Phaladeepika ch. 7's Maharaja yogas, built (2026-10-18).** The chapter
+gathers the figures that make a king, read in V. Subrahmanya Sastri's 1937
+translation with the Sanskrit of the same print beside it, and ships as
+`classical-phaladeepika-raja.json`, 46 rules in the nabhasa set under the
+keys `PHALADEEPIKA_MAHARAJA_*`, each with its effect in words:
+- **vv. 1 to 6:** grahas dignified in kendras, three and five; a debilitated
+  graha bright, retrograde and well placed, one and two or three; dig bala,
+  two and four, by ch. 2 v. 6's houses; a vargottama lagna or Moon with the
+  lagna aspected by four; the lords of the lagna and the ninth vargottama.
+- **vv. 7 to 23:** the Moon's figures: full (ch. 19 v. 8's middle ten days
+  of the month), vargottama, in a Leo navamsha, in Pisces, exalted, in a
+  great friend's navamsha; Venus in Ashvini rising; Mars rising in a fiery
+  sign; the ninth and tenth lords exchanged; the Sagittarius and Pisces
+  figures (C472); the night birth with the Moon in Cancer in the tenth
+  (C473); the Moon's watery signs, ch. 1's, rising or away from the kendras
+  (C474); a graha at ch. 1 v. 6's highest exaltation degree.
+- **vv. 24 and 25:** the four yogas "the learned declare" (C473), and one
+  lord of gain in a kendra from the Moon with Jupiter a lord of wealth.
+- **vv. 26 to 30:** the debilitated graha lifted, Sastri's five kinds: a lord
+  of its debilitation or exaltation sign in a kendra from the lagna or the
+  Moon, the graha exalted in its sign there, the two lords in kendras from
+  each other, the sign's lord aspecting it (and again in a good house), and
+  the debilitated graha itself in a kendra.
+
+v. 2 gives the royal-born v. 1's three and is not built again; where a verse
+asks a royal family, the effect says so, since a chart does not know it.
+Reading vv. 26 to 30 settles part of C87: Phaladeepika gives the lords in
+kendras and the graha exalted there, which the shipped Neecha Bhanga rules
+share, and the retrograde graha at ch. 7 v. 3, but not the own navamsha,
+the navamsha exaltation or a benefic's drishti, which neither ch. 6 nor
+ch. 7 carries.
+
 **BPHS ch. 83's curses, built (2026-10-14).** The chapter reads, from the
 fifth house, the curse in a former birth that denies a son, and gives each
 curse its remedy. As `classical-bphs-shapa.json`, 76 rules join the
