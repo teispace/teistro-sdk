@@ -5597,6 +5597,7 @@ final class Charts {
     required this.dispositorEndMembers,
     required this.sarvatobhadra,
     required this.tithiPravesha,
+    required this.dossier,
   });
 
   /// What kind of chart these are.
@@ -6051,6 +6052,9 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each an array with one row per year found, `1` up, in order (`03-design/tithi-pravesha.md`). A row is `{year, at, solarReturn, elongationDeg, rule, picked, inSign}`: `year` counted as `praveshas.year` counts it; `at` the instant the Moon's elongation from the Sun returns to the birth's, a UTC Julian day, where the year's chart is founded; `solarReturn` the year's sidereal solar return, UTC; `elongationDeg` the birth's directed elongation, `[0, 360)`; `rule` the rule asked for and `picked` the rule that chose the instant, `NATAL_SIGN` or `NEAREST_RETURN`, which differ where the natal sign held no phase return (C446); `inSign` how many phase returns fell while the Sun was in its natal sign, 0 to 2. A chart can hold fewer rows than `through` asked for where the ephemeris ends first. Empty when `tithi_pravesha_json` asked for none.
   final String tithiPravesha;
 
+  /// UTF-8 JSON, canonical: an array with one string per chart, its dossier for a language model (`03-design/dossier.md`): the line `# teistro dossier 1`, a legend of the sections written, then each section as a `== NAME ==` banner, a `#` header naming its `|`-separated columns, and its rows. The same chart under the same record is the same text. Empty when `dossier_json` asked for none.
+  final String dossier;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -6194,6 +6198,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atDispositorEndMembers = blob.section(134, 'dispositor_end_members');
   final atSarvatobhadra = blob.section(135, 'sarvatobhadra');
   final atTithiPravesha = blob.section(136, 'tithi_pravesha');
+  final atDossier = blob.section(137, 'dossier');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -11035,6 +11040,7 @@ Charts decodeCharts(Uint8List bytes) {
     ),
     sarvatobhadra: blob.text(atSarvatobhadra),
     tithiPravesha: blob.text(atTithiPravesha),
+    dossier: blob.text(atDossier),
   );
 }
 

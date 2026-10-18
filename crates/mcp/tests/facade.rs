@@ -520,6 +520,10 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
             "tithiPravesha",
             json!({"through": 2, "rule": "NEAREST_RETURN"}),
         ),
+        (
+            "dossier",
+            json!({"sections": ["GRAHAS", "SHADBALA"], "dashaDepth": 2, "at": 2_460_676.5}),
+        ),
     ];
     let mut server = Server::new(Engine::Builtin).with_detail(Detail::Full);
     let tool = listed(&mut server)

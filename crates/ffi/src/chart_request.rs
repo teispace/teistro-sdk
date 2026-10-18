@@ -521,6 +521,21 @@ pub struct TsChartRequest {
     /// `tithiPravesha.through`.
     /// `api: nullable example={"through":40,"rule":"NATAL_SIGN"}`
     pub tithi_pravesha_json: *const c_char,
+    /// Every chart written as a dossier for a language model, as a JSON
+    /// object: optionally `sections` (keys, written in the dossier's own
+    /// order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
+    /// `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+    /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
+    /// section one flag computes widens the request with it), `preset`
+    /// (`"FULL"`, the default, every section the chart carries, or
+    /// `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
+    /// marked and their branch expanded; date-free when left out),
+    /// `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
+    /// left out). Each chart's text comes back in the `dossier` section.
+    /// Null for none (`03-design/dossier.md`). Refusals are named from the
+    /// record every binding calls `dossier`, as `dossier.sections[0]`.
+    /// `api: nullable example={"preset":"FULL","dashaDepth":2}`
+    pub dossier_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**

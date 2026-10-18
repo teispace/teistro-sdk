@@ -166,6 +166,7 @@ public final class Charts {
     private final DispositorEndMembers dispositorEndMembers;
     private final String sarvatobhadra;
     private final String tithiPravesha;
+    private final String dossier;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -322,6 +323,7 @@ public final class Charts {
         this.dispositorEndMembers = new DispositorEndMembers(blob, 134, "dispositor_end_members");
         this.sarvatobhadra = blob.text(135, "sarvatobhadra");
         this.tithiPravesha = blob.text(136, "tithi_pravesha");
+        this.dossier = blob.text(137, "dossier");
     }
 
     /**
@@ -1701,6 +1703,15 @@ public final class Charts {
      */
     public String tithiPravesha() {
         return tithiPravesha;
+    }
+
+    /**
+     * UTF-8 JSON, canonical: an array with one string per chart, its dossier for a language model (`03-design/dossier.md`): the line `# teistro dossier 1`, a legend of the sections written, then each section as a `== NAME ==` banner, a `#` header naming its `|`-separated columns, and its rows. The same chart under the same record is the same text. Empty when `dossier_json` asked for none.
+     *
+     * @return the dossier
+     */
+    public String dossier() {
+        return dossier;
     }
 
 

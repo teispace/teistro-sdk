@@ -1378,6 +1378,22 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
   external ffi.Pointer<ffi.Char> tithiPraveshaJson;
 
+  /// Every chart written as a dossier for a language model, as a JSON
+  /// object: optionally `sections` (keys, written in the dossier's own
+  /// order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
+  /// `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+  /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
+  /// section one flag computes widens the request with it), `preset`
+  /// (`"FULL"`, the default, every section the chart carries, or
+  /// `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
+  /// marked and their branch expanded; date-free when left out),
+  /// `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
+  /// left out). Each chart's text comes back in the `dossier` section.
+  /// Null for none (`03-design/dossier.md`). Refusals are named from the
+  /// record every binding calls `dossier`, as `dossier.sections0`.
+  /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
+  external ffi.Pointer<ffi.Char> dossierJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3457,7 +3473,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson, this.tithiPraveshaJson});
+  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson, this.tithiPraveshaJson, this.dossierJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3984,8 +4000,24 @@ final class ChartRequest {
   /// Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
   final String? tithiPraveshaJson;
 
+  /// Every chart written as a dossier for a language model, as a JSON
+  /// object: optionally `sections` (keys, written in the dossier's own
+  /// order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
+  /// `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+  /// `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
+  /// section one flag computes widens the request with it), `preset`
+  /// (`"FULL"`, the default, every section the chart carries, or
+  /// `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
+  /// marked and their branch expanded; date-free when left out),
+  /// `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
+  /// left out). Each chart's text comes back in the `dossier` section.
+  /// Null for none (`03-design/dossier.md`). Refusals are named from the
+  /// record every binding calls `dossier`, as `dossier.sections0`.
+  /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
+  final String? dossierJson;
+
   /// This value with the fields given replaced, and the rest kept.
-  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson, String? tithiPraveshaJson}) => ChartRequest(
+  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson, String? tithiPraveshaJson, String? dossierJson}) => ChartRequest(
     kind: kind ?? this.kind,
     lilith: lilith ?? this.lilith,
     instants: instants ?? this.instants,
@@ -4025,6 +4057,7 @@ final class ChartRequest {
     lalkitabJson: lalkitabJson ?? this.lalkitabJson,
     sarvatobhadraJson: sarvatobhadraJson ?? this.sarvatobhadraJson,
     tithiPraveshaJson: tithiPraveshaJson ?? this.tithiPraveshaJson,
+    dossierJson: dossierJson ?? this.dossierJson,
   );
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -4151,6 +4184,9 @@ final class ChartRequest {
     raw.tithiPraveshaJson = tithiPraveshaJson == null
         ? ffi.nullptr
         : tithiPraveshaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.dossierJson = dossierJson == null
+        ? ffi.nullptr
+        : dossierJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -4261,6 +4297,9 @@ final class ChartRequest {
         tithiPraveshaJson: raw.tithiPraveshaJson == ffi.nullptr
             ? null
             : raw.tithiPraveshaJson.cast<pkg_ffi.Utf8>().toDartString(),
+        dossierJson: raw.dossierJson == ffi.nullptr
+            ? null
+            : raw.dossierJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

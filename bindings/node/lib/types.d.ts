@@ -1278,6 +1278,24 @@ export interface ChartRequest {
    * @nullable
    */
   readonly tithiPraveshaJson?: string;
+  /**
+   * Every chart written as a dossier for a language model, as a JSON
+   * object: optionally `sections` (keys, written in the dossier's own
+   * order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
+   * `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+   * `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
+   * section one flag computes widens the request with it), `preset`
+   * (`"FULL"`, the default, every section the chart carries, or
+   * `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
+   * marked and their branch expanded; date-free when left out),
+   * `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
+   * left out). Each chart's text comes back in the `dossier` section.
+   * Null for none (`03-design/dossier.md`). Refusals are named from the
+   * record every binding calls `dossier`, as `dossier.sections0`.
+   * @example {"preset":"FULL","dashaDepth":2}
+   * @nullable
+   */
+  readonly dossierJson?: string;
 }
 
 /**

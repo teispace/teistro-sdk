@@ -1985,11 +1985,12 @@ public final class Native {
             ADDRESS.withName("rectification_json"),
             ADDRESS.withName("lalkitab_json"),
             ADDRESS.withName("sarvatobhadra_json"),
-            ADDRESS.withName("tithi_pravesha_json")
+            ADDRESS.withName("tithi_pravesha_json"),
+            ADDRESS.withName("dossier_json")
         ).withName("ts_chart_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 336;
+        public static final long SIZE = 344;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -2769,6 +2770,27 @@ public final class Native {
 
         /** The handle that reads and writes `tithi_pravesha_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle TITHI_PRAVESHA_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("tithi_pravesha_json"));
+
+        /**
+         * The offset of `dossier_json`. Every chart written as a dossier for a language model, as a JSON
+         * object: optionally `sections` (keys, written in the dossier's own
+         * order: `CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`, `DASHAS`,
+         * `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
+         * `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`; a
+         * section one flag computes widens the request with it), `preset`
+         * (`"FULL"`, the default, every section the chart carries, or
+         * `"FAMILY"`), `at` (a UTC Julian day: the running dasha periods
+         * marked and their branch expanded; date-free when left out),
+         * `dashaDepth` and `utcOffsetSeconds` (the request's own clock when
+         * left out). Each chart's text comes back in the `dossier` section.
+         * Null for none (`03-design/dossier.md`). Refusals are named from the
+         * record every binding calls `dossier`, as `dossier.sections0`.
+         * Example: {"preset":"FULL","dashaDepth":2}. May be null.
+         */
+        public static final long DOSSIER_JSON_OFFSET = 336;
+
+        /** The handle that reads and writes `dossier_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle DOSSIER_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("dossier_json"));
 
     }
 
