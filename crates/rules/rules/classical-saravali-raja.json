@@ -3030,6 +3030,1886 @@
           "text": "a king whose fame is spotless as moonlight"
         }
       ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MOON_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "106",
+        "rank": 1,
+        "note": "The Moon exalted, even waning; the verse says the full Moon the more so. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_JUPITER_ASPECTS_MERCURY",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "109",
+        "rank": 1,
+        "note": "Jupiter aspecting Mercury. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MERCURY"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king whose commands other kings bear on their heads"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_EXALTED_LAGNA_LORD_ASPECTS_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "110",
+        "rank": 1,
+        "note": "The lagna lord exalted and aspecting the Moon. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 1
+          },
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of great wealth who destroys his enemies with elephants, horses and armies"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_EXALTED_MOON_ASPECTS_MERCURY_AND_VENUS",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "111",
+        "rank": 1,
+        "note": "The Moon exalted, aspecting Mercury and Venus; a variant reads Jupiter and Venus. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "MERCURY"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "VENUS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of high fame and good fortune"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MOON_IN_OWN_OR_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_JUPITER_BY_DAY",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "113",
+        "rank": 1,
+        "note": "A birth by day with the Moon in her own navamsha or a great friend's, aspected by Jupiter. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "birth-by-day"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MOON"
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": "MOON",
+            "dignities": [
+              "OWN_SIGN",
+              "MOOLTRIKONA",
+              "GREAT_FRIEND"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, without doubt"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_STRONG_MOON_SIGN_LORD_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "114",
+        "rank": 1,
+        "note": "The lord of the Moon's sign in a kendra at full strength. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": {
+            "lordOf": "MOON"
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "great wealth, and a king even of a brahmin family"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_SUN_IN_A_GREAT_FRIENDS_SIGN_ASPECTED_BY_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "115",
+        "rank": 1,
+        "note": "The Sun in a great friend's sign, aspected by the Moon. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "SUN",
+          "dignities": [
+            "GREAT_FRIEND"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "SUN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a righteous and wealthy king of the Anga country"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_EXALTED_MERCURY_WITH_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "116",
+        "rank": 1,
+        "note": "Mercury exalted and joined by the Moon. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "VIRGO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of Magadha"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_FULL_AND_STRONG_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "117",
+        "rank": 1,
+        "note": "The Moon full and of the first strength, alone. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, as Phaladeepika ch. 7 reads it. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who subdues his foes"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_JUPITER_IN_CANCER_IN_A_KENDRA_TENTH_FROM_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "119",
+        "rank": 1,
+        "note": "Jupiter in Cancer in a kendra and tenth from the Moon. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "MOON",
+          "houses": [
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "lord of the earth girdled by the four oceans"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_SUN_WITH_THE_MOON_IN_ARIES",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "120",
+        "rank": 1,
+        "note": "The Sun with the Moon in Aries. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "ARIES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of Kerala, Karnata, Andhra, the Dravidas or the Cholas"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_EXALTED_JUPITER_WITH_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "121",
+        "rank": 1,
+        "note": "Jupiter exalted and joined by the Moon. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a lord of the Kashmir country"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_VENUS_AND_JUPITER_DIGNIFIED_OR_WELL_HOUSED",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "122",
+        "rank": 1,
+        "note": "Venus and Jupiter each exalted or in its own sign, or in the lagna, a kendra, the ninth or the eleventh. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "VENUS",
+              "dignities": [
+                "EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                1,
+                4,
+                7,
+                9,
+                10,
+                11
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "JUPITER",
+              "dignities": [
+                "EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                1,
+                4,
+                7,
+                9,
+                10,
+                11
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king born of a royal portion"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_THREE_STRONG_BENEFICS_IN_KENDRAS_APART_FROM_MALEFICS",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "123",
+        "rank": 1,
+        "note": "Three benefics or more strong in kendras, none sharing a sign with a malefic. The verse's strength of place, direction and time is read as the chart's strength. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "MOON",
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-kendra",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    1
+                  ],
+                  "from": "SELF",
+                  "atLeast": 1,
+                  "except": [
+                    "SELF"
+                  ]
+                }
+              }
+            ]
+          },
+          "atLeast": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MERCURY_JUPITER_VENUS_SECOND_FROM_THE_SUN",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "124",
+        "rank": 1,
+        "note": "Mercury, Jupiter and Venus in the second from the Sun, none combust, aspected by or joined with a malefic. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": "MERCURY"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": "MERCURY"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "from": "MERCURY",
+            "except": [
+              "MERCURY"
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": "JUPITER"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": "JUPITER"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "from": "JUPITER",
+            "except": [
+              "JUPITER"
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": "VENUS"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": "VENUS"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "from": "VENUS",
+            "except": [
+              "VENUS"
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king over the three seas"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_JUPITER_SECOND_WITH_VENUS",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "126",
+        "rank": 1,
+        "note": "Jupiter in the second with Venus. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who has conquered his enemies' lands"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_CAPRICORN_RISING_MARS_RISING_BENEFICS_FOURTH",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "128",
+        "rank": 1,
+        "note": "Capricorn rising in a navamsha of Saturn, Mars in the lagna, the Sun in the fifth, and Venus, Jupiter and Mercury in the fourth (C478). Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "LAGNA"
+          },
+          "signs": [
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of the underworld"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_ARIES_FIGURE_JUPITER_NINTH_IN_OWN_NAVAMSHA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "133",
+        "rank": 1,
+        "note": "The Sun, the Moon and Mars in Aries rising, Venus, Saturn and Mercury in Taurus, and Jupiter in Sagittarius in the ninth in his own navamsha, the Sun vargottama. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "JUPITER"
+          },
+          "signs": [
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": "SUN",
+          "as": {
+            "navamsha": "SUN"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who slays his enemies in battle"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_BENEFICS_FIFTH_SUN_SIXTH_MARS_EXALTED_SATURN_NINTH",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "134",
+        "rank": 1,
+        "note": "Venus, Mercury and Jupiter in the fifth, the Sun in the sixth, Mars exalted and Saturn in the ninth. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous king, known for gifts, dharma and valour"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_VIRGO_MERCURY_RISING_JUPITER_PISCES_SATURN_SIXTH",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "136",
+        "rank": 1,
+        "note": "Mercury in Virgo rising, Jupiter in Pisces, Mars strong, Saturn in the sixth and Venus in the fourth. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MARS"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who conquers by his own arm"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_CAPRICORN_SATURN_RISING_SUN_SEVENTH_VENUS_EIGHTH",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "137",
+        "rank": 1,
+        "note": "Saturn in Capricorn rising, the Sun in the seventh, Venus in the eighth, Mars in Scorpio and the Moon in Cancer. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous king over the world"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_CAPRICORN_MARS_RISING_SATURN_NINTH_LUMINARIES_SEVENTH",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "138",
+        "rank": 1,
+        "note": "Capricorn rising with Mars, Saturn in the ninth, and the Sun in the seventh with the Moon. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of fickle nature"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_SATURN_AND_MOON_RISING_JUPITER_SEVENTH_MERCURY_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "139",
+        "rank": 1,
+        "note": "Saturn in the lagna with the Moon, Jupiter in the seventh aspected by Venus, and Mercury exalted (C478). Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "VIRGO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king none can assail"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_JUPITER_IN_SAGITTARIUS_VENUS_RISING_MOON_IN_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "140",
+        "rank": 1,
+        "note": "Jupiter in Sagittarius unaspected by malefics, Venus in the lagna and the Moon in Cancer. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": "JUPITER"
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king devoted to brahmins and gods, who builds wells, tanks and temples"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_PUSHKALA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "145",
+        "rank": 1,
+        "note": "Pushkala: the lord of the Moon's sign in a kendra in a great friend's sign, joined with the lagna lord, at full strength and aspecting the lagna. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": {
+            "lordOf": "MOON"
+          }
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": "MOON"
+          },
+          "dignities": [
+            "GREAT_FRIEND"
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": "MOON"
+          },
+          "as": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": "MOON"
+          }
+        },
+        {
+          "type": "planet-aspects-house",
+          "from": {
+            "lordOf": "MOON"
+          },
+          "houseRuled": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king whose fame spreads, his enemies slain"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_LAGNA_LORD_IN_THE_BEGINNING_OF_ITS_SIGN",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "147",
+        "rank": 1,
+        "note": "The lagna lord in the beginning of its sign, read as its third of thirty degrees. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-degrees",
+          "planet": {
+            "lordOf": 1
+          },
+          "from": 0,
+          "to": 10
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a commander of the king's army"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_LAGNA_LORD_IN_THE_MIDDLE_OF_ITS_SIGN",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "147",
+        "rank": 1,
+        "note": "The lagna lord in the middle of its sign, read as its third of thirty degrees. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-degrees",
+          "planet": {
+            "lordOf": 1
+          },
+          "from": 10,
+          "to": 20
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a lord of a province"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_LAGNA_LORD_IN_THE_END_OF_ITS_SIGN",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "147",
+        "rank": 1,
+        "note": "The lagna lord in the end of its sign, read as its third of thirty degrees. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-degrees",
+          "planet": {
+            "lordOf": 1
+          },
+          "from": 20,
+          "to": 30
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a village headman"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_SUN_RISING_IN_A_ROYAL_NAKSHATRA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "148",
+        "rank": 1,
+        "note": "The Sun in the lagna in Revati, a Phalguni, Mula or Pushya. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "SUN",
+          "nakshatras": [
+            "REVATI",
+            "PURVA_PHALGUNI",
+            "UTTARA_PHALGUNI",
+            "MULA",
+            "PUSHYA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of a land a hundred yojanas wide"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_VENUS_IN_A_ROYAL_NAKSHATRA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "149",
+        "rank": 1,
+        "note": "Venus in Krittika, Revati, Swati, Pushya or Ashvini. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "VENUS",
+          "nakshatras": [
+            "KRITTIKA",
+            "REVATI",
+            "SWATI",
+            "PUSHYA",
+            "ASHWINI"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_EXALTED_LAGNA_NAVAMSHA_LORD_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "150",
+        "rank": 1,
+        "note": "The lord of the lagna's navamsha exalted in a kendra. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": {
+              "navamsha": "LAGNA"
+            }
+          },
+          "dignities": [
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": {
+            "lordOf": {
+              "navamsha": "LAGNA"
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_EXALTED_LAGNA_OR_MOON_SIGN_LORD_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "150",
+        "rank": 1,
+        "note": "The lagna lord or the lord of the Moon's sign exalted in a kendra. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": "MOON"
+                  },
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": {
+                    "lordOf": "MOON"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a rich king"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MARS_TENTH_MOON_AND_VENUS_NINTH_EXALTED_SUN_ELEVENTH",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "152",
+        "rank": 1,
+        "note": "Mars in the tenth, the Moon and Venus in the ninth, and the Sun exalted in the eleventh with Jupiter. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king whose horses' dust fills the quarters"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_SATURN_WITH_THE_MOON_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "154",
+        "rank": 1,
+        "note": "Saturn with the Moon in a kendra. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "SATURN"
+        },
+        {
+          "type": "same-sign",
+          "of": "SATURN",
+          "as": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king rich in elephants, horses, villages and wealth, though born of another man"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_BENEFICS_SECOND_MOON_AND_MARS_SEVENTH",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "155",
+        "rank": 1,
+        "note": "Venus, Jupiter and Mercury in the second, and the Moon and Mars in the seventh. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a broad-chested king who destroys his enemies"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MOON_IN_THE_EIGHTH_DEGREE_OF_AQUARIUS_IN_A_TRIKONA",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "157",
+        "rank": 1,
+        "note": "The Moon in the eighth degree of Aquarius, in a trikona. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "MOON",
+          "from": 7,
+          "to": 8
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            5,
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "surely a king, a blessing to all"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MARS_IN_THE_SEVENTH_NAVAMSHA_OF_ARIES",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "158",
+        "rank": 1,
+        "note": "Mars in the seventh navamsha of Aries. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "MARS",
+          "from": 20,
+          "to": 23.333333333333332
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MOON_IN_THE_FIFTEENTH_OF_AQUARIUS_OR_THE_TENTH_OF_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "159",
+        "rank": 1,
+        "note": "The Moon in the fifteenth degree of Aquarius or the tenth of Cancer. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 14,
+                  "to": 15
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "CANCER"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 9,
+                  "to": 10
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_JUPITER_IN_THE_TWENTIETH_OF_SAGITTARIUS",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "160",
+        "rank": 1,
+        "note": "Jupiter in the twentieth degree of Sagittarius. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "JUPITER",
+          "from": 19,
+          "to": 20
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous king"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MERCURY_IN_THE_FIFTH_NAVAMSHA_OF_LEO",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "160",
+        "rank": 1,
+        "note": "Mercury in the fifth navamsha of Leo. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "MERCURY",
+          "from": 13.333333333333334,
+          "to": 16.666666666666668
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous king"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAJA_MOON_AND_JUPITER_IN_THE_FIRST_FIVE_DEGREES_OF_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Saravali",
+        "chapter": "35",
+        "verse": "163",
+        "rank": 1,
+        "note": "The Moon and Jupiter in Cancer within its first five degrees. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "MOON",
+          "from": 0,
+          "to": 5
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "JUPITER",
+          "from": 0,
+          "to": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king none can assail, like the Sun among the grahas"
+        }
+      ]
     }
   ]
 }

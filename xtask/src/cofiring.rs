@@ -72,7 +72,7 @@ const SPAN_DAYS: f64 = 73_049.0;
 const SUPPORT: usize = 5;
 
 /// One text stating one condition twice, each with where it does.
-const REVIEWED: [(&[&str], &str); 4] = [
+const REVIEWED: [(&[&str], &str); 5] = [
     (
         &[
             "BPHS_ARMY_CHIEF_BY_MALEFICS_THIRD_AND_SIXTH_FROM_ATMAKARAKA",
@@ -106,6 +106,11 @@ const REVIEWED: [(&[&str], &str); 4] = [
          opposite and aspect by the seventh alone, so one in the eighth or the second puts both \
          on it",
     ),
+    (
+        &["SARAVALI_MOON_IN_TAURUS", "SARAVALI_RAJA_MOON_EXALTED"],
+        "Saravali reads the Moon in Taurus in ch. 23 among her signs, and again in ch. 35 v. 106 \
+         as the exalted Moon that makes a king even when waning",
+    ),
 ];
 
 /// Rules the sky never holds, each with an instant (a Julian day in UT)
@@ -113,7 +118,7 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 97] = [
+const FIXTURES: [(&str, f64, f64, f64); 104] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -558,10 +563,52 @@ const FIXTURES: [(&str, f64, f64, f64); 97] = [
         27.7172,
         85.324,
     ),
+    (
+        "SARAVALI_RAJA_BENEFICS_SECOND_MOON_AND_MARS_SEVENTH",
+        2_400_648.319_4,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_CAPRICORN_MARS_RISING_SATURN_NINTH_LUMINARIES_SEVENTH",
+        2_412_303.069_4,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_CAPRICORN_RISING_MARS_RISING_BENEFICS_FOURTH",
+        2_395_064.222_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_CAPRICORN_SATURN_RISING_SUN_SEVENTH_VENUS_EIGHTH",
+        2_480_990.020_8,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_MARS_TENTH_MOON_AND_VENUS_NINTH_EXALTED_SUN_ELEVENTH",
+        2_525_076.659_7,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_MOON_AND_JUPITER_IN_THE_FIRST_FIVE_DEGREES_OF_CANCER",
+        2_378_916.256_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_RAJA_SATURN_AND_MOON_RISING_JUPITER_SEVENTH_MERCURY_EXALTED",
+        2_411_977.493_1,
+        27.7172,
+        85.324,
+    ),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 38] = [
+const UNSEEN: [(&str, &str); 41] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -714,6 +761,18 @@ const UNSEEN: [(&str, &str); 38] = [
     (
         "SARAVALI_RAJA_VIRGO_MERCURY_RISING_MOON_ELEVENTH",
         "No sky from 1801 to 2398 has its six grahas in those signs, searched four times a day.",
+    ),
+    (
+        "SARAVALI_RAJA_ARIES_FIGURE_JUPITER_NINTH_IN_OWN_NAVAMSHA",
+        "No sky from 1801 to 2398 has its seven grahas in those signs, searched every ten minutes of a day they allow.",
+    ),
+    (
+        "SARAVALI_RAJA_BENEFICS_FIFTH_SUN_SIXTH_MARS_EXALTED_SATURN_NINTH",
+        "No sky from 1801 to 2398 has Venus, Mercury and Jupiter together with the Sun a sign on, Mars exalted and Saturn four signs on from them, searched every ten minutes of a day they allow.",
+    ),
+    (
+        "SARAVALI_RAJA_VIRGO_MERCURY_RISING_JUPITER_PISCES_SATURN_SIXTH",
+        "Venus in Sagittarius three signs from Mercury in Virgo needs both near their greatest elongations on either side of the Sun, and no sky from 1801 to 2398 has it with Jupiter in Pisces and Saturn in Aquarius.",
     ),
 ];
 
