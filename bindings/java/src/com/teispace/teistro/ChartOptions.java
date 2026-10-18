@@ -17,6 +17,7 @@ import com.teispace.teistro.request.HouseRequest;
 import com.teispace.teistro.request.KpRequest;
 import com.teispace.teistro.request.LalKitabRequest;
 import com.teispace.teistro.request.SarvatobhadraRequest;
+import com.teispace.teistro.request.DossierOptions;
 import com.teispace.teistro.request.TithiPraveshaRequest;
 import com.teispace.teistro.request.LotRequest;
 import com.teispace.teistro.request.MidpointRequest;
@@ -626,6 +627,19 @@ public record ChartOptions(
          */
         public Builder tithiPravesha(TithiPraveshaRequest request) {
             return json("tithi_pravesha_json", request);
+        }
+
+        /**
+         * Every chart written as a dossier for a language model, as
+         * {@code DossierOptions.builder().sections(List.of("GRAHAS", "DASHAS")).at(2460676.5).build()};
+         * a section a request flag computes widens the request with it
+         * ({@code 03-design/dossier.md}).
+         *
+         * @param request the request; null takes it away
+         * @return this builder
+         */
+        public Builder dossier(DossierOptions request) {
+            return json("dossier_json", request);
         }
 
         /**

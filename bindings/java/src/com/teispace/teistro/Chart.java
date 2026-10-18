@@ -331,6 +331,22 @@ public final class Chart {
     }
 
     /**
+     * The chart written as a dossier for a language model, when it was asked for: the same chart
+     * under the same record is the same text ({@code 03-design/dossier.md}).
+     *
+     * @return the text, empty when it was not asked for
+     */
+    public Optional<String> dossier() {
+        return VedicReads.at(batch().cached("dossier", () -> {
+            String text = batch().decoded().dossier();
+            if (text.isEmpty()) {
+                return List.<String>of();
+            }
+            return List.copyOf(JsonRead.texts(Json.read(text)));
+        }), index());
+    }
+
+    /**
      * The rectification readings, when they were asked for: each member
      * empty unless the request named it.
      *

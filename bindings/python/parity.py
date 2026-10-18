@@ -1264,6 +1264,12 @@ def main() -> None:
             },
             # Three years under the practice's rule.
             tithi_pravesha={"through": 3},
+            dossier={
+                "sections": ["CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS"],
+                "at": 2460676.5,
+                "dashaDepth": 2,
+                "utcOffsetSeconds": 20700,
+            },
             # A varshphal list with the book's structure and none of its
             # numbers: year y sends natal house h to h + y - 1, round the twelve.
             lalkitab={
@@ -2000,6 +2006,9 @@ def main() -> None:
                     f"{number(tp.at)} {number(tp.solar_return)} {number(tp.elongation_deg)}"
                     f" {tp.rule} {tp.picked} {tp.in_sign}",
                 )
+            dossier = chart.dossier
+            assert dossier is not None
+            put(f"chart-{i}-dossier", f"{len(dossier.encode('utf-8'))} {fnv(dossier)}")
             rc = chart.rectification
             assert rc is not None
             put_rectification(f"chart-{i}-rectification", rc)

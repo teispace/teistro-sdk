@@ -3208,6 +3208,49 @@ export interface Sarvatobhadra {
 }
 
 /**
+ * A section of a chart's dossier, in the dossier's own order
+ * (`03-design/dossier.md`).
+ */
+export type DossierSection =
+  | 'CHART'
+  | 'NOW'
+  | 'GRAHAS'
+  | 'HOUSES'
+  | 'VARGAS'
+  | 'DASHAS'
+  | 'PANCHANGA'
+  | 'ASHTAKAVARGA'
+  | 'SHADBALA'
+  | 'BHAVA_BALA'
+  | 'VIMSHOPAKA'
+  | 'JAIMINI'
+  | 'POINTS'
+  | 'ASPECTS'
+  | 'AVAKAHADA';
+
+/**
+ * How every chart is written as a dossier for a language model
+ * (`03-design/dossier.md`). Every member is optional: `{}` writes every
+ * section the chart carries, date-free, on the request's clock.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, dashas: ['VIMSHOTTARI'], dossier: { sections: ['GRAHAS', 'DASHAS', 'SHADBALA'], at: today } });
+ * const prompt = `${question}\n\n${chart.dossier}`;
+ */
+export interface DossierRequest {
+  /** The sections, written in the dossier's own order; one a flag computes widens the request with it. */
+  readonly sections?: readonly DossierSection[];
+  /** `FULL`, every section the chart carries (the default), or `FAMILY`: chart, grahas, dashas and panchanga. */
+  readonly preset?: 'FULL' | 'FAMILY';
+  /** The "now", a UTC Julian day: the running dasha periods marked and their branch expanded. */
+  readonly at?: number;
+  /** How many levels a dasha timeline is written to, 1 up. */
+  readonly dashaDepth?: number;
+  /** The clock instants are written in, seconds east of UTC; the request's own when left out. */
+  readonly utcOffsetSeconds?: number;
+}
+
+/**
  * Which phase return of a year is its tithi pravesha
  * (`03-design/tithi-pravesha.md`): `NATAL_SIGN`, the practice's own, the
  * return while the Sun is in its natal sign (C444 to C446), or
@@ -5583,6 +5626,8 @@ export declare class Chart {
    * (`03-design/tithi-pravesha.md`).
    */
   readonly tithiPravesha: readonly TithiPravesha[] | null;
+  /** The chart as a dossier for a language model; `null` unless `dossier` asked (`03-design/dossier.md`). */
+  readonly dossier: string | null;
   /**
    * The chart read as a birth time to rectify: the purifier's runs, the
    * conception, the circumstances and the baseline's cascade, each `null`
@@ -6938,6 +6983,11 @@ export interface ChartRequest {
    * default.
    */
   readonly tithiPravesha?: TithiPraveshaRequest;
+  /**
+   * Every chart written as a dossier for a language model, read back as
+   * each chart's `dossier` (`03-design/dossier.md`). None by default.
+   */
+  readonly dossier?: DossierRequest;
   /**
    * A birth time to rectify, read around every chart's instant and read
    * back as each chart's `rectification` (`03-design/rectification.md`).

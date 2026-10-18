@@ -3,8 +3,8 @@
 Status: `building`, 2026-10-18. `teistro::dossier::dossier(&document,
 &options, &[])` writes the fifteen sections below (`crates/serial/src/dossier.rs`,
 `crates/sdk/tests/dossier.rs`), and a chart request's `dossier` record
-carries each chart's text across the C boundary in section 137; the
-bindings' readers are the next step. The feature register
+carries each chart's text across the C boundary in section 137, read by
+every binding as `chart.dossier`. The feature register
 asks for it twice (`18-interpretation-rendering.md`: "LLM prompt
 dossiers" and "compact text dossier for prompts, presets, byte-stable",
 both P0), and the module catalogue lists it as `serial`'s later row.
@@ -152,7 +152,13 @@ names that one request flag computes — `SHADBALA`, `HOUSES` and the rest
 — **widens the request** with that flag, so naming it is asking for it;
 `VARGAS` and `DASHAS` name no list, so the request must carry one, and
 `NOW` needs `at`; each is refused by `dossier.sections[i]` otherwise.
-Every binding will read `chart.dossier` as a string. The agent server
+Every binding reads `chart.dossier` as a string (Java's
+`chart.dossier()`, an `Optional<String>`), its sections a closed type in
+Node (`DossierSection`), Python (`DossierSection`, a `Literal`) and Dart
+(the `DossierSection` enum); Java's generated `DossierOptions` takes them
+as keys, refused by the SDK when unknown. The parity example asks every
+binding for one dated dossier of five sections and prints its length and
+hash, so the six runners are held to the same bytes. The agent server
 reads the record, so a model can ask a chart for its own dossier.
 
 ## What is decided and what is not
@@ -161,7 +167,7 @@ reads the record, so a model can ask a chart for its own dossier.
 |---|---|
 | **decided** | bare catalogue keys, not codes; presets choose sections and never thin them, and a named section the document lacks is refused; one column table writes the header and the legend; date-free unless `at` |
 | **a setting** | `sections`, `preset`, `at`, `dasha_depth`, `utc_offset_seconds` |
-| **not built** | the bindings' `chart.dossier` readers; the gochar overlay (a transit section from the `gochar` record's readings); the yogas and doshas of a rules reading as a built-in section; a localised legend |
+| **not built** | the gochar overlay (a transit section from the `gochar` record's readings); the yogas and doshas of a rules reading as a built-in section; a localised legend |
 
 ## What will be measured
 

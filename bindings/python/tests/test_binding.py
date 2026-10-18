@@ -1865,6 +1865,30 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, tithi_pravesha={"through": 0}, **at)
             self.assertEqual(refused.exception.field, "tithiPravesha.through")
 
+    def test_a_chart_writes_its_dossier(self) -> None:
+        """The dossier crosses as text (`03-design/dossier.md`): the record
+        widens the request with the sections it names, writes on the
+        request's clock, is the same bytes twice, and a section the chart
+        cannot carry is refused by its index."""
+        from teistro import DossierRequest, TeistroError
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        asked: DossierRequest = {"sections": ["CHART", "GRAHAS", "SHADBALA"]}
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).dossier)
+            text = ctx.chart.found(instant=instant, dossier=asked, **at).dossier
+            assert text is not None
+            self.assertTrue(text.startswith("# teistro dossier 1\n== LEGEND ==\n"))
+            banners = [line[3:-3] for line in text.split("\n") if line.startswith("== ")]
+            self.assertEqual(banners, ["LEGEND", "CHART", "GRAHAS", "SHADBALA"])
+            self.assertIn("+05:45", text)
+            self.assertEqual(ctx.chart.found(instant=instant, dossier=asked, **at).dossier, text)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, dossier={"sections": ["DASHAS"]}, **at)
+            self.assertEqual(refused.exception.field, "dossier.sections[0]")
+
     def test_a_chart_carries_its_lalkitab(self) -> None:
         """Lal Kitab crosses whole, its grahas made members, the cycle from
         the book's general start unless asked, the year and its annual teva

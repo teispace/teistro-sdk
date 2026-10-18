@@ -776,6 +776,30 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart writes its dossier", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                double instant = 2_447_995.489_583_333_5;
+                check(sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder().build()).dossier()
+                        .isEmpty(), "none unless asked");
+                DossierOptions asked = DossierOptions.builder().sections(List.of("CHART", "GRAHAS", "SHADBALA"))
+                        .build();
+                String text = sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().dossier(asked).build()).dossier().orElseThrow();
+                check(text.startsWith("# teistro dossier 1\n== LEGEND ==\n"), "the format line, then the legend");
+                List<String> banners = text.lines().filter(line -> line.startsWith("== "))
+                        .map(line -> line.substring(3, line.length() - 3)).toList();
+                same(List.of("LEGEND", "CHART", "GRAHAS", "SHADBALA"), banners, "the record widened the request");
+                check(text.contains("+05:45"), "the request's clock");
+                same(text, sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().dossier(asked).build()).dossier().orElseThrow(), "the same bytes");
+                TeistroException refused = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().dossier(DossierOptions.builder().sections(List.of("DASHAS")).build())
+                                .build()));
+                same("dossier.sections[0]", refused.field(), "a refusal names its index");
+            }
+        });
+
         tests.put("a chart carries its Lal Kitab", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
