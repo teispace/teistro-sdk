@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The aspect configurations** (`western-configurations.md`). **Numbers:**
+none moved; this adds answers. `sdk.chart().western_configurations` reads
+the grand trines, T-squares, grand crosses, yods, kites, mystic rectangles
+and stellia a chart holds. Each shape is geometry over the aspects
+`western_aspects` answers under the same request, so a shape holds exactly
+when its aspects do, under the same orbs. The names are modern and no
+earlier text states them, so the geometry is the definition and nothing
+interpretive ships. A stellium is counted by tropical sign, three by
+default (`ConfigurationRules::stellium_least`). A smaller shape names the
+larger ones it is inside, rather than being dropped. Edward VII's nativity
+holds two T-squares, each read back from his aspect table.
+
 **The month's lord (Masesha)** (`varshesha.md`). **Numbers:** none moved;
 the year's lord is the same chain through a trait. `sdk.chart().masesha`
 reads the month's lord from the birth, year and month charts after the

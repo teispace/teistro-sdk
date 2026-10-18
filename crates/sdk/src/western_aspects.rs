@@ -9,9 +9,9 @@ use teistro_core::error::Error;
 use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_western::{
-    AntiscionRow, AspectRequest, Composite, Placed, SynastryMidpointRow, SynastryParallelRow,
-    SynastryPoint, SynastryRequest, SynastryRow, SynastryZodiac, WesternAspectRow, aspects,
-    synastry, synastry_antiscia,
+    AntiscionRow, AspectRequest, Composite, Configuration, ConfigurationRules, Placed, PlanetAt,
+    SynastryMidpointRow, SynastryParallelRow, SynastryPoint, SynastryRequest, SynastryRow,
+    SynastryZodiac, WesternAspectRow, aspects, configurations, synastry, synastry_antiscia,
 };
 
 use crate::area::ChartArea;
@@ -232,6 +232,53 @@ impl ChartArea<'_> {
             .map(|at| Placed::new(at.graha, at.longitude_deg, at.speed_deg_per_day))
             .collect();
         aspects(&planets, request)
+    }
+
+    /// The **aspect configurations** a chart holds: the grand trines,
+    /// T-squares, grand crosses, yods, kites, mystic rectangles and
+    /// stellia its planets make (`03-design/western-configurations.md`).
+    ///
+    /// Each shape is geometry over the aspects
+    /// [`ChartArea::western_aspects`] answers under `request`, so it holds
+    /// exactly when every aspect it is made of does, under the same orbs.
+    /// A stellium is read by **tropical** sign, the Western zodiac, whatever
+    /// zodiac the chart was founded in. A shape inside a larger one names
+    /// it in [`Configuration::inside`].
+    ///
+    /// ```no_run
+    /// # use teistro::{AspectRequest, ChartRequest, ConfigurationRules, Context, Ephemeris};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (instant, request): (JulianDay<Utc>, ChartRequest) = todo!();
+    /// let chart = sdk.chart().reading(instant, &request.with_outer_planets())?.value;
+    /// let shapes = sdk.chart().western_configurations(
+    ///     &chart,
+    ///     &AspectRequest::default(),
+    ///     ConfigurationRules::default(),
+    /// )?;
+    /// for shape in shapes.iter().filter(|shape| shape.inside.is_empty()) {
+    ///     println!("{} {:?}", shape.kind.key(), shape.bodies);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::western_aspects`], and what
+    /// [`ConfigurationRules::check`] refuses.
+    pub fn western_configurations(
+        self,
+        chart: &Document,
+        request: &AspectRequest,
+        rules: ConfigurationRules,
+    ) -> Result<Vec<Configuration>, Error> {
+        let rows = self.western_aspects(chart, request)?;
+        let bodies: Vec<PlanetAt> = planets(&chart.foundation)
+            .map(|at| PlanetAt::new(at.graha, at.tropical_deg))
+            .collect();
+        configurations(&bodies, &rows, rules)
     }
 
     /// **Synastry**: the Western aspects between two charts, every point

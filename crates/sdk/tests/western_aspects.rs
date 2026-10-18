@@ -130,3 +130,57 @@ fn lillys_moieties_read_the_seven_and_name_a_planet_they_lack() {
             .all(|row| WesternAspect::PTOLEMAIC.contains(&row.aspect))
     );
 }
+
+#[test]
+fn king_edwards_shapes_hold_on_his_own_aspects() {
+    let sdk = context();
+    let chart = birth(&sdk);
+    let rows = sdk
+        .chart()
+        .western_aspects(&chart, &AspectRequest::default())
+        .unwrap();
+    let shapes = sdk
+        .chart()
+        .western_configurations(
+            &chart,
+            &AspectRequest::default(),
+            teistro::ConfigurationRules::default(),
+        )
+        .unwrap();
+    // Two T-squares, and each read back from the aspect table itself:
+    // the apex square to both ends of an opposition.
+    let found: Vec<(teistro::ConfigurationKind, Vec<Graha>, Option<Graha>)> = shapes
+        .iter()
+        .map(|shape| (shape.kind, shape.bodies.clone(), shape.apex))
+        .collect();
+    assert_eq!(
+        found,
+        [
+            (
+                teistro::ConfigurationKind::TSquare,
+                vec![Graha::Moon, Graha::Jupiter, Graha::Uranus],
+                Some(Graha::Jupiter),
+            ),
+            (
+                teistro::ConfigurationKind::TSquare,
+                vec![Graha::Mars, Graha::Venus, Graha::Pluto],
+                Some(Graha::Mars),
+            ),
+        ]
+    );
+    for shape in &shapes {
+        let apex = shape.apex.unwrap();
+        let ends: Vec<Graha> = shape
+            .bodies
+            .iter()
+            .copied()
+            .filter(|g| *g != apex)
+            .collect();
+        assert!(holds(&rows, ends[0], WesternAspect::Opposition, ends[1]));
+        for end in &ends {
+            assert!(holds(&rows, apex, WesternAspect::Square, *end));
+        }
+        let widest = shape.widest_from_exact_deg.unwrap();
+        assert!(rows.iter().all(|row| row.from_exact_deg <= row.orb_deg) && widest <= 10.0);
+    }
+}

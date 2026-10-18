@@ -52,8 +52,8 @@ becomes a data format.
 | Tajika yogas (16: Ithasala kinds, Ishrafa, Nakta, Yamaya, Manau, Kamboola, Gairi Kamboola, Khallasara, Radda, Duphali Kutta, Dutthotha Davira, Tambira, Kuttha, Durapha) | 16 | partial | orb tables (deeptamsha) | P0 |
 | Yogas in vargas (D9, D10 specific) | | partial | | P1 |
 | BV Raman's 300 Important Combinations | 300 | overlap | PyJHora's 284 include these | P1 |
-| Western configurations (grand trine, T-square, grand cross, yod, kite, mystic rectangle, stellium) | ~10 | no | orb-based rule pack | P1 |
-| Horary considerations before judgement (Lilly) | 7 | no | | P1 |
+| Western configurations (grand trine, T-square, grand cross, yod, kite, mystic rectangle, stellium) | ~10 | no | **built 2026-10-18** as geometry over the chart's own aspects (`03-design/western-configurations.md`), not a rule pack | P1 |
+| Horary considerations before judgement (Lilly) | 7 | no | **built** (`03-design/hellenistic-considerations.md`) | P1 |
 
 ## Yoga strength, timing and interpretation
 

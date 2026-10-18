@@ -413,6 +413,11 @@ pub use teistro_western::{
 };
 #[cfg(feature = "western")]
 pub use western_aspects::{PartnerReading, PartnerSynastry};
+// The shapes several aspects make together: the grand trine, T-square,
+// grand cross, yod, kite, mystic rectangle and stellium
+// (`03-design/western-configurations.md`).
+#[cfg(feature = "western")]
+pub use teistro_western::{Configuration, ConfigurationKind, ConfigurationRules};
 // The declinations a chart's points stand at and Leo's parallels among
 // its planets (`03-design/western-declinations.md`).
 #[cfg(feature = "western")]
