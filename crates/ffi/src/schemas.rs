@@ -415,6 +415,9 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("moon_events", "moon_events"),
             count("muhurta_yogas", "muhurta_yogas"),
             count("varjyam", "varjyam"),
+            count("nakshatra_shool", "nakshatra_shool"),
+            count("chandra_vasa", "chandra_vasa"),
+            count("chandrashtama", "chandrashtama"),
         ],
     )
 }
@@ -544,11 +547,18 @@ fn panchanga_muhurtas_section(id: u32) -> SectionSchema {
         "The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here.",
         {
             let mut fields = interval_columns("from", "to", "it");
-            fields.push(ColumnDef::new(
-                "daylight",
-                Scalar::U8,
-                "1 when it is one of the fifteen of the daylight, 0 for one of the night.",
-            ));
+            fields.extend([
+                ColumnDef::new(
+                    "daylight",
+                    Scalar::U8,
+                    "1 when it is one of the fifteen of the daylight, 0 for one of the night.",
+                ),
+                ColumnDef::new(
+                    "durmuhurta",
+                    Scalar::U8,
+                    "1 when the day's vara censures it under `panchanga.durmuhurta` (`03-design/panchanga-day.md` §21, crux C398), 0 otherwise.",
+                ),
+            ]);
             fields
         },
     )
@@ -681,6 +691,9 @@ pub fn panchanga() -> BlobSchema {
                 "UTF-8 JSON, canonical: each day's Nepal Sambat date when `sections` asked for `TS_PANCHANGA_NEPAL_SAMBAT`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §11). `value` is a list in the days' order, each `{year, month, kind, paksha}`: the year, which opens at Kachhala's first day (1146 from 2025-10-22); the month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta Ashwina), an adhika month keeping the number of the month it repeats; the month's kind (`NIJA`, `ADHIKA`, which is Anala, or `KSHAYA`); and the half as a full key, `paksha.SHUKLA` (thwa) or `paksha.KRISHNA` (ga). The provenance is the days' own. Empty when `sections` did not ask for them.",
             ),
             span_section(26, "varjyam", "The varjyam: each nakshatra's four ghatis of poison, placed by `panchanga.varjyam` (crux C165). `whole` is the window itself, four sixtieths of the star from the table's ghati, and `inside` the part of it in the day; empty under `NONE`.", "Whose varjyam it is.", "Nakshatra"),
+            span_section(27, "nakshatra_shool", "The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402). Empty on a day the Moon crosses none of the four. The vara's own direction is `days.disha_shool`.", "The direction not to travel in.", "Direction"),
+            span_section(28, "chandra_vasa", "The chandra vasa: the direction the Moon dwells in, by the sign it stands in (the commentary's sign directions on Yatra Prakarana v. 34, crux C403), one span for each sign the Moon stood in over the day.", "The direction the Moon dwells in.", "Direction"),
+            span_section(29, "chandrashtama", "Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.", "The natal Moon sign the span is chandrashtama for.", "Rashi"),
         ],
     }
 }

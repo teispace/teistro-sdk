@@ -3673,6 +3673,72 @@ test('a day carries each star\'s varjyam, four sixtieths of it, unless the setti
   assert.deepEqual(of({ panchanga: { varjyam: 'NONE' } }).map((day) => day.varjyam.length), [0, 0, 0, 0, 0, 0, 0]);
 });
 
+test('a day marks its durmuhurtas and carries the shool, the chandra vasa and the chandrashtama', () => {
+  // 15 to 21 June 2024 at Kathmandu, Saturday first. Muhurta Chintamani's
+  // table (Vivaha Prakarana v. 52, crux C398) censures muhurtas by their
+  // deities, so Tuesday's second is the night's seventh; Raman's numbers
+  // his own daylight list, so his Tuesday's second is the daylight's 11th.
+  const days = {
+    from: date(Calendar.Gregorian, 2024, 6, 15),
+    to: date(Calendar.Gregorian, 2024, 6, 21),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const of = (settings) => {
+    const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', settings });
+    const week = ctx.almanac.of(days);
+    const read = Array.from({ length: week.length }, (_, i) => week.at(i));
+    const censured = read.map((day) =>
+      day.muhurtas.flatMap((muhurta, k) =>
+        muhurta.durmuhurta ? [muhurta.daylight ? `D${k + 1}` : `N${k - 14}`] : [],
+      ),
+    );
+    const omens = read.map((day) => ({
+      moonSigns: day.moonSigns,
+      nakshatra: day.nakshatra,
+      shool: day.nakshatraShool,
+      vasa: day.chandraVasa,
+      ashtama: day.chandrashtama,
+    }));
+    ctx.dispose();
+    return { censured, omens };
+  };
+  const texts = of(undefined);
+  assert.deepEqual(texts.censured, [
+    ['D1', 'D2'],
+    ['D14'],
+    ['D9', 'D12'],
+    ['D4', 'N7'],
+    ['D8'],
+    ['D6', 'D12'],
+    ['D4', 'D9'],
+  ]);
+  assert.deepEqual(of({ panchanga: { durmuhurta: 'RAMAN' } }).censured[3], ['D4', 'D11']);
+
+  const signs = [...RashiById.entries()].sort(([a], [b]) => a - b).map(([, key]) => key).filter((key) => key !== 'rashi.UNKNOWN');
+  let shools = 0;
+  for (const day of texts.omens) {
+    // The Moon's own signs, each read twice: for the direction she dwells
+    // in, and as the eighth from the natal sign it is chandrashtama for.
+    assert.equal(day.vasa.length, day.moonSigns.length);
+    assert.equal(day.ashtama.length, day.moonSigns.length);
+    day.moonSigns.forEach((sign, k) => {
+      assert.deepEqual(day.vasa[k].whole, sign.whole);
+      assert.deepEqual(day.ashtama[k].whole, sign.whole);
+      assert.equal(signs[(signs.indexOf(day.ashtama[k].member) + 7) % 12], sign.member);
+    });
+    // A shool is a nakshatra's own run.
+    for (const shool of day.shool) {
+      assert.ok(day.nakshatra.some((star) => star.whole.from === shool.whole.from && star.whole.to === shool.whole.to));
+      assert.ok(shool.member.startsWith('direction.'), shool.member);
+      shools += 1;
+    }
+  }
+  // Four nakshatras of twenty-seven block a direction, so a week of the
+  // Moon's course passes one or two of them.
+  assert.ok(shools >= 1 && shools <= 3, `${shools}`);
+});
+
 test('an almanac carries the eclipses it was asked for', () => {
   // September 2025 at Kathmandu: the total lunar eclipse of the 7th, seen
   // whole near midnight, and the partial solar eclipse of the 21st over

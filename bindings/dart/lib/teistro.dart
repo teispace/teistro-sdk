@@ -24660,13 +24660,21 @@ final class Hora {
 
 /// One of the thirty muhurtas.
 final class Muhurta {
-  const Muhurta({required this.at, required this.daylight});
+  const Muhurta({
+    required this.at,
+    required this.daylight,
+    required this.durmuhurta,
+  });
 
   /// When it runs.
   final Interval at;
 
   /// Whether it is one of the fifteen of the daylight.
   final bool daylight;
+
+  /// Whether the day's vara censures it under `panchanga.durmuhurta`
+  /// (crux C398).
+  final bool durmuhurta;
 }
 
 /// A moonrise or a moonset.
@@ -24833,6 +24841,9 @@ final class Almanac {
       'moonEvents': counts.moonEvents,
       'muhurtaYogas': counts.muhurtaYogas,
       'varjyam': counts.varjyam,
+      'nakshatraShool': counts.nakshatraShool,
+      'chandraVasa': counts.chandraVasa,
+      'chandrashtama': counts.chandrashtama,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -25013,6 +25024,60 @@ final class AlmanacDay {
     );
   }
 
+  /// The nakshatra shool: while the Moon is in one of the four nakshatras
+  /// that block a direction, that direction (Muhurta Chintamani, Yatra
+  /// Prakarana v. 10, crux C402).
+  ///
+  /// Empty on a day the Moon crosses none of them. The vara's own
+  /// direction is `dishaShool`.
+  List<Span<Direction>> get nakshatraShool {
+    final c = batch.decoded.nakshatraShool;
+    return _spans(
+      'nakshatraShool',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Direction.byId,
+    );
+  }
+
+  /// The chandra vasa: the direction the Moon dwells in, by the sign she
+  /// stands in (crux C403).
+  List<Span<Direction>> get chandraVasa {
+    final c = batch.decoded.chandraVasa;
+    return _spans(
+      'chandraVasa',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Direction.byId,
+    );
+  }
+
+  /// Whose chandrashtama the day holds (Kalaprakasika, crux C404).
+  ///
+  /// Each member is a **natal** Moon sign, and its intervals the Moon's own
+  /// run through the eighth sign from it.
+  List<Span<Rashi>> get chandrashtama {
+    final c = batch.decoded.chandrashtama;
+    return _spans(
+      'chandrashtama',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Rashi.byId,
+    );
+  }
+
   /// The signs the Moon stood in.
   List<Span<Rashi>> get moonSigns {
     final c = batch.decoded.moonSigns;
@@ -25091,6 +25156,7 @@ final class AlmanacDay {
       (i) => Muhurta(
         at: Interval(from: c.from[i], to: c.to[i]),
         daylight: c.daylight[i] == 1,
+        durmuhurta: c.durmuhurta[i] == 1,
       ),
     );
   }

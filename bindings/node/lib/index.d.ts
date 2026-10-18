@@ -5624,6 +5624,8 @@ export interface Hora {
 export interface Muhurta extends Interval {
   /** Whether it is one of the fifteen of the daylight. */
   readonly daylight: boolean;
+  /** Whether the day's vara censures it under `panchanga.durmuhurta` (crux C398). */
+  readonly durmuhurta: boolean;
 }
 
 /**
@@ -5747,6 +5749,19 @@ export declare class AlmanacDay {
    * in the day; empty under `NONE`.
    */
   readonly varjyam: readonly Span<Nakshatra>[];
+  /**
+   * The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction
+   * (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402); empty on a day the Moon crosses none of them. The
+   * vara's own direction is `dishaShool`.
+   */
+  readonly nakshatraShool: readonly Span<Direction>[];
+  /** The chandra vasa: the direction the Moon dwells in, by the sign it stands in (crux C403). */
+  readonly chandraVasa: readonly Span<Direction>[];
+  /**
+   * Whose chandrashtama the day holds (Kalaprakasika, crux C404): each member is a **natal** Moon sign, and its
+   * intervals the Moon's own run through the eighth sign from it.
+   */
+  readonly chandrashtama: readonly Span<Rashi>[];
   /** The signs the Moon stood in. */
   readonly moonSigns: readonly Span<Rashi>[];
   /** The signs the Sun stood in. */

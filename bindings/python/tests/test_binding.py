@@ -46,6 +46,7 @@ from teistro import (
     Observer,
     Plugin,
     Rashi,
+    Direction,
     Scale,
     Shodhana,
     Status,
@@ -4709,9 +4710,9 @@ class ADaysSeason(WithLibrary):
         )
 
 
-class ADaysVarjyam(WithLibrary):
-    """Each star's four ghatis of poison, placed by Muhurta Chintamani's
-    table unless `panchanga.varjyam` names another (C165)."""
+class AJuneWeek(WithLibrary):
+    """15 to 21 June 2024 at Kathmandu, Saturday first, under the settings
+    a test names: the week the day's span lists are held over."""
 
     def days(self, settings: Optional[dict[str, object]] = None) -> list[Any]:
         with self.teistro.context(
@@ -4730,6 +4731,11 @@ class ADaysVarjyam(WithLibrary):
                 )
             )
 
+
+class ADaysVarjyam(AJuneWeek):
+    """Each star's four ghatis of poison, placed by Muhurta Chintamani's
+    table unless `panchanga.varjyam` names another (C165)."""
+
     def test_a_varjyam_is_four_sixtieths_of_its_own_star(self) -> None:
         seen = 0
         for day in self.days():
@@ -4747,6 +4753,55 @@ class ADaysVarjyam(WithLibrary):
     def test_none_leaves_the_day_without_one(self) -> None:
         days = self.days({"panchanga": {"varjyam": "NONE"}})
         self.assertEqual([len(day.varjyam) for day in days], [0] * len(days))
+
+
+class ADaysOmens(AJuneWeek):
+    """The durmuhurtas marked on their muhurtas (C398), and the shool, the
+    chandra vasa and the chandrashtama read off the day's spans (C402 to
+    C404)."""
+
+    @staticmethod
+    def censured(day: Any) -> list[str]:
+        daylight = sum(1 for muhurta in day.muhurtas if muhurta.daylight)
+        return [
+            f"D{k + 1}" if muhurta.daylight else f"N{k + 1 - daylight}"
+            for k, muhurta in enumerate(day.muhurtas)
+            if muhurta.durmuhurta
+        ]
+
+    def test_the_texts_censure_by_deity_and_raman_by_number(self) -> None:
+        # Muhurta Chintamani's Tuesday names Agni, who presides over no
+        # muhurta of the daylight, so its second is the night's seventh.
+        self.assertEqual(
+            [self.censured(day) for day in self.days()],
+            [
+                ["D1", "D2"],
+                ["D14"],
+                ["D9", "D12"],
+                ["D4", "N7"],
+                ["D8"],
+                ["D6", "D12"],
+                ["D4", "D9"],
+            ],
+        )
+        tuesday = self.days({"panchanga": {"durmuhurta": "RAMAN"}})[3]
+        self.assertEqual(self.censured(tuesday), ["D4", "D11"])
+
+    def test_the_moon_s_signs_carry_her_dwelling_and_the_chandrashtama(self) -> None:
+        shools = 0
+        for day in self.days():
+            self.assertEqual(len(day.chandra_vasa), len(day.moon_signs))
+            self.assertEqual(len(day.chandrashtama), len(day.moon_signs))
+            for sign, vasa, ashtama in zip(day.moon_signs, day.chandra_vasa, day.chandrashtama):
+                self.assertEqual(vasa.whole, sign.whole)
+                self.assertEqual(ashtama.whole, sign.whole)
+                # The Moon stands in the eighth sign from the natal one.
+                self.assertEqual((int(ashtama.member) + 7) % 12, int(sign.member))
+            for shool in day.nakshatra_shool:
+                self.assertIn(shool.whole, [star.whole for star in day.nakshatra])
+                self.assertIsInstance(shool.member, Direction)
+                shools += 1
+        self.assertIn(shools, range(1, 4))
 
 
 class AnAlmanacDay(WithLibrary):

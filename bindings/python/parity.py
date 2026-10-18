@@ -2379,12 +2379,18 @@ def main() -> None:
             put(f"day-{i}-sun-sign-count", len(almanac_day.sun_signs))
             put(f"day-{i}-muhurta-yoga-count", len(almanac_day.muhurta_yogas))
             put(f"day-{i}-varjyam-count", len(almanac_day.varjyam))
+            put(f"day-{i}-nakshatra-shool-count", len(almanac_day.nakshatra_shool))
+            put(f"day-{i}-chandra-vasa-count", len(almanac_day.chandra_vasa))
+            put(f"day-{i}-chandrashtama-count", len(almanac_day.chandrashtama))
             limbs: list[tuple[str, list[Any]]] = [
                 ("tithi", list(almanac_day.tithi)),
                 ("nakshatra", list(almanac_day.nakshatra)),
                 ("yoga", list(almanac_day.yoga)),
                 ("karana", list(almanac_day.karana)),
                 ("varjyam", list(almanac_day.varjyam)),
+                ("nakshatra-shool", list(almanac_day.nakshatra_shool)),
+                ("chandra-vasa", list(almanac_day.chandra_vasa)),
+                ("chandrashtama", list(almanac_day.chandrashtama)),
             ]
             for name, spans in limbs:
                 for j, span in enumerate(spans):
@@ -2409,6 +2415,15 @@ def main() -> None:
             muhurtas = almanac_day.muhurtas
             put(f"day-{i}-muhurta-0-from", muhurtas[0].at.from_jd)
             put(f"day-{i}-muhurta-last-daylight", muhurtas[-1].daylight)
+            daylight = sum(1 for muhurta in muhurtas if muhurta.daylight)
+            put(
+                f"day-{i}-durmuhurtas",
+                " ".join(
+                    f"D{k + 1}" if muhurta.daylight else f"N{k + 1 - daylight}"
+                    for k, muhurta in enumerate(muhurtas)
+                    if muhurta.durmuhurta
+                ),
+            )
             for j, event in enumerate(almanac_day.moon_events):
                 put(f"day-{i}-moon-{j}-kind", "RISE" if event.rise else "SET")
                 put(f"day-{i}-moon-{j}-instant", event.instant)

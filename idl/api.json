@@ -21984,6 +21984,21 @@
               "name": "varjyam",
               "scalar": "u32",
               "doc": "How many rows of `varjyam` belong to this day."
+            },
+            {
+              "name": "nakshatra_shool",
+              "scalar": "u32",
+              "doc": "How many rows of `nakshatra_shool` belong to this day."
+            },
+            {
+              "name": "chandra_vasa",
+              "scalar": "u32",
+              "doc": "How many rows of `chandra_vasa` belong to this day."
+            },
+            {
+              "name": "chandrashtama",
+              "scalar": "u32",
+              "doc": "How many rows of `chandrashtama` belong to this day."
             }
           ]
         },
@@ -22597,6 +22612,11 @@
               "name": "daylight",
               "scalar": "u8",
               "doc": "1 when it is one of the fifteen of the daylight, 0 for one of the night."
+            },
+            {
+              "name": "durmuhurta",
+              "scalar": "u8",
+              "doc": "1 when the day's vara censures it under `panchanga.durmuhurta` (`03-design/panchanga-day.md` §21, crux C398), 0 otherwise."
             }
           ]
         },
@@ -22734,6 +22754,171 @@
               "scalar": "u16",
               "doc": "Whose varjyam it is.",
               "enum": "Nakshatra"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "name": "nakshatra_shool",
+          "doc": "The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402). Empty on a day the Moon crosses none of the four. The vara's own direction is `days.disha_shool`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The direction not to travel in.",
+              "enum": "Direction"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "name": "chandra_vasa",
+          "doc": "The chandra vasa: the direction the Moon dwells in, by the sign it stands in (the commentary's sign directions on Yatra Prakarana v. 34, crux C403), one span for each sign the Moon stood in over the day.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The direction the Moon dwells in.",
+              "enum": "Direction"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "name": "chandrashtama",
+          "doc": "Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The natal Moon sign the span is chandrashtama for.",
+              "enum": "Rashi"
             },
             {
               "name": "whole_from",

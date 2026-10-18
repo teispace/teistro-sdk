@@ -411,6 +411,10 @@ function almanac(): string {
   const until: number = day.tithi[0]!.inside.to;
   const lord: string = day.horas[0]!.lord;
   const daylight: boolean = day.muhurtas[0]!.daylight;
+  const censured: boolean = day.muhurtas[0]!.durmuhurta;
+  const blocked: string | undefined = day.nakshatraShool[0]?.member;
+  const dwells: string = day.chandraVasa[0]!.member;
+  const natal: string = day.chandrashtama[0]!.member;
   // An absent value is null, never a sentinel, and the checker knows it.
   const sankranti: number | null = day.sankranti;
   const effective: boolean = day.abhijit?.effective ?? false;
@@ -422,7 +426,7 @@ function almanac(): string {
   ctx.almanac.of({ date: from, place, utcOffsetSeconds: 20700 });
   // @ts-expect-error a batch is read, never rewritten
   batch.length = 3;
-  return `${days} ${vara} ${tithi} ${until} ${lord} ${daylight} ${sankranti} ${effective} ${every.length} ${one.index} ${wrong}`;
+  return `${days} ${vara} ${tithi} ${until} ${lord} ${daylight} ${sankranti} ${effective} ${every.length} ${one.index} ${wrong} ${censured} ${blocked} ${dwells} ${natal}`;
 }
 
 void almanac;

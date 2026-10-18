@@ -2508,6 +2508,9 @@ void main() {
     put('day-$i-sun-sign-count', day.sunSigns.length);
     put('day-$i-muhurta-yoga-count', day.muhurtaYogas.length);
     put('day-$i-varjyam-count', day.varjyam.length);
+    put('day-$i-nakshatra-shool-count', day.nakshatraShool.length);
+    put('day-$i-chandra-vasa-count', day.chandraVasa.length);
+    put('day-$i-chandrashtama-count', day.chandrashtama.length);
     void limb(String name, List<Span<dynamic>> spans) {
       for (var j = 0; j < spans.length; j += 1) {
         final span = spans[j];
@@ -2527,6 +2530,9 @@ void main() {
     limb('yoga', day.yoga);
     limb('karana', day.karana);
     limb('varjyam', day.varjyam);
+    limb('nakshatra-shool', day.nakshatraShool);
+    limb('chandra-vasa', day.chandraVasa);
+    limb('chandrashtama', day.chandrashtama);
     final kaalas = day.kaalas;
     for (var j = 0; j < kaalas.length; j += 1) {
       put('day-$i-kaala-$j', kaalas[j].kaala.fullKey);
@@ -2542,6 +2548,15 @@ void main() {
     final muhurtas = day.muhurtas;
     put('day-$i-muhurta-0-from', muhurtas.first.at.from);
     put('day-$i-muhurta-last-daylight', muhurtas.last.daylight);
+    final daylight = muhurtas.where((m) => m.daylight).length;
+    put(
+      'day-$i-durmuhurtas',
+      [
+        for (var k = 0; k < muhurtas.length; k += 1)
+          if (muhurtas[k].durmuhurta)
+            muhurtas[k].daylight ? 'D${k + 1}' : 'N${k + 1 - daylight}',
+      ].join(' '),
+    );
     final moon = day.moonEvents;
     for (var j = 0; j < moon.length; j += 1) {
       put('day-$i-moon-$j-kind', moon[j].rise ? 'RISE' : 'SET');

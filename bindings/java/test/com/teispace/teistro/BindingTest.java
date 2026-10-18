@@ -864,6 +864,30 @@ public final class BindingTest {
                     }
                 }
                 check(varjyam >= 5 && varjyam <= 9, "about a varjyam a day: " + varjyam);
+                // Every vara censures one muhurta or two (crux C398); the Moon's
+                // signs carry where she dwells and whose chandrashtama it is, the
+                // eighth sign from the natal one (C403, C404); and a shool is a
+                // nakshatra's own run (C402).
+                int shools = 0;
+                for (AlmanacDay day : week) {
+                    long censured = day.muhurtas().stream().filter(Muhurta::durmuhurta).count();
+                    check(censured >= 1 && censured <= 2, "a durmuhurta or two a day: " + censured);
+                    List<Span<Rashi>> signs = day.moonSigns();
+                    same(signs.size(), day.chandraVasa().size(), "a dwelling a sign");
+                    same(signs.size(), day.chandrashtama().size(), "a chandrashtama a sign");
+                    for (int k = 0; k < signs.size(); k += 1) {
+                        same(signs.get(k).whole(), day.chandraVasa().get(k).whole(), "the vasa is the sign's run");
+                        Span<Rashi> ashtama = day.chandrashtama().get(k);
+                        same(signs.get(k).whole(), ashtama.whole(), "the chandrashtama is the sign's run");
+                        same(signs.get(k).member().id(), (ashtama.member().id() + 7) % 12, "the eighth from the natal sign");
+                    }
+                    for (Span<Direction> shool : day.nakshatraShool()) {
+                        check(day.nakshatra().stream().anyMatch(star -> star.whole().equals(shool.whole())),
+                                "a shool is a nakshatra's own run");
+                        shools += 1;
+                    }
+                }
+                check(shools >= 1 && shools <= 3, "a shool or two a week: " + shools);
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
                 check(sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)

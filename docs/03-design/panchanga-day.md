@@ -772,12 +772,30 @@ nothing until asked:
 
 The Rust surface carries all four: `Panchanga` gains `durmuhurtas` and
 `is_durmuhurta`, and the three readings above. The document schema
-follows from the derive. The C boundary does not yet: varjyam crossed it
-as a span section written by `span_rows`, and a durmuhurta is not a span
-(it is a number, a half and an interval), so the blob needs a section of
-its own shape and each binding a type to read it into, which is not the
-varjyam commit's pattern repeated. The three readings need nothing new
-at the boundary beyond what a binding already reads (the nakshatra and
-Moon sign spans). No catalogue kind is added (§21.1), so
-`migrate::STATE_REFUSALS` keeps `dur-muhurta`, its reason now naming the
-Rust answer.
+follows from the derive.
+
+The C boundary carries them too, each in the shape it already has:
+
+- **A durmuhurta is a flag on its muhurta.** It is one of the day's
+  thirty muhurtas, named by its half and its number in it, so the
+  `muhurtas` section gains a `durmuhurta` column, and every binding's
+  `Muhurta` a `durmuhurta` boolean. A second section repeating the
+  interval would be the same fact twice, and a reader would have to
+  join them.
+- **The three readings are span sections.** `nakshatra_shool`,
+  `chandra_vasa` and `chandrashtama` are `Span<Direction>`,
+  `Span<Direction>` and `Span<Rashi>`, written by `span_rows` beside
+  `varjyam` and counted in `counts`, so every binding reads them with
+  the span reader it already has. A binding *could* derive them from
+  the nakshatra and Moon sign spans it reads, but that would copy the
+  shool's four stars, the signs' directions and the inclusive eighth
+  into four languages. The SDK answers them once.
+
+Each binding's test holds the week of 15 to 21 June 2024 at Kathmandu to
+Muhurta Chintamani's table muhurta for muhurta, Tuesday's night seventh
+included, and Raman's Tuesday to the daylight's 4th and 11th. Each
+parity runner prints the durmuhurtas by half and number, and the three
+span lists.
+
+No catalogue kind is added (§21.1), so `migrate::STATE_REFUSALS` keeps
+`dur-muhurta`, its reason naming the Rust answer.

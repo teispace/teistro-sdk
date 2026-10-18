@@ -348,6 +348,9 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.moon.rises.len() + day.moon.sets.len(),
         day.omens.yogas.len(),
         day.omens.varjyam.len(),
+        day.nakshatra_shool().len(),
+        day.chandra_vasa().len(),
+        day.chandrashtama().len(),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -387,15 +390,40 @@ fn span_rows<T>(
     let mut rows = Vec::new();
     for day in days {
         for span in list(day) {
-            let mut row = vec![u64::from(id(&span.member)).into()];
-            row.extend(interval(span.whole));
-            row.extend(interval(span.inside));
-            row.push((TsSunrises::from(day.sunrises(span)) as u64).into());
-            let ends = day.ghati_pala(span.whole.to)?;
-            row.extend(
-                [ends.ghati, ends.pala, ends.vipala].map(|part| FixedValue::from(u64::from(part))),
-            );
-            rows.push(row);
+            rows.push(span_row(day, span, &id)?);
+        }
+    }
+    Ok(rows)
+}
+
+/// One span as the row every span section writes: its member, its whole
+/// and the part inside the day, the sunrises it holds, and where its whole
+/// ends in ghatis.
+fn span_row<T>(
+    day: &Panchanga,
+    span: &Span<T>,
+    id: impl Fn(&T) -> u16,
+) -> Result<Vec<FixedValue>, Error> {
+    let mut row = vec![u64::from(id(&span.member)).into()];
+    row.extend(interval(span.whole));
+    row.extend(interval(span.inside));
+    row.push((TsSunrises::from(day.sunrises(span)) as u64).into());
+    let ends = day.ghati_pala(span.whole.to)?;
+    row.extend([ends.ghati, ends.pala, ends.vipala].map(|part| FixedValue::from(u64::from(part))));
+    Ok(row)
+}
+
+/// [`span_rows`] over a list a day reads off spans it holds rather than
+/// keeps, such as the nakshatra shool from its nakshatras.
+fn owned_span_rows<T>(
+    days: &[Panchanga],
+    list: impl Fn(&Panchanga) -> Vec<Span<T>>,
+    id: impl Fn(&T) -> u16,
+) -> Result<Vec<Vec<FixedValue>>, Error> {
+    let mut rows = Vec::new();
+    for day in days {
+        for span in &list(day) {
+            rows.push(span_row(day, span, &id)?);
         }
     }
     Ok(rows)
@@ -437,6 +465,23 @@ fn spans(days: &[Panchanga]) -> Result<Spans, Error> {
     ))
 }
 
+/// One half of a day's muhurtas, each with whether it is the daylight's and
+/// whether the day's vara censures it, which a durmuhurta names by its half
+/// and its number in it from one.
+fn muhurta_half<'a>(
+    day: &'a Panchanga,
+    half: &'a [Interval],
+    daylight: bool,
+) -> impl Iterator<Item = (Interval, bool, bool)> + 'a {
+    (1_u8..).zip(half).map(move |(number, at)| {
+        let censured = day
+            .durmuhurtas
+            .iter()
+            .any(|durmuhurta| durmuhurta.is_daytime == daylight && durmuhurta.number == number);
+        (*at, daylight, censured)
+    })
+}
+
 /// Every period and event list, concatenated days outermost.
 fn periods(days: &[Panchanga]) -> Periods {
     let kaalas: Vec<Vec<FixedValue>> = days
@@ -474,19 +519,21 @@ fn periods(days: &[Panchanga]) -> Periods {
         })
         .collect();
     // The daylight's fifteen then the night's, per day, so a reader
-    // walking the section in order walks the day in order.
+    // walking the section in order walks the day in order. A durmuhurta
+    // is one of these by its half and its number in it, so it is marked
+    // on its row rather than written again.
     let muhurtas: Vec<Vec<FixedValue>> = days
         .iter()
         .flat_map(|day| {
-            day.muhurtas
-                .daylight
-                .iter()
-                .map(|at| (at, true))
-                .chain(day.muhurtas.night.iter().map(|at| (at, false)))
+            muhurta_half(day, &day.muhurtas.daylight, true).chain(muhurta_half(
+                day,
+                &day.muhurtas.night,
+                false,
+            ))
         })
-        .map(|(at, daylight)| {
-            let mut row = interval(*at);
-            row.push(flag(daylight));
+        .map(|(at, daylight, censured)| {
+            let mut row = interval(at);
+            row.extend([flag(daylight), flag(censured)]);
             row
         })
         .collect();
@@ -557,6 +604,9 @@ struct RaggedRows {
     moon_events: Vec<Vec<FixedValue>>,
     muhurta_yogas: Vec<Vec<FixedValue>>,
     varjyam: Vec<Vec<FixedValue>>,
+    nakshatra_shool: Vec<Vec<FixedValue>>,
+    chandra_vasa: Vec<Vec<FixedValue>>,
+    chandrashtama: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -578,6 +628,9 @@ impl RaggedRows {
             moon_events,
             muhurta_yogas,
             varjyam: span_rows(days, |day| &day.omens.varjyam, |m| m.id())?,
+            nakshatra_shool: owned_span_rows(days, Panchanga::nakshatra_shool, |m| m.id())?,
+            chandra_vasa: owned_span_rows(days, Panchanga::chandra_vasa, |m| m.id())?,
+            chandrashtama: owned_span_rows(days, Panchanga::chandrashtama, |m| m.id())?,
         })
     }
 }
@@ -676,6 +729,9 @@ pub fn encode(
         writer.bytes("eclipses", beside.eclipses.as_bytes())?;
         writer.bytes("nepal_sambat", beside.nepal_sambat.as_bytes())?;
         writer.rows("varjyam", &ragged.varjyam)?;
+        writer.rows("nakshatra_shool", &ragged.nakshatra_shool)?;
+        writer.rows("chandra_vasa", &ragged.chandra_vasa)?;
+        writer.rows("chandrashtama", &ragged.chandrashtama)?;
         writer.finish()
     };
     write().map_err(|error| {

@@ -220,6 +220,42 @@ public final class AlmanacDay {
     }
 
     /**
+     * The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction
+     * (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402); empty on a day the Moon crosses none of them. The vara's
+     * own direction is {@link #dishaShool()}.
+     *
+     * @return the spans
+     */
+    public List<Span<Direction>> nakshatraShool() {
+        Panchanga.NakshatraShool c = batch.decoded().nakshatraShool();
+        return spans("nakshatra_shool", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Direction::of);
+    }
+
+    /**
+     * The chandra vasa: the direction the Moon dwells in, by the sign she stands in (crux C403).
+     *
+     * @return the spans
+     */
+    public List<Span<Direction>> chandraVasa() {
+        Panchanga.ChandraVasa c = batch.decoded().chandraVasa();
+        return spans("chandra_vasa", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Direction::of);
+    }
+
+    /**
+     * Whose chandrashtama the day holds (Kalaprakasika, crux C404): each member is a <b>natal</b> Moon sign, and its
+     * intervals the Moon's own run through the eighth sign from it.
+     *
+     * @return the spans
+     */
+    public List<Span<Rashi>> chandrashtama() {
+        Panchanga.Chandrashtama c = batch.decoded().chandrashtama();
+        return spans("chandrashtama", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Rashi::of);
+    }
+
+    /**
      * The signs the Moon stood in.
      *
      * @return the spans
@@ -279,7 +315,8 @@ public final class AlmanacDay {
      */
     public List<Muhurta> muhurtas() {
         Panchanga.Muhurtas c = batch.decoded().muhurtas();
-        return rows("muhurtas", i -> new Muhurta(new Interval(c.from(i), c.to(i)), c.daylight(i) != 0));
+        return rows("muhurtas", i -> new Muhurta(new Interval(c.from(i), c.to(i)), c.daylight(i) != 0,
+                c.durmuhurta(i) != 0));
     }
 
     /**
