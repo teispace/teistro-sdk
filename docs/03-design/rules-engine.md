@@ -632,6 +632,45 @@ dignity and kind for each birth. A pair the sky forces together, Rahu's
 and Ketu's death in or aspecting the eighth, is in the cofiring page's
 list of one text saying it twice.
 
+**Phaladeepika ch. 6's yogas, built (2026-10-18).** The chapter is the
+book's catalogue of named yogas, read in V. Subrahmanya Sastri's 1937
+translation with the Sanskrit of the same print beside it, and ships as
+`classical-phaladeepika-yoga.json`, 76 rules in the nabhasa set, each with
+its effect in words:
+- **vv. 1 to 4:** the five great men, from the lagna or, as v. 4 adds, from
+  the Moon, and v. 4's grades for one to five of them, an `n-of` over the
+  five by key.
+- **vv. 5 to 7:** Sunapha, Anapha, Durudhara and Kemadruma, a partition of
+  every chart, with what v. 5 gives to "some" as Kemadruma's cancellation;
+  Mars to Saturn make them, the nodes not counted (C464).
+- **vv. 8 to 13:** the benefic and malefic Vesi, Vasi and Ubhayachari about
+  the Sun, the kartaris on the lagna, and Susubha.
+- **vv. 14 to 18:** Mahabhagya in both its forms, since a chart does not
+  know the native's sex (C465); Kesari; Sakata with the Moon angular as its
+  cancellation; and Adhama, Sama and Varishtha, a partition.
+- **vv. 19 to 31:** Vasumat, Amala, Pushkala (C466), the two malas (C467),
+  Lakshmi, Gauri, Saraswati, Srikantha, Srinatha and Virinchi.
+- **vv. 32 to 38:** the 66 exchanges of lords as v. 32 sorts them, 30
+  Dainya, 8 Khala and 28 Maha; Parvata and Kahala from the lagna lord's
+  dispositor, which the Sanskrit names where the translation's English is
+  garbled; Raja and Sankha from lords together in a good house (C468).
+- **vv. 42 to 70:** Adhi, the twelve houses' good and ill yogas, Chamara
+  to Musala (C469) and Ava to Vimala (C470), and v. 70's two.
+
+v. 39's sankhya yogas are BPHS ch. 35's, which ship once. v. 70 sets the
+lords of the sixth, eighth and twelfth against those of the first, fourth,
+ninth and tenth, a Duryoga when the first are strong in kendras or
+trikonas and the second weak in the evil houses, and a king the other way
+round; only Leo, Virgo, Sagittarius and Pisces rising give the two sets
+seven different grahas, so only they can hold either (C471).
+`crates/rules/tests/phaladeepika_yoga.rs` holds both partitions and v. 4's
+grades on all 93 recorded charts. Over the computed sky every rule holds on
+some chart but three. All five great men at once fall on 9 days of 1800 to
+2400, and one of them, an Aries lagna in October 2257, is the cofiring
+page's fixture. v. 70's two need every lord placed and strong or weak as
+the verse asks: of 4820 instants with the places right, 108 have the
+Duryoga's strengths and 13 the king's, and one of each is a fixture.
+
 **BPHS ch. 83's curses, built (2026-10-14).** The chapter reads, from the
 fifth house, the curse in a former birth that denies a son, and gives each
 curse its remedy. As `classical-bphs-shapa.json`, 76 rules join the
