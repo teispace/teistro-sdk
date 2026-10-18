@@ -15,7 +15,7 @@ the previous release, not by nobody having looked.
 **The dossier: a chart as text for a language model** (`dossier.md`).
 **Numbers:** none moved; nothing computed changes. `teistro::dossier::dossier(&document, &options, &[])`
 writes a chart document as compact text a model reads in a prompt: the
-line `# teistro dossier 1`, a legend of only the sections written, then
+line `# teistro dossier 2`, a legend of only the sections written, then
 each of fifteen sections (`CHART`, `NOW`, `GRAHAS`, `HOUSES`, `VARGAS`,
 `DASHAS`, `PANCHANGA`, `ASHTAKAVARGA`, `SHADBALA`, `BHAVA_BALA`,
 `VIMSHOPAKA`, `JAIMINI`, `POINTS`, `ASPECTS`, `AVAKAHADA`) as a banner, a
@@ -40,7 +40,19 @@ section writes every rule that held under the request's `rules` record
 (`GocharSection`), the dossier's `fixed`, `word` and `civil` writers are
 public for a consumer's own section, and the
 API description no longer drops a bracket inside a code span
-(`data[len]` had read `datalen`).
+(`data[len]` had read `datalen`). The dossier is measured
+(`dossier-measured.md`, `cargo xtask dossier`): over 53 of the corpus's
+births with every section a whole dossier is 0.39 of the document's
+canonical JSON, and every section is smaller than the JSON it writes
+from. The measurement found the Avakahada the one larger, so format 2
+writes a section's columns once, in its header line, and no longer
+again in the legend.
+
+Every request record now refuses a record written as a list: serde read
+a struct from its fields in order, so `[]` passed for any record whose
+fields all default was read as that default record, and `[0.5]` as its
+first field. A record is written with its field names, and the refusal
+names where the list stands (`dossier`, `shape.rings[1]`).
 
 The conformance corpus moves to 0.12.0, which adds JPL's DE440 itself
 (CSPICE's geometric states, evidence rank 1), and every built-in tier is

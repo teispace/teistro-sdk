@@ -55,12 +55,13 @@ them.
 ## The shape
 
 ```text
-# teistro dossier 1
+# teistro dossier 2
 == LEGEND ==
-# Each section opens `== NAME ==`; a `#` line lists its columns, `|`-separated.
-# `-` is a value the chart does not have.
-# GRAHAS: graha|sign|deg|nakshatra|pada|house|speed|motion
-#   deg: degrees in the sign, two decimals. speed: degrees a day.
+# Each section opens `== NAME ==`; a `#` line under it names its columns, `|`-separated.
+# `-` is a value the chart does not have. Members are catalogue keys (JUPITER, ARIES).
+# GRAHAS
+#   graha: the graha
+#   deg: degrees in the sign, two decimals
 …
 == CHART ==
 kind|NATAL
@@ -73,10 +74,13 @@ SUN|PISCES|28.72|REVATI|4|9|0.98|DIRECT
 …
 ```
 
-- The first line names the format and its **version**, `1`. A change to
+- The first line names the format and its **version**, `2`. A change to
   any byte the format writes — a column, a legend line, a number's
   decimals — raises it, so a store that keys on the text knows its text
-  is stale.
+  is stale. Version 2 stopped repeating a section's column names in the
+  legend, which its own header line already writes, and shortened the
+  Avakahada's two meanings: the measured page (below) found the Avakahada
+  the one section a dossier wrote in more bytes than its JSON.
 - A **section** is a banner, an optional header line, and rows. A row is
   fields joined by `|`; a field never holds a `|` or a line break.
 - **Numbers** have a fixed number of decimals per column, written by
@@ -195,9 +199,16 @@ reads the record, so a model can ask a chart for its own dossier.
 | **a setting** | `sections`, `preset`, `at`, `dasha_depth`, `utc_offset_seconds` |
 | **not built** | a rules reading's house readings and longevity spans; the Ashtakavarga's transit judgement; a localised legend |
 
-## What will be measured
+## What is measured
 
 The bytes of each section's dossier text against the canonical JSON of
-the same section, over the conformance corpus's charts, recorded on a
-generated page, so "far fewer bytes" is a measured number and not a
-sentence.
+the same section, over the conformance corpus's births founded by the
+SDK with every section, are on a generated page,
+[`dossier-measured.md`](dossier-measured.md) (`cargo xtask dossier`,
+held by `check-dossier`), so "far fewer bytes" is a measured number and
+not a sentence. It counts bytes, not tokens: a token count is the
+model's own. The same pass writes the corpus's first birth, founded with
+every section, as the document `teistro-serial`'s own dossier tests read
+(`crates/serial/tests/dossier-chart.json`), so the crate is tested on a
+chart it cannot found and the fixture is never one the SDK no longer
+writes.

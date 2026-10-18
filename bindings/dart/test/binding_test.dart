@@ -5447,7 +5447,7 @@ void _engineTests() {
     );
     expect(found().dossier, isNull);
     final text = found(asked).dossier!;
-    expect(text, startsWith('# teistro dossier 1\n== LEGEND ==\n'));
+    expect(text, matches(RegExp(r'^# teistro dossier \d+\n== LEGEND ==\n')));
     expect(
       [
         for (final line in text.split('\n'))

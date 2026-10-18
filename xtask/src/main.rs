@@ -285,6 +285,7 @@ mod dashas;
 mod declinations;
 mod document_schema;
 mod doshas;
+mod dossier_measured;
 mod eclipses;
 mod engine;
 mod ephemgen;
@@ -512,6 +513,11 @@ const PASSES: &[Pass] = &[
     ("cofiring", cofiring::generate, cofiring::check_generated),
     ("sect", sect::generate, sect::check_generated),
     ("reception", reception::generate, reception::check_generated),
+    (
+        "dossier",
+        dossier_measured::generate,
+        dossier_measured::check_generated,
+    ),
     (
         "fortitudes",
         fortitudes::generate,

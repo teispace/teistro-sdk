@@ -10357,7 +10357,10 @@ fn a_chart_request_answers_the_dossier() {
         .map(|document| teistro::dossier::dossier(document, &options, &[]).unwrap())
         .collect();
     assert_eq!(crossed, expected);
-    assert!(crossed[0].starts_with("# teistro dossier 1\n"));
+    assert!(crossed[0].starts_with(&format!(
+        "# teistro dossier {}\n",
+        teistro::dossier::DOSSIER_FORMAT
+    )));
     assert!(crossed[0].contains("== ASHTAKAVARGA ==\n"));
 
     // None asked is an empty section.
