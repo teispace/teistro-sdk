@@ -1,0 +1,5404 @@
+{
+  "rules": [
+    {
+      "key": "PHALADEEPIKA_RUCHAKA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "1-4",
+        "rank": 1,
+        "note": "Mars in his own sign or exaltation in a kendra from the lagna, or, as v. 4 adds, from the Moon. Own sign takes in the moolatrikona, which is a part of it. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "MARS",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra",
+              "planet": "MARS"
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": "MARS",
+              "reference": "MOON"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long of face, wealthy by daring deeds, brave, victorious over enemies, strong, proud, famed for his merits, a leader of an army who succeeds in all he attempts"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHADRA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "1-4",
+        "rank": 1,
+        "note": "Mercury in his own sign or exaltation in a kendra from the lagna, or, as v. 4 adds, from the Moon. Own sign takes in the moolatrikona, which is a part of it. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "MERCURY",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra",
+              "planet": "MERCURY"
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": "MERCURY",
+              "reference": "MOON"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long-lived, of keen intellect, pure, praised by the learned, a leader of men, very rich and eloquent before an assembly"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_HAMSA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "1-4",
+        "rank": 1,
+        "note": "Jupiter in his own sign or exaltation in a kendra from the lagna, or, as v. 4 adds, from the Moon. Own sign takes in the moolatrikona, which is a part of it. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "JUPITER",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra",
+              "planet": "JUPITER"
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": "JUPITER",
+              "reference": "MOON"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king praised by the good, with auspicious marks on hands and feet, handsome, eating well and righteous"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MALAVYA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "1-4",
+        "rank": 1,
+        "note": "Venus in his own sign or exaltation in a kendra from the lagna, or, as v. 4 adds, from the Moon. Own sign takes in the moolatrikona, which is a part of it. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "VENUS",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra",
+              "planet": "VENUS"
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": "VENUS",
+              "reference": "MOON"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "strong of limb, resolute, wealthy, blessed in wife, children and fortune, with good vehicles and food, famous and learned, of steady senses"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SASA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "1-4",
+        "rank": 1,
+        "note": "Saturn in his own sign or exaltation in a kendra from the lagna, or, as v. 4 adds, from the Moon. Own sign takes in the moolatrikona, which is a part of it. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "SATURN",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra",
+              "planet": "SATURN"
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": "SATURN",
+              "reference": "MOON"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "praised by all, with good servants, strong, a village head or a king, of wicked disposition, given to others' wives and wealth, and happy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHAPURUSHA_ONE",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "4",
+        "rank": 1,
+        "note": "Exactly one of the five great-man yogas of vv. 1 to 3. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_RUCHAKA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_BHADRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_HAMSA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MALAVYA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_SASA"
+            }
+          ],
+          "atLeast": 1,
+          "atMost": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fortunate"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHAPURUSHA_TWO",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "4",
+        "rank": 1,
+        "note": "Exactly two of the five great-man yogas of vv. 1 to 3. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_RUCHAKA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_BHADRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_HAMSA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MALAVYA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_SASA"
+            }
+          ],
+          "atLeast": 2,
+          "atMost": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the equal of a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHAPURUSHA_THREE",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "4",
+        "rank": 1,
+        "note": "Exactly three of the five great-man yogas of vv. 1 to 3. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_RUCHAKA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_BHADRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_HAMSA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MALAVYA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_SASA"
+            }
+          ],
+          "atLeast": 3,
+          "atMost": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHAPURUSHA_FOUR",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "4",
+        "rank": 1,
+        "note": "Exactly four of the five great-man yogas of vv. 1 to 3. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_RUCHAKA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_BHADRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_HAMSA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MALAVYA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_SASA"
+            }
+          ],
+          "atLeast": 4,
+          "atMost": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHAPURUSHA_FIVE",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "4",
+        "rank": 1,
+        "note": "Exactly five of the five great-man yogas of vv. 1 to 3. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_RUCHAKA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_BHADRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_HAMSA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MALAVYA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_SASA"
+            }
+          ],
+          "atLeast": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "greater than an emperor"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SUNAPHA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "5-6",
+        "rank": 1,
+        "note": "A planet in the second from the Moon and none in the twelfth. The planets are Mars to Saturn: the verse excepts the Sun and names no node (C464). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              2
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or his equal, with wealth of his own earning, famed for wisdom and riches"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ANAPHA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "5-6",
+        "rank": 1,
+        "note": "A planet in the twelfth from the Moon and none in the second. The planets are Mars to Saturn: the verse excepts the Sun and names no node (C464). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              12
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "powerful, healthy, of pleasing manners, famous, comfortable, well dressed, content and happy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_DURUDHARA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "5,7",
+        "rank": 1,
+        "note": "Planets in both the second and the twelfth from the Moon. The planets are Mars to Saturn: the verse excepts the Sun and names no node (C464). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              2
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              12
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "enjoying what comes, rich in wealth and vehicles, generous, with faithful servants"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KEMADRUMA_BHANGA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "5",
+        "rank": 1,
+        "note": "What 'some' say removes Kemadruma: a planet in a kendra from the lagna, with the Moon, or in a kendra from her. The planets are those of the yoga, Mars to Saturn (C464). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "LAGNA",
+                "houses": [
+                  1,
+                  4,
+                  7,
+                  10
+                ]
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "MOON",
+                "houses": [
+                  1,
+                  4,
+                  7,
+                  10
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no Kemadruma, as some say"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KEMADRUMA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "5,7",
+        "rank": 1,
+        "note": "None of Sunapha, Anapha and Durudhara: no planet in the second or the twelfth from the Moon. The planets are Mars to Saturn: the verse excepts the Sun and names no node (C464). The view v. 5 gives to 'some' is its cancellation. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "obscure even if of royal birth, miserable, low in ways, poor, a drudge and ill-disposed"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PHALADEEPIKA_KEMADRUMA_BHANGA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_SUBHA_VESI",
+      "category": "surya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8-10",
+        "rank": 1,
+        "note": "A benefic other than the Moon, Mars to Saturn by the readings' classes (C464), in the second from the Sun and none in the twelfth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "SUN",
+                "houses": [
+                  2
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "benefic"
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SELF",
+                  "reference": "SUN",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very handsome, happy, meritorious, brave, a king and virtuous"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SUBHA_VASI",
+      "category": "surya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8-10",
+        "rank": 1,
+        "note": "A benefic other than the Moon, Mars to Saturn by the readings' classes (C464), in the twelfth from the Sun and none in the second. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "SUN",
+                "houses": [
+                  12
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "benefic"
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SELF",
+                  "reference": "SUN",
+                  "houses": [
+                    2
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "famous, liked by all, very prosperous, liberal and favoured by the ruler"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SUBHA_UBHAYACHARI",
+      "category": "surya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8-10",
+        "rank": 1,
+        "note": "A benefic other than the Moon, Mars to Saturn by the readings' classes (C464), in both the second and the twelfth from the Sun. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "SUN",
+                "houses": [
+                  2
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "SUN",
+                "houses": [
+                  12
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of fine limbs, pleasant of speech, delighting the world, eloquent, renowned and wealthy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAPA_VESI",
+      "category": "surya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8-10",
+        "rank": 1,
+        "note": "A malefic other than the Moon, Mars to Saturn by the readings' classes (C464), in the second from the Sun and none in the twelfth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "SUN",
+                "houses": [
+                  2
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SELF",
+                  "reference": "SUN",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "slandering others unjustly, losing his lustre, keeping low company and wicked"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAPA_VASI",
+      "category": "surya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8-10",
+        "rank": 1,
+        "note": "A malefic other than the Moon, Mars to Saturn by the readings' classes (C464), in the twelfth from the Sun and none in the second. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "SUN",
+                "houses": [
+                  12
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SELF",
+                  "reference": "SUN",
+                  "houses": [
+                    2
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "deceitful, abusive, a friend of the wicked, of unrighteous conduct though quoting scripture"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAPA_UBHAYACHARI",
+      "category": "surya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8-10",
+        "rank": 1,
+        "note": "A malefic other than the Moon, Mars to Saturn by the readings' classes (C464), in both the second and the twelfth from the Sun. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "SUN",
+                "houses": [
+                  2
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "SUN",
+                "houses": [
+                  12
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "troubled in mind by public dishonour, without learning, wealth or luck"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SHUBHA_KARTARI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8,11",
+        "rank": 1,
+        "note": "A benefic in the twelfth and a benefic in the second from the lagna. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "LAGNA",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "LAGNA",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long-lived, fearless, healthy, without enemies, happy and rich"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAPA_KARTARI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8,11",
+        "rank": 1,
+        "note": "A malefic in the twelfth and a malefic in the second from the lagna. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-malefic",
+          "reference": "LAGNA",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-malefic",
+          "reference": "LAGNA",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor, impure, unhappy, without wife and children, maimed and short-lived"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SUSUBHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "8,13",
+        "rank": 1,
+        "note": "A benefic in the second from the lagna that no malefic aspects; v. 13 gives it the benefic yogas' good effects. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "LAGNA",
+                "houses": [
+                  2
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "count-aspecting",
+                  "planets": "any-malefic",
+                  "target": "SELF",
+                  "atLeast": 1
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the good effects of the benefic yogas"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHABHAGYA_MALE",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "14-15",
+        "rank": 1,
+        "note": "For a man: born by day, the Sun, the Moon and the lagna in odd signs. The chart does not know the native's sex, so both forms are reported (C465). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "birth-by-day"
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a delight to all who see him, liberal, famous, a ruler, living eighty years and spotless"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHABHAGYA_FEMALE",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "14-15",
+        "rank": 1,
+        "note": "For a woman: born by night, the Sun, the Moon and the lagna in even signs (C465). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "birth-by-day"
+          }
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "TAURUS",
+            "CANCER",
+            "VIRGO",
+            "SCORPIO",
+            "CAPRICORN",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS",
+            "CANCER",
+            "VIRGO",
+            "SCORPIO",
+            "CAPRICORN",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "TAURUS",
+            "CANCER",
+            "VIRGO",
+            "SCORPIO",
+            "CAPRICORN",
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy, with a long-lived husband, sons and grandsons, very lucky and well behaved"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KESARI",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "14,16",
+        "rank": 1,
+        "note": "The Moon in a kendra from Jupiter. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra-from",
+          "planet": "MOON",
+          "reference": "JUPITER"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "destroying his enemies like a lion, speaking nobly in an assembly, passionate, long-lived, renowned, very intelligent and victorious by his own valour"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SAKATA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "14,17",
+        "rank": 1,
+        "note": "The Moon in the sixth, eighth or twelfth from Jupiter; the Moon in a kendra from the lagna cancels it. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "JUPITER",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "losing his fortune and regaining it, an ordinary man, with much grief and unhappiness"
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "the Moon in a kendra from the lagna",
+          "type": "planet-in-kendra",
+          "planet": "MOON"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PHALADEEPIKA_ADHAMA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "14,18",
+        "rank": 1,
+        "note": "The Moon in a kendra from the Sun. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealth, fame, learning and the rest at their lowest"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SAMA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "14,18",
+        "rank": 1,
+        "note": "The Moon in a panaphara from the Sun. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            2,
+            5,
+            8,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealth, fame, learning and the rest middling"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_VARISHTHA",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "14,18",
+        "rank": 1,
+        "note": "The Moon in an apoklima from the Sun. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            3,
+            6,
+            9,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealth, fame, learning and the rest at their highest"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_VASUMAT",
+      "category": "dhana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "19-20",
+        "rank": 1,
+        "note": "Every benefic in an upachaya, the third, sixth, tenth or eleventh, from the lagna, or every one but the Moon from the Moon. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "not",
+              "condition": {
+                "type": "for-any",
+                "planets": [
+                  "SUN",
+                  "MOON",
+                  "MARS",
+                  "MERCURY",
+                  "JUPITER",
+                  "VENUS",
+                  "SATURN"
+                ],
+                "then": {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-in-house-from",
+                        "planet": "SELF",
+                        "reference": "LAGNA",
+                        "houses": [
+                          3,
+                          6,
+                          10,
+                          11
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "for-any",
+                "planets": [
+                  "SUN",
+                  "MARS",
+                  "MERCURY",
+                  "JUPITER",
+                  "VENUS",
+                  "SATURN"
+                ],
+                "then": {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-in-house-from",
+                        "planet": "SELF",
+                        "reference": "MOON",
+                        "houses": [
+                          3,
+                          6,
+                          10,
+                          11
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "keeping to his home and commanding plenty of money"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_AMALA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "19-20",
+        "rank": 1,
+        "note": "A benefic in the tenth from the lagna or from the Moon; the verse names no malefic. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                10
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                10
+              ],
+              "atLeast": 1,
+              "from": "MOON"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "ruling the earth, wealthy, with sons, famous, prosperous and prudent"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUSHKALA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "19-20",
+        "rank": 1,
+        "note": "The lord of the Moon's sign with the lagna lord, a different graha, in a kendra or a great friend's sign, and a strong benefic aspecting the lagna (C466). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": "MOON"
+            },
+            "as": {
+              "lordOf": 1
+            }
+          }
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": "MOON"
+          },
+          "as": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra",
+              "planet": {
+                "lordOf": "MOON"
+              }
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": "MOON"
+              },
+              "dignities": [
+                "GREAT_FRIEND"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "SELF",
+                "houseRuled": 1
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy, honoured by kings, famous, finely dressed and adorned, sweet of speech, very good and a lord"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SUBHAMALA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "21-22",
+        "rank": 1,
+        "note": "A benefic in each of the fifth, sixth and seventh from the lagna (C467). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                6
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a director praised by kings, given to enjoyment, liberal, helpful, loving his kin, with a good wife and sons, and brave"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ASUBHAMALA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "21,23",
+        "rank": 1,
+        "note": "A malefic in each of the sixth, eighth and twelfth from the lagna (C467). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                6
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                8
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of bad ways, unhappy, harming others, ungrateful, timid, irreverent, reviled and quarrelsome"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_LAKSHMI",
+      "category": "dhana",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "21,24",
+        "rank": 1,
+        "note": "The lord of the ninth and Venus each in its own sign or exaltation in a kendra or a trikona. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 9
+          },
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 9
+          },
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "VENUS",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "healthy, wealthy, brilliant, protecting his people, blessed by the goddess of wealth, riding in state, the best of kings and liberal"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_GAURI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "21,25",
+        "rank": 1,
+        "note": "The Moon in her own sign or exaltation in a kendra or a trikona, aspected by Jupiter. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "handsome, of a noble family, a friend of the ruler, with virtuous sons, praised for his successes"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SARASWATI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "26-27",
+        "rank": 1,
+        "note": "Venus, Jupiter and Mercury each in a kendra, a trikona or the second, and Jupiter strong in his own sign, exaltation or a friend's sign. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10,
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10,
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10,
+            2
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "JUPITER",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "JUPITER"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very intelligent, skilled in drama, prose, verse, accounts, poetics and the scriptures, famed in the three worlds, very wealthy, with wife and children, and respected by kings"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SRIKANTHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "28-31",
+        "rank": 1,
+        "note": "The lagna lord, the Sun and the Moon, each in a kendra or a trikona in its own sign, exaltation or a friend's sign. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 1
+          },
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SUN",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "devoted to Siva, observing his rites, magnanimous, helping the virtuous, tolerant of others' beliefs, and powerful"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SRINATHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "28-31",
+        "rank": 1,
+        "note": "Venus, the lord of the ninth and Mercury, each in a kendra or a trikona in its own sign, exaltation or a friend's sign. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "VENUS",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 9
+          },
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 9
+          },
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MERCURY",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy, splendid, witty of speech, marked with Vishnu's emblems, devoted to him, with a good wife and sons, and loved by all"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_VIRINCHI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "28-31",
+        "rank": 1,
+        "note": "Jupiter, the lord of the fifth and Saturn, each in a kendra or a trikona in its own sign, exaltation or a friend's sign. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "JUPITER",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 5
+          },
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 5
+          },
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SATURN",
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "absorbed in the knowledge of Brahman, very intelligent, devoted to the Vedas, virtuous, with distinguished disciples, wealthy, long-lived and honoured by kings"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_DAINYA_PARIVARTANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "32-34",
+        "rank": 1,
+        "note": "An exchange of signs between a lord of the sixth, eighth or twelfth with any other: 30 of the 66. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 6
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 8
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 6
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 8
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 6
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 8
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 4,
+              "house2": 6
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 4,
+              "house2": 8
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 4,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 5,
+              "house2": 6
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 5,
+              "house2": 8
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 5,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 6,
+              "house2": 7
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 6,
+              "house2": 8
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 6,
+              "house2": 9
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 6,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 6,
+              "house2": 11
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 6,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 7,
+              "house2": 8
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 7,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 8,
+              "house2": 9
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 8,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 8,
+              "house2": 11
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 8,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 9,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 10,
+              "house2": 12
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 11,
+              "house2": 12
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "foolish, reviling, sinful, harried by enemies, wounding of speech, unsteady, his undertakings interrupted"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KHALA_PARIVARTANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "32-34",
+        "rank": 1,
+        "note": "An exchange of signs between the lord of the third with a lord of a house other than the sixth, eighth or twelfth: 8 of the 66. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 3
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 3
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 4
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 5
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 7
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 9
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 3,
+              "house2": 11
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "now astray, now gentle of speech, now prosperous, now in distress and poverty"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MAHA_PARIVARTANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "32-34",
+        "rank": 1,
+        "note": "An exchange of signs between two lords of houses other than the third, sixth, eighth and twelfth: 28 of the 66. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 2
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 4
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 5
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 7
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 9
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 11
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 4
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 5
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 7
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 9
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 2,
+              "house2": 11
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 4,
+              "house2": 5
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 4,
+              "house2": 7
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 4,
+              "house2": 9
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 4,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 4,
+              "house2": 11
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 5,
+              "house2": 7
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 5,
+              "house2": 9
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 5,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 5,
+              "house2": 11
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 7,
+              "house2": 9
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 7,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 7,
+              "house2": 11
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 9,
+              "house2": 10
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 9,
+              "house2": 11
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 10,
+              "house2": 11
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "blessed by Sri, a wealthy lord in fine clothes and gold, rewarded and empowered by the ruler, with vehicles, wealth and children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PARVATA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "The lord of the sign the lagna lord stands in, in its own sign or exaltation in a kendra or a trikona. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": {
+              "lordOf": 1
+            }
+          },
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": {
+              "lordOf": 1
+            }
+          },
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of lasting wealth and happiness, doing deeds of lasting good, a lord of the earth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KAHALA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "The lord of the sign held by the lord of the sign the lagna lord stands in, in its own sign or exaltation in a kendra or a trikona. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": {
+              "lordOf": {
+                "lordOf": 1
+              }
+            }
+          },
+          "dignities": [
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": {
+              "lordOf": {
+                "lordOf": 1
+              }
+            }
+          },
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "thriving, noble, benevolent, kind and respected"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_RAJA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "37-38",
+        "rank": 1,
+        "note": "The lords of the ninth and the tenth, two grahas, together in a house other than the sixth, eighth or twelfth (C468). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 9
+            },
+            "as": {
+              "lordOf": 10
+            }
+          }
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "lordOf": 9
+          },
+          "as": {
+            "lordOf": 10
+          }
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 9
+          },
+          "reference": "LAGNA",
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king attended by elephants, horses and litters, drums and conches, the royal umbrella, bards and suppliants"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SANKHA",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "37-38",
+        "rank": 1,
+        "note": "A lord of a kendra and a lord of a trikona, two grahas, together in a house other than the sixth, eighth or twelfth (C468). The lagna is both, so its lord pairs with either. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 1
+                    },
+                    "as": {
+                      "lordOf": 5
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 1
+                  },
+                  "as": {
+                    "lordOf": 5
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 1
+                    },
+                    "as": {
+                      "lordOf": 9
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 1
+                  },
+                  "as": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 4
+                    },
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 4
+                  },
+                  "as": {
+                    "lordOf": 1
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 4
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 4
+                    },
+                    "as": {
+                      "lordOf": 5
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 4
+                  },
+                  "as": {
+                    "lordOf": 5
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 4
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 4
+                    },
+                    "as": {
+                      "lordOf": 9
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 4
+                  },
+                  "as": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 4
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 7
+                    },
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 7
+                  },
+                  "as": {
+                    "lordOf": 1
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 7
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 7
+                    },
+                    "as": {
+                      "lordOf": 5
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 7
+                  },
+                  "as": {
+                    "lordOf": 5
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 7
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 7
+                    },
+                    "as": {
+                      "lordOf": 9
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 7
+                  },
+                  "as": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 7
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 10
+                    },
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 10
+                  },
+                  "as": {
+                    "lordOf": 1
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 10
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 10
+                    },
+                    "as": {
+                      "lordOf": 5
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 10
+                  },
+                  "as": {
+                    "lordOf": 5
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 10
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 10
+                    },
+                    "as": {
+                      "lordOf": 9
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 10
+                  },
+                  "as": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 10
+                  },
+                  "reference": "LAGNA",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "enjoying every comfort among many beautiful women"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ADHI",
+      "category": "chandra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "42-43",
+        "rank": 1,
+        "note": "A benefic in each of the sixth, seventh and eighth from the Moon, or from the lagna. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    6
+                  ],
+                  "atLeast": 1,
+                  "from": "MOON"
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1,
+                  "from": "MOON"
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    8
+                  ],
+                  "atLeast": 1,
+                  "from": "MOON"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    6
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    8
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a commander, a minister or a ruler, famous, prosperous, wealthy, long-lived and high-souled"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_CHAMARA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 1 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 1
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 1
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 1
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "growing daily like the waxing Moon, virtuous, famous, a leader of men, long-lived and prosperous"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_DHENU",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 2 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                2
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 2
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 2
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 2
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "with good food and drink, wealthy, well educated, with a large family and plenty of gold, gems and grain, shining like Kubera"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SAURYA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 3 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                3
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 3
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 3
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 3
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 3
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "praised by glorious younger brothers, of admired valour, engrossed in affairs of state, loved by all and very famous"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_JALADHI",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 4 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                4
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 4
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 4
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 4
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 4
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "rich in cattle, wealth and grain, with a fine house full of kin, a good wife and ornaments, of high and lasting standing, honoured by kings and doing public works"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_CHHATRA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 5 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                5
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 5
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 5
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 5
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 5
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of a happy family life, wealthy, renowned, learned, a keen-witted minister of a king, and respected"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ASTRA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 6 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                6
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 6
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 6
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 6
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 6
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "subduing powerful foes by force, arrogant, bruised of limb but strong of body, and quarrelsome"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KAMA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 7 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 7
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 7
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 7
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 7
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "faithful to his own wife, blessed in wife, children and kin, outshining his father, and very prosperous"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_ASURA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 8 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                8
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 8
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 8
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 8
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 8
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "spoiling others' work, a tale-bearer, self-seeking, poor, of forbidden cravings and mean acts, troubled by his own misdeeds"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAGYA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 9 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                9
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 9
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 9
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 9
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 9
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "riding in state amid music, of lasting wealth, honoured by the eminent, righteous and devoted to his ancestors, the gods and the learned"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KHYATI",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 10 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                10
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 10
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 10
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 10
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 10
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who protects his good subjects by approved conduct, blessed in sons, friends, wife and wealth, prosperous and renowned"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PARIJATA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 11 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                11
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 11
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 11
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 11
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 11
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "always amid festivities, a king, lord of much hoarded wealth and a large family, learned and doing good"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MUSALA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "44-56",
+        "rank": 1,
+        "note": "The house 12 from the lagna joined or aspected by a benefic, and its lord in a good house, one other than the sixth, eighth or twelfth, or bright, uncombust, in its own sign or exaltation (C469). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                12
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 12
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 12
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                9,
+                10,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 12
+                  },
+                  "dignities": [
+                    "EXALTED",
+                    "MOOLTRIKONA",
+                    "OWN_SIGN"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-combust",
+                    "planet": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of wealth hard won and unsteady, humbled, spending rightly, attaining heaven, though foolish and fickle"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_AVA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 1 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 1
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "insignificant, very poor, short-lived, humiliated, keeping bad company, deformed and of unsteady position"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NISSVA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 2 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 2
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "without kind words, with a barren wife and bad company, bad teeth and eyes, without intelligence, children, learning or power, robbed by enemies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_MRITI",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 3 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 3
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "vanquished by enemies, without brothers, shame, strength or wealth, wearied by improper acts and excitable"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KUHU",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 4 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 4
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "without mother, vehicles, friends, comfort, ornaments or kin, losing his place and house, attached to a low woman"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PAMARA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 5 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 5
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of a miserable living, undiscerning, a liar and a cheat, losing children or having none, keeping low company, an atheist and a glutton"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_HARSHA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 6 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 6
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happy, enjoying, fortunate and strong, overcoming enemies, fearing sin, a friend of the eminent, with wealth, fame and sons"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_DUSHKRITI",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 7 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 7
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "losing his wife and given to others', roaming unseen, suffering venereal disease and the ruler's displeasure, despised by kin"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_SARALA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 8 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 8
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long-lived, resolute, fearless and prosperous, with learning, children and riches, succeeding, overcoming foes, pure and celebrated"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_NIRBHAGYA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 9 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 9
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "losing his paternal lands and house, despising the good and his elders, irreligious, in worn clothes and great misery"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_DURYOGA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 10 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 10
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "his labour bearing no fruit, insignificant, a traitor to the people, selfish, and living away from home"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_DARIDRA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 11 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 11
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "loaded with debts, cruel, the poorest of the poor, with ear trouble, without good brothers, sinful, indecent of speech and a menial"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_VIMALA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "57-69",
+        "rank": 1,
+        "note": "The lord of the house 12 from the lagna in the sixth, eighth or twelfth. The verse's alternative, the house joined or aspected by a malefic, is not asked, since alone it holds on nearly every chart (C470). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 12
+          },
+          "reference": "LAGNA",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "spending little and saving much, good to all, happy and independent, of respectable conduct and renowned for his virtues"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_DURYOGA_OF_THE_LORDS",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "70",
+        "rank": 1,
+        "note": "The lords of the sixth, eighth and twelfth each strong in a kendra or a trikona, and the lords of the first, fourth, ninth and tenth each weak or combust in the sixth, eighth or twelfth. A lagna one of whose grahas rules houses of both sets cannot hold it, so only Leo, Virgo, Sagittarius and Pisces rising can (C471). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-strong",
+              "planet": {
+                "lordOf": 6
+              }
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 6
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-strong",
+              "planet": {
+                "lordOf": 8
+              }
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 8
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-strong",
+              "planet": {
+                "lordOf": 12
+              }
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 12
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-weak",
+                  "planet": {
+                    "lordOf": 1
+                  }
+                },
+                {
+                  "type": "planet-combust",
+                  "planet": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 1
+              },
+              "reference": "LAGNA",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-weak",
+                  "planet": {
+                    "lordOf": 4
+                  }
+                },
+                {
+                  "type": "planet-combust",
+                  "planet": {
+                    "lordOf": 4
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 4
+              },
+              "reference": "LAGNA",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-weak",
+                  "planet": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "planet-combust",
+                  "planet": {
+                    "lordOf": 9
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 9
+              },
+              "reference": "LAGNA",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-weak",
+                  "planet": {
+                    "lordOf": 10
+                  }
+                },
+                {
+                  "type": "planet-combust",
+                  "planet": {
+                    "lordOf": 10
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 10
+              },
+              "reference": "LAGNA",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the ill of Duryoga, v. 67's"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KING_BY_THE_LORDS",
+      "category": "raja",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "verse": "70",
+        "rank": 1,
+        "note": "The reverse of the Duryoga of v. 70: the lords of the sixth, eighth and twelfth each weak or combust in those houses, and the lords of the first, fourth, ninth and tenth each strong in a kendra or a trikona (C471). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-weak",
+                  "planet": {
+                    "lordOf": 6
+                  }
+                },
+                {
+                  "type": "planet-combust",
+                  "planet": {
+                    "lordOf": 6
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 6
+              },
+              "reference": "LAGNA",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-weak",
+                  "planet": {
+                    "lordOf": 8
+                  }
+                },
+                {
+                  "type": "planet-combust",
+                  "planet": {
+                    "lordOf": 8
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 8
+              },
+              "reference": "LAGNA",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-weak",
+                  "planet": {
+                    "lordOf": 12
+                  }
+                },
+                {
+                  "type": "planet-combust",
+                  "planet": {
+                    "lordOf": 12
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 12
+              },
+              "reference": "LAGNA",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-strong",
+              "planet": {
+                "lordOf": 1
+              }
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 1
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-strong",
+              "planet": {
+                "lordOf": 4
+              }
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 4
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-strong",
+              "planet": {
+                "lordOf": 9
+              }
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 9
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-strong",
+              "planet": {
+                "lordOf": 10
+              }
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 10
+              },
+              "reference": "LAGNA",
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, fortunate, wealthy, happy and virtuous"
+        }
+      ]
+    }
+  ]
+}

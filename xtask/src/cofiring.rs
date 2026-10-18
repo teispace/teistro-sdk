@@ -110,7 +110,7 @@ const REVIEWED: [(&[&str], &str); 4] = [
 /// and a place, its latitude and longitude, where it does: rare rules,
 /// shown alive. Each was found at Kathmandu's latitude, on the meridian
 /// that puts the lagna the rule asks for on the horizon.
-const FIXTURES: [(&str, f64, f64, f64); 59] = [
+const FIXTURES: [(&str, f64, f64, f64); 62] = [
     (
         "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
         2_415_023.166_67,
@@ -233,6 +233,32 @@ const FIXTURES: [(&str, f64, f64, f64); 59] = [
         2_380_915.0,
         27.7172,
         41.087,
+    ),
+    // All five great men at once: Mars in Aries, Venus in Libra and Saturn in
+    // Capricorn angular to an Aries lagna, Mercury in Virgo and Jupiter in
+    // Sagittarius angular to a Gemini Moon; 9 days of 1800 to 2400 have it.
+    (
+        "PHALADEEPIKA_MAHAPURUSHA_FIVE",
+        2_545_713.0,
+        27.7172,
+        85.324,
+    ),
+    // v. 70's two, which only Leo, Virgo, Sagittarius and Pisces rising can
+    // hold (C471): of 4820 two-hourly instants of 1801 to 2398 at Kathmandu
+    // with every lord placed as the verse asks, 108 also have the strengths
+    // for the Duryoga and 13 for the king. A Leo lagna on 1823-01-15 and a
+    // Virgo lagna on 1964-02-14.
+    (
+        "PHALADEEPIKA_DURYOGA_OF_THE_LORDS",
+        2_386_911.083_3,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PHALADEEPIKA_KING_BY_THE_LORDS",
+        2_438_440.166_8,
+        27.7172,
+        85.324,
     ),
     (
         "PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON",

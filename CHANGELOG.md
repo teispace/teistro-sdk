@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Phaladeepika ch. 6's yogas** (`rules-engine.md`). **Numbers:** none
+moved; this adds 76 rules. The book's catalogue of named yogas, read in
+Sastri's 1937 translation with the Sanskrit beside it, joins the nabhasa
+set: the five great men and v. 4's grades for how many hold; Sunapha,
+Anapha, Durudhara and Kemadruma with v. 5's cancellation; the Vesi family
+about the Sun by class; the kartaris and Susubha; Mahabhagya in both its
+forms, Kesari, Sakata and the Moon's three places from the Sun; Vasumat,
+Amala, Pushkala, the two malas, Lakshmi, Gauri, Saraswati, Srikantha,
+Srinatha and Virinchi; the 66 exchanges of lords as Dainya, Khala and
+Maha; Parvata, Kahala, Raja, Sankha and Adhi; and the twelve houses' good
+and ill yogas, Chamara to Musala and Ava to Vimala, and v. 70's two
+figures from the lords of the evil and the good houses. Every rule holds
+on some computed sky but all five great men at once, which an October 2257
+instant fixes. Cruxes C464 to C471.
+
 **The day's results** (`varshesha.md`). **Numbers:** none moved; this
 adds answers. `teistro_tajika::dina_phala` and `sdk.chart().dina_phala`
 read the *Tajika Nilakanthi*'s day's results (Varsha Tantra, the month's

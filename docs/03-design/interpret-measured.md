@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 25 429 items, 273 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 28 341 items, 304 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 3 194 240 bytes of JSON over the 93 charts, 34 346 bytes a
-chart, 41 842 bytes for the widest and 125 bytes an item. The verses'
-own cited words are **not** what weighs it — 159 176 bytes, 4% — so
+golden file: 3 652 211 bytes of JSON over the 93 charts, 39 271 bytes a
+chart, 47 133 bytes for the widest and 128 bytes an item. The verses'
+own cited words are **not** what weighs it — 300 609 bytes, 8% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 25429 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 25429 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 25429 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 25429 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 28341 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 28341 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 28341 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 28341 disagree |
 
-Every one of the 50 858 renderings — 25 429 in each of 2 strict
+Every one of the 56 682 renderings — 28 341 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -72,13 +72,13 @@ about.
 | `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
-| `sdk.reading.effect` | 3840 |
+| `sdk.reading.effect` | 5318 |
 | `sdk.reading.lifeClass` | 296 |
 | `sdk.reading.lifeSpan` | 176 |
-| `sdk.reading.participants` | 4587 |
+| `sdk.reading.participants` | 5962 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
-| `sdk.reading.status` | 361 |
+| `sdk.reading.status` | 420 |
 | `sdk.reading.timing` | 29 |
 | `sdk.reason.ashtakavarga` | 0 |
 | `sdk.reason.bhavaBala` | 0 |
@@ -112,7 +112,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 3840 of the 25 429
+**The verse's own statement is not translated.** 5318 of the 28 341
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -124,7 +124,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 690 rules this pass composes carry a reading, and they
+rule: 12 of the 766 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -240,11 +240,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 1059 of 1059 | 0 of 1059 |
-| `hi-Deva-IN` | `base` | 0 of 1059 | 987 of 1059 |
-| `ne-Deva-NP` | `strict` | 1059 of 1059 | 1015 of 1059 |
-| `sa-Deva` | `base` | 0 of 1059 | 987 of 1059 |
-| `sa-Latn` | `base` | 0 of 1059 | 953 of 1059 |
+| `en-Latn` | `strict` | 1088 of 1088 | 0 of 1088 |
+| `hi-Deva-IN` | `base` | 0 of 1088 | 1000 of 1088 |
+| `ne-Deva-NP` | `strict` | 1088 of 1088 | 1029 of 1088 |
+| `sa-Deva` | `base` | 0 of 1088 | 1000 of 1088 |
+| `sa-Latn` | `base` | 0 of 1088 | 966 of 1088 |
 
 ## What a rich renderer gets
 
@@ -258,8 +258,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 1059 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 1059 | 42 | `b` |
+| `en-Latn` | 21 of 1088 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 1088 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -281,7 +281,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 2118 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 2176 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -299,7 +299,7 @@ its limbs, which also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 74 of 75 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 2118
+own message, with no fallback and nothing to warn about: 2176
 renderings. What this chart cannot reach is named below, with the reason
 it needs another. A key missing from both fails, and so does a key
 excused that this chart emits — which is not a hypothetical: **three
@@ -681,6 +681,32 @@ PHALADEEPIKA_NEXT_BIRTH_LORD_DEBILITATED_OR_HOSTILE_FOREIGN_ISLAND: the birth af
 PHALADEEPIKA_NEXT_BIRTH_LORD_VENUS_OR_MOON_LAND: the birth after, in a land watered by the sacred rivers
 PHALADEEPIKA_NEXT_BIRTH_LORD_IN_A_SIGN_KIND_TO_THE_LAGNA_LORD_HUMAN: the birth after, as a human
 PHALADEEPIKA_NEXT_BIRTH_LORD_IN_A_SIGN_KIND_TO_THE_LAGNA_LORD_HUMAN: Jupiter and Mars take part
+PHALADEEPIKA_KEMADRUMA_BHANGA: no Kemadruma, as some say
+PHALADEEPIKA_KEMADRUMA_BHANGA: Mars, Jupiter and Venus take part
+PHALADEEPIKA_KEMADRUMA: obscure even if of royal birth, miserable, low in ways, poor, a drudge and ill-disposed
+PHALADEEPIKA_KEMADRUMA: cancelled
+PHALADEEPIKA_PAPA_KARTARI: poor, impure, unhappy, without wife and children, maimed and short-lived
+PHALADEEPIKA_PAPA_KARTARI: Mars and Sun take part
+PHALADEEPIKA_SAKATA: losing his fortune and regaining it, an ordinary man, with much grief and unhappiness
+PHALADEEPIKA_SAKATA: Moon takes part
+PHALADEEPIKA_SAMA: wealth, fame, learning and the rest middling
+PHALADEEPIKA_SAMA: Moon takes part
+PHALADEEPIKA_JALADHI: rich in cattle, wealth and grain, with a fine house full of kin, a good wife and ornaments, of high and lasting standing, honoured by kings and doing public works
+PHALADEEPIKA_JALADHI: Jupiter and Mercury take part
+PHALADEEPIKA_ASTRA: subduing powerful foes by force, arrogant, bruised of limb but strong of body, and quarrelsome
+PHALADEEPIKA_ASTRA: Venus and Sun take part
+PHALADEEPIKA_KHYATI: a king who protects his good subjects by approved conduct, blessed in sons, friends, wife and wealth, prosperous and renowned
+PHALADEEPIKA_KHYATI: Jupiter takes part
+PHALADEEPIKA_MUSALA: of wealth hard won and unsteady, humbled, spending rightly, attaining heaven, though foolish and fickle
+PHALADEEPIKA_MUSALA: Venus and Saturn take part
+PHALADEEPIKA_NISSVA: without kind words, with a barren wife and bad company, bad teeth and eyes, without intelligence, children, learning or power, robbed by enemies
+PHALADEEPIKA_NISSVA: Mars takes part
+PHALADEEPIKA_MRITI: vanquished by enemies, without brothers, shame, strength or wealth, wearied by improper acts and excitable
+PHALADEEPIKA_MRITI: Venus takes part
+PHALADEEPIKA_SARALA: long-lived, resolute, fearless and prosperous, with learning, children and riches, succeeding, overcoming foes, pure and celebrated
+PHALADEEPIKA_SARALA: Venus takes part
+PHALADEEPIKA_NIRBHAGYA: losing his paternal lands and house, despising the good and his elders, irreligious, in worn clothes and great misery
+PHALADEEPIKA_NIRBHAGYA: Mars takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: Venus takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: cancelled
 ARISHTA_MALEFICS_FROM_THE_SUN: Moon and Ketu take part
@@ -958,6 +984,32 @@ PHALADEEPIKA_NEXT_BIRTH_LORD_DEBILITATED_OR_HOSTILE_FOREIGN_ISLAND: the birth af
 PHALADEEPIKA_NEXT_BIRTH_LORD_VENUS_OR_MOON_LAND: the birth after, in a land watered by the sacred rivers
 PHALADEEPIKA_NEXT_BIRTH_LORD_IN_A_SIGN_KIND_TO_THE_LAGNA_LORD_HUMAN: the birth after, as a human
 PHALADEEPIKA_NEXT_BIRTH_LORD_IN_A_SIGN_KIND_TO_THE_LAGNA_LORD_HUMAN: गुरु र मंगल संलग्न छन्
+PHALADEEPIKA_KEMADRUMA_BHANGA: no Kemadruma, as some say
+PHALADEEPIKA_KEMADRUMA_BHANGA: मंगल, गुरु र शुक्र संलग्न छन्
+PHALADEEPIKA_KEMADRUMA: obscure even if of royal birth, miserable, low in ways, poor, a drudge and ill-disposed
+PHALADEEPIKA_KEMADRUMA: रद्द
+PHALADEEPIKA_PAPA_KARTARI: poor, impure, unhappy, without wife and children, maimed and short-lived
+PHALADEEPIKA_PAPA_KARTARI: मंगल र सूर्य संलग्न छन्
+PHALADEEPIKA_SAKATA: losing his fortune and regaining it, an ordinary man, with much grief and unhappiness
+PHALADEEPIKA_SAKATA: चन्द्र संलग्न छ
+PHALADEEPIKA_SAMA: wealth, fame, learning and the rest middling
+PHALADEEPIKA_SAMA: चन्द्र संलग्न छ
+PHALADEEPIKA_JALADHI: rich in cattle, wealth and grain, with a fine house full of kin, a good wife and ornaments, of high and lasting standing, honoured by kings and doing public works
+PHALADEEPIKA_JALADHI: गुरु र बुध संलग्न छन्
+PHALADEEPIKA_ASTRA: subduing powerful foes by force, arrogant, bruised of limb but strong of body, and quarrelsome
+PHALADEEPIKA_ASTRA: शुक्र र सूर्य संलग्न छन्
+PHALADEEPIKA_KHYATI: a king who protects his good subjects by approved conduct, blessed in sons, friends, wife and wealth, prosperous and renowned
+PHALADEEPIKA_KHYATI: गुरु संलग्न छ
+PHALADEEPIKA_MUSALA: of wealth hard won and unsteady, humbled, spending rightly, attaining heaven, though foolish and fickle
+PHALADEEPIKA_MUSALA: शुक्र र शनि संलग्न छन्
+PHALADEEPIKA_NISSVA: without kind words, with a barren wife and bad company, bad teeth and eyes, without intelligence, children, learning or power, robbed by enemies
+PHALADEEPIKA_NISSVA: मंगल संलग्न छ
+PHALADEEPIKA_MRITI: vanquished by enemies, without brothers, shame, strength or wealth, wearied by improper acts and excitable
+PHALADEEPIKA_MRITI: शुक्र संलग्न छ
+PHALADEEPIKA_SARALA: long-lived, resolute, fearless and prosperous, with learning, children and riches, succeeding, overcoming foes, pure and celebrated
+PHALADEEPIKA_SARALA: शुक्र संलग्न छ
+PHALADEEPIKA_NIRBHAGYA: losing his paternal lands and house, despising the good and his elders, irreligious, in worn clothes and great misery
+PHALADEEPIKA_NIRBHAGYA: मंगल संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: शुक्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: रद्द
 ARISHTA_MALEFICS_FROM_THE_SUN: चन्द्र र केतु संलग्न छन्
