@@ -5642,7 +5642,32 @@ void _engineTests() {
       expect(row.masesha, isNull);
       expect(lord.graha, lord.chain.graha);
       expect(lord.bearers.masaLagna, lords[1].masesha!.bearers.masaLagna);
+      // Each day's results beside its lord: the four lords the day's, the
+      // year's, the month's and the Muntha's.
+      final results = row.dayResults!;
+      expect(results.houses, hasLength(12));
+      expect(results.lords.map((one) => one.graha), [
+        lord.graha,
+        third.yearLord.graha,
+        lords[1].masesha!.graha,
+        lord.bearers.muntha,
+      ]);
     }
+    expect(
+      daily.map((row) => row.dayResults!.moonState).toSet().length,
+      greaterThan(1),
+    );
+    final waning =
+        found(
+          instant,
+          const MasaPraveshaRequest(
+            year: 3,
+            month: 2,
+            place: AnnualPlace.birth,
+            results: MasaPhalaRules(kshina: KshinaRule.darkEleventhToNewMoon),
+          ),
+        ).masaPravesha!;
+    expect(waning, hasLength(30));
     ctx.dispose();
   });
 

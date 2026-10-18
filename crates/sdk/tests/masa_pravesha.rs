@@ -12,7 +12,7 @@
 
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::tajika::{MaseshaReading, MaseshaRules, Reading, VarsheshaRules};
+use teistro::tajika::{MasaPhalaRules, MaseshaReading, MaseshaRules, Reading, VarsheshaRules};
 use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 const BIRTH: f64 = 2_447_995.489_583_333_5;
@@ -313,7 +313,7 @@ fn each_months_results_are_read_from_its_chart_beside_its_lord() {
         .varshesha(&natal, &year, 30, VarsheshaRules::default())
         .unwrap()
         .graha;
-    let rules = teistro::tajika::MasaPhalaRules::default();
+    let rules = MasaPhalaRules::default();
     for (row, entry) in rows.iter().zip(&months) {
         let month = chart(&sdk, entry.at.get());
         let lord = row.masesha.as_ref().unwrap();
@@ -370,7 +370,7 @@ fn each_months_results_are_read_from_its_chart_beside_its_lord() {
 }
 
 #[test]
-fn a_place_beside_a_month_founds_each_day_and_its_lord() {
+fn a_place_beside_a_month_founds_each_day_its_lord_and_its_results() {
     let sdk = context();
     let natal = chart(&sdk, BIRTH);
     let clock = UtcOffset::try_from_seconds(20_700).unwrap();
@@ -389,6 +389,11 @@ fn a_place_beside_a_month_founds_each_day_and_its_lord() {
         .chart()
         .masesha(&natal, &year, &month, &months[3], MaseshaRules::default())
         .unwrap();
+    let year_lord = sdk
+        .chart()
+        .varshesha(&natal, &year, 30, VarsheshaRules::default())
+        .unwrap()
+        .graha;
     for row in &rows {
         assert!(row.masesha.is_none() && row.results.is_none());
         let lord = row.dinesha.as_ref().unwrap();
@@ -408,7 +413,35 @@ fn a_place_beside_a_month_founds_each_day_and_its_lord() {
         assert_eq!(lord.graha, lord.chain.graha);
         assert_eq!(lord.bearers.masa_lagna, month_lord.bearers.masa_lagna);
         assert_eq!(lord.bearers.varsha_lagna, month_lord.bearers.varsha_lagna);
+        let results = sdk
+            .chart()
+            .dina_phala(
+                &day,
+                lord,
+                year_lord,
+                month_lord.graha,
+                MasaPhalaRules::default(),
+            )
+            .unwrap();
+        assert_eq!(
+            row.day_results.as_ref(),
+            Some(&results),
+            "day {}",
+            row.entry.day
+        );
+        let offices: Vec<_> = results.lords.iter().map(|one| one.graha).collect();
+        assert_eq!(
+            offices,
+            [lord.graha, year_lord, month_lord.graha, lord.bearers.muntha]
+        );
     }
+    // The Moon walks some thirteen degrees a day, so the thirty days
+    // pass through more than one of her states.
+    let states: std::collections::BTreeSet<_> = rows
+        .iter()
+        .map(|row| row.day_results.as_ref().unwrap().moon_state)
+        .collect();
+    assert!(states.len() > 1);
     // The first day is the month's own chart, so its lord is the month's.
     assert_eq!(rows[0].dinesha.as_ref().unwrap().graha, month_lord.graha);
     // The month's chart handed in as the fifth day's is refused by name.
@@ -426,5 +459,7 @@ fn a_place_beside_a_month_founds_each_day_and_its_lord() {
     assert_eq!(refused.field(), Some("day"));
     let wire = serde_json::to_value(&rows[1]).unwrap();
     assert!(wire["dinesha"]["bearers"]["dinaLagna"].is_string());
+    assert!(wire["dayResults"]["moonState"].is_string());
+    assert_eq!(wire["dayResults"]["houses"].as_array().unwrap().len(), 12);
     assert!(wire.get("masesha").is_none());
 }

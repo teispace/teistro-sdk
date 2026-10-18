@@ -847,7 +847,21 @@ public final class BindingTest {
                     same(row.dinesha().chain().graha(), row.dinesha().graha(), "the chain's lord");
                     same(lords.get(1).masesha().bearers().masaLagna(), row.dinesha().bearers().masaLagna(),
                             "the month lagna's lord");
+                    // Each day's results beside its lord: the four lords the day's, the year's,
+                    // the month's and the Muntha's.
+                    DinaPhala results = row.dayResults();
+                    same(12, results.houses().size(), "twelve houses of the day");
+                    same(List.of(row.dinesha().graha(), third.graha(), lords.get(1).masesha().graha(),
+                            row.dinesha().bearers().muntha()),
+                            results.lords().stream().map(DayLordPlace::graha).toList(), "the day's four lords");
                 }
+                check(daily.stream().map(row -> row.dayResults().moonState()).distinct().count() > 1,
+                        "the Moon moves through her states");
+                same(30, sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().masaPravesha(MasaPraveshaRequest.builder().year(3).month(2)
+                                .place(AnnualPlace.BIRTH)
+                                .results(MasaPhalaRules.builder().kshina(KshinaRule.DARK_ELEVENTH_TO_NEW_MOON).build())
+                                .build()).build()).masaPravesha().orElseThrow().size(), "the waning Moon read otherwise");
 
                 // Each month's results beside its lord: twelve houses, five lords.
                 check(months.get(0).results() == null, "no results without a place");

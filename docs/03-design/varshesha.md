@@ -254,7 +254,7 @@ month's.
 |---|---|
 | **built** | `teistro_tajika::{day_bearers, dinesha, DayCharts, DayBearers, DayOffice, Dinesha}` and `sdk.chart().dinesha(&birth, &year, &month, &day, &entry, rules)`, which needs no ephemeris. A day chart not founded at the entry's instant is refused as `day`. Tests: Charak's worked year read as a first day gives the month's lord, the Sun; a Muntha at 2s 28°20′40″ carrying its degree changes lord between the 20th and the 21st day; the others' reading takes the day lagna's lord; a day outside one to thirty is refused as `day`; thirty founded days of one birth read back through the façade, the first day's lord the month's |
 | **across the boundary** | a `masaPravesha` record with a `month` and a `place` now founds the year's, the month's and each day's charts, and every day row carries `dinesha`, `{graha, reading, bearers, chain}` with the seven `bearers` `{muntha, janmaLagna, triRashi, dinaRatri, dinaLagna, masaLagna, varshaLagna, byDay}`. It was refused before as `masaPravesha.place`. Node, Python, Dart and Java read it as each day's `dinesha`, and each binding's test holds the first day's lord to the month's. The parity runners ask for the year's months, so the days are proved by the binding tests and not printed |
-| **not built** | the day's results: v. 16 reads them from the Moon's and the lagna's navamshas, and vv. 18 onwards give the clauses |
+| **not built** | nothing of v. 17; the day's results are read below |
 
 ## The month's results
 
@@ -298,7 +298,7 @@ by whole signs from the month lagna:
 
 | verse | the lords | the clauses | what follows |
 |---|---|---|---|
-| 12 | the year lagna's lord, the Masesha, the Varshesha, the Muntha's lord | `TRIKA` (the 6th, 8th or 12th; the commentary takes in the 12th the metre left out), `WITH_MALEFIC` (sharing a sign with Mars or Saturn), `MALEFIC_INIMICAL` (aspected by one with an inimical aspect, 1, 4, 7, 10 as the gloss lists them) | illness, enemies, fear and sorrow |
+| 12 | the year lagna's lord, the Masesha, the Varshesha, the Muntha's lord | `TRIKA` (the 6th, 8th or 12th; the commentary takes in the 12th the metre left out), `WITH_MALEFIC` (sharing a sign with a malefic), `MALEFIC_INIMICAL` (aspected by one with an inimical aspect, 1, 4, 7, 10 as the gloss lists them) | illness, enemies, fear and sorrow |
 | 13 | the year lagna's lord, the Masesha, the Varshesha | `STRONG`, `WELL_PLACED` (a kendra, a trikona or the 11th) | health, enemies destroyed, rule, honour and fame |
 
 Each of the five offices is reported, with the month lagna's lord added
@@ -306,8 +306,10 @@ for v. 10's reader. `MonthLordPlace::afflicted` and `::prospers` read the
 two verses off the clauses: v. 12 needs `TRIKA` with either malefic
 clause, since the verse's three conditions are gloss-joined by "or"
 (C457). The Masesha and the Varshesha are the row's own, under its
-`masesha` rules. The malefics are Mars and Saturn, the year yogas' own
-(C114).
+`masesha` rules. The malefics are the chapter's own, which its gloss on
+v. 28 lists: the Sun, Mars, Saturn and the waning Moon (C460), so the
+year yogas' Mars and Saturn (C114) are not used here. The Moon wanes
+under the record's `results.kshina`, the year's `KshinaRule` by default.
 
 Verses 14 and 15 are not built. They give the month a dasha from the
 stronger of the Muntha's lord and the month lagna's lord, and one
@@ -315,9 +317,38 @@ authority's objection to it.
 
 | | |
 |---|---|
-| **built** | `teistro_tajika::{masa_phala, MasaPhala, MonthHouse, HouseClause, MonthLord, MonthLordPlace, LordClause, MasaPhalaRules}`. Every month row the `masaPravesha` record founds at a `place` carries `results`, read under the record's `results` rules (`{weakBelow, strongFrom}`, the year yogas' floors by default, refused as `masaPravesha.results.strongFrom` when below `weakBelow`). Tests: one test a clause on a built sky (`crates/tajika/src/masa_phala.rs`); twelve founded months of one birth read back through `sdk.chart().masa_phala` with the Varshesha read on the year's chart (`crates/sdk/tests/masa_pravesha.rs`); each binding holds the five lords to the row's Masesha, the year's lord and the month lagna's lord, and every parity runner prints each month's houses and lords. Measured on 2026-10-18 over 144 founded months (three births, four years each): every clause holds in some, `WEAK` the rarest at 30 of 1728 houses |
-| **decided** | the house's point (C453), the Moon as one of the pair (C454), a shared sign as companionship and not enmity (C455), one planet in both roles (C456), v. 12's "or" (C457) |
+| **built** | `teistro_tajika::{masa_phala, MasaPhala, MonthHouse, HouseClause, MonthLord, MonthLordPlace, LordClause, MasaPhalaRules}`. Every month row the `masaPravesha` record founds at a `place` carries `results`, read under the record's `results` rules (`{weakBelow, strongFrom, kshina}`, the year yogas' floors and the year's waning Moon by default, refused as `masaPravesha.results.strongFrom` when below `weakBelow`). Tests: one test a clause on a built sky (`crates/tajika/src/masa_phala.rs`); twelve founded months of one birth read back through `sdk.chart().masa_phala` with the Varshesha read on the year's chart (`crates/sdk/tests/masa_pravesha.rs`); each binding holds the five lords to the row's Masesha, the year's lord and the month lagna's lord, and every parity runner prints each month's houses and lords. Measured on 2026-10-18 over 144 founded months (three births, four years each), under the chapter's malefics: every clause holds in some, `BOTH_LOW` the rarest at 30 of 1728 houses and `WEAK` next at 33; 77 lords afflicted, 231 prospering |
+| **decided** | the house's point (C453), the Moon as one of the pair (C454), a shared sign as companionship and not enmity (C455), one planet in both roles (C456), v. 12's "or" (C457), the chapter's malefics (C460) |
 | **not built** | following the three planets through the month, which v. 7 asks for ("so long as they stay so"); vv. 14–15's month dasha |
+
+## The day's results
+
+Verses 18–33 of the same chapter (rank 1) read the day from its chart, in
+clauses as the month's verses do, and `teistro_tajika::dina_phala`
+reports the clauses that hold without weighing them. The malefics and
+benefics are the month's (C460), and the floors and the waning Moon the
+record's `results` rules, shared with the month.
+
+| verse | what is read | the clauses |
+|---|---|---|
+| 18 | every benefic strong in a kendra, a trikona or the 11th; every malefic in the 3rd, 6th or 11th; each from the lagna and from the Moon | `BENEFICS_WELL_PLACED_FROM_LAGNA`, `…_FROM_MOON`, `MALEFICS_WELL_PLACED_FROM_LAGNA`, `…_FROM_MOON`: the gloss gives the malefics' clause as a second way to the same good, "then too" (C461) |
+| 19 | the Dinesha, the Varshesha, the Masesha and the Muntha's lord, from the day lagna | the month's lord clauses, `TRIKA`, `WITH_MALEFIC`, `MALEFIC_INIMICAL`, `STRONG`, `WELL_PLACED`; `DayLordPlace::afflicted` reads "joined" as the gloss's "joined or aspected" (C463) |
+| 20–21 | each house's navamsha lord, the lagna's degree carried into the house's sign (C453) | `WITH_BENEFIC`, `BENEFIC_FRIENDLY`, `MOON_FRIENDLY`, and the gloss's "otherwise", `WITH_MALEFIC`, `MALEFIC_INIMICAL` |
+| 26 | malefics and benefics about the lagna | `MALEFICS_FLANK` (the 2nd and the 12th), `BENEFIC_TWELFTH`, and the gloss's scissors read by motion, `PAPA_KARTARI` and `SHUBHA_KARTARI` (C462) |
+| 27 | the waning Moon in the 1st or the 8th, joined or aspected by a malefic | `WANING_MOON_AFFLICTED` |
+| 28 | the Moon with Mars in the 6th or the 8th; a malefic in the 4th | `MOON_MARS_DUSTHANA`, `MALEFIC_FOURTH` |
+| 29 | a benefic in the 7th, the 2nd, the 9th | `BENEFIC_SEVENTH`, `BENEFIC_SECOND`, `BENEFIC_NINTH` |
+| 30–33 | the Moon's degrees within her sign | `moonState`, one of twelve of 2°30′: `PRAVASA`, `NASHTA`, `MRITA`, `JAYA`, `HASYA`, `RATI`, `KRIDITA`, `PRASUPTA`, `BHUKTA`, `JVARA`, `KAMPITA`, `SUSTHITA`; the gloss's Moon at 2s 4°25′40″ is in the second |
+
+Verses 22–25 read the navamsha signs of the 6th, 12th, 7th and 8th
+"joined" by planets and do not say in which chart a planet joins a
+navamsha sign; they are not built rather than guessed.
+
+| | |
+|---|---|
+| **built** | `teistro_tajika::{dina_phala, DinaPhala, DayHouse, DayHouseClause, DayLord, DayLords, DayLordPlace, DayClause, MoonState}` and `sdk.chart().dina_phala(&day, &dinesha, varshesha, masesha, rules)`, which needs no ephemeris; a day chart whose lagna's lord is not the Dinesha's day lagna lord is refused as `day`. Every day row the `masaPravesha` record founds carries `dayResults`, with the Varshesha read on the year's chart and the Masesha on the month's. Tests: one test a clause on a built sky, the kartari by motion, the waning Moon as a malefic, the gloss's Moon state (`crates/tajika/src/dina_phala.rs`); thirty founded days read back through the façade, the four lords the day's, the year's, the month's and the Muntha's (`crates/sdk/tests/masa_pravesha.rs`). Measured on 2026-10-18 over 1,080 founded days (one birth, three years): every clause holds on some, `PAPA_KARTARI` the rarest on 2 and `SHUBHA_KARTARI` on 7; all twelve Moon states between 75 and 99 days |
+| **decided** | the chapter's malefics (C460), v. 18's two conditions (C461), the scissors by motion (C462), v. 19's "joined" (C463) |
+| **not built** | vv. 22–25, above |
 
 ## The strength crosses as an integer
 

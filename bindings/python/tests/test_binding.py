@@ -1955,6 +1955,20 @@ class AnEngine(WithLibrary):
                 self.assertEqual(row.dinesha.graha, row.dinesha.chain.graha)
                 self.assertEqual(row.dinesha.bearers.masa_lagna, lords[1].masesha.bearers.masa_lagna)
                 self.assertIsInstance(row.dinesha.bearers.dina_lagna, Graha)
+                # Each day's results beside its lord: the four lords the
+                # day's, the year's, the month's and the Muntha's.
+                assert row.day_results is not None
+                self.assertEqual(len(row.day_results.houses), 12)
+                self.assertEqual(
+                    [one.graha for one in row.day_results.lords],
+                    [row.dinesha.graha, third.year_lord.graha, lords[1].masesha.graha, row.dinesha.bearers.muntha],
+                )
+                self.assertIsInstance(row.day_results.houses[0].amsha_lord, Graha)
+            self.assertGreater(len({row.day_results.moon_state for row in daily.masa_pravesha if row.day_results}), 1)
+            waning: MasaPraveshaRequest = {
+                "year": 3, "month": 2, "place": "birth", "results": {"kshina": "DARK_ELEVENTH_TO_NEW_MOON"},
+            }
+            self.assertEqual(len(ctx.chart.found(instant=instant, masa_pravesha=waning, **at).masa_pravesha or ()), 30)
 
     def test_a_chart_writes_its_dossier(self) -> None:
         """The dossier crosses as text (`03-design/dossier.md`): the record

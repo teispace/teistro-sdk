@@ -41,7 +41,9 @@ final class MasaPraveshaReads {
                             row instanceof Map<?, ?> fields && fields.get("results") != null
                                     ? results(fields.get("results")) : null,
                             row instanceof Map<?, ?> fields && fields.get("dinesha") != null
-                                    ? dinesha(fields.get("dinesha")) : null));
+                                    ? dinesha(fields.get("dinesha")) : null,
+                            row instanceof Map<?, ?> fields && fields.get("dayResults") != null
+                                    ? dayResults(fields.get("dayResults")) : null));
                 }
                 charts.add(List.copyOf(one));
             }
@@ -123,6 +125,30 @@ final class MasaPraveshaReads {
                     keys(JsonRead.at(one, "clauses"), MonthLordClause::valueOf)));
         }
         return new MasaPhala(List.copyOf(houses), List.copyOf(lords));
+    }
+
+    /** A day's results, their grahas members. */
+    private static DinaPhala dayResults(Object raw) {
+        List<DayHouse> houses = new ArrayList<>();
+        for (Object one : JsonRead.list(JsonRead.at(raw, "houses"))) {
+            houses.add(new DayHouse(
+                    JsonRead.integer(JsonRead.at(one, "house")),
+                    graha(JsonRead.at(one, "amshaLord")),
+                    keys(JsonRead.at(one, "clauses"), DayHouseClause::valueOf)));
+        }
+        List<DayLordPlace> lords = new ArrayList<>();
+        for (Object one : JsonRead.list(JsonRead.at(raw, "lords"))) {
+            lords.add(new DayLordPlace(
+                    DayLord.valueOf(JsonRead.text(JsonRead.at(one, "office"))),
+                    graha(JsonRead.at(one, "graha")),
+                    JsonRead.integer(JsonRead.at(one, "house")),
+                    keys(JsonRead.at(one, "clauses"), MonthLordClause::valueOf)));
+        }
+        return new DinaPhala(
+                MoonState.valueOf(JsonRead.text(JsonRead.at(raw, "moonState"))),
+                List.copyOf(houses),
+                List.copyOf(lords),
+                keys(JsonRead.at(raw, "clauses"), DayClause::valueOf));
     }
 
     private static <T> List<T> keys(Object raw, Function<String, T> member) {

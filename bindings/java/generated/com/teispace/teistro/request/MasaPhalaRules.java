@@ -9,12 +9,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The floors the month's results judge strong and weak by, the year yogas' own by default.
+ * The floors the month's and the day's results judge strong and weak by, the year yogas' own by default, and when the Moon is waning.
  *
+ * @param kshina When the Moon is waning, and so one of the chapter's malefics rather than its benefics (crux C460); the Samjna Tantra gloss's own by default. Null leaves the SDK's default.
  * @param strongFrom The Vishwa bala from which a planet is strong without a dignity; never below `weak_below`. Null leaves the SDK's default.
  * @param weakBelow The Vishwa bala below which a planet with no dignity is weak. Null leaves the SDK's default.
  */
-public record MasaPhalaRules(Long strongFrom, Long weakBelow) implements RequestJson {
+public record MasaPhalaRules(KshinaRule kshina, Long strongFrom, Long weakBelow) implements RequestJson {
     /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
@@ -27,10 +28,22 @@ public record MasaPhalaRules(Long strongFrom, Long weakBelow) implements Request
 
     /** Builds a {@link MasaPhalaRules} a field at a time. */
     public static final class Builder {
+        private KshinaRule kshina;
         private Long strongFrom;
         private Long weakBelow;
 
         private Builder() {}
+
+        /**
+         * Sets {@code kshina}.
+         *
+         * @param kshina When the Moon is waning, and so one of the chapter's malefics rather than its benefics (crux C460); the Samjna Tantra gloss's own by default. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder kshina(KshinaRule kshina) {
+            this.kshina = kshina;
+            return this;
+        }
 
         /**
          * Sets {@code strongFrom}.
@@ -61,7 +74,7 @@ public record MasaPhalaRules(Long strongFrom, Long weakBelow) implements Request
          * @throws NullPointerException naming a required field left unset
          */
         public MasaPhalaRules build() {
-            return new MasaPhalaRules(strongFrom, weakBelow);
+            return new MasaPhalaRules(kshina, strongFrom, weakBelow);
         }
     }
 
@@ -75,6 +88,7 @@ public record MasaPhalaRules(Long strongFrom, Long weakBelow) implements Request
     public static MasaPhalaRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "MasaPhalaRules");
         return new MasaPhalaRules(
+            Read.orNull(json.get("kshina"), present -> Read.member(present, "MasaPhalaRules.kshina", KshinaRule::byKey)),
             Read.orNull(json.get("strongFrom"), present -> Read.integer(present, "MasaPhalaRules.strongFrom")),
             Read.orNull(json.get("weakBelow"), present -> Read.integer(present, "MasaPhalaRules.weakBelow")));
     }
@@ -82,6 +96,9 @@ public record MasaPhalaRules(Long strongFrom, Long weakBelow) implements Request
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (kshina != null) {
+            json.put("kshina", kshina.toJson());
+        }
         if (strongFrom != null) {
             json.put("strongFrom", strongFrom);
         }

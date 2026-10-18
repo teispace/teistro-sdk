@@ -3364,21 +3364,23 @@ export interface MasaPraveshaRequest {
   /**
    * Where each month's chart is founded, as `varsha.place` is written; given,
    * each month carries its `masesha` and its `results`, and beside a
-   * `month` each day carries its `dinesha`.
+   * `month` each day carries its `dinesha` and its `dayResults`.
    */
   readonly place?: 'birth' | AnnualPlace;
   /** The readings the month's lord, and the day's, part on; the verse's own by default. */
   readonly masesha?: MaseshaRules;
-  /** The floors the month's results judge strong and weak by; the year yogas' own by default. */
+  /** The floors the month's and the day's results judge strong and weak by; the year yogas' own by default. */
   readonly results?: MasaPhalaRules;
 }
 
-/** The floors the month's results judge strong and weak by (`03-design/varshesha.md`, "The month's results"). */
+/** The floors the month's and the day's results judge strong and weak by (`03-design/varshesha.md`, "The month's results"). */
 export interface MasaPhalaRules {
   /** The strength below which a planet with no dignity is weak, in **sub-sub units**, 3600 to a unit: `5 * 3600` by default. */
   readonly weakBelow?: number;
   /** The strength from which a planet is strong, sub-sub units; `10 * 3600` by default, never below `weakBelow`. */
   readonly strongFrom?: number;
+  /** When the Moon wanes and so counts a malefic: the gloss's dark 8th to bright 8th tithi by default. */
+  readonly kshina?: 'DARK_EIGHTH_TO_BRIGHT_EIGHTH' | 'DARK_ELEVENTH_TO_NEW_MOON';
 }
 
 /** The readings the month's lord parts on (`03-design/varshesha.md`, "The month's lord"). */
@@ -3435,6 +3437,8 @@ export interface MasaPravesha {
   readonly results?: MasaPhala;
   /** The day's lord, where the request named a `month` and a `place`; absent otherwise. */
   readonly dinesha?: Dinesha;
+  /** The day's results, where the request named a `month` and a `place`; absent otherwise. */
+  readonly dayResults?: DinaPhala;
 }
 
 /** The seven office-bearers of one day (*Tajika Nilakanthi*, Varsha Tantra, v. 17). */
@@ -3537,6 +3541,83 @@ export interface MasaPhala {
   readonly houses: readonly MonthHouse[];
   /** The five lords, in `MonthLord`'s order. */
   readonly lords: readonly MonthLordPlace[];
+}
+
+/** The Moon's twelve states within a sign, 2°30′ each, in the gloss's order (vv. 30–33). */
+export type MoonState =
+  | 'PRAVASA'
+  | 'NASHTA'
+  | 'MRITA'
+  | 'JAYA'
+  | 'HASYA'
+  | 'RATI'
+  | 'KRIDITA'
+  | 'PRASUPTA'
+  | 'BHUKTA'
+  | 'JVARA'
+  | 'KAMPITA'
+  | 'SUSTHITA';
+
+/** A clause of vv. 20–21 about one house's navamsha lord. */
+export type DayHouseClause = 'WITH_BENEFIC' | 'BENEFIC_FRIENDLY' | 'MOON_FRIENDLY' | 'WITH_MALEFIC' | 'MALEFIC_INIMICAL';
+
+/** The day's lords v. 19 judges: the Dinesha, the Varshesha, the Masesha, the Muntha's. */
+export type DayLord = 'DINESHA' | 'VARSHESHA' | 'MASESHA' | 'MUNTHA';
+
+/** A clause of vv. 18 and 26–29 about the day's chart as a whole. */
+export type DayClause =
+  | 'BENEFICS_WELL_PLACED_FROM_LAGNA'
+  | 'BENEFICS_WELL_PLACED_FROM_MOON'
+  | 'MALEFICS_WELL_PLACED_FROM_LAGNA'
+  | 'MALEFICS_WELL_PLACED_FROM_MOON'
+  | 'MALEFICS_FLANK'
+  | 'BENEFIC_TWELFTH'
+  | 'PAPA_KARTARI'
+  | 'SHUBHA_KARTARI'
+  | 'WANING_MOON_AFFLICTED'
+  | 'MOON_MARS_DUSTHANA'
+  | 'MALEFIC_FOURTH'
+  | 'BENEFIC_SEVENTH'
+  | 'BENEFIC_SECOND'
+  | 'BENEFIC_NINTH';
+
+/** One house of the day, read through its navamsha lord. */
+export interface DayHouse {
+  /** The house, 1 to 12 by whole signs from the day lagna. */
+  readonly house: number;
+  /** The lord of the navamsha the house's point falls in. */
+  readonly amshaLord: Graha;
+  /** The clauses that hold, in the verses' order. */
+  readonly clauses: readonly DayHouseClause[];
+}
+
+/** Where one of the day's lords stands. */
+export interface DayLordPlace {
+  readonly office: DayLord;
+  readonly graha: Graha;
+  /** The house it stands in, 1 to 12 from the day lagna. */
+  readonly house: number;
+  /** The clauses that hold, the month's lords' own. */
+  readonly clauses: readonly MonthLordClause[];
+}
+
+/**
+ * The day's results (`03-design/varshesha.md`, "The day's results"): the
+ * clauses that hold, no verdict.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, masaPravesha: { year: 30, month: 4, place: 'birth' } });
+ * const states = (chart.masaPravesha ?? []).map((day) => day.dayResults?.moonState);
+ */
+export interface DinaPhala {
+  /** The Moon's state within her sign. */
+  readonly moonState: MoonState;
+  /** The twelve houses, first to twelfth. */
+  readonly houses: readonly DayHouse[];
+  /** The four lords, in `DayLord`'s order. */
+  readonly lords: readonly DayLordPlace[];
+  /** The clauses about the whole chart that hold, in the verses' order. */
+  readonly clauses: readonly DayClause[];
 }
 
 /** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */

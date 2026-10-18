@@ -13,9 +13,9 @@ import java.util.Objects;
  *
  * @param masesha The readings the month's lord, and the day's, part on; the verse's own by default. Null leaves the SDK's default.
  * @param month The month whose thirty days are asked for, one to twelve; absent, the year's twelve months are, each as its first day. Null leaves the SDK's default.
- * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord and its results, and each day's row its lord. Absent, the rows are the instants only. Null leaves the SDK's default.
+ * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord and its results, and each day's row its lord and its results. Absent, the rows are the instants only. Null leaves the SDK's default.
  * @param reading Which longitude the year's Sun returns to, and so which zodiac the year divides in; the tradition's, sidereal, by default. The mean year places no Sun and is refused. Null leaves the SDK's default.
- * @param results The floors the month's results judge strong and weak by; the year yogas' own by default. Null leaves the SDK's default.
+ * @param results The floors the month's and the day's results judge strong and weak by, and the waning Moon they count a malefic; the year yogas' own by default. Null leaves the SDK's default.
  * @param year The year divided, one to two hundred, counted as `Pravesha::year` counts it.
  */
 public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPlace place, ReturnLongitude reading, MasaPhalaRules results, int year) implements RequestJson {
@@ -79,7 +79,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
         /**
          * Sets {@code place}.
          *
-         * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord and its results, and each day's row its lord. Absent, the rows are the instants only. Null leaves the SDK's default.
+         * @param place Where each month's chart is founded, `"birth"` or a residence, as `VarshaRequest::place` is written; given, each month's row carries its lord and its results, and each day's row its lord and its results. Absent, the rows are the instants only. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder place(AnnualPlace place) {
@@ -101,7 +101,7 @@ public record MasaPraveshaRequest(MaseshaRules masesha, Integer month, AnnualPla
         /**
          * Sets {@code results}.
          *
-         * @param results The floors the month's results judge strong and weak by; the year yogas' own by default. Null leaves the SDK's default.
+         * @param results The floors the month's and the day's results judge strong and weak by, and the waning Moon they count a malefic; the year yogas' own by default. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder results(MasaPhalaRules results) {
