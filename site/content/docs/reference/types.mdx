@@ -270,6 +270,7 @@ Everything else is the context's settings, which is what makes two calls under o
 | field | type | what it carries |
 |---|---|---|
 | `kind` | `uint16_t` | What kind of chart to found. One of `ts_chart_kind`. Example `0`. |
+| `lilith` | `uint16_t` | Which lunar apogee to place as the Black Moon Lilith beside the nine: `TS_LILITH_NONE` (0, what every caller that wrote this field as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING` (`03-design/lilith.md`). Each chart's comes back in the `lilith` section; any other value is refused naming `lilith`. One of `ts_lilith`. Example `0`. |
 | `instants` | `const double *` | The instants, as Julian days on the UTC scale: one chart each.  A grid, not a scalar, because the founder shares the settings and the solar model across a batch and a rectification pass wants a hundred charts (`03-design/chart-at-the-boundary.md` §3a). A caller wanting one passes a grid of one, as `ts_positions` takes a grid of one instant. Unit `jd`. |
 | `instant_count` | `size_t` | How many instants `instants` points at. |
 | `latitude_deg` | `double` | The place's latitude, degrees north. Unit `deg`. Range `[-90,90]`. Example `27.7172`. |

@@ -827,9 +827,14 @@ final class ChartRequestStruct extends ffi.Struct {
   @ffi.Uint16()
   external int kind;
 
-  /// Reserved; write zero.
+  /// Which lunar apogee to place as the Black Moon Lilith beside the
+  /// nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
+  /// as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
+  /// (`03-design/lilith.md`). Each chart's comes back in the `lilith`
+  /// section; any other value is refused naming `lilith`.
+  /// Enum: TsLilith. Example: 0.
   @ffi.Uint16()
-  external int reserved;
+  external int lilith;
 
   /// The instants, as Julian days on the UTC scale: one chart each.
   ///
@@ -3425,11 +3430,19 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson});
+  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
   final ChartKind kind;
+
+  /// Which lunar apogee to place as the Black Moon Lilith beside the
+  /// nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
+  /// as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
+  /// (`03-design/lilith.md`). Each chart's comes back in the `lilith`
+  /// section; any other value is refused naming `lilith`.
+  /// Enum: TsLilith. Example: 0.
+  final Lilith lilith;
 
   /// The instants, as Julian days on the UTC scale: one chart each.
   ///
@@ -3918,8 +3931,9 @@ final class ChartRequest {
   final String? lalkitabJson;
 
   /// This value with the fields given replaced, and the rest kept.
-  ChartRequest copyWith({ChartKind? kind, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson}) => ChartRequest(
+  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson}) => ChartRequest(
     kind: kind ?? this.kind,
+    lilith: lilith ?? this.lilith,
     instants: instants ?? this.instants,
     latitudeDeg: latitudeDeg ?? this.latitudeDeg,
     longitudeDeg: longitudeDeg ?? this.longitudeDeg,
@@ -3967,6 +3981,7 @@ final class ChartRequest {
   void writeInto(ChartRequestStruct raw, ffi.Allocator arena) {
     raw.structSize = ffi.sizeOf<ChartRequestStruct>();
     raw.kind = kind.id;
+    raw.lilith = lilith.id;
     final instantsBuffer = arena<ffi.Double>(instants.length);
     for (var i = 0; i < instants.length; i++) {
       instantsBuffer[i] = instants[i];
@@ -4082,6 +4097,7 @@ final class ChartRequest {
   /// Reads a value out of a struct, which may be one held inside another.
   static ChartRequest readFrom(ChartRequestStruct raw) => ChartRequest(
         kind: ChartKind.byId(raw.kind),
+        lilith: Lilith.byId(raw.lilith),
         instants: [
           for (var i = 0; i < raw.instantCount; i++) raw.instants[i],
         ],

@@ -711,6 +711,13 @@ fn one_chart_placements(
             ),
         );
     }
+    // No Lilith, since the test provider places no apogee: the empty
+    // section, which `the_lilith` below fills over the built-in sky.
+    put(
+        report,
+        &format!("chart-{index}-lilith"),
+        lilith_line(chart.lilith.as_ref()),
+    );
     for at in 0..12_usize {
         let Some((madhya, sandhi)) = chart.houses.madhya.get(at).zip(chart.houses.sandhi.get(at))
         else {
@@ -6211,6 +6218,55 @@ fn nepal_sambat(report: &mut Report, geo: &Context, place: &Place, offset: UtcOf
     );
 }
 
+/// A chart's Black Moon Lilith as the report prints it, or `none`.
+fn lilith_line(lilith: Option<&teistro::LilithPosition>) -> String {
+    lilith.map_or_else(
+        || "none".to_owned(),
+        |lilith| {
+            format!(
+                "{} {} {} {} {} {} {}",
+                wire_key(&lilith.apogee),
+                number(lilith.longitude_deg),
+                number(lilith.latitude_deg),
+                number(lilith.distance_au),
+                number(lilith.speed_deg_per_day),
+                lilith.house.bhava,
+                lilith.placement.bhava
+            )
+        },
+    )
+}
+
+/// The osculating Lilith of two charts over the built-in sky, which the
+/// test provider cannot place (`03-design/lilith.md`): the apogee with a
+/// latitude, a distance and a retrograde motion, so every column moves,
+/// and two charts, so a section read with the wrong stride shows.
+fn the_lilith(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let sky = Context::builder()
+        .profile("western-tropical-default")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let instants = [
+        JulianDay::<Utc>::literal(2_451_545.0),
+        JulianDay::<Utc>::literal(2_460_676.5),
+    ];
+    let request = ChartRequest::at(*place, offset)
+        .with_kind(ChartKind::Natal)
+        .with_lilith(teistro::Apogee::Osculating);
+    let read = sky
+        .chart()
+        .readings(&instants, &request)
+        .expect("the built-in sky places the apogee");
+    for (k, document) in read.value.iter().enumerate() {
+        put(
+            report,
+            &format!("lilith-{k}"),
+            lilith_line(document.foundation.lilith.as_ref()),
+        );
+    }
+}
+
 /// The eclipses a panchanga request carries, as the report prints them.
 ///
 /// September 2025 at Kathmandu over the built-in sky, which the test
@@ -6904,6 +6960,7 @@ fn main() {
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);
     eclipses(&mut report, &place, offset);
+    the_lilith(&mut report, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");

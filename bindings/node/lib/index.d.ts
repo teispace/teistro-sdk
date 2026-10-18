@@ -79,6 +79,7 @@ import type {
   WesternAspect,
   AspectPhase,
   MoonPhase,
+  Lilith,
   GocharVerdict,
   NodeObstruction,
   NodeVedha,
@@ -311,6 +312,18 @@ export interface PlacedGraha {
   readonly house: Placement;
   /** The bhava of the chart's chalit, which is a different question. */
   readonly placement: Placement;
+}
+
+/**
+ * The Black Moon Lilith, placed as a graha is (`03-design/lilith.md`): the
+ * lunar apogee the request's `lilith` named, in the chart's zodiac and from
+ * its centre. The mean apogee is a direction on the ecliptic, so its
+ * `latitudeDeg` and `distanceAu` are zero; only the osculating one is ever
+ * retrograde.
+ */
+export interface LilithPosition extends Omit<PlacedGraha, 'graha'> {
+  /** Which lunar apogee. */
+  readonly apogee: Exclude<Lilith, 'NONE'> | 'unknown';
 }
 
 /** Where a graha sits in a set of bhavas. */
@@ -5221,6 +5234,15 @@ export declare class Chart {
    * const uranus = chart.outer.find((at) => at.graha === 'graha.URANUS');
    */
   readonly outer: readonly PlacedGraha[];
+  /**
+   * The Black Moon Lilith the request's `lilith` named, placed as the
+   * grahas are; `null` unless it named one.
+   *
+   * @example
+   * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, lilith: Lilith.Mean });
+   * const sign = Math.floor(chart.lilith!.longitudeDeg / 30);
+   */
+  readonly lilith: LilithPosition | null;
   /** The divisional charts asked for, in the order asked; empty unless `vargas` named some. */
   readonly vargas: readonly DivisionalChart[];
   /** The charts drawn in the layouts asked for, in the order asked; empty unless `drawings` named some. */
@@ -6771,6 +6793,14 @@ export interface ChartRequest {
    * hit list's natal points then reach them too.
    */
   readonly outerPlanets?: boolean;
+  /**
+   * Which lunar apogee to place as the Black Moon Lilith, in
+   * `chart.lilith`: `Lilith.Mean` (ELP2000-82B's mean perigee plus 180°)
+   * or `Lilith.Osculating` (the apogee of the Moon's instantaneous
+   * ellipse, the "true" Lilith); none by default, which leaves every
+   * other number as it was, to the bit.
+   */
+  readonly lilith?: Exclude<Lilith, 'NONE'>;
   /** Whether to compute the Shadbala; false by default. */
   readonly shadbala?: boolean;
   /** Whether to compute the Bhava bala; false by default. */

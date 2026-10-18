@@ -3675,6 +3675,23 @@ export const AspectPhaseById = /* @__PURE__ */ new Map([
   [2, 'LEAVING'],
 ]);
 
+/** Every Lilith by name. */
+export const Lilith = /* @__PURE__ */ Object.freeze({
+  None: 'NONE',
+  Mean: 'MEAN',
+  Osculating: 'OSCULATING',
+});
+
+/**
+ * Every Lilith by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const LilithById = /* @__PURE__ */ new Map([
+  [0, 'NONE'],
+  [1, 'MEAN'],
+  [2, 'OSCULATING'],
+]);
+
 /** Every MoonPhase by name. */
 export const MoonPhase = /* @__PURE__ */ Object.freeze({
   New: 'NEW',

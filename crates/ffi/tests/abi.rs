@@ -1339,7 +1339,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -1495,7 +1495,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -1649,7 +1649,7 @@ fn a_chart_request_answers_the_transits() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: births.as_ptr(),
             instant_count: births.len(),
             latitude_deg: 27.7172,
@@ -1858,7 +1858,7 @@ fn hit_list_request(births: &[f64; 2], hits: &CString) -> TsChartRequest {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: births.as_ptr(),
             instant_count: births.len(),
             latitude_deg: 27.7172,
@@ -2135,7 +2135,7 @@ fn a_chart_request_answers_sade_sati() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: births.as_ptr(),
             instant_count: births.len(),
             latitude_deg: 27.7172,
@@ -2402,7 +2402,7 @@ fn a_chart_request_answers_the_dignities() {
             TsChartRequest {
                 struct_size: 0,
                 kind: 0,
-                reserved: 0,
+                lilith: 0,
                 instants: instants.as_ptr(),
                 instant_count: instants.len(),
                 latitude_deg: 27.7172,
@@ -2686,7 +2686,7 @@ fn a_chart_request_answers_the_fortitudes() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -3998,7 +3998,7 @@ fn a_chart_request_answers_kp() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: births.as_ptr(),
             instant_count: births.len(),
             latitude_deg: 13.08,
@@ -4203,7 +4203,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: ptr::null(),
             instant_count: 0,
             latitude_deg: 27.7172,
@@ -4320,7 +4320,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -4466,7 +4466,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -4617,7 +4617,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -5399,7 +5399,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -5518,7 +5518,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -5706,7 +5706,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         TsChartRequest {
             struct_size: 0,
             kind: 0,
-            reserved: 0,
+            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
@@ -5998,7 +5998,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
             TsChartRequest {
                 struct_size: 0,
                 kind: 0,
-                reserved: 0,
+                lilith: 0,
                 instants: instants.as_ptr(),
                 instant_count: instants.len(),
                 latitude_deg: 27.7172,
@@ -10292,4 +10292,110 @@ fn a_chart_request_answers_rectification() {
     );
     let (_, _, field, _, _) = ctx.last_error();
     assert_eq!(field.as_deref(), Some("rectification.purify.minutes"));
+}
+
+/// The Black Moon Lilith crosses in the `lilith` section, one row a chart
+/// in `grahas`'s columns and each bit-identical to the façade's own: none
+/// when the field is zero, which is every caller that wrote it as
+/// reserved, and a value no member has refused by the field's name
+/// (`03-design/lilith.md`).
+#[test]
+fn a_chart_request_places_the_lilith_it_names() {
+    use teistro_ffi::chart::TsLilith;
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_393_783.95, 2_451_545.0];
+    let base = chart_request(&instants, (51.501, -0.142), 0);
+    let schema = schemas::charts();
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.501, -0.142, 0.0).unwrap();
+    let jds: Vec<_> = instants
+        .iter()
+        .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+        .collect();
+
+    let none = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&none, &schema).unwrap();
+    assert_eq!(reader.column("lilith", "apogee").unwrap().len(), 0);
+
+    for (asked, apogee) in [
+        (TsLilith::Mean, teistro::Apogee::Mean),
+        (TsLilith::Osculating, teistro::Apogee::Osculating),
+    ] {
+        let bytes = chart_blob(
+            &ctx,
+            &TsChartRequest {
+                lilith: asked as u16,
+                ..base
+            },
+        )
+        .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        let request =
+            teistro::ChartRequest::at(place, teistro::UtcOffset::try_from_seconds(0).unwrap())
+                .with_lilith(apogee);
+        let expected: Vec<teistro::LilithPosition> = sdk
+            .chart()
+            .readings(&jds, &request)
+            .unwrap()
+            .value
+            .iter()
+            .map(|document| document.foundation.lilith.expect("asked for"))
+            .collect();
+        let bits = |name: &str| -> Vec<u64> {
+            reader
+                .column("lilith", name)
+                .unwrap()
+                .into_iter()
+                .map(|cell| cell.as_f64().to_bits())
+                .collect()
+        };
+        let ints = |name: &str| -> Vec<i64> {
+            reader
+                .column("lilith", name)
+                .unwrap()
+                .into_iter()
+                .map(ScalarValue::as_i64)
+                .collect()
+        };
+        assert_eq!(ints("apogee"), vec![i64::from(asked as u16); 2]);
+        let of = |read: fn(&teistro::LilithPosition) -> f64| -> Vec<u64> {
+            expected.iter().map(|l| read(l).to_bits()).collect()
+        };
+        assert_eq!(bits("longitude_deg"), of(|l| l.longitude_deg));
+        assert_eq!(bits("tropical_deg"), of(|l| l.tropical_deg));
+        assert_eq!(bits("latitude_deg"), of(|l| l.latitude_deg));
+        assert_eq!(bits("distance_au"), of(|l| l.distance_au));
+        assert_eq!(bits("speed_deg_per_day"), of(|l| l.speed_deg_per_day));
+        assert_eq!(
+            ints("house_bhava"),
+            expected
+                .iter()
+                .map(|l| i64::from(l.house.bhava))
+                .collect::<Vec<_>>()
+        );
+        // The nine are what they were without it, to the bit.
+        let plain = Reader::parse(&none, &schema).unwrap();
+        assert_eq!(
+            reader.column("grahas", "longitude_deg").unwrap(),
+            plain.column("grahas", "longitude_deg").unwrap()
+        );
+    }
+
+    let refused = TsChartRequest { lilith: 3, ..base };
+    let mut out = TsBlob::empty();
+    // SAFETY: a valid context and request, and an empty blob to fill.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const refused, &raw mut out) };
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("lilith"));
 }

@@ -3891,6 +3891,60 @@ class ChartsProgressedMutualContacts:
 
 
 @dataclass(frozen=True)
+class ChartsLilith:
+    """The `lilith` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440).
+    """
+
+    apogee: memoryview[int]
+    """Which lunar apogee."""
+
+    longitude_deg: memoryview[float]
+    """Its longitude in the chart's zodiac, degrees."""
+
+    tropical_deg: memoryview[float]
+    """Its longitude in the tropical zodiac, degrees."""
+
+    latitude_deg: memoryview[float]
+    """Its latitude, degrees."""
+
+    distance_au: memoryview[float]
+    """Its distance in astronomical units; zero for a point that has none."""
+
+    speed_deg_per_day: memoryview[float]
+    """Its longitude speed, degrees per day; negative when retrograde."""
+
+    house_bhava: memoryview[int]
+    """The bhava it stands in, 1 to 12."""
+
+    house_method: memoryview[int]
+    """The house system that produced that bhava."""
+
+    house_through: memoryview[float]
+    """How far through the bhava it stands, 0 to 1."""
+
+    house_from_madhya_deg: memoryview[float]
+    """Its distance from the bhava's madhya, degrees."""
+
+    placement_bhava: memoryview[int]
+    """The bhava of the chart's chalit it stands in, 1 to 12."""
+
+    placement_method: memoryview[int]
+    """The house system that produced the chalit."""
+
+    placement_through: memoryview[float]
+    """How far through that bhava it stands, 0 to 1."""
+
+    placement_from_madhya_deg: memoryview[float]
+    """Its distance from that bhava's madhya, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4614,6 +4668,9 @@ class Charts:
     progressed_mutual_contacts: ChartsProgressedMutualContacts
     """Every exact aspect two progressed planets make to each other in the record's window (Leo's "P. to P." list, *The Progressed Horoscope*, p. 41), each pair once in the order the record names the planets, concatenated in the `cast` section's order and **ragged** by `progressions.mutual_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none."""
 
+    lilith: ChartsLilith
+    """The Black Moon Lilith beside the nine, **one row a chart** when the request's `lilith` named an apogee and empty when it did not, in the columns `grahas` has but its first: the apogee rather than a graha. It is placed in the chart's zodiac and from its centre, as the nine are (C441). The mean apogee is a direction on the ecliptic, so its latitude and distance are zero; the osculating one carries the ellipse's own, and is the only one ever retrograde (C439, C440)."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4749,6 +4806,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_moment = blob.section(124, "moment")
     at_progressed_parallels = blob.section(125, "progressed_parallels")
     at_progressed_mutual_contacts = blob.section(126, "progressed_mutual_contacts")
+    at_lilith = blob.section(127, "lilith")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7407,6 +7465,49 @@ def decode_charts(raw: bytes) -> Charts:
                 at_progressed_mutual_contacts, 4, 2, at_progressed_mutual_contacts.count
             ).cast("H"),
             length=at_progressed_mutual_contacts.count,
+        ),
+        lilith=ChartsLilith(
+            apogee=blob.column(at_lilith, 0, 2, at_lilith.count).cast("H"),
+            longitude_deg=blob.column(
+                at_lilith, 1, 8, at_lilith.count
+            ).cast("d"),
+            tropical_deg=blob.column(
+                at_lilith, 2, 8, at_lilith.count
+            ).cast("d"),
+            latitude_deg=blob.column(
+                at_lilith, 3, 8, at_lilith.count
+            ).cast("d"),
+            distance_au=blob.column(
+                at_lilith, 4, 8, at_lilith.count
+            ).cast("d"),
+            speed_deg_per_day=blob.column(
+                at_lilith, 5, 8, at_lilith.count
+            ).cast("d"),
+            house_bhava=blob.column(
+                at_lilith, 6, 1, at_lilith.count
+            ).cast("B"),
+            house_method=blob.column(
+                at_lilith, 7, 2, at_lilith.count
+            ).cast("H"),
+            house_through=blob.column(
+                at_lilith, 8, 8, at_lilith.count
+            ).cast("d"),
+            house_from_madhya_deg=blob.column(
+                at_lilith, 9, 8, at_lilith.count
+            ).cast("d"),
+            placement_bhava=blob.column(
+                at_lilith, 10, 1, at_lilith.count
+            ).cast("B"),
+            placement_method=blob.column(
+                at_lilith, 11, 2, at_lilith.count
+            ).cast("H"),
+            placement_through=blob.column(
+                at_lilith, 12, 8, at_lilith.count
+            ).cast("d"),
+            placement_from_madhya_deg=blob.column(
+                at_lilith, 13, 8, at_lilith.count
+            ).cast("d"),
+            length=at_lilith.count,
         ),
     )
 

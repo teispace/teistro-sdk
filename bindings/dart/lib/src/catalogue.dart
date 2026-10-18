@@ -6391,6 +6391,45 @@ enum AspectPhase {
   }
 }
 
+/// Which lunar apogee a chart request places as the Black Moon Lilith, if
+/// any (`03-design/lilith.md`, C438 to C442): a choice between two, so a
+/// field rather than two section bits a caller could set together.
+enum Lilith {
+  /// None: the foundation the request has always had, to the byte.
+  none(0, 'NONE'),
+  /// The mean lunar apogee, ELP2000-82B's mean perigee plus 180°.
+  mean(1, 'MEAN'),
+  /// The osculating apogee, of the Moon's instantaneous ellipse: what
+  /// later practice calls the "true" Lilith.
+  osculating(2, 'OSCULATING');
+
+  const Lilith(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Lilith byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Lilith'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Lilith? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// A principal phase of the Moon, the Moon's elongation from the Sun a
 /// multiple of 90° (C419).
 enum MoonPhase {

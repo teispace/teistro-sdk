@@ -721,6 +721,7 @@ final class ChartArea extends _Area {
     bool avakahada = false,
     bool moment = false,
     bool outerPlanets = false,
+    Lilith? lilith,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -769,6 +770,7 @@ final class ChartArea extends _Area {
     avakahada: avakahada,
     moment: moment,
     outerPlanets: outerPlanets,
+    lilith: lilith,
     shadbala: shadbala,
     bhavaBala: bhavaBala,
     state: state,
@@ -837,6 +839,7 @@ final class ChartArea extends _Area {
     bool avakahada = false,
     bool moment = false,
     bool outerPlanets = false,
+    Lilith? lilith,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -846,6 +849,7 @@ final class ChartArea extends _Area {
         () => _context._inner.chartFound(
           ChartRequest(
             kind: kind,
+            lilith: _lilithOf(lilith),
             instants: instants,
             latitudeDeg: place.latitudeDeg,
             longitudeDeg: place.longitudeDeg,
@@ -6574,6 +6578,21 @@ KeyOf<DashaSystem> _dashaSystem(Charts batch, int id) {
   return full == null
       ? DashaSystem.byId(id)
       : DashaSystem.registered(full.substring('dasha_system.'.length));
+}
+
+/// A request's Black Moon Lilith as the boundary names it: none when it asks
+/// for none, and an [ArgumentError] naming `lilith` for [Lilith.none]
+/// itself, since leaving it out says that (`03-design/lilith.md`).
+Lilith _lilithOf(Lilith? lilith) {
+  if (lilith == null) return Lilith.none;
+  if (lilith == Lilith.none) {
+    throw ArgumentError.value(
+      lilith,
+      'lilith',
+      'expected Lilith.mean or Lilith.osculating; leave it out for none',
+    );
+  }
+  return lilith;
 }
 
 /// The dashas asked for, as the ids the boundary takes: a [DashaSystem], or a
@@ -23255,6 +23274,50 @@ final class PlacedGraha {
   final Placement placement;
 }
 
+/// The Black Moon Lilith of a chart, placed as the grahas are
+/// (`03-design/lilith.md`): the mean apogee is a direction on the ecliptic, its
+/// latitude zero to rounding and its distance zero, and the osculating one's
+/// are the osculating orbit's.
+final class LilithPosition {
+  const LilithPosition({
+    required this.apogee,
+    required this.longitudeDeg,
+    required this.tropicalDeg,
+    required this.latitudeDeg,
+    required this.distanceAu,
+    required this.speedDegPerDay,
+    required this.house,
+    required this.placement,
+  });
+
+  /// Which lunar apogee the request named: never [Lilith.none].
+  final Lilith apogee;
+
+  /// Its longitude in the chart's zodiac, degrees.
+  final double longitudeDeg;
+
+  /// Its tropical longitude, degrees.
+  final double tropicalDeg;
+
+  /// Its ecliptic latitude, degrees.
+  final double latitudeDeg;
+
+  /// Its distance, astronomical units.
+  final double distanceAu;
+
+  /// Its longitude speed, degrees per day.
+  final double speedDegPerDay;
+
+  /// Whether that speed is negative.
+  bool get retrograde => speedDegPerDay < 0;
+
+  /// The bhava for "which house is it in".
+  final Placement house;
+
+  /// The bhava of the chart's chalit, which is a different question.
+  final Placement placement;
+}
+
 /// One of the twelve bhavas.
 final class Bhava {
   const Bhava({required this.madhyaDeg, required this.sandhiDeg});
@@ -24427,6 +24490,48 @@ final class Chart {
     return _placed(g, o.length ~/ charts);
   }
 
+  /// The Black Moon Lilith the request's `lilith` named, placed as the
+  /// grahas are; `null` when it named none. The section holds a row a chart
+  /// or none (`03-design/lilith.md`).
+  ///
+  /// ```dart
+  /// final chart = ctx.chart.found(/* … */ lilith: Lilith.mean);
+  /// final sign = chart.lilith!.longitudeDeg ~/ 30;
+  /// ```
+  LilithPosition? get lilith {
+    final l = batch.lilith;
+    final charts = batch.cast.instant.length;
+    if (l.length == 0) return null;
+    if (l.length != charts) {
+      throw StateError(
+        'lilith has ${l.length} rows for $charts charts; it is one a chart or none',
+      );
+    }
+    final i = index;
+    return LilithPosition(
+      apogee: Lilith.byId(l.apogee[i]),
+      longitudeDeg: l.longitudeDeg[i],
+      tropicalDeg: l.tropicalDeg[i],
+      latitudeDeg: l.latitudeDeg[i],
+      distanceAu: l.distanceAu[i],
+      speedDegPerDay: l.speedDegPerDay[i],
+      house: _placement(
+        l.houseBhava,
+        l.houseMethod,
+        l.houseThrough,
+        l.houseFromMadhyaDeg,
+        i,
+      ),
+      placement: _placement(
+        l.placementBhava,
+        l.placementMethod,
+        l.placementThrough,
+        l.placementFromMadhyaDeg,
+        i,
+      ),
+    );
+  }
+
   /// One chart's stride of a placed-bodies section, a row a body.
   List<PlacedGraha> _placed(ChartsGrahas g, int count) {
     final base = index * count;
@@ -24439,21 +24544,37 @@ final class Chart {
         latitudeDeg: g.latitudeDeg[i],
         distanceAu: g.distanceAu[i],
         speedDegPerDay: g.speedDegPerDay[i],
-        house: Placement(
-          bhava: g.houseBhava[i],
-          method: HouseSystem.byId(g.houseMethod[i]),
-          through: g.houseThrough[i],
-          fromMadhyaDeg: g.houseFromMadhyaDeg[i],
+        house: _placement(
+          g.houseBhava,
+          g.houseMethod,
+          g.houseThrough,
+          g.houseFromMadhyaDeg,
+          i,
         ),
-        placement: Placement(
-          bhava: g.placementBhava[i],
-          method: HouseSystem.byId(g.placementMethod[i]),
-          through: g.placementThrough[i],
-          fromMadhyaDeg: g.placementFromMadhyaDeg[i],
+        placement: _placement(
+          g.placementBhava,
+          g.placementMethod,
+          g.placementThrough,
+          g.placementFromMadhyaDeg,
+          i,
         ),
       );
     });
   }
+
+  /// Row `i` of one of a placed-bodies section's two placements.
+  static Placement _placement(
+    List<int> bhava,
+    List<int> method,
+    List<double> through,
+    List<double> fromMadhya,
+    int i,
+  ) => Placement(
+    bhava: bhava[i],
+    method: HouseSystem.byId(method[i]),
+    through: through[i],
+    fromMadhyaDeg: fromMadhya[i],
+  );
 
   /// The twelve bhavas for "which house is it in", first to twelfth.
   List<Bhava> get houses =>

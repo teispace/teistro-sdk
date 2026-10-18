@@ -7413,6 +7413,36 @@ export declare const AspectPhase: {
 export declare const AspectPhaseById: ReadonlyMap<number, AspectPhase>;
 
 /**
+ * Which lunar apogee a chart request places as the Black Moon Lilith, if
+ * any (`03-design/lilith.md`, C438 to C442): a choice between two, so a
+ * field rather than two section bits a caller could set together.
+ */
+export type Lilith = 'NONE' | 'MEAN' | 'OSCULATING';
+
+/** Every Lilith by name; the values are the strings the union accepts. */
+export declare const Lilith: {
+  /**
+   * None: the foundation the request has always had, to the byte.
+   */
+  readonly None: 'NONE';
+  /**
+   * The mean lunar apogee, ELP2000-82B's mean perigee plus 180°.
+   */
+  readonly Mean: 'MEAN';
+  /**
+   * The osculating apogee, of the Moon's instantaneous ellipse: what
+   * later practice calls the "true" Lilith.
+   */
+  readonly Osculating: 'OSCULATING';
+};
+
+/**
+ * Every Lilith by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const LilithById: ReadonlyMap<number, Lilith>;
+
+/**
  * A principal phase of the Moon, the Moon's elongation from the Sun a
  * multiple of 90° (C419).
  */

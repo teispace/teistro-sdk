@@ -90,6 +90,7 @@ from .catalogue import (
     Karana,
     Kind,
     Koota,
+    Lilith,
     Lot,
     LunarEclipseKind,
     LunarMonth,
@@ -697,7 +698,7 @@ class _ChartRequestStruct(ctypes.Structure):
     _fields_ = [
         ("struct_size", ctypes.c_uint32),
         ("kind", ctypes.c_uint16),
-        ("reserved", ctypes.c_uint16),
+        ("lilith", ctypes.c_uint16),
         ("instants", ctypes.POINTER(ctypes.c_double)),
         ("instant_count", ctypes.c_size_t),
         ("latitude_deg", ctypes.c_double),
@@ -2235,6 +2236,15 @@ class ChartRequest:
     Enum: ChartKind. Example: 0.
     """
 
+    lilith: Lilith
+    """Which lunar apogee to place as the Black Moon Lilith beside the
+    nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
+    as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
+    (`03-design/lilith.md`). Each chart's comes back in the `lilith`
+    section; any other value is refused naming `lilith`.
+    Enum: TsLilith. Example: 0.
+    """
+
     instants: Sequence[float]
     """The instants, as Julian days on the UTC scale: one chart each.
 
@@ -2765,6 +2775,7 @@ class ChartRequest:
         """
         raw.struct_size = ctypes.sizeof(_ChartRequestStruct)
         raw.kind = _c_value(self.kind)
+        raw.lilith = _c_value(self.lilith)
         _instants = (ctypes.c_double * len(self.instants))(
             *(_c_value(_v) for _v in self.instants)
         )
@@ -2889,6 +2900,7 @@ class ChartRequest:
         """The value the library wrote into a C struct."""
         return cls(
             kind=ChartKind(raw.kind),
+            lilith=Lilith(raw.lilith),
             instants=[raw.instants[_i] for _i in range(raw.instant_count)]
             if raw.instants
             else [],

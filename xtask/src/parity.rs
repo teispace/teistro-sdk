@@ -106,14 +106,16 @@ struct Report {
 /// keep within its size budget, where every native build carries the
 /// standard one (ADR-0027); the two differ by seconds of a moment and
 /// thousandths of a magnitude, each within the bounds its tier is held to
-/// in `crates/ephemeris-builtin/tests/eclipses.rs`. So these lines are
+/// in `crates/ephemeris-builtin/tests/eclipses.rs`, and the osculating
+/// lunar apogee, read off the Moon's velocity, by a few hundredths of a
+/// degree (`03-design/lilith.md`). So these lines are
 /// held to the same **shape** — every kind, rule and count, and which
 /// contacts and stretches exist — and their numbers and hashes are the
 /// tier's own. The list fails both ways: a line with a different shape
 /// fails, and so does a prefix none of whose lines differ any more,
 /// because then the build carries the standard tier and the exception is
 /// stale.
-const WASM_TIER: [&str; 1] = ["eclipses-"];
+const WASM_TIER: [&str; 2] = ["eclipses-", "lilith-"];
 
 /// The wasm runner's own values: its build's target, which must be a
 /// wasm32 one, and is the one line it may not share.

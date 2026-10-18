@@ -977,6 +977,55 @@ impl From<teistro::gochar::hits::AspectPhase> for TsAspectPhase {
     }
 }
 
+/// Which lunar apogee a chart request places as the Black Moon Lilith, if
+/// any (`03-design/lilith.md`, C438 to C442): a choice between two, so a
+/// field rather than two section bits a caller could set together.
+#[repr(u16)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsLilith {
+    /// None: the foundation the request has always had, to the byte.
+    None = 0,
+    /// The mean lunar apogee, ELP2000-82B's mean perigee plus 180°.
+    Mean = 1,
+    /// The osculating apogee, of the Moon's instantaneous ellipse: what
+    /// later practice calls the "true" Lilith.
+    Osculating = 2,
+}
+
+impl TsLilith {
+    /// The apogee a request field names, `None` for none; a value no
+    /// member has is refused naming `lilith`.
+    fn apogee(id: u16) -> Result<Option<teistro::Apogee>, Error> {
+        match id {
+            0 => Ok(None),
+            1 => Ok(Some(teistro::Apogee::Mean)),
+            2 => Ok(Some(teistro::Apogee::Osculating)),
+            other => Err(Error::invalid_arg(format!(
+                "no Lilith with id {other}: 0 for none, 1 for the mean apogee, 2 for the osculating one"
+            ))
+            .with_field("lilith")),
+        }
+    }
+}
+
+impl TryFrom<teistro::Apogee> for TsLilith {
+    type Error = Error;
+
+    /// The member a placed apogee is written as; an apogee the façade
+    /// gained and this boundary was not given is an internal fault, not
+    /// a row written under another's name.
+    fn try_from(apogee: teistro::Apogee) -> Result<TsLilith, Error> {
+        match apogee {
+            teistro::Apogee::Mean => Ok(TsLilith::Mean),
+            teistro::Apogee::Osculating => Ok(TsLilith::Osculating),
+            other => Err(Error::new(
+                Status::Internal,
+                format!("the boundary has no Lilith member for the apogee {other:?}"),
+            )),
+        }
+    }
+}
+
 /// A principal phase of the Moon, the Moon's elongation from the Sun a
 /// multiple of 90° (C419).
 #[repr(u8)]
@@ -1350,6 +1399,51 @@ struct GrahaColumns {
     placed_from: Vec<f64>,
 }
 
+/// A placed body as a placed-bodies section writes it: the grahas and
+/// the outer three by their graha, the Black Moon Lilith by its apogee.
+struct PlacedRow {
+    id: u16,
+    longitude_deg: f64,
+    tropical_deg: f64,
+    latitude_deg: f64,
+    distance_au: f64,
+    speed_deg_per_day: f64,
+    house: teistro_chart::bhava::Placement,
+    placement: teistro_chart::bhava::Placement,
+}
+
+impl From<&teistro_chart::foundation::GrahaPosition> for PlacedRow {
+    fn from(g: &teistro_chart::foundation::GrahaPosition) -> PlacedRow {
+        PlacedRow {
+            id: g.graha.id(),
+            longitude_deg: g.longitude_deg,
+            tropical_deg: g.tropical_deg,
+            latitude_deg: g.latitude_deg,
+            distance_au: g.distance_au,
+            speed_deg_per_day: g.speed_deg_per_day,
+            house: g.house,
+            placement: g.placement,
+        }
+    }
+}
+
+impl TryFrom<&teistro::LilithPosition> for PlacedRow {
+    type Error = Error;
+
+    fn try_from(l: &teistro::LilithPosition) -> Result<PlacedRow, Error> {
+        Ok(PlacedRow {
+            id: TsLilith::try_from(l.apogee)? as u16,
+            longitude_deg: l.longitude_deg,
+            tropical_deg: l.tropical_deg,
+            latitude_deg: l.latitude_deg,
+            distance_au: l.distance_au,
+            speed_deg_per_day: l.speed_deg_per_day,
+            house: l.house,
+            placement: l.placement,
+        })
+    }
+}
+
 impl GrahaColumns {
     /// The columns of every chart's bodies in one list, charts outermost:
     /// row `chart * count + g` is body `g` of chart `chart`, the same
@@ -1358,10 +1452,29 @@ impl GrahaColumns {
         charts: &[&ChartFoundation],
         pick: fn(&ChartFoundation) -> &[teistro_chart::foundation::GrahaPosition],
     ) -> GrahaColumns {
-        let rows: Vec<&teistro_chart::foundation::GrahaPosition> =
-            charts.iter().flat_map(|c| pick(c)).collect();
+        GrahaColumns::of_rows(
+            &charts
+                .iter()
+                .flat_map(|c| pick(c))
+                .map(PlacedRow::from)
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    /// Each chart's Black Moon Lilith, a row a chart when the request
+    /// named an apogee and none when it did not.
+    fn lilith(charts: &[&ChartFoundation]) -> Result<GrahaColumns, Error> {
+        let rows = charts
+            .iter()
+            .filter_map(|c| c.lilith.as_ref())
+            .map(PlacedRow::try_from)
+            .collect::<Result<Vec<_>, Error>>()?;
+        Ok(GrahaColumns::of_rows(&rows))
+    }
+
+    fn of_rows(rows: &[PlacedRow]) -> GrahaColumns {
         GrahaColumns {
-            ids: rows.iter().map(|g| g.graha.id()).collect(),
+            ids: rows.iter().map(|g| g.id).collect(),
             longitudes: rows.iter().map(|g| g.longitude_deg).collect(),
             tropicals: rows.iter().map(|g| g.tropical_deg).collect(),
             latitudes: rows.iter().map(|g| g.latitude_deg).collect(),
@@ -5151,6 +5264,7 @@ pub fn encode(
     let hellenistic = HellenisticColumns::of(&composed, charts.len())?;
     let western = crate::family::western::Columns::of(&composed, charts.len())?;
     let tables = AspectTables::of(&composed, charts.len())?;
+    let lilith = GrahaColumns::lilith(charts)?;
     let summary = summary_values(
         place,
         kind,
@@ -5212,6 +5326,7 @@ pub fn encode(
         tables.write(&mut writer)?;
         by.avakahada.write(&mut writer)?;
         by.moment.write(&mut writer)?;
+        lilith.write(&mut writer, "lilith")?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -5997,13 +6112,17 @@ unsafe fn chart_request_of(
         let layout = KeyId::new(Kind::ChartLayout, u16::try_from(layout).unwrap_or(u16::MAX));
         drawings.push((layout, varga));
     }
-    Ok(sections_of(
+    let request = sections_of(
         asked.sections,
         ChartRequest::at(place, clock).with_kind(kind),
     )
     .with_vargas(vargas)
     .with_drawings(drawings)
-    .with_dashas(dashas))
+    .with_dashas(dashas);
+    Ok(match TsLilith::apogee(asked.lilith)? {
+        Some(apogee) => request.with_lilith(apogee),
+        None => request,
+    })
 }
 
 /// Where a request casts its charts, of what kind, and against which

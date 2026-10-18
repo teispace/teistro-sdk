@@ -4364,6 +4364,24 @@ class AspectPhase(Member):
     """The transit passed out of the orb."""
 
 
+class Lilith(Member):
+    """Which lunar apogee a chart request places as the Black Moon Lilith, if
+    any (`03-design/lilith.md`, C438 to C442): a choice between two, so a
+    field rather than two section bits a caller could set together.
+    """
+
+    NONE = 0
+    """None: the foundation the request has always had, to the byte."""
+
+    MEAN = 1
+    """The mean lunar apogee, ELP2000-82B's mean perigee plus 180°."""
+
+    OSCULATING = 2
+    """The osculating apogee, of the Moon's instantaneous ellipse: what
+    later practice calls the "true" Lilith.
+    """
+
+
 class MoonPhase(Member):
     """A principal phase of the Moon, the Moon's elongation from the Sun a
     multiple of 90° (C419).
@@ -6813,6 +6831,11 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "ENTERING",
         1: "EXACT",
         2: "LEAVING",
+    },
+    "Lilith": {
+        0: "NONE",
+        1: "MEAN",
+        2: "OSCULATING",
     },
     "MoonPhase": {
         0: "NEW",

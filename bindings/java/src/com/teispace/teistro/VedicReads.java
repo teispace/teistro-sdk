@@ -920,6 +920,35 @@ final class VedicReads {
         return List.copyOf(out);
     }
 
+    /**
+     * The Black Moon Lilith the request named, placed as the grahas are, or
+     * empty when it named none. The section holds a row a chart or none
+     * ({@code 03-design/lilith.md}). Ports {@code Chart.lilith}.
+     *
+     * @throws IllegalStateException when the rows are neither none nor one a chart
+     */
+    static Optional<LilithPosition> lilith(Chart chart) {
+        Charts decoded = decoded(chart);
+        int charts = decoded.cast().length();
+        Charts.Lilith c = decoded.lilith();
+        int rows = c.length();
+        if (rows == 0) {
+            return Optional.empty();
+        }
+        if (rows != charts) {
+            throw new IllegalStateException(
+                    "lilith has " + rows + " rows for " + charts + " charts; it is one a chart or none");
+        }
+        int i = chart.index();
+        return Optional.of(new LilithPosition(
+                Lilith.of(c.apogee(i)), c.longitudeDeg(i), c.tropicalDeg(i), c.latitudeDeg(i), c.distanceAu(i),
+                c.speedDegPerDay(i),
+                new Placement(c.houseBhava(i), HouseSystem.of(c.houseMethod(i)), c.houseThrough(i),
+                        c.houseFromMadhyaDeg(i)),
+                new Placement(c.placementBhava(i), HouseSystem.of(c.placementMethod(i)), c.placementThrough(i),
+                        c.placementFromMadhyaDeg(i))));
+    }
+
     /** The twelve bhavas for "which house is it in", first to twelfth. Ports {@code Chart.houses}. */
     static List<Bhava> houses(Chart chart) {
         Charts.Houses c = decoded(chart).houses();

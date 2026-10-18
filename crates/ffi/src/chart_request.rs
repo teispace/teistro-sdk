@@ -23,8 +23,13 @@ pub struct TsChartRequest {
     /// What kind of chart to found.
     /// `api: enum=ChartKind example=0`
     pub kind: u16,
-    /// Reserved; write zero.
-    pub reserved: u16,
+    /// Which lunar apogee to place as the Black Moon Lilith beside the
+    /// nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
+    /// as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
+    /// (`03-design/lilith.md`). Each chart's comes back in the `lilith`
+    /// section; any other value is refused naming `lilith`.
+    /// `api: enum=TsLilith example=0`
+    pub lilith: u16,
     /// The instants, as Julian days on the UTC scale: one chart each.
     ///
     /// A grid, not a scalar, because the founder shares the settings and

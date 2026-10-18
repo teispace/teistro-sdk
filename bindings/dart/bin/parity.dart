@@ -734,6 +734,15 @@ void putDay(String prefix, LocalDay day) {
   );
 }
 
+/// A chart's Black Moon Lilith as the report prints it, or `none`.
+String lilithLine(LilithPosition? lilith) =>
+    lilith == null
+        ? 'none'
+        : '${lilith.apogee.key} ${number(lilith.longitudeDeg)} '
+            '${number(lilith.latitudeDeg)} ${number(lilith.distanceAu)} '
+            '${number(lilith.speedDegPerDay)} ${lilith.house.bhava} '
+            '${lilith.placement.bhava}';
+
 void main() {
   final teistro = Teistro.open();
 
@@ -2270,6 +2279,8 @@ void main() {
             '${at.house.bhava} ${at.placement.bhava}',
       );
     }
+    // No Lilith, since the test provider places no apogee.
+    put('chart-$i-lilith', lilithLine(chart.lilith));
     final houses = chart.houses;
     for (var k = 0; k < houses.length; k += 1) {
       put('chart-$i-house-$k-madhya', houses[k].madhyaDeg);
@@ -2980,6 +2991,25 @@ void main() {
     ),
   );
   geo.dispose();
+
+  // ── The Black Moon Lilith ────────────────────────────────────────────
+  // The osculating apogee of two charts over the built-in sky, which the
+  // test provider cannot place: every column moves, and a wrong stride
+  // shows (`03-design/lilith.md`).
+  final western = teistro.context(
+    profile: 'western-tropical-default',
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+  );
+  final held = western.chart.foundMany(
+    instants: const [2451545.0, 2460676.5],
+    place: place,
+    utcOffsetSeconds: 20700,
+    lilith: Lilith.osculating,
+  );
+  for (final (at, chart) in held.each.indexed) {
+    put('lilith-$at', lilithLine(chart.lilith));
+  }
+  western.dispose();
 
   // ── The eclipses ─────────────────────────────────────────────────────
   // September 2025 at Kathmandu over the built-in sky, which the test

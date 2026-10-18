@@ -81,6 +81,7 @@ public final class ChartArea {
         }
         return new ChartRequest(
                 options.kind(),
+                options.lilith(),
                 instants,
                 place.latitudeDeg().value(),
                 place.longitudeDeg().value(),
