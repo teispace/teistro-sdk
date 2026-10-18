@@ -35,6 +35,7 @@ mod antiscia;
 mod arc;
 mod aspects;
 mod composite;
+mod configuration;
 mod declination;
 mod harmonic;
 mod houses;
@@ -54,6 +55,7 @@ pub use aspects::{
     aspects,
 };
 pub use composite::{ChartPoints, Composite, composite};
+pub use configuration::{Configuration, ConfigurationKind, ConfigurationRules, configurations};
 pub use declination::{
     Declined, LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG, ParallelRequest, ParallelRow, parallels,
 };
