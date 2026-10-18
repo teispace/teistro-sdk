@@ -486,6 +486,7 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
         "synastry" => json!({"partner": partner}),
         "matching" => json!({"partner": partner, "partnerRole": "BRIDE"}),
         "varsha" | "tithiPravesha" => json!({"through": 1}),
+        "masaPravesha" => json!({"year": 1}),
         "progressions" => json!({"at": 2_460_676.5}),
         "harmonic" => json!({"number": 5}),
         "gochar" | "sarvatobhadra" => json!({"instants": [2_460_676.5]}),
@@ -523,6 +524,10 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
         (
             "dossier",
             json!({"sections": ["GRAHAS", "SHADBALA"], "dashaDepth": 2, "at": 2_460_676.5}),
+        ),
+        (
+            "masaPravesha",
+            json!({"year": 2, "month": 3, "reading": "TROPICAL"}),
         ),
     ];
     let mut server = Server::new(Engine::Builtin).with_detail(Detail::Full);
