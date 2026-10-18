@@ -240,15 +240,44 @@ pub(crate) fn check(root: &Path, args: &[String]) -> i32 {
     i32::from(failed)
 }
 
-/// The app's integration test (`facts.dart`'s four facts) on `device`.
+/// What `flutter test` says when the app it launched never opened its VM
+/// service to the tool: the runner's simulator or emulator was slow to
+/// launch a freshly built app, not a fact the app answered wrongly. Two of
+/// four iOS verify runs on 17 October failed so, and one hung five hours.
+const VM_SERVICE_UNREACHED: &str = "Connecting to the VM Service";
+
+/// The app's integration test (`facts.dart`'s four facts) on `device`,
+/// run a second time only when the first never reached the app's VM
+/// service: any other failure, a fact among them, fails at once.
 fn integration_test(app: &Path, device: &str, on: &str) -> Result<(), ()> {
-    step(
+    let run = || {
         Command::new("flutter")
             .args(["test", "integration_test", "-d", device])
-            .current_dir(app),
-        &format!("the bundled library answers the four facts on {on}"),
-        &format!("the integration test failed on {on}"),
-    )
+            .current_dir(app)
+            .output()
+    };
+    for attempt in 1..=2 {
+        let output = run().map_err(|why| println!("FAIL  `flutter test` did not start: {why}"))?;
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        print!("{stdout}");
+        eprint!("{stderr}");
+        if output.status.success() {
+            println!("ok    the bundled library answers the four facts on {on}");
+            return Ok(());
+        }
+        let unreached =
+            stdout.contains(VM_SERVICE_UNREACHED) || stderr.contains(VM_SERVICE_UNREACHED);
+        if attempt == 1 && unreached {
+            println!(
+                "retry the app on {on} never opened its VM service to `flutter test`; once more"
+            );
+            continue;
+        }
+        break;
+    }
+    println!("FAIL  the integration test failed on {on} (`flutter`)");
+    Err(())
 }
 
 /// An available iPhone simulator, booted for the run and shut down after
@@ -271,6 +300,14 @@ fn on_simulator(app: &Path) -> Result<(), ()> {
             &format!("the simulator {name} did not boot"),
         )?;
     }
+    // `simctl boot` returns while the device is still starting, and an app
+    // launched then may never reach `flutter test`; `bootstatus -b` waits
+    // until the simulator has finished booting.
+    step(
+        Command::new("xcrun").args(["simctl", "bootstatus", &udid, "-b"]),
+        "",
+        &format!("the simulator {name} never finished booting"),
+    )?;
     let outcome = integration_test(app, &udid, &format!("the {name} simulator"));
     if !booted {
         let _ = Command::new("xcrun")
