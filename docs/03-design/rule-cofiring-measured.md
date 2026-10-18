@@ -2,11 +2,11 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2104 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 1992 rules hold at least once and 112 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2147 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2012 rules hold at least once and 135 never do.
 
-Rules holding on the same 5 or more charts form 120 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 121 groups, and each is explained. Below that, 6 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
-- **80 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
+- **81 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
 - **4 groups: one text says it twice**, where the table below says.
 
@@ -105,6 +105,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 482 | `DWIGRAHA_MOON_JUPITER`<br>`PARIJATA_TOGETHER_MOON_JUPITER` |
 | 405 | `PHALADEEPIKA_NEXT_BIRTH_LORD_SUN_LAND`<br>`SARAVALI_LAGNA_ARIES` |
 | 284 | `PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY`<br>`PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS` |
+| 174 | `BPHS_BORN_IN_ASHLESHA_PADAS_TWO_TO_FOUR`<br>`SARAVALI_RAJA_STRONG_MOON_IN_THE_LAST_DECANATE_OF_CANCER` |
 | 160 | `CHANDRA_IN_ARIES_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_ARIES_ASPECTED_BY_JUPITER` |
 | 145 | `CHANDRA_IN_CAPRICORN_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_CAPRICORN_ASPECTED_BY_JUPITER` |
 | 143 | `CHANDRA_IN_GEMINI_ASPECTED_BY_SATURN`<br>`SARAVALI_MOON_IN_GEMINI_ASPECTED_BY_SATURN` |
@@ -235,6 +236,23 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `PHALADEEPIKA_WEAK_MOON_IN_A_DUSTHANA` | 2450123.74913 | 27.7172, 85.324 |
 | `SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS` | 2428308.91667 | 27.7172, -89.235 |
 | `SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH` | 2451702.41667 | 27.7172, -97.355 |
+| `SARAVALI_RAJA_ALL_VARGOTTAMA_OR_AT_HOME` | 2414577.9722 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_ARIES_RISING_WITH_MOON_MARS_AND_JUPITER` | 2382242.5347 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_BENEFICS_IN_THE_FIRST_FOURTH_SEVENTH_MALEFICS_THIRD_NINTH_ELEVENTH` | 2383809.3125 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_EXALTED_SUN_TENTH_WITH_JUPITER_VENUS_NINTH` | 2386658.7153 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_FULL_MOON_IN_A_TAURUS_NAVAMSHA_ASPECTED_BY_ALL` | 2409719.1528 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_JUPITER_AND_MOON_FIFTH_THREE_IN_OWN_NAVAMSHAS` | 2385461.1389 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_JUPITER_FOURTH_AT_HOME_FULL_MOON_NINTH` | 2554453.4931 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_KALASHA` | 2387002.7431 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_LUMINARIES_EARLY_SAGITTARIUS_SATURN_RISING` | 2387615.8889 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_MERCURY_RISING_JUPITER_SEVENTH_MOON_FOURTH_IN_CANCER` | 2436292.5556 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_MOON_AT_HIGHEST_EXALTATION_ASPECTED_BY_VENUS` | 2384649.5556 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_SUN_AT_HIGHEST_EXALTATION_RISING` | 2378971.5 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_TAURUS_RISING_JUPITER_AND_MOON` | 2391343.6944 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_VENUS_MERCURY_MARS_RISING_MOON_AND_JUPITER_SEVENTH` | 2392442.4931 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_VENUS_MOON_SUN_THIRD_MARS_SEVENTH_JUPITER_NINTH` | 2413189.3194 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_VENUS_RISING_IN_A_SIGN_OF_JUPITER_MERCURY_EXALTED` | 2404003.6875 | 27.7172, 85.324 |
+| `SARAVALI_RAJA_MOON_SIGN_LORD_IN_AN_UPACHAYA_FROM_THE_MOON` | 2379895.2586 | 27.7172, 85.324 |
 
 ### Held nowhere searched
 
@@ -272,6 +290,12 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA` | Four days from 1800 to 2400, all in 1895, have Jupiter in Cancer, Mercury and Saturn in Libra and the Sun, Mars and Venus as the rule asks, and on them the Moon is in Libra to Sagittarius, never Cancer. |
 | `SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON` | A Moon aspecting the second while the Sun stands in it is opposite the Sun, near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there. |
 | `SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY` | Mercury casts only the seventh aspect and keeps near the Sun, so the Moon he aspects is near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there. |
+| `SARAVALI_RAJA_ARIES_RISING_JUPITER_AND_SUN_IN_LEO_FIGURE` | No sky from 1801 to 2398 has its seven grahas in those signs, searched four times a day. |
+| `SARAVALI_RAJA_CANCER_MOON_RISING_FIGURE` | No sky from 1801 to 2398 has its seven grahas in those houses with Cancer rising, searched four times a day. |
+| `SARAVALI_RAJA_EXALTED_MOON_RISING_FIGURE` | No sky from 1801 to 2398 has its six grahas in those signs, searched four times a day. |
+| `SARAVALI_RAJA_LEO_SUN_RISING_FIGURE` | No sky from 1801 to 2398 has its five grahas in those signs, searched four times a day. |
+| `SARAVALI_RAJA_SATURN_LATE_CAPRICORN_FIGURE` | No sky from 1801 to 2398 has its seven grahas in those signs with Saturn in the latter half of Capricorn, searched four times a day. |
+| `SARAVALI_RAJA_VIRGO_MERCURY_RISING_MOON_ELEVENTH` | No sky from 1801 to 2398 has its six grahas in those signs, searched four times a day. |
 
 ## Held on every chart
 
