@@ -9194,26 +9194,26 @@
       ]
     },
     {
-      "key": "SARAVALI_MARANA_WANING_MOON_EIGHTH_MARS_TENTH_SATURN_FIRST_SUN_FOURTH_CLUBBED",
+      "key": "SARAVALI_MARANA_WANING_MOON_EIGHTH_MARS_TENTH_SUN_FIRST_SATURN_FOURTH_CLUBBED",
       "category": "marana",
       "source": {
         "text": "Saravali",
         "chapter": "46",
         "verse": "11",
         "rank": 1,
-        "note": "The waning Moon, Mars, Saturn and the Sun in the eighth, tenth, lagna and fourth, as Brihat Jataka ch. 25 v. 6 places them; the print's list of grahas names one more than the houses (C534). Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali, whose chapter numbers these are."
+        "note": "The waning Moon in the eighth, Mars in the tenth, the Sun in the lagna and Saturn in the fourth. The verse lists the waning Moon, Mars, the Sun, Mercury and Saturn against four houses; read respectively without Mercury, whom the houses leave over, the Sun stands in the lagna and Saturn in the last house. Brihat Jataka ch. 25 v. 6 has Saturn in the lagna and the Sun in the last house, which the sky forbids with the Moon waning, the Moon then never more than five signs ahead of the Sun (C534). Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali, whose chapter numbers these are."
       },
       "conditions": [
-        {
-          "type": "panchanga-paksha",
-          "paksha": "krishna"
-        },
         {
           "type": "planet-in-house",
           "planet": "MOON",
           "houses": [
             8
           ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
         },
         {
           "type": "planet-in-house",
@@ -9224,14 +9224,14 @@
         },
         {
           "type": "planet-in-house",
-          "planet": "SATURN",
+          "planet": "SUN",
           "houses": [
             1
           ]
         },
         {
           "type": "planet-in-house",
-          "planet": "SUN",
+          "planet": "SATURN",
           "houses": [
             4
           ]
@@ -9245,26 +9245,26 @@
       ]
     },
     {
-      "key": "SARAVALI_MARANA_WANING_MOON_TENTH_MARS_NINTH_SATURN_FIRST_SUN_FIFTH_SMOKE_OR_FIRE",
+      "key": "SARAVALI_MARANA_WANING_MOON_TENTH_MARS_NINTH_SUN_FIRST_SATURN_FIFTH_SMOKE_OR_FIRE",
       "category": "marana",
       "source": {
         "text": "Saravali",
         "chapter": "46",
         "verse": "11",
         "rank": 1,
-        "note": "The same grahas in the tenth, ninth, lagna and fifth, as Brihat Jataka ch. 25 v. 6 places them. Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali, whose chapter numbers these are."
+        "note": "The waning Moon in the tenth, Mars in the ninth, the Sun in the lagna and Saturn in the fifth. The verse lists the waning Moon, Mars, the Sun, Mercury and Saturn against four houses; read respectively without Mercury, whom the houses leave over, the Sun stands in the lagna and Saturn in the last house. Brihat Jataka ch. 25 v. 6 has Saturn in the lagna and the Sun in the last house, which the sky forbids with the Moon waning, the Moon then never more than five signs ahead of the Sun (C534). Read in the 1907 Nirnaya Sagar print of Kalyana Varma's Saravali, whose chapter numbers these are."
       },
       "conditions": [
-        {
-          "type": "panchanga-paksha",
-          "paksha": "krishna"
-        },
         {
           "type": "planet-in-house",
           "planet": "MOON",
           "houses": [
             10
           ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
         },
         {
           "type": "planet-in-house",
@@ -9275,14 +9275,14 @@
         },
         {
           "type": "planet-in-house",
-          "planet": "SATURN",
+          "planet": "SUN",
           "houses": [
             1
           ]
         },
         {
           "type": "planet-in-house",
-          "planet": "SUN",
+          "planet": "SATURN",
           "houses": [
             5
           ]

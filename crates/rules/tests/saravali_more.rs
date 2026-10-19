@@ -41,7 +41,7 @@ fn chapters(numbers: &[&str]) -> Vec<Rule> {
 /// ch. 20's orders do, the difference is the outcome's and not the yoga's.
 /// Ch. 44's friend and enemy counts are the ones Jataka Parijata ch. 8
 /// restates.
-const TWINS: [(&str, &str); 59] = [
+const TWINS: [(&str, &str); 57] = [
     ("PRAVRAJYA_SUN_STRONGEST", "BJ_PRAVRAJYA_SUN"),
     ("PRAVRAJYA_MOON_STRONGEST", "BJ_PRAVRAJYA_MOON"),
     ("PRAVRAJYA_MARS_STRONGEST", "BJ_PRAVRAJYA_MARS"),
@@ -176,14 +176,6 @@ const TWINS: [(&str, &str); 59] = [
     (
         "MARANA_MALEFICS_WITH_THE_WANING_MOON_IN_TRINES_AND_LAGNA_IMPALED",
         "BJ_MARANA_SUN_MARS_SATURN_IN_THE_FIRST_FIFTH_NINTH_WITH_THE_WANING_MOON_IMPALED",
-    ),
-    (
-        "MARANA_WANING_MOON_EIGHTH_MARS_TENTH_SATURN_FIRST_SUN_FOURTH_CLUBBED",
-        "BJ_MARANA_WANING_MOON_EIGHTH_MARS_TENTH_SATURN_FIRST_SUN_FOURTH_CLUBBED",
-    ),
-    (
-        "MARANA_WANING_MOON_TENTH_MARS_NINTH_SATURN_FIRST_SUN_FIFTH_SMOKE_OR_FIRE",
-        "BJ_MARANA_WANING_MOON_TENTH_MARS_NINTH_SATURN_FIRST_SUN_FIFTH_SMOKE_OR_FIRE",
     ),
     (
         "MARANA_MARS_FOURTH_SUN_SEVENTH_SATURN_TENTH_WEAPON_FIRE_OR_KING",
