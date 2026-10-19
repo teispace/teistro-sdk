@@ -139,6 +139,24 @@ fn a_window_of_life_is_not_a_range_of_days() {
     assert_ne!(answer["status"], "LIMIT", "{answer}");
 }
 
+/// **A transit window is a range of days**: a hit list is searched day by
+/// day, so eighty-four years of Saturn's hits are refused naming the
+/// window's end, and a year of them is read.
+#[test]
+fn a_transit_window_is_a_range_of_days() {
+    let mut server = Server::new(Engine::None);
+    let hits = |to: f64| {
+        placed(json!({ "instant": 2_430_338.5,
+            "hits": { "from": 2_430_338.5, "to": to, "grahas": ["SATURN"] } }))
+    };
+    let (refusal, refused) = call(&mut server, "chart.found", &hits(2_461_041.5));
+    assert!(refused);
+    assert_eq!(refusal["status"], "LIMIT", "{refusal}");
+    assert_eq!(refusal["field"], "hits.to");
+    let (answer, _) = call(&mut server, "chart.found", &hits(2_430_704.5));
+    assert_ne!(answer["status"], "LIMIT", "{answer}");
+}
+
 /// **A batch is bounded** (P5): an array at the bound is read, one past
 /// it is a `LIMIT` naming the array by its path.
 #[test]

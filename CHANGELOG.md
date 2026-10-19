@@ -17,9 +17,9 @@ none moved.
 
 - *What changes:* `teistro-mcp` speaks the `io.modelcontextprotocol/tasks`
   extension. A client that declares it gets a call outlasting two seconds
-  (`--task-after MS`, `none` for never) back as a task handle, which it
-  polls with `tasks/get` and stops with `tasks/cancel`. A quicker call is
-  answered inline, as before.
+  (`--task-after MS`, `0` for always, `none` for never) back as a task
+  handle, which it polls with `tasks/get` and stops with `tasks/cancel`. A
+  quicker call is answered inline, as before.
 - *Why:* measured through the release binary, a 1,000-birth study at the
   most permutations a test may draw took 431 s, seven times a default
   client's request timeout.
@@ -27,6 +27,14 @@ none moved.
   answered exactly as before.
 - *For an embedding host:* `Server::with_task_patience` sets the wait,
   and `TASK_PATIENCE` is the shipped one.
+
+**A transit window is bounded over MCP** (`mcp-server.md`, P5).
+**Numbers:** none moved. **Fixed:** `Limits` counted only `first` to
+`last` dates, so a `hits` section's `from` to `to` passed the day bound
+however long it was, and eighty-four years of Saturn's hits held the
+fuzzer past its timeout. The window's days now count toward
+`--max-days`, and a window past it is a `LIMIT` naming `hits.to`. A
+progressions window of life is still not counted.
 
 **Shodashottari and Shattrimsha-sama** (`dasha-kernels.md`). **Numbers:**
 none moved; two dashas the catalogue named are computed, 31 in all. BPHS

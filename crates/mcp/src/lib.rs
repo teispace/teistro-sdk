@@ -490,6 +490,7 @@ impl Server {
     /// The same server, waiting `patience` on a call whose client declares
     /// the `io.modelcontextprotocol/tasks` extension before handing it back
     /// as a task its client polls (P7), or never making one for `None`.
+    /// A zero patience makes every such call a task, however quick.
     /// The shipped patience is [`TASK_PATIENCE`], two seconds. A wasm32
     /// server makes no tasks, having no thread to run one on.
     #[must_use]
@@ -1248,11 +1249,17 @@ impl Server {
             let _ = done.send(());
         });
         // Wait out the patience, handing a cancellation of the request on
-        // to the task while it is still the request's.
+        // to the task while it is still the request's. None at all is not
+        // waited on, so a call that ends at once is a task too.
         let deadline = Instant::now() + patience;
         loop {
             let left = deadline.saturating_duration_since(Instant::now());
-            match ended.recv_timeout(left.min(WAIT_STEP)) {
+            let waited = if patience.is_zero() {
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+            } else {
+                ended.recv_timeout(left.min(WAIT_STEP))
+            };
+            match waited {
                 Ok(()) | Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
                 Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
                     if self.watch.stopping() {

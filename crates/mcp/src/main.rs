@@ -58,7 +58,8 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
   --task-after MS        how long a call is waited on before it is handed
                          back as a task its client polls, for a client
                          declaring the io.modelcontextprotocol/tasks
-                         extension: 2000 unless told, `none` for never
+                         extension: 2000 unless told, 0 for always,
+                         `none` for never
   --http ADDRESS         serve Streamable HTTP at http://ADDRESS/mcp rather
                          than stdio (`127.0.0.1:8080`, or port 0 for any): the
                          2026-07-28 revision, stateless; authorization is left

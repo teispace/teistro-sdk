@@ -30,7 +30,9 @@ pub struct Limits {
     pub items: Option<usize>,
     /// The most days a record's ranges span, summed: each object holding
     /// `first` and `last` as `{year, month, day}` is a range of days,
-    /// counted inclusive.
+    /// counted inclusive, and a transit window (a `hits` section's `from`
+    /// to `to`, searched day by day) its days begun. A window of life, a
+    /// progression's, is not one: its cost is a day a year.
     pub days: Option<u64>,
 }
 
@@ -131,12 +133,21 @@ impl Limits {
         path: &mut String,
         days: &mut u64,
     ) -> Result<(), Error> {
-        *days = days.saturating_add(span(fields));
+        let window = path
+            .rsplit('.')
+            .next()
+            .is_some_and(|key| WINDOWS.contains(&key));
+        let (spanned, end) = if window {
+            (transit_window(fields), "to")
+        } else {
+            (span(fields), "last")
+        };
+        *days = days.saturating_add(spanned);
         if let Some(most) = self.days.filter(|most| *days > *most) {
             let last = if path.is_empty() {
-                String::from("last")
+                String::from(end)
             } else {
-                format!("{path}.last")
+                format!("{path}.{end}")
             };
             return Err(Error::limit(format!(
                 "the request spans {days} days to `{last}`; the server answers at most \
@@ -158,6 +169,32 @@ impl Limits {
             path.truncate(length);
         }
         Ok(())
+    }
+}
+
+/// The sections whose `from` to `to` is a transit window, searched day by
+/// day: a year of one chart's hits takes about a second and a half
+/// (`03-design/transit-hit-list.md`), so a century would hold a worker for
+/// minutes.
+const WINDOWS: &[&str] = &["hits"];
+
+/// The days a transit window's `from` to `to` begins, as Julian days; none
+/// for a window its reader will refuse.
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "positive and whole, and a float cast saturates past u64::MAX"
+)]
+fn transit_window(fields: &Map<String, Value>) -> u64 {
+    let instant = |key: &str| fields.get(key).and_then(Value::as_f64);
+    let (Some(from), Some(to)) = (instant("from"), instant("to")) else {
+        return 0;
+    };
+    let between = (to - from).ceil();
+    if between.is_finite() && between > 0.0 {
+        between as u64
+    } else {
+        0
     }
 }
 

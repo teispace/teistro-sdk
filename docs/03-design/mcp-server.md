@@ -385,9 +385,13 @@ line, for unbounded, and `Limits::default` states the shipped bounds.
 They were chosen by timing the release binary: the shipped batch is
 found in seconds and the shipped year of days in well under a minute,
 where a century of days would take the better part of half an hour. A
-window of life (progressions' `from` and `to`)
-is not a range of days and is not counted, since it spans decades by
-design. A record past a bound is a `LIMIT` naming the field by its path
+transit window (a `hits` section's `from` and `to`, Julian days) is
+counted by the days it begins, since its search walks the window day by
+day: a year of one chart's hits takes about a second and a half, and the
+fuzzer's eighty-four years of Saturn outran its timeout. A window of life
+(progressions' `from` and `to`) is not a range of days and is not
+counted, since it spans decades by design and costs a day a year. A
+record past a bound is a `LIMIT` naming the field by its path
 (`periods[1].last`, `instants`), the bound and the option; a prompt
 writes no such call and names its own argument. The transport stops
 reading a line a byte past the message bound and refuses it with a null
@@ -465,7 +469,7 @@ capabilities and is never sent a task otherwise, and
 in a fork of the server (the same engine, adapter, tools, packs and
 bounds, its own watch and contexts); it is answered as before if it ends
 within the server's patience, two seconds unless `--task-after` says
-otherwise (`none` for never), and as a `CreateTaskResult`
+otherwise (`0` for always, however quick, `none` for never), and as a `CreateTaskResult`
 (`resultType: "task"`) otherwise. So a quick call costs a declaring
 client nothing, and only the long call becomes a task. A cancellation of
 the request while it is still waited on passes to the work.

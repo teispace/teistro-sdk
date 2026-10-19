@@ -66,7 +66,8 @@ context carries; `teistro-mcp --help` lists them all.
 - `--max-items`, `--max-days` and `--max-message-bytes` bound a request;
   past a bound it is refused naming its field.
 - `--task-after MS` is how long a call is waited on before it is handed
-  back as a task, 2000 unless told. Only a client that declares the
+  back as a task, 2000 unless told, `0` for every call and `none` for
+  never. Only a client that declares the
   `io.modelcontextprotocol/tasks` extension ever gets one, and it polls
   the task with `tasks/get` and stops it with `tasks/cancel`. A large
   research study can run for minutes, longer than a client's request
