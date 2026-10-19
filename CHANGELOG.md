@@ -30,6 +30,16 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
+**Jataka Parijata's death and marring, ch. 5A and ch. 6** (`rules-engine.md`).
+**Numbers:** none moved; this adds 237 rules. Ch. 5A's manner and place of
+death, the body's end and the worlds before and after, and ch. 6's low
+birth, servitude, Reka, poverty, defective limbs, the eyes and the diseases,
+read in Sastri's 1932 translation against the verse and vv. 15 to 18 in the
+Chowkhamba print. Nineteen state another text's figure, BPHS ch. 44's,
+Brihat Jataka ch. 23's or the chapter's own, and answer what it does. Eight
+the sky never or almost never holds are listed unseen, five of them because
+no instant can; what the verses leave open is cruxes C497 to C499.
+
 **Brihat Jataka ch. 15's pravrajya yogas** (`rules-engine.md`). **Numbers:**
 none moved; this adds 19 rules. Varahamihira's chapter on renunciation, read
 in Iyer's 1885 translation against the Sanskrit, joins the nabhasa set as

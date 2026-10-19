@@ -2,13 +2,13 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2567 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2370 rules hold at least once and 197 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2804 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2574 rules hold at least once and 230 never do.
 
-Rules holding on the same 5 or more charts form 232 groups, and each is explained. Below that, 27 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 248 groups, and each is explained. Below that, 27 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
-- **190 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
+- **204 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
-- **6 groups: one text says it twice**, where the table below says.
+- **8 groups: one text says it twice**, where the table below says.
 
 A group of one text that is none of these fails the gate, and so does a listed group that no longer holds together.
 
@@ -22,6 +22,8 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 113 | `SARAVALI_MERCURY_AND_VENUS_IN_THE_SEVENTH`<br>`SARAVALI_MERCURY_VENUS_IN_BHAVA_7` | Saravali reads Mercury and Venus in the seventh in ch. 34, and again among two grahas in an angle |
 | 1008 | `PHALADEEPIKA_KETU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH`<br>`PHALADEEPIKA_RAHU_IN_OR_ASPECTING_THE_EIGHTH_CAUSE_OF_DEATH` | Phaladeepika ch. 14 vv. 13 and 15 give each node its own death; the nodes stand opposite and aspect by the seventh alone, so one in the eighth or the second puts both on it |
 | 512 | `SARAVALI_MOON_IN_TAURUS`<br>`SARAVALI_RAJA_MOON_EXALTED` | Saravali reads the Moon in Taurus in ch. 23 among her signs, and again in ch. 35 v. 106 as the exalted Moon that makes a king even when waning |
+| 217 | `PARIJATA_DARIDRA_SATURN_MOON_SUN_IN_KENDRAS`<br>`PARIJATA_ROGA_SATURN_MOON_SUN_IN_KENDRAS_IDIOT` | Jataka Parijata gives Saturn, the Moon and the Sun in kendras twice: ch. 6 v. 4 among the poverty yogas, ch. 6 v. 81 among the diseases of the mind |
+| 41 | `PARIJATA_MARANA_SATURN_IN_CANCER_MOON_IN_CAPRICORN_DEATH_BY_DROPSY`<br>`PARIJATA_ROGA_SATURN_IN_CANCER_MOON_IN_CAPRICORN_DROPSY`<br>`SARAVALI_SATURN_IN_CANCER_ASPECTED_BY_MOON` | Jataka Parijata gives Saturn in Cancer and the Moon in Capricorn twice: ch. 5A v. 3 as the manner of death, ch. 6 v. 97 as the disease |
 
 ## One aspect from both grahas
 
@@ -76,18 +78,26 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 2310 | `BJ_CHANDRA_ONE_BENEFIC_IN_UPACHAYA_FROM_THE_MOON`<br>`LUNAR_DHANA_ONE_BENEFIC_IN_UPACHAYA` |
 | 2079 | `SARAVALI_UBHAYACHARI`<br>`SOLAR_UBHAYACHARI` |
 | 2031 | `PARIJATA_AMALA`<br>`PHALADEEPIKA_AMALA` |
+| 2018 | `BPHS_MOVABLE_THIRD_PLACE_OF_DEATH`<br>`PARIJATA_MARANA_DUAL_EIGHTH_PLACE_OF_DEATH` |
 | 2013 | `BJ_CHANDRA_MOON_IN_APOKLIMA_FROM_THE_SUN`<br>`LUNAR_MOON_IN_APOKLIMA_FROM_THE_SUN`<br>`PHALADEEPIKA_VARISHTHA` |
 | 2013 | `BJ_CHANDRA_MOON_IN_KENDRA_FROM_THE_SUN`<br>`LUNAR_MOON_IN_KENDRA_FROM_THE_SUN`<br>`PHALADEEPIKA_ADHAMA` |
+| 2009 | `BPHS_DESCENT_FROM_HELL`<br>`PARIJATA_LOKA_PAST_BIRTH_FROM_THE_NETHER_WORLD` |
+| 2003 | `BPHS_FIXED_THIRD_PLACE_OF_DEATH`<br>`PARIJATA_MARANA_MOVABLE_EIGHTH_PLACE_OF_DEATH` |
+| 1979 | `BPHS_DUAL_THIRD_PLACE_OF_DEATH`<br>`PARIJATA_MARANA_FIXED_EIGHTH_PLACE_OF_DEATH` |
 | 1974 | `BJ_CHANDRA_MOON_IN_PANAPHARA_FROM_THE_SUN`<br>`LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN`<br>`PHALADEEPIKA_SAMA` |
 | 1861 | `ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA`<br>`PHALADEEPIKA_MAHARAJA_STRONG_LAGNA_LORD_IN_A_KENDRA` |
+| 1632 | `BPHS_DESCENT_FROM_YAMA`<br>`PARIJATA_LOKA_PAST_BIRTH_FROM_MORTALS` |
 | 1622 | `BJ_NABHASA_KEDARA`<br>`NABHASA_KEDARA` |
 | 1515 | `DWIGRAHA_MERCURY_VENUS`<br>`PARIJATA_TOGETHER_MERCURY_VENUS`<br>`SARAVALI_TOGETHER_MERCURY_VENUS` |
+| 1408 | `BPHS_DESCENT_FROM_THE_MANES`<br>`PARIJATA_LOKA_PAST_BIRTH_FROM_THE_MANES` |
 | 1380 | `DWIGRAHA_SUN_VENUS`<br>`PARIJATA_TOGETHER_SUN_VENUS`<br>`SARAVALI_TOGETHER_SUN_VENUS` |
 | 1376 | `BJ_NABHASA_DAMINI`<br>`NABHASA_DAMA` |
 | 1334 | `BJ_CHANDRA_SUNAPHA`<br>`PHALADEEPIKA_SUNAPHA`<br>`SARAVALI_SUNAPHA` |
 | 1331 | `BJ_CHANDRA_ANAPHA`<br>`PHALADEEPIKA_ANAPHA`<br>`SARAVALI_ANAPHA` |
 | 1059 | `BJ_CHANDRA_TWO_BENEFICS_IN_UPACHAYA_FROM_THE_MOON`<br>`LUNAR_DHANA_TWO_BENEFICS_IN_UPACHAYA` |
 | 983 | `PARASHARA_CHAMARA`<br>`PARIJATA_CHAMARA` |
+| 951 | `BPHS_DESCENT_FROM_THE_GODS`<br>`PARIJATA_LOKA_PAST_BIRTH_FROM_THE_GODS` |
+| 831 | `BJ_ANISHTA_TAURUS_ARIES_OR_SAGITTARIUS_RISING_ASPECTED_BY_A_MALEFIC`<br>`PARIJATA_ROGA_ARIES_TAURUS_OR_SAGITTARIUS_RISING_ASPECTED_BY_A_MALEFIC` |
 | 826 | `DWIGRAHA_MARS_VENUS`<br>`PARIJATA_TOGETHER_MARS_VENUS`<br>`SARAVALI_TOGETHER_MARS_VENUS` |
 | 826 | `DWIGRAHA_SUN_MARS`<br>`PARIJATA_TOGETHER_SUN_MARS`<br>`SARAVALI_TOGETHER_SUN_MARS` |
 | 812 | `DWIGRAHA_MARS_MERCURY`<br>`PARIJATA_TOGETHER_MARS_MERCURY`<br>`SARAVALI_TOGETHER_MARS_MERCURY` |
@@ -101,26 +111,27 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 545 | `DWIGRAHA_MERCURY_SATURN`<br>`PARIJATA_TOGETHER_MERCURY_SATURN`<br>`SARAVALI_TOGETHER_MERCURY_SATURN` |
 | 530 | `DWIGRAHA_VENUS_SATURN`<br>`PARIJATA_TOGETHER_VENUS_SATURN`<br>`SARAVALI_TOGETHER_VENUS_SATURN` |
 | 523 | `PHALADEEPIKA_PAST_BIRTH_LORD_SUN_LAND`<br>`SARAVALI_LAGNA_SAGITTARIUS` |
-| 513 | `BPHS_VENUS_IN_EIGHTH_DEATH_BY_HUNGER`<br>`SARAVALI_VENUS_IN_BHAVA_8` |
+| 513 | `BPHS_VENUS_IN_EIGHTH_DEATH_BY_HUNGER`<br>`PARIJATA_MARANA_VENUS_IN_THE_EIGHTH_DEATH_BY_THIRST`<br>`SARAVALI_VENUS_IN_BHAVA_8` |
 | 512 | `BPHS_MARS_IN_THIRD_DEATH_BY_WOUNDS`<br>`SARAVALI_MARS_IN_BHAVA_3` |
 | 512 | `DWIGRAHA_MARS_SATURN`<br>`PARIJATA_TOGETHER_MARS_SATURN`<br>`SARAVALI_TOGETHER_MARS_SATURN` |
-| 506 | `BPHS_SUN_IN_EIGHTH_DEATH_BY_FIRE`<br>`SARAVALI_SUN_IN_BHAVA_8` |
+| 506 | `BPHS_SUN_IN_EIGHTH_DEATH_BY_FIRE`<br>`PARIJATA_MARANA_SUN_IN_THE_EIGHTH_DEATH_BY_FIRE`<br>`SARAVALI_SUN_IN_BHAVA_8` |
 | 506 | `DWIGRAHA_MARS_JUPITER`<br>`PARIJATA_TOGETHER_MARS_JUPITER`<br>`SARAVALI_TOGETHER_MARS_JUPITER` |
-| 505 | `BPHS_JUPITER_IN_EIGHTH_DEATH_BY_DISEASE`<br>`SARAVALI_JUPITER_IN_BHAVA_8` |
-| 504 | `BPHS_SATURN_IN_EIGHTH_DEATH_BY_THIRST`<br>`SARAVALI_SATURN_IN_BHAVA_8` |
+| 505 | `BPHS_JUPITER_IN_EIGHTH_DEATH_BY_DISEASE`<br>`PARIJATA_MARANA_JUPITER_IN_THE_EIGHTH_DEATH_BY_AN_UNKNOWN_ILLNESS`<br>`SARAVALI_JUPITER_IN_BHAVA_8` |
+| 504 | `BPHS_SATURN_IN_EIGHTH_DEATH_BY_THIRST`<br>`PARIJATA_MARANA_SATURN_IN_THE_EIGHTH_DEATH_BY_HUNGER`<br>`SARAVALI_SATURN_IN_BHAVA_8` |
 | 502 | `DWIGRAHA_JUPITER_SATURN`<br>`PARIJATA_TOGETHER_JUPITER_SATURN`<br>`SARAVALI_TOGETHER_JUPITER_SATURN` |
-| 501 | `BPHS_MARS_IN_EIGHTH_DEATH_BY_WEAPONS`<br>`SARAVALI_MARS_IN_BHAVA_8` |
+| 501 | `BPHS_MARS_IN_EIGHTH_DEATH_BY_WEAPONS`<br>`PARIJATA_MARANA_MARS_IN_THE_EIGHTH_DEATH_BY_A_WEAPON`<br>`SARAVALI_MARS_IN_BHAVA_8` |
 | 501 | `DWIGRAHA_MOON_MARS`<br>`PARIJATA_TOGETHER_MOON_MARS`<br>`SARAVALI_TOGETHER_MOON_MARS` |
 | 501 | `DWIGRAHA_MOON_VENUS`<br>`PARIJATA_TOGETHER_MOON_VENUS`<br>`SARAVALI_TOGETHER_MOON_VENUS` |
-| 499 | `BPHS_MERCURY_IN_EIGHTH_DEATH_BY_FEVER`<br>`SARAVALI_MERCURY_IN_BHAVA_8` |
+| 499 | `BPHS_MERCURY_IN_EIGHTH_DEATH_BY_FEVER`<br>`PARIJATA_MARANA_MERCURY_IN_THE_EIGHTH_DEATH_BY_FEVER`<br>`SARAVALI_MERCURY_IN_BHAVA_8` |
 | 498 | `BPHS_MOON_IN_THIRD_DEATH_BY_CONSUMPTION`<br>`SARAVALI_MOON_IN_BHAVA_3` |
 | 498 | `DWIGRAHA_MOON_MERCURY`<br>`PARIJATA_TOGETHER_MOON_MERCURY`<br>`SARAVALI_TOGETHER_MOON_MERCURY` |
 | 492 | `DWIGRAHA_MOON_SATURN`<br>`PARIJATA_TOGETHER_MOON_SATURN`<br>`SARAVALI_TOGETHER_MOON_SATURN` |
 | 488 | `DWIGRAHA_SUN_MOON`<br>`PARIJATA_TOGETHER_SUN_MOON`<br>`SARAVALI_TOGETHER_SUN_MOON` |
-| 485 | `BPHS_MOON_IN_EIGHTH_DEATH_BY_WATER`<br>`SARAVALI_MOON_IN_BHAVA_8` |
+| 485 | `BPHS_MOON_IN_EIGHTH_DEATH_BY_WATER`<br>`PARIJATA_MARANA_MOON_IN_THE_EIGHTH_DEATH_BY_WATER`<br>`SARAVALI_MOON_IN_BHAVA_8` |
 | 482 | `DWIGRAHA_MOON_JUPITER`<br>`PARIJATA_TOGETHER_MOON_JUPITER`<br>`SARAVALI_TOGETHER_MOON_JUPITER` |
 | 433 | `PARIJATA_TOGETHER_SUN_MARS_MERCURY`<br>`SARAVALI_TOGETHER_SUN_MARS_MERCURY` |
 | 405 | `PHALADEEPIKA_NEXT_BIRTH_LORD_SUN_LAND`<br>`SARAVALI_LAGNA_ARIES` |
+| 337 | `BJ_ANISHTA_VENUS_AND_SUN_IN_A_TRINE_OR_THE_SEVENTH`<br>`PARIJATA_ANGA_VENUS_AND_SUN_IN_A_TRIKONA_OR_THE_SEVENTH` |
 | 297 | `PARIJATA_TOGETHER_SUN_MERCURY_JUPITER`<br>`SARAVALI_TOGETHER_SUN_MERCURY_JUPITER` |
 | 284 | `PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY`<br>`PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS` |
 | 284 | `PARIJATA_TOGETHER_SUN_MERCURY_SATURN`<br>`SARAVALI_TOGETHER_SUN_MERCURY_SATURN` |
@@ -170,6 +181,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 118 | `CHANDRA_IN_SAGITTARIUS_ASPECTED_BY_SATURN`<br>`SARAVALI_MOON_IN_SAGITTARIUS_ASPECTED_BY_SATURN` |
 | 115 | `CHANDRA_IN_TAURUS_ASPECTED_BY_MARS`<br>`SARAVALI_MOON_IN_TAURUS_ASPECTED_BY_MARS` |
 | 115 | `PHALADEEPIKA_MAHARAJA_SUN_AND_VENUS_FOURTH`<br>`SARAVALI_SUN_VENUS_IN_BHAVA_4` |
+| 114 | `BJ_ANISHTA_SATURN_RISING_MARS_IN_A_TRINE_OR_THE_SEVENTH`<br>`PARIJATA_ROGA_SATURN_RISING_MARS_SEVENTH_OR_IN_A_TRIKONA` |
 | 114 | `CHANDRA_IN_TAURUS_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_TAURUS_ASPECTED_BY_JUPITER` |
 | 113 | `PARIJATA_TOGETHER_SUN_MOON_VENUS`<br>`SARAVALI_TOGETHER_SUN_MOON_VENUS` |
 | 112 | `CHANDRA_IN_LEO_ASPECTED_BY_JUPITER`<br>`SARAVALI_MOON_IN_LEO_ASPECTED_BY_JUPITER` |
@@ -183,6 +195,8 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 84 | `PARIJATA_TOGETHER_SUN_MARS_JUPITER`<br>`SARAVALI_TOGETHER_SUN_MARS_JUPITER` |
 | 83 | `PARIJATA_TOGETHER_MARS_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_MARS_JUPITER_VENUS` |
 | 82 | `PARIJATA_TOGETHER_MOON_MARS_VENUS`<br>`SARAVALI_TOGETHER_MOON_MARS_VENUS` |
+| 77 | `BJ_ANISHTA_LUMINARIES_SIXTH_AND_TWELFTH`<br>`PARIJATA_ANGA_LUMINARIES_SIXTH_AND_TWELFTH` |
+| 77 | `BJ_ANISHTA_LUMINARIES_TOGETHER_IN_CANCER_OR_LEO`<br>`PARIJATA_ROGA_LUMINARIES_IN_CANCER_OR_LEO` |
 | 75 | `PARIJATA_TOGETHER_MARS_VENUS_SATURN`<br>`SARAVALI_TOGETHER_MARS_VENUS_SATURN` |
 | 73 | `PARIJATA_TOGETHER_MARS_MERCURY_SATURN`<br>`SARAVALI_TOGETHER_MARS_MERCURY_SATURN` |
 | 72 | `PARIJATA_TOGETHER_SUN_MOON_MARS`<br>`SARAVALI_TOGETHER_SUN_MOON_MARS` |
@@ -211,6 +225,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 36 | `PARIJATA_TOGETHER_MOON_JUPITER_SATURN`<br>`SARAVALI_TOGETHER_MOON_JUPITER_SATURN` |
 | 36 | `PARIJATA_TOGETHER_SUN_MARS_MERCURY_SATURN`<br>`SARAVALI_TOGETHER_SUN_MARS_MERCURY_SATURN` |
 | 35 | `PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY`<br>`SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY` |
+| 29 | `BJ_ANISHTA_LUMINARIES_MARS_SATURN_IN_THE_NINTH_ELEVENTH_THIRD_FIFTH`<br>`PARIJATA_ROGA_MALEFICS_NINTH_ELEVENTH_THIRD_FIFTH_UNASPECTED` |
 | 28 | `BJ_PRAVRAJYA_MERCURY`<br>`PRAVRAJYA_MERCURY` |
 | 22 | `PARASHARA_SRINATHA`<br>`PARIJATA_SRINATHA` |
 | 22 | `PARIJATA_TOGETHER_MARS_MERCURY_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_MARS_MERCURY_JUPITER_VENUS` |
@@ -245,6 +260,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 9 | `PARIJATA_TOGETHER_SUN_MERCURY_JUPITER_VENUS_SATURN`<br>`SARAVALI_TOGETHER_SUN_MERCURY_JUPITER_VENUS_SATURN` |
 | 9 | `PARIJATA_TOGETHER_SUN_MOON_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_SUN_MOON_JUPITER_VENUS` |
 | 9 | `PARIJATA_TOGETHER_SUN_MOON_VENUS_SATURN`<br>`SARAVALI_TOGETHER_SUN_MOON_VENUS_SATURN` |
+| 7 | `BJ_ANISHTA_LUMINARIES_SEVENTH_ASPECTED_BY_SATURN`<br>`PARIJATA_LUMINARIES_SEVENTH_ASPECTED_BY_SATURN` |
 | 7 | `PARIJATA_TOGETHER_SUN_MARS_JUPITER_SATURN`<br>`SARAVALI_TOGETHER_SUN_MARS_JUPITER_SATURN` |
 | 6 | `BJ_PRAVRAJYA_VENUS`<br>`PRAVRAJYA_VENUS` |
 | 6 | `PARIJATA_MERCURY_IN_CANCER_SIXTH_OR_EIGHTH_ASPECTED_BY_THE_MOON`<br>`SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH` |
@@ -414,6 +430,27 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `BJ_NABHASA_GOLA` | 2437699.08333 | 27.7172, -37.399 |
 | `BJ_PRAVRAJYA_MARS_COMBUST` | 2379202.9444 | 27.7172, 85.324 |
 | `BJ_PRAVRAJYA_SATURN_COMBUST` | 2379857 | 27.7172, 85.324 |
+| `PARIJATA_ANGA_LAST_NAVAMSHA_OF_CAPRICORN_RISING_ASPECTED_BY_SATURN_MOON_SUN` | 2378699.0972 | 27.7172, 85.324 |
+| `PARIJATA_ANGA_LAST_NAVAMSHA_OF_CAPRICORN_RISING_MALEFICS_IN_ITS_THREE_DREKKANAS` | 2426740.5694 | 27.7172, 85.324 |
+| `PARIJATA_ANGA_LEO_RISING_WITH_THE_LUMINARIES_ASPECTED_BY_SATURN_AND_MARS` | 2384931.5 | 27.7172, 85.324 |
+| `PARIJATA_ANGA_LUMINARIES_TWELFTH_MALEFICS_SIXTH_AND_EIGHTH_BOTH_EYES` | 2379584.6042 | 27.7172, 85.324 |
+| `PARIJATA_ANGA_MARS_IN_THE_FIRST_DREKKANA_OF_THE_FIFTH_ASPECTED_BY_SATURN_SUN_MOON` | 2403740.6667 | 27.7172, 85.324 |
+| `PARIJATA_ANGA_MARS_IN_THE_FIRST_DREKKANA_OF_THE_LAGNA_ASPECTED_BY_SATURN_SUN_MOON` | 2403741 | 27.7172, 85.324 |
+| `PARIJATA_ANGA_MOON_SIXTH_SUN_EIGHTH_SATURN_TWELFTH_MARS_SECOND` | 2395967.8889 | 27.7172, 85.324 |
+| `PARIJATA_ANGA_MOON_TENTH_MARS_SEVENTH_SUN_SECOND` | 2378835.375 | 27.7172, 85.324 |
+| `PARIJATA_DARIDRA_LAGNA_LORD_TWELFTH_MARS_WITH_THE_MOON_IN_A_CRUEL_TENTH` | 2378631.5 | 27.7172, 85.324 |
+| `PARIJATA_DARIDRA_NIGHT_MOVABLE_LAGNA_WEAK_BENEFICS_IN_KENDRAS_AND_TRIKONAS` | 2452872.1626 | 27.7172, 85.324 |
+| `PARIJATA_DARIDRA_SUN_AT_HIS_DEEPEST_FALL` | 2415318.5 | 27.7172, 85.324 |
+| `PARIJATA_DARIDRA_SUN_IN_ARIES_IN_A_LIBRA_NAVAMSHA_ASPECTED_BY_A_MALEFIC` | 2378617.5 | 27.7172, 85.324 |
+| `PARIJATA_DARIDRA_VENUS_FIRST_JUPITER_FIFTH_MARS_ELEVENTH_MOON_THIRD_ALL_FALLEN` | 2416028.5 | 27.7172, 85.324 |
+| `PARIJATA_DARIDRA_VENUS_JUPITER_MOON_MARS_FALLEN_IN_FOUR_GOOD_HOUSES` | 2416028.8264 | 27.7172, 85.324 |
+| `PARIJATA_MARANA_MOON_IN_VIRGO_SEVENTH_WITH_A_MALEFIC_VENUS_IN_ARIES_SUN_RISING` | 2380041.5 | 27.7172, 85.324 |
+| `PARIJATA_MARANA_SATURN_SECOND_MOON_FOURTH_MARS_TENTH_WORMS_IN_A_WOUND` | 2378648.5069 | 27.7172, 85.324 |
+| `PARIJATA_MARANA_SUN_AND_MARS_SEVENTH_SATURN_EIGHTH_WANING_MOON_FOURTH_BIRDS` | 2386221.9653 | 27.7172, 85.324 |
+| `PARIJATA_MARANA_SUN_FIRST_MARS_FIFTH_SATURN_EIGHTH_MOON_NINTH_A_FALL` | 2378894.5 | 27.7172, 85.324 |
+| `PARIJATA_MARANA_SUN_FOURTH_MARS_TENTH_ASPECTED_BY_THE_WANING_MOON_IMPALED` | 2380352.2222 | 27.7172, 85.324 |
+| `PARIJATA_PRESHYA_VENUS_NINTH_MOON_SEVENTH_JUPITER_SECOND_OR_FIRST_MARS_EIGHTH_FIXED_LAGNA` | 2380934.7222 | 27.7172, 85.324 |
+| `PARIJATA_VENUS_FALLEN_OR_SATURNIAN_IN_A_DUSTHANA_ASPECTED_BY_SATURN_LUMINARIES_SEVENTH` | 2378875.9792 | 27.7172, 85.324 |
 
 ### Held nowhere searched
 
@@ -469,6 +506,18 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `PARIJATA_RAJA_MERCURY_VIRGO_MOON_PISCES_MARS_GEMINI_JUPITER_SAGITTARIUS_SATURN_CAPRICORN` | No day from 1800 to 2398 has Mercury, the Moon, Mars, Jupiter and Saturn in Virgo, Pisces, Gemini, Sagittarius and Capricorn at once, searched day by day by sign. |
 | `BJ_NABHASA_VAJRA` | Benefics in the 1st and 7th and malefics in the 4th and 10th, all seven in the kendras: the Sun, a malefic, would stand three or nine signs from Venus, a benefic, and Venus is never more than two signs from the Sun (her greatest elongation 47.28 degrees, day by day 1800 to 2398). Ch. 12 v. 6 says so itself. |
 | `BJ_NABHASA_YAVA` | Vajra's figure turned about, malefics in the 1st and 7th and benefics in the 4th and 10th, all seven in the kendras: the Sun and Venus would again stand three or nine signs apart, which her greatest elongation of 47.28 degrees, day by day 1800 to 2398, never allows. |
+| `PARIJATA_MARANA_WANING_MOON_EIGHTH_MARS_TENTH_SATURN_FIRST_SUN_FOURTH_CLUBBED` | The Moon in the 8th and the Sun in the 4th stand five signs apart, so the Moon is 120 to 180 degrees past the Sun and waxing; the verse asks her waning. |
+| `PARIJATA_MARANA_WANING_MOON_TENTH_MARS_NINTH_SATURN_FIRST_SUN_FIFTH_SMOKE_OR_FIRE` | The Moon in the 10th and the Sun in the 5th stand six signs apart, 120 to 180 degrees past the Sun, so she is waxing; of 83 days 1800 to 2398 holding everything else, none has her waning. |
+| `PARIJATA_MARANA_WANING_MOON_TENTH_SUN_SEVENTH_MARS_FOURTH_DEATH_IN_FILTH` | The Moon in the 10th and the Sun in the 7th stand four signs apart, so the Moon is past the Sun by under 180 degrees and waxing; the verse asks her waning. |
+| `PARIJATA_PRESHYA_NIGHT_SUN_TENTH_MOON_SEVENTH_SATURN_FOURTH_MARS_THIRD_JUPITER_SECOND` | The verse asks a birth at night (the Sanskrit's nisayam) with the Sun in the 10th, which is above the horizon: no night birth has the Sun there. |
+| `PARIJATA_ROGA_MARS_WITH_MERCURY_SIXTH_IN_A_MALEFICS_NAVAMSHA_ASPECTED_BY_MOON_AND_VENUS` | Venus aspects only the 7th from her, so she would stand opposite Mars and so opposite Mercury, with whom he stands; Mercury and Venus are never more than about 76 degrees apart. |
+| `PARIJATA_JUPITER_WITH_SATURN_MARS_RAHU_ASPECTED_BY_VENUS_AND_MERCURY` | No day 1800 to 2398 has Jupiter with Saturn, Mars and Rahu aspected by Venus and Mercury, searched by sign day by day; leaving out any one condition leaves at most 26 days. |
+| `PARIJATA_DARIDRA_FIVE_IN_THE_EIGHTH_SIXTH_TWELFTH_FIFTH_TENTH_TWELFTH_LORD_FALLEN_YET_STRONGER` | Of the days 1800 to 2398 placing the five grahas so, the twelfth lord is debilitated on 66 and combust as well on none, searched by sign day by day; the translator's own example figure cannot occur. |
+| `PARIJATA_ROGA_SATURN_WITH_MARS_SIXTH_ASPECTED_BY_SUN_AND_RAHU_LAGNA_LORD_WEAK` | Of the days 1800 to 2398 holding everything else, 383 by sign, none has Rahu aspecting Saturn and Mars in the 6th. |
+| `PARIJATA_ANGA_MERCURY_IN_A_TRIKONA_THE_REST_WEAK` | It asks every graha but Mercury weak, and the Sun, Mars and Saturn are never weak together: of 2,000 instants drawn over 1900 to 2100 the Sun is weak on 482, Mars on 54, both on 12, and the three on none. |
+| `PARIJATA_LOKA_MOKSHA_PISCES_RISING_IN_A_BENEFICS_NAVAMSHA_WITH_JUPITER_THE_REST_WEAK` | It asks every graha but Jupiter weak, and the Sun, Mars and Saturn are never weak together: of 2,000 instants drawn over 1900 to 2100 the Sun is weak on 482, Mars on 54, both on 12, and the three on none. |
+| `PARIJATA_MOON_AND_MERCURY_TENTH_AFFLICTED_IN_FALLEN_NAVAMSHAS` | It holds on none of 24,848 instants drawn over 1900 to 2100 at Kathmandu, nor on any ten minutes of the days a sign-level search of 1800 to 2398 found for it: the Moon and Mercury in the 10th, each in its fallen navamsha, with a malefic, aspected by one, together. |
+| `PARIJATA_ROGA_SATURN_SIXTH_WITH_GULIKA_ASPECTED_BY_SUN_MARS_RAHU` | It holds on none of 24,848 instants drawn over 1900 to 2100 at Kathmandu, nor on any ten minutes of the days a sign-level search of 1800 to 2398 found with Saturn so aspected: Gulika, which moves through the day, must stand in the 6th with him as well. |
 
 ## Held on every chart
 

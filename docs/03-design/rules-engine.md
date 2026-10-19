@@ -813,6 +813,13 @@ leader is a reading of its own where BPHS only cancels; v. 3 drops BPHS's
 "yoga of kings" names ch. 11's 30 raja yogas by key. The planetary war of
 vv. 1 and 2 is not built (C490). Ch. 14's pairs ship already as `DWIGRAHA_*`.
 
+**Jataka Parijata ch. 5A and ch. 6, built (2026-10-19).** `classical-parijata-bhanga.json`,
+237 rules: ch. 5A's death and worlds (`PARIJATA_MARANA_*`, `PARIJATA_LOKA_*`), the 22nd
+drekkana read by the lagna's sign and third; ch. 6's poverty, servitude, limbs and diseases
+(`daridra`, `miscellaneous`, `roga`), vv. 15 to 18 from the Chowkhamba print. Nineteen twins
+(BPHS ch. 44, Brihat Jataka ch. 23, ch. 6 v. 97 as ch. 5A v. 3) are held to agree; eight
+figures the sky forbids or never held are listed unseen (C497 to C499).
+
 **Jataka Parijata ch. 7's named yogas, vv. 128 to 163, built (2026-10-19).**
 `classical-parijata-named.json`, 31 rules in the nabhasa set under
 `PARIJATA_*`, read off the page images of Sastri's 1932 translation with the

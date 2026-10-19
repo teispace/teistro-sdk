@@ -72,7 +72,7 @@ const SPAN_DAYS: f64 = 73_049.0;
 const SUPPORT: usize = 5;
 
 /// One text stating one condition twice, each with where it does.
-const REVIEWED: [(&[&str], &str); 6] = [
+const REVIEWED: [(&[&str], &str); 8] = [
     (
         &[
             "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -119,6 +119,22 @@ const REVIEWED: [(&[&str], &str); 6] = [
         "Saravali reads the Moon in Taurus in ch. 23 among her signs, and again in ch. 35 v. 106 \
          as the exalted Moon that makes a king even when waning",
     ),
+    (
+        &[
+            "PARIJATA_DARIDRA_SATURN_MOON_SUN_IN_KENDRAS",
+            "PARIJATA_ROGA_SATURN_MOON_SUN_IN_KENDRAS_IDIOT",
+        ],
+        "Jataka Parijata gives Saturn, the Moon and the Sun in kendras twice: ch. 6 v. 4 \
+         among the poverty yogas, ch. 6 v. 81 among the diseases of the mind",
+    ),
+    (
+        &[
+            "PARIJATA_MARANA_SATURN_IN_CANCER_MOON_IN_CAPRICORN_DEATH_BY_DROPSY",
+            "PARIJATA_ROGA_SATURN_IN_CANCER_MOON_IN_CAPRICORN_DROPSY",
+        ],
+        "Jataka Parijata gives Saturn in Cancer and the Moon in Capricorn twice: ch. 5A v. 3 \
+         as the manner of death, ch. 6 v. 97 as the disease",
+    ),
 ];
 
 /// Rules the sky never holds, each with an instant (a Julian day in UT)
@@ -126,7 +142,7 @@ const REVIEWED: [(&[&str], &str); 6] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 147] = [
+const FIXTURES: [(&str, f64, f64, f64); 168] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -821,10 +837,138 @@ const FIXTURES: [(&str, f64, f64, f64); 147] = [
         85.324,
     ),
     ("BJ_PRAVRAJYA_SATURN_COMBUST", 2_379_857.0, 27.7172, 85.324),
+    // Jataka Parijata chs. 5A and 6: found by sign day by day, 1800 to
+    // 2398, or drawn over 1900 to 2100, and confirmed at Kathmandu.
+    (
+        "PARIJATA_ANGA_LAST_NAVAMSHA_OF_CAPRICORN_RISING_ASPECTED_BY_SATURN_MOON_SUN",
+        2_378_699.097_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_ANGA_LAST_NAVAMSHA_OF_CAPRICORN_RISING_MALEFICS_IN_ITS_THREE_DREKKANAS",
+        2_426_740.569_4,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_ANGA_LEO_RISING_WITH_THE_LUMINARIES_ASPECTED_BY_SATURN_AND_MARS",
+        2_384_931.500_0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_ANGA_LUMINARIES_TWELFTH_MALEFICS_SIXTH_AND_EIGHTH_BOTH_EYES",
+        2_379_584.604_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_ANGA_MARS_IN_THE_FIRST_DREKKANA_OF_THE_FIFTH_ASPECTED_BY_SATURN_SUN_MOON",
+        2_403_740.666_7,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_ANGA_MARS_IN_THE_FIRST_DREKKANA_OF_THE_LAGNA_ASPECTED_BY_SATURN_SUN_MOON",
+        2_403_741.000_0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_ANGA_MOON_SIXTH_SUN_EIGHTH_SATURN_TWELFTH_MARS_SECOND",
+        2_395_967.888_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_ANGA_MOON_TENTH_MARS_SEVENTH_SUN_SECOND",
+        2_378_835.375_0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_DARIDRA_LAGNA_LORD_TWELFTH_MARS_WITH_THE_MOON_IN_A_CRUEL_TENTH",
+        2_378_631.500_0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_DARIDRA_NIGHT_MOVABLE_LAGNA_WEAK_BENEFICS_IN_KENDRAS_AND_TRIKONAS",
+        2_452_872.162_6,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_DARIDRA_SUN_AT_HIS_DEEPEST_FALL",
+        2_415_318.5,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_DARIDRA_SUN_IN_ARIES_IN_A_LIBRA_NAVAMSHA_ASPECTED_BY_A_MALEFIC",
+        2_378_617.500_0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_DARIDRA_VENUS_FIRST_JUPITER_FIFTH_MARS_ELEVENTH_MOON_THIRD_ALL_FALLEN",
+        2_416_028.500_0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_DARIDRA_VENUS_JUPITER_MOON_MARS_FALLEN_IN_FOUR_GOOD_HOUSES",
+        2_416_028.826_4,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_MARANA_MOON_IN_VIRGO_SEVENTH_WITH_A_MALEFIC_VENUS_IN_ARIES_SUN_RISING",
+        2_380_041.500_0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_MARANA_SATURN_SECOND_MOON_FOURTH_MARS_TENTH_WORMS_IN_A_WOUND",
+        2_378_648.506_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_MARANA_SUN_AND_MARS_SEVENTH_SATURN_EIGHTH_WANING_MOON_FOURTH_BIRDS",
+        2_386_221.965_3,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_MARANA_SUN_FIRST_MARS_FIFTH_SATURN_EIGHTH_MOON_NINTH_A_FALL",
+        2_378_894.500_0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_MARANA_SUN_FOURTH_MARS_TENTH_ASPECTED_BY_THE_WANING_MOON_IMPALED",
+        2_380_352.222_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_PRESHYA_VENUS_NINTH_MOON_SEVENTH_JUPITER_SECOND_OR_FIRST_MARS_EIGHTH_FIXED_LAGNA",
+        2_380_934.722_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_VENUS_FALLEN_OR_SATURNIAN_IN_A_DUSTHANA_ASPECTED_BY_SATURN_LUMINARIES_SEVENTH",
+        2_378_875.979_2,
+        27.7172,
+        85.324,
+    ),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 50] = [
+const UNSEEN: [(&str, &str); 62] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -1025,6 +1169,54 @@ const UNSEEN: [(&str, &str); 50] = [
     (
         "BJ_NABHASA_YAVA",
         "Vajra's figure turned about, malefics in the 1st and 7th and benefics in the 4th and 10th, all seven in the kendras: the Sun and Venus would again stand three or nine signs apart, which her greatest elongation of 47.28 degrees, day by day 1800 to 2398, never allows.",
+    ),
+    (
+        "PARIJATA_MARANA_WANING_MOON_EIGHTH_MARS_TENTH_SATURN_FIRST_SUN_FOURTH_CLUBBED",
+        "The Moon in the 8th and the Sun in the 4th stand five signs apart, so the Moon is 120 to 180 degrees past the Sun and waxing; the verse asks her waning.",
+    ),
+    (
+        "PARIJATA_MARANA_WANING_MOON_TENTH_MARS_NINTH_SATURN_FIRST_SUN_FIFTH_SMOKE_OR_FIRE",
+        "The Moon in the 10th and the Sun in the 5th stand six signs apart, 120 to 180 degrees past the Sun, so she is waxing; of 83 days 1800 to 2398 holding everything else, none has her waning.",
+    ),
+    (
+        "PARIJATA_MARANA_WANING_MOON_TENTH_SUN_SEVENTH_MARS_FOURTH_DEATH_IN_FILTH",
+        "The Moon in the 10th and the Sun in the 7th stand four signs apart, so the Moon is past the Sun by under 180 degrees and waxing; the verse asks her waning.",
+    ),
+    (
+        "PARIJATA_PRESHYA_NIGHT_SUN_TENTH_MOON_SEVENTH_SATURN_FOURTH_MARS_THIRD_JUPITER_SECOND",
+        "The verse asks a birth at night (the Sanskrit's nisayam) with the Sun in the 10th, which is above the horizon: no night birth has the Sun there.",
+    ),
+    (
+        "PARIJATA_ROGA_MARS_WITH_MERCURY_SIXTH_IN_A_MALEFICS_NAVAMSHA_ASPECTED_BY_MOON_AND_VENUS",
+        "Venus aspects only the 7th from her, so she would stand opposite Mars and so opposite Mercury, with whom he stands; Mercury and Venus are never more than about 76 degrees apart.",
+    ),
+    (
+        "PARIJATA_JUPITER_WITH_SATURN_MARS_RAHU_ASPECTED_BY_VENUS_AND_MERCURY",
+        "No day 1800 to 2398 has Jupiter with Saturn, Mars and Rahu aspected by Venus and Mercury, searched by sign day by day; leaving out any one condition leaves at most 26 days.",
+    ),
+    (
+        "PARIJATA_DARIDRA_FIVE_IN_THE_EIGHTH_SIXTH_TWELFTH_FIFTH_TENTH_TWELFTH_LORD_FALLEN_YET_STRONGER",
+        "Of the days 1800 to 2398 placing the five grahas so, the twelfth lord is debilitated on 66 and combust as well on none, searched by sign day by day; the translator's own example figure cannot occur.",
+    ),
+    (
+        "PARIJATA_ROGA_SATURN_WITH_MARS_SIXTH_ASPECTED_BY_SUN_AND_RAHU_LAGNA_LORD_WEAK",
+        "Of the days 1800 to 2398 holding everything else, 383 by sign, none has Rahu aspecting Saturn and Mars in the 6th.",
+    ),
+    (
+        "PARIJATA_ANGA_MERCURY_IN_A_TRIKONA_THE_REST_WEAK",
+        "It asks every graha but Mercury weak, and the Sun, Mars and Saturn are never weak together: of 2,000 instants drawn over 1900 to 2100 the Sun is weak on 482, Mars on 54, both on 12, and the three on none.",
+    ),
+    (
+        "PARIJATA_LOKA_MOKSHA_PISCES_RISING_IN_A_BENEFICS_NAVAMSHA_WITH_JUPITER_THE_REST_WEAK",
+        "It asks every graha but Jupiter weak, and the Sun, Mars and Saturn are never weak together: of 2,000 instants drawn over 1900 to 2100 the Sun is weak on 482, Mars on 54, both on 12, and the three on none.",
+    ),
+    (
+        "PARIJATA_MOON_AND_MERCURY_TENTH_AFFLICTED_IN_FALLEN_NAVAMSHAS",
+        "It holds on none of 24,848 instants drawn over 1900 to 2100 at Kathmandu, nor on any ten minutes of the days a sign-level search of 1800 to 2398 found for it: the Moon and Mercury in the 10th, each in its fallen navamsha, with a malefic, aspected by one, together.",
+    ),
+    (
+        "PARIJATA_ROGA_SATURN_SIXTH_WITH_GULIKA_ASPECTED_BY_SUN_MARS_RAHU",
+        "It holds on none of 24,848 instants drawn over 1900 to 2100 at Kathmandu, nor on any ten minutes of the days a sign-level search of 1800 to 2398 found with Saturn so aspected: Gulika, which moves through the day, must stand in the 6th with him as well.",
     ),
 ];
 
