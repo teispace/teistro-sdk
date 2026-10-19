@@ -1,5 +1,5 @@
 //! Jataka Parijata ch. 7's named yogas held to the 93 recorded charts: what
-//! each answers, and that the three the chapter states as BPHS ch. 36 does
+//! each answers, and that the four the chapter states as BPHS ch. 36 does
 //! answer what BPHS's do.
 
 #![allow(
@@ -28,12 +28,12 @@ fn verses() -> Vec<Rule> {
 }
 
 /// The yogas both texts state alike.
-const TWINS: [&str; 3] = ["SANKHA", "SRINATHA", "KHADGA"];
+const TWINS: [&str; 4] = ["CHAMARA", "SANKHA", "SRINATHA", "KHADGA"];
 
 #[test]
 fn the_named_yogas_answer_and_their_twins_agree() {
     let rules = verses();
-    assert_eq!(rules.len(), 21);
+    assert_eq!(rules.len(), 31);
     teistro_rules::check_references(&rules).expect("the verses name themselves soundly");
     let twins: Vec<Rule> = TWINS
         .iter()
@@ -72,9 +72,10 @@ fn the_named_yogas_answer_and_their_twins_agree() {
 }
 
 /// What each answers over the 93 recorded charts.
-const ANSWERED: [(&str, usize); 21] = [
+const ANSWERED: [(&str, usize); 31] = [
     ("PARIJATA_AMSAVATARA", 0),
     ("PARIJATA_BHERI", 9),
+    ("PARIJATA_CHAMARA", 17),
     ("PARIJATA_HARIHARABRAHMA_FROM_THE_LAGNA_LORD", 0),
     ("PARIJATA_HARIHARABRAHMA_FROM_THE_SECOND_LORD", 0),
     ("PARIJATA_HARIHARABRAHMA_FROM_THE_SEVENTH_LORD", 0),
@@ -83,10 +84,19 @@ const ANSWERED: [(&str, usize); 21] = [
     ("PARIJATA_KHADGA", 0),
     ("PARIJATA_KURMA", 0),
     ("PARIJATA_KUSUMA", 0),
+    ("PARIJATA_LAKSHMI", 0),
+    ("PARIJATA_MALIKA_FROM_THE_EIGHTH", 0),
+    ("PARIJATA_MALIKA_FROM_THE_ELEVENTH", 0),
+    ("PARIJATA_MALIKA_FROM_THE_FIFTH", 0),
     ("PARIJATA_MALIKA_FROM_THE_FIRST", 0),
     ("PARIJATA_MALIKA_FROM_THE_FOURTH", 0),
+    ("PARIJATA_MALIKA_FROM_THE_NINTH", 0),
     ("PARIJATA_MALIKA_FROM_THE_SECOND", 0),
+    ("PARIJATA_MALIKA_FROM_THE_SEVENTH", 0),
+    ("PARIJATA_MALIKA_FROM_THE_SIXTH", 0),
+    ("PARIJATA_MALIKA_FROM_THE_TENTH", 0),
     ("PARIJATA_MALIKA_FROM_THE_THIRD", 0),
+    ("PARIJATA_MALIKA_FROM_THE_TWELFTH", 0),
     ("PARIJATA_MATSYA", 0),
     ("PARIJATA_MRIDANGA", 5),
     ("PARIJATA_PARIJATA", 58),

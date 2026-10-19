@@ -126,7 +126,7 @@ const REVIEWED: [(&[&str], &str); 6] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 114] = [
+const FIXTURES: [(&str, f64, f64, f64); 119] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -344,6 +344,39 @@ const FIXTURES: [(&str, f64, f64, f64); 114] = [
     ),
     ("PARIJATA_SARADA", 2_390_777.222_2, 27.7172, 85.324),
     ("PARIJATA_KURMA", 2_547_710.312_5, 27.7172, 85.324),
+    // The garland from the fifth on: one sky of 1802 with the seven in Gemini
+    // to Scorpio, one to a sign, read at the longitudes that raise the lagna
+    // each garland needs.
+    (
+        "PARIJATA_MALIKA_FROM_THE_FIFTH",
+        2_379_544.784_7,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_MALIKA_FROM_THE_SEVENTH",
+        2_379_544.784_7,
+        27.7172,
+        45.0,
+    ),
+    (
+        "PARIJATA_MALIKA_FROM_THE_EIGHTH",
+        2_379_544.784_7,
+        27.7172,
+        12.0,
+    ),
+    (
+        "PARIJATA_MALIKA_FROM_THE_NINTH",
+        2_379_544.784_7,
+        27.7172,
+        -22.0,
+    ),
+    (
+        "PARIJATA_MALIKA_FROM_THE_ELEVENTH",
+        2_379_544.784_7,
+        27.7172,
+        -92.0,
+    ),
     // All five great men at once: Mars in Aries, Venus in Libra and Saturn in
     // Capricorn angular to an Aries lagna, Mercury in Virgo and Jupiter in
     // Sagittarius angular to a Gemini Moon; 9 days of 1800 to 2400 have it.

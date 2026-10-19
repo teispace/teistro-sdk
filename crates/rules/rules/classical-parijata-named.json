@@ -249,7 +249,7 @@
         "chapter": "7",
         "verse": "132",
         "rank": 1,
-        "note": "The seven grahas in the seven houses from the first on, one to a house. The garland from the fifth on stands on pp. 456 and 457, which the scan lacks (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+        "note": "The seven grahas in the seven houses from the first on, one to a house. Read from V. Subrahmanya Sastri's 1932 translation."
       },
       "conditions": [
         {
@@ -280,7 +280,7 @@
         "chapter": "7",
         "verse": "132",
         "rank": 1,
-        "note": "The seven grahas in the seven houses from the second on, one to a house. The garland from the fifth on stands on pp. 456 and 457, which the scan lacks (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+        "note": "The seven grahas in the seven houses from the second on, one to a house. Read from V. Subrahmanya Sastri's 1932 translation."
       },
       "conditions": [
         {
@@ -311,7 +311,7 @@
         "chapter": "7",
         "verse": "133",
         "rank": 1,
-        "note": "The seven grahas in the seven houses from the third on, one to a house. The garland from the fifth on stands on pp. 456 and 457, which the scan lacks (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+        "note": "The seven grahas in the seven houses from the third on, one to a house. Read from V. Subrahmanya Sastri's 1932 translation."
       },
       "conditions": [
         {
@@ -342,7 +342,7 @@
         "chapter": "7",
         "verse": "133",
         "rank": 1,
-        "note": "The seven grahas in the seven houses from the fourth on, one to a house. The garland from the fifth on stands on pp. 456 and 457, which the scan lacks (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+        "note": "The seven grahas in the seven houses from the fourth on, one to a house. Read from V. Subrahmanya Sastri's 1932 translation."
       },
       "conditions": [
         {
@@ -362,6 +362,335 @@
         {
           "type": "effect",
           "text": "a liberal sovereign, fortunate in ruling many lands"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_FIFTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "134",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the fifth on, one to a house. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who sacrifices, or a famous man"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_SIXTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "134",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the sixth on, one to a house. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "now wealthy and happy, now poor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_SEVENTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "134",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the seventh on, one to a house. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, the lord of many women"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_EIGHTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "134",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the eighth on, one to a house. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            1,
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long-lived and poor, eminent among men, and ruled by women"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_NINTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "135",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the ninth on, one to a house. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            9,
+            10,
+            11,
+            12,
+            1,
+            2,
+            3
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a store of virtues, a sacrificer, an ascetic and a lord"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_TENTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "135",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the tenth on, one to a house. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            10,
+            11,
+            12,
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "devoted to dharma and duty, honoured by good men"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_ELEVENTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "135",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the eleventh on, one to a house. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            11,
+            12,
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a lord of royal women and gems, skilled in every undertaking"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALIKA_FROM_THE_TWELFTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "135",
+        "rank": 1,
+        "note": "The seven grahas in the seven houses from the twelfth on, one to a house. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            12,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "spending much and honoured everywhere"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_CHAMARA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "136-137",
+        "rank": 1,
+        "note": "The lagna lord exalted in a kendra and aspected by Jupiter; or two benefics in the lagna, the seventh, the ninth or the tenth: BPHS ch. 36 vv. 11 and 12's yoga, its conditions as written there. vv. 134 to 136 stand on the translation's pp. 456 and 457, missing from both its uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's commentary (C481). Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "lord-of-house-in-kendra",
+                  "houseRuled": 1
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "JUPITER",
+                  "target": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 2
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 2
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                9
+              ],
+              "atLeast": 2
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                10
+              ],
+              "atLeast": 2
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a philosopher, learned and eloquent, honoured by kings, or a king versed in the scriptures; he lives 71 years"
         }
       ]
     },
@@ -961,6 +1290,45 @@
       ]
     },
     {
+      "key": "PARIJATA_LAKSHMI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "152-153",
+        "rank": 1,
+        "note": "The ninth lord in a kendra, in its mooltrikona or at its deep exaltation, while the lagna lord is strong. The verse sets the deep exaltation on the ninth lord, as the Chowkhamba commentary and Jatakadesha's parallel read it; the translation sets it on the lagna lord (C481). BPHS ch. 36 admits the ninth lord's own and exaltation signs. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 9
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 9
+          },
+          "dignities": [
+            "MOOLTRIKONA",
+            "DEEP_EXALTED"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of kings, of many virtues, ruling many lands, famed for learning, handsome, bowed to by distant kings, with many wives and sons"
+        }
+      ]
+    },
+    {
       "key": "PARIJATA_KUSUMA",
       "category": "miscellaneous",
       "source": {
@@ -968,7 +1336,7 @@
         "chapter": "7",
         "verse": "154-155",
         "rank": 1,
-        "note": "A fixed sign rising, Venus in a kendra, the Moon in a trikona and no benefic, and Saturn in the tenth. The verse's shubhetare, other than a benefic, is read of the Moon, as the translation reads it, so under the readings a waning Moon; BPHS ch. 36 has the Moon joined by a benefic. Read from V. Subrahmanya Sastri's 1932 translation."
+        "note": "A fixed sign rising, Venus in a kendra, the Moon in the fifth and Saturn in the tenth. The verse's trikona shubhetara, a trikona other than the ninth, the ninth being shubha as in v. 21, is the fifth, as the Chowkhamba commentary reads it; the translation reads it of the Moon herself (C481). BPHS ch. 36 has the Moon in a trine with a benefic. Read from V. Subrahmanya Sastri's 1932 translation."
       },
       "conditions": [
         {
@@ -985,16 +1353,11 @@
           "planet": "VENUS"
         },
         {
-          "type": "planet-in-trikona",
-          "planet": "MOON"
-        },
-        {
-          "type": "not",
-          "condition": {
-            "type": "planet-is",
-            "planet": "MOON",
-            "class": "benefic"
-          }
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
         },
         {
           "type": "planet-in-house",

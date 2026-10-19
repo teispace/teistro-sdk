@@ -767,20 +767,23 @@ general to hold on exactly the charts where one of its grahas' readings does.
 Ch. 13 v. 2's Kemadruma and vv. 30 to 32 are not built (C480).
 
 **Jataka Parijata ch. 7's named yogas, vv. 128 to 163, built (2026-10-19).**
-`classical-parijata-named.json`, 21 rules in the nabhasa set under
+`classical-parijata-named.json`, 31 rules in the nabhasa set under
 `PARIJATA_*`, read off the page images of Sastri's 1932 translation with the
-verse beside it: Parvata, Kahala, Malika from the lagna, the second, the third
-and the fourth, Sankha, Bheri, Mridanga, Srinatha, Sarada, Matsya, Kurma,
-Khadga, Kusuma, Parijata, Kalanidhi, Amsavatara and the three Hariharabrahmas.
-Most share a name with a BPHS ch. 36 yoga and differ from it, and each note
-says how; Sankha, Srinatha and Khadga are stated as BPHS states them, ship with
-BPHS's conditions and Jataka Parijata's effects, and a test holds each to
-answer what its twin does on every recorded chart. Parijata is the
-dispositor's dispositor in a kendra, a trikona or exaltation, unrelated to
-Phaladeepika's yoga of that name. Not built (C481): Lakshmi, whose verse
-puts the deep exaltation on the ninth lord where the translation puts it on
-the lagna lord; Chamara and the garland from the fifth on, whose verses
-stand on pp. 456 and 457, missing from both uploads of the translation.
+verse beside it: Parvata, Kahala, Malika from each of the twelve houses,
+Chamara, Sankha, Bheri, Mridanga, Srinatha, Sarada, Matsya, Kurma, Khadga,
+Lakshmi, Kusuma, Parijata, Kalanidhi, Amsavatara and the three
+Hariharabrahmas. vv. 134 to 136, Malika from the fifth house on and
+Chamara, stand on the translation's pp. 456 and 457, missing from both its
+uploads, and are read in the Chowkhamba print with Kapileshvara Shastri's
+commentary, which also settles two places where the translation and the
+verse part (C481): Lakshmi's deep exaltation is the ninth lord's, and
+Kusuma's Moon is in the fifth. Most share a name with a BPHS ch. 36 yoga
+and differ from it, and each note says how; Chamara, Sankha, Srinatha and
+Khadga are stated as BPHS states them, ship with BPHS's conditions and
+Jataka Parijata's effects, and a test holds each to answer what its twin
+does on every recorded chart. Parijata is the dispositor's dispositor in a
+kendra, a trikona or exaltation, unrelated to Phaladeepika's yoga of that
+name.
 
 **Saravali ch. 35's raja yogas, vv. 7 to 185, built (2026-10-19).** The
 chapter on the birth of kings, read in the 1907 Nirnaya Sagar print off
