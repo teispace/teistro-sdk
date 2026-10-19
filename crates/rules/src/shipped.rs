@@ -152,6 +152,12 @@ const BJ_MORE: &str = include_str!("../rules/classical-bj-more.json");
 /// friendly and hostile grahas; the ganda nakshatras and the evil limbs of the
 /// day, some as BPHS chs. 85 to 87 write them.
 const PARIJATA_YOGA: &str = include_str!("../rules/classical-parijata-yoga.json");
+/// Uttara Kalamrita, Kanda I section 4 and Kanda II vv. 79 to 105: the lords
+/// of the ninth and tenth and their kin, the houses destroyed and promoted,
+/// the Indu lagna's wealth, the atmakaraka's companions, and the lagnas'
+/// pairs, one yoga each as Phaladeepika ch. 7 and Jataka Parijata ch. 7 write
+/// them.
+const UTTARA_KALAMRITA: &str = include_str!("../rules/classical-uttara-kalamrita.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -213,6 +219,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PHALADEEPIKA_MORE));
     rules.append(&mut read(BJ_MORE));
     rules.append(&mut read(PARIJATA_YOGA));
+    rules.append(&mut read(UTTARA_KALAMRITA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
