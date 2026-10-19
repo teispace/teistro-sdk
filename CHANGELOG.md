@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The national panchanga's further festival days** (`festival-rules.md`
+§10, C600 to C623). **Numbers:** none moved. `DHARMASINDHU` and `NEPAL`
+answer as before. A third pack, `NEPAL_PANCHANGA`, is `NEPAL` plus:
+- 58 rules fitted to the days Nepal's committee prints in VS 2082 and
+  2083, each citing its printed page;
+- 13 days counted from another rule's.
+
+`festival-measured.md` §6 holds the pack to the 132 printed days and names
+each parting's cause. The fits use three readings: the tithi at sunrise,
+the later of two sunrises, and the share of a window.
+
+Two forms the language lacks are recorded as the cause of six partings:
+- a predicate weighing two partial holdings (C601);
+- a window of day muhurtas for purvahna (C602).
+
+`festival-rule-language.md` designs those two and the other forms the 57
+excluded festivals need. `festival-classification.md` classes 502
+festivals and 97 further names.
+
+Festival keys are a new open catalogue kind, `festival` (70). They are
+named in English, Nepali and Hindi.
+
 **Brihat Jataka ch. 21, the grahas in the vargas** (`rules-engine.md`,
 C595 to C599). **Numbers:** none moved; 73 rules are added
 (`classical-bj-vargas.json`, `BJ_VARGA_*`), 4,818 shipped. Read from

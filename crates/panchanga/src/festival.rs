@@ -32,6 +32,7 @@ use crate::span::Span;
 
 mod ekadashi;
 mod following;
+mod nepal_panchanga;
 
 pub use ekadashi::{
     EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, Vedha, ekadashis,

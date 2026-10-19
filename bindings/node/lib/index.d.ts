@@ -6523,12 +6523,14 @@ export interface FestivalRequest {
 }
 
 /**
- * A pack of festival rules the SDK ships: *Dharmasindhu*'s, or those as
+ * A pack of festival rules the SDK ships: *Dharmasindhu*'s; those as
  * Nepal's national panchanga keeps them (a rite of the daylight on the day
  * whose sunrise holds its tithi) with the days it counts from them
- * (`03-design/festival-rules.md` §9.4–9.5).
+ * (`03-design/festival-rules.md` §9.4–9.5); or those with the further days
+ * the panchanga prints, each rule fitted to the committee's editions and
+ * citing its page (§10).
  */
-export type FestivalPack = 'DHARMASINDHU' | 'NEPAL';
+export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA';
 
 /**
  * An observance on the day a number of civil days after another rule's

@@ -24,11 +24,21 @@ pub enum FestivalPack {
     /// another's ([`FollowingRule::nepal`]): Holi in the hills and in the
     /// Terai.
     Nepal,
+    /// [`FestivalPack::Nepal`] and the further days the national panchanga
+    /// prints ([`FestivalRule::nepal_panchanga`],
+    /// [`FollowingRule::nepal_panchanga`]): rules fitted to the committee's
+    /// VS 2082 and 2083 editions where no text in hand gives a table, each
+    /// citing its page (`festival-rules.md` §10, C600).
+    NepalPanchanga,
 }
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 2] = [FestivalPack::Dharmasindhu, FestivalPack::Nepal];
+    pub const ALL: [FestivalPack; 3] = [
+        FestivalPack::Dharmasindhu,
+        FestivalPack::Nepal,
+        FestivalPack::NepalPanchanga,
+    ];
 
     /// Its key, as a request names it.
     #[must_use]
@@ -36,6 +46,7 @@ impl FestivalPack {
         match self {
             FestivalPack::Dharmasindhu => "DHARMASINDHU",
             FestivalPack::Nepal => "NEPAL",
+            FestivalPack::NepalPanchanga => "NEPAL_PANCHANGA",
         }
     }
 
@@ -45,6 +56,11 @@ impl FestivalPack {
         match self {
             FestivalPack::Dharmasindhu => FestivalRule::dharmasindhu(),
             FestivalPack::Nepal => FestivalRule::nepal(),
+            FestivalPack::NepalPanchanga => {
+                let mut rules = FestivalRule::nepal();
+                rules.extend(FestivalRule::nepal_panchanga());
+                rules
+            }
         }
     }
 
@@ -52,7 +68,9 @@ impl FestivalPack {
     #[must_use]
     pub fn ekadashis(self) -> Vec<EkadashiRule> {
         match self {
-            FestivalPack::Dharmasindhu | FestivalPack::Nepal => EkadashiRule::dharmasindhu(),
+            FestivalPack::Dharmasindhu | FestivalPack::Nepal | FestivalPack::NepalPanchanga => {
+                EkadashiRule::dharmasindhu()
+            }
         }
     }
 
@@ -62,6 +80,11 @@ impl FestivalPack {
         match self {
             FestivalPack::Dharmasindhu => Vec::new(),
             FestivalPack::Nepal => FollowingRule::nepal(),
+            FestivalPack::NepalPanchanga => {
+                let mut rules = FollowingRule::nepal();
+                rules.extend(FollowingRule::nepal_panchanga());
+                rules
+            }
         }
     }
 }
@@ -517,6 +540,19 @@ mod tests {
         let shipped = FestivalRequest::from(FestivalPack::Dharmasindhu);
         assert_eq!(shipped.following(), []);
         assert_eq!(shipped.reach(), 0);
+    }
+
+    #[test]
+    fn the_nepal_panchanga_pack_is_nepal_s_and_its_fitted_days() {
+        let asked = FestivalRequest::from_json(r#"{"rules": "NEPAL_PANCHANGA"}"#).unwrap();
+        assert_eq!(asked, FestivalRequest::from(FestivalPack::NepalPanchanga));
+        let nepal = FestivalRule::nepal();
+        assert_eq!(&asked.rules()[..nepal.len()], nepal.as_slice());
+        assert_eq!(asked.rules().len(), nepal.len() + FestivalRule::nepal_panchanga().len());
+        let counted = FollowingRule::nepal().len() + FollowingRule::nepal_panchanga().len();
+        assert_eq!(asked.following().len(), counted);
+        assert_eq!(asked.reach(), 1);
+        asked.check().unwrap();
     }
 
     #[test]

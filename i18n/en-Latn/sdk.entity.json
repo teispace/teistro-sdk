@@ -2798,5 +2798,462 @@
       "name": "Malefic",
       "prose": "Malefic"
     }
+  },
+  "festival": {
+    "RAMA_NAVAMI": {
+      "name": "Rama Navami",
+      "prose": "Rama Navami",
+      "iast": "Rāmanavamī"
+    },
+    "JANMASHTAMI": {
+      "name": "Krishna Janmashtami",
+      "prose": "Krishna Janmashtami",
+      "iast": "Kṛṣṇajanmāṣṭamī"
+    },
+    "VIJAYA_DASHAMI": {
+      "name": "Vijaya Dashami",
+      "prose": "Vijaya Dashami",
+      "iast": "Vijayādaśamī"
+    },
+    "LAKSHMI_PUJA": {
+      "name": "Lakshmi Puja",
+      "prose": "Lakshmi Puja",
+      "iast": "Lakṣmīpūjā"
+    },
+    "HARITALIKA": {
+      "name": "Haritalika Teej",
+      "prose": "Haritalika Teej",
+      "iast": "Haritālikā"
+    },
+    "NAVARATRA_ARAMBHA": {
+      "name": "Navaratra Begins",
+      "prose": "Navaratra Begins",
+      "iast": "Navarātrārambha"
+    },
+    "YAMA_DWITIYA": {
+      "name": "Yama Dwitiya",
+      "prose": "Yama Dwitiya",
+      "iast": "Yamadvitīyā"
+    },
+    "SHIVARATRI": {
+      "name": "Maha Shivaratri",
+      "prose": "Maha Shivaratri",
+      "iast": "Mahāśivarātri"
+    },
+    "RAKSHABANDHAN": {
+      "name": "Raksha Bandhan",
+      "prose": "Raksha Bandhan",
+      "iast": "Rakṣābandhana"
+    },
+    "BALI_PRATIPADA": {
+      "name": "Bali Pratipada",
+      "prose": "Bali Pratipada",
+      "iast": "Balipratipadā"
+    },
+    "HOLIKA": {
+      "name": "Holika Dahan",
+      "prose": "Holika Dahan",
+      "iast": "Holikādahana"
+    },
+    "UPAKARMA_MADHYANDINA": {
+      "name": "Madhyandina Upakarma",
+      "prose": "Madhyandina Upakarma",
+      "iast": "Mādhyandina Upākarma"
+    },
+    "UPAKARMA_TAITTIRIYA": {
+      "name": "Taittiriya Upakarma",
+      "prose": "Taittiriya Upakarma",
+      "iast": "Taittirīya Upākarma"
+    },
+    "UPAKARMA_SAMAVEDI": {
+      "name": "Samavedi Upakarma",
+      "prose": "Samavedi Upakarma",
+      "iast": "Sāmavedī Upākarma"
+    },
+    "PURNIMA_VRATA": {
+      "name": "Full Moon Fast",
+      "prose": "Full Moon Fast",
+      "iast": "Pūrṇimāvrata"
+    },
+    "HOLI_HILLS": {
+      "name": "Holi in the Hills",
+      "prose": "Holi in the Hills",
+      "iast": "Pahāḍī Holī"
+    },
+    "HOLI_TERAI": {
+      "name": "Holi in the Terai",
+      "prose": "Holi in the Terai",
+      "iast": "Tarāī Holī"
+    },
+    "EKADASHI_SMARTA": {
+      "name": "Smarta Ekadashi",
+      "prose": "Smarta Ekadashi",
+      "iast": "Smārta Ekādaśī"
+    },
+    "EKADASHI_SMARTA_RENUNCIANT": {
+      "name": "Renunciants' Ekadashi",
+      "prose": "Renunciants' Ekadashi",
+      "iast": "Saṃnyāsī Ekādaśī"
+    },
+    "EKADASHI_VAISHNAVA": {
+      "name": "Vaishnava Ekadashi",
+      "prose": "Vaishnava Ekadashi",
+      "iast": "Vaiṣṇava Ekādaśī"
+    },
+    "CHAITE_DASHAIN": {
+      "name": "Chaite Dashain",
+      "prose": "Chaite Dashain",
+      "iast": "Caite Daśaĩ"
+    },
+    "SETO_MACHHINDRANATH_JATRA": {
+      "name": "Seto Machhindranath Rath Jatra",
+      "prose": "Seto Machhindranath Rath Jatra",
+      "iast": "Śveta Matsyendranātha Rathayātrā"
+    },
+    "PARASHURAMA_JAYANTI": {
+      "name": "Parashurama Jayanti",
+      "prose": "Parashurama Jayanti",
+      "iast": "Paraśurāma Jayantī"
+    },
+    "SHANKARACHARYA_JAYANTI": {
+      "name": "Shankaracharya Jayanti",
+      "prose": "Shankaracharya Jayanti",
+      "iast": "Śaṅkarācārya Jayantī"
+    },
+    "GANGA_SAPTAMI": {
+      "name": "Ganga Saptami",
+      "prose": "Ganga Saptami",
+      "iast": "Gaṅgā Saptamī"
+    },
+    "SITA_NAVAMI": {
+      "name": "Sita Navami",
+      "prose": "Sita Navami",
+      "iast": "Sītā Navamī"
+    },
+    "KURMA_JAYANTI": {
+      "name": "Kurma Jayanti",
+      "prose": "Kurma Jayanti",
+      "iast": "Kūrma Jayantī"
+    },
+    "DASHAHARA_SNANA_ARAMBHA": {
+      "name": "Dashahara Bathing Begins",
+      "prose": "Dashahara Bathing Begins",
+      "iast": "Daśaharā Snānārambha"
+    },
+    "GOSAIKUNDA_SNANA_ARAMBHA": {
+      "name": "Gosaikunda Bathing Begins",
+      "prose": "Gosaikunda Bathing Begins",
+      "iast": "Gosāĩkuṇḍa Snānārambha"
+    },
+    "KUMARA_JATRA": {
+      "name": "Kumar Jatra",
+      "prose": "Kumar Jatra",
+      "iast": "Kumāra Yātrā"
+    },
+    "GANGA_DASHAHARA": {
+      "name": "Ganga Dashahara",
+      "prose": "Ganga Dashahara",
+      "iast": "Gaṅgā Daśaharā"
+    },
+    "GOSAIKUNDA_SNANA_SAMAPTI": {
+      "name": "Gosaikunda Bathing Ends",
+      "prose": "Gosaikunda Bathing Ends",
+      "iast": "Gosāĩkuṇḍa Snāna Samāpti"
+    },
+    "HATYAMOCHANA_SNANA": {
+      "name": "Hatyamochan Bathing",
+      "prose": "Hatyamochan Bathing",
+      "iast": "Hatyāmocana Tīrthasnāna"
+    },
+    "NIRJALA_EKADASHI": {
+      "name": "Nirjala Ekadashi",
+      "prose": "Nirjala Ekadashi",
+      "iast": "Nirjalā Ekādaśī"
+    },
+    "ANALA_PUNHI": {
+      "name": "Anala Punhi",
+      "prose": "Anala Punhi",
+      "iast": "Analā Punhi"
+    },
+    "DILA_CHARHE": {
+      "name": "Dila Charhe",
+      "prose": "Dila Charhe",
+      "iast": "Dilā Carhe"
+    },
+    "DURVA_ASHTAMI": {
+      "name": "Durva Ashtami",
+      "prose": "Durva Ashtami",
+      "iast": "Dūrvāṣṭamī"
+    },
+    "AJA_EKADASHI": {
+      "name": "Aja Ekadashi",
+      "prose": "Aja Ekadashi",
+      "iast": "Ajā Ekādaśī"
+    },
+    "CHATHA": {
+      "name": "Chatha",
+      "prose": "Chatha",
+      "iast": "Cathā"
+    },
+    "GANESHA_CHATURTHI": {
+      "name": "Ganesh Chaturthi",
+      "prose": "Ganesh Chaturthi",
+      "iast": "Gaṇeśa Caturthī"
+    },
+    "RISHI_PANCHAMI": {
+      "name": "Rishi Panchami",
+      "prose": "Rishi Panchami",
+      "iast": "Ṛṣi Pañcamī"
+    },
+    "GAURA_SAPTAMI": {
+      "name": "Gaura Saptami",
+      "prose": "Gaura Saptami",
+      "iast": "Gaurā Saptamī"
+    },
+    "AMUKTABHARANA_SAPTAMI": {
+      "name": "Amuktabharana Saptami",
+      "prose": "Amuktabharana Saptami",
+      "iast": "Amuktābharaṇa Saptamī"
+    },
+    "HILE_JATRA": {
+      "name": "Hile Jatra",
+      "prose": "Hile Jatra",
+      "iast": "Hile Jātrā"
+    },
+    "VAMANA_DWADASHI": {
+      "name": "Vamana Dwadashi",
+      "prose": "Vamana Dwadashi",
+      "iast": "Vāmana Dvādaśī"
+    },
+    "PRATIPADA_SHRADDHA": {
+      "name": "Pratipada Shraddha",
+      "prose": "Pratipada Shraddha",
+      "iast": "Pratipadā Śrāddha"
+    },
+    "DWITIYA_SHRADDHA": {
+      "name": "Dwitiya Shraddha",
+      "prose": "Dwitiya Shraddha",
+      "iast": "Dvitīyā Śrāddha"
+    },
+    "TRITIYA_SHRADDHA": {
+      "name": "Tritiya Shraddha",
+      "prose": "Tritiya Shraddha",
+      "iast": "Tṛtīyā Śrāddha"
+    },
+    "CHATURTHI_SHRADDHA": {
+      "name": "Chaturthi Shraddha",
+      "prose": "Chaturthi Shraddha",
+      "iast": "Caturthī Śrāddha"
+    },
+    "PANCHAMI_SHRADDHA": {
+      "name": "Panchami Shraddha",
+      "prose": "Panchami Shraddha",
+      "iast": "Pañcamī Śrāddha"
+    },
+    "SHASHTHI_SHRADDHA": {
+      "name": "Shashthi Shraddha",
+      "prose": "Shashthi Shraddha",
+      "iast": "Ṣaṣṭhī Śrāddha"
+    },
+    "SAPTAMI_SHRADDHA": {
+      "name": "Saptami Shraddha",
+      "prose": "Saptami Shraddha",
+      "iast": "Saptamī Śrāddha"
+    },
+    "ASHTAMI_SHRADDHA": {
+      "name": "Ashtami Shraddha",
+      "prose": "Ashtami Shraddha",
+      "iast": "Aṣṭamī Śrāddha"
+    },
+    "NAVAMI_SHRADDHA": {
+      "name": "Navami Shraddha",
+      "prose": "Navami Shraddha",
+      "iast": "Navamī Śrāddha"
+    },
+    "DASHAMI_SHRADDHA": {
+      "name": "Dashami Shraddha",
+      "prose": "Dashami Shraddha",
+      "iast": "Daśamī Śrāddha"
+    },
+    "EKADASHI_SHRADDHA": {
+      "name": "Ekadashi Shraddha",
+      "prose": "Ekadashi Shraddha",
+      "iast": "Ekādaśī Śrāddha"
+    },
+    "DWADASHI_SHRADDHA": {
+      "name": "Dwadashi Shraddha",
+      "prose": "Dwadashi Shraddha",
+      "iast": "Dvādaśī Śrāddha"
+    },
+    "TRAYODASHI_SHRADDHA": {
+      "name": "Trayodashi Shraddha",
+      "prose": "Trayodashi Shraddha",
+      "iast": "Trayodaśī Śrāddha"
+    },
+    "CHATURDASHI_SHRADDHA": {
+      "name": "Chaturdashi Shraddha",
+      "prose": "Chaturdashi Shraddha",
+      "iast": "Caturdaśī Śrāddha"
+    },
+    "AMAVASYA_SHRADDHA": {
+      "name": "Amavasya Shraddha",
+      "prose": "Amavasya Shraddha",
+      "iast": "Amāvasyā Śrāddha"
+    },
+    "SORHA_SHRADDHA_ARAMBHA": {
+      "name": "Sorha Shraddha Begins",
+      "prose": "Sorha Shraddha Begins",
+      "iast": "Ṣoḍaśa Śrāddha Ārambha"
+    },
+    "KALI_YUGADI": {
+      "name": "Kaliyugadi",
+      "prose": "Kaliyugadi",
+      "iast": "Kaliyugādi"
+    },
+    "UPANGA_LALITA_VRATA": {
+      "name": "Upanga Lalita Vrata",
+      "prose": "Upanga Lalita Vrata",
+      "iast": "Upāṅgalalitā Vrata"
+    },
+    "KUCHHI_BHOYE": {
+      "name": "Kuchhi Bhoye",
+      "prose": "Kuchhi Bhoye",
+      "iast": "Kuchi Bhvay"
+    },
+    "YAMAPANCHAKA_ARAMBHA": {
+      "name": "Yamapanchak Begins",
+      "prose": "Yamapanchak Begins",
+      "iast": "Yamapañcaka Ārambha"
+    },
+    "DHANVANTARI_JAYANTI": {
+      "name": "Dhanvantari Jayanti",
+      "prose": "Dhanvantari Jayanti",
+      "iast": "Dhanvantari Jayantī"
+    },
+    "LAXMI_PRASAD_DEVKOTA_JAYANTI": {
+      "name": "Laxmi Prasad Devkota Jayanti",
+      "prose": "Laxmi Prasad Devkota Jayanti",
+      "iast": "Lakṣmīprasāda Devakoṭā Jayantī"
+    },
+    "MHA_PUJA": {
+      "name": "Mha Puja",
+      "prose": "Mha Puja",
+      "iast": "Mhapūjā"
+    },
+    "NEPAL_SAMBAT_NEW_YEAR": {
+      "name": "Nepal Sambat New Year",
+      "prose": "Nepal Sambat New Year",
+      "iast": "Nepāla Saṃvat Navavarṣa"
+    },
+    "HARIBODHINI_EKADASHI": {
+      "name": "Haribodhini Ekadashi",
+      "prose": "Haribodhini Ekadashi",
+      "iast": "Haribodhinī Ekādaśī"
+    },
+    "BHISHMA_PANCHAKA_ARAMBHA": {
+      "name": "Bhishma Panchak Begins",
+      "prose": "Bhishma Panchak Begins",
+      "iast": "Bhīṣmapañcaka Ārambha"
+    },
+    "TULASI_VIVAHA": {
+      "name": "Tulsi Vivah",
+      "prose": "Tulsi Vivah",
+      "iast": "Tulasī Vivāha"
+    },
+    "PASHUPATI_HALESI_MELA": {
+      "name": "Pashupatinath and Halesi Mahadev Mela",
+      "prose": "Pashupatinath and Halesi Mahadev Mela",
+      "iast": "Paśupatinātha Halesī Mahādeva Melā"
+    },
+    "BALA_CHATURDASHI": {
+      "name": "Bala Chaturdashi",
+      "prose": "Bala Chaturdashi",
+      "iast": "Bālā Caturdaśī"
+    },
+    "DATTATREYA_JAYANTI": {
+      "name": "Dattatreya Jayanti",
+      "prose": "Dattatreya Jayanti",
+      "iast": "Dattātreya Jayantī"
+    },
+    "NUWAKOT_DUPCHESHWAR_MELA": {
+      "name": "Nuwakot Dupcheshwar Mela",
+      "prose": "Nuwakot Dupcheshwar Mela",
+      "iast": "Nuvākoṭa Dupceśvara Melā"
+    },
+    "PISHACHAMOCHANA_SHRADDHA": {
+      "name": "Pishachmochan Shraddha",
+      "prose": "Pishachmochan Shraddha",
+      "iast": "Piśācamocana Śrāddha"
+    },
+    "GAIDU_PUJA": {
+      "name": "Gaidu Puja",
+      "prose": "Gaidu Puja",
+      "iast": "Gaiḍu Pūjā"
+    },
+    "PAUSHA_PUTRADA_EKADASHI": {
+      "name": "Pausha Putrada Ekadashi",
+      "prose": "Pausha Putrada Ekadashi",
+      "iast": "Pauṣa Putradā Ekādaśī"
+    },
+    "LAI_CHARHE": {
+      "name": "Lai Charhe",
+      "prose": "Lai Charhe",
+      "iast": "Lai Carhe"
+    },
+    "TILAKUNDA_CHATURTHI": {
+      "name": "Tilkunda Chaturthi",
+      "prose": "Tilkunda Chaturthi",
+      "iast": "Tilakunda Caturthī"
+    },
+    "CHAMPA_SHASHTHI": {
+      "name": "Champa Shashthi",
+      "prose": "Champa Shashthi",
+      "iast": "Campā Ṣaṣṭhī"
+    },
+    "BHIMA_EKADASHI": {
+      "name": "Bhima Ekadashi",
+      "prose": "Bhima Ekadashi",
+      "iast": "Bhīmā Ekādaśī"
+    },
+    "VIJAYA_EKADASHI": {
+      "name": "Vijaya Ekadashi",
+      "prose": "Vijaya Ekadashi",
+      "iast": "Vijayā Ekādaśī"
+    },
+    "SHILA_CHARHE": {
+      "name": "Shila Charhe",
+      "prose": "Shila Charhe",
+      "iast": "Silā Carhe"
+    },
+    "DVAPARA_YUGADI": {
+      "name": "Dwaparyugadi",
+      "prose": "Dwaparyugadi",
+      "iast": "Dvāparayugādi"
+    },
+    "PAHAN_CHARHE": {
+      "name": "Pahan Charhe",
+      "prose": "Pahan Charhe",
+      "iast": "Pāśā Carhe"
+    },
+    "GHODE_JATRA": {
+      "name": "Ghode Jatra",
+      "prose": "Ghode Jatra",
+      "iast": "Ghoḍe Jātrā"
+    },
+    "MATSYANARAYANA_MELA": {
+      "name": "Machhenarayan Mela",
+      "prose": "Machhenarayan Mela",
+      "iast": "Matsyanārāyaṇa Melā"
+    },
+    "MATSYA_JAYANTI": {
+      "name": "Matsya Jayanti",
+      "prose": "Matsya Jayanti",
+      "iast": "Matsya Jayantī"
+    },
+    "VAISHAKHA_SNANA_ARAMBHA": {
+      "name": "Baisakh Bathing Begins",
+      "prose": "Baisakh Bathing Begins",
+      "iast": "Vaiśākha Snāna Ārambha"
+    }
   }
 }

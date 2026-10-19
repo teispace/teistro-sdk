@@ -326,7 +326,7 @@ fn udaya() -> FestivalRequest {
         .fold(FestivalRequest::new(rules), FestivalRequest::with_following)
 }
 
-fn on(found: Option<&Observance>, (year, month, day): Day) -> bool {
+pub(super) fn on(found: Option<&Observance>, (year, month, day): Day) -> bool {
     found.is_some_and(|o| (o.day.year, o.day.month, o.day.day) == (year, month, day))
 }
 
@@ -338,7 +338,7 @@ fn serial((year, month, day): Day) -> i32 {
 
 /// The observance of `rule` within a fortnight of the printed day: a rule
 /// falls once a year, so the one nearest is the year's.
-fn near(observances: &Observances, rule: &str, printed: Day) -> Option<Observance> {
+pub(super) fn near(observances: &Observances, rule: &str, printed: Day) -> Option<Observance> {
     let distance =
         |o: &Observance| (serial((o.day.year, o.day.month, o.day.day)) - serial(printed)).abs();
     observances

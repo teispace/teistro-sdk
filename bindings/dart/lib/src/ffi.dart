@@ -1823,7 +1823,7 @@ final class PanchangaRequestStruct extends ffi.Struct {
   external ffi.Pointer<ffi.Char> muhurtaJson;
 
   /// The days festival rules fall on over the same days, as a JSON
-  /// object: `rules`, a shipped pack named (`DHARMASINDHU`, `NEPAL`) or
+  /// object: `rules`, a shipped pack (`DHARMASINDHU`, `NEPAL`, `NEPAL_PANCHANGA`) or
   /// a list whose items name a pack or spell a rule out, a later rule
   /// replacing an earlier one with its key; an item with a `vedha` is
   /// an Ekadashi rule, one with an `after` a rule counting `days` civil
@@ -4961,7 +4961,7 @@ final class PanchangaRequest {
   final String? muhurtaJson;
 
   /// The days festival rules fall on over the same days, as a JSON
-  /// object: `rules`, a shipped pack named (`DHARMASINDHU`, `NEPAL`) or
+  /// object: `rules`, a shipped pack (`DHARMASINDHU`, `NEPAL`, `NEPAL_PANCHANGA`) or
   /// a list whose items name a pack or spell a rule out, a later rule
   /// replacing an earlier one with its key; an item with a `vedha` is
   /// an Ekadashi rule, one with an `after` a rule counting `days` civil

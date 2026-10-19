@@ -20808,6 +20808,12 @@
       "number": 66,
       "doc": "A graha in transit through a house counted from the natal Moon, as `SATURN_IN_12`; the readings that name one arrive in a loaded pack.",
       "open": true
+    },
+    {
+      "kind": "festival",
+      "number": 70,
+      "doc": "A festival or observance a festival rule decides, by the rule's key, as `SHIVARATRI`; the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs.",
+      "open": true
     }
   ]
 }

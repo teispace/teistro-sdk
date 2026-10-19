@@ -144,9 +144,11 @@ pub enum Kind {
     LunarEclipseKind = 68,
     /// How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
     SolarEclipseKind = 69,
+    /// A festival or observance a festival rule decides, by the rule's key, as `SHIVARATRI`; the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs.
+    Festival = 70,
 }
 
-const BY_NAME: [(&str, Kind); 68] = [
+const BY_NAME: [(&str, Kind); 69] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_cheshta", Kind::AvasthaCheshta),
@@ -172,6 +174,7 @@ const BY_NAME: [(&str, Kind); 68] = [
     ("dignity", Kind::Dignity),
     ("direction", Kind::Direction),
     ("era", Kind::Era),
+    ("festival", Kind::Festival),
     ("gana", Kind::Gana),
     ("gender", Kind::Gender),
     ("gochar_bhava", Kind::GocharBhava),
@@ -219,7 +222,7 @@ const BY_NAME: [(&str, Kind); 68] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 68] = [
+    pub const ALL: [Kind; 69] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -288,6 +291,7 @@ impl Kind {
         Kind::BlackoutKind,
         Kind::LunarEclipseKind,
         Kind::SolarEclipseKind,
+        Kind::Festival,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -362,6 +366,7 @@ impl Kind {
             Kind::BlackoutKind => "blackout_kind",
             Kind::LunarEclipseKind => "lunar_eclipse_kind",
             Kind::SolarEclipseKind => "solar_eclipse_kind",
+            Kind::Festival => "festival",
         }
     }
 
@@ -443,6 +448,7 @@ impl Kind {
             Kind::BlackoutKind => 12,
             Kind::LunarEclipseKind => 3,
             Kind::SolarEclipseKind => 4,
+            Kind::Festival => 0,
         }
     }
 
@@ -524,6 +530,7 @@ impl Kind {
             67 => Some(Kind::BlackoutKind),
             68 => Some(Kind::LunarEclipseKind),
             69 => Some(Kind::SolarEclipseKind),
+            70 => Some(Kind::Festival),
             _ => None,
         }
     }

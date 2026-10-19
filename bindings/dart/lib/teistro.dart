@@ -13982,7 +13982,12 @@ enum FestivalPack {
   /// *Dharmasindhu*'s rules as Nepal's national panchanga keeps them (a
   /// rite of the daylight on the day whose sunrise holds its tithi), and
   /// the days it counts from them (`03-design/festival-rules.md` §9.4–9.5).
-  nepal('NEPAL');
+  nepal('NEPAL'),
+
+  /// [nepal]'s rules and the further days the panchanga prints, each rule
+  /// fitted to the committee's editions and citing its page
+  /// (`03-design/festival-rules.md` §10).
+  nepalPanchanga('NEPAL_PANCHANGA');
 
   const FestivalPack(this.key);
 

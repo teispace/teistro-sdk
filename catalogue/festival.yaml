@@ -1,0 +1,5 @@
+kind: festival
+number: 70
+version: 1
+open: true
+doc: "A festival or observance a festival rule decides, by the rule's key, as `SHIVARATRI`; the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs."

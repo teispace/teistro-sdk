@@ -1,6 +1,6 @@
 # Festival rules: deciding the day of an observance
 
-Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's rules (§9) held to the committee's printed days, with the `NEPAL` pack's reading agreeing on all 29 (§9.5, §9.7), and the monthly full-moon fast on all 24 (§9.6). Written from the source
+Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's rules (§9) held to the committee's printed days, with the `NEPAL` pack's reading agreeing on all 29 (§9.5, §9.7), and the monthly full-moon fast on all 24 (§9.6); 2026-10-20: the `NEPAL_PANCHANGA` pack's 58 fitted rules and 13 counted days written, their 132 printed days awaiting the pass (§10). Written from the source
 before any code; §4 is as built, and says where the building corrected
 it.
 
@@ -826,3 +826,136 @@ is no record to hold that rule to, and it waits (C207).
 | # | fork | default | the other reading |
 |---|---|---|---|
 | C207 | the Samavedis' and the Rigvedis' upakarma | **Hasta in Bhadrapada's bright half at aparahna**, the earlier day only when it alone is held wholly (`UPAKARMA_SAMAVEDI`); 2 of 2 printed days | Shravana's Hasta under a sankranti, a sangava time, the Sun-in-Leo reading; the Rigvedis' fall-back rule, not encoded for want of a printed record |
+
+## 10. The national panchanga's further days: a fitted pack (C600)
+
+Nepal's national panchanga prints far more than the twenty rules above.
+A consumer that projects Nepal's festivals past the years it has
+verified needs those days too. This section turns its reviewed table of
+festival rules into SDK rules. That table held 149 rows: 92 it computes
+and 57 it gives up on. The pack is the `NEPAL_PANCHANGA` pack. How the
+festivals are classified is on its own page
+(`festival-classification.md`), and so is what the language lacks for the
+57 (`festival-rule-language.md`).
+
+### 10.1 What the rows are
+
+No text in hand gives these rules a table. Each row names a tithi, a time
+of day and a tie, and was **fitted**: the window that gave the days the
+consumer had verified, nine to fourteen years of them. So the rules are
+evidence of practice, not of a text. Each one says so in its `source` and
+names the page of the committee's VS 2082 and 2083 editions where its day
+is printed.
+
+Where a text does speak, it mostly agrees with the fit:
+
+- *Dharmasindhu* p. 37 gives Ganga saptami to madhyahna, as the fit does.
+- The same page gives Parashurama jayanti to the night's first watch,
+  where the fit uses pradosha.
+- p. 38 gives Dashahara to purvahna and, when Jyeshtha is doubled, to the
+  adhika month (C606).
+- pp. 55–56 bar the Durva vrata while the Sun is in Kanya. In VS 2083
+  Bhadrapada's bright 8th falls with the Sun in Kanya, and the committee
+  prints the vrata a month early (C608).
+- p. 57 gives Vamana dwadashi to madhyahna with Shravana, where the fit
+  uses purvahna (C602).
+
+The fitted window is kept, and the text's is recorded as the other reading.
+
+### 10.2 The pack
+
+`NEPAL_PANCHANGA` adds three things to `NEPAL`'s rules and counted days:
+
+- 58 karmakala rules (`FestivalRule::nepal_panchanga`);
+- 13 counted days (`FollowingRule::nepal_panchanga`), each on the day of
+  the rule it follows;
+- the same Ekadashi observers as `DHARMASINDHU`.
+
+Its keys do not repeat `NEPAL`'s, so a request may name either. Five of
+the consumer's rows are days `NEPAL` already gives: Rama Navami, Lakshmi
+puja, Yama dwitiya, Shivaratri and Holi in the Terai.
+
+The pack is a **sibling** of `NEPAL` and not a growth of it, for three
+reasons:
+
+- The two are different kinds of evidence. `NEPAL` is the text's own
+  tables read as the committee keeps a rite of the daylight (C197); this
+  pack is fitted.
+- A request that wants only the text's rules keeps asking for `NEPAL`, and
+  `NEPAL`'s answers, tests and measured page do not move.
+- Packs compose. A following rule may name a `NEPAL` key (Shila charhe
+  counts from `SHIVARATRI`, the poet's birthday from `LAKSHMI_PUJA`), and
+  `check()` requires every `after` to name a rule in the request. That is
+  why the pack includes `NEPAL` rather than standing beside it.
+
+### 10.3 Three fits
+
+Each rule takes one of three fits:
+
+- **udaya**: the day whose sunrise holds the tithi, the earlier when both
+  sunrises do. This is `FestivalRule::udaya` (C197).
+- **udaya, the later**: the later of two sunrises, and the earlier day only
+  when no sunrise holds the tithi (C610).
+- **the share of a window**: the guards `LATER_ONLY → later`,
+  `NEITHER → later`, `BOTH → earlier` and `WHOLLY(later) → later`, and
+  otherwise the earlier day.
+
+Over the consumer's verified days the share table equals the consumer's
+own rule with one exception. When the tithi begins inside the earlier
+day's window and ends inside the later day's, both days hold part of it,
+and the consumer takes the day holding more. No predicate today compares
+two parts, so the share table takes the earlier day (C601).
+
+Purvahna, the first two fifths of the daylight, is read as its first
+fifth, pratah, until a window can name day muhurtas (C602).
+
+Fitted by an emulation of the committee's sky, the forms give the
+following share of the consumer's verified days over VS 2070–2083:
+
+| form | verified days given |
+|---|---|
+| the consumer's own rule | 985 of 1,054 |
+| the share table | 970 |
+| the share table with `GREATER` | 985, the same as the consumer's |
+
+The emulation is the Surya Siddhanta Sun and Moon with the committee's
+bija, and a modern sunrise at Kathmandu. It reproduces all 730 printed
+sunrise tithis of VS 2082 and 2083.
+
+### 10.4 What is measured
+
+`festival-measured.md` §6 finds the pack at Kathmandu over the committee's
+sky and the modern sky. It holds the committee's sky to the 132 days
+printed for the pack's rules in VS 2082 and 2083. Every parting carries
+its cause and the day the pack gives, and the pass checks both.
+
+The emulation predicts 114 agreements and 18 partings under the
+committee's sky:
+
+| cause | partings | crux |
+|---|---|---|
+| a predicate that weighs two parts | 3 | C601 |
+| purvahna read as pratah | 3 | C602 |
+| Jyeshtha's rites kept in the adhika month in VS 2083 | 6 | C606, C607 |
+| the solar Bhadra in VS 2083 | 3 | C608 |
+| the print's Hile jatra being Ramechhap's | 2 | C609 |
+| Dupcheshwar's mela on the full moon | 1 | C611 |
+
+Seven rows are not printed in either year (C613).
+
+The modern sky parts from the committee's on 18 rows. The print takes the
+committee's day on every one of them but Mha puja and the Nepal Sambat new
+year of VS 2083, which follow the modern sky. Until the pass has run,
+these figures are the emulation's. The pass's figures replace them, and a
+difference between the two is a finding.
+
+### 10.5 Forks
+
+| # | fork | default | the other reading |
+|---|---|---|---|
+| C600 | the fitted days as a pack | **a sibling pack, `NEPAL_PANCHANGA`, holding `NEPAL` and the fitted rules**, each citing its printed page | grow `NEPAL`, which mixes text and fit and moves its answers |
+| C601 | two partial holdings | **the share table: the earlier day unless the later holds the window wholly** (970 of 1,054) | a `GREATER` predicate, the day holding more (985 of 1,054, the consumer's own) |
+| C602 | purvahna | **pratah, the first fifth**, until a day-muhurta window exists | day muhurtas 1–6, the first two fifths (the consumer's); the first half of the day (*Dharmasindhu* p. 21) |
+| C603 | neither day holds the window | **the later**, the consumer's sunrise fallback, which always gives the later | the earlier (the maintainer's decision); no verified year has the case |
+| C606 | Jyeshtha's rites in a year with an adhika Jyeshtha | **the nija month**, as the consumer projects | the adhika month, as the committee printed in VS 2083 and *Dharmasindhu* p. 38 directs for Dashahara |
+| C610 | Vijaya ekadashi | **the later of two sunrises**, as VS 2083 prints | the earlier, the consumer's |

@@ -11,7 +11,9 @@
 //! - the three Ekadashi observers against a published almanac's Smarta,
 //!   Gauna and Vaishnava days ([`ekadashi`]);
 //! - the shipped rules at Kathmandu against the days Nepal's national
-//!   panchanga printed for VS 2082 and 2083 ([`nepal`]).
+//!   panchanga printed for VS 2082 and 2083 ([`nepal`], [`purnima`]), and
+//!   the fitted rules of the `NEPAL_PANCHANGA` pack against the further
+//!   days it printed ([`panchanga`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -34,6 +36,7 @@ use crate::measure::{Claim, table};
 
 mod ekadashi;
 mod nepal;
+mod panchanga;
 mod purnima;
 
 const PAGE: &str = "docs/03-design/festival-measured.md";
@@ -399,6 +402,7 @@ fn page() -> Result<String, String> {
     let fasts = ekadashi::compare(&context, request.ekadashis(), &years, &mut problems);
     let nepal = nepal::compare(&mut problems)?;
     let full_moons = purnima::compare(&mut problems)?;
+    let fitted = panchanga::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -406,6 +410,7 @@ fn page() -> Result<String, String> {
     ekadashi::render(&mut out, &fasts);
     nepal::render(&mut out, &nepal);
     purnima::render(&mut out, &full_moons);
+    panchanga::render(&mut out, &fitted);
     Ok(out)
 }
 
