@@ -29,9 +29,10 @@ use crate::{TS_CONTEXT_TEST_PROVIDER, TS_ERROR_OWNED};
 /// Which of the SDK's own ephemerides a context computes with when no
 /// provider vtable is given.
 ///
-/// A caller who passes a vtable has already answered the question, and
-/// this is ignored. The states are exclusive, which is why they are an
-/// enum and not flag bits (ADR-0028).
+/// A caller who passes a provider has already answered the question, and
+/// this is ignored, except that `SURYA_SIDDHANTA` puts the text in front
+/// of that provider for its modern sunrise. The states are exclusive,
+/// which is why they are an enum and not flag bits (ADR-0028).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum TsEphemeris {
@@ -126,8 +127,11 @@ pub struct TsContextOptions {
     /// registration order. Null for none (`03-design/dasha-kernels.md`).
     /// `api: nullable`
     pub dashas_json: *const c_char,
-    /// Which of the SDK's own ephemerides to use when no provider vtable
-    /// is given; ignored when one is (ADR-0028).
+    /// Which of the SDK's own ephemerides to use when no provider is
+    /// given (ADR-0028). With a provider, `SURYA_SIDDHANTA` puts the text
+    /// in front of it, the provider giving the day's modern sunrise and
+    /// the outer planets (the Nepali committee's setup over a real
+    /// engine); any other computes with the provider alone.
     /// `api: enum=TsEphemeris example=0`
     pub ephemeris: u8,
 }
@@ -390,6 +394,19 @@ impl TsContext {
         texts: &OptionTexts<'_>,
         ephemeris: teistro::Ephemeris,
     ) -> Result<TsContext, Error> {
+        TsContext::build_chain(texts, vec![ephemeris])
+    }
+
+    /// [`TsContext::build`] over an ordered chain, as the façade takes it:
+    /// the Surya Siddhanta takes the entries after it for its sunrise.
+    ///
+    /// # Errors
+    ///
+    /// As [`TsContext::build`].
+    pub fn build_chain(
+        texts: &OptionTexts<'_>,
+        chain: Vec<teistro::Ephemeris>,
+    ) -> Result<TsContext, Error> {
         // **The façade composes it.** This function used to resolve the
         // profile, parse the patch, load the embedded bundles, start the
         // locale engine, read the ΔT knob and wrap the provider in its
@@ -425,13 +442,10 @@ impl TsContext {
                 return Err(Error::left_out("chart").with_field("options.dashas_json"));
             }
         }
-        // One entry, never a chain: a C caller names one ephemeris and
-        // gets it or a refusal, which is what `ts_context_new`'s
-        // selector means. A chain is the ergonomic layers' shape,
-        // assembled above this boundary.
-        // The builder names a registered layout by its place among the
-        // layouts; here those are the rows of `options.layouts_json`.
-        let inner = building.ephemeris([ephemeris]).build().map_err(|error| {
+        // A C caller names one ephemeris, or the text in front of a
+        // provider, and gets it or a refusal; a fallback chain is the
+        // ergonomic layers' shape, assembled above this boundary.
+        let inner = building.ephemeris(chain).build().map_err(|error| {
             // The builder names a registered row by its place among the
             // layouts or the dashas; here those are the options' arrays.
             let renamed = error.field().and_then(|field| {
@@ -633,9 +647,24 @@ unsafe fn build(
         // SAFETY: non-null; the caller promises a readable vtable whose
         // functions stay valid with `provider_user_data`.
         let bound = unsafe { VtableProvider::bind(ptr::read(provider), provider_user_data) }?;
-        teistro::Ephemeris::Provider(Box::new(bound))
+        return TsContext::build_chain(
+            &texts,
+            behind(ephemeris, teistro::Ephemeris::Provider(Box::new(bound))),
+        );
     };
     TsContext::build(&texts, chosen)
+}
+
+/// The chain a caller's own provider is opened in: behind the Surya
+/// Siddhanta, which takes its modern sunrise from it, when the selector
+/// names the text, and alone otherwise -- the selector is otherwise
+/// ignored beside a provider, as it always was (ADR-0028).
+pub(crate) fn behind(ephemeris: u8, provider: teistro::Ephemeris) -> Vec<teistro::Ephemeris> {
+    if TsEphemeris::from_repr(ephemeris) == Some(TsEphemeris::SuryaSiddhanta) {
+        vec![teistro::Ephemeris::SuryaSiddhanta, provider]
+    } else {
+        vec![provider]
+    }
 }
 
 /// The ephemeris a caller asked for by name, or the refusal that says
@@ -695,8 +724,9 @@ pub struct OptionTexts<'a> {
     pub dashas_json: Option<&'a str>,
 }
 
-/// The strings an options record carries, checked and borrowed, for the
-/// loader's constructor (`ts_context_new_with_provider`).
+/// The strings an options record carries, checked and borrowed, and its
+/// ephemeris selector, for the loader's constructor
+/// (`ts_context_new_with_provider`).
 ///
 /// Both ways of making a context read the strings through `texts_of`, so
 /// a field added there reaches each of them and neither can forget one.
@@ -708,7 +738,7 @@ pub struct OptionTexts<'a> {
 #[cfg(not(target_family = "wasm"))]
 pub(crate) unsafe fn read_options<'a>(
     options: *const TsContextOptions,
-) -> Result<OptionTexts<'a>, Error> {
+) -> Result<(OptionTexts<'a>, u8), Error> {
     let options = if options.is_null() {
         None
     } else {
@@ -716,7 +746,8 @@ pub(crate) unsafe fn read_options<'a>(
         Some(unsafe { read_in(options, "options") }?)
     };
     // SAFETY: the caller's contract.
-    unsafe { texts_of(options) }
+    let texts = unsafe { texts_of(options) }?;
+    Ok((texts, options.map_or(0, |o| o.ephemeris)))
 }
 
 /// # Safety
@@ -848,11 +879,54 @@ mod tests {
     )]
 
     use super::{
-        OptionTexts, TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_ephemeris, resolve,
+        OptionTexts, TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, behind, own_ephemeris,
+        resolve,
     };
     use teistro_core::settings::DEFAULT_CACHE_CELLS;
     #[cfg(feature = "builtin-ephemeris")]
     use teistro_port_ephemeris::EphemerisProvider;
+
+    /// A provider handed to the boundary sits behind the Surya Siddhanta
+    /// when the selector names the text, and gives its sunrise; under any
+    /// other selector it stands alone, as it always did (under a modern
+    /// profile, since the committee's refuses a modern engine alone).
+    #[test]
+    fn a_provider_sits_behind_the_text_when_the_selector_names_it() {
+        let test =
+            || teistro::Ephemeris::Provider(Box::new(teistro_port_ephemeris::TestProvider::new()));
+        let texts = OptionTexts {
+            profile: Some("nepali-committee"),
+            ..OptionTexts::default()
+        };
+        let stamp = |context: &TsContext| {
+            context
+                .sdk()
+                .ephemeris()
+                .expect("an ephemeris")
+                .capabilities()
+                .identity
+        };
+        let committee =
+            TsContext::build_chain(&texts, behind(TsEphemeris::SuryaSiddhanta as u8, test()))
+                .expect("the committee's setup");
+        let modern = teistro_port_ephemeris::TestProvider::new()
+            .capabilities()
+            .identity
+            .name;
+        assert!(
+            stamp(&committee)
+                .data_version
+                .contains(&format!("sunrise from {modern}")),
+            "{:?}",
+            stamp(&committee)
+        );
+        for alone in [TsEphemeris::None, TsEphemeris::Builtin, TsEphemeris::Test] {
+            let context =
+                TsContext::build_chain(&OptionTexts::default(), behind(alone as u8, test()))
+                    .expect("the provider alone");
+            assert_eq!(stamp(&context).name, modern, "{alone:?}");
+        }
+    }
 
     /// The knob's default is the port's default, in one place.
     #[test]

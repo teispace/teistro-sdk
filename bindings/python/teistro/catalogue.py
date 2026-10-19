@@ -3616,9 +3616,10 @@ class Ephemeris(Member):
     """Which of the SDK's own ephemerides a context computes with when no
     provider vtable is given.
 
-    A caller who passes a vtable has already answered the question, and
-    this is ignored. The states are exclusive, which is why they are an
-    enum and not flag bits (ADR-0028).
+    A caller who passes a provider has already answered the question, and
+    this is ignored, except that `SURYA_SIDDHANTA` puts the text in front
+    of that provider for its modern sunrise. The states are exclusive,
+    which is why they are an enum and not flag bits (ADR-0028).
     """
 
     NONE = 0

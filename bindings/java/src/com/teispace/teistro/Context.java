@@ -122,7 +122,22 @@ public final class Context implements AutoCloseable {
         // a chain that said only why its last entry failed would hide the
         // one the caller wanted.
         List<String> refusals = new java.util.ArrayList<>();
-        for (EphemerisChoice entry : chain) {
+        for (int index = 0; index < chain.size(); index++) {
+            EphemerisChoice entry = chain.get(index);
+            if (entry instanceof EphemerisChoice.Own own && own.ephemeris() == Ephemeris.SURYA_SIDDHANTA) {
+                // The text takes every entry after it, so it is the last one
+                // tried, and with nothing tried before it its refusal is the
+                // refusal: the façade's chain, entry for entry.
+                try {
+                    return text(teistro, options, chain.subList(index + 1, chain.size()));
+                } catch (TeistroException refusal) {
+                    if (refusals.isEmpty()) {
+                        throw refusal;
+                    }
+                    refusals.add(entry.named() + ": " + refusal.getMessage());
+                    break;
+                }
+            }
             try {
                 return open(teistro, options, entry);
             } catch (TeistroException refusal) {
@@ -133,8 +148,34 @@ public final class Context implements AutoCloseable {
                 "no ephemeris in the chain could be opened:\n  " + String.join("\n  ", refusals));
     }
 
+    /**
+     * The Surya Siddhanta in front of the entries after it, as the façade
+     * opens it: the text reckons the limbs, and an adapter after it gives the
+     * day's modern sunrise and the outer planets, the Nepali committee's
+     * setup over a real engine. The adapters are tried in order and one that
+     * does not open is passed over, as the façade passes over it; with none,
+     * the text stands alone, its modern sunrise the built-in's.
+     */
+    private static Context text(Teistro teistro, ContextOptions options, List<EphemerisChoice> rest) {
+        for (EphemerisChoice entry : rest) {
+            if (entry instanceof Plugin) {
+                try {
+                    return open(teistro, options, entry, Ephemeris.SURYA_SIDDHANTA);
+                } catch (TeistroException passedOver) {
+                    // The text alone is the answer below.
+                }
+            }
+        }
+        return open(teistro, options, EphemerisChoice.of(Ephemeris.SURYA_SIDDHANTA));
+    }
+
     /** Opens on one entry of the chain: none, one of the SDK's own, or a plugin. */
     private static Context open(Teistro teistro, ContextOptions options, EphemerisChoice entry) {
+        return open(teistro, options, entry, Ephemeris.NONE);
+    }
+
+    /** Opens on one entry of the chain, a plugin behind {@code before}. */
+    private static Context open(Teistro teistro, ContextOptions options, EphemerisChoice entry, Ephemeris before) {
         Native lib = teistro.lib();
         HostProvider host = options.provider() == null ? null : new HostProvider(lib, options.provider());
         try (Arena arena = Arena.ofConfined()) {
@@ -146,7 +187,7 @@ public final class Context implements AutoCloseable {
             Native.TsContextOptions.LOCALE.set(raw, 0L, Boundary.cString(arena, options.locale()));
             Native.TsContextOptions.LAYOUTS_JSON.set(raw, 0L, Boundary.cString(arena, options.layoutsJson()));
             Native.TsContextOptions.DASHAS_JSON.set(raw, 0L, Boundary.cString(arena, options.dashasJson()));
-            Ephemeris named = entry instanceof EphemerisChoice.Own own ? own.ephemeris() : Ephemeris.NONE;
+            Ephemeris named = entry instanceof EphemerisChoice.Own own ? own.ephemeris() : before;
             Native.TsContextOptions.EPHEMERIS.set(raw, 0L, (byte) named.id());
             MemorySegment out = arena.allocate(ValueLayout.ADDRESS);
             MemorySegment error = Boundary.errorRecord(arena);

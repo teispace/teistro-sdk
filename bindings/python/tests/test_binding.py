@@ -16,6 +16,8 @@ from typing import Any, Optional, Union
 
 from teistro import (
     Air,
+    Context,
+    nepal_official,
     Altitude,
     decode_provenance,
     AvasthaSayanadi,
@@ -671,6 +673,34 @@ class AnEngine(WithLibrary):
         with self.assertRaises(ValueError) as empty:
             self.teistro.context(ephemeris=[])
         self.assertIn("names nothing", str(empty.exception))
+
+    def test_the_surya_siddhanta_takes_its_sunrise_from_the_adapter_after_it(
+        self,
+    ) -> None:
+        """**Nepal's official days**: the text takes the adapters after it.
+
+        As the façade's chain does, so the committee's limbs are the
+        text's and its sunrise the engine's. Before this, each entry
+        opened alone and the adapter after the text was never asked.
+        """
+        self.assertEqual(
+            nepal_official(),
+            {"profile": "nepali-committee", "ephemeris": [Ephemeris.SURYA_SIDDHANTA]},
+        )
+
+        def stamp(ctx: Context) -> str:
+            sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
+            return sky.provenance.provider.data_version
+
+        # An adapter that is not there is passed over, as the façade
+        # passes over it, and the text keeps the built-in's sunrise.
+        with self.teistro.context(**nepal_official(Plugin("/nowhere/adapter.so"))) as fell_back:
+            self.assertIn("sunrise from teistro-builtin", stamp(fell_back))
+        plugin = os.environ.get("TEISTRO_TEIMERIS_ADAPTER")
+        if not plugin:
+            self.skipTest("set TEISTRO_TEIMERIS_ADAPTER to the adapter's library")
+        with self.teistro.context(**nepal_official(Plugin(plugin)), locale="en-Latn") as official:
+            self.assertIn("sunrise from teimeris", stamp(official))
 
     def test_a_provider_and_a_named_ephemeris_together_are_refused(self) -> None:
         """Each answers one question, so both together is a refusal."""

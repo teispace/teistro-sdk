@@ -21,11 +21,11 @@ is therefore one nothing touches.
 | surface | declares | exercised | untouched |
 |---|---:|---:|---:|
 | Node | 42 | 41 | 1 |
-| Dart | 33 | 31 | 2 |
+| Dart | 34 | 32 | 2 |
 | Rust | 141 | 141 | 0 |
 | Python | 182 | 180 | 2 |
 
-**5 members nothing names**, of 398 members the four surfaces declare.
+**5 members nothing names**, of 399 members the four surfaces declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 

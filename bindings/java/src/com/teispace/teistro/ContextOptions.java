@@ -38,6 +38,9 @@ public record ContextOptions(
         }
     }
 
+    /** The profile {@link Builder#nepalOfficial} opens: the Nepali committee's. */
+    public static final String NEPAL_OFFICIAL_PROFILE = "nepali-committee";
+
     /**
      * A builder over the defaults.
      *
@@ -140,6 +143,33 @@ public record ContextOptions(
                 throw new IllegalArgumentException("an ephemeris chain that names nothing opens nothing");
             }
             this.ephemeris = java.util.List.of(chain);
+            return this;
+        }
+
+        /**
+         * <b>Nepal's official days</b>: the Nepali committee's reckoning, the
+         * setup the committee's own panchanga is computed by. The tithi,
+         * nakshatra and yoga come from the Surya Siddhanta with the
+         * committee's bija; the day's sunrise and the outer planets come from
+         * {@code modern}, the adapters tried in order after the text. With
+         * none, the sunrise is the built-in ephemeris's.
+         *
+         * <pre>{@code
+         * ContextOptions official = ContextOptions.builder()
+         *         .nepalOfficial(Teimeris.builder().build())
+         *         .locale("ne-Deva-NP")
+         *         .build();
+         * }</pre>
+         *
+         * @param modern the adapters that give the sunrise, in order
+         * @return this builder
+         */
+        public Builder nepalOfficial(Plugin... modern) {
+            java.util.List<EphemerisChoice> chain = new java.util.ArrayList<>();
+            chain.add(EphemerisChoice.of(Ephemeris.SURYA_SIDDHANTA));
+            chain.addAll(java.util.List.of(modern));
+            this.profile = NEPAL_OFFICIAL_PROFILE;
+            this.ephemeris = java.util.List.copyOf(chain);
             return this;
         }
 

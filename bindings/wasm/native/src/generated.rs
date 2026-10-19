@@ -1550,8 +1550,11 @@ pub struct ContextOptions {
     /// registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dashas_json: Option<String>,
-    /// Which of the SDK's own ephemerides to use when no provider vtable
-    /// is given; ignored when one is (ADR-0028).
+    /// Which of the SDK's own ephemerides to use when no provider is
+    /// given (ADR-0028). With a provider, `SURYA_SIDDHANTA` puts the text
+    /// in front of it, the provider giving the day's modern sunrise and
+    /// the outer planets (the Nepali committee's setup over a real
+    /// engine); any other computes with the provider alone.
     /// Enum: TsEphemeris. Example: `0`.
     pub ephemeris: String,
 }

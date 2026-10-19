@@ -209,7 +209,6 @@ final class Teistro {
   /// still works, with `ephemeris` winning when both are given
   /// (ADR-0028). With none of them the context has no ephemeris and
   /// positions answer `Status.capability`.
-  /// A context: settings, a locale and an ephemeris.
   ///
   /// `ephemeris` is an **ordered chain**, tried in order (ADR-0029). An
   /// entry is an adapter's own descriptor — [PluginEphemeris], what a
@@ -222,6 +221,12 @@ final class Teistro {
   /// chain is a caller *saying* they will accept the fallback. A context
   /// asked for an engine and given the built-in without being told is
   /// the silence this refuses.
+  ///
+  /// [Ephemeris.suryaSiddhanta] takes the entries after it: the text
+  /// reckons the limbs, and the first adapter after it that opens gives
+  /// the day's modern sunrise and the outer planets, as the façade's
+  /// chain does. [nepalOfficial] is that setup under the committee's
+  /// profile.
   Context context({
     String? profile,
     Map<String, Object?>? settings,
@@ -292,7 +297,33 @@ final class Teistro {
       // because a chain that said only why its last entry failed would
       // hide the one the caller actually wanted.
       final refusals = <String>[];
-      for (final entry in chain) {
+      for (final (index, entry) in chain.indexed) {
+        if (entry case NamedEphemeris(name: Ephemeris.suryaSiddhanta)) {
+          // The text takes every entry after it, so it is the last one
+          // tried, and with nothing tried before it its refusal is the
+          // refusal — the façade's chain, entry for entry.
+          try {
+            return Context._(
+              this,
+              _text(
+                chain.sublist(index + 1),
+                profile,
+                settings,
+                locale,
+                layoutsJson,
+                dashasJson,
+                host,
+              ),
+              host,
+              layouts,
+              dashaSystems,
+            );
+          } on Object catch (refusal) {
+            if (refusals.isEmpty) rethrow;
+            refusals.add('${_names(entry)}: $refusal');
+            break;
+          }
+        }
         try {
           return Context._(
             this,
@@ -328,9 +359,15 @@ final class Teistro {
     PluginEphemeris(:final plugin) => plugin,
   };
 
-  /// Opens the context on one entry of the chain.
-  TeistroContext _open(
-    EphemerisChoice entry,
+  /// The Surya Siddhanta in front of the entries after it, as the façade
+  /// opens it: the text reckons the limbs, and an adapter after it gives
+  /// the day's modern sunrise and the outer planets — the Nepali
+  /// committee's setup over a real engine. The adapters are tried in
+  /// order and one that does not open is passed over, as the façade
+  /// passes over it; with none, the text stands alone, its modern sunrise
+  /// the built-in's.
+  TeistroContext _text(
+    List<EphemerisChoice> rest,
     String? profile,
     Map<String, Object?>? settings,
     String? locale,
@@ -338,6 +375,75 @@ final class Teistro {
     String? dashasJson,
     HostProvider? host,
   ) {
+    for (final entry in rest.whereType<PluginEphemeris>()) {
+      try {
+        return _open(
+          entry,
+          profile,
+          settings,
+          locale,
+          layoutsJson,
+          dashasJson,
+          host,
+          before: Ephemeris.suryaSiddhanta,
+        );
+      } on Object {
+        // Passed over; the text alone is the answer below.
+      }
+    }
+    return _open(
+      const NamedEphemeris(Ephemeris.suryaSiddhanta),
+      profile,
+      settings,
+      locale,
+      layoutsJson,
+      dashasJson,
+      host,
+    );
+  }
+
+  /// **Nepal's official days**: a context on the Nepali committee's
+  /// reckoning, the setup the committee's own panchanga is computed by.
+  /// The tithi, nakshatra and yoga come from the Surya Siddhanta with the
+  /// committee's bija; the day's sunrise and the outer planets come from
+  /// `modern`, the adapters tried in order after the text.
+  ///
+  /// ```dart
+  /// final official = sdk.nepalOfficial(
+  ///   modern: [teimeris()],
+  ///   locale: 'ne-Deva-NP',
+  /// );
+  /// ```
+  ///
+  /// With no `modern`, the sunrise is the built-in ephemeris's. The other
+  /// arguments are [context]'s.
+  Context nepalOfficial({
+    List<PluginEphemeris> modern = const <PluginEphemeris>[],
+    Map<String, Object?>? settings,
+    String? locale,
+    List<LayoutRow> layouts = const <LayoutRow>[],
+    List<DashaDefinition> dashaSystems = const <DashaDefinition>[],
+  }) => context(
+    profile: nepalOfficialProfile,
+    settings: settings,
+    locale: locale,
+    ephemeris: nepalOfficialChain(modern),
+    layouts: layouts,
+    dashaSystems: dashaSystems,
+  );
+
+  /// Opens the context on one entry of the chain; an adapter behind
+  /// `before`, if named.
+  TeistroContext _open(
+    EphemerisChoice entry,
+    String? profile,
+    Map<String, Object?>? settings,
+    String? locale,
+    String? layoutsJson,
+    String? dashasJson,
+    HostProvider? host, {
+    Ephemeris before = Ephemeris.none,
+  }) {
     ContextOptions options(Ephemeris named) => ContextOptions(
       flags: 0,
       ephemeris: named,
@@ -367,7 +473,7 @@ final class Teistro {
         try {
           return TeistroContext.newWithProvider(
             library,
-            options: options(Ephemeris.none),
+            options: options(before),
             provider: loaded,
           );
         } finally {
@@ -376,6 +482,15 @@ final class Teistro {
     }
   }
 }
+
+/// The profile [Teistro.nepalOfficial] opens: the Nepali committee's.
+const String nepalOfficialProfile = 'nepali-committee';
+
+/// The chain [Teistro.nepalOfficial] opens: the Surya Siddhanta, then
+/// `modern` for the day's sunrise and the outer planets.
+List<EphemerisChoice> nepalOfficialChain([
+  List<PluginEphemeris> modern = const <PluginEphemeris>[],
+]) => [const NamedEphemeris(Ephemeris.suryaSiddhanta), ...modern];
 
 /// One entry of an ephemeris chain (ADR-0029).
 ///

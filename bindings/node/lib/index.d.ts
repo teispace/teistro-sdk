@@ -7733,6 +7733,26 @@ export interface PluginEphemeris {
 export type EphemerisChoice = Ephemeris | PluginEphemeris;
 
 /**
+ * **Nepal's official days**: the options that open a context on the
+ * Nepali committee's reckoning. The tithi, nakshatra and yoga come from
+ * the Surya Siddhanta with the committee's bija; the day's sunrise and the
+ * outer planets come from `modern`, the engine named after the text.
+ * Spread it into a context's options:
+ *
+ * ```ts
+ * const official = new Context({ ...nepalOfficial(teimeris()), locale: 'ne-Deva-NP' });
+ * ```
+ *
+ * With no `modern`, the sunrise is the built-in ephemeris's.
+ */
+export function nepalOfficial(
+  modern?: PluginEphemeris | readonly PluginEphemeris[],
+): { readonly profile: string; readonly ephemeris: readonly EphemerisChoice[] };
+
+/** The profile `nepalOfficial` opens: the Nepali committee's. */
+export const NEPAL_OFFICIAL_PROFILE: 'nepali-committee';
+
+/**
  * A context: settings resolved from a profile and a patch, a locale, and
  * an ephemeris. One context serves one thread; a worker builds its own.
  */

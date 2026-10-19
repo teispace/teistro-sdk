@@ -400,6 +400,10 @@ impl Context {
     }
 }
 
+/// The profile [`ContextBuilder::nepal_official`] resolves: the Nepali
+/// committee's.
+pub const NEPAL_OFFICIAL_PROFILE: &str = "nepali-committee";
+
 /// A context under construction.
 ///
 /// A builder rather than an options struct for two reasons the project
@@ -493,6 +497,30 @@ impl ContextBuilder {
     pub fn ephemeris(mut self, chain: impl IntoIterator<Item = Ephemeris>) -> ContextBuilder {
         self.chain = Some(chain.into_iter().collect());
         self
+    }
+
+    /// **Nepal's official days**: the Nepali committee's reckoning, the
+    /// setup the committee's own panchanga is computed by. The profile is
+    /// [`NEPAL_OFFICIAL_PROFILE`] and the chain the Surya Siddhanta, then
+    /// `modern`: the text reckons the tithi, nakshatra and yoga with the
+    /// committee's bija, and the first of `modern` that opens gives the
+    /// day's sunrise and the outer planets. With none, the sunrise is the
+    /// built-in ephemeris's.
+    ///
+    /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// use teistro::{Context, NEPAL_OFFICIAL_PROFILE};
+    ///
+    /// // An app passes its engine, `Ephemeris::Provider(teimeris)`.
+    /// let official = Context::builder().nepal_official([]).build()?;
+    /// assert_eq!(official.profile(), NEPAL_OFFICIAL_PROFILE);
+    /// # }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn nepal_official(self, modern: impl IntoIterator<Item = Ephemeris>) -> ContextBuilder {
+        self.profile(NEPAL_OFFICIAL_PROFILE)
+            .ephemeris(core::iter::once(Ephemeris::SuryaSiddhanta).chain(modern))
     }
 
     /// A provider of the caller's own laid over the one the chain opens,

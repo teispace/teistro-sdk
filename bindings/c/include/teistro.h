@@ -4595,9 +4595,10 @@ typedef enum ts_provider_code {
  * Which of the SDK's own ephemerides a context computes with when no
  * provider vtable is given.
  *
- * A caller who passes a vtable has already answered the question, and
- * this is ignored. The states are exclusive, which is why they are an
- * enum and not flag bits (ADR-0028).
+ * A caller who passes a provider has already answered the question, and
+ * this is ignored, except that `SURYA_SIDDHANTA` puts the text in front
+ * of that provider for its modern sunrise. The states are exclusive,
+ * which is why they are an enum and not flag bits (ADR-0028).
  */
 typedef enum ts_ephemeris {
     /**
@@ -7711,8 +7712,11 @@ struct ts_context_options {
      */
     const char * dashas_json;
     /**
-     * Which of the SDK's own ephemerides to use when no provider vtable
-     * is given; ignored when one is (ADR-0028).
+     * Which of the SDK's own ephemerides to use when no provider is
+     * given (ADR-0028). With a provider, `SURYA_SIDDHANTA` puts the text
+     * in front of it, the provider giving the day's modern sunrise and
+     * the outer planets (the Nepali committee's setup over a real
+     * engine); any other computes with the provider alone.
      * Enum: ts_ephemeris. Example: 0.
      */
     uint8_t ephemeris;
@@ -9555,8 +9559,10 @@ ts_status ts_provider_load(const char * path, const char * config_json, ts_provi
  * Creates a context that computes with a **loaded** provider.
  *
  * The same as `ts_context_new` in every other respect — `options` may be
- * null for the defaults, and `options.ephemeris` is ignored because this
- * call has already answered the question it asks.
+ * null for the defaults. `options.ephemeris` is `SURYA_SIDDHANTA` for the
+ * text in front of the provider, which takes the day's modern sunrise and
+ * the outer planets from it (the Nepali committee's setup,
+ * `nepali-committee`); any other computes with the provider alone.
  *
  * The context takes its own reference to the adapter, so this handle may
  * be freed immediately afterwards or kept to found another context; the

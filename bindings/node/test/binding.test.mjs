@@ -43,6 +43,7 @@ import {
   defaultProfile,
   fixedOfJulianDay,
   julianDayOfFixed,
+  nepalOfficial,
   packFrame,
   sdkVersion,
   unpackFrame,
@@ -905,6 +906,44 @@ test('an ephemeris chain is tried in order and refuses naming each', () => {
   // default; and a descriptor without a `plugin` is not a descriptor.
   assert.throws(() => new Context({ ephemeris: [] }), /names nothing/u);
   assert.throws(() => new Context({ ephemeris: [{ config: {} }] }), /descriptor/u);
+});
+
+/**
+ * **Nepal's official days**: the Surya Siddhanta takes the adapters after
+ * it, as the façade's chain does, so the committee's limbs are the text's
+ * and its sunrise the engine's. Before this, each entry opened alone and
+ * the adapter after the text was never asked. The preset is that chain
+ * under the committee's profile.
+ */
+test('the Surya Siddhanta takes its sunrise from the adapter after it', () => {
+  assert.deepEqual(nepalOfficial(), {
+    profile: 'nepali-committee',
+    ephemeris: ['SURYA_SIDDHANTA'],
+  });
+  const stamp = (ctx) =>
+    ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] }).provenance.provider.dataVersion;
+  // An adapter that is not there is passed over, as the façade passes
+  // over it, and the text keeps the built-in's sunrise.
+  const fellBack = new Context(nepalOfficial({ plugin: '/nowhere/adapter.so' }));
+  try {
+    assert.match(stamp(fellBack), /sunrise from teistro-builtin/u);
+  } finally {
+    fellBack.dispose();
+  }
+  const plugin = process.env.TEISTRO_TEIMERIS_ADAPTER;
+  if (!plugin) {
+    console.log('skipped the engine: set TEISTRO_TEIMERIS_ADAPTER to its library');
+    return;
+  }
+  const official = new Context({
+    ...nepalOfficial({ plugin, config: { data: 'embedded' } }),
+    locale: 'en-Latn',
+  });
+  try {
+    assert.match(stamp(official), /sunrise from teimeris/u);
+  } finally {
+    official.dispose();
+  }
 });
 
 /**

@@ -105,8 +105,10 @@ unsafe fn load(path: *const c_char, config_json: *const c_char) -> Result<TsProv
 /// Creates a context that computes with a **loaded** provider.
 ///
 /// The same as `ts_context_new` in every other respect — `options` may be
-/// null for the defaults, and `options.ephemeris` is ignored because this
-/// call has already answered the question it asks.
+/// null for the defaults. `options.ephemeris` is `SURYA_SIDDHANTA` for the
+/// text in front of the provider, which takes the day's modern sunrise and
+/// the outer planets from it (the Nepali committee's setup,
+/// `nepali-committee`); any other computes with the provider alone.
 ///
 /// The context takes its own reference to the adapter, so this handle may
 /// be freed immediately afterwards or kept to found another context; the
@@ -145,8 +147,11 @@ unsafe fn with_provider(
     // SAFETY: the entry point's contract.
     let bound = unsafe { &*provider }.adapter.provider()?;
     // SAFETY: the entry point's contract.
-    let texts = unsafe { crate::context::read_options(options) }?;
-    crate::context::TsContext::build(&texts, teistro::Ephemeris::Provider(Box::new(bound)))
+    let (texts, ephemeris) = unsafe { crate::context::read_options(options) }?;
+    crate::context::TsContext::build_chain(
+        &texts,
+        crate::context::behind(ephemeris, teistro::Ephemeris::Provider(Box::new(bound))),
+    )
 }
 
 /// Frees a loaded provider; null is ignored.

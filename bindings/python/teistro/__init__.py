@@ -296,6 +296,10 @@ from .catalogue import (
 )
 
 __all__ = [
+    "NEPAL_OFFICIAL_PROFILE",
+    "NepalOfficial",
+    "Plugin",
+    "nepal_official",
     "Air",
     "ChartTiming",
     "LocalDay",
@@ -1272,6 +1276,37 @@ EphemerisChoice = Ephemeris | Plugin
 adapter's descriptor."""
 
 
+NEPAL_OFFICIAL_PROFILE = "nepali-committee"
+"""The profile `nepal_official` opens: the Nepali committee's."""
+
+
+class NepalOfficial(TypedDict):
+    """What `nepal_official` sets: a profile and a chain."""
+
+    profile: str
+    ephemeris: list[EphemerisChoice]
+
+
+def nepal_official(modern: Plugin | Sequence[Plugin] = ()) -> NepalOfficial:
+    """**Nepal's official days**: the options that open a context on the
+    Nepali committee's reckoning, the setup the committee's own panchanga
+    is computed by. The tithi, nakshatra and yoga come from the Surya
+    Siddhanta with the committee's bija; the day's sunrise and the outer
+    planets come from `modern`, the engine named after the text.
+
+    Unpack it into a context's arguments, beside anything else::
+
+        from teistro_ephemeris_teimeris import teimeris
+        official = sdk.context(**nepal_official(teimeris()), locale="ne-Deva-NP")
+
+    `modern` is an adapter's descriptor, or a sequence of them tried in
+    order; with none, the sunrise is the built-in ephemeris's.
+    """
+    engines = [modern] if isinstance(modern, Plugin) else list(modern)
+    chain: list[EphemerisChoice] = [Ephemeris.SURYA_SIDDHANTA, *engines]
+    return {"profile": NEPAL_OFFICIAL_PROFILE, "ephemeris": chain}
+
+
 class Teistro:
     """The SDK's shared library, opened once and shared by every context.
 
@@ -1467,7 +1502,24 @@ class Teistro:
         # together, because a chain that said only why its last entry
         # failed would hide the one the caller actually wanted.
         refusals: list[str] = []
-        for entry in chain:
+        for index, entry in enumerate(chain):
+            if entry is Ephemeris.SURYA_SIDDHANTA:
+                # The text takes every entry after it, so it is the last
+                # one tried, and with nothing tried before it its refusal
+                # is the refusal -- the façade's chain, entry for entry.
+                try:
+                    return Context(
+                        self,
+                        self._text(chain[index + 1 :], profile, settings_json, locale, rows_json, host),
+                        host,
+                        layouts,
+                        dasha_systems,
+                    )
+                except TeistroError as refusal:
+                    if not refusals:
+                        raise
+                    refusals.append(f"{entry.key}: {refusal}")
+                    break
             try:
                 return Context(
                     self,
@@ -1482,6 +1534,41 @@ class Teistro:
         joined = "\n  ".join(refusals)
         raise ValueError(f"no ephemeris in the chain could be opened:\n  {joined}")
 
+    def _text(
+        self,
+        rest: Sequence[EphemerisChoice],
+        profile: Optional[str],
+        settings_json: Optional[str],
+        locale: Optional[str],
+        rows_json: _RowsJson,
+        host: Optional[HostProvider],
+    ) -> TeistroContext:
+        """The Surya Siddhanta in front of the entries after it, as the
+        façade opens it: the text reckons the limbs, and an adapter after
+        it gives the day's modern sunrise and the outer planets -- the
+        Nepali committee's setup over a real engine. The adapters are
+        tried in order and one that does not open is passed over, as the
+        façade passes over it; with none, the text stands alone, its
+        modern sunrise the built-in's."""
+        for entry in rest:
+            if not isinstance(entry, Plugin):
+                continue
+            try:
+                return self._open(
+                    entry,
+                    profile,
+                    settings_json,
+                    locale,
+                    rows_json,
+                    host,
+                    before=Ephemeris.SURYA_SIDDHANTA,
+                )
+            except TeistroError:
+                continue
+        return self._open(
+            Ephemeris.SURYA_SIDDHANTA, profile, settings_json, locale, rows_json, host
+        )
+
     def _open(
         self,
         entry: EphemerisChoice,
@@ -1490,9 +1577,11 @@ class Teistro:
         locale: Optional[str],
         rows_json: _RowsJson,
         host: Optional[HostProvider],
+        before: Ephemeris = Ephemeris.NONE,
     ) -> TeistroContext:
-        """Opens the context on one entry of the chain."""
-        named = Ephemeris.NONE if isinstance(entry, Plugin) else entry
+        """Opens the context on one entry of the chain; an adapter behind
+        `before`, if named."""
+        named = before if isinstance(entry, Plugin) else entry
         options = ContextOptions(
             flags=0,
             profile=profile,

@@ -5,7 +5,7 @@ description: "Creates a context that computes with a **loaded** provider."
 
 Creates a context that computes with a **loaded** provider.
 
-The same as `ts_context_new` in every other respect — `options` may be null for the defaults, and `options.ephemeris` is ignored because this call has already answered the question it asks.
+The same as `ts_context_new` in every other respect — `options` may be null for the defaults. `options.ephemeris` is `SURYA_SIDDHANTA` for the text in front of the provider, which takes the day's modern sunrise and the outer planets from it (the Nepali committee's setup, `nepali-committee`); any other computes with the provider alone.
 
 The context takes its own reference to the adapter, so this handle may be freed immediately afterwards or kept to found another context; the library is unloaded when the last of them goes.
 

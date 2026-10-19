@@ -149,7 +149,7 @@ mod western_aspects;
 #[cfg(feature = "western")]
 mod western_houses;
 
-pub use context::{Context, ContextBuilder};
+pub use context::{Context, ContextBuilder, NEPAL_OFFICIAL_PROFILE};
 pub use ephemeris::Ephemeris;
 #[cfg(feature = "chart")]
 pub use reading::ChartRequest;

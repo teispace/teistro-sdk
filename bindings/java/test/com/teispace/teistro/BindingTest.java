@@ -1490,6 +1490,33 @@ public final class BindingTest {
             check(both != null && both.getMessage().contains("give one of them"), "a provider and an ephemeris");
         });
 
+        tests.put("the Surya Siddhanta takes its sunrise from the adapter after it", () -> {
+            // Nepal's official days: the text takes the adapters after it, as
+            // the façade's chain does. Before this, each entry opened alone
+            // and the adapter after the text was never asked.
+            java.util.function.Function<ContextOptions, String> stamp = options -> {
+                try (Context sky = teistro.context(options)) {
+                    return sky.positions(new double[] {2_451_545.0}, List.of(Body.SUN)).provenance().provider()
+                            .dataVersion();
+                }
+            };
+            // An adapter that is not there is passed over, as the façade
+            // passes over it, and the text keeps the built-in's sunrise.
+            String fellBack = stamp.apply(
+                    ContextOptions.builder().nepalOfficial(Plugin.of("/nowhere/adapter.so")).build());
+            check(fellBack.contains("sunrise from teistro-builtin"), "the built-in's sunrise: " + fellBack);
+            String adapter = System.getenv("TEISTRO_TEIMERIS_ADAPTER");
+            if (adapter == null || adapter.isEmpty()) {
+                System.out.println("      (no TEISTRO_TEIMERIS_ADAPTER: the plugin itself was not loaded)");
+                return;
+            }
+            String official = stamp.apply(
+                    ContextOptions.builder().nepalOfficial(Plugin.of(adapter)).locale("en-Latn").build());
+            check(official.contains("sunrise from teimeris"), "the engine's sunrise: " + official);
+            same(ContextOptions.NEPAL_OFFICIAL_PROFILE,
+                    ContextOptions.builder().nepalOfficial().build().profile(), "the committee's profile");
+        });
+
         tests.put("an ephemeris is plugged in by naming its platform binary", () -> {
             // Runs only where the adapter is built, as every binding's plugin
             // test does: a checkout has neither the adapter nor its data.

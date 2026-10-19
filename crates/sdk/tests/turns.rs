@@ -237,6 +237,13 @@ fn the_committees_sunrise_comes_from_the_next_modern_entry() {
         "{}",
         stamp(&beside)
     );
+    // The preset is that setup, under the committee's profile.
+    let official = Context::builder()
+        .nepal_official([Ephemeris::Provider(Box::new(TestProvider::new()))])
+        .build()
+        .unwrap();
+    assert_eq!(official.profile(), teistro::NEPAL_OFFICIAL_PROFILE);
+    assert_eq!(stamp(&official), stamp(&beside));
     // Its day is another, so compare a member both days hold whole.
     let date = (2025, 11, 11);
     let saptami = |sdk: &Context| {

@@ -7357,7 +7357,19 @@ function open(chain, settled, info, positions) {
     return attempt(chain[0], settled, info, positions);
   }
   const refusals = [];
-  for (const entry of chain) {
+  for (const [index, entry] of chain.entries()) {
+    if (entry === 'SURYA_SIDDHANTA') {
+      // The text takes every entry after it, so it is the last one
+      // tried, and with nothing tried before it its refusal is the
+      // refusal — the façade's chain, entry for entry.
+      try {
+        return text(chain.slice(index + 1), settled, info, positions);
+      } catch (refusal) {
+        if (refusals.length === 0) throw refusal;
+        refusals.push(`${entry}: ${refusal.message}`);
+        break;
+      }
+    }
     try {
       return attempt(entry, settled, info, positions);
     } catch (refusal) {
@@ -7369,8 +7381,56 @@ function open(chain, settled, info, positions) {
   );
 }
 
-/** One entry of the chain, opened. */
-function attempt(entry, settled, info, positions) {
+/**
+ * The Surya Siddhanta in front of the entries after it, as the façade
+ * opens it: the text reckons the limbs, and an adapter after it gives the
+ * day's modern sunrise and the outer planets — the Nepali committee's
+ * setup over a real engine. The adapters are tried in order and one that
+ * does not open is passed over, as the façade passes over it; with none,
+ * the text stands alone, its modern sunrise the built-in's.
+ */
+function text(rest, settled, info, positions) {
+  for (const entry of rest) {
+    if (typeof entry === 'string') continue;
+    try {
+      return attempt(entry, settled, info, positions, 'SURYA_SIDDHANTA');
+    } catch {
+      // Passed over; the text alone is the answer below.
+    }
+  }
+  return attempt('SURYA_SIDDHANTA', settled, info, positions);
+}
+
+/**
+ * **Nepal's official days**: the options that open a context on the
+ * Nepali committee's reckoning, the setup the committee's own panchanga is
+ * computed by. The tithi, nakshatra and yoga come from the Surya
+ * Siddhanta with the committee's bija; the day's sunrise and the outer
+ * planets come from `modern`, the engine named after the text.
+ *
+ * Spread it into a context's options, beside anything else:
+ *
+ * ```js
+ * import { teimeris } from '@teistro/ephemeris-teimeris';
+ * const official = new Context({ ...nepalOfficial(teimeris()), locale: 'ne-Deva-NP' });
+ * ```
+ *
+ * `modern` is an adapter's descriptor, or a list of them tried in order;
+ * with none, the sunrise is the built-in ephemeris's.
+ *
+ * @param {PluginEphemeris|readonly PluginEphemeris[]} [modern]
+ * @returns {{ profile: string, ephemeris: readonly EphemerisChoice[] }}
+ */
+export function nepalOfficial(modern = []) {
+  const engines = Array.isArray(modern) ? modern : [modern];
+  return { profile: NEPAL_OFFICIAL_PROFILE, ephemeris: ['SURYA_SIDDHANTA', ...engines] };
+}
+
+/** The profile `nepalOfficial` opens: the Nepali committee's. */
+export const NEPAL_OFFICIAL_PROFILE = 'nepali-committee';
+
+/** One entry of the chain, opened; an adapter behind `before`, if named. */
+function attempt(entry, settled, info, positions, before = 'NONE') {
   if (typeof entry === 'string') {
     return new native.Context({ ...settled, ephemeris: entry }, info, positions);
   }
@@ -7391,7 +7451,7 @@ function attempt(entry, settled, info, positions) {
   // context, and a consumer never holds either.
   const loaded = new native.Provider(entry.plugin, JSON.stringify(entry.config ?? {}));
   try {
-    return native.Context.newWithProvider({ ...settled, ephemeris: 'NONE' }, loaded);
+    return native.Context.newWithProvider({ ...settled, ephemeris: before }, loaded);
   } finally {
     loaded.dispose();
   }

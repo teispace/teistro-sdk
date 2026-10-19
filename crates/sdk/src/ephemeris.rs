@@ -277,25 +277,27 @@ fn built_in_sunrise() -> Result<Box<dyn EphemerisProvider>, Error> {
 /// is no next entry, so the refusal is the refusal.
 ///
 /// The entries after the one that opens are handed to it: the Surya
-/// Siddhanta at a modern sunrise takes that sunrise from them.
+/// Siddhanta at a modern sunrise takes that sunrise from them. Having
+/// taken them, it is the last entry tried, so when nothing was tried
+/// before it its refusal is the refusal, as for a chain of one.
 pub(crate) fn open(
     chain: Vec<Ephemeris>,
     siddhanta: Siddhanta,
     delta_t: DeltaTModel,
 ) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
     let mut refusals: Vec<String> = Vec::with_capacity(chain.len());
-    let only = chain.len() == 1;
-    let mut entries = chain.into_iter();
+    let mut entries = chain.into_iter().peekable();
     while let Some(entry) = entries.next() {
         let name = entry.name();
-        let rest = if matches!(entry, Ephemeris::SuryaSiddhanta) {
+        let rest: Vec<Ephemeris> = if matches!(entry, Ephemeris::SuryaSiddhanta) {
             entries.by_ref().collect()
         } else {
             Vec::new()
         };
+        let alone = refusals.is_empty() && entries.peek().is_none();
         match entry.open_before(siddhanta, delta_t, rest) {
             Ok(opened) => return Ok(opened),
-            Err(refusal) if only => return Err(refusal),
+            Err(refusal) if alone => return Err(refusal),
             Err(refusal) => refusals.push(format!("{name}: {refusal}")),
         }
     }

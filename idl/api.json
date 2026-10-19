@@ -6629,7 +6629,7 @@
     },
     {
       "name": "TsEphemeris",
-      "doc": "Which of the SDK's own ephemerides a context computes with when no\nprovider vtable is given.\n\nA caller who passes a vtable has already answered the question, and\nthis is ignored. The states are exclusive, which is why they are an\nenum and not flag bits (ADR-0028).",
+      "doc": "Which of the SDK's own ephemerides a context computes with when no\nprovider vtable is given.\n\nA caller who passes a provider has already answered the question, and\nthis is ignored, except that `SURYA_SIDDHANTA` puts the text in front\nof that provider for its modern sunrise. The states are exclusive,\nwhich is why they are an enum and not flag bits (ADR-0028).",
       "repr": "u8",
       "values": [
         {
@@ -11808,7 +11808,7 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Which of the SDK's own ephemerides to use when no provider vtable\nis given; ignored when one is (ADR-0028).",
+          "doc": "Which of the SDK's own ephemerides to use when no provider is\ngiven (ADR-0028). With a provider, `SURYA_SIDDHANTA` puts the text\nin front of it, the provider giving the day's modern sunrise and\nthe outer planets (the Nepali committee's setup over a real\nengine); any other computes with the provider alone.",
           "meta": {
             "example": "0",
             "enum": "TsEphemeris"
@@ -16076,7 +16076,7 @@
     },
     {
       "name": "ts_context_new_with_provider",
-      "doc": "Creates a context that computes with a **loaded** provider.\n\nThe same as `ts_context_new` in every other respect — `options` may be\nnull for the defaults, and `options.ephemeris` is ignored because this\ncall has already answered the question it asks.\n\nThe context takes its own reference to the adapter, so this handle may\nbe freed immediately afterwards or kept to found another context; the\nlibrary is unloaded when the last of them goes.",
+      "doc": "Creates a context that computes with a **loaded** provider.\n\nThe same as `ts_context_new` in every other respect — `options` may be\nnull for the defaults. `options.ephemeris` is `SURYA_SIDDHANTA` for the\ntext in front of the provider, which takes the day's modern sunrise and\nthe outer planets from it (the Nepali committee's setup,\n`nepali-committee`); any other computes with the provider alone.\n\nThe context takes its own reference to the adapter, so this handle may\nbe freed immediately afterwards or kept to found another context; the\nlibrary is unloaded when the last of them goes.",
       "safety": "`provider` must be a live handle from `ts_provider_load`; every\nother pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call.",
       "params": [
         {

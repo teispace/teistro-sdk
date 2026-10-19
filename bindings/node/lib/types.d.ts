@@ -493,8 +493,11 @@ export interface ContextOptions {
    */
   readonly dashasJson?: string;
   /**
-   * Which of the SDK's own ephemerides to use when no provider vtable
-   * is given; ignored when one is (ADR-0028).
+   * Which of the SDK's own ephemerides to use when no provider is
+   * given (ADR-0028). With a provider, `SURYA_SIDDHANTA` puts the text
+   * in front of it, the provider giving the day's modern sunrise and
+   * the outer planets (the Nepali committee's setup over a real
+   * engine); any other computes with the provider alone.
    * @enum Ephemeris
    * @example 0
    */

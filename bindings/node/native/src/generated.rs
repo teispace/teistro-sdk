@@ -1495,8 +1495,11 @@ pub struct ContextOptions {
     /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
     /// registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
     pub dashas_json: Option<String>,
-    /// Which of the SDK's own ephemerides to use when no provider vtable
-    /// is given; ignored when one is (ADR-0028).
+    /// Which of the SDK's own ephemerides to use when no provider is
+    /// given (ADR-0028). With a provider, `SURYA_SIDDHANTA` puts the text
+    /// in front of it, the provider giving the day's modern sunrise and
+    /// the outer planets (the Nepali committee's setup over a real
+    /// engine); any other computes with the provider alone.
     /// Enum: TsEphemeris. Example: `0`.
     pub ephemeris: String,
 }
@@ -3728,8 +3731,10 @@ impl Context {
     /// Creates a context that computes with a **loaded** provider.
     ///
     /// The same as `ts_context_new` in every other respect — `options` may be
-    /// null for the defaults, and `options.ephemeris` is ignored because this
-    /// call has already answered the question it asks.
+    /// null for the defaults. `options.ephemeris` is `SURYA_SIDDHANTA` for the
+    /// text in front of the provider, which takes the day's modern sunrise and
+    /// the outer planets from it (the Nepali committee's setup,
+    /// `nepali-committee`); any other computes with the provider alone.
     ///
     /// The context takes its own reference to the adapter, so this handle may
     /// be freed immediately afterwards or kept to found another context; the

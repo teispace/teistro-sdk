@@ -678,6 +678,38 @@ void _engineTests() {
     );
   });
 
+  /// **Nepal's official days**: the Surya Siddhanta takes the adapters
+  /// after it, as the façade's chain does, so the committee's limbs are
+  /// the text's and its sunrise the engine's. Before this, each entry
+  /// opened alone and the adapter after the text was never asked.
+  test('the Surya Siddhanta takes its sunrise from the adapter after it', () {
+    expect(nepalOfficialChain(), hasLength(1));
+    String stamp(Context ctx) =>
+        ctx
+            .positions(instants: [2451545.0], bodies: [Body.sun])
+            .provenance
+            .provider
+            .dataVersion;
+    // An adapter that is not there is passed over, as the façade passes
+    // over it, and the text keeps the built-in's sunrise.
+    final fellBack = teistro.nepalOfficial(
+      modern: const [PluginEphemeris(plugin: '/nowhere/adapter.so')],
+    );
+    addTearDown(fellBack.dispose);
+    expect(stamp(fellBack), contains('sunrise from teistro-builtin'));
+    final plugin = Platform.environment['TEISTRO_TEIMERIS_ADAPTER'];
+    if (plugin == null || plugin.isEmpty) {
+      markTestSkipped('the adapter is not built in this checkout');
+      return;
+    }
+    final official = teistro.nepalOfficial(
+      modern: [PluginEphemeris(plugin: plugin)],
+      locale: 'en-Latn',
+    );
+    addTearDown(official.dispose);
+    expect(stamp(official), contains('sunrise from teimeris'));
+  });
+
   /// A chain is **ordered and explicit** (ADR-0029): tried in order, and
   /// a refusal names every entry that failed rather than only the last,
   /// which would hide the one the caller actually wanted. Needs no
