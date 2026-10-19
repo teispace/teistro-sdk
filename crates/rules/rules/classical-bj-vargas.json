@@ -1,0 +1,4508 @@
+{
+  "rules": [
+    {
+      "key": "BJ_VARGA_ONE_IN_OWN_HOUSE",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 1 of the seven in a sign each rules, the moolatrikona and Mercury's exaltation in Virgo counted, since each is the graha's own house; the verse raises the effect a step for each graha more, so each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": "SELF",
+            "as": {
+              "lordOf": "SELF"
+            }
+          },
+          "atLeast": 1,
+          "atMost": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of his family's common standing"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_TWO_IN_OWN_HOUSES",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 2 of the seven in a sign each rules, the moolatrikona and Mercury's exaltation in Virgo counted, since each is the graha's own house; the verse raises the effect a step for each graha more, so each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": "SELF",
+            "as": {
+              "lordOf": "SELF"
+            }
+          },
+          "atLeast": 2,
+          "atMost": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a leading member of his family"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_THREE_IN_OWN_HOUSES",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 3 of the seven in a sign each rules, the moolatrikona and Mercury's exaltation in Virgo counted, since each is the graha's own house; the verse raises the effect a step for each graha more, so each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": "SELF",
+            "as": {
+              "lordOf": "SELF"
+            }
+          },
+          "atLeast": 3,
+          "atMost": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "honoured by his kinsmen"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_FOUR_IN_OWN_HOUSES",
+      "category": "dhana",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 4 of the seven in a sign each rules, the moolatrikona and Mercury's exaltation in Virgo counted, since each is the graha's own house; the verse raises the effect a step for each graha more, so each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": "SELF",
+            "as": {
+              "lordOf": "SELF"
+            }
+          },
+          "atLeast": 4,
+          "atMost": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_FIVE_IN_OWN_HOUSES",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 5 of the seven in a sign each rules, the moolatrikona and Mercury's exaltation in Virgo counted, since each is the graha's own house; the verse raises the effect a step for each graha more, so each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": "SELF",
+            "as": {
+              "lordOf": "SELF"
+            }
+          },
+          "atLeast": 5,
+          "atMost": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "living in comfort"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SIX_IN_OWN_HOUSES",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 6 of the seven in a sign each rules, the moolatrikona and Mercury's exaltation in Virgo counted, since each is the graha's own house; the verse raises the effect a step for each graha more, so each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": "SELF",
+            "as": {
+              "lordOf": "SELF"
+            }
+          },
+          "atLeast": 6,
+          "atMost": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "living in great ease, as happy as a king"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SEVEN_IN_OWN_HOUSES",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 7 of the seven in a sign each rules, the moolatrikona and Mercury's exaltation in Virgo counted, since each is the graha's own house; the verse raises the effect a step for each graha more, so each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": "SELF",
+            "as": {
+              "lordOf": "SELF"
+            }
+          },
+          "atLeast": 7,
+          "atMost": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_ONE_IN_A_FRIENDS_SIGN",
+      "category": "daridra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 1 of the seven in friends' signs, by the compound relation, as Jataka Parijata ch. 8 v. 109 counts them; each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "FRIEND",
+              "GREAT_FRIEND"
+            ]
+          },
+          "atLeast": 1,
+          "atMost": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "living on others"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_TWO_IN_FRIENDS_SIGNS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 2 of the seven in friends' signs, by the compound relation, as Jataka Parijata ch. 8 v. 109 counts them; each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "FRIEND",
+              "GREAT_FRIEND"
+            ]
+          },
+          "atLeast": 2,
+          "atMost": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "upheld by his friends"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_THREE_IN_FRIENDS_SIGNS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 3 of the seven in friends' signs, by the compound relation, as Jataka Parijata ch. 8 v. 109 counts them; each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "FRIEND",
+              "GREAT_FRIEND"
+            ]
+          },
+          "atLeast": 3,
+          "atMost": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "upheld by his kinsmen"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_FOUR_IN_FRIENDS_SIGNS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 4 of the seven in friends' signs, by the compound relation, as Jataka Parijata ch. 8 v. 109 counts them; each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "FRIEND",
+              "GREAT_FRIEND"
+            ]
+          },
+          "atLeast": 4,
+          "atMost": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "upheld by his brothers and cousins"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_FIVE_IN_FRIENDS_SIGNS",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 5 of the seven in friends' signs, by the compound relation, as Jataka Parijata ch. 8 v. 109 counts them; each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "FRIEND",
+              "GREAT_FRIEND"
+            ]
+          },
+          "atLeast": 5,
+          "atMost": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a master over many people"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SIX_IN_FRIENDS_SIGNS",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 6 of the seven in friends' signs, by the compound relation, as Jataka Parijata ch. 8 v. 109 counts them; each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "FRIEND",
+              "GREAT_FRIEND"
+            ]
+          },
+          "atLeast": 6,
+          "atMost": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a commander of an army"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SEVEN_IN_FRIENDS_SIGNS",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "1",
+        "rank": 1,
+        "note": "Exactly 7 of the seven in friends' signs, by the compound relation, as Jataka Parijata ch. 8 v. 109 counts them; each count is its own figure (C595). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "FRIEND",
+              "GREAT_FRIEND"
+            ]
+          },
+          "atLeast": 7,
+          "atMost": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_ONE_EXALTED_ASPECTED_BY_A_FRIEND",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "A graha in its exaltation sign, the whole sign, aspected by a graha it counts a natural friend; one such is enough (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SUN",
+                  "as": {
+                    "exaltationOf": "SUN"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "SUN",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "SUN"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "MOON",
+                  "as": {
+                    "exaltationOf": "MOON"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MOON",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "MOON"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "MARS",
+                  "as": {
+                    "exaltationOf": "MARS"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MARS",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "MARS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "MERCURY",
+                  "as": {
+                    "exaltationOf": "MERCURY"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MERCURY",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "MERCURY"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "JUPITER",
+                  "as": {
+                    "exaltationOf": "JUPITER"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "JUPITER",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "JUPITER"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "VENUS",
+                  "as": {
+                    "exaltationOf": "VENUS"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "VENUS",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "VENUS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SATURN",
+                  "as": {
+                    "exaltationOf": "SATURN"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "SATURN",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "SATURN"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_ONE_EXALTED_WITH_A_FRIEND",
+      "category": "dhana",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "A graha in its exaltation sign, the whole sign, sharing it with a graha it counts a natural friend; one such is enough (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SUN",
+                  "as": {
+                    "exaltationOf": "SUN"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "SUN",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": "SUN"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "MOON",
+                  "as": {
+                    "exaltationOf": "MOON"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MOON",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": "MOON"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "MARS",
+                  "as": {
+                    "exaltationOf": "MARS"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MARS",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": "MARS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "MERCURY",
+                  "as": {
+                    "exaltationOf": "MERCURY"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MERCURY",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": "MERCURY"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "JUPITER",
+                  "as": {
+                    "exaltationOf": "JUPITER"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "JUPITER",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": "JUPITER"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "VENUS",
+                  "as": {
+                    "exaltationOf": "VENUS"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "VENUS",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": "VENUS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SATURN",
+                  "as": {
+                    "exaltationOf": "SATURN"
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "SATURN",
+                        "to": "SELF",
+                        "relations": [
+                          "friend"
+                        ]
+                      },
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": "SATURN"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very rich and honoured by all"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_ONE_IN_AN_ENEMYS_SIGN_OR_DEBILITATED",
+      "category": "daridra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "Exactly 1 of the seven each in an enemy's sign by the compound relation or in its debilitation; each count is its own figure (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "ENEMY",
+              "GREAT_ENEMY",
+              "DEBILITATED",
+              "DEEP_DEBILITATED"
+            ]
+          },
+          "atLeast": 1,
+          "atMost": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_TWO_IN_ENEMIES_SIGNS_OR_DEBILITATED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "Exactly 2 of the seven each in an enemy's sign by the compound relation or in its debilitation; each count is its own figure (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "ENEMY",
+              "GREAT_ENEMY",
+              "DEBILITATED",
+              "DEEP_DEBILITATED"
+            ]
+          },
+          "atLeast": 2,
+          "atMost": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "afflicted with grief"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_THREE_IN_ENEMIES_SIGNS_OR_DEBILITATED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "Exactly 3 of the seven each in an enemy's sign by the compound relation or in its debilitation; each count is its own figure (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "ENEMY",
+              "GREAT_ENEMY",
+              "DEBILITATED",
+              "DEEP_DEBILITATED"
+            ]
+          },
+          "atLeast": 3,
+          "atMost": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a fool"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_FOUR_IN_ENEMIES_SIGNS_OR_DEBILITATED",
+      "category": "roga",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "Exactly 4 of the seven each in an enemy's sign by the compound relation or in its debilitation; each count is its own figure (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "ENEMY",
+              "GREAT_ENEMY",
+              "DEBILITATED",
+              "DEEP_DEBILITATED"
+            ]
+          },
+          "atLeast": 4,
+          "atMost": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "afflicted with diseases"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_FIVE_IN_ENEMIES_SIGNS_OR_DEBILITATED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "Exactly 5 of the seven each in an enemy's sign by the compound relation or in its debilitation; each count is its own figure (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "ENEMY",
+              "GREAT_ENEMY",
+              "DEBILITATED",
+              "DEEP_DEBILITATED"
+            ]
+          },
+          "atLeast": 5,
+          "atMost": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "imprisoned"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SIX_IN_ENEMIES_SIGNS_OR_DEBILITATED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "Exactly 6 of the seven each in an enemy's sign by the compound relation or in its debilitation; each count is its own figure (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "ENEMY",
+              "GREAT_ENEMY",
+              "DEBILITATED",
+              "DEEP_DEBILITATED"
+            ]
+          },
+          "atLeast": 6,
+          "atMost": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a victim of much grief"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SEVEN_IN_ENEMIES_SIGNS_OR_DEBILITATED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "2",
+        "rank": 1,
+        "note": "Exactly 7 of the seven each in an enemy's sign by the compound relation or in its debilitation; each count is its own figure (C596). Iyer's note that the seven cannot all be debilitated, Mercury and the Sun never in Pisces and Libra together, bears on debilitation alone; the verse takes an enemy's sign as well, which the sky allows (C596). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "ENEMY",
+              "GREAT_ENEMY",
+              "DEBILITATED",
+              "DEEP_DEBILITATED"
+            ]
+          },
+          "atLeast": 7,
+          "atMost": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "one who torments those who do not deserve it"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_AQUARIUS_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "3",
+        "rank": 1,
+        "note": "Aquarius rising, as Satya holds it; the verse sets the Yavanas' dwadashamsha beside it and Vishnugupta's objection to theirs, and gives no verdict of its own (C597). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "not happy"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_AQUARIUS_DWADASHAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna in a dwadashamsha of Aquarius, as the Yavanas hold it; Vishnugupta objects that every sign holds one and that the signs are given good effects, and the verse leaves the dispute open (C597). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D12",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "AQUARIUS"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "not happy"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MALEFICS_IN_SOLAR_HORAS_OF_ODD_SIGNS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "4",
+        "rank": 1,
+        "note": "Every malefic of the seven in an odd sign's first half, the Sun's hora; the malefics are the readings' (C597). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-in-sign",
+                        "planet": "SELF",
+                        "signs": [
+                          "ARIES",
+                          "GEMINI",
+                          "LEO",
+                          "LIBRA",
+                          "SAGITTARIUS",
+                          "AQUARIUS"
+                        ]
+                      },
+                      {
+                        "type": "planet-in-degrees",
+                        "planet": "SELF",
+                        "from": 0,
+                        "to": 15
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "widely famous, a doer of great deeds, strong, healthy and bright"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_BENEFICS_IN_LUNAR_HORAS_OF_EVEN_SIGNS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "4",
+        "rank": 1,
+        "note": "Every benefic of the seven in an even sign's first half, the Moon's hora; the benefics are the readings' (C597). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "benefic"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-in-sign",
+                        "planet": "SELF",
+                        "signs": [
+                          "TAURUS",
+                          "CANCER",
+                          "VIRGO",
+                          "SCORPIO",
+                          "CAPRICORN",
+                          "PISCES"
+                        ]
+                      },
+                      {
+                        "type": "planet-in-degrees",
+                        "planet": "SELF",
+                        "from": 0,
+                        "to": 15
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "gentle, bright, comfortable, liked by all, wise and sweet-spoken"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MALEFICS_IN_SOLAR_HORAS_NOT_ALL_IN_ODD_SIGNS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "5",
+        "rank": 1,
+        "note": "Every malefic of the seven in a hora of the Sun, but not every one in an odd sign: the hora as v. 4 asks and the sign not. Iyer's added case, malefics in the Moon's horas of odd signs, is his note and is not built (C597). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "and",
+                        "conditions": [
+                          {
+                            "type": "planet-in-sign",
+                            "planet": "SELF",
+                            "signs": [
+                              "ARIES",
+                              "GEMINI",
+                              "LEO",
+                              "LIBRA",
+                              "SAGITTARIUS",
+                              "AQUARIUS"
+                            ]
+                          },
+                          {
+                            "type": "planet-in-degrees",
+                            "planet": "SELF",
+                            "from": 0,
+                            "to": 15
+                          }
+                        ]
+                      },
+                      {
+                        "type": "and",
+                        "conditions": [
+                          {
+                            "type": "planet-in-sign",
+                            "planet": "SELF",
+                            "signs": [
+                              "TAURUS",
+                              "CANCER",
+                              "VIRGO",
+                              "SCORPIO",
+                              "CAPRICORN",
+                              "PISCES"
+                            ]
+                          },
+                          {
+                            "type": "planet-in-degrees",
+                            "planet": "SELF",
+                            "from": 15,
+                            "to": 30
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "rule",
+            "key": "BJ_VARGA_MALEFICS_IN_SOLAR_HORAS_OF_ODD_SIGNS"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "v. 4's effects of the malefics, in moderate measure"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_BENEFICS_IN_LUNAR_HORAS_NOT_ALL_IN_EVEN_SIGNS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "5",
+        "rank": 1,
+        "note": "Every benefic of the seven in a hora of the Moon, but not every one in an even sign: the hora as v. 4 asks and the sign not. Iyer's added case, benefics in the Sun's horas of even signs, is his note and is not built (C597). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "benefic"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "and",
+                        "conditions": [
+                          {
+                            "type": "planet-in-sign",
+                            "planet": "SELF",
+                            "signs": [
+                              "ARIES",
+                              "GEMINI",
+                              "LEO",
+                              "LIBRA",
+                              "SAGITTARIUS",
+                              "AQUARIUS"
+                            ]
+                          },
+                          {
+                            "type": "planet-in-degrees",
+                            "planet": "SELF",
+                            "from": 15,
+                            "to": 30
+                          }
+                        ]
+                      },
+                      {
+                        "type": "and",
+                        "conditions": [
+                          {
+                            "type": "planet-in-sign",
+                            "planet": "SELF",
+                            "signs": [
+                              "TAURUS",
+                              "CANCER",
+                              "VIRGO",
+                              "SCORPIO",
+                              "CAPRICORN",
+                              "PISCES"
+                            ]
+                          },
+                          {
+                            "type": "planet-in-degrees",
+                            "planet": "SELF",
+                            "from": 0,
+                            "to": 15
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "rule",
+            "key": "BJ_VARGA_BENEFICS_IN_LUNAR_HORAS_OF_EVEN_SIGNS"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "v. 4's effects of the benefics, in moderate measure"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_HER_OWN_OR_A_FRIENDS_DREKKANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in a drekkana of Cancer, or in one whose lord she counts a friend at the birth, as Iyer's note reads it: by the compound relation, which for the Moon, who has no natural enemy, is the lord standing in the second, third, fourth, tenth, eleventh or twelfth from her. The drekkana is ch. 1's, the sign's, the fifth's and the ninth's lords (C598). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "in-varga",
+              "varga": "D3",
+              "condition": {
+                "type": "planet-in-sign",
+                "planet": "MOON",
+                "signs": [
+                  "CANCER"
+                ]
+              }
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "planet-in-sign",
+                    "planet": "MOON",
+                    "signs": [
+                      "LEO"
+                    ]
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SUN",
+                  "reference": "MOON",
+                  "houses": [
+                    2,
+                    3,
+                    4,
+                    10,
+                    11,
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "planet-in-sign",
+                    "planet": "MOON",
+                    "signs": [
+                      "ARIES",
+                      "SCORPIO"
+                    ]
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    2,
+                    3,
+                    4,
+                    10,
+                    11,
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "planet-in-sign",
+                    "planet": "MOON",
+                    "signs": [
+                      "GEMINI",
+                      "VIRGO"
+                    ]
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MERCURY",
+                  "reference": "MOON",
+                  "houses": [
+                    2,
+                    3,
+                    4,
+                    10,
+                    11,
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "planet-in-sign",
+                    "planet": "MOON",
+                    "signs": [
+                      "SAGITTARIUS",
+                      "PISCES"
+                    ]
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "JUPITER",
+                  "reference": "MOON",
+                  "houses": [
+                    2,
+                    3,
+                    4,
+                    10,
+                    11,
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "planet-in-sign",
+                    "planet": "MOON",
+                    "signs": [
+                      "TAURUS",
+                      "LIBRA"
+                    ]
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "VENUS",
+                  "reference": "MOON",
+                  "houses": [
+                    2,
+                    3,
+                    4,
+                    10,
+                    11,
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "planet-in-sign",
+                    "planet": "MOON",
+                    "signs": [
+                      "CAPRICORN",
+                      "AQUARIUS"
+                    ]
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    2,
+                    3,
+                    4,
+                    10,
+                    11,
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very handsome and of known virtues"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_SERPENT_DREKKANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in a serpent drekkana, as Iyer's note to the verse lists them: Cancer's second, Scorpio's first, Pisces's third. A drekkana of more than one kind gives each kind's effect (C598). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "CANCER"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 20
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "SCORPIO"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 10
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 20,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wicked"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_WEAPON_DREKKANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in an armed drekkana, as Iyer's note to the verse lists them: Aries's first, Aries's third, Gemini's second, Leo's first, Libra's second, Aquarius's first. A drekkana of more than one kind gives each kind's effect (C598). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 10
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 20,
+                  "to": 30
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "GEMINI"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 20
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "LEO"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 10
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "LIBRA"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 20
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 10
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a doer of cruel deeds"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_QUADRUPED_DREKKANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in a quadruped drekkana, as Iyer's note to the verse lists them: Aries's second, Taurus's second, Taurus's third, Cancer's first, Libra's third, Scorpio's third, Sagittarius's first. A drekkana of more than one kind gives each kind's effect (C598). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 20
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 20
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 20,
+                  "to": 30
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "CANCER"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 10
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "LIBRA"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 20,
+                  "to": 30
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "SCORPIO"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 20,
+                  "to": 30
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "SAGITTARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 10
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "one who goes to his preceptor's wife"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_BIRD_DREKKANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in a bird drekkana, as Iyer's note to the verse lists them: Aries's second, Gemini's second, Leo's first, Libra's second. A drekkana of more than one kind gives each kind's effect (C598). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 20
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "GEMINI"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 20
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "LEO"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 10
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "LIBRA"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 20
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of wandering habits"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_ARIES_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Aries in a sign other than Aries: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "ARIES"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "ARIES"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a thief"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_ARIES_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Aries rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Aries (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "ARIES"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of thieves"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_TAURUS_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Taurus in a sign other than Taurus: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "TAURUS"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "TAURUS"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "one who spends his earnings on pleasure"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_TAURUS_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Taurus rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Taurus (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "TAURUS"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of those who spend on pleasure"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_GEMINI_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Gemini in a sign other than Gemini: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "GEMINI"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "GEMINI"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "learned"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_GEMINI_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Gemini rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Gemini (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "GEMINI"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "GEMINI"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of the learned"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_CANCER_NAVAMSHA_RISING",
+      "category": "dhana",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Cancer in a sign other than Cancer: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "CANCER"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "CANCER"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_CANCER_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "dhana",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Cancer rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Cancer (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "CANCER"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of the wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_LEO_NAVAMSHA_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Leo in a sign other than Leo: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "LEO"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "LEO"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_LEO_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "raja",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Leo rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Leo (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "LEO"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of kings"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_VIRGO_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Virgo in a sign other than Virgo: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "VIRGO"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "VIRGO"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a eunuch"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_VIRGO_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Virgo rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Virgo (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "VIRGO"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of eunuchs"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_LIBRA_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Libra in a sign other than Libra: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "LIBRA"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "LIBRA"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "bold in battle"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_LIBRA_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Libra rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Libra (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "LIBRA"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of the bold in battle"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SCORPIO_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Scorpio in a sign other than Scorpio: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "SCORPIO"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "SCORPIO"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a carrier of loads for his living"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SCORPIO_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Scorpio rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Scorpio (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "SCORPIO"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of the carriers of loads"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SAGITTARIUS_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Sagittarius in a sign other than Sagittarius: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "SAGITTARIUS"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "SAGITTARIUS"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a servant"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SAGITTARIUS_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Sagittarius rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Sagittarius (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "SAGITTARIUS"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of servants"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_CAPRICORN_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Capricorn in a sign other than Capricorn: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "CAPRICORN"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "CAPRICORN"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a sinner"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_CAPRICORN_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Capricorn rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Capricorn (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "CAPRICORN"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of sinners"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_AQUARIUS_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Aquarius in a sign other than Aquarius: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "AQUARIUS"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "AQUARIUS"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wicked"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_AQUARIUS_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Aquarius rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Aquarius (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "AQUARIUS"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of the wicked"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_PISCES_NAVAMSHA_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lagna in a navamsha of Pisces in a sign other than Pisces: Iyer's note reads the verse's list of the twelve as the navamshas that are not vargottama, which the verse's second half reads apart (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "PISCES"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "PISCES"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fearless"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_PISCES_NAVAMSHA_RISING_VARGOTTAMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "7",
+        "rank": 1,
+        "note": "Pisces rising in its own navamsha, vargottama: the chief of those v. 7's first half names for a navamsha of Pisces (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "lagna-in-sign",
+            "signs": [
+              "PISCES"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the chief of the fearless"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MARS_IN_HIS_OWN_TRIMSHAMSHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "8",
+        "rank": 1,
+        "note": "Mars in a trimshamsha he rules, by ch. 1 v. 7's degrees: 0 to 5 of an odd sign, 25 to 30 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MARS",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MARS",
+                  "from": 0,
+                  "to": 5
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MARS",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MARS",
+                  "from": 25,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "married, strong, adorned, generous, bright and rash in his work"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SATURN_IN_HIS_OWN_TRIMSHAMSHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "8",
+        "rank": 1,
+        "note": "Saturn in a trimshamsha he rules, by ch. 1 v. 7's degrees: 5 to 10 of an odd sign, 20 to 25 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SATURN",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SATURN",
+                  "from": 5,
+                  "to": 10
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SATURN",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SATURN",
+                  "from": 20,
+                  "to": 25
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sickly, his wife dying before him, wicked, coveting others' wives, sorrowful and unclean, yet with a house, clothes and servants"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_JUPITER_IN_HIS_OWN_TRIMSHAMSHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "9",
+        "rank": 1,
+        "note": "Jupiter in a trimshamsha he rules, by ch. 1 v. 7's degrees: 10 to 18 of an odd sign, 12 to 20 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "JUPITER",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "JUPITER",
+                  "from": 10,
+                  "to": 18
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "JUPITER",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "JUPITER",
+                  "from": 12,
+                  "to": 20
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "rich, famous, happy, wise, bright, honoured by all, healthy, active and living in luxury"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MERCURY_IN_HIS_OWN_TRIMSHAMSHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "9",
+        "rank": 1,
+        "note": "Mercury in a trimshamsha he rules, by ch. 1 v. 7's degrees: 18 to 25 of an odd sign, 5 to 12 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MERCURY",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MERCURY",
+                  "from": 18,
+                  "to": 25
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MERCURY",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MERCURY",
+                  "from": 5,
+                  "to": 12
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "intelligent, skilled in the fine arts, a fop, an author, clear of speech, skilled in crafts, keeping the sages' rules of life, bold in enterprise and much honoured"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_VENUS_IN_HIS_OWN_TRIMSHAMSHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "Venus in a trimshamsha he rules, by ch. 1 v. 7's degrees: 25 to 30 of an odd sign, 0 to 5 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "VENUS",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "VENUS",
+                  "from": 25,
+                  "to": 30
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "VENUS",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "VENUS",
+                  "from": 0,
+                  "to": 5
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "with many sons, comfortable, healthy, loving people, rich, handsome, wicked, fair of body and enjoying many women"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_MARS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The sun in a trimshamsha of Mars, by ch. 1 v. 7's degrees: 0 to 5 of an odd sign, 25 to 30 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 0,
+                  "to": 5
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 25,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "bold in battle"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_MARS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The moon in a trimshamsha of Mars, by ch. 1 v. 7's degrees: 0 to 5 of an odd sign, 25 to 30 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 5
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 25,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "slow at work"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_SATURN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The sun in a trimshamsha of Saturn, by ch. 1 v. 7's degrees: 5 to 10 of an odd sign, 20 to 25 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 5,
+                  "to": 10
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 20,
+                  "to": 25
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wicked"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_SATURN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The moon in a trimshamsha of Saturn, by ch. 1 v. 7's degrees: 5 to 10 of an odd sign, 20 to 25 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 5,
+                  "to": 10
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 20,
+                  "to": 25
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "given to cruel deeds"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_JUPITER",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The sun in a trimshamsha of Jupiter, by ch. 1 v. 7's degrees: 10 to 18 of an odd sign, 12 to 20 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 10,
+                  "to": 18
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 12,
+                  "to": 20
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of good disposition"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_JUPITER",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The moon in a trimshamsha of Jupiter, by ch. 1 v. 7's degrees: 10 to 18 of an odd sign, 12 to 20 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 10,
+                  "to": 18
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 12,
+                  "to": 20
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "rich"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_MERCURY",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The sun in a trimshamsha of Mercury, by ch. 1 v. 7's degrees: 18 to 25 of an odd sign, 5 to 12 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 18,
+                  "to": 25
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 5,
+                  "to": 12
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "living in comfort"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_MERCURY",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The moon in a trimshamsha of Mercury, by ch. 1 v. 7's degrees: 18 to 25 of an odd sign, 5 to 12 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 18,
+                  "to": 25
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 5,
+                  "to": 12
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "learned"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_VENUS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The sun in a trimshamsha of Venus, by ch. 1 v. 7's degrees: 25 to 30 of an odd sign, 0 to 5 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 25,
+                  "to": 30
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "SUN",
+                  "from": 0,
+                  "to": 5
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of a fine body"
+        }
+      ]
+    },
+    {
+      "key": "BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_VENUS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "21",
+        "verse": "10",
+        "rank": 1,
+        "note": "The moon in a trimshamsha of Venus, by ch. 1 v. 7's degrees: 25 to 30 of an odd sign, 0 to 5 of an even one (C599). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES",
+                    "GEMINI",
+                    "LEO",
+                    "LIBRA",
+                    "SAGITTARIUS",
+                    "AQUARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 25,
+                  "to": 30
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "TAURUS",
+                    "CANCER",
+                    "VIRGO",
+                    "SCORPIO",
+                    "CAPRICORN",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "MOON",
+                  "from": 0,
+                  "to": 5
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "liked by the people"
+        }
+      ]
+    }
+  ]
+}

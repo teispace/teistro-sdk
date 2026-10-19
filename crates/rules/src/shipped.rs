@@ -246,6 +246,14 @@ const PARIJATA_LATE: &str = include_str!(concat!(
 /// houses, the upapada, the Karakamsha and the woman's chart, some as Brihat
 /// Jataka ch. 24, Phaladeepika ch. 10 and BPHS ch. 44 write them.
 const BPHS_LATE: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bphs-late.json"));
+/// Brihat Jataka ch. 21, the grahas in the vargas: the counts of grahas in
+/// their own, friends' and enemies' signs, the exalted graha with a friend,
+/// the horas, the Moon's drekkana, the rising navamsha and the trimshamshas,
+/// the friendly counts as Jataka Parijata ch. 8 writes them.
+const BJ_VARGAS: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-bj-vargas.json"
+));
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -314,6 +322,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PHALADEEPIKA_LATE));
     rules.append(&mut read(PARIJATA_LATE));
     rules.append(&mut read(BPHS_LATE));
+    rules.append(&mut read(BJ_VARGAS));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
