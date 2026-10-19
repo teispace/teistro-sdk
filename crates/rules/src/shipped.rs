@@ -553,7 +553,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 4396);
+        assert_eq!(rules.len(), 4745);
         for rule in &rules {
             let rank = rule
                 .source
@@ -702,7 +702,7 @@ mod tests {
     }
 
     /// Every category the shipped rules use.
-    const CATEGORIES: [&str; 35] = [
+    const CATEGORIES: [&str; 37] = [
         "arishta",
         "arishta-bhanga",
         "arishta-father",
@@ -711,6 +711,7 @@ mod tests {
         "ayur",
         "chandra",
         "chandra-drishti",
+        "chandra-nakshatra",
         "daridra",
         "dhana",
         "dwigraha",
@@ -727,6 +728,7 @@ mod tests {
         "marana",
         "miscellaneous",
         "nabhasa",
+        "navamsa-drishti",
         "neecha-bhanga",
         "nodal",
         "pair-in-angle",

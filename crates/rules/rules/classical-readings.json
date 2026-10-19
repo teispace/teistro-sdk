@@ -4970,5 +4970,1752 @@
         ]
       }
     ]
+  },
+  "bjMoonInNakshatra": {
+    "text": "Brihat Jataka",
+    "chapter": "16",
+    "rank": 1,
+    "note": "The Moon in a nakshatra at birth, and what the verse says of the native. The chapter reads all twenty-seven in fourteen stanzas, two to a stanza, in order from Ashwini; Punarvasu alone has stanza 4 to itself. It reads only the Moon: there are no verses on the Sun or another graha in the nakshatras and no closing verse. Iyer's note after stanza 14, that the effects come in full only where the Moon is strong, is the translator's and not built. Read from N. Chidambaram Iyer's 1885 translation of Varahamihira's Brihat Jataka, ch. 16.",
+    "readings": [
+      {
+        "verse": "1",
+        "nakshatra": "ASHWINI",
+        "effect": "fond of ornaments, handsome, popular, skilled in work and intelligent"
+      },
+      {
+        "verse": "1",
+        "nakshatra": "BHARANI",
+        "effect": "successful in work, truthful, free from disease, able and free from grief"
+      },
+      {
+        "verse": "2",
+        "nakshatra": "KRITTIKA",
+        "effect": "a glutton, fond of other men's wives, of bright appearance and widely famous"
+      },
+      {
+        "verse": "2",
+        "nakshatra": "ROHINI",
+        "effect": "truthful, not coveting others' property, clean in habits, sweet of speech, firm in his views and handsome"
+      },
+      {
+        "verse": "3",
+        "nakshatra": "MRIGASHIRA",
+        "effect": "of no firm principles, able, timid, well spoken, active, rich and given to sensual pleasure"
+      },
+      {
+        "verse": "3",
+        "nakshatra": "ARDRA",
+        "effect": "insincere, quick-tempered, ungrateful, troublesome and given to wicked deeds"
+      },
+      {
+        "verse": "4",
+        "nakshatra": "PUNARVASU",
+        "effect": "devout and patient, comfortable, good-natured and quiet, of wrong views, sickly, thirsty and pleased with trifles"
+      },
+      {
+        "verse": "5",
+        "nakshatra": "PUSHYA",
+        "effect": "master of his desires, generally liked, learned in the shastras, rich and charitable"
+      },
+      {
+        "verse": "5",
+        "nakshatra": "ASHLESHA",
+        "effect": "heedless of other men's work, eating anything, sinful, ungrateful and skilled in cheating"
+      },
+      {
+        "verse": "6",
+        "nakshatra": "MAGHA",
+        "effect": "having many servants, worshipping the devas and the pitris, and engaged in important works"
+      },
+      {
+        "verse": "6",
+        "nakshatra": "PURVA_PHALGUNI",
+        "effect": "sweet of speech, liberal in gifts, given to wandering, and in a king's service"
+      },
+      {
+        "verse": "7",
+        "nakshatra": "UTTARA_PHALGUNI",
+        "effect": "generally liked, earning by his learning, and comfortable"
+      },
+      {
+        "verse": "7",
+        "nakshatra": "HASTA",
+        "effect": "active, resourceful, shameless, merciless, a thief and a drunkard"
+      },
+      {
+        "verse": "8",
+        "nakshatra": "CHITRA",
+        "effect": "wearing cloths and flowers of many colours, with beautiful eyes and limbs"
+      },
+      {
+        "verse": "8",
+        "nakshatra": "SWATI",
+        "effect": "mild and quiet, master of his passions, skilled in trade, merciful, unable to bear thirst, sweet of speech and charitable"
+      },
+      {
+        "verse": "9",
+        "nakshatra": "VISHAKHA",
+        "effect": "jealous of others' prosperity, a niggard, of bright appearance, clear of speech, skilled in earning, and a stirrer of quarrels"
+      },
+      {
+        "verse": "9",
+        "nakshatra": "ANURADHA",
+        "effect": "rich, living abroad, unable to bear hunger, and given to wandering"
+      },
+      {
+        "verse": "10",
+        "nakshatra": "JYESHTHA",
+        "effect": "of few friends, very cheerful, virtuous and quick-tempered"
+      },
+      {
+        "verse": "10",
+        "nakshatra": "MULA",
+        "effect": "proud, rich and happy, harming no one, firm in his views, and living in luxury"
+      },
+      {
+        "verse": "11",
+        "nakshatra": "PURVA_ASHADHA",
+        "effect": "having an agreeable wife, proud, and attached to his friends"
+      },
+      {
+        "verse": "11",
+        "nakshatra": "UTTARA_ASHADHA",
+        "effect": "obedient, learned in the rules of virtue, of many friends, grateful, and generally liked"
+      },
+      {
+        "verse": "12",
+        "nakshatra": "SHRAVANA",
+        "effect": "prosperous and learned, with a liberal-minded wife, rich and widely famous"
+      },
+      {
+        "verse": "12",
+        "nakshatra": "DHANISHTHA",
+        "effect": "liberal in gifts, rich, valiant, fond of music, and a niggard"
+      },
+      {
+        "verse": "13",
+        "nakshatra": "SHATABHISHA",
+        "effect": "harsh of speech, truthful, suffering grief, a conqueror of his enemies, rash in his undertakings and independent"
+      },
+      {
+        "verse": "13",
+        "nakshatra": "PURVA_BHADRAPADA",
+        "effect": "suffering grief, leaving his wealth to his wife's disposal, clear of speech, skilled in earning, and a niggard"
+      },
+      {
+        "verse": "14",
+        "nakshatra": "UTTARA_BHADRAPADA",
+        "effect": "an able speaker, happy, with children and grandchildren, a conqueror of his enemies, and virtuous"
+      },
+      {
+        "verse": "14",
+        "nakshatra": "REVATI",
+        "effect": "of perfect limbs, liked by all, deeply learned, not coveting others' property, and rich"
+      }
+    ]
+  },
+  "bjInRasi": {
+    "text": "Brihat Jataka",
+    "rank": 1,
+    "note": "A graha in a sign, and what the chapter says of the native: the Moon in ch. 17, one stanza to a sign, and the others in ch. 18. Stanza 13 says the effects come in full where the Moon, the sign she occupies and its lord are all strong, and that the same holds for the other grahas in the signs (ch. 18); it weighs a reading and bars none, and names no measure of strength, so it is no condition here. The chapter takes the Sun's twelve signs one by one (vv. 1 to 4) and reads the other grahas mostly by lord, one reading for both signs of Mars, Venus, Mercury, Jupiter or Saturn where the verse joins them, so a reading stands for a rule in each sign it names. The Sun's Aries reading is for the Sun \"not in its exaltation degree\"; what the exalted Sun gives is the translator's note, not the verse, so the plain reading holds in all of Aries. Jupiter in Leo and in Aquarius are read in the verse by reference to Jupiter in Cancer and are written out in full (C591). V. 20 extends the Moon's sign readings to the rising sign and the bhavas, which is no reading of a graha in a sign. Read from N. Chidambaram Iyer's 1885 translation of Varahamihira's Brihat Jataka, chs. 17 and 18.",
+    "grahas": [
+      {
+        "planet": "MOON",
+        "chapter": "17",
+        "readings": [
+          {
+            "verse": "1",
+            "signs": [
+              "ARIES"
+            ],
+            "effect": "round red eyes, fond of vegetables and of hot food in moderation, quick to relent, fond of travel and of love, strong of knee, without lasting wealth, fond of fighting and of women, good at making friends, of disfigured nails and a scarred head, proud, the eldest of his brothers, with a spear-shaped line in the hand, fickle, and afraid of water"
+          },
+          {
+            "verse": "2",
+            "signs": [
+              "TAURUS"
+            ],
+            "effect": "handsome and graceful of gait, large of thigh and face, marked on the back, face and sides, liberal, bearing misfortune, of great influence, with a large hump on the neck, having daughters, phlegmatic, parted from kinsmen, wealth and sons, agreeable and patient, a great eater, fond of women, attached to his friends, and happy in youth and age"
+          },
+          {
+            "verse": "3",
+            "signs": [
+              "GEMINI"
+            ],
+            "effect": "fond of women and skilled in love, red-eyed, learned in the shastras, a carrier of messages, curly-haired and sharp of intellect, skilled in wit, in reading other men's thoughts and in play, of beautiful features, sweet of speech, a great eater, fond of music and skilled in dance, consorting with eunuchs, and high of nose"
+          },
+          {
+            "verse": "4",
+            "signs": [
+              "CANCER"
+            ],
+            "effect": "bent of body, quick of walk, high of hip, swayed by women, with an excellent friend, learned in astrology, owning many houses, his wealth waxing and waning like the Moon, short and thick-necked, won over by kind words, attached to his friends, and fond of water and forests"
+          },
+          {
+            "verse": "5",
+            "signs": [
+              "LEO"
+            ],
+            "effect": "quick-tempered, large of cheek and broad of face, brown-eyed, of very few sons, hating women, fond of meat, forests and hills, long angry at trifles, troubled by hunger, thirst, belly-ache, tooth-ache and anxiety, liberal, bold in battle, of fixed principles, proud, and attached to his mother"
+          },
+          {
+            "verse": "6",
+            "signs": [
+              "VIRGO"
+            ],
+            "effect": "modest, mild and beautiful of eye and gait, with drooping shoulders and arms, comfortable, soft of body, truthful, skilled in dance, music and painting, learned in the shastras, virtuous and intelligent, fond of love, enjoying other men's houses and property, living abroad, sweet of speech, and having daughters and very few sons"
+          },
+          {
+            "verse": "7",
+            "signs": [
+              "LIBRA"
+            ],
+            "effect": "honouring the devas, Brahmins and holy men, intelligent, not coveting others' property, religious, swayed by women, tall and high of nose, thin and defective of limb, fond of travel, rich, a trader, bearing a god's name with a title given by learned men, sickly, protecting his family, and disgraced and cast out by his kinsmen"
+          },
+          {
+            "verse": "8",
+            "signs": [
+              "SCORPIO"
+            ],
+            "effect": "broad of eye and breast, round of shank, thigh and knee, parted from his parents and teachers, sick in youth, honoured by kings, brown of colour, not straightforward, with lines of a fish, a thunderbolt or a bird in hands and feet, and concealing his sins"
+          },
+          {
+            "verse": "9",
+            "signs": [
+              "SAGITTARIUS"
+            ],
+            "effect": "long of face and neck, inheriting his father's property, liberal, an author, strong and eloquent, large of teeth, ears, lips and nose, engaged in many works, skilled in sculpture, of indistinct shoulders, disfigured nails and large hands, of deep and inventive intellect and right understanding, hating his kinsmen, and yielding to kindness but never to force"
+          },
+          {
+            "verse": "10",
+            "signs": [
+              "CAPRICORN"
+            ],
+            "effect": "ever attached to his wife and children, virtuous in deed, thin of lower limbs and waist, good-eyed, open to advice, amiable, slow at work, unable to bear cold, given to wandering, strong, an author, a niggard, attached to old women of low caste, shameless and merciless"
+          },
+          {
+            "verse": "11",
+            "signs": [
+              "AQUARIUS"
+            ],
+            "effect": "with a camel's neck, a sinewy, rough and hairy body, tall, large of legs, thighs, back, buttocks, face and lower belly, deaf, attached to other men's wives and to their wicked deeds, rising and falling by turns, fond of flowers and perfumes, attached to his friends, and tireless in walking"
+          },
+          {
+            "verse": "12",
+            "signs": [
+              "PISCES"
+            ],
+            "effect": "a dealer in the produce of the sea and a trader, fond of his wife and his clothes, of perfect limbs and a bright body, long of nose and large of head, disgracing his enemies, swayed by women, beautiful of eye, fair, rich, happy and learned"
+          }
+        ]
+      },
+      {
+        "planet": "SUN",
+        "chapter": "18",
+        "readings": [
+          {
+            "verse": "1",
+            "signs": [
+              "ARIES"
+            ],
+            "effect": "famous far and wide, able, given to wandering, of small wealth, a bearer of weapons"
+          },
+          {
+            "verse": "1",
+            "signs": [
+              "TAURUS"
+            ],
+            "effect": "a dealer in cloth and perfumes, averse to women, skilled in music"
+          },
+          {
+            "verse": "2",
+            "signs": [
+              "GEMINI"
+            ],
+            "effect": "learned in grammar, an astrologer, rich"
+          },
+          {
+            "verse": "2",
+            "signs": [
+              "CANCER"
+            ],
+            "effect": "independent, fierce, poor, working for others, wearied by journeys on foot"
+          },
+          {
+            "verse": "2",
+            "signs": [
+              "LEO"
+            ],
+            "effect": "fond of forests, hills and cow-sheds, strong, foolish"
+          },
+          {
+            "verse": "2",
+            "signs": [
+              "VIRGO"
+            ],
+            "effect": "skilled in writing, painting, letters and mathematics, of a womanly body"
+          },
+          {
+            "verse": "3",
+            "signs": [
+              "LIBRA"
+            ],
+            "effect": "fond of liquor or a maker of it, given to wandering, an alchemist, of wicked deeds"
+          },
+          {
+            "verse": "3",
+            "signs": [
+              "SCORPIO"
+            ],
+            "effect": "fierce, rash in his undertakings, earning by work with poison, deeply versed in arms"
+          },
+          {
+            "verse": "4",
+            "signs": [
+              "SAGITTARIUS"
+            ],
+            "effect": "respected by sages, rich, independent, learned in medicine and sculpture"
+          },
+          {
+            "verse": "4",
+            "signs": [
+              "CAPRICORN"
+            ],
+            "effect": "doing work beneath his station, ignorant, a dealer in mean goods, of small wealth, avaricious, living on other men's property"
+          },
+          {
+            "verse": "4",
+            "signs": [
+              "AQUARIUS"
+            ],
+            "effect": "doing work beneath his station, poor, without sons"
+          },
+          {
+            "verse": "4",
+            "signs": [
+              "PISCES"
+            ],
+            "effect": "rich by trade in the produce of water, respected by women"
+          }
+        ]
+      },
+      {
+        "planet": "MARS",
+        "chapter": "18",
+        "readings": [
+          {
+            "verse": "5",
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "effect": "honoured by the king, given to wandering, a commander of armies or a trader, rich, scarred by wounds, a thief, given to the pleasures of the senses"
+          },
+          {
+            "verse": "5",
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "effect": "swayed by women, deaf to his friends' advice, fond of other men's wives, versed in conjuring, fond of adorning himself, timid, rough of body"
+          },
+          {
+            "verse": "6",
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "effect": "of bright appearance, with sons and without friends, helpful to others, skilled in music and in fighting, miserly, fearless, given to begging"
+          },
+          {
+            "verse": "6",
+            "signs": [
+              "CANCER"
+            ],
+            "effect": "rich, earning wealth across the seas, of defective limbs, wicked"
+          },
+          {
+            "verse": "7",
+            "signs": [
+              "LEO"
+            ],
+            "effect": "poor, patient under affliction, a wanderer in forests, fearless, with few wives and children"
+          },
+          {
+            "verse": "7",
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "effect": "with many enemies, a king's minister, famous far and wide, fearless, with very few children"
+          },
+          {
+            "verse": "7",
+            "signs": [
+              "AQUARIUS"
+            ],
+            "effect": "ever grieving, poor, wandering from place to place, a liar, independent, wicked"
+          },
+          {
+            "verse": "7",
+            "signs": [
+              "CAPRICORN"
+            ],
+            "effect": "very rich, with many sons, a king or the equal of a king"
+          }
+        ]
+      },
+      {
+        "planet": "MERCURY",
+        "chapter": "18",
+        "readings": [
+          {
+            "verse": "8",
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "effect": "fond of gambling, debt and liquor, an unbeliever arguing against the shastras, a thief, poor, with a mean wife, deceitful, a liar, straying from rectitude"
+          },
+          {
+            "verse": "8",
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "effect": "a preacher, with many sons and wives, ever earning, generous, respectful to his teacher"
+          },
+          {
+            "verse": "9",
+            "signs": [
+              "GEMINI"
+            ],
+            "effect": "talkative, a liar, learned in the sciences, music, dance and painting, sweet of speech, living in comfort"
+          },
+          {
+            "verse": "9",
+            "signs": [
+              "CANCER"
+            ],
+            "effect": "earning by work connected with water, disliked by his kinsmen"
+          },
+          {
+            "verse": "10",
+            "signs": [
+              "LEO"
+            ],
+            "effect": "disliked by women, poor, without comfort or sons, wandering, ignorant, fond of women, disgraced"
+          },
+          {
+            "verse": "10",
+            "signs": [
+              "VIRGO"
+            ],
+            "effect": "generous, learned, of many virtues, living in comfort, patient, ingenious, fearless"
+          },
+          {
+            "verse": "11",
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "effect": "working for others, poor, a sculptor, in debt, working without pay"
+          },
+          {
+            "verse": "11",
+            "signs": [
+              "SAGITTARIUS"
+            ],
+            "effect": "respected by kings, learned in the sciences and the law"
+          },
+          {
+            "verse": "11",
+            "signs": [
+              "PISCES"
+            ],
+            "effect": "skilled at making friends, quick to read other men's minds, learned in the crafts of low castes"
+          }
+        ]
+      },
+      {
+        "planet": "JUPITER",
+        "chapter": "18",
+        "readings": [
+          {
+            "verse": "12",
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "effect": "a commander of armies, very rich, with many wives and children, generous, with good servants, patient, of bright appearance, happy with his wife, of great fame"
+          },
+          {
+            "verse": "12",
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "effect": "free from disease, living in comfort, rich, with friends and sons, generous, liked by all"
+          },
+          {
+            "verse": "12",
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "effect": "with many clothes, houses, servants, sons and friends, a minister, living in comfort"
+          },
+          {
+            "verse": "13",
+            "signs": [
+              "CANCER"
+            ],
+            "effect": "possessed of gems, sons, wealth, wives, influence, intelligence and comfort"
+          },
+          {
+            "verse": "13",
+            "signs": [
+              "LEO"
+            ],
+            "effect": "possessed of gems, sons, wealth, wives, influence, intelligence and comfort, and a commander of armies besides"
+          },
+          {
+            "verse": "13",
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "effect": "the ruler of a province, a king's minister or a commander of armies, or very rich"
+          },
+          {
+            "verse": "13",
+            "signs": [
+              "AQUARIUS"
+            ],
+            "effect": "possessed of gems, sons, wealth, wives, influence, intelligence and comfort"
+          },
+          {
+            "verse": "13",
+            "signs": [
+              "CAPRICORN"
+            ],
+            "effect": "of deeds disgraceful to his station, of very little wealth, afflicted with grief"
+          }
+        ]
+      },
+      {
+        "planet": "VENUS",
+        "chapter": "18",
+        "readings": [
+          {
+            "verse": "14",
+            "signs": [
+              "ARIES",
+              "SCORPIO"
+            ],
+            "effect": "fond of other men's wives, losing his property through them, a disgrace to his family"
+          },
+          {
+            "verse": "14",
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ],
+            "effect": "wealthy by his own powers, liked by the king, foremost among his kinsmen, famous, fearless"
+          },
+          {
+            "verse": "15",
+            "signs": [
+              "GEMINI"
+            ],
+            "effect": "doing a king's work, rich, learned in music"
+          },
+          {
+            "verse": "15",
+            "signs": [
+              "VIRGO"
+            ],
+            "effect": "given to hard work"
+          },
+          {
+            "verse": "15",
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "effect": "liked by all, swayed by women, fond of bad women"
+          },
+          {
+            "verse": "16",
+            "signs": [
+              "CANCER"
+            ],
+            "effect": "with two wives, a beggar, timid and haughty, grieving"
+          },
+          {
+            "verse": "16",
+            "signs": [
+              "LEO"
+            ],
+            "effect": "gaining money through women, with an excellent wife and very few sons"
+          },
+          {
+            "verse": "16",
+            "signs": [
+              "SAGITTARIUS"
+            ],
+            "effect": "of excellent qualities, rich"
+          },
+          {
+            "verse": "16",
+            "signs": [
+              "PISCES"
+            ],
+            "effect": "learned, a man of authority, rich, respected by the king, liked by all"
+          }
+        ]
+      },
+      {
+        "planet": "SATURN",
+        "chapter": "18",
+        "readings": [
+          {
+            "verse": "17",
+            "signs": [
+              "ARIES"
+            ],
+            "effect": "foolish, wandering from place to place, a fop, parted from his friends"
+          },
+          {
+            "verse": "17",
+            "signs": [
+              "SCORPIO"
+            ],
+            "effect": "imprisoned, beaten, indifferent to work, merciless"
+          },
+          {
+            "verse": "17",
+            "signs": [
+              "GEMINI",
+              "VIRGO"
+            ],
+            "effect": "shameless, grieving, poor, without sons, a poor painter, a constable and a chief officer"
+          },
+          {
+            "verse": "18",
+            "signs": [
+              "TAURUS"
+            ],
+            "effect": "fond of low-caste women, of small wealth, with several wives"
+          },
+          {
+            "verse": "18",
+            "signs": [
+              "LIBRA"
+            ],
+            "effect": "the head of a body of men in a town, an army or a village, rich"
+          },
+          {
+            "verse": "18",
+            "signs": [
+              "CANCER"
+            ],
+            "effect": "poor, with very few teeth, parted from his mother, without sons"
+          },
+          {
+            "verse": "18",
+            "signs": [
+              "LEO"
+            ],
+            "effect": "not deserving respect, grieving, without sons, a carrier of burdens"
+          },
+          {
+            "verse": "19",
+            "signs": [
+              "SAGITTARIUS",
+              "PISCES"
+            ],
+            "effect": "dying a good death, a faithful officer in the king's palace, with good sons and a good wife, wealthy, the chief man in a town, an army or a village"
+          },
+          {
+            "verse": "19",
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ],
+            "effect": "enjoying other men's wives and property, the head of a town, a village or an army, weak of sight, dirty, averse to bathing, of lasting wealth and authority, enjoying what he has earned"
+          }
+        ]
+      }
+    ]
+  },
+  "bjMoonAspected": {
+    "text": "Brihat Jataka",
+    "chapter": "19",
+    "rank": 1,
+    "note": "The Moon in a sign under one graha's aspect, and what the verse says of the native. The verses take Aries to Cancer in v. 1, Leo to Scorpio in v. 2 and Sagittarius to Pisces in v. 3; Aries to Cancer name Mars first, the rest Mercury first, and where a verse gives one reading for Saturn, the Sun and Mars (Virgo, Libra, Sagittarius, Pisces) or for Venus, Saturn, the Sun and Mars (Aquarius) each graha carries it. The aspect is graha drishti cast in the rasi chart. Phaladeepika ch. 18 gives the same seventy-two in its own words (the moonAspected family), differing in a few signs. Read from N. Chidambaram Iyer's 1885 translation of Varahamihira's Brihat Jataka, ch. 19.",
+    "signs": [
+      {
+        "verse": "1",
+        "sign": "ARIES",
+        "readings": [
+          {
+            "from": "MARS",
+            "effect": "a king"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "learned"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "the equal of a king"
+          },
+          {
+            "from": "VENUS",
+            "effect": "of good conduct"
+          },
+          {
+            "from": "SATURN",
+            "effect": "a thief"
+          },
+          {
+            "from": "SUN",
+            "effect": "poor"
+          }
+        ]
+      },
+      {
+        "verse": "1",
+        "sign": "TAURUS",
+        "readings": [
+          {
+            "from": "MARS",
+            "effect": "poor"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "a thief"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "respected by the people"
+          },
+          {
+            "from": "VENUS",
+            "effect": "a king"
+          },
+          {
+            "from": "SATURN",
+            "effect": "rich"
+          },
+          {
+            "from": "SUN",
+            "effect": "a servant"
+          }
+        ]
+      },
+      {
+        "verse": "1",
+        "sign": "GEMINI",
+        "readings": [
+          {
+            "from": "MARS",
+            "effect": "a seller of weapons"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "a king"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "learned"
+          },
+          {
+            "from": "VENUS",
+            "effect": "fearful"
+          },
+          {
+            "from": "SATURN",
+            "effect": "a weaver"
+          },
+          {
+            "from": "SUN",
+            "effect": "poor"
+          }
+        ]
+      },
+      {
+        "verse": "1",
+        "sign": "CANCER",
+        "readings": [
+          {
+            "from": "MARS",
+            "effect": "a valiant soldier"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "a writer of letters"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "learned"
+          },
+          {
+            "from": "VENUS",
+            "effect": "a king"
+          },
+          {
+            "from": "SATURN",
+            "effect": "living by weapons"
+          },
+          {
+            "from": "SUN",
+            "effect": "suffering from diseases of the eye"
+          }
+        ]
+      },
+      {
+        "verse": "2",
+        "sign": "LEO",
+        "readings": [
+          {
+            "from": "MERCURY",
+            "effect": "an astrologer"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "rich"
+          },
+          {
+            "from": "VENUS",
+            "effect": "a king"
+          },
+          {
+            "from": "SATURN",
+            "effect": "a barber"
+          },
+          {
+            "from": "SUN",
+            "effect": "a king"
+          },
+          {
+            "from": "MARS",
+            "effect": "a king"
+          }
+        ]
+      },
+      {
+        "verse": "2",
+        "sign": "VIRGO",
+        "readings": [
+          {
+            "from": "MERCURY",
+            "effect": "a king"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a commander of armies"
+          },
+          {
+            "from": "VENUS",
+            "effect": "vigilant"
+          },
+          {
+            "from": "SATURN",
+            "effect": "living by service to women"
+          },
+          {
+            "from": "SUN",
+            "effect": "living by service to women"
+          },
+          {
+            "from": "MARS",
+            "effect": "living by service to women"
+          }
+        ]
+      },
+      {
+        "verse": "2",
+        "sign": "LIBRA",
+        "readings": [
+          {
+            "from": "MERCURY",
+            "effect": "a king"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a worker in gold"
+          },
+          {
+            "from": "VENUS",
+            "effect": "a trader"
+          },
+          {
+            "from": "SATURN",
+            "effect": "a chief, and mischievous"
+          },
+          {
+            "from": "SUN",
+            "effect": "a chief, and mischievous"
+          },
+          {
+            "from": "MARS",
+            "effect": "a chief, and mischievous"
+          }
+        ]
+      },
+      {
+        "verse": "2",
+        "sign": "SCORPIO",
+        "readings": [
+          {
+            "from": "MERCURY",
+            "effect": "the father of twins"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "obedient"
+          },
+          {
+            "from": "VENUS",
+            "effect": "a washerman"
+          },
+          {
+            "from": "SATURN",
+            "effect": "of defective limbs"
+          },
+          {
+            "from": "SUN",
+            "effect": "poor"
+          },
+          {
+            "from": "MARS",
+            "effect": "a king"
+          }
+        ]
+      },
+      {
+        "verse": "3",
+        "sign": "SAGITTARIUS",
+        "readings": [
+          {
+            "from": "MERCURY",
+            "effect": "a protector of his kinsmen"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a king"
+          },
+          {
+            "from": "VENUS",
+            "effect": "a protector of many"
+          },
+          {
+            "from": "SATURN",
+            "effect": "a fop, making a show of virtue, neglectful of other men's work"
+          },
+          {
+            "from": "SUN",
+            "effect": "a fop, making a show of virtue, neglectful of other men's work"
+          },
+          {
+            "from": "MARS",
+            "effect": "a fop, making a show of virtue, neglectful of other men's work"
+          }
+        ]
+      },
+      {
+        "verse": "3",
+        "sign": "CAPRICORN",
+        "readings": [
+          {
+            "from": "MERCURY",
+            "effect": "a king of kings"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a king"
+          },
+          {
+            "from": "VENUS",
+            "effect": "learned"
+          },
+          {
+            "from": "SATURN",
+            "effect": "rich"
+          },
+          {
+            "from": "SUN",
+            "effect": "poor"
+          },
+          {
+            "from": "MARS",
+            "effect": "a king"
+          }
+        ]
+      },
+      {
+        "verse": "3",
+        "sign": "AQUARIUS",
+        "readings": [
+          {
+            "from": "MERCURY",
+            "effect": "a king"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "the equal of a king"
+          },
+          {
+            "from": "VENUS",
+            "effect": "fond of other men's wives"
+          },
+          {
+            "from": "SATURN",
+            "effect": "fond of other men's wives"
+          },
+          {
+            "from": "SUN",
+            "effect": "fond of other men's wives"
+          },
+          {
+            "from": "MARS",
+            "effect": "fond of other men's wives"
+          }
+        ]
+      },
+      {
+        "verse": "3",
+        "sign": "PISCES",
+        "readings": [
+          {
+            "from": "MERCURY",
+            "effect": "witty"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a king"
+          },
+          {
+            "from": "VENUS",
+            "effect": "learned"
+          },
+          {
+            "from": "SATURN",
+            "effect": "of wicked deeds"
+          },
+          {
+            "from": "SUN",
+            "effect": "of wicked deeds"
+          },
+          {
+            "from": "MARS",
+            "effect": "of wicked deeds"
+          }
+        ]
+      }
+    ]
+  },
+  "bjNavamsaAspected": {
+    "text": "Brihat Jataka",
+    "chapter": "19",
+    "rank": 1,
+    "note": "The Moon in a navamsa under one graha's aspect, and what the verse says of the native. Vv. 5 to 8 name the navamsas by lord, Cancer and Leo by sign, so seven groups cover the twelve, each read under the Sun, Mars, Mercury, Jupiter, Venus and Saturn in that order. V. 8 says the same readings hold for the Sun in those navamsas, the Moon's aspect read where the Sun's is named; Mercury and Venus never stand seventh from the Sun, so under graha drishti the Sun has no rules under their aspects. The aspect is graha drishti cast in the rasi chart; the navamsa only places the Moon (or the Sun). Vv. 4 and 9, which weigh these readings by hora, drekkana, dwadasamsha, vargottama and the navamsa lord's strength, are not built. Read from N. Chidambaram Iyer's 1885 translation of Varahamihira's Brihat Jataka, ch. 19.",
+    "navamsas": [
+      {
+        "verse": "5",
+        "lord": "MARS",
+        "signs": [
+          "ARIES",
+          "SCORPIO"
+        ],
+        "readings": [
+          {
+            "from": "SUN",
+            "effect": "the protector of a city"
+          },
+          {
+            "from": "MARS",
+            "effect": "fond of cruelty"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "skilled in single combat"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a king"
+          },
+          {
+            "from": "VENUS",
+            "effect": "rich"
+          },
+          {
+            "from": "SATURN",
+            "effect": "quarrelsome"
+          }
+        ]
+      },
+      {
+        "verse": "5",
+        "lord": "VENUS",
+        "signs": [
+          "TAURUS",
+          "LIBRA"
+        ],
+        "readings": [
+          {
+            "from": "SUN",
+            "effect": "foolish"
+          },
+          {
+            "from": "MARS",
+            "effect": "fond of other men's wives"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "a writer of good works"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a writer of good works"
+          },
+          {
+            "from": "VENUS",
+            "effect": "fond of comforts"
+          },
+          {
+            "from": "SATURN",
+            "effect": "consorting with other men's wives"
+          }
+        ]
+      },
+      {
+        "verse": "6",
+        "lord": "MERCURY",
+        "signs": [
+          "GEMINI",
+          "VIRGO"
+        ],
+        "readings": [
+          {
+            "from": "SUN",
+            "effect": "a duellist or a dancer"
+          },
+          {
+            "from": "MARS",
+            "effect": "a thief"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "a great poet"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a minister"
+          },
+          {
+            "from": "VENUS",
+            "effect": "skilled in music"
+          },
+          {
+            "from": "SATURN",
+            "effect": "skilled in the mechanical arts"
+          }
+        ]
+      },
+      {
+        "verse": "6",
+        "lord": "MOON",
+        "signs": [
+          "CANCER"
+        ],
+        "readings": [
+          {
+            "from": "SUN",
+            "effect": "small of body"
+          },
+          {
+            "from": "MARS",
+            "effect": "miserly, of small wealth"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "given to austerities"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a chief"
+          },
+          {
+            "from": "VENUS",
+            "effect": "thriving through women"
+          },
+          {
+            "from": "SATURN",
+            "effect": "industrious"
+          }
+        ]
+      },
+      {
+        "verse": "7",
+        "lord": "SUN",
+        "signs": [
+          "LEO"
+        ],
+        "readings": [
+          {
+            "from": "SUN",
+            "effect": "of angry temper"
+          },
+          {
+            "from": "MARS",
+            "effect": "liked by the king"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "rich by finding hidden treasure"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "one whose orders are carried out"
+          },
+          {
+            "from": "VENUS",
+            "effect": "without sons"
+          },
+          {
+            "from": "SATURN",
+            "effect": "of wicked deeds"
+          }
+        ]
+      },
+      {
+        "verse": "7",
+        "lord": "JUPITER",
+        "signs": [
+          "SAGITTARIUS",
+          "PISCES"
+        ],
+        "readings": [
+          {
+            "from": "SUN",
+            "effect": "of well-known powers"
+          },
+          {
+            "from": "MARS",
+            "effect": "learned in the rules of war"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "skilled in ridicule"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "a minister"
+          },
+          {
+            "from": "VENUS",
+            "effect": "without virility"
+          },
+          {
+            "from": "SATURN",
+            "effect": "charitable"
+          }
+        ]
+      },
+      {
+        "verse": "8",
+        "lord": "SATURN",
+        "signs": [
+          "CAPRICORN",
+          "AQUARIUS"
+        ],
+        "readings": [
+          {
+            "from": "SUN",
+            "effect": "with very few children"
+          },
+          {
+            "from": "MARS",
+            "effect": "unhappy though rich"
+          },
+          {
+            "from": "MERCURY",
+            "effect": "haughty"
+          },
+          {
+            "from": "JUPITER",
+            "effect": "doing deeds beneath his station"
+          },
+          {
+            "from": "VENUS",
+            "effect": "fond of bad women"
+          },
+          {
+            "from": "SATURN",
+            "effect": "miserly"
+          }
+        ]
+      }
+    ]
+  },
+  "bjInBhava": {
+    "text": "Brihat Jataka",
+    "chapter": "20",
+    "rank": 1,
+    "note": "A graha in a bhava counted from the ascendant, and what the verse says of the native. The chapter writes out the Sun, the Moon and Jupiter in every house, and gives the others only some houses by name: Mars the first, second and ninth, Mercury the first to the eighth, Saturn the first and Venus the first, fifth and seventh, each taking the rest from the Sun's readings (Venus from Jupiter's), so those houses repeat that reading under their own verse. The Sun, the Moon and Saturn in the ascendant read otherwise when a named sign rises, given as variants. Venus in Pisces, in any house, makes the native rich, which no house rule holds. Stanzas 10 and 11 weigh every reading by the graha's dignity (full in exaltation, three-quarters in mooltrikona, half in its own sign, a quarter in a friend's, less in an enemy's, nothing in debilitation or combust) and, after Satyacharya, have benefics promote a bhava and malefics reduce it, reversed in the sixth, eighth and twelfth; neither bars a reading and the kernel has no such weight, so neither is here. Read from N. Chidambaram Iyer's 1885 translation of Varahamihira's Brihat Jataka, ch. 20.",
+    "grahas": [
+      {
+        "planet": "SUN",
+        "readings": [
+          {
+            "verse": "1",
+            "effect": "fond of fighting, slow at work, without sight and without mercy"
+          },
+          {
+            "verse": "1",
+            "effect": "very rich, losing his wealth to the king, and suffering diseases of the face"
+          },
+          {
+            "verse": "2",
+            "effect": "intelligent and powerful"
+          },
+          {
+            "verse": "2",
+            "effect": "afflicted with grief and mental suffering"
+          },
+          {
+            "verse": "2",
+            "effect": "without sons, and poor"
+          },
+          {
+            "verse": "2",
+            "effect": "powerful, and subjugated by his enemy"
+          },
+          {
+            "verse": "3",
+            "effect": "disgraced at the hands of women"
+          },
+          {
+            "verse": "3",
+            "effect": "of very few sons, and becoming blind"
+          },
+          {
+            "verse": "3",
+            "effect": "having sons, wealth and comfort"
+          },
+          {
+            "verse": "3",
+            "effect": "comfortable and powerful"
+          },
+          {
+            "verse": "3",
+            "effect": "very rich"
+          },
+          {
+            "verse": "3",
+            "effect": "an apostate"
+          }
+        ],
+        "variants": [
+          {
+            "verse": "1",
+            "house": 1,
+            "lagnas": [
+              "ARIES"
+            ],
+            "effect": "rich, and suffering diseases of the eye"
+          },
+          {
+            "verse": "1",
+            "house": 1,
+            "lagnas": [
+              "LEO"
+            ],
+            "effect": "night-blind"
+          },
+          {
+            "verse": "1",
+            "house": 1,
+            "lagnas": [
+              "LIBRA"
+            ],
+            "effect": "blind and poor"
+          },
+          {
+            "verse": "1",
+            "house": 1,
+            "lagnas": [
+              "CANCER"
+            ],
+            "effect": "with a mote in his eye"
+          }
+        ]
+      },
+      {
+        "planet": "MOON",
+        "readings": [
+          {
+            "verse": "4",
+            "effect": "dumb, mad, an idiot, blind or deaf, doing mean deeds or a slave"
+          },
+          {
+            "verse": "4",
+            "effect": "of a large family"
+          },
+          {
+            "verse": "4",
+            "effect": "delighting in torturing animals"
+          },
+          {
+            "verse": "4",
+            "effect": "in full enjoyment of what the fourth house signifies"
+          },
+          {
+            "verse": "4",
+            "effect": "in full enjoyment of what the fifth house signifies"
+          },
+          {
+            "verse": "4",
+            "effect": "soft of body, of dull appetite, sparing in love, cruel and slow at work"
+          },
+          {
+            "verse": "5",
+            "effect": "jealous of others' prosperity, and lustful"
+          },
+          {
+            "verse": "5",
+            "effect": "fickle, and afflicted with disease"
+          },
+          {
+            "verse": "5",
+            "effect": "liked by all, with sons, kinsmen and wealth"
+          },
+          {
+            "verse": "5",
+            "effect": "successful everywhere, virtuous, wealthy, intelligent and valorous"
+          },
+          {
+            "verse": "5",
+            "effect": "famous, and gaining wealth and the like"
+          },
+          {
+            "verse": "5",
+            "effect": "wicked, and of defective limbs"
+          }
+        ],
+        "variants": [
+          {
+            "verse": "4",
+            "house": 1,
+            "lagnas": [
+              "CANCER"
+            ],
+            "effect": "rich"
+          },
+          {
+            "verse": "4",
+            "house": 1,
+            "lagnas": [
+              "ARIES"
+            ],
+            "effect": "having many sons"
+          },
+          {
+            "verse": "4",
+            "house": 1,
+            "lagnas": [
+              "TAURUS"
+            ],
+            "effect": "wealthy"
+          }
+        ]
+      },
+      {
+        "planet": "MARS",
+        "readings": [
+          {
+            "verse": "6",
+            "effect": "of a wounded body"
+          },
+          {
+            "verse": "6",
+            "effect": "eating poor food"
+          },
+          {
+            "verse": "6",
+            "effect": "intelligent and powerful"
+          },
+          {
+            "verse": "6",
+            "effect": "afflicted with grief and mental suffering"
+          },
+          {
+            "verse": "6",
+            "effect": "without sons, and poor"
+          },
+          {
+            "verse": "6",
+            "effect": "powerful, and subjugated by his enemy"
+          },
+          {
+            "verse": "6",
+            "effect": "disgraced at the hands of women"
+          },
+          {
+            "verse": "6",
+            "effect": "of very few sons, and becoming blind"
+          },
+          {
+            "verse": "6",
+            "effect": "a sinner"
+          },
+          {
+            "verse": "6",
+            "effect": "comfortable and powerful"
+          },
+          {
+            "verse": "6",
+            "effect": "very rich"
+          },
+          {
+            "verse": "6",
+            "effect": "an apostate"
+          }
+        ],
+        "variants": []
+      },
+      {
+        "planet": "MERCURY",
+        "readings": [
+          {
+            "verse": "6",
+            "effect": "learned"
+          },
+          {
+            "verse": "6",
+            "effect": "wealthy"
+          },
+          {
+            "verse": "6",
+            "effect": "wicked"
+          },
+          {
+            "verse": "6",
+            "effect": "learned"
+          },
+          {
+            "verse": "6",
+            "effect": "a king's minister"
+          },
+          {
+            "verse": "6",
+            "effect": "without enemies"
+          },
+          {
+            "verse": "6",
+            "effect": "knowing the law"
+          },
+          {
+            "verse": "6",
+            "effect": "renowned for his virtues"
+          },
+          {
+            "verse": "6",
+            "effect": "having sons, wealth and comfort"
+          },
+          {
+            "verse": "6",
+            "effect": "comfortable and powerful"
+          },
+          {
+            "verse": "6",
+            "effect": "very rich"
+          },
+          {
+            "verse": "6",
+            "effect": "an apostate"
+          }
+        ],
+        "variants": []
+      },
+      {
+        "planet": "JUPITER",
+        "readings": [
+          {
+            "verse": "7",
+            "effect": "learned"
+          },
+          {
+            "verse": "7",
+            "effect": "well spoken"
+          },
+          {
+            "verse": "7",
+            "effect": "a niggard"
+          },
+          {
+            "verse": "7",
+            "effect": "comfortable"
+          },
+          {
+            "verse": "7",
+            "effect": "intelligent"
+          },
+          {
+            "verse": "7",
+            "effect": "without enemies"
+          },
+          {
+            "verse": "7",
+            "effect": "of qualities above his father's"
+          },
+          {
+            "verse": "7",
+            "effect": "doing deeds unfit for his station"
+          },
+          {
+            "verse": "7",
+            "effect": "a devotee"
+          },
+          {
+            "verse": "7",
+            "effect": "wealthy"
+          },
+          {
+            "verse": "7",
+            "effect": "full of gain"
+          },
+          {
+            "verse": "7",
+            "effect": "doing fearful deeds"
+          }
+        ],
+        "variants": []
+      },
+      {
+        "planet": "VENUS",
+        "readings": [
+          {
+            "verse": "8",
+            "effect": "skilled in love, and in great comfort"
+          },
+          {
+            "verse": "8",
+            "effect": "well spoken"
+          },
+          {
+            "verse": "8",
+            "effect": "a niggard"
+          },
+          {
+            "verse": "8",
+            "effect": "comfortable"
+          },
+          {
+            "verse": "8",
+            "effect": "comfortable"
+          },
+          {
+            "verse": "8",
+            "effect": "without enemies"
+          },
+          {
+            "verse": "8",
+            "effect": "fond of quarrels and of love"
+          },
+          {
+            "verse": "8",
+            "effect": "doing deeds unfit for his station"
+          },
+          {
+            "verse": "8",
+            "effect": "a devotee"
+          },
+          {
+            "verse": "8",
+            "effect": "wealthy"
+          },
+          {
+            "verse": "8",
+            "effect": "full of gain"
+          },
+          {
+            "verse": "8",
+            "effect": "doing fearful deeds"
+          }
+        ],
+        "variants": []
+      },
+      {
+        "planet": "SATURN",
+        "readings": [
+          {
+            "verse": "9",
+            "effect": "poor, sick and lustful, dirty, much diseased in youth, and indistinct of speech"
+          },
+          {
+            "verse": "9",
+            "effect": "very rich, losing his wealth to the king, and suffering diseases of the face"
+          },
+          {
+            "verse": "9",
+            "effect": "intelligent and powerful"
+          },
+          {
+            "verse": "9",
+            "effect": "afflicted with grief and mental suffering"
+          },
+          {
+            "verse": "9",
+            "effect": "without sons, and poor"
+          },
+          {
+            "verse": "9",
+            "effect": "powerful, and subjugated by his enemy"
+          },
+          {
+            "verse": "9",
+            "effect": "disgraced at the hands of women"
+          },
+          {
+            "verse": "9",
+            "effect": "of very few sons, and becoming blind"
+          },
+          {
+            "verse": "9",
+            "effect": "having sons, wealth and comfort"
+          },
+          {
+            "verse": "9",
+            "effect": "comfortable and powerful"
+          },
+          {
+            "verse": "9",
+            "effect": "very rich"
+          },
+          {
+            "verse": "9",
+            "effect": "an apostate"
+          }
+        ],
+        "variants": [
+          {
+            "verse": "9",
+            "house": 1,
+            "lagnas": [
+              "LIBRA",
+              "SAGITTARIUS",
+              "CAPRICORN",
+              "AQUARIUS",
+              "PISCES"
+            ],
+            "effect": "as happy as a king, ruling a village or town, learned, and fine of limb"
+          }
+        ]
+      }
+    ]
   }
 }

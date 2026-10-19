@@ -881,8 +881,8 @@ ch. 24's woman's horoscope and ch. 25's death and worlds. Ch. 25 is the chapter 
 ch. 5A restates, and 57 of its rules copy that encoding and are held to agree, departing where
 the Sanskrit does (v. 5's waning Moon, v. 11's sign lord, the drekkana lists of vv. 4 and 13,
 C525, C526). Ch. 24's trimshamshas are read by ch. 1 v. 7's degrees, and the half-sign classes
-by C520. Chs. 16 to 21's readings by placement are left to the readings table, which keeps one
-text a family.
+by C520. Chs. 16 to 20's readings by placement went to the readings table, which keeps one
+text a family ("Brihat Jataka's own readings" below), and ch. 21's counts and vargas to a pack.
 
 **Phaladeepika chs. 10, 12 and 27, built (2026-10-19).** `classical-phaladeepika-more.json`,
 75 rules in the nabhasa set: ch. 10's seventh house as `PHALADEEPIKA_KALATRA_*`, ch. 12's
@@ -1220,6 +1220,27 @@ and `planet-in-house` on either of the two says which sign that is. The
 recording engine, by comparison, carries fifteen rules that pair a conjunction
 with a house and every one of them is a pair; its one triple with a house uses
 a house *class*, not a named house.
+
+**Brihat Jataka's own readings (2026-10-19).** Chs. 16 to 20 add five
+families to the generator, 349 rules read from Iyer's 1885 translation:
+- the Moon in each nakshatra;
+- each graha in each sign, a verse joining a lord's two signs standing
+  for a rule in each;
+- the Moon in each sign under each graha's aspect;
+- the Moon in each lord's navamsa under each aspect;
+- each graha in each bhava.
+
+The navamsa family is the first reading to place a body in a division
+(`in-varga` D9), and the aspect is still cast in the rasi chart (C593).
+V. 8 reads the same verses for the Sun with the Moon's aspect in place of
+his own, and Mercury and Venus never stand seventh from him, so the Sun
+gets 28 rules where the Moon gets 42 rather than 42 that could never
+hold: **a verse the sky forbids is left unbuilt, with the reason**.
+
+Ch. 20's rising-sign readings are separate rules beside the house's own
+(C588). The readings test now passes the corpus's vargas to the
+evaluator, without which every navamsa reading would have answered no
+chart at all.
 
 **Gathering, rather than deciding.** A rule answers one figure; a consumer
 asking what the fourth house says wants every figure that touches it at once.

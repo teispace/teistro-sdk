@@ -20,7 +20,8 @@ mod common;
 
 use std::collections::BTreeMap;
 
-use common::{chart, chart_at, files_in};
+use common::{chart, chart_at, files_in, vargas};
+use teistro_core::catalogue::Rashi;
 use teistro_rules::{Evaluator, Readings, Rule, Tables, shipped};
 
 #[test]
@@ -669,15 +670,17 @@ const ANSWERED: [(&str, usize); 188] = [
 ];
 
 /// The readings of one shape, built by the generator from its table: every
-/// pair of the seven grahas in one sign (Brihat Jataka ch. 14) and the Moon in
-/// each sign under each of six aspects (Phaladeepika ch. 18). None of them
+/// pair of the seven grahas in one sign (Brihat Jataka ch. 14), the Moon in
+/// each sign under each of six aspects (Phaladeepika ch. 18), and the rest the
+/// generator's own documentation lists, Brihat Jataka chs. 16 to 20 among them. None of them
 /// grades anything, so each says in words what its verse says and carries no
 /// severity, no cancellation and no span.
 #[test]
 fn the_generator_makes_one_rule_a_reading() {
     let rules = shipped::readings();
-    assert_eq!(rules.len(), 1339);
+    assert_eq!(rules.len(), 1688);
     every_family_is_whole(rules);
+    varahamihira_is_whole(rules);
     dwadasamsas_carry_their_signs(rules);
     // What the generator builds is a rule like any other: it writes out in the
     // language and reads back the same, outcome and all.
@@ -690,7 +693,9 @@ fn the_generator_makes_one_rule_a_reading() {
     let mut charts = 0;
     for (path, file) in files_in("doshas") {
         let chart = chart_at(&path, &file["inputs"]);
-        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
+        // Brihat Jataka ch. 19 places the Moon and the Sun in a navamsa.
+        let divisions = vargas(&chart);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_vargas(&divisions);
         charts += 1;
         for rule in rules {
             let result = evaluator.evaluate(rule);
@@ -734,8 +739,11 @@ fn the_generator_makes_one_rule_a_reading() {
     let silent = counts.iter().filter(|(_, count)| *count == 0).count();
     // A twelfth of a sign is narrower still: 96 of the 144 dwadasamsas
     // rise in none of the 93. Saravali's 119 sets are silent where Jataka
-    // Parijata's are, 49 of them.
-    assert_eq!(silent, 598);
+    // Parijata's are, 49 of them. Brihat Jataka's chs. 16 to 20 add 76:
+    // 35 of the Moon's 72 under an aspect, as Phaladeepika's, 24 of the 70
+    // navamsas under one, 11 of ch. 20's 12 rising signs, four nakshatras and
+    // two houses.
+    assert_eq!(silent, 674);
     // A graha stands in exactly one sign in every chart, so each of Saravali's
     // chapters answers 93 times over the 93.
     // One part of one sign rises in every chart, so each of Saravali's two
@@ -795,6 +803,7 @@ fn the_generator_makes_one_rule_a_reading() {
         by_family.values().all(|total| *total == 93),
         "{by_family:?}"
     );
+    varahamihira_once_a_chart(&counts);
     // Saravali's sets and Jataka Parijata's are one figure read by two texts,
     // so each answers the charts its twin does.
     for (key, count) in counts
@@ -807,7 +816,356 @@ fn the_generator_makes_one_rule_a_reading() {
 }
 
 /// What each reading answers over the 93 recorded charts.
-static READINGS: [(&str, usize); 1339] = [
+static READINGS: [(&str, usize); 1688] = [
+    ("BJ_JUPITER_IN_AQUARIUS", 3),
+    ("BJ_JUPITER_IN_ARIES", 8),
+    ("BJ_JUPITER_IN_BHAVA_1", 5),
+    ("BJ_JUPITER_IN_BHAVA_10", 3),
+    ("BJ_JUPITER_IN_BHAVA_11", 0),
+    ("BJ_JUPITER_IN_BHAVA_12", 3),
+    ("BJ_JUPITER_IN_BHAVA_2", 1),
+    ("BJ_JUPITER_IN_BHAVA_3", 12),
+    ("BJ_JUPITER_IN_BHAVA_4", 23),
+    ("BJ_JUPITER_IN_BHAVA_5", 16),
+    ("BJ_JUPITER_IN_BHAVA_6", 5),
+    ("BJ_JUPITER_IN_BHAVA_7", 4),
+    ("BJ_JUPITER_IN_BHAVA_8", 14),
+    ("BJ_JUPITER_IN_BHAVA_9", 7),
+    ("BJ_JUPITER_IN_CANCER", 4),
+    ("BJ_JUPITER_IN_CAPRICORN", 12),
+    ("BJ_JUPITER_IN_GEMINI", 15),
+    ("BJ_JUPITER_IN_LEO", 1),
+    ("BJ_JUPITER_IN_LIBRA", 3),
+    ("BJ_JUPITER_IN_PISCES", 17),
+    ("BJ_JUPITER_IN_SAGITTARIUS", 5),
+    ("BJ_JUPITER_IN_SCORPIO", 2),
+    ("BJ_JUPITER_IN_TAURUS", 12),
+    ("BJ_JUPITER_IN_VIRGO", 11),
+    ("BJ_MARS_IN_AQUARIUS", 16),
+    ("BJ_MARS_IN_ARIES", 4),
+    ("BJ_MARS_IN_BHAVA_1", 3),
+    ("BJ_MARS_IN_BHAVA_10", 18),
+    ("BJ_MARS_IN_BHAVA_11", 5),
+    ("BJ_MARS_IN_BHAVA_12", 14),
+    ("BJ_MARS_IN_BHAVA_2", 10),
+    ("BJ_MARS_IN_BHAVA_3", 8),
+    ("BJ_MARS_IN_BHAVA_4", 9),
+    ("BJ_MARS_IN_BHAVA_5", 3),
+    ("BJ_MARS_IN_BHAVA_6", 12),
+    ("BJ_MARS_IN_BHAVA_7", 5),
+    ("BJ_MARS_IN_BHAVA_8", 2),
+    ("BJ_MARS_IN_BHAVA_9", 4),
+    ("BJ_MARS_IN_CANCER", 1),
+    ("BJ_MARS_IN_CAPRICORN", 7),
+    ("BJ_MARS_IN_GEMINI", 6),
+    ("BJ_MARS_IN_LEO", 18),
+    ("BJ_MARS_IN_LIBRA", 5),
+    ("BJ_MARS_IN_PISCES", 9),
+    ("BJ_MARS_IN_SAGITTARIUS", 8),
+    ("BJ_MARS_IN_SCORPIO", 13),
+    ("BJ_MARS_IN_TAURUS", 4),
+    ("BJ_MARS_IN_VIRGO", 2),
+    ("BJ_MERCURY_IN_AQUARIUS", 7),
+    ("BJ_MERCURY_IN_ARIES", 21),
+    ("BJ_MERCURY_IN_BHAVA_1", 5),
+    ("BJ_MERCURY_IN_BHAVA_10", 7),
+    ("BJ_MERCURY_IN_BHAVA_11", 3),
+    ("BJ_MERCURY_IN_BHAVA_12", 6),
+    ("BJ_MERCURY_IN_BHAVA_2", 10),
+    ("BJ_MERCURY_IN_BHAVA_3", 10),
+    ("BJ_MERCURY_IN_BHAVA_4", 5),
+    ("BJ_MERCURY_IN_BHAVA_5", 6),
+    ("BJ_MERCURY_IN_BHAVA_6", 22),
+    ("BJ_MERCURY_IN_BHAVA_7", 8),
+    ("BJ_MERCURY_IN_BHAVA_8", 3),
+    ("BJ_MERCURY_IN_BHAVA_9", 8),
+    ("BJ_MERCURY_IN_CANCER", 14),
+    ("BJ_MERCURY_IN_CAPRICORN", 6),
+    ("BJ_MERCURY_IN_GEMINI", 1),
+    ("BJ_MERCURY_IN_LEO", 3),
+    ("BJ_MERCURY_IN_LIBRA", 2),
+    ("BJ_MERCURY_IN_PISCES", 7),
+    ("BJ_MERCURY_IN_SAGITTARIUS", 9),
+    ("BJ_MERCURY_IN_SCORPIO", 6),
+    ("BJ_MERCURY_IN_TAURUS", 7),
+    ("BJ_MERCURY_IN_VIRGO", 10),
+    ("BJ_MOON_IN_ANURADHA", 11),
+    ("BJ_MOON_IN_AQUARIUS", 4),
+    ("BJ_MOON_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
+    ("BJ_MOON_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
+    ("BJ_MOON_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
+    ("BJ_MOON_IN_AQUARIUS_ASPECTED_BY_SATURN", 2),
+    ("BJ_MOON_IN_AQUARIUS_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_AQUARIUS_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_ARDRA", 2),
+    ("BJ_MOON_IN_ARIES", 1),
+    ("BJ_MOON_IN_ARIES_ASPECTED_BY_JUPITER", 0),
+    ("BJ_MOON_IN_ARIES_ASPECTED_BY_MARS", 0),
+    ("BJ_MOON_IN_ARIES_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_ARIES_ASPECTED_BY_SATURN", 0),
+    ("BJ_MOON_IN_ARIES_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_ARIES_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_ASHLESHA", 1),
+    ("BJ_MOON_IN_ASHWINI", 0),
+    ("BJ_MOON_IN_BHARANI", 1),
+    ("BJ_MOON_IN_BHAVA_1", 9),
+    ("BJ_MOON_IN_BHAVA_10", 0),
+    ("BJ_MOON_IN_BHAVA_11", 6),
+    ("BJ_MOON_IN_BHAVA_12", 5),
+    ("BJ_MOON_IN_BHAVA_1_ARIES_RISING", 0),
+    ("BJ_MOON_IN_BHAVA_1_CANCER_RISING", 0),
+    ("BJ_MOON_IN_BHAVA_1_TAURUS_RISING", 0),
+    ("BJ_MOON_IN_BHAVA_2", 5),
+    ("BJ_MOON_IN_BHAVA_3", 23),
+    ("BJ_MOON_IN_BHAVA_4", 9),
+    ("BJ_MOON_IN_BHAVA_5", 4),
+    ("BJ_MOON_IN_BHAVA_6", 3),
+    ("BJ_MOON_IN_BHAVA_7", 5),
+    ("BJ_MOON_IN_BHAVA_8", 12),
+    ("BJ_MOON_IN_BHAVA_9", 12),
+    ("BJ_MOON_IN_CANCER", 5),
+    ("BJ_MOON_IN_CANCER_ASPECTED_BY_JUPITER", 0),
+    ("BJ_MOON_IN_CANCER_ASPECTED_BY_MARS", 1),
+    ("BJ_MOON_IN_CANCER_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_CANCER_ASPECTED_BY_SATURN", 1),
+    ("BJ_MOON_IN_CANCER_ASPECTED_BY_SUN", 1),
+    ("BJ_MOON_IN_CANCER_ASPECTED_BY_VENUS", 2),
+    ("BJ_MOON_IN_CAPRICORN", 8),
+    ("BJ_MOON_IN_CAPRICORN_ASPECTED_BY_JUPITER", 0),
+    ("BJ_MOON_IN_CAPRICORN_ASPECTED_BY_MARS", 0),
+    ("BJ_MOON_IN_CAPRICORN_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_CAPRICORN_ASPECTED_BY_SATURN", 1),
+    ("BJ_MOON_IN_CAPRICORN_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_CAPRICORN_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_CHITRA", 1),
+    ("BJ_MOON_IN_DHANISHTHA", 0),
+    ("BJ_MOON_IN_GEMINI", 6),
+    ("BJ_MOON_IN_GEMINI_ASPECTED_BY_JUPITER", 0),
+    ("BJ_MOON_IN_GEMINI_ASPECTED_BY_MARS", 2),
+    ("BJ_MOON_IN_GEMINI_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_GEMINI_ASPECTED_BY_SATURN", 4),
+    ("BJ_MOON_IN_GEMINI_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_GEMINI_ASPECTED_BY_VENUS", 1),
+    ("BJ_MOON_IN_HASTA", 10),
+    ("BJ_MOON_IN_JUPITER_NAVAMSA_ASPECTED_BY_JUPITER", 1),
+    ("BJ_MOON_IN_JUPITER_NAVAMSA_ASPECTED_BY_MARS", 7),
+    ("BJ_MOON_IN_JUPITER_NAVAMSA_ASPECTED_BY_MERCURY", 8),
+    ("BJ_MOON_IN_JUPITER_NAVAMSA_ASPECTED_BY_SATURN", 3),
+    ("BJ_MOON_IN_JUPITER_NAVAMSA_ASPECTED_BY_SUN", 1),
+    ("BJ_MOON_IN_JUPITER_NAVAMSA_ASPECTED_BY_VENUS", 7),
+    ("BJ_MOON_IN_JYESHTHA", 3),
+    ("BJ_MOON_IN_KRITTIKA", 1),
+    ("BJ_MOON_IN_LEO", 10),
+    ("BJ_MOON_IN_LEO_ASPECTED_BY_JUPITER", 2),
+    ("BJ_MOON_IN_LEO_ASPECTED_BY_MARS", 3),
+    ("BJ_MOON_IN_LEO_ASPECTED_BY_MERCURY", 1),
+    ("BJ_MOON_IN_LEO_ASPECTED_BY_SATURN", 2),
+    ("BJ_MOON_IN_LEO_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_LEO_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_LIBRA", 3),
+    ("BJ_MOON_IN_LIBRA_ASPECTED_BY_JUPITER", 1),
+    ("BJ_MOON_IN_LIBRA_ASPECTED_BY_MARS", 0),
+    ("BJ_MOON_IN_LIBRA_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_LIBRA_ASPECTED_BY_SATURN", 2),
+    ("BJ_MOON_IN_LIBRA_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_LIBRA_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_MAGHA", 3),
+    ("BJ_MOON_IN_MARS_NAVAMSA_ASPECTED_BY_JUPITER", 0),
+    ("BJ_MOON_IN_MARS_NAVAMSA_ASPECTED_BY_MARS", 2),
+    ("BJ_MOON_IN_MARS_NAVAMSA_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_MARS_NAVAMSA_ASPECTED_BY_SATURN", 2),
+    ("BJ_MOON_IN_MARS_NAVAMSA_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_MARS_NAVAMSA_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_MERCURY_NAVAMSA_ASPECTED_BY_JUPITER", 4),
+    ("BJ_MOON_IN_MERCURY_NAVAMSA_ASPECTED_BY_MARS", 5),
+    ("BJ_MOON_IN_MERCURY_NAVAMSA_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_MERCURY_NAVAMSA_ASPECTED_BY_SATURN", 3),
+    ("BJ_MOON_IN_MERCURY_NAVAMSA_ASPECTED_BY_SUN", 2),
+    ("BJ_MOON_IN_MERCURY_NAVAMSA_ASPECTED_BY_VENUS", 1),
+    ("BJ_MOON_IN_MOON_NAVAMSA_ASPECTED_BY_JUPITER", 3),
+    ("BJ_MOON_IN_MOON_NAVAMSA_ASPECTED_BY_MARS", 2),
+    ("BJ_MOON_IN_MOON_NAVAMSA_ASPECTED_BY_MERCURY", 4),
+    ("BJ_MOON_IN_MOON_NAVAMSA_ASPECTED_BY_SATURN", 2),
+    ("BJ_MOON_IN_MOON_NAVAMSA_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_MOON_NAVAMSA_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_MRIGASHIRA", 0),
+    ("BJ_MOON_IN_MULA", 5),
+    ("BJ_MOON_IN_PISCES", 13),
+    ("BJ_MOON_IN_PISCES_ASPECTED_BY_JUPITER", 0),
+    ("BJ_MOON_IN_PISCES_ASPECTED_BY_MARS", 7),
+    ("BJ_MOON_IN_PISCES_ASPECTED_BY_MERCURY", 7),
+    ("BJ_MOON_IN_PISCES_ASPECTED_BY_SATURN", 2),
+    ("BJ_MOON_IN_PISCES_ASPECTED_BY_SUN", 1),
+    ("BJ_MOON_IN_PISCES_ASPECTED_BY_VENUS", 7),
+    ("BJ_MOON_IN_PUNARVASU", 4),
+    ("BJ_MOON_IN_PURVA_ASHADHA", 7),
+    ("BJ_MOON_IN_PURVA_BHADRAPADA", 2),
+    ("BJ_MOON_IN_PURVA_PHALGUNI", 7),
+    ("BJ_MOON_IN_PUSHYA", 4),
+    ("BJ_MOON_IN_REVATI", 10),
+    ("BJ_MOON_IN_ROHINI", 3),
+    ("BJ_MOON_IN_SAGITTARIUS", 12),
+    ("BJ_MOON_IN_SAGITTARIUS_ASPECTED_BY_JUPITER", 3),
+    ("BJ_MOON_IN_SAGITTARIUS_ASPECTED_BY_MARS", 2),
+    ("BJ_MOON_IN_SAGITTARIUS_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_SAGITTARIUS_ASPECTED_BY_SATURN", 1),
+    ("BJ_MOON_IN_SAGITTARIUS_ASPECTED_BY_SUN", 2),
+    ("BJ_MOON_IN_SAGITTARIUS_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_SATURN_NAVAMSA_ASPECTED_BY_JUPITER", 0),
+    ("BJ_MOON_IN_SATURN_NAVAMSA_ASPECTED_BY_MARS", 3),
+    ("BJ_MOON_IN_SATURN_NAVAMSA_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_SATURN_NAVAMSA_ASPECTED_BY_SATURN", 3),
+    ("BJ_MOON_IN_SATURN_NAVAMSA_ASPECTED_BY_SUN", 1),
+    ("BJ_MOON_IN_SATURN_NAVAMSA_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_SCORPIO", 16),
+    ("BJ_MOON_IN_SCORPIO_ASPECTED_BY_JUPITER", 2),
+    ("BJ_MOON_IN_SCORPIO_ASPECTED_BY_MARS", 2),
+    ("BJ_MOON_IN_SCORPIO_ASPECTED_BY_MERCURY", 2),
+    ("BJ_MOON_IN_SCORPIO_ASPECTED_BY_SATURN", 0),
+    ("BJ_MOON_IN_SCORPIO_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_SCORPIO_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_SHATABHISHA", 2),
+    ("BJ_MOON_IN_SHRAVANA", 4),
+    ("BJ_MOON_IN_SUN_NAVAMSA_ASPECTED_BY_JUPITER", 2),
+    ("BJ_MOON_IN_SUN_NAVAMSA_ASPECTED_BY_MARS", 1),
+    ("BJ_MOON_IN_SUN_NAVAMSA_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_SUN_NAVAMSA_ASPECTED_BY_SATURN", 2),
+    ("BJ_MOON_IN_SUN_NAVAMSA_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_SUN_NAVAMSA_ASPECTED_BY_VENUS", 1),
+    ("BJ_MOON_IN_SWATI", 2),
+    ("BJ_MOON_IN_TAURUS", 4),
+    ("BJ_MOON_IN_TAURUS_ASPECTED_BY_JUPITER", 1),
+    ("BJ_MOON_IN_TAURUS_ASPECTED_BY_MARS", 2),
+    ("BJ_MOON_IN_TAURUS_ASPECTED_BY_MERCURY", 1),
+    ("BJ_MOON_IN_TAURUS_ASPECTED_BY_SATURN", 1),
+    ("BJ_MOON_IN_TAURUS_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_TAURUS_ASPECTED_BY_VENUS", 1),
+    ("BJ_MOON_IN_UTTARA_ASHADHA", 4),
+    ("BJ_MOON_IN_UTTARA_BHADRAPADA", 3),
+    ("BJ_MOON_IN_UTTARA_PHALGUNI", 0),
+    ("BJ_MOON_IN_VENUS_NAVAMSA_ASPECTED_BY_JUPITER", 2),
+    ("BJ_MOON_IN_VENUS_NAVAMSA_ASPECTED_BY_MARS", 3),
+    ("BJ_MOON_IN_VENUS_NAVAMSA_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_VENUS_NAVAMSA_ASPECTED_BY_SATURN", 2),
+    ("BJ_MOON_IN_VENUS_NAVAMSA_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_VENUS_NAVAMSA_ASPECTED_BY_VENUS", 2),
+    ("BJ_MOON_IN_VIRGO", 11),
+    ("BJ_MOON_IN_VIRGO_ASPECTED_BY_JUPITER", 3),
+    ("BJ_MOON_IN_VIRGO_ASPECTED_BY_MARS", 2),
+    ("BJ_MOON_IN_VIRGO_ASPECTED_BY_MERCURY", 0),
+    ("BJ_MOON_IN_VIRGO_ASPECTED_BY_SATURN", 1),
+    ("BJ_MOON_IN_VIRGO_ASPECTED_BY_SUN", 0),
+    ("BJ_MOON_IN_VIRGO_ASPECTED_BY_VENUS", 0),
+    ("BJ_MOON_IN_VISHAKHA", 3),
+    ("BJ_SATURN_IN_AQUARIUS", 5),
+    ("BJ_SATURN_IN_ARIES", 14),
+    ("BJ_SATURN_IN_BHAVA_1", 3),
+    ("BJ_SATURN_IN_BHAVA_10", 1),
+    ("BJ_SATURN_IN_BHAVA_11", 21),
+    ("BJ_SATURN_IN_BHAVA_12", 4),
+    ("BJ_SATURN_IN_BHAVA_1_AQUARIUS_RISING", 0),
+    ("BJ_SATURN_IN_BHAVA_1_CAPRICORN_RISING", 0),
+    ("BJ_SATURN_IN_BHAVA_1_LIBRA_RISING", 0),
+    ("BJ_SATURN_IN_BHAVA_1_PISCES_RISING", 1),
+    ("BJ_SATURN_IN_BHAVA_1_SAGITTARIUS_RISING", 0),
+    ("BJ_SATURN_IN_BHAVA_2", 7),
+    ("BJ_SATURN_IN_BHAVA_3", 22),
+    ("BJ_SATURN_IN_BHAVA_4", 9),
+    ("BJ_SATURN_IN_BHAVA_5", 4),
+    ("BJ_SATURN_IN_BHAVA_6", 6),
+    ("BJ_SATURN_IN_BHAVA_7", 6),
+    ("BJ_SATURN_IN_BHAVA_8", 5),
+    ("BJ_SATURN_IN_BHAVA_9", 5),
+    ("BJ_SATURN_IN_CANCER", 5),
+    ("BJ_SATURN_IN_CAPRICORN", 20),
+    ("BJ_SATURN_IN_GEMINI", 3),
+    ("BJ_SATURN_IN_LEO", 2),
+    ("BJ_SATURN_IN_LIBRA", 1),
+    ("BJ_SATURN_IN_PISCES", 4),
+    ("BJ_SATURN_IN_SAGITTARIUS", 9),
+    ("BJ_SATURN_IN_SCORPIO", 10),
+    ("BJ_SATURN_IN_TAURUS", 9),
+    ("BJ_SATURN_IN_VIRGO", 11),
+    ("BJ_SUN_IN_AQUARIUS", 7),
+    ("BJ_SUN_IN_ARIES", 15),
+    ("BJ_SUN_IN_BHAVA_1", 4),
+    ("BJ_SUN_IN_BHAVA_10", 7),
+    ("BJ_SUN_IN_BHAVA_11", 6),
+    ("BJ_SUN_IN_BHAVA_12", 4),
+    ("BJ_SUN_IN_BHAVA_1_ARIES_RISING", 0),
+    ("BJ_SUN_IN_BHAVA_1_CANCER_RISING", 0),
+    ("BJ_SUN_IN_BHAVA_1_LEO_RISING", 0),
+    ("BJ_SUN_IN_BHAVA_1_LIBRA_RISING", 0),
+    ("BJ_SUN_IN_BHAVA_2", 12),
+    ("BJ_SUN_IN_BHAVA_3", 5),
+    ("BJ_SUN_IN_BHAVA_4", 13),
+    ("BJ_SUN_IN_BHAVA_5", 1),
+    ("BJ_SUN_IN_BHAVA_6", 17),
+    ("BJ_SUN_IN_BHAVA_7", 14),
+    ("BJ_SUN_IN_BHAVA_8", 6),
+    ("BJ_SUN_IN_BHAVA_9", 4),
+    ("BJ_SUN_IN_CANCER", 11),
+    ("BJ_SUN_IN_CAPRICORN", 6),
+    ("BJ_SUN_IN_GEMINI", 11),
+    ("BJ_SUN_IN_JUPITER_NAVAMSA_ASPECTED_BY_JUPITER", 2),
+    ("BJ_SUN_IN_JUPITER_NAVAMSA_ASPECTED_BY_MARS", 3),
+    ("BJ_SUN_IN_JUPITER_NAVAMSA_ASPECTED_BY_MOON", 2),
+    ("BJ_SUN_IN_JUPITER_NAVAMSA_ASPECTED_BY_SATURN", 2),
+    ("BJ_SUN_IN_LEO", 8),
+    ("BJ_SUN_IN_LIBRA", 3),
+    ("BJ_SUN_IN_MARS_NAVAMSA_ASPECTED_BY_JUPITER", 2),
+    ("BJ_SUN_IN_MARS_NAVAMSA_ASPECTED_BY_MARS", 7),
+    ("BJ_SUN_IN_MARS_NAVAMSA_ASPECTED_BY_MOON", 0),
+    ("BJ_SUN_IN_MARS_NAVAMSA_ASPECTED_BY_SATURN", 4),
+    ("BJ_SUN_IN_MERCURY_NAVAMSA_ASPECTED_BY_JUPITER", 2),
+    ("BJ_SUN_IN_MERCURY_NAVAMSA_ASPECTED_BY_MARS", 0),
+    ("BJ_SUN_IN_MERCURY_NAVAMSA_ASPECTED_BY_MOON", 1),
+    ("BJ_SUN_IN_MERCURY_NAVAMSA_ASPECTED_BY_SATURN", 1),
+    ("BJ_SUN_IN_MOON_NAVAMSA_ASPECTED_BY_JUPITER", 0),
+    ("BJ_SUN_IN_MOON_NAVAMSA_ASPECTED_BY_MARS", 0),
+    ("BJ_SUN_IN_MOON_NAVAMSA_ASPECTED_BY_MOON", 0),
+    ("BJ_SUN_IN_MOON_NAVAMSA_ASPECTED_BY_SATURN", 2),
+    ("BJ_SUN_IN_PISCES", 6),
+    ("BJ_SUN_IN_SAGITTARIUS", 13),
+    ("BJ_SUN_IN_SATURN_NAVAMSA_ASPECTED_BY_JUPITER", 5),
+    ("BJ_SUN_IN_SATURN_NAVAMSA_ASPECTED_BY_MARS", 0),
+    ("BJ_SUN_IN_SATURN_NAVAMSA_ASPECTED_BY_MOON", 1),
+    ("BJ_SUN_IN_SATURN_NAVAMSA_ASPECTED_BY_SATURN", 1),
+    ("BJ_SUN_IN_SCORPIO", 2),
+    ("BJ_SUN_IN_SUN_NAVAMSA_ASPECTED_BY_JUPITER", 3),
+    ("BJ_SUN_IN_SUN_NAVAMSA_ASPECTED_BY_MARS", 0),
+    ("BJ_SUN_IN_SUN_NAVAMSA_ASPECTED_BY_MOON", 0),
+    ("BJ_SUN_IN_SUN_NAVAMSA_ASPECTED_BY_SATURN", 1),
+    ("BJ_SUN_IN_TAURUS", 9),
+    ("BJ_SUN_IN_VENUS_NAVAMSA_ASPECTED_BY_JUPITER", 2),
+    ("BJ_SUN_IN_VENUS_NAVAMSA_ASPECTED_BY_MARS", 0),
+    ("BJ_SUN_IN_VENUS_NAVAMSA_ASPECTED_BY_MOON", 0),
+    ("BJ_SUN_IN_VENUS_NAVAMSA_ASPECTED_BY_SATURN", 3),
+    ("BJ_SUN_IN_VIRGO", 2),
+    ("BJ_VENUS_IN_AQUARIUS", 13),
+    ("BJ_VENUS_IN_ARIES", 2),
+    ("BJ_VENUS_IN_BHAVA_1", 3),
+    ("BJ_VENUS_IN_BHAVA_10", 2),
+    ("BJ_VENUS_IN_BHAVA_11", 4),
+    ("BJ_VENUS_IN_BHAVA_12", 16),
+    ("BJ_VENUS_IN_BHAVA_2", 3),
+    ("BJ_VENUS_IN_BHAVA_3", 6),
+    ("BJ_VENUS_IN_BHAVA_4", 14),
+    ("BJ_VENUS_IN_BHAVA_5", 7),
+    ("BJ_VENUS_IN_BHAVA_6", 2),
+    ("BJ_VENUS_IN_BHAVA_7", 11),
+    ("BJ_VENUS_IN_BHAVA_8", 18),
+    ("BJ_VENUS_IN_BHAVA_9", 7),
+    ("BJ_VENUS_IN_CANCER", 7),
+    ("BJ_VENUS_IN_CAPRICORN", 12),
+    ("BJ_VENUS_IN_GEMINI", 8),
+    ("BJ_VENUS_IN_LEO", 5),
+    ("BJ_VENUS_IN_LIBRA", 1),
+    ("BJ_VENUS_IN_PISCES", 5),
+    ("BJ_VENUS_IN_SAGITTARIUS", 10),
+    ("BJ_VENUS_IN_SCORPIO", 4),
+    ("BJ_VENUS_IN_TAURUS", 18),
+    ("BJ_VENUS_IN_VIRGO", 8),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
@@ -2196,6 +2554,10 @@ fn every_family_is_whole(rules: &[Rule]) {
             .effect()
             .unwrap_or_else(|| panic!("{}: says in words what follows", rule.key));
         assert!(!text.is_empty() && rule.life_span().is_none());
+        // Brihat Jataka chs. 16 to 20 are held by `varahamihira_is_whole`.
+        if rule.key.starts_with("BJ_") {
+            continue;
+        }
         match rule.category.as_str() {
             "dwigraha" => pairs.push(named(&rule.key, "DWIGRAHA_")),
             "chandra-drishti" => moon.push(named(&rule.key, "CHANDRA_IN_")),
@@ -2263,6 +2625,81 @@ fn every_family_is_whole(rules: &[Rule]) {
     );
     assert_eq!(rising.into_iter().collect::<Vec<_>>(), RISING);
 }
+
+/// Brihat Jataka's readings held as Saravali's are: each of the seven in a
+/// sign and in a house, and the Moon in a nakshatra, once a chart.
+fn varahamihira_once_a_chart(counts: &[(&str, usize)]) {
+    let mut by_place: BTreeMap<(&str, &str), usize> = BTreeMap::new();
+    for (key, count) in counts {
+        let Some((graha, place)) = key
+            .strip_prefix("BJ_")
+            .and_then(|rest| rest.split_once("_IN_"))
+        else {
+            continue;
+        };
+        if place.contains("_ASPECTED_BY_") || place.ends_with("_RISING") {
+            continue;
+        }
+        let kind = if place.starts_with("BHAVA_") {
+            "bhava"
+        } else if Rashi::ALL.iter().any(|sign| sign.key() == place) {
+            "sign"
+        } else {
+            "nakshatra"
+        };
+        *by_place.entry((graha, kind)).or_default() += count;
+    }
+    assert_eq!(by_place.len(), 15);
+    assert!(by_place.values().all(|total| *total == 93), "{by_place:?}");
+}
+
+/// Brihat Jataka chs. 16 to 20, counted by family and the graha each is
+/// about, against [`VARAHAMIHIRA`].
+fn varahamihira_is_whole(rules: &[Rule]) {
+    let mut varahamihira: BTreeMap<(&str, &str), usize> = BTreeMap::new();
+    for rule in rules {
+        let Some(rest) = rule.key.strip_prefix("BJ_") else {
+            continue;
+        };
+        let (graha, _) = rest.split_once("_IN_").unwrap();
+        let family = if rule.key.ends_with("_RISING") {
+            "graha-in-bhava-rising"
+        } else {
+            rule.category.as_str()
+        };
+        *varahamihira.entry((family, graha)).or_default() += 1;
+    }
+    assert_eq!(varahamihira.into_iter().collect::<Vec<_>>(), VARAHAMIHIRA);
+}
+
+/// Brihat Jataka chs. 16 to 20: the Moon in each nakshatra and under each
+/// graha's aspect in each sign, each of the seven in each sign and each
+/// house, the rising signs ch. 20 names for the Sun, the Moon and Saturn in
+/// the ascendant, and the Moon and the Sun in each lord's navamsa under each
+/// aspect but, for the Sun, Mercury's and Venus's.
+const VARAHAMIHIRA: [((&str, &str), usize); 21] = [
+    (("chandra-drishti", "MOON"), 72),
+    (("chandra-nakshatra", "MOON"), 27),
+    (("graha-in-bhava", "JUPITER"), 12),
+    (("graha-in-bhava", "MARS"), 12),
+    (("graha-in-bhava", "MERCURY"), 12),
+    (("graha-in-bhava", "MOON"), 12),
+    (("graha-in-bhava", "SATURN"), 12),
+    (("graha-in-bhava", "SUN"), 12),
+    (("graha-in-bhava", "VENUS"), 12),
+    (("graha-in-bhava-rising", "MOON"), 3),
+    (("graha-in-bhava-rising", "SATURN"), 5),
+    (("graha-in-bhava-rising", "SUN"), 4),
+    (("graha-in-rasi", "JUPITER"), 12),
+    (("graha-in-rasi", "MARS"), 12),
+    (("graha-in-rasi", "MERCURY"), 12),
+    (("graha-in-rasi", "MOON"), 12),
+    (("graha-in-rasi", "SATURN"), 12),
+    (("graha-in-rasi", "SUN"), 12),
+    (("graha-in-rasi", "VENUS"), 12),
+    (("navamsa-drishti", "MOON"), 42),
+    (("navamsa-drishti", "SUN"), 28),
+];
 
 /// Every combination of the seven from two to six, once each in each text
 /// that lists them: 21, 35, 35, 21 and 7.

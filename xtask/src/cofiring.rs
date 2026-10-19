@@ -72,7 +72,7 @@ const SPAN_DAYS: f64 = 73_049.0;
 const SUPPORT: usize = 5;
 
 /// One text stating one condition twice, each with where it does.
-const REVIEWED: [(&[&str], &str); 91] = [
+const REVIEWED: [(&[&str], &str); 98] = [
     (
         &[
             "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -803,6 +803,62 @@ const REVIEWED: [(&[&str], &str); 91] = [
         ],
         "Saravali gives the Moon and Mercury in the first twice: ch. 45 v. 25 in a woman's chart, \
          and among the grahas in the houses",
+    ),
+    (
+        &[
+            "BJ_MARANA_SUN_IN_THE_EIGHTH_DEATH_BY_FIRE",
+            "BJ_SUN_IN_BHAVA_8",
+        ],
+        "Brihat Jataka gives the Sun in the eighth twice: ch. 25 v. 1 as the manner of death, \
+         and ch. 20 v. 3 among the grahas in the bhavas",
+    ),
+    (
+        &[
+            "BJ_MARANA_MOON_IN_THE_EIGHTH_DEATH_BY_WATER",
+            "BJ_MOON_IN_BHAVA_8",
+        ],
+        "Brihat Jataka gives the Moon in the eighth twice: ch. 25 v. 1 as the manner of death, \
+         and ch. 20 v. 5 among the grahas in the bhavas",
+    ),
+    (
+        &[
+            "BJ_MARANA_MARS_IN_THE_EIGHTH_DEATH_BY_A_WEAPON",
+            "BJ_MARS_IN_BHAVA_8",
+        ],
+        "Brihat Jataka gives Mars in the eighth twice: ch. 25 v. 1 as the manner of death, \
+         and ch. 20 v. 6 among the grahas in the bhavas",
+    ),
+    (
+        &[
+            "BJ_MARANA_MERCURY_IN_THE_EIGHTH_DEATH_BY_FEVER",
+            "BJ_MERCURY_IN_BHAVA_8",
+        ],
+        "Brihat Jataka gives Mercury in the eighth twice: ch. 25 v. 1 as the manner of death, \
+         and ch. 20 v. 6 among the grahas in the bhavas",
+    ),
+    (
+        &[
+            "BJ_JUPITER_IN_BHAVA_8",
+            "BJ_MARANA_JUPITER_IN_THE_EIGHTH_DEATH_BY_AN_UNKNOWN_ILLNESS",
+        ],
+        "Brihat Jataka gives Jupiter in the eighth twice: ch. 25 v. 1 as the manner of death, \
+         and ch. 20 v. 7 among the grahas in the bhavas",
+    ),
+    (
+        &[
+            "BJ_MARANA_VENUS_IN_THE_EIGHTH_DEATH_BY_THIRST",
+            "BJ_VENUS_IN_BHAVA_8",
+        ],
+        "Brihat Jataka gives Venus in the eighth twice: ch. 25 v. 1 as the manner of death, \
+         and ch. 20 v. 8 among the grahas in the bhavas",
+    ),
+    (
+        &[
+            "BJ_MARANA_SATURN_IN_THE_EIGHTH_DEATH_BY_HUNGER",
+            "BJ_SATURN_IN_BHAVA_8",
+        ],
+        "Brihat Jataka gives Saturn in the eighth twice: ch. 25 v. 1 as the manner of death, \
+         and ch. 20 v. 9 among the grahas in the bhavas",
     ),
 ];
 

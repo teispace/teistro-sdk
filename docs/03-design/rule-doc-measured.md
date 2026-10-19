@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-5053 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1339 in `READINGS`, 2844 in `NABHASAS`, 657 in `the corpus's own`. Their 25 840 conditions are written 8995 ways, which say 8970 things, and the renderer gives those 8990 sentences.
+5402 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1688 in `READINGS`, 2844 in `NABHASAS`, 657 in `the corpus's own`. Their 26 413 conditions are written 9036 ways, which say 9011 things, and the renderer gives those 9031 sentences.
 
-The 4396 shipped rules are what a consumer evaluates; the corpus's own
+The 4745 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | falsified | 1 of 8970 disagree |
-| every condition of every rule renders | **holds** | 0 of 25840 disagree |
+| no two conditions that differ in meaning read alike | falsified | 1 of 9011 disagree |
+| every condition of every rule renders | **holds** | 0 of 26413 disagree |
 
 These renderings are shared, each by the conditions beneath it:
 
@@ -50,8 +50,8 @@ These renderings are shared, each by the conditions beneath it:
 | `and` | 2649 | MOON aspects SUN and SUN aspects MOON |
 | `or` | 1747 | MARS is combust or MARS is retrograde |
 | `not` | 1732 | it is not the case that SATURN is weak |
-| `planet-in-house` | 2618 | SUN stands in the 1st house |
-| `planet-in-sign` | 2032 | SUN stands in LEO |
+| `planet-in-house` | 2714 | SUN stands in the 1st house |
+| `planet-in-sign` | 2270 | SUN stands in LEO |
 | `planet-dignity` | 780 | the dignity of SUN is exalted |
 | `planet-in-kendra` | 194 | SUN stands in a kendra |
 | `planet-in-trikona` | 15 | SUN stands in a trikona |
@@ -70,7 +70,7 @@ These renderings are shared, each by the conditions beneath it:
 | `chara-karaka-in-house` | 34 | the AK stands in the 1st house |
 | `planet-combust` | 145 | SUN is combust |
 | `planet-retrograde` | 24 | MARS is retrograde |
-| `planet-aspects-planet` | 1598 | KETU aspects SUN |
+| `planet-aspects-planet` | 1740 | KETU aspects SUN |
 | `planet-aspects-house` | 224 | SUN aspects the 1st house |
 | `planet-at-table-degree` | 12 | SUN stands at the degree MRITYU_BHAGA gives it in its sign |
 | `planet-in-table-sign` | 7 | SUN stands in a sign DAGDHA_RASHI gives the birth tithi |
@@ -92,7 +92,7 @@ These renderings are shared, each by the conditions beneath it:
 | `birth-during-eclipse` | 6 | the birth falls in an eclipse |
 | `birth-on-sankranti` | 8 | the birth falls on a sankranti's day |
 | `transit-in-house` | 0 | in no pack |
-| `planet-in-nakshatra` | 54 | MOON stands in the nakshatra MULA |
+| `planet-in-nakshatra` | 81 | MOON stands in the nakshatra MULA |
 | `same-nakshatra` | 2 | MOON and KETU stand in one nakshatra |
 | `planet-strong` | 443 | SUN is strong |
 | `planet-weak` | 82 | SUN is weak |
@@ -103,7 +103,7 @@ These renderings are shared, each by the conditions beneath it:
 | `for-any` | 655 | some one of SUN, MARS or SATURN meets: the body found aspects KETU |
 | `count-of` | 185 | at least 4 of the nine grahas meet: the body found aspects MOON |
 | `n-of` | 14 | exactly 1 of these hold: the rule PHALADEEPIKA_RUCHAKA holds, the rule PHALADEEPIKA_BHADRA holds, the rule PHALADEEPIKA_HAMSA holds, the rule PHALADEEPIKA_MALAVYA holds and the rule PHALADEEPIKA_SASA holds |
-| `in-varga` | 242 | in the D2, the lagna rises in CANCER |
+| `in-varga` | 312 | in the D9, SUN stands in LEO |
 | `count-in-houses` | 827 | at least 1 malefic stands in the 7th from SUN |
 | `count-aspecting` | 30 | at least 1 malefic aspects SUN |
 | `rule` | 2466 | the rule NABHASA_GADA holds |

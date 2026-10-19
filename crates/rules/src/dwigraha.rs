@@ -8,14 +8,16 @@
 //! Saravali the same combinations (chs. 15 to 19), a graha in each of the
 //! twelve signs (chs. 22 to 29), the same
 //! graha there under each other graha's aspect, and a graha in each of the
-//! twelve bhavas (ch. 30). None of them grades anything: each verse says
+//! twelve bhavas (ch. 30); and Brihat Jataka chs. 16 to 20 the Moon in each
+//! nakshatra, each graha in each sign, the Moon there and in each navamsa under
+//! each graha's aspect, and each graha in each bhava. None of them grades anything: each verse says
 //! in words what follows, so every rule here carries an [`Outcome::Effect`]
 //! and no severity and no span. The conditions repeat, so only what changes is
 //! data — the pair, the sign, the aspecting graha, the house and the reading —
 //! and the rules are built from it.
 
 use serde::Deserialize;
-use teistro_core::catalogue::{Graha, Rashi};
+use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Varga};
 
 use crate::language::{Body, Condition, EvidenceRank, House, Source};
 use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
@@ -37,6 +39,11 @@ pub(crate) struct Table {
     in_bhava: InBhava,
     rising_part: RisingPart,
     pair_in_angle: PairInAngle,
+    bj_moon_in_nakshatra: BjMoonInNakshatra,
+    bj_in_rasi: BjInRasi,
+    bj_moon_aspected: BjMoonAspected,
+    bj_navamsa_aspected: BjNavamsaAspected,
+    bj_in_bhava: BjInBhava,
 }
 
 /// What every rule of a family shares: its text, and how it was read.
@@ -279,6 +286,129 @@ struct SignRow {
     effects: Vec<String>,
 }
 
+/// Brihat Jataka ch. 16: the Moon in each nakshatra.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BjMoonInNakshatra {
+    #[serde(flatten)]
+    family: Family,
+    readings: Vec<NakshatraReading>,
+}
+
+/// One nakshatra's reading.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct NakshatraReading {
+    verse: String,
+    nakshatra: Nakshatra,
+    effect: String,
+}
+
+/// Brihat Jataka chs. 17 and 18: each graha in the signs, the Moon's chapter
+/// a sign to a reading and the others' often a lord's two signs at once.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BjInRasi {
+    #[serde(flatten)]
+    family: Family,
+    grahas: Vec<SignedRows>,
+}
+
+/// One graha's readings, each naming the signs it is read in.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SignedRows {
+    planet: Body,
+    chapter: String,
+    readings: Vec<SignedReading>,
+}
+
+/// A reading of the graha in any of `signs`.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SignedReading {
+    verse: String,
+    signs: Vec<Rashi>,
+    effect: String,
+}
+
+/// Brihat Jataka ch. 19 vv. 1 to 3: the Moon in a sign under each graha's
+/// aspect, in each verse's own order of the grahas.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BjMoonAspected {
+    #[serde(flatten)]
+    family: Family,
+    signs: Vec<AspectedSign>,
+}
+
+/// One sign's readings, a graha's aspect to a reading.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AspectedSign {
+    verse: String,
+    sign: Rashi,
+    readings: Vec<Aspecting>,
+}
+
+/// What a verse says under one graha's aspect.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Aspecting {
+    from: Body,
+    effect: String,
+}
+
+/// Brihat Jataka ch. 19 vv. 5 to 8: the Moon in a lord's navamsa under each
+/// graha's aspect, which v. 8 reads for the Sun too.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BjNavamsaAspected {
+    #[serde(flatten)]
+    family: Family,
+    navamsas: Vec<NavamsaGroup>,
+}
+
+/// One lord's navamsas: the signs whose navamsa it is, and a reading under
+/// each graha's aspect.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct NavamsaGroup {
+    verse: String,
+    lord: Body,
+    signs: Vec<Rashi>,
+    readings: Vec<Aspecting>,
+}
+
+/// Brihat Jataka ch. 20: each graha in the twelve bhavas, with the readings a
+/// verse changes when a named sign rises.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BjInBhava {
+    #[serde(flatten)]
+    family: Family,
+    grahas: Vec<BjBhavaRows>,
+}
+
+/// One graha's houses from the ascendant, and its rising-sign variants.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BjBhavaRows {
+    planet: Body,
+    readings: Vec<Reading>,
+    variants: Vec<Variant>,
+}
+
+/// A reading of the graha in `house` when one of `lagnas` rises.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Variant {
+    verse: String,
+    house: House,
+    lagnas: Vec<Rashi>,
+    effect: String,
+}
+
 impl Family {
     /// The citation a rule of this family carries, with its own verse.
     fn source(&self, verse: &str) -> Source {
@@ -365,6 +495,11 @@ impl Table {
             .chain(self.in_bhava())
             .chain(self.rising_part())
             .chain(self.pair_in_angle())
+            .chain(self.bj_moon_in_nakshatra())
+            .chain(self.bj_in_rasi())
+            .chain(self.bj_moon_aspected())
+            .chain(self.bj_navamsa_aspected())
+            .chain(self.bj_in_bhava())
             .collect()
     }
 
@@ -642,6 +777,181 @@ impl Table {
                     )
                 })
             })
+    }
+}
+
+impl Table {
+    /// Brihat Jataka ch. 16: the Moon in each of the twenty-seven nakshatras.
+    fn bj_moon_in_nakshatra(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.bj_moon_in_nakshatra.family;
+        self.bj_moon_in_nakshatra
+            .readings
+            .iter()
+            .map(move |reading| {
+                stating(
+                    format!("BJ_MOON_IN_{}", reading.nakshatra.key()),
+                    "chandra-nakshatra",
+                    family.source(&reading.verse),
+                    vec![Condition::PlanetInNakshatra {
+                        planet: BodyRef::Body(MOON),
+                        nakshatras: vec![reading.nakshatra],
+                        padas: Vec::new(),
+                    }],
+                    &reading.effect,
+                )
+            })
+    }
+
+    /// Brihat Jataka chs. 17 and 18: each graha in each sign. A verse reading
+    /// a lord's two signs at once stands for a rule in each, and the key names
+    /// the one sign.
+    fn bj_in_rasi(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.bj_in_rasi.family;
+        self.bj_in_rasi.grahas.iter().flat_map(move |graha| {
+            graha.readings.iter().flat_map(move |reading| {
+                reading.signs.iter().map(move |sign| {
+                    stating(
+                        format!("BJ_{}_IN_{}", graha.planet.key(), sign.key()),
+                        "graha-in-rasi",
+                        family.in_chapter(Some(graha.chapter.clone()), &reading.verse),
+                        vec![Condition::PlanetInSign {
+                            planet: SignRef::Of(BodyRef::Body(graha.planet)),
+                            signs: vec![*sign],
+                        }],
+                        &reading.effect,
+                    )
+                })
+            })
+        })
+    }
+
+    /// Brihat Jataka ch. 19 vv. 1 to 3: the Moon in each sign under each
+    /// graha's aspect, cast in the rasi chart.
+    fn bj_moon_aspected(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.bj_moon_aspected.family;
+        self.bj_moon_aspected.signs.iter().flat_map(move |row| {
+            row.readings.iter().map(move |reading| {
+                stating(
+                    format!(
+                        "BJ_MOON_IN_{}_ASPECTED_BY_{}",
+                        row.sign.key(),
+                        reading.from.key()
+                    ),
+                    "chandra-drishti",
+                    family.source(&row.verse),
+                    vec![
+                        Condition::PlanetInSign {
+                            planet: SignRef::Of(BodyRef::Body(MOON)),
+                            signs: vec![row.sign],
+                        },
+                        aspected_by(reading.from, MOON),
+                    ],
+                    &reading.effect,
+                )
+            })
+        })
+    }
+
+    /// Brihat Jataka ch. 19 vv. 5 to 8: the Moon in each lord's navamsa under
+    /// each graha's aspect, cast in the rasi chart; then v. 8's Sun in the same
+    /// navamsas, the Moon's aspect read where the Sun's is named. Mercury and
+    /// Venus never stand seventh from the Sun, so the Sun has no rules under
+    /// their aspects.
+    fn bj_navamsa_aspected(&self) -> impl Iterator<Item = Rule> {
+        const SUN: Body = Body::Graha(Graha::Sun);
+        let family = &self.bj_navamsa_aspected.family;
+        [MOON, SUN].into_iter().flat_map(move |planet| {
+            self.bj_navamsa_aspected
+                .navamsas
+                .iter()
+                .flat_map(move |group| {
+                    group.readings.iter().filter_map(move |reading| {
+                        let from = match (planet, reading.from) {
+                            (SUN, SUN) => MOON,
+                            (SUN, Body::Graha(Graha::Mercury | Graha::Venus)) => return None,
+                            (_, from) => from,
+                        };
+                        Some(stating(
+                            format!(
+                                "BJ_{}_IN_{}_NAVAMSA_ASPECTED_BY_{}",
+                                planet.key(),
+                                group.lord.key(),
+                                from.key()
+                            ),
+                            "navamsa-drishti",
+                            family.source(&group.verse),
+                            vec![
+                                Condition::InVarga {
+                                    varga: Varga::D9,
+                                    condition: Box::new(Condition::PlanetInSign {
+                                        planet: SignRef::Of(BodyRef::Body(planet)),
+                                        signs: group.signs.clone(),
+                                    }),
+                                },
+                                aspected_by(from, planet),
+                            ],
+                            &reading.effect,
+                        ))
+                    })
+                })
+        })
+    }
+
+    /// Brihat Jataka ch. 20: each graha in each bhava from the ascendant, and
+    /// the readings a verse gives the same place when a named sign rises.
+    fn bj_in_bhava(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.bj_in_bhava.family;
+        self.bj_in_bhava.grahas.iter().flat_map(move |graha| {
+            let in_house = move |house: House| Condition::PlanetInHouse {
+                planet: Subject::Ref(SignRef::Of(BodyRef::Body(graha.planet))),
+                houses: vec![house],
+            };
+            let plain = graha
+                .readings
+                .iter()
+                .enumerate()
+                .filter_map(move |(at, reading)| {
+                    let house = House::try_new(u8::try_from(at).ok()? + 1).ok()?;
+                    Some(stating(
+                        format!("BJ_{}_IN_BHAVA_{}", graha.planet.key(), house.get()),
+                        "graha-in-bhava",
+                        family.source(&reading.verse),
+                        vec![in_house(house)],
+                        &reading.effect,
+                    ))
+                });
+            let varied = graha.variants.iter().flat_map(move |variant| {
+                variant.lagnas.iter().map(move |lagna| {
+                    stating(
+                        format!(
+                            "BJ_{}_IN_BHAVA_{}_{}_RISING",
+                            graha.planet.key(),
+                            variant.house.get(),
+                            lagna.key()
+                        ),
+                        "graha-in-bhava",
+                        family.source(&variant.verse),
+                        vec![
+                            in_house(variant.house),
+                            Condition::PlanetInSign {
+                                planet: SignRef::Of(BodyRef::Body(Body::Lagna)),
+                                signs: vec![*lagna],
+                            },
+                        ],
+                        &variant.effect,
+                    )
+                })
+            });
+            plain.chain(varied)
+        })
+    }
+}
+
+/// `from` aspects `target` by graha drishti in the rasi chart.
+fn aspected_by(from: Body, target: Body) -> Condition {
+    Condition::PlanetAspectsPlanet {
+        from: BodySubject::Ref(BodyRef::Body(from)),
+        target: SignRef::Of(BodyRef::Body(target)),
     }
 }
 

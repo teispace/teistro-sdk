@@ -12,6 +12,22 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Brihat Jataka chs. 16 to 20 join the readings** (`rules-engine.md`,
+C585 to C594). **Numbers:** none moved; 349 rules are added, 4,745
+shipped. Read from Iyer's 1885 translation:
+- the Moon in each of the 27 nakshatras (ch. 16);
+- each of the seven grahas in each sign (chs. 17 and 18);
+- the Moon in each sign under each graha's aspect (ch. 19 vv. 1 to 3);
+- the Moon, and by v. 8 the Sun, in each lord's navamsa under each aspect
+  (vv. 5 to 8);
+- each graha in each bhava, with the readings ch. 20 gives when a named
+  sign rises.
+
+The Sun has no navamsa rules under Mercury's or Venus's aspect, since
+neither ever stands seventh from him. Vv. 4 and 9 of ch. 19 and the
+chapters' strength remarks weigh a reading rather than bar one, so they
+are not built.
+
 **The shipped packs are embedded compact** (`rules-engine.md`).
 **Numbers:** none moved; every pack reads the same value. The rule packs
 and tables were embedded as laid out for reading, and the indentation
