@@ -236,7 +236,7 @@ impl RuleInputs {
     /// The document's panchanga is the day's almanac and a rule asks about
     /// the one limb that was **running**, so the limbs at the birth are
     /// read out of it at the chart's own instant
-    /// ([`birth_limbs`]). A document without that section carries no
+    /// (`birth_limbs`). A document without that section carries no
     /// limbs, and the 11 shipped rules that read one say so by name rather
     /// than failing: ask for it with `ChartRequest::with_panchanga`, which
     /// `with_rule_inputs` does.

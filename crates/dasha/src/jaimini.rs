@@ -6,7 +6,7 @@
 //! signs, the dignities, the lagna — with the one or two things more each
 //! needs passed beside it: the Atmakaraka and the navamshas for the
 //! karakamsha, each graha's degrees for Brahma. So they sit here, beside
-//! [`stronger_sign`](crate::rashi::stronger_sign), whose sign strength
+//! [`stronger_sign`], whose sign strength
 //! (BPHS ch. 46 vv. 158 to 166) Brahma is chosen by, and not in the rules,
 //! which no dasha may depend on.
 //!

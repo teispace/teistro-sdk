@@ -55,7 +55,7 @@ const fn header(page: &'static str, first: Day, year: i32, printed: &'static str
 }
 
 /// The headers of the committee's national panchanga for VS 2082 and
-/// 2083, page 2 onwards, each "ने.सं. <year> (<month><half>)", with the
+/// 2083, page 2 onwards, each `ने.सं. <year> (<month><half>)`, with the
 /// date of the page's first row. A visarga some headers add after थ्व is
 /// left out.
 const HEADERS: [Header; 51] = [

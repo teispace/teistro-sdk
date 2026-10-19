@@ -15,7 +15,7 @@
 //!   Sudarshan Chakra and the Western wheel, each cited;
 //! - [`clock`]: the directions a radial layout needs, the same on every
 //!   platform;
-//! - [`place`]: a chart placed in a layout, every cell carrying both its sign
+//! - [`place`](mod@place): a chart placed in a layout, every cell carrying both its sign
 //!   and its house;
 //! - [`registry`]: the shipped layouts and a consumer's own, looked up by key.
 //!

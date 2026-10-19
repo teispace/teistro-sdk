@@ -73,7 +73,7 @@ pub(crate) fn scalar_out(type_ref: &TypeRef, vocabulary: &Vocabulary) -> bool {
 /// The parameter roles the marshaller carries.
 ///
 /// One list, read by the classifier and by nothing else: a role added
-/// here without an arm in [`arm`] would generate code that does not
+/// here without an arm in [`arm`](super::dispatch::arm) would generate code that does not
 /// compile, which is the failure mode to want.
 pub(crate) const ROLES_KNOWN: [&str; 14] = [
     "handle",

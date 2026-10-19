@@ -2,7 +2,7 @@
 //! a consumer registers (`03-design/dasha-kernels.md`, "A consumer's own
 //! system").
 //!
-//! A registered system is a [`DashaDefinition`] — a [`UduDefinition`] for the
+//! A registered system is a [`DashaDefinition`] — a [`UduDefinition`](crate::row::UduDefinition) for the
 //! nakshatra-seeded kernel or a [`RashiDefinition`] for the sign-based one —
 //! checked by the rules a shipped row passes, with a key the catalogue does
 //! not have, so it adds a system and never replaces one.

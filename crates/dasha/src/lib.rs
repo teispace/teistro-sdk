@@ -2,7 +2,7 @@
 //! read without building it (Phase 5; `docs/03-design/dasha-kernels.md`,
 //! measured in `docs/03-design/dasha-measured.md`).
 //!
-//! - [`row`]: a nakshatra-seeded system as data, its lords and years and the
+//! - [`row`](mod@row): a nakshatra-seeded system as data, its lords and years and the
 //!   map from the Moon's nakshatra to its first lord;
 //! - [`balance`]: what remains of the first period, spatially or temporally,
 //!   and how it is written;

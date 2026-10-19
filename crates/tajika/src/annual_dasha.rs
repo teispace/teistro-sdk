@@ -353,7 +353,7 @@ const MEAN_ROUNDS: usize = 6;
 /// ([`YearClock::Even`]). The longitude is read on the annual chart's own
 /// zodiac, as the return was. How the knots are found, in two batched
 /// passes over the Sun rather than a search for each, is
-/// [`KNOT_STEP_DAYS`]'s to say.
+/// `KNOT_STEP_DAYS`'s to say.
 ///
 /// # Errors
 ///

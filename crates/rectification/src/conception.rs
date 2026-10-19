@@ -267,7 +267,7 @@ pub enum InvisibleHalf {
     BySign,
 }
 
-/// How [`nisheka`] counts back (BPHS ch. 3 vv. 25–29).
+/// How [`nisheka_span`] counts back (BPHS ch. 3 vv. 25–29).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]

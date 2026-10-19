@@ -1339,7 +1339,7 @@ impl ChartArea<'_> {
     /// **not** give for the yogas: it floors strength at five Vishwa
     /// units for the office-bearers when choosing the year lord, and
     /// says nothing here. That figure is the default and
-    /// [`Chart::strength_with_rules`] moves it; crux C116 records why,
+    /// [`ChartArea::strength_with_rules`] moves it; crux C116 records why,
     /// and `03-design/muntha-measured.md` §11 measures what moving it
     /// costs.
     ///
@@ -1353,7 +1353,7 @@ impl ChartArea<'_> {
         teistro_tajika::strength(graha, &Self::sky_of(annual)?)
     }
 
-    /// [`Chart::strength`] with the floor between strong and weak chosen.
+    /// [`ChartArea::strength`] with the floor between strong and weak chosen.
     ///
     /// # Errors
     ///
@@ -1387,12 +1387,12 @@ impl ChartArea<'_> {
         self.favour_with_rules(annual, graha, YogaRules::default())
     }
 
-    /// [`Chart::favour`] with the strength floors and the Moon's reading
+    /// [`ChartArea::favour`] with the strength floors and the Moon's reading
     /// chosen.
     ///
     /// # Errors
     ///
-    /// As [`Chart::favour`]; and floors that would let a planet be both,
+    /// As [`ChartArea::favour`]; and floors that would let a planet be both,
     /// named `strong_from`.
     pub fn favour_with_rules(
         self,

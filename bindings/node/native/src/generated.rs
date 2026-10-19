@@ -765,13 +765,13 @@ pub fn delta_t_source_to_str(value: u8) -> String {
 #[derive(Clone, Debug)]
 pub struct Observer {
     /// Degrees, east positive.
-    /// Unit: deg. Range: [-180,180]. Example: 85.3240.
+    /// Unit: deg. Range: `[-180,180]`. Example: `85.3240`.
     pub longitude_deg: f64,
     /// Degrees, north positive.
-    /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+    /// Unit: deg. Range: `[-90,90]`. Example: `27.7172`.
     pub latitude_deg: f64,
     /// Metres above sea level.
-    /// Unit: m. Range: [-500,12000]. Example: 1400.
+    /// Unit: m. Range: `[-500,12000]`. Example: `1400`.
     pub altitude_m: f64,
 }
 
@@ -824,14 +824,14 @@ impl Observer {
 #[derive(Clone, Debug)]
 pub struct PositionRequest {
     /// The scale the instants are on.
-    /// Enum: TimeScale. Example: 0.
+    /// Enum: TimeScale. Example: `0`.
     pub scale: String,
     /// The frame the positions are wanted in, packed; `ts_frame_pack`
     /// builds it from a frame's fields and `ts_frame_unpack` reads it back.
-    /// Example: 0.
+    /// Example: `0`.
     pub frame_bits: u32,
     /// Whether speeds are wanted.
-    /// Example: 1.
+    /// Example: `1`.
     pub speeds: bool,
     /// The observer, which a topocentric frame needs.
     pub observer: Option<Observer>,
@@ -1046,16 +1046,16 @@ impl PositionColumns {
 #[derive(Clone, Debug)]
 pub struct Obliquity {
     /// Mean obliquity, degrees.
-    /// Unit: deg. Range: [22,25]. Example: 23.4392911.
+    /// Unit: deg. Range: `[22,25]`. Example: `23.4392911`.
     pub mean_deg: f64,
     /// True obliquity, degrees.
-    /// Unit: deg. Range: [22,25]. Example: 23.4397911.
+    /// Unit: deg. Range: `[22,25]`. Example: `23.4397911`.
     pub true_deg: f64,
     /// Nutation in longitude, degrees.
-    /// Unit: deg. Range: [-0.006,0.006]. Example: -0.0038957.
+    /// Unit: deg. Range: `[-0.006,0.006]`. Example: `-0.0038957`.
     pub nutation_lon_deg: f64,
     /// Nutation in obliquity, degrees.
-    /// Unit: deg. Range: [-0.003,0.003]. Example: -0.0026876.
+    /// Unit: deg. Range: `[-0.003,0.003]`. Example: `-0.0026876`.
     pub nutation_obl_deg: f64,
 }
 
@@ -1122,22 +1122,22 @@ pub struct HorizonRequest {
     /// The place.
     pub observer: Observer,
     /// The search begins here, UT1.
-    /// Unit: jd. Example: 2451545.0.
+    /// Unit: jd. Example: `2451545.0`.
     pub from_jd_ut1: f64,
     /// The search ends this many days later.
-    /// Unit: d. Range: (0,366]. Example: 1.
+    /// Unit: d. Range: `(0,366]`. Example: `1`.
     pub window_days: f64,
     /// The altitude of the disc point at the event, degrees.
-    /// Unit: deg. Range: [-90,90]. Example: -0.8333.
+    /// Unit: deg. Range: `[-90,90]`. Example: `-0.8333`.
     pub altitude_deg: f64,
     /// The air's pressure at the observer, hectopascals, resolved at the
     /// observer's height when the refraction is an atmosphere; else zero.
     /// Appended in ABI 4.
-    /// Unit: hPa. Range: [0,1100]. Example: 1013.25.
+    /// Unit: hPa. Range: `[0,1100]`. Example: `1013.25`.
     pub pressure_hpa: f64,
     /// The air's temperature at the observer, degrees Celsius, resolved
     /// when the refraction is an atmosphere; else zero. Appended in ABI 4.
-    /// Unit: degC. Range: [-90,60]. Example: 15.
+    /// Unit: degC. Range: `[-90,60]`. Example: `15`.
     pub temperature_c: f64,
 }
 
@@ -1230,25 +1230,25 @@ pub struct CrossingRequest {
     /// `Body::id` of the second body of a composite; else zero.
     pub second_body: u32,
     /// The first body's coefficient in a composite.
-    /// Unit: 1. Example: 1.
+    /// Unit: 1. Example: `1`.
     pub coefficient_a: f64,
     /// The second body's coefficient in a composite.
-    /// Unit: 1. Example: -1.
+    /// Unit: 1. Example: `-1`.
     pub coefficient_b: f64,
     /// The lattice's first line, degrees.
-    /// Unit: deg. Range: [0,360). Example: 0.
+    /// Unit: deg. Range: `[0,360)`. Example: `0`.
     pub origin_deg: f64,
     /// The lattice's spacing, degrees; zero for a single target.
-    /// Unit: deg. Range: [0,360). Example: 30.
+    /// Unit: deg. Range: `[0,360)`. Example: `30`.
     pub step_deg: f64,
     /// The window's start, UT1.
-    /// Unit: jd. Example: 2451545.0.
+    /// Unit: jd. Example: `2451545.0`.
     pub from_jd_ut1: f64,
     /// The window's end, UT1.
-    /// Unit: jd. Example: 2451910.0.
+    /// Unit: jd. Example: `2451910.0`.
     pub to_jd_ut1: f64,
     /// How closely each instant is placed, days.
-    /// Unit: d. Range: (0,1]. Example: 0.0000115740741.
+    /// Unit: d. Range: `(0,1]`. Example: `0.0000115740741`.
     pub tolerance_days: f64,
     /// The observer, read when `has_observer` is set.
     pub observer: Observer,
@@ -1345,10 +1345,10 @@ impl CrossingRequest {
 #[derive(Clone, Debug)]
 pub struct CrossingEvent {
     /// The instant, UT1.
-    /// Unit: jd. Example: 2451545.0.
+    /// Unit: jd. Example: `2451545.0`.
     pub jd_ut1: f64,
     /// The boundary reached, degrees.
-    /// Unit: deg. Range: [0,360). Example: 30.
+    /// Unit: deg. Range: `[0,360)`. Example: `30`.
     pub boundary_deg: f64,
     /// `Direction::id`.
     pub direction: u32,
@@ -1454,19 +1454,19 @@ impl Hash {
 #[derive(Clone, Debug)]
 pub struct ContextOptions {
     /// `TS_CONTEXT_*` flags, or zero.
-    /// Example: 0.
+    /// Example: `0`.
     pub flags: u32,
     /// The shipped profile's id (`parashari-classical`, `nepali-default`,
     /// `nepali-committee`, `surya-siddhanta`, `kp-default`,
     /// `western-tropical-default`, `conformance-baseline`).
-    /// Example: parashari-classical. May be null.
+    /// Example: `parashari-classical`. May be null.
     pub profile: Option<String>,
     /// A JSON settings patch over the profile: an object whose groups and
     /// knobs are the settings document's, every one optional; an unknown
     /// knob or a value outside its type is `INVALID_ARG` naming it. May be null.
     pub settings_json: Option<String>,
     /// The locale every render resolves from (`ne-Deva-NP`).
-    /// Example: en-Latn. May be null.
+    /// Example: `en-Latn`. May be null.
     pub locale: Option<String>,
     /// Chart layouts of the consumer's own, to draw in beside the shipped
     /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
@@ -1497,7 +1497,7 @@ pub struct ContextOptions {
     pub dashas_json: Option<String>,
     /// Which of the SDK's own ephemerides to use when no provider vtable
     /// is given; ignored when one is (ADR-0028).
-    /// Enum: TsEphemeris. Example: 0.
+    /// Enum: TsEphemeris. Example: `0`.
     pub ephemeris: String,
 }
 
@@ -1598,32 +1598,32 @@ impl ContextOptions {
 pub struct Frame {
     /// The ayanamsha, read only when `sidereal` is set; `0xFFFF` names
     /// none, which is what a tropical frame carries.
-    /// Enum: Ayanamsha. Example: 0. May be null.
+    /// Enum: Ayanamsha. Example: `0`. May be null.
     pub ayanamsha: Option<String>,
     /// Where the position is seen from; a topocentric frame needs the
     /// request's observer.
-    /// Enum: Centre. Example: 0.
+    /// Enum: Centre. Example: `0`.
     pub centre: String,
     /// Which equinox the coordinates refer to.
-    /// Enum: Equinox. Example: 0.
+    /// Enum: Equinox. Example: `0`.
     pub equinox: String,
     /// Ecliptic or equatorial.
-    /// Enum: Coordinates. Example: 0.
+    /// Enum: Coordinates. Example: `0`.
     pub coordinates: String,
     /// The sidereal zodiac, which uses `ayanamsha`; tropical otherwise.
-    /// Example: 0.
+    /// Example: `0`.
     pub sidereal: bool,
     /// Whether light time is applied.
-    /// Example: 1.
+    /// Example: `1`.
     pub light_time: bool,
     /// Whether annual aberration is applied.
-    /// Example: 1.
+    /// Example: `1`.
     pub aberration: bool,
     /// Whether relativistic deflection is applied.
-    /// Example: 0.
+    /// Example: `0`.
     pub deflection: bool,
     /// Whether nutation is applied.
-    /// Example: 1.
+    /// Example: `1`.
     pub nutation: bool,
 }
 
@@ -1705,26 +1705,26 @@ impl Frame {
 #[derive(Clone, Debug)]
 pub struct CalendarDate {
     /// The calendar's id.
-    /// Enum: Calendar. Example: 0.
+    /// Enum: Calendar. Example: `0`.
     pub calendar: String,
     /// The era the calendar attaches, `0xFFFF` for none; filled by the
     /// library and ignored on input.
-    /// Enum: Era. Example: 7. May be null.
+    /// Enum: Era. Example: `7`. May be null.
     pub era: Option<String>,
     /// The astronomical year.
-    /// Example: 2026.
+    /// Example: `2026`.
     pub year: i32,
     /// The year in the era, 1-based; meaningful when `era` is set.
-    /// Example: 2026.
+    /// Example: `2026`.
     pub era_year: i32,
     /// The month, 1-based; for the ISO week date, the week.
-    /// Range: [1,53]. Example: 9.
+    /// Range: `[1,53]`. Example: `9`.
     pub month: u32,
     /// The day, 1-based; for the ISO week date, the weekday 1 to 7.
-    /// Range: [1,32]. Example: 6.
+    /// Range: `[1,32]`. Example: `6`.
     pub day: u32,
     /// How the date was resolved.
-    /// Enum: TsResolution. Example: 0.
+    /// Enum: TsResolution. Example: `0`.
     pub resolution: String,
     /// The engine's month when the resolution is divergent, else zero.
     pub computed_month: u32,
@@ -1818,14 +1818,14 @@ impl CalendarDate {
 #[derive(Clone, Debug)]
 pub struct ChartRequest {
     /// What kind of chart to found.
-    /// Enum: ChartKind. Example: 0.
+    /// Enum: ChartKind. Example: `0`.
     pub kind: String,
     /// Which lunar apogee to place as the Black Moon Lilith beside the
     /// nine: `TS_LILITH_NONE` (0, what every caller that wrote this field
     /// as reserved zero gets), `TS_LILITH_MEAN` or `TS_LILITH_OSCULATING`
     /// (`03-design/lilith.md`). Each chart's comes back in the `lilith`
     /// section; any other value is refused naming `lilith`.
-    /// Enum: TsLilith. Example: 0.
+    /// Enum: TsLilith. Example: `0`.
     pub lilith: String,
     /// The instants, as Julian days on the UTC scale: one chart each.
     ///
@@ -1837,17 +1837,17 @@ pub struct ChartRequest {
     /// Unit: jd.
     pub instants: Vec<f64>,
     /// The place's latitude, degrees north.
-    /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+    /// Unit: deg. Range: `[-90,90]`. Example: `27.7172`.
     pub latitude_deg: f64,
     /// The place's longitude, degrees east.
-    /// Unit: deg. Range: [-180,180]. Example: 85.324.
+    /// Unit: deg. Range: `[-180,180]`. Example: `85.324`.
     pub longitude_deg: f64,
     /// The place's altitude, metres above the ellipsoid.
-    /// Unit: m. Range: [-500,9000]. Example: 1400.
+    /// Unit: m. Range: `[-500,9000]`. Example: `1400`.
     pub altitude_m: f64,
     /// The local clock's offset from UTC in seconds, east positive: the
     /// clock the day's date is read in.
-    /// Unit: s. Range: [-64800,64800]. Example: 20700.
+    /// Unit: s. Range: `[-64800,64800]`. Example: `20700`.
     pub utc_offset_seconds: i32,
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
@@ -1859,7 +1859,7 @@ pub struct ChartRequest {
     /// A bit set here and a named option in every ergonomic layer, which
     /// is the split `ts_frame_pack` already has: nothing but a generated
     /// layer writes bits (`03-design/chart-reading.md` §5).
-    /// Example: 0.
+    /// Example: `0`.
     pub sections: u32,
     /// Which divisional charts to compute, as catalogue ids, in the
     /// order they should be answered in; null with a count of zero for
@@ -1897,7 +1897,7 @@ pub struct ChartRequest {
     /// The SVGs come back in the blob's `svgs` section, in the context's
     /// locale. Null for none, which costs nothing
     /// (`03-design/render-svg.md`).
-    /// Example: {"extends":"DARK"}. May be null.
+    /// Example: `{"extends":"DARK"}`. May be null.
     pub theme_json: Option<String>,
     /// Rules to answer over every chart, as JSON: `shipped` names the
     /// kernel's sets, `rules` a consumer's own in the rule format, with
@@ -1906,7 +1906,7 @@ pub struct ChartRequest {
     /// blob's `rules` section, and the sections the rules read are computed
     /// whether or not `sections` asked for them. Null for none, which costs
     /// nothing.
-    /// Example: {"shipped":["NABHASAS"]}. May be null.
+    /// Example: `{"shipped":["NABHASAS"]}`. May be null.
     pub rules_json: Option<String>,
     /// Narrative plans to compose over every chart, as JSON: an object
     /// naming the composers to run — `placements`, `readings`, `strength`,
@@ -1919,7 +1919,7 @@ pub struct ChartRequest {
     /// rules answered, so it needs `rules_json` beside it; the sections
     /// the other composers read are computed for them, as the rules' are.
     /// Null for none, which costs nothing.
-    /// Example: {"placements":true}. May be null.
+    /// Example: `{"placements":true}`. May be null.
     pub interpret_json: Option<String>,
     /// The annual charts to answer for every chart in the batch, as a JSON
     /// object: `reading` — `"SIDEREAL"` (the tradition's), `"TROPICAL"`
@@ -1941,7 +1941,7 @@ pub struct ChartRequest {
     /// `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
     /// named from the record every binding calls `gochar`, as
     /// `gochar.instants`.
-    /// Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
+    /// Example: `{"instants":[2460676.5],"from":"MOON"}`. May be null.
     pub gochar_json: Option<String>,
     /// The transit hit list to search against every chart in the batch,
     /// as a JSON object: the window `from` and `to`, UTC Julian days, and
@@ -1960,7 +1960,7 @@ pub struct ChartRequest {
     /// rows a chart, the sky searched once for the batch. Null for none
     /// (`03-design/transit-hit-list.md`). Refusals are named from the
     /// record every binding calls `hits`, as `hits.to`.
-    /// Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
+    /// Example: `{"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}`. May be null.
     pub hits_json: Option<String>,
     /// Sade Sati and the smaller spells of Saturn to find for every chart
     /// in the batch, as a JSON object: `from`, a UTC Julian day, and
@@ -1972,7 +1972,7 @@ pub struct ChartRequest {
     /// sections, the sky searched once for the batch. Null for none
     /// (`03-design/sade-sati.md`). Refusals are named from the record every
     /// binding calls `sadeSati`, as `sadeSati.to`.
-    /// Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
+    /// Example: `{"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}`. May be null.
     pub sade_sati_json: Option<String>,
     /// Every chart read as KP (Krishnamurti Paddhati), as a JSON object,
     /// every member optional: `number`, the querent's horary number 1 to
@@ -1985,7 +1985,7 @@ pub struct ChartRequest {
     /// under the settings' `kp` group. Null for none, which costs nothing
     /// (`03-design/kp.md`). Refusals are named from the record every
     /// binding calls `kp`, as `kp.number`.
-    /// Example: {"number":74}. May be null.
+    /// Example: `{"number":74}`. May be null.
     pub kp_json: Option<String>,
     /// Every chart's essential dignities, as a JSON object, every member
     /// optional: `sectRule` (`"HORIZON"`, the Sun's centre above the true
@@ -2001,7 +2001,7 @@ pub struct ChartRequest {
     /// planets in `dignity_planets`. Null for none, which costs nothing
     /// (`03-design/essential-dignities.md`). Refusals are named from the
     /// record every binding calls `dignities`, as `dignities.sectRule`.
-    /// Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
+    /// Example: `{"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}`. May be null.
     pub dignities_json: Option<String>,
     /// Every chart's accidental fortitudes beside its essential dignities
     /// (Lilly, p. 115), as a JSON object, every member optional:
@@ -2020,7 +2020,7 @@ pub struct ChartRequest {
     /// nothing (`03-design/essential-dignities.md` §Accidental fortitudes).
     /// Refusals are named from the record every binding calls
     /// `fortitudes`, as `fortitudes.rules.beamsDeg`.
-    /// Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
+    /// Example: `{"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}`. May be null.
     pub fortitudes_json: Option<String>,
     /// Every chart's lots, all fourteen Valens gives, as a JSON object,
     /// every member optional: `sectRule` (the record `dignities_json`
@@ -2032,7 +2032,7 @@ pub struct ChartRequest {
     /// Null for none, which costs nothing
     /// (`03-design/hellenistic-lots.md`). Refusals are named from the
     /// record every binding calls `lots`, as `lots.fortune`.
-    /// Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
+    /// Example: `{"fortune":"REVERSED_WHILE_MOON_UP"}`. May be null.
     pub lots_json: Option<String>,
     /// Every chart's considerations before judgement (Lilly, *Christian
     /// Astrology* I.XIX), as a JSON object, every member optional:
@@ -2046,7 +2046,7 @@ pub struct ChartRequest {
     /// (`03-design/hellenistic-considerations.md`). Refusals are named from
     /// the record every binding calls `considerations`, as
     /// `considerations.moonLateFromDeg`.
-    /// Example: {"moonLateFromDeg":25}. May be null.
+    /// Example: `{"moonLateFromDeg":25}`. May be null.
     pub considerations_json: Option<String>,
     /// Whether a horary matter is brought to pass (Lilly, *Christian
     /// Astrology* pp. 107–113 and 125–127), as a JSON object:
@@ -2065,7 +2065,7 @@ pub struct ChartRequest {
     /// (`03-design/hellenistic-perfection.md`). Refusals are named from
     /// the record every binding calls `perfection`, as
     /// `perfection.quesited`.
-    /// Example: {"house":7}. May be null.
+    /// Example: `{"house":7}`. May be null.
     pub perfection_json: Option<String>,
     /// The progressions to read every chart's birth through, as a JSON
     /// object, every field optional but one of `at` and `contacts`: `at`,
@@ -2085,7 +2085,7 @@ pub struct ChartRequest {
     /// and `progressed_contacts`. Null for none, which costs nothing
     /// (`03-design/western-progressions.md`). Refusals are named from the
     /// record every binding calls `progressions`, as `progressions.year`.
-    /// Example: {"at":2460676.5}. May be null.
+    /// Example: `{"at":2460676.5}`. May be null.
     pub progressions_json: Option<String>,
     /// Every chart's Western aspect table, as a JSON object, every field
     /// optional: `aspects`, the keys looked for (`"CONJUNCTION"`,
@@ -2100,7 +2100,7 @@ pub struct ChartRequest {
     /// Null for none, which costs nothing (`03-design/western-aspects.md`).
     /// Refusals are named from the record every binding calls
     /// `westernAspects`, as `westernAspects.orbs.orbs`.
-    /// Example: {"aspects":["TRINE","SQUARE"]}. May be null.
+    /// Example: `{"aspects":["TRINE","SQUARE"]}`. May be null.
     pub western_aspects_json: Option<String>,
     /// Every chart's synastry with one partner, as a JSON object:
     /// `partner`, the second birth, `{"instant": jd, "place": {"latitude",
@@ -2129,7 +2129,7 @@ pub struct ChartRequest {
     /// (`03-design/western-synastry.md`). Refusals are
     /// named from the record every binding calls `synastry`, as
     /// `synastry.partner.place.latitude`.
-    /// Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
+    /// Example: `{"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}`. May be null.
     pub synastry_json: Option<String>,
     /// Every chart's declinations and the parallels among its planets, as
     /// a JSON object, every field optional: `orbDeg`, how close two
@@ -2141,7 +2141,7 @@ pub struct ChartRequest {
     /// none, which costs nothing (`03-design/western-declinations.md`).
     /// Refusals are named from the record every binding calls
     /// `parallels`, as `parallels.orbDeg`.
-    /// Example: {"orbDeg":1}. May be null.
+    /// Example: `{"orbDeg":1}`. May be null.
     pub parallels_json: Option<String>,
     /// Every chart's antiscia, as a JSON object, every field optional:
     /// `orbs`, as `western_aspects_json` spells them, read at the
@@ -2155,7 +2155,7 @@ pub struct ChartRequest {
     /// Null for none, which costs nothing
     /// (`03-design/western-antiscia.md`). Refusals are named from the
     /// record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
-    /// Example: {"orbs":{"model":"LEO"}}. May be null.
+    /// Example: `{"orbs":{"model":"LEO"}}`. May be null.
     pub antiscia_json: Option<String>,
     /// Every chart's equal distances, as a JSON object, every field
     /// optional: `orbDeg`, how far from the axis through two planets'
@@ -2167,7 +2167,7 @@ pub struct ChartRequest {
     /// `midpoint_rows`. Null for none, which costs nothing
     /// (`03-design/western-midpoints.md`). Refusals are named from the
     /// record every binding calls `midpoints`, as `midpoints.orbDeg`.
-    /// Example: {"orbDeg":1}. May be null.
+    /// Example: `{"orbDeg":1}`. May be null.
     pub midpoints_json: Option<String>,
     /// Every chart's Western houses, as a JSON object, every field
     /// optional: `system`, the division (`"KOCH"`), else the profile's
@@ -2180,7 +2180,7 @@ pub struct ChartRequest {
     /// (`03-design/western-houses.md`). Refusals are named from the
     /// record every binding calls `westernHouses`, as
     /// `westernHouses.system`.
-    /// Example: {"system":"KOCH"}. May be null.
+    /// Example: `{"system":"KOCH"}`. May be null.
     pub western_houses_json: Option<String>,
     /// Every chart's harmonic chart, as a JSON object: `number`, the
     /// harmonic, a whole number from 1 to 360 every longitude is
@@ -2192,7 +2192,7 @@ pub struct ChartRequest {
     /// Null for none, which costs nothing
     /// (`03-design/western-harmonics.md`). Refusals are named from the
     /// record every binding calls `harmonic`, as `harmonic.number`.
-    /// Example: {"number":9}. May be null.
+    /// Example: `{"number":9}`. May be null.
     pub harmonic_json: Option<String>,
     /// Every chart matched with one partner's birth by the Ashta Koota of
     /// *Muhurta Chintamani* VI.21–34, the ten considerations and the Kuja
@@ -2216,7 +2216,7 @@ pub struct ChartRequest {
     /// which costs nothing
     /// (`03-design/matching.md`). Refusals are named from the record every
     /// binding calls `matching`, as `matching.partnerRole`.
-    /// Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
+    /// Example: `{"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}`. May be null.
     pub matching_json: Option<String>,
     /// Every chart read as a prashna, the chart of the moment a question
     /// was asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as
@@ -2233,7 +2233,7 @@ pub struct ChartRequest {
     /// back in the `prashna` section. Null for none, which costs nothing
     /// (`03-design/prashna.md`). Refusals are named from the record every
     /// binding calls `prashna`, as `prashna.question.house`.
-    /// Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
+    /// Example: `{"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}`. May be null.
     pub prashna_json: Option<String>,
     /// Every chart's remedies, as BPHS, *Laghu Parashari* and
     /// *Yājñavalkya* prescribe them, as a JSON object, every member
@@ -2246,7 +2246,7 @@ pub struct ChartRequest {
     /// Null for none, which costs nothing (`03-design/remedies.md`).
     /// Refusals are named from the record every binding calls `remedies`,
     /// as `remedies.rules.devata`.
-    /// Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
+    /// Example: `{"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}`. May be null.
     pub remedies_json: Option<String>,
     /// Every chart read as a birth time to rectify, the chart's instant
     /// the time on record, as a JSON object, every member optional:
@@ -2263,7 +2263,7 @@ pub struct ChartRequest {
     /// nothing (`03-design/rectification.md`). Refusals are named from
     /// the record every binding calls `rectification`, as
     /// `rectification.purify.minutes`.
-    /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+    /// Example: `{"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}`. May be null.
     pub rectification_json: Option<String>,
     /// Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
     /// object, every member optional: `cycle` (`{planet, year}`, where the
@@ -2276,7 +2276,7 @@ pub struct ChartRequest {
     /// section. Null for none, which costs nothing
     /// (`03-design/lalkitab.md`). Refusals are named from the record every
     /// binding calls `lalkitab`, as `lalkitab.cycle.year`.
-    /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+    /// Example: `{"cycle":{"planet":"VENUS","year":17},"year":30}`. May be null.
     pub lalkitab_json: Option<String>,
     /// The Sarvatobhadra chakra to read against every chart, as a JSON
     /// object: `instants`, UTC Julian days, at least one, and optionally
@@ -2290,7 +2290,7 @@ pub struct ChartRequest {
     /// charts founded once for the batch. Null for none
     /// (`03-design/gochar.md` §8). Refusals are named from the record
     /// every binding calls `sarvatobhadra`, as `sarvatobhadra.instants`.
-    /// Example: {"instants":[2460676.5],"motion":"SUN"}. May be null.
+    /// Example: `{"instants":[2460676.5],"motion":"SUN"}`. May be null.
     pub sarvatobhadra_json: Option<String>,
     /// The tithi praveshas to find for every chart's years, as a JSON
     /// object: `through`, the last year, 1 to 200, and optionally `rule`,
@@ -2301,7 +2301,7 @@ pub struct ChartRequest {
     /// fewer. Null for none (`03-design/tithi-pravesha.md`). Refusals are
     /// named from the record every binding calls `tithiPravesha`, as
     /// `tithiPravesha.through`.
-    /// Example: {"through":40,"rule":"NATAL_SIGN"}. May be null.
+    /// Example: `{"through":40,"rule":"NATAL_SIGN"}`. May be null.
     pub tithi_pravesha_json: Option<String>,
     /// Every chart written as a dossier for a language model, as a JSON
     /// object: optionally `sections` (keys, written in the dossier's own
@@ -2318,7 +2318,7 @@ pub struct ChartRequest {
     /// left out). Each chart's text comes back in the `dossier` section.
     /// Null for none (`03-design/dossier.md`). Refusals are named from the
     /// record every binding calls `dossier`, as `dossier.sections[0]`.
-    /// Example: {"preset":"FULL","dashaDepth":2}. May be null.
+    /// Example: `{"preset":"FULL","dashaDepth":2}`. May be null.
     pub dossier_json: Option<String>,
     /// One year's month charts, or one month's day charts, to find for
     /// every chart, as a JSON object: `year`, 1 to 200, counted as the
@@ -2343,7 +2343,7 @@ pub struct ChartRequest {
     /// back empty. Null for none (`03-design/annual-chart.md`, "The
     /// month's and the day's chart"). Refusals are named from the record
     /// every binding calls `masaPravesha`, as `masaPravesha.month`.
-    /// Example: {"year":30,"place":"birth","results":{"strongFrom":32400}}. May be null.
+    /// Example: `{"year":30,"place":"birth","results":{"strongFrom":32400}}`. May be null.
     pub masa_pravesha_json: Option<String>,
     /// The aspect configurations to find in every chart, as a JSON
     /// object: optionally `aspects` and `orbs`, as `western_aspects_json`
@@ -2355,7 +2355,7 @@ pub struct ChartRequest {
     /// (`03-design/western-configurations.md`). Refusals are named from
     /// the record every binding calls `westernConfigurations`, as
     /// `westernConfigurations.stelliumLeast`.
-    /// Example: {"stelliumLeast":4}. May be null.
+    /// Example: `{"stelliumLeast":4}`. May be null.
     pub western_configurations_json: Option<String>,
 }
 
@@ -2789,20 +2789,20 @@ impl ChartRequest {
 #[derive(Clone, Debug)]
 pub struct CivilTime {
     /// The hour.
-    /// Range: [0,23]. Example: 6.
+    /// Range: `[0,23]`. Example: `6`.
     pub hour: u32,
     /// The minute.
-    /// Range: [0,59]. Example: 15.
+    /// Range: `[0,59]`. Example: `15`.
     pub minute: u32,
     /// The second; `60` only for a leap second the table has.
-    /// Range: [0,60]. Example: 0.
+    /// Range: `[0,60]`. Example: `0`.
     pub second: u32,
     /// Whether the time is given; a date-only civil time has none, and the
     /// context's unknown-time policy decides what to do.
-    /// Example: 1.
+    /// Example: `1`.
     pub has_time: bool,
     /// Nanoseconds within the second.
-    /// Range: [0,999999999]. Example: 0.
+    /// Range: `[0,999999999]`. Example: `0`.
     pub nanos: u32,
 }
 
@@ -2916,16 +2916,16 @@ impl CivilDateTime {
 #[derive(Clone, Debug)]
 pub struct ZoneSpec {
     /// Which field applies.
-    /// Enum: TsZoneKind. Example: 0.
+    /// Enum: TsZoneKind. Example: `0`.
     pub kind: String,
     /// The offset east of UTC in seconds, for a fixed offset.
-    /// Unit: s. Range: [-86400,86400]. Example: 20700.
+    /// Unit: s. Range: `[-86400,86400]`. Example: `20700`.
     pub offset_seconds: i32,
     /// The longitude east-positive in degrees, for local mean time.
-    /// Unit: deg. Range: [-180,180]. Example: 85.3240.
+    /// Unit: deg. Range: `[-180,180]`. Example: `85.3240`.
     pub longitude_deg: f64,
     /// The IANA name, for a database zone.
-    /// Example: Asia/Kathmandu. May be null.
+    /// Example: `Asia/Kathmandu`. May be null.
     pub zone: Option<String>,
 }
 
@@ -2990,16 +2990,16 @@ impl ZoneSpec {
 #[derive(Clone, Debug)]
 pub struct ZoneResolution {
     /// The offset east of UTC applied, seconds.
-    /// Unit: s. Example: 20700.
+    /// Unit: s. Example: `20700`.
     pub offset_seconds: i32,
     /// How far a civil time inside a gap was shifted forward, seconds.
-    /// Unit: s. Example: 0.
+    /// Unit: s. Example: `0`.
     pub dst_shift_seconds: i32,
     /// What the resolution wants the consumer to know.
-    /// Example: 0.
+    /// Example: `0`.
     pub warnings: Vec<String>,
     /// The instant on UTC.
-    /// Unit: jd. Example: 2446431.2743.
+    /// Unit: jd. Example: `2446431.2743`.
     pub instant_jd_utc: f64,
     /// The zone database version (`2026c`), `manual` or `lmt`; lent until
     /// the next call on the context.
@@ -3008,17 +3008,17 @@ pub struct ZoneResolution {
     /// the next call on the context. May be null.
     pub abbreviation: Option<String>,
     /// Where the offset came from.
-    /// Enum: TsZoneSource. Example: 0.
+    /// Enum: TsZoneSource. Example: `0`.
     pub source: String,
     /// Which rules produced it.
-    /// Enum: TsZoneEra. Example: 0.
+    /// Enum: TsZoneEra. Example: `0`.
     pub era: String,
     /// What the daylight-saving policy did.
-    /// Enum: TsDst. Example: 0.
+    /// Enum: TsDst. Example: `0`.
     pub dst: String,
     /// Which occurrence an overlap resolved to; meaningful when `dst` is
     /// an overlap.
-    /// Enum: TsChosen. Example: 0.
+    /// Enum: TsChosen. Example: `0`.
     pub chosen: String,
     /// Whether the time was given rather than supplied by a policy.
     pub time_known: bool,
@@ -3124,30 +3124,30 @@ impl ZoneResolution {
 #[derive(Clone, Debug)]
 pub struct TimeConversion {
     /// The scale converted from.
-    /// Enum: TsScale. Example: 2.
+    /// Enum: TsScale. Example: `2`.
     pub from: String,
     /// The scale converted to.
-    /// Enum: TsScale. Example: 1.
+    /// Enum: TsScale. Example: `1`.
     pub to: String,
     /// What produced the Delta T applied.
-    /// Enum: TsDeltaTSource. Example: 0.
+    /// Enum: TsDeltaTSource. Example: `0`.
     pub delta_t_source: String,
     /// Whether UTC before 1972 was read as UT1.
     pub proleptic_utc: bool,
     /// Whether `uncertainty_seconds` is meaningful.
     pub has_uncertainty: bool,
     /// The instant on the target scale.
-    /// Unit: jd. Example: 2451545.0007.
+    /// Unit: jd. Example: `2451545.0007`.
     pub jd: f64,
     /// The Delta T applied, seconds; zero for a conversion that needs none.
-    /// Unit: s. Example: 63.83.
+    /// Unit: s. Example: `63.83`.
     pub delta_t_seconds: f64,
     /// Delta T's one-sigma uncertainty, seconds, when `has_uncertainty`.
-    /// Unit: s. Example: 0.0.
+    /// Unit: s. Example: `0.0`.
     pub uncertainty_seconds: f64,
     /// UT1 less UTC applied, seconds: zero until a provider supplies the
     /// IERS bulletins.
-    /// Unit: s. Example: 0.0.
+    /// Unit: s. Example: `0.0`.
     pub dut1_seconds: f64,
     /// The Delta T model's key (`TABLE_THEN_MODEL`); lent until the next
     /// call on the context.
@@ -3238,15 +3238,15 @@ impl TimeConversion {
 #[derive(Clone, Debug)]
 pub struct DeltaT {
     /// What produced it.
-    /// Enum: TsDeltaTSource. Example: 0.
+    /// Enum: TsDeltaTSource. Example: `0`.
     pub source: String,
     /// Whether `uncertainty_seconds` is meaningful.
     pub has_uncertainty: bool,
     /// TT less UT1, seconds.
-    /// Unit: s. Example: 63.83.
+    /// Unit: s. Example: `63.83`.
     pub seconds: f64,
     /// The one-sigma uncertainty, seconds, when `has_uncertainty`.
-    /// Unit: s. Example: 0.0.
+    /// Unit: s. Example: `0.0`.
     pub uncertainty_seconds: f64,
     /// The model's key; lent until the next call on the context.
     pub model: String,
@@ -3395,38 +3395,38 @@ impl IntlLoaded {
 #[derive(Clone, Debug)]
 pub struct PanchangaRequest {
     /// The calendar the range's dates are written in.
-    /// Enum: Calendar. Example: 0.
+    /// Enum: Calendar. Example: `0`.
     pub calendar: String,
     /// The first day's astronomical year.
-    /// Example: 2026.
+    /// Example: `2026`.
     pub from_year: i32,
     /// The first day's month, 1-based.
-    /// Range: [1,13]. Example: 9.
+    /// Range: `[1,13]`. Example: `9`.
     pub from_month: u32,
     /// The first day's day of the month, 1-based.
-    /// Range: [1,32]. Example: 1.
+    /// Range: `[1,32]`. Example: `1`.
     pub from_day: u32,
     /// The last day's month, 1-based.
-    /// Range: [1,13]. Example: 9.
+    /// Range: `[1,13]`. Example: `9`.
     pub to_month: u32,
     /// The last day's day of the month, 1-based.
-    /// Range: [1,32]. Example: 30.
+    /// Range: `[1,32]`. Example: `30`.
     pub to_day: u32,
     /// The last day's astronomical year.
-    /// Example: 2026.
+    /// Example: `2026`.
     pub to_year: i32,
     /// The place's latitude, degrees north.
-    /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+    /// Unit: deg. Range: `[-90,90]`. Example: `27.7172`.
     pub latitude_deg: f64,
     /// The place's longitude, degrees east.
-    /// Unit: deg. Range: [-180,180]. Example: 85.324.
+    /// Unit: deg. Range: `[-180,180]`. Example: `85.324`.
     pub longitude_deg: f64,
     /// The place's altitude, metres above the ellipsoid.
-    /// Unit: m. Range: [-500,9000]. Example: 1400.
+    /// Unit: m. Range: `[-500,9000]`. Example: `1400`.
     pub altitude_m: f64,
     /// The local clock's offset from UTC in seconds, east positive: the
     /// clock the days' dates are read in.
-    /// Unit: s. Range: [-64800,64800]. Example: 20700.
+    /// Unit: s. Range: `[-64800,64800]`. Example: `20700`.
     pub utc_offset_seconds: i32,
     /// What to answer beside the days, as a bit set:
     /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
@@ -3440,7 +3440,7 @@ pub struct PanchangaRequest {
     ///
     /// A bit set here and a named option in every ergonomic layer, as a
     /// chart request's `sections` is (`03-design/chart-reading.md` §5).
-    /// Example: 0.
+    /// Example: `0`.
     pub sections: u32,
     /// A muhurta search over the same days, as a JSON object: `rules`,
     /// the activity's rules spelt out or a shipped set named
@@ -3457,7 +3457,7 @@ pub struct PanchangaRequest {
     /// (`03-design/muhurta-at-the-boundary.md`). Null for none, which
     /// costs nothing. Refusals are named from the record every binding
     /// calls `muhurta`, as `muhurta.rules`.
-    /// Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
+    /// Example: `{"rules":"RAMAN_MARRIAGE"}`. May be null.
     pub muhurta_json: Option<String>,
     /// The days festival rules fall on over the same days, as a JSON
     /// object: `rules`, a shipped pack named (`DHARMASINDHU`, `NEPAL`) or
@@ -3473,7 +3473,7 @@ pub struct PanchangaRequest {
     /// (`03-design/festival-rules.md` §7). Null for none, which costs
     /// nothing. Refusals are named from the record every binding calls
     /// `festivals`, down to a rule's own field under `festivals.rules`.
-    /// Example: {"rules":"DHARMASINDHU"}. May be null.
+    /// Example: `{"rules":"DHARMASINDHU"}`. May be null.
     pub festivals_json: Option<String>,
 }
 

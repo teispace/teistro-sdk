@@ -21,7 +21,7 @@
 //! | [`obl80`] | `eraObl80` | mean obliquity (IAU 1980) |
 //! | [`obl06`] | `eraObl06` | mean obliquity (IAU 2006) |
 //! | [`pr00`] | `eraPr00` | the IAU 2000 precession-rate adjustments |
-//! | [`nut00b`] | `eraNut00b` | nutation (IAU 2000B), the 77-term table in [`nut00b`] |
+//! | [`nut00b`](fn@nut00b) | `eraNut00b` | nutation (IAU 2000B), the 77-term table in [`nut00b`](mod@nut00b) |
 //! | [`fal03`], [`falp03`], [`faf03`], [`fad03`], [`faom03`], [`fave03`], [`fae03`], [`fapa03`] | `eraFal03` and kin | the fundamental arguments (IERS Conventions 2003) |
 //! | [`eect00`] | `eraEect00` | the equation of the equinoxes' complementary terms (IAU 2000) |
 //! | [`ee00`] | `eraEe00` | the equation of the equinoxes from an obliquity and a nutation |

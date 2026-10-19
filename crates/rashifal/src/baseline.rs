@@ -415,7 +415,7 @@ const fn baseline_obstructs(other: Graha, graha: Graha) -> bool {
 
 /// A reading re-judged by the baseline engine's own tables (D1 to D3),
 /// `BASELINE`: the same houses, each good transit's vedha house and its
-/// obstructors from [`BASELINE_VEDHA`] and [`baseline_obstructs`]. The
+/// obstructors from `BASELINE_VEDHA` and `baseline_obstructs`. The
 /// good houses are the text's, which the baseline's agree with. The
 /// reading's `rules` are kept as they came and no longer describe its
 /// verdicts.

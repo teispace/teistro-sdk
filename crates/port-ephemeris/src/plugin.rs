@@ -4,7 +4,7 @@
 //! [`ProviderVtable`] says how a provider is *driven* once it is in hand.
 //! This says how it is got hold of: three exported symbols, one
 //! configuration string, and a version to check before any of it is
-//! called. An adapter implements them with [`export_provider!`] and
+//! called. An adapter implements them with [`export_provider!`](crate::export_provider!) and
 //! writes no `unsafe` of its own; the SDK's loader resolves them by the
 //! names below.
 //!
@@ -26,7 +26,7 @@
 //!
 //! Two versions are checked and they are **not** the same version. This
 //! module's [`PLUGIN_ABI_VERSION`] covers the three entry points above;
-//! [`VTABLE_ABI_VERSION`] covers the table of function pointers they hand
+//! [`VTABLE_ABI_VERSION`](crate::VTABLE_ABI_VERSION) covers the table of function pointers they hand
 //! back, and [`crate::VtableProvider::bind`] checks it. They can change
 //! independently — a new override on the vtable is not a change to how a
 //! library is opened — and a loader that conflated them would report the
@@ -162,7 +162,7 @@ pub unsafe fn read_config<'a>(config_json: *const c_char) -> Result<&'a str, Pro
 /// the difference.
 ///
 /// ```ignore
-/// fn open(config: &str) -> Result<MyProvider, ProviderError> { … }
+/// fn open(config: &str) -> Result<MyProvider, ProviderError> { /* … */ }
 /// teistro_port_ephemeris::export_provider!(MyProvider, open);
 /// ```
 ///

@@ -1343,7 +1343,7 @@ impl<'a> ChartArea<'a> {
     ///
     /// # Errors
     ///
-    /// A request [`HitRequest::check`] refuses; whatever the search refuses,
+    /// A request [`HitRequest::check`](crate::HitRequest::check) refuses; whatever the search refuses,
     /// such as a window the ephemeris does not cover.
     pub fn hits(
         self,
@@ -1357,7 +1357,7 @@ impl<'a> ChartArea<'a> {
         })
     }
 
-    /// [`Chart::hits`] for many natal charts over one window, **searching
+    /// [`ChartArea::hits`] for many natal charts over one window, **searching
     /// the sky once**: each graha's longitude is scanned one time for every
     /// chart, its ingresses and stations — which are the sky's and not a
     /// chart's — are refined once and handed to each, and only the aspects
@@ -1383,7 +1383,7 @@ impl<'a> ChartArea<'a> {
     ///
     /// # Errors
     ///
-    /// As [`Chart::hits`]; no chart at all is `INVALID_ARG` naming `natals`.
+    /// As [`ChartArea::hits`]; no chart at all is `INVALID_ARG` naming `natals`.
     pub fn hits_many<'d>(
         self,
         natals: impl IntoIterator<Item = &'d Document>,
@@ -1612,7 +1612,7 @@ impl<'a> ChartArea<'a> {
     ///
     /// # Errors
     ///
-    /// A request [`SadeSatiRequest::check`] refuses; whatever the search
+    /// A request [`SadeSatiRequest::check`](crate::SadeSatiRequest::check) refuses; whatever the search
     /// refuses, such as a window the ephemeris does not cover.
     pub fn sade_sati(
         self,

@@ -169,7 +169,7 @@ pub struct MoonWeakness {
 ///
 /// An aspect is Tajika's by sign, the conjunction included, as
 /// [`Drishti::between_signs`] reads it, and an enemy's sign is one whose
-/// lord stands to `graha` as [`Relation::Enemy`].
+/// lord stands to `graha` as [`Relation::Enemy`](crate::bala::Relation::Enemy).
 ///
 /// # Errors
 ///

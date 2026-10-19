@@ -762,7 +762,7 @@ fn render_object(out: &mut String, api: &Api, s: &StructDef, b: Backend) {
             out,
             "{}{}    pub {}: {ty},",
             doc(
-                &field_doc_with(f, DocStyle::Prose, f.meta.enum_name.as_deref()),
+                &field_doc_with(f, DocStyle::Markdown, f.meta.enum_name.as_deref()),
                 "    "
             ),
             b.field(&ty),

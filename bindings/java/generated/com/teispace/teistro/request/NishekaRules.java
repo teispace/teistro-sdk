@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * How `nisheka` counts back (BPHS ch. 3 vv. 25–29).
+ * How `nisheka_span` counts back (BPHS ch. 3 vv. 25–29).
  *
  * @param invisibleHalf The invisible half. Null leaves the SDK's default.
  * @param mandiAt Which end of Saturn's eighth Mandi is. Its own setting, not the purifier's: Jha's gloss to v. 70 takes the start and rejects the end, and his worked nisheka closes only with it. Null leaves the SDK's default.

@@ -80,8 +80,8 @@ pub enum BirthEclipse {
 /// The sign rising at `at` and when it rose and sets, from `lagna_at`, the
 /// lagna's longitude in degrees at an instant.
 ///
-/// Each edge is walked to in [`STEP_DAYS`] and found to a second by
-/// bisection; an edge beyond [`REACH_DAYS`] is `None`.
+/// Each edge is walked to in `STEP_DAYS` and found to a second by
+/// bisection; an edge beyond `REACH_DAYS` is `None`.
 ///
 /// # Errors
 ///

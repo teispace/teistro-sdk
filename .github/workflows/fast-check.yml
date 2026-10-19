@@ -52,6 +52,12 @@ jobs:
           command: check
       - name: Unit tests
         run: cargo test --workspace
+      # Every intra-doc link resolves and every example block parses: a
+      # rename leaves the old name in prose, and only rustdoc reads it.
+      - name: Rustdoc (warnings as errors)
+        run: cargo doc --workspace --no-deps --keep-going
+        env:
+          RUSTDOCFLAGS: -D warnings
       - name: Documentation gates
         run: cargo xtask check-docs
       - name: Guides (every program a guide shows is cut from a file a gate runs)

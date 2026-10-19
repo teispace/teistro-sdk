@@ -14,7 +14,7 @@
 //! - [`validate`]: the gates a source tree passes before it is built;
 //! - [`pack`]: the `.tpack` container, zero-copy reads with a checksum;
 //! - [`generate`]: typed accessors for TypeScript and Dart;
-//! - [`bench`]: the timing helper of the conformance kit (`crates/ephemeris-kit`), shared with spike 3.
+//! - [`bench`](mod@bench): the timing helper of the conformance kit (`crates/ephemeris-kit`), shared with spike 3.
 
 pub mod analysis;
 pub mod generate;

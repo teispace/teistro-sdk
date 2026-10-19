@@ -2,7 +2,7 @@
 //! (`docs/02-architecture/01-module-catalog.md`,
 //! `01-research/platform/13-astronomy-layer.md`).
 //!
-//! - [`delta_t`] and [`scale`]: Delta T as the IERS table where measured
+//! - [`delta_t`](mod@delta_t) and [`scale`]: Delta T as the IERS table where measured
 //!   and a cited model either side, with an uncertainty on every value,
 //!   and the conversions between UT1 and TT;
 //! - [`iau`]: the IAU routines ported from ERFA with a provenance table

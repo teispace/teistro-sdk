@@ -184,7 +184,7 @@ impl PairMatrix {
 pub struct EventTest {
     /// The study's seed; required.
     pub seed: u64,
-    /// How many permutations, 1 to [`MAX_PERMUTATIONS`].
+    /// How many permutations, 1 to [`MAX_PERMUTATIONS`](crate::MAX_PERMUTATIONS).
     pub permutations: u32,
     /// Whether the predicate is looked for more often than chance, less,
     /// or either.
@@ -540,7 +540,7 @@ fn diagonal_row(
 /// [`AfterBirth::Refuse`], a restricted pairing no permutation can make
 /// or, under `research/shuffle/1`, one rejection cannot meet
 /// (`afterBirth`, with a hint); permutations outside 1 to
-/// [`MAX_PERMUTATIONS`], or too few to reach `alpha` over the family
+/// [`MAX_PERMUTATIONS`](crate::MAX_PERMUTATIONS), or too few to reach `alpha` over the family
 /// (`permutations`); `level` or `alpha` outside (0, 1); no predicate
 /// (`predicates`).
 pub fn timed(

@@ -15,7 +15,7 @@
 //! (`tests/provider.rs`). A central difference over a fitted table would
 //! return an average rate across the step, which the conformance kit
 //! measures and rejects. A Chebyshev series has an exact derivative, so
-//! [`Block::at`] returns both from one pass of a single recurrence.
+//! [`Table::at`] returns both from one pass of a single recurrence.
 //!
 //! # The shape of a table
 //!

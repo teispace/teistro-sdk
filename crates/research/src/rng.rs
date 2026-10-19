@@ -119,7 +119,7 @@ pub const fn stream_seed(seed: u64, k: u64) -> u64 {
     finalise(seed ^ finalise(k.wrapping_add(GOLDEN)))
 }
 
-/// `SplitMix64`: a 64-bit state advanced by [`GOLDEN`] and finalised.
+/// `SplitMix64`: a 64-bit state advanced by `GOLDEN` and finalised.
 #[derive(Clone, Debug)]
 pub struct SplitMix64 {
     state: u64,

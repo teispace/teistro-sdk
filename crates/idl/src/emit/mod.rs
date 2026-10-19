@@ -48,6 +48,9 @@ pub enum DocStyle {
     Prose,
     /// `@unit deg`, `@range [1,5]`, `@example 3`, one per line.
     JsDoc,
+    /// [`DocStyle::Prose`] for a Rust doc comment, whose Markdown reads a
+    /// bare `[1,5]` as a link: the range and the example are code spans.
+    Markdown,
 }
 
 /// A field's documentation with the enum it stands for, its unit, range
@@ -72,10 +75,14 @@ pub fn field_doc_with(field: &FieldDef, style: DocStyle, enum_name: Option<&str>
     for (tag, value) in tags {
         let Some(value) = value else { continue };
         match style {
-            DocStyle::Prose => {
+            DocStyle::Prose | DocStyle::Markdown => {
                 let separator = if first { "\n" } else { " " };
                 let label = capitalised(tag);
-                let _ = write!(text, "{separator}{label}: {value}.");
+                if style == DocStyle::Markdown && matches!(tag, "range" | "example") {
+                    let _ = write!(text, "{separator}{label}: `{value}`.");
+                } else {
+                    let _ = write!(text, "{separator}{label}: {value}.");
+                }
             }
             DocStyle::JsDoc => {
                 let _ = write!(text, "\n@{tag} {value}");
@@ -85,7 +92,7 @@ pub fn field_doc_with(field: &FieldDef, style: DocStyle, enum_name: Option<&str>
     }
     if field.meta.nullable {
         match style {
-            DocStyle::Prose => text.push_str(" May be null."),
+            DocStyle::Prose | DocStyle::Markdown => text.push_str(" May be null."),
             DocStyle::JsDoc => text.push_str("\n@nullable"),
         }
     }
@@ -182,7 +189,7 @@ mod tests {
     use crate::model::{Meta, Scalar, TypeRef};
 
     #[test]
-    fn documentation_carries_the_metadata_in_both_styles() {
+    fn documentation_carries_the_metadata_in_every_style() {
         let field = FieldDef {
             name: "lon_deg".into(),
             ty: TypeRef::scalar(Scalar::F64),
@@ -198,6 +205,10 @@ mod tests {
         assert_eq!(
             field_doc(&field, DocStyle::Prose),
             "The longitude.\nUnit: deg. Range: [0,360). Example: 280.46. May be null."
+        );
+        assert_eq!(
+            field_doc(&field, DocStyle::Markdown),
+            "The longitude.\nUnit: deg. Range: `[0,360)`. Example: `280.46`. May be null."
         );
         assert_eq!(
             field_doc(&field, DocStyle::JsDoc),

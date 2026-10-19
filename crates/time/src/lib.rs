@@ -7,7 +7,7 @@
 //!
 //! - [`scale`]: the conversions between UTC, UT1 and TT, explicit
 //!   functions that stamp what they applied, over the astronomy layer's
-//!   Delta T ([`delta_t`], re-exported from `teistro_astro`: the IERS
+//!   Delta T ([`delta_t`](fn@delta_t), re-exported from `teistro_astro`: the IERS
 //!   table where measured and a cited model either side, with an
 //!   uncertainty on every value);
 //! - [`leap`]: the leap-second table and what it allows;
@@ -16,7 +16,7 @@
 //!   policies, and the metadata a stored chart keeps ([`ZoneResolution`]);
 //!   the embedded database ([`EmbeddedTzdb`]) implements the time-zone
 //!   port and never reads the host;
-//! - [`local_day`]: the sunrise-anchored day at a place from a solar
+//! - [`local_day`](mod@local_day): the sunrise-anchored day at a place from a solar
 //!   model, with the polar policies;
 //! - [`ghati`]: ghati-pala as exact integer arithmetic on microseconds;
 //! - [`hora`]: the twenty-four planetary hours of a day and their lords.

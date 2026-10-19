@@ -14,13 +14,13 @@
 //! are valid until the next call on the same context.
 //!
 //! - [`context`]: the handle, its options, the last error;
-//! - [`keys`]: catalogue keys and ids;
+//! - [`key`]: catalogue keys and ids;
 //! - [`calendar`]: dates in every shipped calendar, the fixed day;
 //! - [`frame`]: the frame a position request asks for, by field;
 //! - [`time`]: civil times to instants with the zone metadata, the scales;
 //! - [`intl`]: the locale engine over the embedded bundles and loaded packs;
 //! - [`positions`]: positions over the ephemeris port, completed;
-//! - [`strings`] and [`blob`]: the owned and borrowed result carriers;
+//! - [`string`] and [`blob`]: the owned and borrowed result carriers;
 //! - [`schemas`]: the result blob schemas, read by the generators.
 //!
 //! The API description is extracted from this crate's source, the port's
