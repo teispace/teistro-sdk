@@ -17,13 +17,17 @@ use std::collections::BTreeMap;
 use common::{chart_at, files_in};
 use teistro_rules::{Evaluator, Readings, Rule, shipped};
 
-/// Every rule the three chapters ship.
+/// The pack of ch. 3's later verses, which `parijata_late.rs` holds apart.
+const LATE: &str = include_str!("../rules/classical-parijata-late.json");
+
+/// Every rule the three chapters ship in this pack.
 fn verses() -> Vec<Rule> {
     shipped::nabhasas()
         .iter()
         .filter(|rule| {
             rule.source.text == "Jataka Parijata"
                 && matches!(rule.source.chapter.as_deref(), Some("3" | "8" | "9"))
+                && !LATE.contains(&format!("\"{}\"", rule.key))
         })
         .cloned()
         .collect()

@@ -1,0 +1,4031 @@
+{
+  "rules": [
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_EXALTED_OR_OWN_IN_A_KENDRA_OR_TRIKONA_EIGHTH_LORD_AWAY_BENEFIC_RISING",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "2",
+        "rank": 1,
+        "note": "The lagna lord in a kendra or a trikona, bright (not combust), in its exaltation or its own sign; the eighth lord outside the kendras; and a benefic in the lagna. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": {
+              "lordOf": 1
+            }
+          }
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "lord-of-house-in-kendra",
+            "houseRuled": 8
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long-lived, rich, honoured, virtuous, praised by kings, fortunate, handsome, strong, fearless, righteous and with a good family"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_CONNECTED_TO_A_BENEFIC",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna lord connected to a benefic other than itself (sat-sambandha). Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "SELF"
+                        },
+                        "as": {
+                          "lordOf": 1
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": {
+                            "lordOf": 1
+                          }
+                        },
+                        "as": "SELF"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 1
+                    }
+                  },
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "lordOf": 1
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": {
+                          "lordOf": 1
+                        },
+                        "target": "SELF"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "planet-in-kendra-from",
+                    "planet": "SELF",
+                    "reference": {
+                      "lordOf": 1
+                    }
+                  },
+                  {
+                    "type": "planet-in-house-from",
+                    "planet": "SELF",
+                    "reference": {
+                      "lordOf": 1
+                    },
+                    "houses": [
+                      5,
+                      9
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "lives in a good village, among good company"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_WITH_A_STRONG_GRAHA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna lord joined in its sign by a strong graha other than itself. The Sanskrit's locatives keep the lagna lord (kalevarapati) as their subject; Sastri's English gives the exaltation, own sign and the movable, fixed and dual signs to the graha joining it (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "lordOf": 1
+                }
+              },
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "under the patronage of a renowned king"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_EXALTED",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna lord exalted. The Sanskrit's locatives keep the lagna lord (kalevarapati) as their subject; Sastri's English gives the exaltation, own sign and the movable, fixed and dual signs to the graha joining it (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king himself"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_OWN_SIGN",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna lord in its own sign. The Sanskrit's locatives keep the lagna lord (kalevarapati) as their subject; Sastri's English gives the exaltation, own sign and the movable, fixed and dual signs to the graha joining it (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "lives in the place of his birth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_MOVABLE_SIGN",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna lord in a movable sign. The Sanskrit's locatives keep the lagna lord (kalevarapati) as their subject; Sastri's English gives the exaltation, own sign and the movable, fixed and dual signs to the graha joining it (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "lordOf": 1
+          },
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "ever on the move"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_FIXED_SIGN",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna lord in a fixed sign. The Sanskrit's locatives keep the lagna lord (kalevarapati) as their subject; Sastri's English gives the exaltation, own sign and the movable, fixed and dual signs to the graha joining it (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "lordOf": 1
+          },
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "settled in one place"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_DUAL_SIGN",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna lord in a dual sign. The Sanskrit's locatives keep the lagna lord (kalevarapati) as their subject; Sastri's English gives the exaltation, own sign and the movable, fixed and dual signs to the graha joining it (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "lordOf": 1
+          },
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "now moving, now settled"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_BRIGHT",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "4",
+        "rank": 1,
+        "note": "The lagna lord bright-rayed, read as not combust; a Sun ruling the lagna always is. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": {
+              "lordOf": 1
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "famous"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_WELL_PLACED",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "4",
+        "rank": 1,
+        "note": "The lagna lord well placed. Well placed is read as outside the sixth, eighth and twelfth, as ch. 12's rules read it. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happy and prospering"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_DUSTHANA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "4",
+        "rank": 1,
+        "note": "The lagna lord in the sixth, eighth or twelfth. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "miserable"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_MALEFICS_ENEMYS_OR_DEBILITATION_SIGN",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "4",
+        "rank": 1,
+        "note": "The lagna lord in a malefic's sign not its own, an enemy's sign, or its debilitation; the Sanskrit names the evil sign and the debilitation, and Sastri's English adds the enemy's. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": {
+                    "lordOf": {
+                      "lordOf": 1
+                    }
+                  },
+                  "class": "malefic"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": {
+                        "lordOf": 1
+                      }
+                    },
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 1
+              },
+              "dignities": [
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 1
+              },
+              "dignities": [
+                "DEBILITATED",
+                "DEEP_DEBILITATED"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "lives in a mean place among low people"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_RISING_BENEFIC_IN_THE_SECOND",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "5",
+        "rank": 1,
+        "note": "The lord of the second in the lagna and a benefic in the second; the compound's number is unmarked and read as one at least. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 2,
+          "houseOccupied": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of the best qualities, a prosperous family, rich, affable and far-sighted"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_THE_SUN",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "5",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Sun, connected to Sun. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "SUN"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "SUN"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "SUN"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "SUN"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "SUN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SUN",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "SUN"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "SUN",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "learning and wealth used for the good of the world"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_SATURN",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "5",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Saturn, connected to Saturn. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "SATURN"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "SATURN"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "SATURN"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "SATURN"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "SATURN"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SATURN",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "SATURN"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "SATURN",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "small and low learning"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_JUPITER",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Jupiter, connected to Jupiter. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "JUPITER"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "JUPITER"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "JUPITER"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "JUPITER"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "JUPITER"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "JUPITER",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "JUPITER"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "JUPITER",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "versed in the scriptures and the law"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_MERCURY",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Mercury, connected to Mercury. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "MERCURY"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "MERCURY"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "MERCURY"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "MERCURY"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "MERCURY"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MERCURY",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "MERCURY"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "MERCURY",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "eloquent and clever in statecraft"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_VENUS",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Venus, connected to Venus. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "VENUS"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "VENUS"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "VENUS"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "VENUS"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "VENUS"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "VENUS",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "VENUS"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "VENUS",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "skilled in the talk of love"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_THE_MOON",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Moon, connected to Moon. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "MOON"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "MOON"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "MOON"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "MOON"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "MOON"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MOON",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "MOON"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "MOON",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "knowing something of the arts"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_MARS",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Mars, connected to Mars. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "MARS"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "MARS"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "MARS"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "MARS"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "MARS"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MARS",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "MARS"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "MARS",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "given to cruel deeds, a backbiter"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_RAHU",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Rahu, connected to Rahu. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "RAHU"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "RAHU"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "RAHU"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "RAHU"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "RAHU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "RAHU",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "RAHU"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "RAHU",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of indistinct speech"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_KETU",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the second, a graha other than Ketu, connected to Ketu. Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 2
+            },
+            "as": "KETU"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "lordOf": 2
+                    }
+                  },
+                  "as": "KETU"
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": "KETU"
+                  },
+                  "as": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 2
+              },
+              "as": "KETU"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 2
+                  },
+                  "target": "KETU"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "KETU",
+                  "target": {
+                    "lordOf": 2
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "KETU"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "KETU",
+              "houses": [
+                5,
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "stammering and speaking falsehood"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_MALEFICS_IN_THE_SECOND",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "6",
+        "rank": 1,
+        "note": "Malefics in the second. The verse's plural is read as two or more. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "foolish and without wealth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LORDS_OF_ONE_AND_THREE_EXCHANGED_AND_STRONG",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lords of the lagna and the third each in the other's sign, both strong. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "mutual-exchange",
+          "house1": 1,
+          "house2": 3
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 3
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "brave, steadfast, helpful to his brothers and able in daring deeds"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_THIRD_LORD_STRONG_WITH_A_BENEFIC_MARS_STRONG_AND_WELL_PLACED",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "8",
+        "rank": 1,
+        "note": "The lord of the third strong and joined by a benefic other than itself, and Mars, its karaka, strong and in a good house, read as outside the sixth, eighth and twelfth. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 3
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 3
+                  }
+                }
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "lordOf": 3
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MARS"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "brothers prosper"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_THIRD_LORD_WEAK_IN_A_DUSTHANA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "8",
+        "rank": 1,
+        "note": "The lord of the third weak and in the sixth, eighth or twelfth; the Sanskrit joins the two (viryavihine duhsthite), where Sastri's English has either. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 3
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 3
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "brothers lost"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_THIRD_LORD_AND_MARS_ODD_ASPECTED_BY_JUPITER_SUN_AND_MARS",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "9",
+        "rank": 1,
+        "note": "Mars, the karaka, and the lord of the third in odd signs, the third an odd sign, and each aspected by Jupiter, the Sun and Mars, those of the three other than itself. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "lordOf": 3
+          },
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": 3,
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MARS"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SUN",
+          "target": "MARS"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": 3
+              },
+              "as": "JUPITER"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": {
+                "lordOf": 3
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": 3
+              },
+              "as": "SUN"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SUN",
+              "target": {
+                "lordOf": 3
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": 3
+              },
+              "as": "MARS"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": {
+                "lordOf": 3
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "brothers, as many as the navamsha shows"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_FOURTH_LORD_AND_MOON_IN_DUSTHANAS_AFFLICTED",
+      "category": "arishta-mother",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "10",
+        "rank": 1,
+        "note": "Each of the fourth lord and the Moon in the sixth, eighth or twelfth, neither joined nor aspected by a benefic other than itself, and each hemmed between malefics or joined or aspected by one. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": 4
+              },
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "for-any",
+                "planets": [
+                  "SUN",
+                  "MOON",
+                  "MARS",
+                  "MERCURY",
+                  "JUPITER",
+                  "VENUS",
+                  "SATURN",
+                  "RAHU",
+                  "KETU"
+                ],
+                "then": {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 4
+                        }
+                      }
+                    },
+                    {
+                      "type": "or",
+                      "conditions": [
+                        {
+                          "type": "same-sign",
+                          "of": "SELF",
+                          "as": {
+                            "lordOf": 4
+                          }
+                        },
+                        {
+                          "type": "planet-aspects-planet",
+                          "from": "SELF",
+                          "target": {
+                            "lordOf": 4
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-malefic",
+                      "houses": [
+                        2
+                      ],
+                      "atLeast": 1,
+                      "from": {
+                        "lordOf": 4
+                      }
+                    },
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-malefic",
+                      "houses": [
+                        12
+                      ],
+                      "atLeast": 1,
+                      "from": {
+                        "lordOf": 4
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN",
+                    "RAHU",
+                    "KETU"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-is",
+                        "planet": "SELF",
+                        "class": "malefic"
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "same-body",
+                          "of": "SELF",
+                          "as": {
+                            "lordOf": 4
+                          }
+                        }
+                      },
+                      {
+                        "type": "or",
+                        "conditions": [
+                          {
+                            "type": "same-sign",
+                            "of": "SELF",
+                            "as": {
+                              "lordOf": 4
+                            }
+                          },
+                          {
+                            "type": "planet-aspects-planet",
+                            "from": "SELF",
+                            "target": {
+                              "lordOf": 4
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "for-any",
+                "planets": [
+                  "SUN",
+                  "MOON",
+                  "MARS",
+                  "MERCURY",
+                  "JUPITER",
+                  "VENUS",
+                  "SATURN",
+                  "RAHU",
+                  "KETU"
+                ],
+                "then": {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": "MOON"
+                      }
+                    },
+                    {
+                      "type": "or",
+                      "conditions": [
+                        {
+                          "type": "same-sign",
+                          "of": "SELF",
+                          "as": "MOON"
+                        },
+                        {
+                          "type": "planet-aspects-planet",
+                          "from": "SELF",
+                          "target": "MOON"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-malefic",
+                      "houses": [
+                        2
+                      ],
+                      "atLeast": 1,
+                      "from": "MOON"
+                    },
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-malefic",
+                      "houses": [
+                        12
+                      ],
+                      "atLeast": 1,
+                      "from": "MOON"
+                    }
+                  ]
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN",
+                    "RAHU",
+                    "KETU"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-is",
+                        "planet": "SELF",
+                        "class": "malefic"
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "same-body",
+                          "of": "SELF",
+                          "as": "MOON"
+                        }
+                      },
+                      {
+                        "type": "or",
+                        "conditions": [
+                          {
+                            "type": "same-sign",
+                            "of": "SELF",
+                            "as": "MOON"
+                          },
+                          {
+                            "type": "planet-aspects-planet",
+                            "from": "SELF",
+                            "target": "MOON"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the mother's death"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_FOURTH_LORD_AND_MOON_STRONG_WITH_BENEFICS_BENEFIC_FOURTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "10",
+        "rank": 1,
+        "note": "The fourth lord and the Moon strong, each joined or aspected by a benefic other than itself, and a benefic in the fourth. The verse's last clause, benefics in good places from the Moon, names no houses and is not built. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 4
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 4
+                  }
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 4
+                    }
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "SELF",
+                    "target": {
+                      "lordOf": 4
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": "MOON"
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": "MOON"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "SELF",
+                    "target": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the mother's happiness"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LORDS_OF_ONE_AND_FOUR_EXCHANGING_HOUSES_THE_MOON_WITH_ONE",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "11",
+        "rank": 1,
+        "note": "The lagna lord in the fourth or the fourth lord in the lagna, and the Moon joined or aspected by either, a graha other than her. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 1,
+              "houseOccupied": 4
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 4,
+              "houseOccupied": 1
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 1
+                    },
+                    "as": "MOON"
+                  }
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 1
+                      },
+                      "as": "MOON"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 1
+                      },
+                      "target": "MOON"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 4
+                    },
+                    "as": "MOON"
+                  }
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 4
+                      },
+                      "as": "MOON"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 4
+                      },
+                      "target": "MOON"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "performs his mother's last rites"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LORDS_OF_ONE_AND_FOUR_HOSTILE_AND_UNCONNECTED",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "11",
+        "rank": 1,
+        "note": "The lords of the lagna and the fourth, two grahas, both in enemies' signs or debilitated, or in the sixth and the eighth from each other, and not connected. 'In each other's enemy or debilitation sign' is read as each in an enemy's sign or its debilitation (C576). Connected is ch. 15 v. 30's five bonds: each in the other's sign, together, aspecting each other, or in a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 1
+            },
+            "as": {
+              "lordOf": 4
+            }
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "dignities": [
+                    "ENEMY",
+                    "GREAT_ENEMY",
+                    "DEBILITATED",
+                    "DEEP_DEBILITATED"
+                  ]
+                },
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 4
+                  },
+                  "dignities": [
+                    "ENEMY",
+                    "GREAT_ENEMY",
+                    "DEBILITATED",
+                    "DEEP_DEBILITATED"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 1
+              },
+              "reference": {
+                "lordOf": 4
+              },
+              "houses": [
+                6,
+                8
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": {
+                        "lordOf": 1
+                      }
+                    },
+                    "as": {
+                      "lordOf": 4
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": {
+                        "lordOf": 4
+                      }
+                    },
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": {
+                  "lordOf": 1
+                },
+                "as": {
+                  "lordOf": 4
+                }
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": {
+                      "lordOf": 1
+                    },
+                    "target": {
+                      "lordOf": 4
+                    }
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": {
+                      "lordOf": 4
+                    },
+                    "target": {
+                      "lordOf": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "planet-in-kendra-from",
+                "planet": {
+                  "lordOf": 1
+                },
+                "reference": {
+                  "lordOf": 4
+                }
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": {
+                  "lordOf": 1
+                },
+                "reference": {
+                  "lordOf": 4
+                },
+                "houses": [
+                  5,
+                  9
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "cannot perform his mother's last rites"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_FOURTH_LORD_AND_VENUS_IN_THE_LAGNA_OR_FOURTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "13",
+        "rank": 1,
+        "note": "The fourth lord and Venus, well placed, each in the lagna or the fourth. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 4
+          },
+          "houses": [
+            1,
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            1,
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a palanquin, lordship and kingship; gold, silk, jewels, ornaments, beds and the comforts of love, cows, elephants and horses"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_FOURTH_LORD_WITH_MARS_AND_THE_SUN_IN_A_DUSTHANA_OR_THEY_IN_THE_FOURTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "14",
+        "rank": 1,
+        "note": "The fourth lord in the sixth, eighth or twelfth with Mars and the Sun, or Mars and the Sun in the fourth; the Sanskrit joins the dusthana and the company, where Sastri's English has either. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "lordOf": 4
+                  },
+                  "houses": [
+                    6,
+                    8,
+                    12
+                  ]
+                },
+                {
+                  "type": "same-sign",
+                  "of": "MARS",
+                  "as": {
+                    "lordOf": 4
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": "SUN",
+                  "as": {
+                    "lordOf": 4
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MARS",
+                  "houses": [
+                    4
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SUN",
+                  "houses": [
+                    4
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the house of birth burnt"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_FOURTH_LORD_IN_THE_FOURTH_WITH_RAHU_OR_SATURN",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "14",
+        "rank": 1,
+        "note": "The fourth lord in the fourth, joined there by Rahu or Saturn, a graha other than itself. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 4,
+          "houseOccupied": 4
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "RAHU",
+                  "as": {
+                    "lordOf": 4
+                  }
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "RAHU",
+                    "as": {
+                      "lordOf": 4
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SATURN",
+                  "as": {
+                    "lordOf": 4
+                  }
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SATURN",
+                    "as": {
+                      "lordOf": 4
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the house old and decaying"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_FOURTH_OR_ITS_LORD_HELD_BY_AN_ENEMY",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "14",
+        "rank": 1,
+        "note": "A graha the fourth lord counts its natural enemy in the fourth or joining the fourth lord; the nodes have no natural relation and are not counted. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 4
+                  }
+                }
+              },
+              {
+                "type": "natural-relation",
+                "of": {
+                  "lordOf": 4
+                },
+                "to": "SELF",
+                "relations": [
+                  "enemy"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4
+                    ]
+                  },
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 4
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "cows, lands and vehicles seized by enemies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_FIFTH_OF_MERCURY",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "15",
+        "rank": 1,
+        "note": "The fifth a sign of Mercury (saumya, which Sastri reads as Mercury), or its navamsha one, or Mercury in the fifth. The fifth's navamsha is read as that of its cusp at equal division, 120 degrees from the lagna's, which falls in the lagna's own navamsha sign (C576). The verse's second figure, the fifth lord in a vaiseshikamsha, is not built. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": 5,
+              "signs": [
+                "GEMINI",
+                "VIRGO"
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "LAGNA"
+              },
+              "signs": [
+                "GEMINI",
+                "VIRGO"
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MERCURY",
+              "houses": [
+                5
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "intelligent and guileless"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_MALEFICS_IN_THE_SIXTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "16",
+        "rank": 1,
+        "note": "Malefics in the sixth. The verse's plural is read as two or more. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "intense and constant trouble from enemies, hard to remedy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_WITH_OR_ASPECTED_BY_A_STRONG_SIXTH_LORD",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "16",
+        "rank": 1,
+        "note": "The lagna lord joined or aspected by a strong sixth lord, a graha other than itself. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-body",
+            "of": {
+              "lordOf": 1
+            },
+            "as": {
+              "lordOf": 6
+            }
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 6
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 6
+              },
+              "as": {
+                "lordOf": 1
+              }
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": {
+                "lordOf": 6
+              },
+              "target": {
+                "lordOf": 1
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "intense and constant trouble from enemies, hard to remedy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_THE_SIXTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "16",
+        "rank": 1,
+        "note": "The lagna lord in the sixth. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 1,
+          "houseOccupied": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "intense and constant trouble from enemies, hard to remedy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SIXTH_LORD_IN_A_KENDRA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "16",
+        "rank": 1,
+        "note": "The sixth lord in a kendra. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "intense and constant trouble from enemies, hard to remedy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SIXTH_LORD_WITH_OR_ASPECTED_BY_A_MALEFIC",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "16",
+        "rank": 1,
+        "note": "The sixth lord joined or aspected by a malefic other than itself; Sastri numbers it apart from the kendra, as the Sanskrit's 'or' does. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 6
+                  }
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 6
+                    }
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "SELF",
+                    "target": {
+                      "lordOf": 6
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "intense and constant trouble from enemies, hard to remedy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_OVER_THE_SIXTH_LORD_IN_A_BENEFIC_NAVAMSHA_FOURTH_LORD_STRONG",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "17",
+        "rank": 1,
+        "note": "The lagna lord stronger than the sixth lord, in a benefic's navamsha (saumya-graha-amsha) and aspected by a benefic, and the fourth lord strong in a kendra or a trikona. Where one graha rules the lagna and the sixth it is not stronger than itself, and the rule does not hold. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-stronger-than",
+          "planet": {
+            "lordOf": 1
+          },
+          "than": {
+            "lordOf": 6
+          }
+        },
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": {
+              "navamsha": {
+                "lordOf": 1
+              }
+            }
+          },
+          "class": "benefic"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 4
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 4
+          },
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "healthy, of a firm body, enjoying every comfort"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SIXTH_LORD_FALLEN_IN_A_DUSTHANA_LAGNA_LORD_STRONGER_SUN_NINTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "18",
+        "rank": 1,
+        "note": "The sixth lord in the sixth, eighth or twelfth and debilitated, in an enemy's sign or combust; the lagna lord stronger than it; and the Sun in the ninth (ravau shubhe). The other reading, ripau shubhe, a benefic in the sixth, is not built. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 6
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 6
+              },
+              "dignities": [
+                "DEBILITATED",
+                "DEEP_DEBILITATED",
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-combust",
+              "planet": {
+                "lordOf": 6
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-stronger-than",
+          "planet": {
+            "lordOf": 1
+          },
+          "than": {
+            "lordOf": 6
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "his enemies destroyed"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SEVENTH_WITH_A_BENEFIC_ITS_LORD_STRONG",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "20",
+        "rank": 1,
+        "note": "The seventh connected to a benefic, which Sastri reads as a benefic in it or aspecting it, and its lord strong. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 7
+            }
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 7
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a chaste wife of every virtue, blessed with husband and sons"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_EIGHTH_LORD_AWAY_FROM_THE_KENDRAS_WEAKER_THAN_THE_LAGNA_LORD",
+      "category": "ayur",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "21",
+        "rank": 1,
+        "note": "The eighth lord outside the kendras and weaker than the lagna lord; where one graha rules both it is not weaker than itself. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "lord-of-house-in-kendra",
+            "houseRuled": 8
+          }
+        },
+        {
+          "type": "planet-stronger-than",
+          "planet": {
+            "lordOf": 1
+          },
+          "than": {
+            "lordOf": 8
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long-lived, free of anxiety, obstacle and misery"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_MARS_OR_SUN_NINTH_ITS_LORD_IN_A_DUSTHANA_OR_HEMMED",
+      "category": "arishta-father",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "22",
+        "rank": 1,
+        "note": "Mars or the Sun in the ninth, and its lord in the sixth, eighth or twelfth or hemmed between malefics. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                9
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                9
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": 9
+              },
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    2
+                  ],
+                  "atLeast": 1,
+                  "from": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    12
+                  ],
+                  "atLeast": 1,
+                  "from": {
+                    "lordOf": 9
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the father's death soon after the birth"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SUN_BY_DAY_SATURN_BY_NIGHT_WELL_PLACED_ASPECTED_BY_A_BENEFIC_NINTH_LORD_STRONG",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "23",
+        "rank": 1,
+        "note": "By day the Sun, by night Saturn, well placed and aspected by a benefic, and the ninth lord strong. Well placed is read as outside the sixth, eighth and twelfth, as ch. 12's rules read it. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "birth-by-day"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SUN",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-benefic",
+                  "target": "SUN"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SATURN",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10,
+                    11
+                  ]
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-benefic",
+                  "target": "SATURN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 9
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the father long-lived"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LUMINARIES_IN_THE_TRINES_OF_SATURN_AND_MARS",
+      "category": "arishta-father",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "24",
+        "rank": 1,
+        "note": "The Sun and the Moon each in the fifth or the ninth from Saturn and from Mars. Brihat Jataka ch. 5 v. 14 asks Mars and Saturn together and either luminary, a figure apart. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": "SATURN",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": "MARS",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SATURN",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "MARS",
+          "houses": [
+            5,
+            9
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "SUN"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "MOON"
+            }
+          ],
+          "label": "Jupiter aspects both luminaries, which v. 24 reads apart"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "abandoned by both parents"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LUMINARIES_IN_THE_TRINES_OF_SATURN_AND_MARS_ASPECTED_BY_JUPITER",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "24",
+        "rank": 1,
+        "note": "The figure above, both luminaries aspected by Jupiter. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": "SATURN",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": "MARS",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SATURN",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "MARS",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "SUN"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "abandoned by both parents, yet long-lived and happy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SATURN_NINTH_LORD_IN_A_MOVABLE_SIGN_UNASPECTED_BY_BENEFICS",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "25",
+        "rank": 1,
+        "note": "Saturn the ninth lord, in a movable sign, aspected by no benefic. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": "SATURN",
+          "as": {
+            "lordOf": 9
+          }
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "SATURN"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "reared by another father"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SUN_IN_A_DUSTHANA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "25",
+        "rank": 1,
+        "note": "The Sun in the sixth, eighth or twelfth. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "reared by another father"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_NINTH_OR_ITS_LORD_MOVABLE_WITH_SATURN_TWELFTH_LORD_STRONG",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "26",
+        "rank": 1,
+        "note": "The ninth in a movable sign held or aspected by Saturn, or the ninth lord in a movable sign joined or aspected by Saturn, a graha other than itself; and the twelfth lord strong. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": 9,
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SATURN",
+                      "houses": [
+                        9
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SATURN",
+                      "houseRuled": 9
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": {
+                    "lordOf": 9
+                  },
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "and",
+                      "conditions": [
+                        {
+                          "type": "same-sign",
+                          "of": "SATURN",
+                          "as": {
+                            "lordOf": 9
+                          }
+                        },
+                        {
+                          "type": "not",
+                          "condition": {
+                            "type": "same-body",
+                            "of": "SATURN",
+                            "as": {
+                              "lordOf": 9
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "SATURN",
+                      "target": {
+                        "lordOf": 9
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 12
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "surely given in adoption"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_BENEFIC_IN_THE_TENTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "27",
+        "rank": 1,
+        "note": "A benefic in the tenth. The Sanskrit's 'or' (shubhakhage va) parts the benefic in the tenth from the lord's figure, where Sastri's English joins them (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            10
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "revered and famous, ever righteous, of a king's fortune and long-lived"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_TENTH_LORD_STRONG_EXALTED_OR_OWN_IN_A_KENDRA_OR_TRIKONA",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "27",
+        "rank": 1,
+        "note": "The tenth lord strong, in a kendra or a trikona, in its own sign or exaltation. The Sanskrit's 'or' (shubhakhage va) parts the benefic in the tenth from the lord's figure, where Sastri's English joins them (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 10
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 10
+          },
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 10
+          },
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "revered and famous, ever righteous, of a king's fortune and long-lived"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_THE_TENTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "27",
+        "rank": 1,
+        "note": "The lagna lord in the tenth. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 1,
+          "houseOccupied": 10
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "revered and famous, ever righteous, of a king's fortune and long-lived"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SUN_OR_MARS_IN_THE_TENTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "28",
+        "rank": 1,
+        "note": "The Sun or Mars in the tenth. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                10
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "mighty and loved by the people"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_SUN_OR_MARS_IN_THE_TENTH_ITS_LORD_WELL_PLACED",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "28",
+        "rank": 1,
+        "note": "The Sun or Mars in the tenth, and its lord well placed as well. Well placed is read as outside the sixth, eighth and twelfth, as ch. 12's rules read it. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 10
+          },
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "achieves great and valorous undertakings"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_BENEFICS_IN_THE_TENTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "28",
+        "rank": 1,
+        "note": "Benefics in the tenth. The verse's plural is read as two or more. Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            10
+          ],
+          "atLeast": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "does good deeds the good commend"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_BHAVA_RAHU_SATURN_OR_KETU_IN_THE_TENTH",
+      "category": "house-based",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "16",
+        "verse": "28",
+        "rank": 1,
+        "note": "Rahu, Saturn or Ketu in the tenth. The verse names the three together, and the nodes never share a sign, so one of them is read (C576). Read from V. Subrahmanya Sastri's translation of Mantreswara's Phaladeepika, the 1950 second edition's page images (pp. 164 to 173), the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "RAHU",
+              "houses": [
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "KETU",
+              "houses": [
+                10
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "does sinful deeds"
+        }
+      ]
+    }
+  ]
+}

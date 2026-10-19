@@ -1,0 +1,4169 @@
+{
+  "rules": [
+    {
+      "key": "PARIJATA_JANMA_BOAT_FULL_MOON_IN_CANCER_MERCURY_RISING_A_BENEFIC_FOURTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "61",
+        "rank": 1,
+        "note": "The full Moon in Cancer, Mercury in the lagna and a benefic (shubhe) in the fourth, which Sastri gives as Jupiter with the commentary and his note as any benefic: Brihat Jataka ch. 5 v. 8's figure, its conditions as written there. The print numbers the verse 61 a second time, after the father's confinement, and the next 62. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  4
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a boat"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_BOAT_WATERY_SIGN_RISING_MOON_SEVENTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "61",
+        "rank": 1,
+        "note": "A watery sign rising and the Moon in the seventh: Brihat Jataka ch. 5 v. 8's figure, its conditions as written there. The print numbers the verse 61 a second time, after the father's confinement, and the next 62. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "CANCER",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 15,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a boat"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_WATERY_SIGN_RISING_BY_THE_WATERS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "62",
+        "rank": 1,
+        "note": "A watery sign rising and the Moon in a watery sign, or the full Moon aspecting the lagna, or the Moon in the tenth, fourth or lagna: Brihat Jataka ch. 5 v. 9's figure and its Sanskrit, which Sastri's note gives as the other interpretation, its conditions as written there (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "CANCER",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 15,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "CANCER",
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-sign",
+                      "planet": "MOON",
+                      "signs": [
+                        "CAPRICORN"
+                      ]
+                    },
+                    {
+                      "type": "planet-in-degrees",
+                      "planet": "MOON",
+                      "from": 15,
+                      "to": 30
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_EKADASHI",
+                    "SHUKLA_DWADASHI",
+                    "SHUKLA_TRAYODASHI",
+                    "SHUKLA_CHATURDASHI",
+                    "PURNIMA",
+                    "KRISHNA_PRATIPADA",
+                    "KRISHNA_DVITIYA",
+                    "KRISHNA_TRITIYA",
+                    "KRISHNA_CHATURTHI",
+                    "KRISHNA_PANCHAMI"
+                  ]
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "MOON",
+                  "houseRuled": 1
+                }
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                10,
+                4,
+                1
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born near water"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_MOON_RISING_SATURN_TWELFTH_ASPECTED_BY_A_MALEFIC",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "63",
+        "rank": 1,
+        "note": "The lagna and the Moon in one sign, and Saturn in the twelfth aspected by a malefic: Brihat Jataka ch. 5 v. 10's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a hidden place or a prison"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_SCORPIO_OR_CANCER_RISING_WITH_SATURN_ASPECTED_BY_THE_MOON",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "63",
+        "rank": 1,
+        "note": "Scorpio or Cancer rising with Saturn in it, aspected by the Moon: Brihat Jataka ch. 5 v. 10's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SCORPIO",
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a pit"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_WATERY_SIGN_RISING_WITH_SATURN_ASPECTED_BY_MERCURY",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "64",
+        "rank": 1,
+        "note": "A watery sign rising with Saturn in it, aspected by Mercury: Brihat Jataka ch. 5 v. 11's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "CANCER",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 15,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a pleasure house"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_WATERY_SIGN_RISING_WITH_SATURN_ASPECTED_BY_SUN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "64",
+        "rank": 1,
+        "note": "A watery sign rising with Saturn in it, aspected by the Sun: Brihat Jataka ch. 5 v. 11's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "CANCER",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 15,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SUN",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a temple"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_WATERY_SIGN_RISING_WITH_SATURN_ASPECTED_BY_MOON",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "64",
+        "rank": 1,
+        "note": "A watery sign rising with Saturn in it, aspected by the Moon: Brihat Jataka ch. 5 v. 11's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "CANCER",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 15,
+                  "to": 30
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born on saline or sandy ground"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_HUMAN_SIGN_RISING_WITH_SATURN_ASPECTED_BY_MARS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "65",
+        "rank": 1,
+        "note": "A human sign rising with Saturn in it, aspected by Mars: Brihat Jataka ch. 5 v. 12's figure, its biped signs the human ones of C500, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "LIBRA",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "SAGITTARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 0,
+                  "to": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MARS",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a cremation ground or a kitchen"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_HUMAN_SIGN_RISING_WITH_SATURN_ASPECTED_BY_VENUS_AND_THE_MOON",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "65",
+        "rank": 1,
+        "note": "A human sign rising with Saturn in it, aspected by Venus and the Moon: Brihat Jataka ch. 5 v. 12's figure, its biped signs the human ones of C500, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "LIBRA",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "SAGITTARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 0,
+                  "to": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "SATURN"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a lovely place"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_HUMAN_SIGN_RISING_WITH_SATURN_ASPECTED_BY_JUPITER",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "65",
+        "rank": 1,
+        "note": "A human sign rising with Saturn in it, aspected by Jupiter: Brihat Jataka ch. 5 v. 12's figure, its biped signs the human ones of C500, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "LIBRA",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "SAGITTARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 0,
+                  "to": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in the hall of the sacred fires"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_HUMAN_SIGN_RISING_WITH_SATURN_ASPECTED_BY_SUN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "65",
+        "rank": 1,
+        "note": "A human sign rising with Saturn in it, aspected by the Sun: Brihat Jataka ch. 5 v. 12's figure, its biped signs the human ones of C500, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "LIBRA",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "SAGITTARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 0,
+                  "to": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SUN",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a palace, a temple or a cowshed"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_HUMAN_SIGN_RISING_WITH_SATURN_ASPECTED_BY_MERCURY",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "65",
+        "rank": 1,
+        "note": "A human sign rising with Saturn in it, aspected by Mercury: Brihat Jataka ch. 5 v. 12's figure, its biped signs the human ones of C500, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "LIBRA",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "SAGITTARIUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 0,
+                  "to": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in an art gallery"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_VARGOTTAMA_LAGNA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "66",
+        "rank": 1,
+        "note": "The rising navamsha vargottama: Brihat Jataka ch. 5 v. 13's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "LAGNA",
+          "as": {
+            "navamsha": "LAGNA"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in the house of the mother's father"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_LAGNA_AND_ITS_NAVAMSHA_MOVABLE",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "66",
+        "rank": 1,
+        "note": "The rising sign and the rising navamsha both movable, the navamsha not the sign itself. The verse reads the stronger of the two, which the language cannot weigh between signs; where both are of one kind the stronger is too (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "LAGNA",
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "LAGNA"
+          },
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": "LAGNA",
+            "as": {
+              "navamsha": "LAGNA"
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a building far from the father's home"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_LAGNA_AND_ITS_NAVAMSHA_FIXED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "66",
+        "rank": 1,
+        "note": "The rising sign and the rising navamsha both fixed, the navamsha not the sign itself. The verse reads the stronger of the two, which the language cannot weigh between signs; where both are of one kind the stronger is too (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "LAGNA",
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "LAGNA"
+          },
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": "LAGNA",
+            "as": {
+              "navamsha": "LAGNA"
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in the father's own house"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_LAGNA_AND_ITS_NAVAMSHA_DUAL",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "66",
+        "rank": 1,
+        "note": "The rising sign and the rising navamsha both dual, the navamsha not the sign itself. The verse reads the stronger of the two, which the language cannot weigh between signs; where both are of one kind the stronger is too (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "LAGNA",
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "LAGNA"
+          },
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": "LAGNA",
+            "as": {
+              "navamsha": "LAGNA"
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in an outhouse"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_MOON_SEVENTH_IN_THE_TRINES_OF_MARS_AND_SATURN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "67",
+        "rank": 1,
+        "note": "Sastri's reading: the Moon in the seventh and in the fifth or ninth from Mars and from Saturn. His note's other reading, the Moon in the fifth, ninth or seventh from Mars and Saturn together, is Brihat Jataka ch. 5 v. 14's, shipped apart (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "MARS",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SATURN",
+          "houses": [
+            5,
+            9
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MOON",
+          "label": "Jupiter aspects the Moon, which v. 67 reads apart"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "abandoned by the mother"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_MOON_SEVENTH_IN_THE_TRINES_OF_MARS_AND_SATURN_ASPECTED_BY_JUPITER",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "67",
+        "rank": 1,
+        "note": "Sastri's reading: the Moon in the seventh and in the fifth or ninth from Mars and from Saturn. His note's other reading, the Moon in the fifth, ninth or seventh from Mars and Saturn together, is Brihat Jataka ch. 5 v. 14's, shipped apart (C575). The Moon aspected by Jupiter. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "MARS",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SATURN",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "abandoned, yet long-lived, happy and well cared for"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_MOON_RISING_ASPECTED_BY_A_MALEFIC_MARS_SEVENTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "68",
+        "rank": 1,
+        "note": "The Moon in the lagna aspected by a malefic, and Mars in the seventh: Brihat Jataka ch. 5 v. 15's figure, its conditions as written there. Mars in the seventh aspects her himself, so Iyer's Saturn or Mars and Sastri's any malefic answer alike. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "MOON"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": "MOON"
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MOON",
+          "label": "a benefic aspects the Moon as well, which v. 15 reads apart"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "abandoned by the mother, and dies"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_MOON_RISING_MARS_AND_SATURN_ELEVENTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "68",
+        "rank": 1,
+        "note": "The Moon in the lagna and Mars and Saturn in the eleventh: Brihat Jataka ch. 5 v. 15's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "MOON",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "MOON",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MOON",
+          "label": "a benefic aspects the Moon as well, which v. 15 reads apart"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "abandoned by the mother, and dies"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_DESERTED_MOON_ASPECTED_BY_A_BENEFIC",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "68",
+        "rank": 1,
+        "note": "Either figure above and a benefic aspecting the Moon: Brihat Jataka ch. 5 v. 15's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "SATURN",
+                      "target": "MOON"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "MARS",
+                      "target": "MOON"
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "MARS",
+                  "houses": [
+                    7
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    11
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    11
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "taken in by people of the aspecting benefic's class"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_DESERTED_MOON_ASPECTED_BY_ANOTHER_MALEFIC",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "68",
+        "rank": 1,
+        "note": "Either figure above, and a second malefic aspecting the Moon besides the Mars of the first or the Saturn of the second, which aspect her already: two or more malefics aspecting her (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                7
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "MOON",
+                  "houses": [
+                    11
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    11
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "count-aspecting",
+          "planets": "any-malefic",
+          "target": "MOON",
+          "atLeast": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "falls into bad hands and dies, though others rear it"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_A_BENEFIC_DEBILITATED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "69",
+        "rank": 1,
+        "note": "A benefic debilitated; the Sanskrit's shubhe is singular, where Sastri's English has the benefics. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED",
+                  "DEEP_DEBILITATED"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in an exposed place, by a tree, a rampart or a river bank"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_MOON_RISING_UNASPECTED_BY_BENEFICS_TOGETHER",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "69",
+        "rank": 1,
+        "note": "The Moon in the lagna, and no two benefics in one sign aspecting her: Sastri's reading. The Sanskrit asks the lagna and the Moon both unaspected by grahas together (naikagataih), as Brihat Jataka ch. 5 v. 16 does (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "JUPITER",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "planet-is",
+                    "planet": "VENUS",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "same-sign",
+                    "of": "JUPITER",
+                    "as": "VENUS"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "JUPITER",
+                    "target": "MOON"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "VENUS",
+                    "target": "MOON"
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "JUPITER",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "planet-is",
+                    "planet": "MERCURY",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "same-sign",
+                    "of": "JUPITER",
+                    "as": "MERCURY"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "JUPITER",
+                    "target": "MOON"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "MERCURY",
+                    "target": "MOON"
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "VENUS",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "planet-is",
+                    "planet": "MERCURY",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "same-sign",
+                    "of": "VENUS",
+                    "as": "MERCURY"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "VENUS",
+                    "target": "MOON"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "MERCURY",
+                    "target": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in a lonely place"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_MOON_DARKENED_BY_SATURN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "70",
+        "rank": 1,
+        "note": "The Moon in a navamsha of Saturn, in the fourth, aspected by Saturn, in a watery navamsha or with Saturn: Brihat Jataka ch. 5 v. 17's figure, its conditions as written there; Sastri's English has a watery sign and his note the navamsha (abjamshaga). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "MOON"
+              },
+              "signs": [
+                "CAPRICORN",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                4
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "MOON"
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "MOON"
+              },
+              "signs": [
+                "CANCER",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": "MOON",
+              "as": "SATURN"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born in darkness"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_THREE_DEBILITATED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "70",
+        "rank": 1,
+        "note": "Three or more of the seven debilitated: Brihat Jataka ch. 5 v. 17's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "DEBILITATED",
+              "DEEP_DEBILITATED"
+            ]
+          },
+          "atLeast": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "born on the ground"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_SIGN_RISING_HEAD_FIRST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "70",
+        "rank": 1,
+        "note": "The rising sign's way of rising: Brihat Jataka ch. 5 v. 17's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "GEMINI",
+            "LEO",
+            "VIRGO",
+            "LIBRA",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "delivered head first"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_SIGN_RISING_FEET_FIRST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "70",
+        "rank": 1,
+        "note": "The rising sign's way of rising: Brihat Jataka ch. 5 v. 17's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "ARIES",
+            "TAURUS",
+            "CANCER",
+            "SAGITTARIUS",
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "delivered feet first"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_SIGN_RISING_BOTH_WAYS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "70",
+        "rank": 1,
+        "note": "The rising sign's way of rising: Brihat Jataka ch. 5 v. 17's figure, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "delivered hands first"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_MALEFICS_WITH_THE_MOON_OR_FOURTH_OR_SEVENTH_FROM_HER",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "70",
+        "rank": 1,
+        "note": "Malefics other than the Moon with her or in the fourth or the seventh from her. The verse's plural is read as two or more. Brihat Jataka ch. 5 v. 17 asks the fourth and the seventh only, a figure apart. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1,
+            4,
+            7
+          ],
+          "atLeast": 2,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the mother suffers much in labour"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_LAMP_SUN_IN_A_MOVABLE_SIGN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "71",
+        "rank": 1,
+        "note": "The Sun in a movable sign. The oil by the Moon's part of her sign yet to run, the wick by the rising sign's part below the horizon and the door by the strong grahas in the kendras are readings and are not built. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lamp one that is carried about"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_LAMP_SUN_IN_A_FIXED_SIGN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "71",
+        "rank": 1,
+        "note": "The Sun in a fixed sign. The oil by the Moon's part of her sign yet to run, the wick by the rising sign's part below the horizon and the door by the strong grahas in the kendras are readings and are not built. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lamp a fixture"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_LAMP_SUN_IN_A_DUAL_SIGN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "71",
+        "rank": 1,
+        "note": "The Sun in a dual sign. The oil by the Moon's part of her sign yet to run, the wick by the rising sign's part below the horizon and the door by the strong grahas in the kendras are readings and are not built. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lamp one that can be taken from its place"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_SATURN_THE_STRONGEST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "72",
+        "rank": 1,
+        "note": "Saturn stronger than each of the six others: the verse names the graha with no word of degree, and Brihat Jataka ch. 5 v. 19 asks the strongest (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "planet-stronger-than",
+            "planet": "SATURN",
+            "than": "SELF"
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber old and repaired"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_MARS_THE_STRONGEST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "72",
+        "rank": 1,
+        "note": "Mars stronger than each of the six others: the verse names the graha with no word of degree, and Brihat Jataka ch. 5 v. 19 asks the strongest (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-stronger-than",
+            "planet": "MARS",
+            "than": "SELF"
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber scorched by fire"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_THE_MOON_THE_STRONGEST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "72",
+        "rank": 1,
+        "note": "The Moon stronger than each of the six others: the verse names the graha with no word of degree, and Brihat Jataka ch. 5 v. 19 asks the strongest (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-stronger-than",
+            "planet": "MOON",
+            "than": "SELF"
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber new"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_THE_SUN_THE_STRONGEST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "72",
+        "rank": 1,
+        "note": "The Sun stronger than each of the six others: the verse names the graha with no word of degree, and Brihat Jataka ch. 5 v. 19 asks the strongest (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-stronger-than",
+            "planet": "SUN",
+            "than": "SELF"
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber of much timber and not strong"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_MERCURY_THE_STRONGEST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "72",
+        "rank": 1,
+        "note": "Mercury stronger than each of the six others: the verse names the graha with no word of degree, and Brihat Jataka ch. 5 v. 19 asks the strongest (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-stronger-than",
+            "planet": "MERCURY",
+            "than": "SELF"
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber built by many craftsmen"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_VENUS_THE_STRONGEST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "72",
+        "rank": 1,
+        "note": "Venus stronger than each of the six others: the verse names the graha with no word of degree, and Brihat Jataka ch. 5 v. 19 asks the strongest (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-stronger-than",
+            "planet": "VENUS",
+            "than": "SELF"
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber lovely, painted and new"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_JUPITER_THE_STRONGEST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "72",
+        "rank": 1,
+        "note": "Jupiter stronger than each of the six others: the verse names the graha with no word of degree, and Brihat Jataka ch. 5 v. 19 asks the strongest (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-stronger-than",
+            "planet": "JUPITER",
+            "than": "SELF"
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber strong and durable"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_IN_THE_EAST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "73",
+        "rank": 1,
+        "note": "The strongest of the seven in the kendras in one of Aries, Cancer, Libra, Scorpio, Aquarius: Sastri's sign of that graha, read as the sign it stands in, since Venus's and Saturn's own signs point two ways. With no graha in a kendra the verse takes the strongest kendra, which is not built (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SUN",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "SUN",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "SCORPIO",
+                    "AQUARIUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MOON",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MOON",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "SCORPIO",
+                    "AQUARIUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MARS",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MARS",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MARS",
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "SCORPIO",
+                    "AQUARIUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MERCURY",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MERCURY",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MERCURY",
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "SCORPIO",
+                    "AQUARIUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "JUPITER",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "JUPITER",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "JUPITER",
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "SCORPIO",
+                    "AQUARIUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "VENUS",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "VENUS",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "VENUS",
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "SCORPIO",
+                    "AQUARIUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SATURN",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "SATURN",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SATURN",
+                  "signs": [
+                    "ARIES",
+                    "CANCER",
+                    "LIBRA",
+                    "SCORPIO",
+                    "AQUARIUS"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber in the east of the house"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_IN_THE_NORTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "73",
+        "rank": 1,
+        "note": "The strongest of the seven in the kendras in one of Gemini, Virgo, Sagittarius, Pisces: Sastri's sign of that graha, read as the sign it stands in, since Venus's and Saturn's own signs point two ways. With no graha in a kendra the verse takes the strongest kendra, which is not built (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SUN",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "SUN",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "GEMINI",
+                    "VIRGO",
+                    "SAGITTARIUS",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MOON",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MOON",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "GEMINI",
+                    "VIRGO",
+                    "SAGITTARIUS",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MARS",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MARS",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MARS",
+                  "signs": [
+                    "GEMINI",
+                    "VIRGO",
+                    "SAGITTARIUS",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MERCURY",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MERCURY",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MERCURY",
+                  "signs": [
+                    "GEMINI",
+                    "VIRGO",
+                    "SAGITTARIUS",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "JUPITER",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "JUPITER",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "JUPITER",
+                  "signs": [
+                    "GEMINI",
+                    "VIRGO",
+                    "SAGITTARIUS",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "VENUS",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "VENUS",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "VENUS",
+                  "signs": [
+                    "GEMINI",
+                    "VIRGO",
+                    "SAGITTARIUS",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SATURN",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "SATURN",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SATURN",
+                  "signs": [
+                    "GEMINI",
+                    "VIRGO",
+                    "SAGITTARIUS",
+                    "PISCES"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber in the north of the house"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_IN_THE_WEST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "73",
+        "rank": 1,
+        "note": "The strongest of the seven in the kendras in one of Taurus: Sastri's sign of that graha, read as the sign it stands in, since Venus's and Saturn's own signs point two ways. With no graha in a kendra the verse takes the strongest kendra, which is not built (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SUN",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "SUN",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MOON",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MOON",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MARS",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MARS",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MARS",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MERCURY",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MERCURY",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MERCURY",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "JUPITER",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "JUPITER",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "JUPITER",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "VENUS",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "VENUS",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "VENUS",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SATURN",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "SATURN",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SATURN",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber in the west of the house"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_CHAMBER_IN_THE_SOUTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "73",
+        "rank": 1,
+        "note": "The strongest of the seven in the kendras in one of Capricorn, Leo: Sastri's sign of that graha, read as the sign it stands in, since Venus's and Saturn's own signs point two ways. With no graha in a kendra the verse takes the strongest kendra, which is not built (C575). Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SUN",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "SUN",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SUN",
+                  "signs": [
+                    "CAPRICORN",
+                    "LEO"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MOON",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MOON",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MOON",
+                  "signs": [
+                    "CAPRICORN",
+                    "LEO"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MARS",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MARS",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MARS",
+                  "signs": [
+                    "CAPRICORN",
+                    "LEO"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "MERCURY",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "JUPITER",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "MERCURY",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "MERCURY",
+                  "signs": [
+                    "CAPRICORN",
+                    "LEO"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "JUPITER",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "VENUS",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "JUPITER",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "JUPITER",
+                  "signs": [
+                    "CAPRICORN",
+                    "LEO"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "VENUS",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "SATURN"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "VENUS",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "VENUS",
+                  "signs": [
+                    "CAPRICORN",
+                    "LEO"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SATURN",
+                      "houses": [
+                        1,
+                        4,
+                        7,
+                        10
+                      ]
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "for-any",
+                        "planets": [
+                          "SUN",
+                          "MOON",
+                          "MARS",
+                          "MERCURY",
+                          "JUPITER",
+                          "VENUS"
+                        ],
+                        "then": {
+                          "type": "not",
+                          "condition": {
+                            "type": "or",
+                            "conditions": [
+                              {
+                                "type": "not",
+                                "condition": {
+                                  "type": "planet-in-house",
+                                  "planet": "SELF",
+                                  "houses": [
+                                    1,
+                                    4,
+                                    7,
+                                    10
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "planet-stronger-than",
+                                "planet": "SATURN",
+                                "than": "SELF"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-sign",
+                  "planet": "SATURN",
+                  "signs": [
+                    "CAPRICORN",
+                    "LEO"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the lying-in chamber in the south of the house"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_JANMA_FOUR_WITH_MERCURY_IN_ONE_DREKKANA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "3",
+        "verse": "79",
+        "rank": 1,
+        "note": "Mercury and three others of the seven in one drekkana (trayah sabudhah, which Sastri counts as four with Mercury among them). The verse's other half, an inauspicious Venus marking his drekkana's limb, is not built. Read from V. Subrahmanya Sastri's 1932 translation, rendered off the page images (pp. 148 to 171), the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": "MERCURY"
+              },
+              {
+                "type": "in-varga",
+                "varga": "D3",
+                "condition": {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MERCURY"
+                }
+              }
+            ]
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a sure wound or mark on the limb that drekkana stands for"
+        }
+      ]
+    }
+  ]
+}

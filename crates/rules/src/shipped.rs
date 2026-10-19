@@ -172,6 +172,13 @@ const SARAVALI_MORE: &str = include_str!("../rules/classical-saravali-more.json"
 /// Saravali ch. 45, a woman's chart, most as Brihat Jataka ch. 24 writes it,
 /// and ch. 46 vv. 22 to 45, the 22nd drekkana's causes of death.
 const SARAVALI_LATE: &str = include_str!("../rules/classical-saravali-late.json");
+/// Phaladeepika ch. 16, the effects of the twelve houses: each verse that
+/// states a figure, from the lagna lord's place to the doers of the tenth.
+const PHALADEEPIKA_LATE: &str = include_str!("../rules/classical-phaladeepika-late.json");
+/// Jataka Parijata ch. 3 vv. 61 to 79: the place of birth, the lamp, the
+/// lying-in chamber and the marks of the body, most as Brihat Jataka ch. 5
+/// writes them.
+const PARIJATA_LATE: &str = include_str!("../rules/classical-parijata-late.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -237,6 +244,8 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(BPHS_MORE));
     rules.append(&mut read(SARAVALI_MORE));
     rules.append(&mut read(SARAVALI_LATE));
+    rules.append(&mut read(PHALADEEPIKA_LATE));
+    rules.append(&mut read(PARIJATA_LATE));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
