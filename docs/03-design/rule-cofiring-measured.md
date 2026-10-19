@@ -2,11 +2,11 @@
 
 Status: `generated` by `cargo xtask cofiring`; `check-cofiring` regenerates it in verify and fails on any difference.
 
-Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2388 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2225 rules hold at least once and 163 never do.
+Two rules that hold on exactly the same charts are a duplicate unless something says why ([`01-quality-bar.md`](../05-testing/01-quality-bar.md), "rule fixtures"). The pass evaluates every shipped rule, 2494 of them, on 6000 charts the SDK computes: 1000 at each of 6 places from Quito to Sydney, from 1900 to 2100, no two at one instant. 2310 rules hold at least once and 184 never do.
 
-Rules holding on the same 5 or more charts form 201 groups, and each is explained. Below that, 20 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
+Rules holding on the same 5 or more charts form 208 groups, and each is explained. Below that, 21 groups are nested conjunctions of five and six grahas, each held on a chart or two, which is chance.
 
-- **159 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
+- **166 groups: two texts state one condition.** The rules cite different texts, so the group is agreement between sources, and each rule carries its own reading.
 - **36 groups: one aspect read from both grahas.** Saravali reads a graha in each sign under each aspect, a chapter to a graha, and two grahas that cast only the seventh aspect each other exactly when each stands seventh from the other.
 - **6 groups: one text says it twice**, where the table below says.
 
@@ -70,7 +70,9 @@ A group of one text that is none of these fails the gate, and so does a listed g
 |---:|---|
 | 3053 | `DWIGRAHA_SUN_MERCURY`<br>`PARIJATA_TOGETHER_SUN_MERCURY`<br>`SARAVALI_TOGETHER_SUN_MERCURY` |
 | 2447 | `PARASHARA_SANKHA`<br>`PARIJATA_SANKHA` |
+| 2434 | `PARIJATA_RAJA_DEBILITATED_GRAHAS_SIGN_OR_EXALTATION_LORD_IN_A_KENDRA`<br>`PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_LORD_IN_A_KENDRA` |
 | 2079 | `SARAVALI_UBHAYACHARI`<br>`SOLAR_UBHAYACHARI` |
+| 2031 | `PARIJATA_AMALA`<br>`PHALADEEPIKA_AMALA` |
 | 2013 | `LUNAR_MOON_IN_APOKLIMA_FROM_THE_SUN`<br>`PHALADEEPIKA_VARISHTHA` |
 | 2013 | `LUNAR_MOON_IN_KENDRA_FROM_THE_SUN`<br>`PHALADEEPIKA_ADHAMA` |
 | 1974 | `LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN`<br>`PHALADEEPIKA_SAMA` |
@@ -83,7 +85,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 826 | `DWIGRAHA_MARS_VENUS`<br>`PARIJATA_TOGETHER_MARS_VENUS`<br>`SARAVALI_TOGETHER_MARS_VENUS` |
 | 826 | `DWIGRAHA_SUN_MARS`<br>`PARIJATA_TOGETHER_SUN_MARS`<br>`SARAVALI_TOGETHER_SUN_MARS` |
 | 812 | `DWIGRAHA_MARS_MERCURY`<br>`PARIJATA_TOGETHER_MARS_MERCURY`<br>`SARAVALI_TOGETHER_MARS_MERCURY` |
-| 753 | `BJ_MALEFICS_IN_TWELFTH_AND_SECOND`<br>`PHALADEEPIKA_PAPA_KARTARI` |
+| 753 | `BJ_MALEFICS_IN_TWELFTH_AND_SECOND`<br>`PARIJATA_PAPA_KARTARI`<br>`PHALADEEPIKA_PAPA_KARTARI` |
 | 690 | `PARIJATA_TOGETHER_SUN_MERCURY_VENUS`<br>`SARAVALI_TOGETHER_SUN_MERCURY_VENUS` |
 | 654 | `LUNAR_DURADHARA`<br>`PHALADEEPIKA_DURUDHARA`<br>`SARAVALI_DURUDHARA` |
 | 601 | `DWIGRAHA_SUN_JUPITER`<br>`PARIJATA_TOGETHER_SUN_JUPITER`<br>`SARAVALI_TOGETHER_SUN_JUPITER` |
@@ -117,6 +119,7 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 284 | `PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY`<br>`PHALADEEPIKA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_BENEFICS` |
 | 284 | `PARIJATA_TOGETHER_SUN_MERCURY_SATURN`<br>`SARAVALI_TOGETHER_SUN_MERCURY_SATURN` |
 | 258 | `PARIJATA_TOGETHER_SUN_MOON_MERCURY`<br>`SARAVALI_TOGETHER_SUN_MOON_MERCURY` |
+| 213 | `PARIJATA_SHUBHA_KARTARI`<br>`PHALADEEPIKA_SHUBHA_KARTARI` |
 | 203 | `PARIJATA_TOGETHER_MARS_MERCURY_VENUS`<br>`SARAVALI_TOGETHER_MARS_MERCURY_VENUS` |
 | 176 | `PARIJATA_TOGETHER_SUN_MARS_VENUS`<br>`SARAVALI_TOGETHER_SUN_MARS_VENUS` |
 | 174 | `BPHS_BORN_IN_ASHLESHA_PADAS_TWO_TO_FOUR`<br>`SARAVALI_RAJA_STRONG_MOON_IN_THE_LAST_DECANATE_OF_CANCER` |
@@ -177,12 +180,14 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 64 | `PARIJATA_TOGETHER_SUN_MERCURY_VENUS_SATURN`<br>`SARAVALI_TOGETHER_SUN_MERCURY_VENUS_SATURN` |
 | 63 | `PARIJATA_TOGETHER_MOON_MARS_MERCURY`<br>`SARAVALI_TOGETHER_MOON_MARS_MERCURY` |
 | 62 | `PARIJATA_TOGETHER_JUPITER_VENUS_SATURN`<br>`SARAVALI_TOGETHER_JUPITER_VENUS_SATURN` |
+| 59 | `PARIJATA_RAJA_JUPITER_SECOND_WITH_VENUS`<br>`SARAVALI_RAJA_JUPITER_SECOND_WITH_VENUS` |
 | 56 | `PARIJATA_TOGETHER_SUN_JUPITER_SATURN`<br>`SARAVALI_TOGETHER_SUN_JUPITER_SATURN` |
 | 55 | `PARIJATA_TOGETHER_SUN_MOON_MERCURY_VENUS`<br>`SARAVALI_TOGETHER_SUN_MOON_MERCURY_VENUS` |
 | 49 | `PARIJATA_TOGETHER_MOON_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_MOON_JUPITER_VENUS` |
 | 49 | `PARIJATA_TOGETHER_SUN_MARS_MERCURY_JUPITER`<br>`SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER` |
 | 48 | `PARIJATA_TOGETHER_MERCURY_JUPITER_SATURN`<br>`SARAVALI_TOGETHER_MERCURY_JUPITER_SATURN` |
 | 45 | `PARIJATA_TOGETHER_SUN_MOON_JUPITER`<br>`SARAVALI_TOGETHER_SUN_MOON_JUPITER` |
+| 43 | `PARIJATA_RAJA_MARS_RISING_IN_FIRE_ASPECTED_BY_A_FRIEND`<br>`PHALADEEPIKA_MAHARAJA_MARS_RISING_IN_FIRE` |
 | 43 | `PARIJATA_TOGETHER_MARS_JUPITER_SATURN`<br>`SARAVALI_TOGETHER_MARS_JUPITER_SATURN` |
 | 43 | `PARIJATA_TOGETHER_MOON_MARS_JUPITER`<br>`SARAVALI_TOGETHER_MOON_MARS_JUPITER` |
 | 42 | `PARIJATA_TOGETHER_MOON_VENUS_SATURN`<br>`SARAVALI_TOGETHER_MOON_VENUS_SATURN` |
@@ -205,7 +210,9 @@ A group of one text that is none of these fails the gate, and so does a listed g
 | 18 | `PARASHARA_KHADGA`<br>`PARIJATA_KHADGA` |
 | 18 | `PARIJATA_TOGETHER_SUN_JUPITER_VENUS_SATURN`<br>`SARAVALI_TOGETHER_SUN_JUPITER_VENUS_SATURN` |
 | 17 | `PARIJATA_TOGETHER_SUN_MOON_MARS_VENUS`<br>`SARAVALI_TOGETHER_SUN_MOON_MARS_VENUS` |
+| 16 | `BJ_RAJA_VARGOTTAMA_MOON_ASPECTED_BY_FOUR`<br>`PARIJATA_RAJA_VARGOTTAMA_MOON_ASPECTED_BY_FOUR` |
 | 13 | `PARIJATA_TOGETHER_MARS_JUPITER_VENUS_SATURN`<br>`SARAVALI_TOGETHER_MARS_JUPITER_VENUS_SATURN` |
+| 12 | `BJ_RAJA_VARGOTTAMA_LAGNA_ASPECTED_BY_FOUR`<br>`PARIJATA_RAJA_VARGOTTAMA_LAGNA_ASPECTED_BY_FOUR` |
 | 11 | `PARIJATA_TOGETHER_MOON_MERCURY_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_MOON_MERCURY_JUPITER_VENUS` |
 | 11 | `PARIJATA_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS`<br>`SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS` |
 | 11 | `PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS`<br>`SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS` |
@@ -355,6 +362,23 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `SARAVALI_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN` | 2437699.08333 | 27.7172, -37.399 |
 | `SARAVALI_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN` | 2437699.08333 | 27.7172, -37.399 |
 | `SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN` | 2437699.08333 | 27.7172, -37.399 |
+| `PARIJATA_RAJA_SUN_MOON_MERCURY_VENUS_TENTH_IN_FRIENDS_NAVAMSHAS` | 2527530.6932 | 27.7172, 85.324 |
+| `PARIJATA_BUDHA` | 2393193.0833 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_FIVE_EXALTED_JUPITER_RISING` | 2413666.7431 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_FULL_MOON_NINTH_SATURN_TENTH_MARS_SECOND` | 2379244.3681 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_FULL_MOON_RISING_IN_PISCES_MARS_EXALTED_SATURN_AQUARIUS` | 2417158.8819 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_LUMINARIES_EARLY_SAGITTARIUS_STRONG_SATURN_RISING_MARS_EXALTED` | 2387615.8889 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_MARS_CAPRICORN_SUN_ARIES_JUPITER_AQUARIUS` | 2390285.2639 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_MERCURY_RISING_JUPITER_SEVENTH_BRIGHT_MOON_FOURTH_IN_CANCER_VENUS_TENTH` | 2436292.5556 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_MOON_RISING_JUPITER_FOURTH_VENUS_TENTH_SATURN_DIGNIFIED` | 2380915.5972 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_ONE_EACH_IN_THE_FIRST_SECOND_THIRD_FOURTH_FIFTH_SEVENTH_NINTH` | 2381967.2292 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_SATURN_RISING_IN_AQUARIUS_FOUR_EXALTED` | 2406725.3889 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_STRONG_MARS_RISING_IN_CAPRICORN_SATURN_NINTH_OR_TWELFTH_LUMINARIES_SEVENTH` | 2383452.0278 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_SUN_AND_MERCURY_FOURTH_SATURN_AND_MOON_TENTH_MARS_RISING` | 2385710.2639 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_SUN_IN_A_TRIKONA_IN_PISCES_MOON_AND_JUPITER_IN_CANCER` | 2378944.2639 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_SUN_RISING_IN_SAGITTARIUS_MARS_AND_MOON_TENTH_VENUS_ELEVENTH_OR_TWELFTH` | 2387253.5347 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_TAURUS_MOON_RISING_ASPECTED_BY_ALL` | 2454074.9375 | 27.7172, 85.324 |
+| `PARIJATA_RAJA_VENUS_IN_ASHWINI_RISING` | 2380836.3889 | 27.7172, 85.324 |
 
 ### Held nowhere searched
 
@@ -404,6 +428,10 @@ A rule that holds on none of the charts is not a duplicate of anything, but it i
 | `SARAVALI_RAJA_MOON_TENTH_VENUS_NINTH_OTHERS_ELEVENTH` | No sky from 1801 to 2398 has Mars, Mercury, Jupiter and Saturn in the Sun's sign with Venus two signs and the Moon one sign behind it, searched every ten minutes of a day they allow. |
 | `SARAVALI_RAJA_JUPITER_SECOND_MARS_FOURTH_SUN_TENTH_MOON_RISING_THE_REST_IN_ENEMY_SIGNS` | No sky from 1801 to 2398 holds it: the 164 instants at Kathmandu that place Jupiter, Mars, the Sun and the Moon as it asks, searched every ten minutes of a day they allow, never also put Mercury, Venus and Saturn all in an enemy's sign. |
 | `SARAVALI_RAJA_VENUS_AND_MERCURY_IN_KENDRAS_FROM_SATURN_THE_REST_EXALTED` | No sky from 1801 to 2398 has the Sun, the Moon, Mars, Jupiter and Saturn exalted at once, searched every ten minutes of a day they allow. |
+| `PARIJATA_RAJA_LAGNA_LORD_IN_AN_UPACHAYA_FROM_THE_MOON_BENEFICS_IN_KENDRAS_MALEFICS_WEAK` | It asks the Sun, Mars and Saturn all below their required Shadbala: of 2,000 instants drawn from 1900 to 2100 the Sun is weak on 482, Mars on 54, the two together on 12 and all three on none, and none of the 16,848 instants every twenty minutes of the 300 days from 1800 to 2398 that place the rest has them weak together. |
+| `PARIJATA_RAJA_SIX_EXALTED` | As BPHS_SIX_GRAHAS_EXALTED: Mercury exalted in Virgo and Venus in Pisces would stand opposite, which the two never do, so the six are the Sun, the Moon, Mars, Jupiter, Venus and Saturn, and no day from 1800 to 2398 has the slower of them exalted together. |
+| `PARIJATA_RAJA_LIBRA_FIGURE` | It fixes six grahas' signs and the lagna: the Moon, Jupiter and Venus in Sagittarius, Mercury in Libra rising, Mars in Virgo and Saturn in Capricorn. No day from 1800 to 2398 has the grahas in those signs, searched day by day. |
+| `PARIJATA_RAJA_MERCURY_VIRGO_MOON_PISCES_MARS_GEMINI_JUPITER_SAGITTARIUS_SATURN_CAPRICORN` | No day from 1800 to 2398 has Mercury, the Moon, Mars, Jupiter and Saturn in Virgo, Pisces, Gemini, Sagittarius and Capricorn at once, searched day by day by sign. |
 
 ## Held on every chart
 

@@ -126,7 +126,7 @@ const REVIEWED: [(&[&str], &str); 6] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 119] = [
+const FIXTURES: [(&str, f64, f64, f64); 136] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -702,10 +702,109 @@ const FIXTURES: [(&str, f64, f64, f64); 119] = [
         27.7172,
         -37.399,
     ),
+    // Jataka Parijata ch. 7 vv. 1 to 127: found by sign day by day, 1800 to
+    // 2398, and confirmed every ten minutes of the day at Kathmandu.
+    (
+        "PARIJATA_RAJA_SUN_MOON_MERCURY_VENUS_TENTH_IN_FRIENDS_NAVAMSHAS",
+        2_527_530.693_2,
+        27.7172,
+        85.324,
+    ),
+    ("PARIJATA_BUDHA", 2_393_193.083_3, 27.7172, 85.324),
+    (
+        "PARIJATA_RAJA_FIVE_EXALTED_JUPITER_RISING",
+        2_413_666.743_1,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_FULL_MOON_NINTH_SATURN_TENTH_MARS_SECOND",
+        2_379_244.368_1,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_FULL_MOON_RISING_IN_PISCES_MARS_EXALTED_SATURN_AQUARIUS",
+        2_417_158.881_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_LUMINARIES_EARLY_SAGITTARIUS_STRONG_SATURN_RISING_MARS_EXALTED",
+        2_387_615.888_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_MARS_CAPRICORN_SUN_ARIES_JUPITER_AQUARIUS",
+        2_390_285.263_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_MERCURY_RISING_JUPITER_SEVENTH_BRIGHT_MOON_FOURTH_IN_CANCER_VENUS_TENTH",
+        2_436_292.555_6,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_MOON_RISING_JUPITER_FOURTH_VENUS_TENTH_SATURN_DIGNIFIED",
+        2_380_915.597_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_ONE_EACH_IN_THE_FIRST_SECOND_THIRD_FOURTH_FIFTH_SEVENTH_NINTH",
+        2_381_967.229_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_SATURN_RISING_IN_AQUARIUS_FOUR_EXALTED",
+        2_406_725.388_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_STRONG_MARS_RISING_IN_CAPRICORN_SATURN_NINTH_OR_TWELFTH_LUMINARIES_SEVENTH",
+        2_383_452.027_8,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_SUN_AND_MERCURY_FOURTH_SATURN_AND_MOON_TENTH_MARS_RISING",
+        2_385_710.263_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_SUN_IN_A_TRIKONA_IN_PISCES_MOON_AND_JUPITER_IN_CANCER",
+        2_378_944.263_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_SUN_RISING_IN_SAGITTARIUS_MARS_AND_MOON_TENTH_VENUS_ELEVENTH_OR_TWELFTH",
+        2_387_253.534_7,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_TAURUS_MOON_RISING_ASPECTED_BY_ALL",
+        2_454_074.937_5,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_RAJA_VENUS_IN_ASHWINI_RISING",
+        2_380_836.388_9,
+        27.7172,
+        85.324,
+    ),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 44] = [
+const UNSEEN: [(&str, &str); 48] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -882,6 +981,22 @@ const UNSEEN: [(&str, &str); 44] = [
     (
         "SARAVALI_RAJA_VENUS_AND_MERCURY_IN_KENDRAS_FROM_SATURN_THE_REST_EXALTED",
         "No sky from 1801 to 2398 has the Sun, the Moon, Mars, Jupiter and Saturn exalted at once, searched every ten minutes of a day they allow.",
+    ),
+    (
+        "PARIJATA_RAJA_LAGNA_LORD_IN_AN_UPACHAYA_FROM_THE_MOON_BENEFICS_IN_KENDRAS_MALEFICS_WEAK",
+        "It asks the Sun, Mars and Saturn all below their required Shadbala: of 2,000 instants drawn from 1900 to 2100 the Sun is weak on 482, Mars on 54, the two together on 12 and all three on none, and none of the 16,848 instants every twenty minutes of the 300 days from 1800 to 2398 that place the rest has them weak together.",
+    ),
+    (
+        "PARIJATA_RAJA_SIX_EXALTED",
+        "As BPHS_SIX_GRAHAS_EXALTED: Mercury exalted in Virgo and Venus in Pisces would stand opposite, which the two never do, so the six are the Sun, the Moon, Mars, Jupiter, Venus and Saturn, and no day from 1800 to 2398 has the slower of them exalted together.",
+    ),
+    (
+        "PARIJATA_RAJA_LIBRA_FIGURE",
+        "It fixes six grahas' signs and the lagna: the Moon, Jupiter and Venus in Sagittarius, Mercury in Libra rising, Mars in Virgo and Saturn in Capricorn. No day from 1800 to 2398 has the grahas in those signs, searched day by day.",
+    ),
+    (
+        "PARIJATA_RAJA_MERCURY_VIRGO_MOON_PISCES_MARS_GEMINI_JUPITER_SAGITTARIUS_SATURN_CAPRICORN",
+        "No day from 1800 to 2398 has Mercury, the Moon, Mars, Jupiter and Saturn in Virgo, Pisces, Gemini, Sagittarius and Capricorn at once, searched day by day by sign.",
     ),
 ];
 

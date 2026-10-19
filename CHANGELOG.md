@@ -30,6 +30,15 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
+**Jataka Parijata's raja yogas, ch. 7 vv. 1 to 127** (`rules-engine.md`).
+**Numbers:** none moved; this adds 106 rules. The chapter's kings, read in
+Sastri's 1932 translation against the verse and vv. 23 to 28 in the
+Chowkhamba print, then its Bhaskara, Indra, Marut and Budha, Kemadruma by
+its own definition and cancellation, the poverty yogas, Sakata, Chandradhi,
+Lagnadhi, Gajakesari, Amala and the kartaris. Eight state another text's
+yoga and answer what it does. Four readings the sky forbade were read again,
+and what the verses leave open is crux C482.
+
 **Jataka Parijata's named yogas, ch. 7 vv. 128 to 163** (`rules-engine.md`).
 **Numbers:** none moved; this adds 31 rules. Parvata to Hariharabrahma, read
 in Sastri's 1932 translation against the verse, and the two pages the

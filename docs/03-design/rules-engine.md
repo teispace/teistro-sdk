@@ -766,6 +766,30 @@ Phaladeepika's do; the grahas are Mars to Saturn. A test holds each yoga in
 general to hold on exactly the charts where one of its grahas' readings does.
 Ch. 13 v. 2's Kemadruma and vv. 30 to 32 are not built (C480).
 
+**Jataka Parijata ch. 7's raja yogas, vv. 1 to 127, built (2026-10-19).**
+`classical-parijata-raja.json`, 106 rules in the nabhasa set under
+`PARIJATA_RAJA_*` and, for the yogas the chapter names, `PARIJATA_<name>`:
+the figures of kings, vv. 1 to 57 and 61, with vv. 23 to 28 read in the
+Chowkhamba print, whose translation pages are missing from both uploads;
+Bhaskara, Indra, Marut and Budha (vv. 67 to 70); Kemadruma by v. 71's Moon
+and by vv. 72, 73 and 83, with its kendra cancellation, and the poverty
+yogas of vv. 74 to 79 under `daridra`; Sakata with its kendra exception;
+the Moon's own or great friend's navamsha aspected by Jupiter by day and
+Venus by night (v. 112); Chandradhi, Lagnadhi, Gajakesari's two forms,
+Amala, Shubha, Ashubha and the kartaris. Eight state another text's yoga as
+that text does, Brihat Jataka ch. 11's vargottama lagna and Moon,
+Phaladeepika's Venus in Ashwini, Amala and kartaris, BPHS ch. 39's six
+exalted and Saravali ch. 35's Jupiter second with Venus, and a test holds
+each to answer what its twin does. Four readings the sky forbade were read
+again (C482): v. 34's Sun, Venus and Mercury respectively third, sixth and
+eighth from the Moon, which the three never stand apart enough for, are
+each in one of those houses; v. 6's Venus aspected by all, which the Sun
+and Mercury cannot do, by three, as Phaladeepika reads the verse; v. 79's
+Moon bereft of strength is waning, her Shadbala almost never falling short;
+and v. 32's weak malefics are the Sun, Mars and Saturn, whom no instant searched holds weak together. Four figures the sky never held are listed unseen with why; the rest that the computed sky misses carry a fixture. vv. 86 to 107 and
+121 to 124, Sunapha to Ubhayachari graha by graha, ship from Saravali chs.
+13 and 14 and BPHS ch. 38 and are not repeated.
+
 **Jataka Parijata ch. 7's named yogas, vv. 128 to 163, built (2026-10-19).**
 `classical-parijata-named.json`, 31 rules in the nabhasa set under
 `PARIJATA_*`, read off the page images of Sastri's 1932 translation with the

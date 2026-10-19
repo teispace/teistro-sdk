@@ -1,0 +1,6056 @@
+{
+  "rules": [
+    {
+      "key": "PARIJATA_RAJA_SEVEN_IN_VIRGO_PISCES_GEMINI_TAURUS_LEO_SAGITTARIUS_AQUARIUS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "1",
+        "rank": 1,
+        "note": "The seven in Virgo, Pisces, Gemini, Taurus, Leo, Sagittarius and Aquarius alone. The verse's grahas read as the seven, every one in the signs it lists. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-sign",
+            "planet": "SELF",
+            "signs": [
+              "VIRGO",
+              "PISCES",
+              "GEMINI",
+              "TAURUS",
+              "LEO",
+              "SAGITTARIUS",
+              "AQUARIUS"
+            ]
+          },
+          "atLeast": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous king with an army of elephants and horses"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SEVEN_IN_LIBRA_ARIES_TAURUS_PISCES",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "1",
+        "rank": 1,
+        "note": "The seven in Libra, Aries, Taurus and Pisces alone. The verse's grahas read as the seven, every one in the signs it lists. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-sign",
+            "planet": "SELF",
+            "signs": [
+              "LIBRA",
+              "ARIES",
+              "TAURUS",
+              "PISCES"
+            ]
+          },
+          "atLeast": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SEVEN_IN_TAURUS_SAGITTARIUS_PISCES_OR_THE_KENDRAS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "1",
+        "rank": 1,
+        "note": "The seven each in Taurus, Sagittarius or Pisces or in a kendra. The verse's grahas read as the seven, every one in the signs it lists. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-in-sign",
+                "planet": "SELF",
+                "signs": [
+                  "TAURUS",
+                  "SAGITTARIUS",
+                  "PISCES"
+                ]
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1,
+                  4,
+                  7,
+                  10
+                ]
+              }
+            ]
+          },
+          "atLeast": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler of the earth of wide fame"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SEVEN_IN_VIRGO_ARIES_LIBRA_LEO_AQUARIUS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "2",
+        "rank": 1,
+        "note": "The seven in Virgo, Aries, Libra, Leo and Aquarius alone. The verse's grahas read as the seven, every one in the signs it lists. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-sign",
+            "planet": "SELF",
+            "signs": [
+              "VIRGO",
+              "ARIES",
+              "LIBRA",
+              "LEO",
+              "AQUARIUS"
+            ]
+          },
+          "atLeast": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_ONE_EACH_IN_THE_FIRST_SECOND_THIRD_FOURTH_FIFTH_SEVENTH_NINTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "2",
+        "rank": 1,
+        "note": "A graha each in the third, the fourth and the fifth, two in the second and the ninth, and the remaining two in the lagna and the seventh: the seven one to a house in those seven. The verse's first clause, grahas in the third, fifth and fourth, names no number and is not built (C482). Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9
+          ]
+        },
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a just king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SEVEN_IN_THE_MOONS_HORA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "3",
+        "rank": 1,
+        "note": "The seven each in the Moon's hora, Cancer in the hora chart. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "in-varga",
+            "varga": "D2",
+            "condition": {
+              "type": "planet-in-sign",
+              "planet": "SELF",
+              "signs": [
+                "CANCER"
+              ]
+            }
+          },
+          "atLeast": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_BENEFICS_NINTH_AND_ELEVENTH_MALEFICS_SIXTH_AND_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "3",
+        "rank": 1,
+        "note": "Benefics in the ninth and the eleventh and malefics in the sixth and the tenth, a graha of the kind in each house at least. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            9
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            11
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            10
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_STRONG_BENEFIC_IN_A_KENDRA_MARS_AND_SATURN_NINTH_AND_ELEVENTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "4",
+        "rank": 1,
+        "note": "Benefics strong in the kendras, read as one strong benefic in a kendra at least, and Mars and Saturn in the ninth and the eleventh, one in each. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1,
+                  4,
+                  7,
+                  10
+                ]
+              },
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              }
+            ]
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            9,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            9,
+            11
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "same-sign",
+            "of": "MARS",
+            "as": "SATURN"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of every virtue"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_VARGOTTAMA_LAGNA_ASPECTED_BY_FOUR",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "5",
+        "rank": 1,
+        "note": "The lagna vargottama and aspected by four or more of the grahas other than the Moon, as Brihat Jataka ch. 11 v. 3 gives it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "LAGNA",
+          "as": {
+            "navamsha": "LAGNA"
+          }
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-house",
+            "from": "SELF",
+            "houseRuled": 1
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a leader of men"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_VARGOTTAMA_MOON_ASPECTED_BY_FOUR",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "5",
+        "rank": 1,
+        "note": "The Moon vargottama and aspected by four or more of the other grahas, as Brihat Jataka ch. 11 v. 3 gives it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "navamsha": "MOON"
+          }
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": "MOON"
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a leader of men"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_VENUS_IN_ASHWINI_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "6",
+        "rank": 1,
+        "note": "Venus in Ashwini in the lagna, aspected by the other grahas, read as three of them at least, as Phaladeepika ch. 7 v. 8 has it: the Sun and Mercury never stand seventh from Venus, so all six can never aspect him. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-nakshatra",
+          "planet": "VENUS",
+          "nakshatras": [
+            "ASHWINI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": "VENUS"
+          },
+          "atLeast": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the senior of his family, destroying his foes, with many women"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_THREE_IN_OWN_NAVAMSHAS_ONE_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "6",
+        "rank": 1,
+        "note": "Three or more of the seven in their own navamshas, one of them in the lagna; an own navamsha is never a debilitation navamsha, which the verse excludes. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": {
+              "lordOf": {
+                "navamsha": "SELF"
+              }
+            },
+            "as": "SELF"
+          },
+          "atLeast": 3
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-body",
+                "of": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "as": "SELF"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_FIVE_IN_OWN_NAVAMSHAS_ONE_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "6",
+        "rank": 1,
+        "note": "Five or more of the seven in their own navamshas, one of them in the lagna; an own navamsha is never a debilitation navamsha, which the verse excludes. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": {
+              "lordOf": {
+                "navamsha": "SELF"
+              }
+            },
+            "as": "SELF"
+          },
+          "atLeast": 5
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-body",
+                "of": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "as": "SELF"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a very wealthy king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_VENUS_SECOND_STRONG_LAGNA_LORD",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "7",
+        "rank": 1,
+        "note": "Venus in the second, neither debilitated nor in an enemy's sign, while the lagna lord is strong. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": "VENUS",
+            "dignities": [
+              "DEBILITATED",
+              "DEEP_DEBILITATED",
+              "ENEMY",
+              "GREAT_ENEMY"
+            ]
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_NIGHT_MOON_IN_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_VENUS_ALONE",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "7",
+        "rank": 1,
+        "note": "By night, the Moon in her own navamsha or a great friend's, aspected by Venus and by no other graha. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "birth-by-day"
+          }
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": "MOON",
+            "dignities": [
+              "OWN_SIGN",
+              "MOOLTRIKONA",
+              "GREAT_FRIEND"
+            ]
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN",
+              "RAHU",
+              "KETU"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "VENUS"
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SELF",
+                  "target": "MOON"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_VENUS_RISING_IN_PISCES_IN_A_PISCES_NAVAMSHA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "8",
+        "rank": 1,
+        "note": "Venus in the lagna in Pisces, in a Pisces navamsha. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "VENUS"
+          },
+          "signs": [
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_EXALTED_STRONG_LAGNA_LORD_ASPECTED_BY_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "8",
+        "rank": 1,
+        "note": "The lagna lord exalted and strong, aspected by the Moon. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of royal rank"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_LAGNA_LORD_EXALTED_IN_A_KENDRA_ALONE",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "8",
+        "rank": 1,
+        "note": "The lagna lord in its exaltation sign, a kendra, not in a debilitation or enemy's navamsha, and no other graha with it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "in-varga",
+            "varga": "D9",
+            "condition": {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 1
+              },
+              "dignities": [
+                "DEBILITATED",
+                "DEEP_DEBILITATED",
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN",
+              "RAHU",
+              "KETU"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler of the earth"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_FULL_MOON_NINTH_SATURN_TENTH_MARS_SECOND",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "9",
+        "rank": 1,
+        "note": "The full Moon in the ninth in her own sign, her exaltation or a friend's, Saturn in the tenth and Mars in the second, the verse's tenth and second taken in its order. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, as Phaladeepika ch. 7 reads it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a lord of the earth"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_FULL_MOON_IN_A_KENDRA_ASPECTED_BY_VENUS_AND_JUPITER",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "9, 47",
+        "rank": 1,
+        "note": "The full Moon strong in a kendra other than the lagna, aspected by Venus and Jupiter; v. 47 repeats it. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, as Phaladeepika ch. 7 reads it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            4,
+            7,
+            10
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a sovereign who gives land"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_VENUS_STRONG_ELEVENTH_OR_TWELFTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "10",
+        "rank": 1,
+        "note": "Venus strong in the eleventh or the twelfth. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            11,
+            12
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "VENUS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king's peer"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_TWO_OR_THREE_EXALTED_MOON_IN_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "10",
+        "rank": 1,
+        "note": "Two or three grahas exalted and the Moon in Cancer; the verse's strong lagna is read as its lord strong. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "DEEP_EXALTED",
+              "EXALTED"
+            ]
+          },
+          "atLeast": 2,
+          "atMost": 3
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king honoured everywhere"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_BENEFICS_IN_UPACHAYAS_MALEFICS_FIRST_OR_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "11",
+        "rank": 1,
+        "note": "Every benefic in an upachaya and a malefic in the lagna or the tenth, the nodes not counted. The translation's note gives a manuscript reading the other way round, malefics in the upachayas but the tenth and benefics in the lagna or the tenth (C482). Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    }
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      3,
+                      6,
+                      10,
+                      11
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1,
+                  10
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a cruel king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MARS_RISING_IN_FIRE_ASPECTED_BY_A_FRIEND",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "12",
+        "rank": 1,
+        "note": "Mars in the lagna in Sagittarius, Aries or Leo, aspected by a natural friend. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "SAGITTARIUS",
+            "ARIES",
+            "LEO"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "natural-relation",
+                "of": "MARS",
+                "to": "SELF",
+                "relations": [
+                  "friend"
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "MARS"
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a kingdom won by his own prowess"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SUN_THIRD_MOON_NINTH_JUPITER_FIFTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "12",
+        "rank": 1,
+        "note": "The Sun, the Moon and Jupiter strong in the third, the ninth and the fifth respectively. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SUN"
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        },
+        {
+          "type": "planet-strong",
+          "planet": "JUPITER"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king like Kubera"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_DEBILITATED_GRAHAS_SIGN_OR_EXALTATION_LORD_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "13",
+        "rank": 1,
+        "note": "A graha debilitated while the lord of its sign or of its exaltation sign stands in a kendra from the Moon or the lagna. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED",
+                  "DEEP_DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-kendra",
+                    "planet": {
+                      "lordOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "planet-in-kendra-from",
+                    "planet": {
+                      "lordOf": "SELF"
+                    },
+                    "reference": "MOON"
+                  },
+                  {
+                    "type": "planet-in-kendra",
+                    "planet": {
+                      "lordOf": {
+                        "exaltationOf": "SELF"
+                      }
+                    }
+                  },
+                  {
+                    "type": "planet-in-kendra-from",
+                    "planet": {
+                      "lordOf": {
+                        "exaltationOf": "SELF"
+                      }
+                    },
+                    "reference": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a just king, an emperor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_DEBILITATED_GRAHAS_NAVAMSHA_LORD_WELL_PLACED_MOVABLE_LAGNA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "14",
+        "rank": 1,
+        "note": "The lord of a debilitated graha's navamsha in a kendra or a trikona, while the lagna is movable or its lord in a movable navamsha. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED",
+                  "DEEP_DEBILITATED"
+                ]
+              },
+              {
+                "type": "planet-in-house",
+                "planet": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "houses": [
+                  1,
+                  4,
+                  5,
+                  7,
+                  9,
+                  10
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lagna-in-sign",
+              "signs": [
+                "ARIES",
+                "CANCER",
+                "LIBRA",
+                "CAPRICORN"
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": {
+                  "lordOf": 1
+                }
+              },
+              "signs": [
+                "ARIES",
+                "CANCER",
+                "LIBRA",
+                "CAPRICORN"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or a very powerful man"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_TENTH_LORD_EIGHTH_IN_A_GOOD_NAVAMSHA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "15",
+        "rank": 1,
+        "note": "The tenth lord in the eighth, in a navamsha of its exaltation, its own sign or a friend's. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 10,
+          "houseOccupied": 8
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": {
+              "lordOf": 10
+            },
+            "dignities": [
+              "DEEP_EXALTED",
+              "EXALTED",
+              "MOOLTRIKONA",
+              "OWN_SIGN",
+              "GREAT_FRIEND",
+              "FRIEND"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of kings"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_JUPITER_LAGNA_LORD_TWELFTH_SATURN_OR_SUN_BEYOND",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "16",
+        "rank": 1,
+        "note": "Jupiter, the lagna lord, in the twelfth, and Saturn, the third lord, in the twelfth from him or the Sun in the eleventh: a Sagittarius lagna, as the translation's note shows. The Sun's eleventh is read from the lagna, as the note reads it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 1
+          },
+          "as": "JUPITER"
+        },
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": 3
+          },
+          "as": "SATURN"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "JUPITER",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                11
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of kings"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_NINTH_LORDS_NAVAMSHA_LORD_FIFTH_OR_FOURTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "16",
+        "rank": 1,
+        "note": "The lord of the ninth lord's navamsha in the fifth or the fourth. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "navamsha": {
+                "lordOf": 9
+              }
+            }
+          },
+          "houses": [
+            4,
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MERCURY_JOINED_OR_ASPECTED_BY_JUPITER",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "16",
+        "rank": 1,
+        "note": "Mercury joined or aspected by Jupiter. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": "JUPITER",
+              "as": "MERCURY"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "MERCURY"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king's favourite"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_JUPITER_RISING_MERCURY_IN_A_KENDRA_ASPECTED_BY_THE_NINTH_LORD",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "17",
+        "rank": 1,
+        "note": "Jupiter in the lagna and Mercury in a kendra aspected by the ninth lord. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-kendra",
+          "planet": "MERCURY"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 9
+          },
+          "target": "MERCURY"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the equal of kings"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_STRONG_DIGNIFIED_SATURN_WELL_PLACED_ASPECTED_BY_THE_ELEVENTH_LORD",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "17",
+        "rank": 1,
+        "note": "Saturn strong in a kendra or a trikona, in his mooltrikona or exaltation, aspected by the eleventh lord. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SATURN"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SATURN",
+          "dignities": [
+            "MOOLTRIKONA",
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 11
+          },
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the equal of kings"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MOON_RISING_JUPITER_FOURTH_VENUS_TENTH_SATURN_DIGNIFIED",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "18",
+        "rank": 1,
+        "note": "The Moon in the lagna, Jupiter in the fourth, Venus in the tenth, and Saturn exalted or in his own sign. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SATURN",
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or a king's equal"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_BENEFICS_IN_THE_TWELFTH_ELEVENTH_FIRST_SECOND_THIRD_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "18",
+        "rank": 1,
+        "note": "Every benefic in the twelfth, the eleventh, the lagna, the second, the third or the tenth. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    }
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      12,
+                      11,
+                      1,
+                      2,
+                      3,
+                      10
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "like a sovereign, favoured"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_RAHU_TENTH_SATURN_ELEVENTH_ASPECTED_BY_THE_NINTH_LORD",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "19",
+        "rank": 1,
+        "note": "Rahu in the tenth and Saturn in the eleventh aspected by the ninth lord, while no debilitated graha joins the lagna lord. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 9
+          },
+          "target": "SATURN"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 1
+                  }
+                },
+                {
+                  "type": "planet-dignity",
+                  "planet": "SELF",
+                  "dignities": [
+                    "DEBILITATED",
+                    "DEEP_DEBILITATED"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "like a lord of the earth"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_TWO_TO_FOUR_DEBILITATED_IN_EXALTATION_NAVAMSHAS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "20",
+        "rank": 1,
+        "note": "Two, three or four grahas debilitated, each in a navamsha of its exaltation sign. The verse's alternative, benefic shashtyamshas, is not built. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED",
+                  "DEEP_DEBILITATED"
+                ]
+              },
+              {
+                "type": "in-varga",
+                "varga": "D9",
+                "condition": {
+                  "type": "planet-dignity",
+                  "planet": "SELF",
+                  "dignities": [
+                    "DEEP_EXALTED",
+                    "EXALTED"
+                  ]
+                }
+              }
+            ]
+          },
+          "atLeast": 2,
+          "atMost": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a just emperor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SIX_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "22",
+        "rank": 1,
+        "note": "Six grahas exalted, as BPHS ch. 39 v. 46 gives it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "DEEP_EXALTED",
+              "EXALTED"
+            ]
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of kings over the earth"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_FIVE_EXALTED_JUPITER_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "22",
+        "rank": 1,
+        "note": "Five grahas exalted and Jupiter in the lagna. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "DEEP_EXALTED",
+              "EXALTED"
+            ]
+          },
+          "atLeast": 5
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler of all men and lands"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SATURN_RISING_IN_AQUARIUS_FOUR_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "23",
+        "rank": 1,
+        "note": "Saturn in the lagna in Aquarius and four grahas exalted. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "DEEP_EXALTED",
+              "EXALTED"
+            ]
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MERCURY_RISING_IN_ARIES_JUPITER_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "23",
+        "rank": 1,
+        "note": "Mercury in the lagna in Aries and Jupiter exalted. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "JUPITER",
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_TAURUS_MOON_RISING_ASPECTED_BY_ALL",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "24",
+        "rank": 1,
+        "note": "The Moon in the lagna in Taurus, aspected by all six other grahas: the Sun, Mercury and Venus can do it only from Scorpio, under a full Moon. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": "MOON"
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king from childhood"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_ONE_EXALTED_THE_REST_AT_HOME_OR_WITH_FRIENDS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "24",
+        "rank": 1,
+        "note": "One graha exalted and the other six in their own signs or friends'. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "DEEP_EXALTED",
+              "EXALTED"
+            ]
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "DEEP_EXALTED",
+              "EXALTED",
+              "MOOLTRIKONA",
+              "OWN_SIGN",
+              "GREAT_FRIEND",
+              "FRIEND"
+            ]
+          },
+          "atLeast": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a fortune equal to a king's"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_JUPITER_WITH_MARS_AND_THE_MOON_VARGOTTAMA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "25",
+        "rank": 1,
+        "note": "Jupiter with Mars and the Moon, Jupiter vargottama. The verse's pushkara navamsha alternative is not built. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "JUPITER",
+          "as": "MARS"
+        },
+        {
+          "type": "same-sign",
+          "of": "JUPITER",
+          "as": "MOON"
+        },
+        {
+          "type": "same-sign",
+          "of": "JUPITER",
+          "as": {
+            "navamsha": "JUPITER"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_FULL_MOON_TENTH_WITH_OR_ASPECTED_BY_A_BENEFIC",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "25",
+        "rank": 1,
+        "note": "The full Moon in the tenth, joined or aspected by a benefic. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, as Phaladeepika ch. 7 reads it. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": "MOON"
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": "MOON"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "SELF",
+                    "target": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a lord of the earth"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_LIBRA_FIGURE",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "26",
+        "rank": 1,
+        "note": "The Moon with Jupiter and Venus in Sagittarius, Mercury in the lagna, Mars in Virgo and Saturn in the fourth in Capricorn: a Libra lagna. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a very strong king honoured by all"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MERCURY_VIRGO_MOON_PISCES_MARS_GEMINI_JUPITER_SAGITTARIUS_SATURN_CAPRICORN",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "27",
+        "rank": 1,
+        "note": "Mercury, the Moon, Mars, Jupiter and Saturn in Virgo, Pisces, Gemini, Sagittarius and Capricorn respectively. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "GEMINI"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_FULL_MOON_RISING_IN_PISCES_MARS_EXALTED_SATURN_AQUARIUS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "27",
+        "rank": 1,
+        "note": "The full Moon strong in the lagna in Pisces, Mars exalted and Saturn in Aquarius. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, as Phaladeepika ch. 7 reads it. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MARS",
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MARS_RISING_IN_CAPRICORN_MOON_IN_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "28",
+        "rank": 1,
+        "note": "Mars in the lagna in Capricorn and the Moon in Cancer. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MARS_CAPRICORN_SUN_ARIES_JUPITER_AQUARIUS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "28",
+        "rank": 1,
+        "note": "Mars, the Sun and Jupiter in Capricorn, Aries and Aquarius respectively. Read in the Chowkhamba print with Kapileshvara Shastri's commentary, the translation's pp. 396 to 399 missing from both its uploads (C481)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_FULL_MOON_JOINED_ASPECTED_BY_VENUS_MERCURY_JUPITER",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "29",
+        "rank": 1,
+        "note": "The full Moon joined by a graha other than the lagna lord and aspected by Venus, Mercury and Jupiter. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, as Phaladeepika ch. 7 reads it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": "MOON"
+                }
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": "MOON"
+              }
+            ]
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_JUPITER_VENUS_MARS_VARGOTTAMA_NO_MALEFIC_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "29",
+        "rank": 1,
+        "note": "Jupiter, Venus and Mars vargottama and no malefic in a kendra, the nodes not counted. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "JUPITER",
+          "as": {
+            "navamsha": "JUPITER"
+          }
+        },
+        {
+          "type": "same-sign",
+          "of": "VENUS",
+          "as": {
+            "navamsha": "VENUS"
+          }
+        },
+        {
+          "type": "same-sign",
+          "of": "MARS",
+          "as": {
+            "navamsha": "MARS"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    1,
+                    4,
+                    7,
+                    10
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SHIRSHODAYA_GRAHAS_MOON_RISING_IN_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "30",
+        "rank": 1,
+        "note": "Every graha but the Moon in a sign rising by its head, Gemini, Leo, Virgo, Libra, Scorpio or Aquarius, and the Moon in the lagna in Cancer, joined or aspected by a benefic. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-sign",
+            "planet": "SELF",
+            "signs": [
+              "GEMINI",
+              "LEO",
+              "VIRGO",
+              "LIBRA",
+              "SCORPIO",
+              "AQUARIUS"
+            ]
+          },
+          "atLeast": 6
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": "MOON"
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": "MOON"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "SELF",
+                    "target": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_LAGNA_LORD_NINTH_OR_TENTH_MOON_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "30",
+        "rank": 1,
+        "note": "The lagna lord in the ninth or the tenth and the Moon in the lagna. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_LUMINARIES_EARLY_SAGITTARIUS_STRONG_SATURN_RISING_MARS_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "31",
+        "rank": 1,
+        "note": "The Sun in the first half of Sagittarius with the Moon in that sign, Saturn strong in the lagna and Mars exalted; the Chowkhamba commentary sets the lagna in Capricorn. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-degrees",
+          "planet": "SUN",
+          "from": 0,
+          "to": 15
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SATURN"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MARS",
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a mighty king whose foes bow from afar"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_LAGNA_LORD_IN_AN_UPACHAYA_FROM_THE_MOON_BENEFICS_IN_KENDRAS_MALEFICS_WEAK",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "32",
+        "rank": 1,
+        "note": "The lagna lord in an upachaya from the Moon, a benefic in a kendra in a benefic's navamsha, and the Sun, Mars and Saturn all weak; a waning Moon, which the commentary also names, is not asked to be weak, her Shadbala almost never falling short (C482). Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 1
+          },
+          "reference": "MOON",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1,
+                  4,
+                  7,
+                  10
+                ]
+              },
+              {
+                "type": "planet-is",
+                "planet": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "class": "benefic"
+              }
+            ]
+          }
+        },
+        {
+          "type": "planet-weak",
+          "planet": "SUN"
+        },
+        {
+          "type": "planet-weak",
+          "planet": "MARS"
+        },
+        {
+          "type": "planet-weak",
+          "planet": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king like Indra"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SUN_IN_A_TRIKONA_IN_PISCES_MOON_AND_JUPITER_IN_CANCER",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "33",
+        "rank": 1,
+        "note": "The Sun in a trikona in Pisces, about to enter his exaltation, and the Moon and Jupiter in Cancer. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "CANCER"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler of a land rich in gems"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_DIGNIFIED_SUN_THIRD_VENUS_SIXTH_MERCURY_EIGHTH_FROM_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "34",
+        "rank": 1,
+        "note": "The Sun in his mooltrikona or exaltation; the Sun, Venus and Mercury in their own navamshas, each in the third, the sixth or the eighth from the Moon. The translation and the Chowkhamba commentary place them respectively, which the sky forbids: Venus and Mercury never stand three and five signs on from the Sun (C482). Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "SUN",
+          "dignities": [
+            "MOOLTRIKONA",
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "navamsha": "SUN"
+                }
+              },
+              "as": "SUN"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SUN",
+              "reference": "MOON",
+              "houses": [
+                3,
+                6,
+                8
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "navamsha": "VENUS"
+                }
+              },
+              "as": "VENUS"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "MOON",
+              "houses": [
+                3,
+                6,
+                8
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "navamsha": "MERCURY"
+                }
+              },
+              "as": "MERCURY"
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "MOON",
+              "houses": [
+                3,
+                6,
+                8
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "even a cowherd's son becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SUN_MOON_MERCURY_VENUS_TENTH_IN_FRIENDS_NAVAMSHAS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "35",
+        "rank": 1,
+        "note": "The Sun, the Moon, Mercury and Venus in the tenth, each in a navamsha whose lord is its natural friend, none in an enemy's sign, combust or debilitated. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MERCURY",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "natural-relation",
+                "of": "SELF",
+                "to": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "relations": [
+                  "friend"
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "planet-dignity",
+                  "planet": "SELF",
+                  "dignities": [
+                    "ENEMY",
+                    "GREAT_ENEMY",
+                    "DEBILITATED",
+                    "DEEP_DEBILITATED"
+                  ]
+                }
+              }
+            ]
+          },
+          "atLeast": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": "MOON"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": "MERCURY"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": "VENUS"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a great king whose road is laid with elephants' ichor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_EXALTED_MARS_ASPECTED_BY_SUN_MOON_AND_JUPITER",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "36",
+        "rank": 1,
+        "note": "Mars strong and exalted, aspected by the Sun, the Moon and Jupiter. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "MARS",
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MARS"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SUN",
+          "target": "MARS"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "MARS"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": "MARS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "though low-born, a king able to protect the whole earth"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MERCURY_RISING_JUPITER_SEVENTH_BRIGHT_MOON_FOURTH_IN_CANCER_VENUS_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "37",
+        "rank": 1,
+        "note": "Mercury in the lagna, Jupiter in the seventh, the bright Moon in Cancer in the fourth and Venus in the tenth. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "shukla"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler of the earth in health and peace"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_FULL_MOON_STRONG",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "38",
+        "rank": 1,
+        "note": "The full Moon of chief strength alone, read as strong and in her own sign or exaltation, as the Chowkhamba commentary reads her strength. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, as Phaladeepika ch. 7 reads it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a victorious king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_JUPITER_SECOND_WITH_VENUS",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "39",
+        "rank": 1,
+        "note": "Jupiter in the second with Venus, as Saravali ch. 35 v. 126 gives it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king who conquers his foes"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_LAGNA_LORD_IN_A_KENDRA_TENTH_LORD_FOURTH_NINTH_LORD_ELEVENTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "40",
+        "rank": 1,
+        "note": "The lagna lord in a kendra, the tenth lord in the fourth and the ninth lord in the eleventh. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 1
+        },
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 10,
+          "houseOccupied": 4
+        },
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 9,
+          "houseOccupied": 11
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a long-lived king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_COMBUST_MERCURY_AT_HOME",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "41",
+        "rank": 1,
+        "note": "Mercury combust yet in his own sign or mooltrikona. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-combust",
+          "planet": "MERCURY"
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "GEMINI",
+            "VIRGO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king excelling in every learning"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SUN_AND_MERCURY_FOURTH_SATURN_AND_MOON_TENTH_MARS_RISING",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "42",
+        "rank": 1,
+        "note": "The Sun and Mercury in the fourth, Saturn and the Moon in the tenth and Mars in the lagna. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, no doubt"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SUN_RISING_IN_LEO_MERCURY_IN_VIRGO",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "43",
+        "rank": 1,
+        "note": "The Sun in the lagna in Leo, the lagna's navamsha not a sign of Venus, and Mercury in Virgo. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-sign",
+            "planet": {
+              "navamsha": "LAGNA"
+            },
+            "signs": [
+              "TAURUS",
+              "LIBRA"
+            ]
+          }
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "VIRGO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "even the low-born a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SATURN_AND_MARS_TENTH_FIFTH_OR_FIRST_FULL_MOON_IN_JUPITERS_SIGN",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "44",
+        "rank": 1,
+        "note": "Saturn and Mars each in the tenth, the fifth or the lagna, and the full Moon in Sagittarius or Pisces. The Moon full is the month's middle ten days, Shukla Ekadashi to Krishna Panchami, as Phaladeepika ch. 7 reads it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            10,
+            5,
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            10,
+            5,
+            1
+          ]
+        },
+        {
+          "type": "panchanga-tithi",
+          "tithis": [
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_STRONG_LAGNA_LORD_IN_A_KENDRA_ASPECTED_BY_A_FRIEND",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "45",
+        "rank": 1,
+        "note": "The lagna lord strong in a kendra and aspected by a natural friend; strong in a kendra alone it makes the raja yoga, and with the friend's aspect even the low-born rise. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "natural-relation",
+                "of": {
+                  "lordOf": 1
+                },
+                "to": "SELF",
+                "relations": [
+                  "friend"
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": {
+                  "lordOf": 1
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, or one honoured by kings"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_DIGNIFIED_LAGNA_LORD_ASPECTS_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "46",
+        "rank": 1,
+        "note": "The lagna lord in its own sign or exaltation, aspecting the Moon. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 1
+          },
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous king with armies"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_LAGNA_LORD_IN_A_KENDRA_UNAFFLICTED_ALONE",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "48",
+        "rank": 1,
+        "note": "The lagna lord in a kendra, neither debilitated, combust nor in an enemy's sign, and joined by no other graha. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": {
+              "lordOf": 1
+            },
+            "dignities": [
+              "DEBILITATED",
+              "DEEP_DEBILITATED",
+              "ENEMY",
+              "GREAT_ENEMY"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": {
+              "lordOf": 1
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN",
+              "RAHU",
+              "KETU"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                },
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_JUPITER_FIFTH_MOON_THIRD_SUN_NINTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "49",
+        "rank": 1,
+        "note": "Jupiter, the Moon and the Sun in the fifth, the third and the ninth respectively. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king rich as Kubera"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SUN_RISING_IN_SAGITTARIUS_MARS_AND_MOON_TENTH_VENUS_ELEVENTH_OR_TWELFTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "50",
+        "rank": 1,
+        "note": "The Sun strong in the lagna in Sagittarius, Mars with the Moon in the tenth and Venus in the eleventh or the twelfth. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "SAGITTARIUS"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SUN"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            11,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king like Indra"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MALEFICS_THIRD_SIXTH_ELEVENTH_LAGNA_LORD_ASPECTED_BY_A_BENEFIC",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "51",
+        "rank": 1,
+        "note": "Every malefic in the third, the sixth or the eleventh, one there at least, the nodes not counted, and the lagna lord aspected by a benefic. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "malefic"
+                    }
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      3,
+                      6,
+                      11
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  3,
+                  6,
+                  11
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a strong king extolled by all"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_STRONG_MARS_RISING_IN_CAPRICORN_SATURN_NINTH_OR_TWELFTH_LUMINARIES_SEVENTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "52",
+        "rank": 1,
+        "note": "Mars strong in the lagna in Capricorn, Saturn in the ninth or the twelfth, and the Sun with the Moon in the seventh. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MARS"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            9,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king of fickle mind"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MOON_WITH_SATURN_ELEVENTH_FOURTH_OR_TENTH",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "53",
+        "rank": 1,
+        "note": "The Moon with Saturn in the eleventh, the fourth or the tenth. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            11,
+            4,
+            10
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "if royal-born a king, or as wealthy"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_LAGNA_LORD_IN_AN_UPACHAYA_MOON_NINTH_STRONG_BENEFIC_IN_A_KENDRA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "54",
+        "rank": 1,
+        "note": "The lagna lord in an upachaya, the Moon in the ninth, and a benefic strong in a kendra in a benefic's varga, read as its navamsha. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1,
+                  4,
+                  7,
+                  10
+                ]
+              },
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-is",
+                "planet": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "class": "benefic"
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_JUPITER_AND_MOON_IN_TAURUS_LAGNA_LORD_IN_A_TRIKONA",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "54",
+        "rank": 1,
+        "note": "Jupiter and the Moon in Taurus and the lagna lord strong in the fifth or the ninth, aspected by neither Saturn nor Mars. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "SATURN",
+            "target": {
+              "lordOf": 1
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "MARS",
+            "target": {
+              "lordOf": 1
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler of the earth"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_MOON_RISING_IN_CANCER_SUN_IN_PISCES",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "55",
+        "rank": 1,
+        "note": "The Moon in the lagna in Cancer and the Sun in Pisces. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_SATURN_RISING_IN_A_SIGN_OF_JUPITER_VENUS_MARS_OR_HIS_OWN",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "57",
+        "rank": 1,
+        "note": "Saturn in the lagna in Sagittarius, Pisces, Libra, Aries, Capricorn or Aquarius. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "SAGITTARIUS",
+            "PISCES",
+            "LIBRA",
+            "ARIES",
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a handsome, learned lord of men, the head of a town or a village"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_RAJA_ONE_LORD_OF_GAIN_IN_A_KENDRA_FROM_THE_MOON_JUPITER_ELEVENTH_LORD",
+      "category": "raja",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "61",
+        "rank": 1,
+        "note": "One of the lords of the ninth, the eleventh and the second in a kendra from the Moon, and Jupiter the lord of the eleventh. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 9
+              },
+              "reference": "MOON"
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 11
+              },
+              "reference": "MOON"
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": {
+                "lordOf": 2
+              },
+              "reference": "MOON"
+            }
+          ]
+        },
+        {
+          "type": "same-body",
+          "of": "JUPITER",
+          "as": {
+            "lordOf": 11
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an undivided empire"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHASKARA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "67",
+        "rank": 1,
+        "note": "Mercury in the second from the Sun, the Moon in the eleventh from Mercury and Jupiter in a trikona from the Moon. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "MERCURY",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "MOON",
+          "houses": [
+            1,
+            5,
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "brave, lordly, learned in the scriptures, handsome, musical, good at reckoning, resolute and able"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_INDRA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "68",
+        "rank": 1,
+        "note": "Mars in the third from the Moon, Saturn in the seventh from Mars, Venus in the seventh from Saturn and Jupiter in the seventh from Venus. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "MOON",
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "MARS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "SATURN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "VENUS",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "celebrated, of good character, a king or his equal, eloquent, with wealth, ornaments, fame, beauty and prowess"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MARUT",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "69",
+        "rank": 1,
+        "note": "Jupiter in a trikona from Venus, the Moon in the fifth from Jupiter and the Sun in a kendra from the Moon. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "VENUS",
+          "houses": [
+            1,
+            5,
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-kendra-from",
+          "planet": "SUN",
+          "reference": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "eloquent, broad-chested, big-bellied, learned, prosperous, shrewd in trade, a king or his equal"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BUDHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "70",
+        "rank": 1,
+        "note": "Jupiter in the lagna, the Moon in a kendra from Jupiter, Rahu in the second from the Moon and the Sun and Mars in the third from her, as the translation reads it; the Chowkhamba commentary's Hindi counts the third from the lagna (C482). Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-kendra-from",
+          "planet": "MOON",
+          "reference": "JUPITER"
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "RAHU",
+          "reference": "MOON",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": "MOON",
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "MOON",
+          "houses": [
+            3
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of royal majesty and matchless strength, famous, learned, skilled in trade, talented and free of foes"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_KEMADRUMA_MOON_IN_THE_FIRST_OR_SEVENTH_UNASPECTED_BY_JUPITER",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "71",
+        "rank": 1,
+        "note": "The Moon in the lagna or the seventh, not aspected by Jupiter. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            7
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "JUPITER",
+            "target": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the fruit of kemadruma, poverty"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_KEMADRUMA",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "72-73, 83",
+        "rank": 1,
+        "note": "No graha but the Sun in the second or the twelfth from the Moon, she alone in her sign and in no kendra: v. 83 cancels it when the Moon is in a kendra or joined by a graha. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "no-planet-in-houses-from",
+          "reference": "MOON",
+          "houses": [
+            1,
+            2,
+            12
+          ],
+          "except": [
+            "SUN"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-kendra",
+            "planet": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "dirty, sorrowful, mean, poor, a servant and wicked, though born to a king"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_MOON_WITH_THE_SUN_IN_A_MALEFIC_NAVAMSHA_ASPECTED_BY_A_DEBILITATED_GRAHA",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "74",
+        "rank": 1,
+        "note": "The Moon with the Sun in a malefic's navamsha, aspected by a debilitated graha. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": "SUN"
+        },
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": {
+              "navamsha": "MOON"
+            }
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED",
+                  "DEEP_DEBILITATED"
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "MOON"
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poverty"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_NIGHT_MALEFIC_ON_THE_EIGHTH_FROM_THE_WANING_MOON",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "74",
+        "rank": 1,
+        "note": "By night, the eighth from the waning Moon aspected or held by a malefic. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "birth-by-day"
+          }
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                8
+              ],
+              "atLeast": 1,
+              "from": "MOON"
+            },
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN",
+                "RAHU",
+                "KETU"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "malefic"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "SELF",
+                    "target": {
+                      "from": "MOON",
+                      "house": 8
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poverty"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_MOON_WITH_A_NODE_ASPECTED_BY_A_MALEFIC",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "75",
+        "rank": 1,
+        "note": "The Moon with Rahu or Ketu, aspected by a malefic. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": "MOON",
+              "as": "RAHU"
+            },
+            {
+              "type": "same-sign",
+              "of": "MOON",
+              "as": "KETU"
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "soon poor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_MOON_IN_LIBRA_IN_AN_ENEMY_SIGN_ASPECTED_BY_A_DEBILITATED_GRAHA",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "76",
+        "rank": 1,
+        "note": "The Moon in Libra, in an enemy's varga, aspected by a debilitated graha or an enemy. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "ENEMY",
+            "GREAT_ENEMY"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": "MOON"
+                }
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "MOON"
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "DEBILITATED",
+                      "DEEP_DEBILITATED"
+                    ]
+                  },
+                  {
+                    "type": "natural-relation",
+                    "of": "MOON",
+                    "to": "SELF",
+                    "relations": [
+                      "enemy"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poverty"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_MOON_DEBILITATED_OR_HOSTILE_IN_A_GOOD_HOUSE_JUPITER_HIDDEN_FROM_HER",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "77",
+        "rank": 1,
+        "note": "The Moon in a kendra or a trikona in a debilitation or enemy's varga, read as her sign, and Jupiter in the twelfth, the sixth or the eighth from her. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "DEBILITATED",
+            "DEEP_DEBILITATED",
+            "ENEMY",
+            "GREAT_ENEMY"
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "MOON",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poverty"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_MOON_MOVABLE_IN_A_MALEFIC_NAVAMSHA_UNASPECTED_BY_JUPITER",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "77",
+        "rank": 1,
+        "note": "The Moon in a movable sign in a malefic's navamsha aspected by an enemy, or in a movable navamsha, and not aspected by Jupiter. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "JUPITER",
+            "target": "MOON"
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": {
+                    "lordOf": {
+                      "navamsha": "MOON"
+                    }
+                  },
+                  "class": "malefic"
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "natural-relation",
+                        "of": "MOON",
+                        "to": "SELF",
+                        "relations": [
+                          "enemy"
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": "MOON"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "MOON"
+              },
+              "signs": [
+                "ARIES",
+                "CANCER",
+                "LIBRA",
+                "CAPRICORN"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "great poverty"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_SATURN_AND_VENUS_FALLEN_TOGETHER_OR_FACING",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "78",
+        "rank": 1,
+        "note": "Saturn and Venus each in a debilitation, enemy's or malefic's sign, aspecting each other or together. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "SATURN",
+              "dignities": [
+                "DEBILITATED",
+                "DEEP_DEBILITATED",
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-is",
+              "planet": {
+                "lordOf": "SATURN"
+              },
+              "class": "malefic"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": "VENUS",
+              "dignities": [
+                "DEBILITATED",
+                "DEEP_DEBILITATED",
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-is",
+              "planet": {
+                "lordOf": "VENUS"
+              },
+              "class": "malefic"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": "SATURN",
+              "as": "VENUS"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "VENUS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "even a prince poor"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_NIGHT_AFFLICTED_WEAK_MOON_ASPECTED_BY_THE_TENTH_LORD",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "79",
+        "rank": 1,
+        "note": "By night, the Moon with a malefic or in a malefic's sign or navamsha, bereft of strength and aspected by the tenth lord. Her lost strength is read as her waning, the strength her paksha bala measures: her Shadbala almost never falls short of what is required of her (C482). Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "birth-by-day"
+          }
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 10
+          },
+          "target": "MOON"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN",
+                "RAHU",
+                "KETU"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "malefic"
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "same-body",
+                      "of": "SELF",
+                      "as": "MOON"
+                    }
+                  },
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": "MOON"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "planet-is",
+              "planet": {
+                "lordOf": "MOON"
+              },
+              "class": "malefic"
+            },
+            {
+              "type": "planet-is",
+              "planet": {
+                "lordOf": {
+                  "navamsha": "MOON"
+                }
+              },
+              "class": "malefic"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "kemadruma"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DARIDRA_NIGHT_WANING_MOON_DEBILITATED",
+      "category": "daridra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "79",
+        "rank": 1,
+        "note": "By night, the waning Moon debilitated. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "birth-by-day"
+          }
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "DEBILITATED",
+            "DEEP_DEBILITATED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "kemadruma"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SAKATA",
+      "category": "chandra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "108-109",
+        "rank": 1,
+        "note": "Jupiter in the sixth or the eighth from the Moon and not in a kendra from the lagna. The commentary quotes Phaladeepika ch. 6's exception; that text's Sakata counts the Moon in the sixth, eighth or twelfth from Jupiter and ships without it. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "MOON",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-kendra",
+            "planet": "JUPITER"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor though royal-born, toiling, always distressed and disliked by kings"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MOON_IN_OWN_OR_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_JUPITER_BY_DAY_VENUS_BY_NIGHT",
+      "category": "chandra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "112",
+        "rank": 1,
+        "note": "By day the Moon in her own navamsha or a great friend's aspected by Jupiter, by night by Venus. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": "MOON",
+            "dignities": [
+              "OWN_SIGN",
+              "MOOLTRIKONA",
+              "GREAT_FRIEND"
+            ]
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "birth-by-day"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "JUPITER",
+                  "target": "MOON"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "VENUS",
+                  "target": "MOON"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy and happy"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_CHANDRADHI",
+      "category": "chandra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "113",
+        "rank": 1,
+        "note": "Benefics in the sixth, the seventh and the eighth from the Moon, as many as stand there, one at least: the verse's yathasambhavam. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            6,
+            7,
+            8
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              6,
+              7,
+              8
+            ],
+            "atLeast": 1,
+            "from": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a commander, a minister or a king, wealthy, happy, long-lived and free of foes and disease"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_LAGNADHI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "114-115",
+        "rank": 1,
+        "note": "Benefics in the sixth, the seventh and the eighth from the lagna, one at least, neither joined nor aspected by a malefic, and no malefic in the fourth; the nodes are not counted among the aspecting malefics, whose aspects with theirs leave no sixth, seventh and eighth all free. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            6,
+            7,
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              6,
+              7,
+              8
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SELF",
+                      "houseRuled": 6
+                    },
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SELF",
+                      "houseRuled": 7
+                    },
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SELF",
+                      "houseRuled": 8
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              4
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an author of many works, learned and modest, in authority, sincere, high-souled, famous, wealthy and virtuous"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_GAJAKESARI",
+      "category": "chandra",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "116-117",
+        "rank": 1,
+        "note": "Jupiter in a kendra from the Moon; or the Moon aspected by Venus, Jupiter and Mercury, none of them debilitated or combust. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra-from",
+              "planet": "JUPITER",
+              "reference": "MOON"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "VENUS",
+                      "target": "MOON"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-dignity",
+                        "planet": "VENUS",
+                        "dignities": [
+                          "DEBILITATED",
+                          "DEEP_DEBILITATED"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-combust",
+                        "planet": "VENUS"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "JUPITER",
+                      "target": "MOON"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-dignity",
+                        "planet": "JUPITER",
+                        "dignities": [
+                          "DEBILITATED",
+                          "DEEP_DEBILITATED"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-combust",
+                        "planet": "JUPITER"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "MERCURY",
+                      "target": "MOON"
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-dignity",
+                        "planet": "MERCURY",
+                        "dignities": [
+                          "DEBILITATED",
+                          "DEEP_DEBILITATED"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "planet-combust",
+                        "planet": "MERCURY"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "splendid, wealthy in grain, intelligent, virtuous and pleasing to kings"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_AMALA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "118-120",
+        "rank": 1,
+        "note": "A benefic in the tenth from the Moon or the lagna: Phaladeepika ch. 6 vv. 19 and 20's yoga, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                10
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                10
+              ],
+              "atLeast": 1,
+              "from": "MOON"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "spotless fame lasting while moon and stars endure, honoured by kings, enjoying, generous and kind"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SHUBHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "125",
+        "rank": 1,
+        "note": "A benefic in the lagna. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "eloquent, handsome, of good conduct and virtue"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_ASHUBHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "125",
+        "rank": 1,
+        "note": "A malefic in the lagna. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "lustful, sinful and living on others"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SHUBHA_KARTARI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "125",
+        "rank": 1,
+        "note": "Benefics in the twelfth and the second: Phaladeepika ch. 6's yoga, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "LAGNA",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "LAGNA",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "splendid, wealthy and strong"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_PAPA_KARTARI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "7",
+        "verse": "125",
+        "rank": 1,
+        "note": "Malefics in the twelfth and the second: Phaladeepika ch. 6's yoga, its conditions as written there. Read from V. Subrahmanya Sastri's 1932 translation, the Sanskrit checked in it."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-malefic",
+          "reference": "LAGNA",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-malefic",
+          "reference": "LAGNA",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sinful, begging and dirty"
+        }
+      ]
+    }
+  ]
+}

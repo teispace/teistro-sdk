@@ -121,6 +121,10 @@ const SARAVALI_LUMINARIES: &str = include_str!("../rules/classical-saravali-lumi
 /// Jataka Parijata ch. 7 vv. 128 to 163: the named yogas, Parvata to
 /// Hariharabrahma, four of them as BPHS ch. 36 writes them.
 const PARIJATA_NAMED: &str = include_str!("../rules/classical-parijata-named.json");
+/// Jataka Parijata ch. 7 vv. 1 to 127: the raja yogas, the Moon's and the
+/// Sun's yogas with their poverty and its cancellations, and the named yogas
+/// Bhaskara to Budha.
+const PARIJATA_RAJA: &str = include_str!("../rules/classical-parijata-raja.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -175,6 +179,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(SARAVALI_RAJA));
     rules.append(&mut read(SARAVALI_LUMINARIES));
     rules.append(&mut read(PARIJATA_NAMED));
+    rules.append(&mut read(PARIJATA_RAJA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -343,7 +348,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (97, 6));
+        assert_eq!((strength, points), (115, 6));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -414,7 +419,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 2388);
+        assert_eq!(rules.len(), 2494);
         for rule in &rules {
             let rank = rule
                 .source

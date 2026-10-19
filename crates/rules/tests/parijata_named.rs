@@ -16,15 +16,24 @@ use std::collections::BTreeMap;
 use common::{chart_at, files_in};
 use teistro_rules::{Evaluator, Readings, Rule, shipped};
 
-/// Every rule the verses ship.
+/// Every rule the verses ship: ch. 7 from v. 128 on.
 fn verses() -> Vec<Rule> {
     shipped::nabhasas()
         .iter()
         .filter(|rule| {
-            rule.source.text == "Jataka Parijata" && rule.source.chapter.as_deref() == Some("7")
+            rule.source.text == "Jataka Parijata"
+                && rule.source.chapter.as_deref() == Some("7")
+                && first_verse(rule) >= 128
         })
         .cloned()
         .collect()
+}
+
+/// The first verse a rule cites.
+fn first_verse(rule: &Rule) -> u32 {
+    let verse = rule.source.verse.as_deref().unwrap_or_default();
+    let digits: String = verse.chars().take_while(char::is_ascii_digit).collect();
+    digits.parse().expect("a verse number")
 }
 
 /// The yogas both texts state alike.
