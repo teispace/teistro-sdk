@@ -39,7 +39,22 @@ instruction-count gating).
    millisecond per one-second step, leaving the rest of a frame to the
    consumer.
 
-## Budgets (proposed, to be measured then gated)
+## Budgets (measured and gated for the requests an app makes)
+
+The budgets are for a **native provider**, which in practice means the
+Teimeris engine (ADR-0029): the recommended modern ephemeris, under both
+setups a consumer ships, the modern positions (`parashari-classical`) and
+the Nepali committee's (`nepali-committee` over the Surya Siddhanta with
+Teimeris second for sunrise and the outer planets). The built-in ephemeris
+needs no engine and is held to its accuracy page instead; it is an order of
+magnitude slower, and `05-testing/app-speed-measured.md` prints by how much.
+
+What an app asks for (a context, a day, a month grid, a year, a year of
+festivals, a muhurta search, a chart, a match) is timed through the façade
+by `teistro-ephemeris-teimeris-app-speed`, recorded per machine, rendered
+into `05-testing/app-speed-measured.md` and gated by `check-app-speed`: a
+median past **twice** its budget fails, since wall time is noisy and a
+tighter ceiling would fail on a busy runner rather than on a regression.
 
 | operation | budget (native provider, laptop core) |
 |---|---|

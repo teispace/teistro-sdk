@@ -1,0 +1,202 @@
+{
+  "machine": "Apple M2 Pro",
+  "os": "Darwin 27.0.0",
+  "arch": "aarch64",
+  "commit": "f1258970",
+  "teimeris": "0.1.0",
+  "memo": "cold: a fresh context every run",
+  "timings": [
+    {
+      "setup": "drik-teimeris",
+      "request": "open",
+      "runs": 21,
+      "median_ms": 4.345,
+      "min_ms": 4.136,
+      "max_ms": 4.843
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "day",
+      "runs": 21,
+      "median_ms": 1.976,
+      "min_ms": 1.864,
+      "max_ms": 2.107
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "month",
+      "runs": 21,
+      "median_ms": 60.447,
+      "min_ms": 59.604,
+      "max_ms": 62.753
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "year",
+      "runs": 7,
+      "median_ms": 555.757,
+      "min_ms": 546.167,
+      "max_ms": 745.455
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "festivals",
+      "runs": 8,
+      "median_ms": 527.12,
+      "min_ms": 517.944,
+      "max_ms": 538.05
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "muhurta",
+      "runs": 11,
+      "median_ms": 348.752,
+      "min_ms": 313.739,
+      "max_ms": 458.959
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "chart",
+      "runs": 21,
+      "median_ms": 1.352,
+      "min_ms": 1.268,
+      "max_ms": 1.821
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "matching",
+      "runs": 21,
+      "median_ms": 0.014,
+      "min_ms": 0.013,
+      "max_ms": 0.025
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "open",
+      "runs": 21,
+      "median_ms": 4.472,
+      "min_ms": 4.123,
+      "max_ms": 4.986
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "day",
+      "runs": 21,
+      "median_ms": 1.004,
+      "min_ms": 0.9,
+      "max_ms": 1.157
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "month",
+      "runs": 21,
+      "median_ms": 34.133,
+      "min_ms": 32.971,
+      "max_ms": 37.627
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "year",
+      "runs": 13,
+      "median_ms": 296.021,
+      "min_ms": 289.594,
+      "max_ms": 331.416
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "festivals",
+      "runs": 15,
+      "median_ms": 256.102,
+      "min_ms": 252.353,
+      "max_ms": 315.685
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "muhurta",
+      "runs": 21,
+      "median_ms": 126.281,
+      "min_ms": 122.806,
+      "max_ms": 143.845
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "chart",
+      "runs": 21,
+      "median_ms": 1.334,
+      "min_ms": 1.248,
+      "max_ms": 1.519
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "matching",
+      "runs": 21,
+      "median_ms": 0.014,
+      "min_ms": 0.012,
+      "max_ms": 0.02
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "open",
+      "runs": 21,
+      "median_ms": 0.013,
+      "min_ms": 0.013,
+      "max_ms": 0.016
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "day",
+      "runs": 21,
+      "median_ms": 45.389,
+      "min_ms": 44.558,
+      "max_ms": 60.46
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "month",
+      "runs": 3,
+      "median_ms": 1502.143,
+      "min_ms": 1501.817,
+      "max_ms": 1518.446
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "year",
+      "runs": 3,
+      "median_ms": 15704.7,
+      "min_ms": 14392.519,
+      "max_ms": 16682.499
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "festivals",
+      "runs": 3,
+      "median_ms": 14681.329,
+      "min_ms": 14166.863,
+      "max_ms": 15044.396
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "muhurta",
+      "runs": 3,
+      "median_ms": 4957.409,
+      "min_ms": 4558.823,
+      "max_ms": 5545.018
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "chart",
+      "runs": 21,
+      "median_ms": 2.657,
+      "min_ms": 2.558,
+      "max_ms": 2.852
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "matching",
+      "runs": 21,
+      "median_ms": 0.015,
+      "min_ms": 0.012,
+      "max_ms": 0.027
+    }
+  ]
+}

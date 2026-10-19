@@ -38,10 +38,19 @@ default = ["standard"]
 compact = ["teistro-ephemeris-builtin/compact"]
 standard = ["teistro-ephemeris-builtin/standard"]
 full = ["teistro-ephemeris-builtin/full"]
+# The SDK's façade, for the binary that times what an app pays
+# (`docs/05-testing/app-speed-measured.md`); optional so that the plugin's
+# own build does not compile the whole SDK.
+app-speed = ["dep:teistro"]
 
 [[bin]]
 name = "teistro-ephemeris-teimeris-kit"
 path = "src/bin/kit.rs"
+
+[[bin]]
+name = "teistro-ephemeris-teimeris-app-speed"
+path = "src/bin/app_speed.rs"
+required-features = ["app-speed"]
 
 [[bin]]
 name = "teistro-ephemeris-teimeris-bs-fit"
@@ -87,6 +96,7 @@ path = "src/bin/sidereal_table.rs"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 teimeris = { path = "../../../../teimeris/bindings/rust/teimeris" }
+teistro = { path = "../../../crates/sdk", optional = true }
 teistro-astro = { path = "../../../crates/astro" }
 teistro-calendar = { path = "../../../crates/calendar" }
 teistro-core = { path = "../../../crates/core" }

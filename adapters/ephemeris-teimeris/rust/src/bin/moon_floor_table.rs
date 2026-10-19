@@ -113,11 +113,8 @@ struct Row {
 fn solve(mut a: Vec<Vec<f64>>, mut b: Vec<f64>) -> Option<Vec<f64>> {
     let n = b.len();
     for column in 0..n {
-        let pivot = (column..n).max_by(|x, y| {
-            a[*x][column]
-                .abs()
-                .total_cmp(&a[*y][column].abs())
-        })?;
+        let pivot =
+            (column..n).max_by(|x, y| a[*x][column].abs().total_cmp(&a[*y][column].abs()))?;
         a.swap(column, pivot);
         b.swap(column, pivot);
         let head = a[column][column];
@@ -300,8 +297,7 @@ fn main() -> ExitCode {
             separations.push(separation_arcsec(theory_direction, engine));
             // The port reports distance in astronomical units.
             let engine_km = cell.dist * 149_597_870.7;
-            radius_relative =
-                radius_relative.max(((distance_km - engine_km) / engine_km).abs());
+            radius_relative = radius_relative.max(((distance_km - engine_km) / engine_km).abs());
         }
         let samples = separations.len();
         let mean = separations.iter().sum::<f64>() / samples as f64;

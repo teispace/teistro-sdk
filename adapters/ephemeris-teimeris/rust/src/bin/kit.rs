@@ -39,9 +39,10 @@ fn main() -> ExitCode {
     // Opened once more per context the façade builds; it opened above, so
     // it opens here.
     let open = || -> Box<dyn EphemerisProvider> {
-        Box::new(TeimerisProvider::open(&data_dir).unwrap_or_else(|error| {
-            panic!("Teimeris opened once and not again: {error}")
-        }))
+        Box::new(
+            TeimerisProvider::open(&data_dir)
+                .unwrap_or_else(|error| panic!("Teimeris opened once and not again: {error}")),
+        )
     };
     if runner::charts("teimeris", &open, &args) {
         kit

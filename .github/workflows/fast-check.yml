@@ -240,6 +240,8 @@ jobs:
         run: cargo xtask check-samvatsara
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
         run: cargo xtask check-agreement
+      - name: App speed page (what an app pays per request under each setup, every median over Teimeris inside twice its budget)
+        run: cargo xtask check-app-speed
       - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
         run: cargo xtask check-arudhas
       - name: Reception page (Lilly's worked receptions held to the shipped tables, and each kind counted over the corpus)

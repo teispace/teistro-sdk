@@ -47,12 +47,12 @@ use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::settings::OverridePolicy;
-use teistro_port_ephemeris::EphemerisProvider;
 use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_ephemeris_builtin::tables::{MOON_BIJA_FITTED_OVER, TIER_NAME};
 use teistro_ephemeris_teimeris::{
     TeimerisProvider, data_dir_from_env, profile_from_env, profile_key,
 };
+use teistro_port_ephemeris::EphemerisProvider;
 use teistro_port_ephemeris::{
     Body, Centre, Coordinates, Corrections, Equinox, Frame, PositionColumns, PositionRequest,
     TimeScale, Zodiac,
@@ -253,7 +253,7 @@ fn completion<P: EphemerisProvider + ?Sized>(provider: &P) -> Completion<'_, P> 
         OverridePolicy::PreferNative,
         DeltaTModel::TableThenModel,
     )
-        .with_ayanamsha_basis(Basis::True)
+    .with_ayanamsha_basis(Basis::True)
 }
 
 fn main() -> ExitCode {
@@ -290,7 +290,10 @@ fn main() -> ExitCode {
     let with = |f: fn(&mut Corrections)| {
         let mut c = Corrections::GEOMETRIC;
         f(&mut c);
-        Frame { corrections: c, ..geometric }
+        Frame {
+            corrections: c,
+            ..geometric
+        }
     };
     let ladder: [(&str, Frame); 7] = [
         ("geometric (of date)", geometric),
@@ -298,11 +301,21 @@ fn main() -> ExitCode {
         ("deflection only", with(|c| c.deflection = true)),
         ("aberration only", with(|c| c.aberration = true)),
         ("nutation only", with(|c| c.nutation = true)),
-        ("apparent, tropical", Frame { corrections: Corrections::APPARENT, ..geometric }),
-        ("apparent, sidereal", Frame {
-            corrections: Corrections::APPARENT,
-            zodiac: Zodiac::sidereal(Ayanamsha::Lahiri),
-            ..geometric }),
+        (
+            "apparent, tropical",
+            Frame {
+                corrections: Corrections::APPARENT,
+                ..geometric
+            },
+        ),
+        (
+            "apparent, sidereal",
+            Frame {
+                corrections: Corrections::APPARENT,
+                zodiac: Zodiac::sidereal(Ayanamsha::Lahiri),
+                ..geometric
+            },
+        ),
     ];
     // Does the engine itself distinguish these frames? If a partial
     // correction gives the engine the same answer as geometric, the
@@ -444,8 +457,7 @@ fn main() -> ExitCode {
                 }
                 worst_speed = worst_speed.max((x.lon_speed - y.lon_speed).abs() * 3_600.0);
                 worst_lat = worst_lat.max((x.lat - y.lat).abs() * 3_600.0);
-                worst_lat_speed =
-                    worst_lat_speed.max((x.lat_speed - y.lat_speed).abs() * 3_600.0);
+                worst_lat_speed = worst_lat_speed.max((x.lat_speed - y.lat_speed).abs() * 3_600.0);
                 // A direction carries no distance, so there is nothing to
                 // compare and a relative difference would be 0/0.
                 if y.dist > 0.0 {
@@ -469,10 +481,7 @@ fn main() -> ExitCode {
             if *body == Body::Moon {
                 moon_worst = worst;
             }
-            #[expect(
-                clippy::cast_precision_loss,
-                reason = "a sample count is thousands"
-            )]
+            #[expect(clippy::cast_precision_loss, reason = "a sample count is thousands")]
             let mean = total / jds.len() as f64;
             rows.push(Row {
                 body: body.key().to_string(),
@@ -495,47 +504,53 @@ fn main() -> ExitCode {
     // Each provider against itself: a month of six-hour steps, dense
     // enough to interpolate the Moon's ascending crossing, at three
     // epochs across the span.
-    let self_check = |name: &'static str, provider: &dyn EphemerisProvider, year: i32, from: f64| {
-        let dense: Vec<f64> = (0..120).map(|q| f64::from(q).mul_add(0.25, from)).collect();
-        let request = PositionRequest::new(
-            &dense,
-            TimeScale::Tt,
-            &[Body::Moon, Body::TrueNode],
-            Frame {
-                centre: Centre::Geocentric,
-                zodiac: Zodiac::Tropical,
-                ..chart_frame()
-            },
-        );
-        let columns = completion(provider)
-            .positions(&request)
-            .expect("a month of the Moon and its node")
-            .columns;
-        let (mut worst, mut crossings) = (0.0_f64, 0usize);
-        for index in 1..dense.len() {
-            let (Some(before), Some(here)) = (columns.at(index - 1, 0), columns.at(index, 0)) else {
-                continue;
-            };
-            if before.lat >= 0.0 || here.lat < 0.0 {
-                continue; // the ascending crossing only
+    let self_check =
+        |name: &'static str, provider: &dyn EphemerisProvider, year: i32, from: f64| {
+            let dense: Vec<f64> = (0..120).map(|q| f64::from(q).mul_add(0.25, from)).collect();
+            let request = PositionRequest::new(
+                &dense,
+                TimeScale::Tt,
+                &[Body::Moon, Body::TrueNode],
+                Frame {
+                    centre: Centre::Geocentric,
+                    zodiac: Zodiac::Tropical,
+                    ..chart_frame()
+                },
+            );
+            let columns = completion(provider)
+                .positions(&request)
+                .expect("a month of the Moon and its node")
+                .columns;
+            let (mut worst, mut crossings) = (0.0_f64, 0usize);
+            for index in 1..dense.len() {
+                let (Some(before), Some(here)) = (columns.at(index - 1, 0), columns.at(index, 0))
+                else {
+                    continue;
+                };
+                if before.lat >= 0.0 || here.lat < 0.0 {
+                    continue; // the ascending crossing only
+                }
+                let Some(node) = columns.at(index, 1) else {
+                    continue;
+                };
+                crossings += 1;
+                let fraction = -before.lat / (here.lat - before.lat);
+                let at_crossing = before.lon + fraction * apart(here.lon, before.lon);
+                worst = worst.max(apart(at_crossing, node.lon).abs());
             }
-            let Some(node) = columns.at(index, 1) else {
-                continue;
-            };
-            crossings += 1;
-            let fraction = -before.lat / (here.lat - before.lat);
-            let at_crossing = before.lon + fraction * apart(here.lon, before.lon);
-            worst = worst.max(apart(at_crossing, node.lon).abs());
-        }
-        SelfCheck {
-            provider: name,
-            year,
-            crossings,
-            worst_degrees: worst,
-        }
-    };
+            SelfCheck {
+                provider: name,
+                year,
+                crossings,
+                worst_degrees: worst,
+            }
+        };
     let mut node_against_own_crossing = Vec::new();
-    for (year, from) in [(1850, 2_396_759.0), (2000, 2_451_545.0), (2350, 2_579_305.0)] {
+    for (year, from) in [
+        (1850, 2_396_759.0),
+        (2000, 2_451_545.0),
+        (2350, 2_579_305.0),
+    ] {
         node_against_own_crossing.push(self_check("built-in", &builtin, year, from));
         node_against_own_crossing.push(self_check("engine", &engine, year, from));
     }

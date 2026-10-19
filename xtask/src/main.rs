@@ -257,6 +257,7 @@ mod accuracy;
 mod agreement;
 mod almanac;
 mod antiscia;
+mod app_speed;
 mod areas;
 mod arudhas;
 mod ashtakavarga;
@@ -471,6 +472,7 @@ const PASSES: &[Pass] = &[
     ("batching", batching::generate, batching::check_generated),
     ("surface", surface::generate, surface::check_generated),
     ("agreement", agreement::generate, agreement::check_generated),
+    ("app-speed", app_speed::generate, app_speed::check_generated),
     ("pluto", pluto::generate, pluto::check_generated),
     ("engine", engine::generate, engine::check_generated),
     ("areas", areas::generate, areas::check_generated),
