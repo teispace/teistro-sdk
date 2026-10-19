@@ -32,10 +32,10 @@ use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{
     Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, CrossingEvent,
-    CrossingRequest, Direction, DiscPoint, DistanceUnit, EphemerisKind, EphemerisProvider, Equinox,
-    Frame, HorizonEventKind, HorizonRequest, Identity, Obliquity, Overrides, PositionColumns,
-    PositionRequest, ProviderError, Quantity, Refraction, Source, SpeedModel, TimeScale, Zodiac,
-    sefile, validate,
+    CrossingRequest, DataHash, Direction, DiscPoint, DistanceUnit, EphemerisKind,
+    EphemerisProvider, Equinox, Frame, HorizonEventKind, HorizonRequest, Identity, Obliquity,
+    Overrides, PositionColumns, PositionRequest, ProviderError, Quantity, Refraction, Source,
+    SpeedModel, TimeScale, Zodiac, sefile, validate,
 };
 
 /// The environment variable naming the data directory.
@@ -137,6 +137,10 @@ mod plugin {
     #[derive(Debug, Default, Deserialize)]
     #[serde(rename_all = "camelCase", deny_unknown_fields)]
     struct Config {
+        /// `"embedded"`: the data built into the engine's binary, with no
+        /// directory and nothing hashed at run time — what an app on a
+        /// phone names. Not with `dataDir`, which names a directory.
+        data: Option<String>,
         /// Where the engine's data files are.
         data_dir: Option<PathBuf>,
         /// `compatible` or `max`; the engine's own profile names.
@@ -144,7 +148,7 @@ mod plugin {
     }
 
     /// Builds the provider a loader asked for.
-    fn open(config_json: &str) -> Result<TeimerisProvider, ProviderError> {
+    pub(super) fn open(config_json: &str) -> Result<TeimerisProvider, ProviderError> {
         let config: Config = if config_json.trim().is_empty() {
             Config::default()
         } else {
@@ -160,8 +164,22 @@ mod plugin {
                 ))
             })?,
         };
-        let data_dir = config.data_dir.unwrap_or_else(data_dir_from_env);
-        TeimerisProvider::open_with(&data_dir, profile)
+        match (config.data.as_deref(), config.data_dir) {
+            (None, data_dir) => {
+                let data_dir = data_dir.unwrap_or_else(data_dir_from_env);
+                TeimerisProvider::open_with(&data_dir, profile)
+            }
+            (Some("embedded"), None) => TeimerisProvider::embedded_with(profile),
+            (Some("embedded"), Some(dir)) => Err(ProviderError::invalid(format!(
+                "the configuration names `data: \"embedded\"` and `dataDir: {}`; name one: \
+                 the embedded data has no directory",
+                dir.display()
+            ))),
+            (Some(other), _) => Err(ProviderError::invalid(format!(
+                "`data: \"{other}\"` is not a source this adapter has; it has `\"embedded\"`, \
+                 or name a directory with `dataDir`"
+            ))),
+        }
     }
 
     teistro_port_ephemeris::export_provider!(TeimerisProvider, open);
@@ -327,6 +345,61 @@ impl TeimerisProvider {
             .profile(profile)
             .open()
             .map_err(|error| map_error(&error, f64::NAN))?;
+        Ok(TeimerisProvider::over(context, files, jd_range))
+    }
+
+    /// Opens a context over the data **built into the engine's binary**,
+    /// in the profile the environment names: no directory, no file read,
+    /// and nothing hashed, because each embedded file's SHA-256 was
+    /// computed when the engine was built.
+    ///
+    /// This is the call an app makes, on a phone or anywhere a data
+    /// directory is one more thing to ship. What it covers is the tier the
+    /// engine was built with (`TM_EMBED_TIER`, `MODERN` by default: 1800 to
+    /// 2400), and the provenance it reports is the same as a directory of
+    /// the same files would give.
+    ///
+    /// # Errors
+    ///
+    /// When the engine was built with nothing embedded (`TM_EMBED_TIER=NONE`)
+    /// or with no planet block, or cannot open.
+    pub fn embedded() -> Result<TeimerisProvider, ProviderError> {
+        TeimerisProvider::embedded_with(profile_from_env())
+    }
+
+    /// The same, in a profile of the caller's choosing.
+    ///
+    /// # Errors
+    ///
+    /// As [`TeimerisProvider::embedded`].
+    pub fn embedded_with(profile: Profile) -> Result<TeimerisProvider, ProviderError> {
+        let carried = Context::embedded_files();
+        let star_catalogue = carried.iter().any(|file| file.name == "sefstars.txt");
+        let files = sefile::SeFiles::of(
+            carried.into_iter().map(|file| DataHash {
+                sha256: file.sha256.to_owned(),
+                bytes: file.size as u64,
+                file: file.name,
+            }),
+            star_catalogue,
+        );
+        let Some(jd_range) = files.jd_range else {
+            return Err(ProviderError::DataMissing {
+                detail: String::from(
+                    "the engine carries no planet block (sepl_*.se1): it was built with \
+                     TM_EMBED_TIER=NONE or a tier without one; open a data directory instead",
+                ),
+            });
+        };
+        let context = Context::builder()
+            .profile(profile)
+            .open()
+            .map_err(|error| map_error(&error, f64::NAN))?;
+        Ok(TeimerisProvider::over(context, files, jd_range))
+    }
+
+    /// The provider over an opened context and the files it reads.
+    fn over(context: Context, files: sefile::SeFiles, jd_range: (f64, f64)) -> TeimerisProvider {
         let ayanamshas = files.ayanamshas();
         let capabilities = Capabilities {
             identity: Identity {
@@ -365,10 +438,10 @@ impl TeimerisProvider {
             // capability the port gains later is then a compile error here
             // rather than a default this engine never chose.
         };
-        Ok(TeimerisProvider {
+        TeimerisProvider {
             context: Mutex::new(context),
             capabilities,
-        })
+        }
     }
 
     /// Runs `f` with the context, serialised.
@@ -778,6 +851,55 @@ mod tests {
             observer: None,
             speeds: true,
         }
+    }
+
+    /// The data carried in the engine's binary describes itself as the
+    /// same files on disk do, hash for hash, and answers as they answer.
+    #[test]
+    fn the_embedded_data_is_the_directory_s_files_and_answers_alike() {
+        let embedded = TeimerisProvider::embedded().unwrap_or_else(|e| panic!("{e}"));
+        let carried = embedded.capabilities().identity.data_hashes;
+        assert!(
+            !carried.is_empty(),
+            "the default build embeds the MODERN tier"
+        );
+        for hash in &carried {
+            let on_disk = DataHash::of_file(&data_dir_from_env().join(&hash.file))
+                .unwrap_or_else(|e| panic!("{}: {e}", hash.file));
+            assert_eq!(*hash, on_disk, "{} is not the file on disk", hash.file);
+        }
+        assert_eq!(
+            embedded.capabilities().jd_range,
+            (
+                sefile::julian_day(1800, 1, 1),
+                sefile::julian_day(2399, 12, 31)
+            ),
+        );
+        let on_disk = provider();
+        let jds = [2_451_545.0, 2_460_000.5, 2_400_000.5];
+        let bodies = [Body::Sun, Body::Moon, Body::Mars, Body::Saturn];
+        let a = embedded
+            .positions(&request(&jds, &bodies))
+            .unwrap_or_else(|e| panic!("{e}"));
+        let b = on_disk
+            .positions(&request(&jds, &bodies))
+            .unwrap_or_else(|e| panic!("{e}"));
+        for index in 0..jds.len() * bodies.len() {
+            assert_eq!(a.cell(index), b.cell(index), "cell {index}");
+        }
+    }
+
+    #[test]
+    fn the_plugin_configuration_names_one_source() {
+        assert!(plugin::open(r#"{"data":"embedded"}"#).is_ok());
+        let both = plugin::open(r#"{"data":"embedded","dataDir":"/tmp"}"#)
+            .err()
+            .unwrap_or_else(|| panic!("both refused"));
+        assert!(both.to_string().contains("name one"), "{both}");
+        let unknown = plugin::open(r#"{"data":"cloud"}"#)
+            .err()
+            .unwrap_or_else(|| panic!("an unknown source refused"));
+        assert!(unknown.to_string().contains("`\"embedded\"`"), "{unknown}");
     }
 
     #[test]

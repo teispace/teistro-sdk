@@ -109,20 +109,43 @@ pub fn scan(dir: &Path) -> std::io::Result<SeFiles> {
         .iter()
         .map(|name| DataHash::of_file(&dir.join(name)))
         .collect::<std::io::Result<Vec<DataHash>>>()?;
-    let mut range: Option<(f64, f64)> = None;
-    for name in names.iter().filter(|n| n.starts_with("sepl")) {
-        if let Some((first, last)) = block_years(name) {
-            let lo = julian_day(first, 1, 1);
-            let hi = julian_day(last, 12, 31);
-            range = Some(range.map_or((lo, hi), |(a, b)| (a.min(lo), b.max(hi))));
+    Ok(SeFiles::of(hashes, dir.join("sefstars.txt").is_file()))
+}
+
+impl SeFiles {
+    /// What a set of files offers, from their hashes alone: the blocks
+    /// among them, sorted, their coverage, and whether the star catalogue
+    /// is with them.
+    ///
+    /// [`scan`] reads a directory into this; an engine that carries its
+    /// data in its own binary, hashed when it was built, passes those
+    /// hashes, so the same files give the same coverage and provenance
+    /// however they are carried and nothing is hashed at run time. A file
+    /// that is not a block (the star catalogue, the orbital elements) is
+    /// left out of `names` and `hashes`, as `scan` leaves it out.
+    #[must_use]
+    pub fn of(hashes: impl IntoIterator<Item = DataHash>, star_catalogue: bool) -> SeFiles {
+        let mut hashes: Vec<DataHash> = hashes
+            .into_iter()
+            .filter(|hash| block_years(&hash.file).is_some())
+            .collect();
+        hashes.sort_by(|a, b| a.file.cmp(&b.file));
+        let names: Vec<String> = hashes.iter().map(|hash| hash.file.clone()).collect();
+        let mut range: Option<(f64, f64)> = None;
+        for name in names.iter().filter(|n| n.starts_with("sepl")) {
+            if let Some((first, last)) = block_years(name) {
+                let lo = julian_day(first, 1, 1);
+                let hi = julian_day(last, 12, 31);
+                range = Some(range.map_or((lo, hi), |(a, b)| (a.min(lo), b.max(hi))));
+            }
+        }
+        SeFiles {
+            names,
+            hashes,
+            jd_range: range,
+            star_catalogue,
         }
     }
-    Ok(SeFiles {
-        names,
-        hashes,
-        jd_range: range,
-        star_catalogue: dir.join("sefstars.txt").is_file(),
-    })
 }
 
 #[cfg(test)]
@@ -164,5 +187,33 @@ mod tests {
         };
         assert!(with_stars.ayanamshas().contains(&Ayanamsha::TrueChitra));
         assert_eq!(with_stars.ayanamshas().len(), Ayanamsha::all().len());
+    }
+
+    /// Files carried in an engine's binary give what the same files in a
+    /// directory give: the same names, hashes and coverage.
+    #[test]
+    fn files_described_by_their_hashes_match_the_same_files_scanned() {
+        let dir = std::env::temp_dir().join("teistro-port-ephemeris-sefile-of");
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        for (name, bytes) in [
+            ("semo_18.se1", &b"moon"[..]),
+            ("sepl_18.se1", b"planets"),
+            ("seorbel.txt", b"elements"),
+        ] {
+            std::fs::write(dir.join(name), bytes).unwrap();
+        }
+        let scanned = scan(&dir).unwrap();
+        let described = SeFiles::of(
+            ["seorbel.txt", "sepl_18.se1", "semo_18.se1"]
+                .map(|name| DataHash::of_file(&dir.join(name)).unwrap()),
+            false,
+        );
+        assert_eq!(described, scanned);
+        assert_eq!(described.names, ["semo_18.se1", "sepl_18.se1"]);
+        assert_eq!(
+            described.jd_range,
+            Some((julian_day(1800, 1, 1), julian_day(2399, 12, 31)))
+        );
     }
 }
