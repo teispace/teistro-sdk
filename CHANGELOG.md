@@ -30,6 +30,31 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
+**Brihat Jataka ch. 15's pravrajya yogas** (`rules-engine.md`). **Numbers:**
+none moved; this adds 19 rules. Varahamihira's chapter on renunciation, read
+in Iyer's 1885 translation against the Sanskrit, joins the nabhasa set as
+`BJ_PRAVRAJYA_*`: the strongest of four or more strong grahas in one sign and
+the order it gives, paired with the grahas as Varahamihira pairs them; the
+combust leader, who leaves the native devoted but uninitiated; the lord of the
+Moon's sign and Saturn; the Moon in Saturn's drekkana and a navamsha of Mars
+or Saturn; and the two ascetics born in one of ch. 11's raja yogas. Nine state
+BPHS ch. 79's yogas and answer what BPHS's do. Ch. 14's pairs ship already.
+Crux C490.
+
+**Brihat Jataka chs. 12 and 13, the Nabhasa yogas and the Moon's yogas**
+(`rules-engine.md`). **Numbers:** none moved; this adds 54 rules.
+Varahamihira's thirty-two Nabhasa yogas and his chapter on the Moon, read in
+Chidambaram Iyer's 1885 translation with the Sanskrit checked, join the
+nabhasa set as `BJ_NABHASA_*` and `BJ_CHANDRA_*`: the ashraya, dala, akriti
+and sankhya yogas with the order in which they stand down to each other, the
+Moon's place from the Sun and in her navamsha, Adhi, Sunapha to Kemadruma
+with each graha's result, her half of the sky by day and night, and the
+benefics in the upachayas from the lagna and the Moon. Twenty-nine state a
+yoga as BPHS, Phaladeepika or Jataka Parijata already ship it and are held to
+it as twins; Srak, Sarpa, Vajra, Yava and Kemadruma are the chapter's own
+readings, and Vajra and Yava hold on no sky, as v. 6 says. Cruxes C483 to
+C489.
+
 **Jataka Parijata's raja yogas, ch. 7 vv. 1 to 127** (`rules-engine.md`).
 **Numbers:** none moved; this adds 106 rules. The chapter's kings, read in
 Sastri's 1932 translation against the verse and vv. 23 to 28 in the

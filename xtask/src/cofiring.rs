@@ -126,7 +126,7 @@ const REVIEWED: [(&[&str], &str); 6] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 136] = [
+const FIXTURES: [(&str, f64, f64, f64); 147] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -801,10 +801,30 @@ const FIXTURES: [(&str, f64, f64, f64); 136] = [
         27.7172,
         85.324,
     ),
+    // Brihat Jataka ch. 12: the Nabhasa yogas BPHS ch. 35 states alike hold
+    // where BPHS's do.
+    ("BJ_NABHASA_NALA", 2_420_757.166_67, 27.7172, 59.593),
+    ("BJ_NABHASA_GADA", 2_430_110.0, 27.7172, -93.752),
+    ("BJ_NABHASA_SAKATA", 2_418_976.25, 27.7172, -8.53),
+    ("BJ_NABHASA_VIHAGA", 2_418_976.25, 27.7172, 81.47),
+    ("BJ_NABHASA_KAMALA", 2_420_757.166_67, 27.7172, 119.593),
+    ("BJ_NABHASA_CHHATRA", 2_378_584.5, 27.7172, -158.98),
+    ("BJ_NABHASA_SAMUDRA", 2_412_258.5, 27.7172, 97.14),
+    ("BJ_NABHASA_CHAKRA", 2_412_258.5, 27.7172, 65.74),
+    ("BJ_NABHASA_GOLA", 2_437_699.083_33, 27.7172, -37.399),
+    // Brihat Jataka ch. 15 v. 2: the leader combust, found by sign day by
+    // day, 1800 to 2398, and confirmed at Kathmandu.
+    (
+        "BJ_PRAVRAJYA_MARS_COMBUST",
+        2_379_202.944_4,
+        27.7172,
+        85.324,
+    ),
+    ("BJ_PRAVRAJYA_SATURN_COMBUST", 2_379_857.0, 27.7172, 85.324),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 48] = [
+const UNSEEN: [(&str, &str); 50] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -997,6 +1017,14 @@ const UNSEEN: [(&str, &str); 48] = [
     (
         "PARIJATA_RAJA_MERCURY_VIRGO_MOON_PISCES_MARS_GEMINI_JUPITER_SAGITTARIUS_SATURN_CAPRICORN",
         "No day from 1800 to 2398 has Mercury, the Moon, Mars, Jupiter and Saturn in Virgo, Pisces, Gemini, Sagittarius and Capricorn at once, searched day by day by sign.",
+    ),
+    (
+        "BJ_NABHASA_VAJRA",
+        "Benefics in the 1st and 7th and malefics in the 4th and 10th, all seven in the kendras: the Sun, a malefic, would stand three or nine signs from Venus, a benefic, and Venus is never more than two signs from the Sun (her greatest elongation 47.28 degrees, day by day 1800 to 2398). Ch. 12 v. 6 says so itself.",
+    ),
+    (
+        "BJ_NABHASA_YAVA",
+        "Vajra's figure turned about, malefics in the 1st and 7th and benefics in the 4th and 10th, all seven in the kendras: the Sun and Venus would again stand three or nine signs apart, which her greatest elongation of 47.28 degrees, day by day 1800 to 2398, never allows.",
     ),
 ];
 

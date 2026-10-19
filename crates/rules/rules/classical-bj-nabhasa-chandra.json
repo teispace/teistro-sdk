@@ -1,0 +1,3596 @@
+{
+  "rules": [
+    {
+      "key": "BJ_NABHASA_RAJJU",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "2, 11",
+        "rank": 1,
+        "note": "All the seven in movable signs, as BPHS ch. 35 v. 7 puts it. V. 12 makes an ashraya yoga fruitless where another Nabhasa yoga is mixed with it, that one giving the result: the two dala and twenty akriti yogas, and of the sankhya yogas Gola alone, since the seven in one sign always make an ashraya figure too; the other sankhya yogas stand down to the ashraya under v. 10 (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "planet-in-sign",
+                "planet": "SELF",
+                "signs": [
+                  "ARIES",
+                  "CANCER",
+                  "LIBRA",
+                  "CAPRICORN"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GOLA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "envious, fond of journeys and given to foreign lands"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_MUSALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "2, 11",
+        "rank": 1,
+        "note": "All the seven in fixed signs, as BPHS ch. 35 v. 7 puts it. V. 12 makes an ashraya yoga fruitless where another Nabhasa yoga is mixed with it, that one giving the result: the two dala and twenty akriti yogas, and of the sankhya yogas Gola alone, since the seven in one sign always make an ashraya figure too; the other sankhya yogas stand down to the ashraya under v. 10 (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "planet-in-sign",
+                "planet": "SELF",
+                "signs": [
+                  "TAURUS",
+                  "LEO",
+                  "SCORPIO",
+                  "AQUARIUS"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GOLA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "proud, wealthy and busy with many undertakings"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_NALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "2, 11",
+        "rank": 1,
+        "note": "All the seven in dual signs, as BPHS ch. 35 v. 7 puts it. V. 12 makes an ashraya yoga fruitless where another Nabhasa yoga is mixed with it, that one giving the result: the two dala and twenty akriti yogas, and of the sankhya yogas Gola alone, since the seven in one sign always make an ashraya figure too; the other sankhya yogas stand down to the ashraya under v. 10 (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "planet-in-sign",
+                "planet": "SELF",
+                "signs": [
+                  "GEMINI",
+                  "VIRGO",
+                  "SAGITTARIUS",
+                  "PISCES"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GOLA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "deficient in a limb, steady, wealthy and skilful"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_SRAK",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "2, 11",
+        "rank": 1,
+        "note": "Benefics in the kendras, Parashara's Srak or Mala. The verse says only the kendras joined by benefics, and by malefics for the other; read as three kendras or more each holding one, as BPHS ch. 35 v. 8 counts them, and no graha of the other kind among the seven in any kendra, so that the two cannot hold together, where BPHS's reading lets both hold (C484). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      7
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "benefic"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      10
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "atLeast": 3
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SELF"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "furnished with enjoyments"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_SARPA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "2, 11",
+        "rank": 1,
+        "note": "Malefics in the kendras, Parashara's Sarpa. The verse says only the kendras joined by benefics, and by malefics for the other; read as three kendras or more each holding one, as BPHS ch. 35 v. 8 counts them, and no graha of the other kind among the seven in any kendra, so that the two cannot hold together, where BPHS's reading lets both hold (C484). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "n-of",
+          "conditions": [
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "malefic"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "malefic"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "malefic"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      7
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-is",
+                    "planet": "SELF",
+                    "class": "malefic"
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      10
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "atLeast": 3
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "benefic"
+                },
+                {
+                  "type": "planet-in-kendra",
+                  "planet": "SELF"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a sharer in much sorrow"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_GADA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "4, 13",
+        "rank": 1,
+        "note": "All the seven in two successive kendras, each holding one. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                1,
+                4
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                4,
+                7
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                7,
+                10
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                10,
+                1
+              ],
+              "requireAllHousesFilled": true
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a performer of sacrifices, wealthy and ever bent on gain"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_SAKATA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "4, 13",
+        "rank": 1,
+        "note": "All the seven in the lagna and the seventh. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            7
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "living by carts, sickly, and with a bad wife"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_VIHAGA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "4, 13",
+        "rank": 1,
+        "note": "All the seven in the fourth and the tenth; the verse's word is kha and bandhu, the sky and kin. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            4,
+            10
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a messenger, a wanderer and a maker of quarrels"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_SRINGATAKA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "4, 13",
+        "rank": 1,
+        "note": "All the seven in the lagna, the fifth and the ninth. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            5,
+            9
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "lastingly happy"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_HALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "4, 13",
+        "rank": 1,
+        "note": "All the seven in a trine of houses other than the lagna's: the second, sixth and tenth, the third, seventh and eleventh, or the fourth, eighth and twelfth. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                2,
+                6,
+                10
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                3,
+                7,
+                11
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                4,
+                8,
+                12
+              ],
+              "requireAllHousesFilled": true
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a tiller of the soil"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_VAJRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "5, 6, 14",
+        "rank": 1,
+        "note": "Benefics in the lagna and the seventh, malefics in the fourth and the tenth. The verse places the benefics as Sakata places the seven, in the lagna and the seventh, and the malefics as Vihaga does, in the fourth and the tenth, so all the seven stand in the kendras, each kendra holding one. V. 6 says the author gives this after the older texts and asks how Mercury and Venus could stand fourth from the Sun: neither ever does, so the figure holds on no sky, where BPHS ch. 35's Vajra and Yava, a benefic or a malefic in each house with the rest anywhere, can (C483). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "requireAllHousesFilled": true
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    }
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1,
+                      7
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "malefic"
+                    }
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4,
+                      10
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happy at the beginning and the end of life, well liked and very brave"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_YAVA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "5, 6, 14",
+        "rank": 1,
+        "note": "Malefics in the lagna and the seventh, benefics in the fourth and the tenth, Vajra reversed. The verse places the benefics as Sakata places the seven, in the lagna and the seventh, and the malefics as Vihaga does, in the fourth and the tenth, so all the seven stand in the kendras, each kendra holding one. V. 6 says the author gives this after the older texts and asks how Mercury and Venus could stand fourth from the Sun: neither ever does, so the figure holds on no sky, where BPHS ch. 35's Vajra and Yava, a benefic or a malefic in each house with the rest anywhere, can (C483). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "requireAllHousesFilled": true
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "malefic"
+                    }
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1,
+                      7
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    }
+                  },
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4,
+                      10
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "strong, and happy in the middle of life"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_KAMALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "5, 14",
+        "rank": 1,
+        "note": "All the seven in the four kendras, benefics and malefics mixed, each kendra holding one; v. 14 calls it Padma. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of wide fame, with happiness and virtues past measure"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_VAPI",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "5, 14",
+        "rank": 1,
+        "note": "The same four-sign figure outside the kendras: all the seven in the four panapharas or the four apoklimas, each holding one. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                2,
+                5,
+                8,
+                11
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                3,
+                6,
+                9,
+                12
+              ],
+              "requireAllHousesFilled": true
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of slight but lasting comfort, a hoarder of treasure and no giver"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_YUPA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "7, 15",
+        "rank": 1,
+        "note": "All the seven in the four houses from the lagna, each holding one. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "generous, self-possessed, and a performer of great sacrifices"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_SHARA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "7, 15",
+        "rank": 1,
+        "note": "All the seven in the four houses from the fourth, each holding one. The translation calls it Ishu or Bana. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "cruel, a keeper of prisons and a maker of arrows"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_SHAKTI",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "7, 15",
+        "rank": 1,
+        "note": "All the seven in the four houses from the seventh, each holding one. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            7,
+            8,
+            9,
+            10
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "low, idle, and without comfort or wealth"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_DANDA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "7, 15",
+        "rank": 1,
+        "note": "All the seven in the four houses from the tenth, each holding one. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            10,
+            11,
+            12,
+            1
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "parted from those dear to him and living by the lowest service"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_NAUKA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "8, 16",
+        "rank": 1,
+        "note": "All the seven filling the seven houses from the lagna, as v. 10's sankhya yogas count signs held (C449). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "famous, of fickle happiness, and miserly"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_KUTA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "8, 16",
+        "rank": 1,
+        "note": "All the seven filling the seven houses from the fourth, as v. 10's sankhya yogas count signs held (C449). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "untruthful and a keeper of prisons"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_CHHATRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "8, 16",
+        "rank": 1,
+        "note": "All the seven filling the seven houses from the seventh, as v. 10's sankhya yogas count signs held (C449). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            1
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a giver of comfort to his own people, happy late in life"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_CHAPA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "8, 16",
+        "rank": 1,
+        "note": "All the seven filling the seven houses from the tenth, as v. 10's sankhya yogas count signs held (C449). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            10,
+            11,
+            12,
+            1,
+            2,
+            3,
+            4
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "brave, and happy at the beginning and the end of life"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_ARDHA_CHANDRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "8, 17",
+        "rank": 1,
+        "note": "All the seven filling seven houses from a house that is not a kendra, the verse's other signs: eight windows, as Saravali ch. 21 v. 13 defines the figure too. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                1,
+                2
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                9,
+                10,
+                11,
+                12,
+                1,
+                2,
+                3
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                11,
+                12,
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "requireAllHousesFilled": true
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                12,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "requireAllHousesFilled": true
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fortunate, of pleasing body, and a leader"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_SAMUDRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "9, 17",
+        "rank": 1,
+        "note": "All the seven in the six alternate houses from the second, each holding one. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            2,
+            4,
+            6,
+            8,
+            10,
+            12
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the equal of a king, and enjoying"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_CHAKRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "9, 17",
+        "rank": 1,
+        "note": "All the seven in the six alternate houses from the lagna, each holding one. V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11
+          ],
+          "requireAllHousesFilled": true
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor, his feet lit by the jewels of bowing kings"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_VALLAKI",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "10, 17",
+        "rank": 1,
+        "note": "The seven standing in seven signs; v. 17 calls it Vina. V. 10 sets the sankhya yogas aside for the others stated before, so each carries a cancellation naming the ashraya, dala and akriti yogas, as BPHS ch. 35 v. 17's does; the names are this chapter's, whose dala, Vajra and Yava differ from BPHS's (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 7
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "skilful, and fond of song and dance"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_DAMINI",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "10, 18",
+        "rank": 1,
+        "note": "The seven standing in six signs. V. 10 sets the sankhya yogas aside for the others stated before, so each carries a cancellation naming the ashraya, dala and akriti yogas, as BPHS ch. 35 v. 17's does; the names are this chapter's, whose dala, Vajra and Yava differ from BPHS's (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 6
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "generous, devoted to others' work, and a keeper of cattle"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_PASHA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "10, 18",
+        "rank": 1,
+        "note": "The seven standing in five signs. V. 10 sets the sankhya yogas aside for the others stated before, so each carries a cancellation naming the ashraya, dala and akriti yogas, as BPHS ch. 35 v. 17's does; the names are this chapter's, whose dala, Vajra and Yava differ from BPHS's (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 5
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an earner of wealth, of loose conduct, with servants and kin"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_KEDARA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "10, 18",
+        "rank": 1,
+        "note": "The seven standing in four signs. V. 10 sets the sankhya yogas aside for the others stated before, so each carries a cancellation naming the ashraya, dala and akriti yogas, as BPHS ch. 35 v. 17's does; the names are this chapter's, whose dala, Vajra and Yava differ from BPHS's (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 4
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a tiller of the soil, of use to many"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_SHULA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "10, 18",
+        "rank": 1,
+        "note": "The seven standing in three signs. V. 10 sets the sankhya yogas aside for the others stated before, so each carries a cancellation naming the ashraya, dala and akriti yogas, as BPHS ch. 35 v. 17's does; the names are this chapter's, whose dala, Vajra and Yava differ from BPHS's (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 3
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "brave, wounded, fond of wealth and yet poor"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_YUGA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "10, 19",
+        "rank": 1,
+        "note": "The seven standing in two signs. V. 10 sets the sankhya yogas aside for the others stated before, so each carries a cancellation naming the ashraya, dala and akriti yogas, as BPHS ch. 35 v. 17's does; the names are this chapter's, whose dala, Vajra and Yava differ from BPHS's (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 2
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "without wealth, or a heretic"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_NABHASA_GOLA",
+      "category": "nabhasa",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "12",
+        "verse": "10, 19",
+        "rank": 1,
+        "note": "All the seven in one sign. V. 10 sets the sankhya yogas aside for the others stated before; Gola's cancellation names the dala and akriti yogas and not the ashraya, since all the seven in one sign is always an ashraya figure and naming them would leave no Gola on any sky, where v. 12 lets the yoga mixed with an ashraya give the result (C485). V. 19 makes every Nabhasa yoga give its result in all the dashas. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRAK"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHARA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SHAKTI"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_KUTA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_SAMUDRA"
+        },
+        {
+          "type": "rule",
+          "key": "BJ_NABHASA_CHAKRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "poor, dirty, ignorant, of poor craft, idle and a wanderer"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "BJ_CHANDRA_MOON_IN_KENDRA_FROM_THE_SUN",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "1",
+        "rank": 1,
+        "note": "The Moon counted from the Sun: a kendra, a panaphara or an apoklima, which the verse grades low, middling and best in that order. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of low conduct, wealth, learning, intelligence and skill"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_MOON_IN_PANAPHARA_FROM_THE_SUN",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "1",
+        "rank": 1,
+        "note": "The Moon counted from the Sun: a kendra, a panaphara or an apoklima, which the verse grades low, middling and best in that order. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            2,
+            5,
+            8,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of middling conduct, wealth, learning, intelligence and skill"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_MOON_IN_APOKLIMA_FROM_THE_SUN",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "1",
+        "rank": 1,
+        "note": "The Moon counted from the Sun: a kendra, a panaphara or an apoklima, which the verse grades low, middling and best in that order. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            3,
+            6,
+            9,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of the best conduct, wealth, learning, intelligence and skill"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_MOON_IN_OWN_OR_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_JUPITER_BY_DAY_VENUS_BY_NIGHT",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "1",
+        "rank": 1,
+        "note": "By day the Moon in her own navamsha or a great friend's aspected by Jupiter, by night by Venus, as Jataka Parijata ch. 7 v. 112 restates it; the great friend is the compound relation (C489). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": "MOON",
+            "dignities": [
+              "OWN_SIGN",
+              "MOOLTRIKONA",
+              "GREAT_FRIEND"
+            ]
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "birth-by-day"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "JUPITER",
+                  "target": "MOON"
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "VENUS",
+                  "target": "MOON"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy and happy"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_ADHI",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "2",
+        "rank": 1,
+        "note": "Benefics in the sixth, the seventh and the eighth from the Moon, one in each, as BPHS ch. 37 v. 5 words it; the translator's note gives seven sorts, one house or more, which is not built (C489). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "MOON",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "MOON",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "MOON",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a commander, a minister or a king, rich in comfort and wealth, his enemies struck down, long-lived and free of disease and fear"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_SUNAPHA",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "3, 5",
+        "rank": 1,
+        "note": "A graha in the second from the Moon and none in the twelfth. V. 3 names the three by a graha other than the Sun in the second from the Moon, the twelfth and both, respectively, so each excludes the next, and v. 4 counts thirty-one sorts of the first two, every set of five grahas, so the grahas are Mars to Saturn and no node. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              2
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or his equal, with wealth of his own getting, intelligent, rich and famous"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_ANAPHA",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "3, 5",
+        "rank": 1,
+        "note": "A graha in the twelfth from the Moon and none in the second. V. 3 names the three by a graha other than the Sun in the second from the Moon, the twelfth and both, respectively, so each excludes the next, and v. 4 counts thirty-one sorts of the first two, every set of five grahas, so the grahas are Mars to Saturn and no node. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              12
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a lord, sound of body, of good conduct and wide fame, enjoying, well dressed and content"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_DURUDHARA",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "3, 4, 6",
+        "rank": 1,
+        "note": "Grahas in both the second and the twelfth from the Moon; v. 4 counts a hundred and eighty sorts. V. 3 names the three by a graha other than the Sun in the second from the Moon, the twelfth and both, respectively, so each excludes the next, and v. 4 counts thirty-one sorts of the first two, every set of five grahas, so the grahas are Mars to Saturn and no node. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              2
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-in-house-from",
+            "planet": "SELF",
+            "reference": "MOON",
+            "houses": [
+              12
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "enjoying pleasures, rich in wealth and vehicles, generous, with good servants"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_KEMADRUMA",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "3, 6",
+        "rank": 1,
+        "note": "None of Sunapha, Anapha and Durudhara: no graha, Mars to Saturn, in the second or the twelfth from the Moon. The verse reports that others refuse the yoga when the Moon is in a kendra or joined by a graha, and that some count the three from the kendras or from her navamsha sign, and holds the last not established; neither is built, so the Moon in a kendra from the lagna and a graha with her do not cancel it, as BPHS ch. 37 vv. 11 to 13 and Phaladeepika ch. 6 have them do (C486). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-in-house-from",
+              "planet": "SELF",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "dirty, sorrowful, low, poor, a servant and wicked, even when born to a royal line"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_YOGA_MADE_BY_MARS",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "7",
+        "rank": 1,
+        "note": "Mars making the yoga. The graha making Sunapha, Anapha or Durudhara: in the second or the twelfth from the Moon. The translator's note gives every such graha its result when two or more make the yoga. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "MOON",
+          "houses": [
+            2,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "energetic, brave, rich and rash"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_YOGA_MADE_BY_MERCURY",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "7",
+        "rank": 1,
+        "note": "Mercury making the yoga. The graha making Sunapha, Anapha or Durudhara: in the second or the twelfth from the Moon. The translator's note gives every such graha its result when two or more make the yoga. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "MOON",
+          "houses": [
+            2,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "clever, well spoken and skilled in the arts"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_YOGA_MADE_BY_JUPITER",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "7",
+        "rank": 1,
+        "note": "Jupiter making the yoga. The graha making Sunapha, Anapha or Durudhara: in the second or the twelfth from the Moon. The translator's note gives every such graha its result when two or more make the yoga. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "MOON",
+          "houses": [
+            2,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sharing in wealth, virtue and comfort, and honoured by the king"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_YOGA_MADE_BY_VENUS",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "7",
+        "rank": 1,
+        "note": "Venus making the yoga. The graha making Sunapha, Anapha or Durudhara: in the second or the twelfth from the Moon. The translator's note gives every such graha its result when two or more make the yoga. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "MOON",
+          "houses": [
+            2,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "amorous, very rich, and an enjoyer of pleasures"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_YOGA_MADE_BY_SATURN",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "Saturn making the yoga. The graha making Sunapha, Anapha or Durudhara: in the second or the twelfth from the Moon. The translator's note gives every such graha its result when two or more make the yoga. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "MOON",
+          "houses": [
+            2,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an enjoyer of others' wealth and goods, a doer of many works and the head of a band"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_MOON_HARMFUL_BY_HEMISPHERE",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "By day the Moon in the visible half of the sky, by night in the hidden half: v. 8 makes her harmful in the first, and by its \"otherwise the reverse\" in the second. The visible half is read as the seventh to the twelfth houses, whole signs, and the night as a birth not by day (C487). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "birth-by-day"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "suffering brought on by the Moon"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_MOON_FAVOURABLE_BY_HEMISPHERE",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "8",
+        "rank": 1,
+        "note": "By day the Moon in the hidden half of the sky, by night in the visible half: v. 8 makes her favourable. The visible half is read as the seventh to the twelfth houses, whole signs, and the night as a birth not by day (C487). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "birth-by-day"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "prosperity brought on by the Moon"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_ALL_BENEFICS_IN_UPACHAYA_FROM_THE_LAGNA",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "9",
+        "rank": 1,
+        "note": "The benefics in the upachayas, the third, sixth, tenth and eleventh; v. 9 grades all of them from the lagna highest, all from the Moon next, two middling and fewer little, the two and the one read from either. From the lagna the Moon is not counted among them, as from herself she can stand in no upachaya. V. 9 adds that the yoga's result overrides other evil ones, which is not built (C488). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "atLeast": 3,
+          "except": [
+            "MOON"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "exceedingly wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_ALL_BENEFICS_IN_UPACHAYA_FROM_THE_MOON",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "9",
+        "rank": 1,
+        "note": "The benefics in the upachayas, the third, sixth, tenth and eleventh; v. 9 grades all of them from the lagna highest, all from the Moon next, two middling and fewer little, the two and the one read from either. From the lagna the Moon is not counted among them, as from herself she can stand in no upachaya. V. 9 adds that the yoga's result overrides other evil ones, which is not built (C488). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "atLeast": 3,
+          "from": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_TWO_BENEFICS_IN_UPACHAYA_FROM_THE_LAGNA",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "9",
+        "rank": 1,
+        "note": "The benefics in the upachayas, the third, sixth, tenth and eleventh; v. 9 grades all of them from the lagna highest, all from the Moon next, two middling and fewer little, the two and the one read from either. From the lagna the Moon is not counted among them, as from herself she can stand in no upachaya. V. 9 adds that the yoga's result overrides other evil ones, which is not built (C488). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "atLeast": 2,
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              3,
+              6,
+              10,
+              11
+            ],
+            "atLeast": 3,
+            "except": [
+              "MOON"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of middling wealth"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_TWO_BENEFICS_IN_UPACHAYA_FROM_THE_MOON",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "9",
+        "rank": 1,
+        "note": "The benefics in the upachayas, the third, sixth, tenth and eleventh; v. 9 grades all of them from the lagna highest, all from the Moon next, two middling and fewer little, the two and the one read from either. From the lagna the Moon is not counted among them, as from herself she can stand in no upachaya. V. 9 adds that the yoga's result overrides other evil ones, which is not built (C488). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "atLeast": 2,
+          "from": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              3,
+              6,
+              10,
+              11
+            ],
+            "atLeast": 3,
+            "from": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of middling wealth"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_ONE_BENEFIC_IN_UPACHAYA_FROM_THE_LAGNA",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "9",
+        "rank": 1,
+        "note": "The benefics in the upachayas, the third, sixth, tenth and eleventh; v. 9 grades all of them from the lagna highest, all from the Moon next, two middling and fewer little, the two and the one read from either. From the lagna the Moon is not counted among them, as from herself she can stand in no upachaya. V. 9 adds that the yoga's result overrides other evil ones, which is not built (C488). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              3,
+              6,
+              10,
+              11
+            ],
+            "atLeast": 2,
+            "except": [
+              "MOON"
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of little wealth"
+        }
+      ]
+    },
+    {
+      "key": "BJ_CHANDRA_ONE_BENEFIC_IN_UPACHAYA_FROM_THE_MOON",
+      "category": "chandra",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "13",
+        "verse": "9",
+        "rank": 1,
+        "note": "The benefics in the upachayas, the third, sixth, tenth and eleventh; v. 9 grades all of them from the lagna highest, all from the Moon next, two middling and fewer little, the two and the one read from either. From the lagna the Moon is not counted among them, as from herself she can stand in no upachaya. V. 9 adds that the yoga's result overrides other evil ones, which is not built (C488). Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              3,
+              6,
+              10,
+              11
+            ],
+            "atLeast": 2,
+            "from": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of little wealth"
+        }
+      ]
+    }
+  ]
+}

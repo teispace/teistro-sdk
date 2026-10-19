@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 30 952 items, 332 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 31 970 items, 343 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 4 055 660 bytes of JSON over the 93 charts, 43 609 bytes a
-chart, 52 511 bytes for the widest and 131 bytes an item. The verses'
-own cited words are **not** what weighs it — 368 560 bytes, 9% — so
+golden file: 4 213 419 bytes of JSON over the 93 charts, 45 305 bytes a
+chart, 54 686 bytes for the widest and 131 bytes an item. The verses'
+own cited words are **not** what weighs it — 394 481 bytes, 9% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 30952 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 30952 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 30952 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 30952 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 31970 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 31970 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 31970 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 31970 disagree |
 
-Every one of the 61 904 renderings — 30 952 in each of 2 strict
+Every one of the 63 940 renderings — 31 970 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -72,13 +72,13 @@ about.
 | `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
-| `sdk.reading.effect` | 6675 |
+| `sdk.reading.effect` | 7212 |
 | `sdk.reading.lifeClass` | 296 |
 | `sdk.reading.lifeSpan` | 176 |
-| `sdk.reading.participants` | 7216 |
+| `sdk.reading.participants` | 7696 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
-| `sdk.reading.status` | 420 |
+| `sdk.reading.status` | 421 |
 | `sdk.reading.timing` | 29 |
 | `sdk.reason.ashtakavarga` | 0 |
 | `sdk.reason.bhavaBala` | 0 |
@@ -112,7 +112,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 6675 of the 30 952
+**The verse's own statement is not translated.** 7212 of the 31 970
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -124,7 +124,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 1155 rules this pass composes carry a reading, and they
+rule: 12 of the 1228 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -240,11 +240,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 1125 of 1125 | 0 of 1125 |
-| `hi-Deva-IN` | `base` | 0 of 1125 | 1018 of 1125 |
-| `ne-Deva-NP` | `strict` | 1125 of 1125 | 1047 of 1125 |
-| `sa-Deva` | `base` | 0 of 1125 | 1018 of 1125 |
-| `sa-Latn` | `base` | 0 of 1125 | 984 of 1125 |
+| `en-Latn` | `strict` | 1141 of 1141 | 0 of 1141 |
+| `hi-Deva-IN` | `base` | 0 of 1141 | 1026 of 1141 |
+| `ne-Deva-NP` | `strict` | 1141 of 1141 | 1055 of 1141 |
+| `sa-Deva` | `base` | 0 of 1141 | 1026 of 1141 |
+| `sa-Latn` | `base` | 0 of 1141 | 992 of 1141 |
 
 ## What a rich renderer gets
 
@@ -258,8 +258,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 1125 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 1125 | 42 | `b` |
+| `en-Latn` | 21 of 1141 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 1141 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -281,7 +281,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 2250 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 2282 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -299,7 +299,7 @@ its limbs, which also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 74 of 75 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 2250
+own message, with no fallback and nothing to warn about: 2282
 renderings. What this chart cannot reach is named below, with the reason
 it needs another. A key missing from both fails, and so does a key
 excused that this chart emits — which is not a hypothetical: **three
@@ -736,6 +736,13 @@ PARIJATA_DARIDRA_MOON_DEBILITATED_OR_HOSTILE_IN_A_GOOD_HOUSE_JUPITER_HIDDEN_FROM
 PARIJATA_DARIDRA_MOON_DEBILITATED_OR_HOSTILE_IN_A_GOOD_HOUSE_JUPITER_HIDDEN_FROM_HER: Moon and Jupiter take part
 PARIJATA_PAPA_KARTARI: sinful, begging and dirty
 PARIJATA_PAPA_KARTARI: Mars and Sun take part
+BJ_NABHASA_PASHA: an earner of wealth, of loose conduct, with servants and kin
+BJ_NABHASA_PASHA: Sun, Moon, Mars, Mercury, Jupiter, Venus and Saturn take part
+BJ_CHANDRA_MOON_IN_PANAPHARA_FROM_THE_SUN: of middling conduct, wealth, learning, intelligence and skill
+BJ_CHANDRA_MOON_IN_PANAPHARA_FROM_THE_SUN: Moon takes part
+BJ_CHANDRA_KEMADRUMA: dirty, sorrowful, low, poor, a servant and wicked, even when born to a royal line
+BJ_CHANDRA_MOON_FAVOURABLE_BY_HEMISPHERE: prosperity brought on by the Moon
+BJ_CHANDRA_MOON_FAVOURABLE_BY_HEMISPHERE: Moon takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: Venus takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: cancelled
 ARISHTA_MALEFICS_FROM_THE_SUN: Moon and Ketu take part
@@ -1068,6 +1075,13 @@ PARIJATA_DARIDRA_MOON_DEBILITATED_OR_HOSTILE_IN_A_GOOD_HOUSE_JUPITER_HIDDEN_FROM
 PARIJATA_DARIDRA_MOON_DEBILITATED_OR_HOSTILE_IN_A_GOOD_HOUSE_JUPITER_HIDDEN_FROM_HER: चन्द्र र गुरु संलग्न छन्
 PARIJATA_PAPA_KARTARI: sinful, begging and dirty
 PARIJATA_PAPA_KARTARI: मंगल र सूर्य संलग्न छन्
+BJ_NABHASA_PASHA: an earner of wealth, of loose conduct, with servants and kin
+BJ_NABHASA_PASHA: सूर्य, चन्द्र, मंगल, बुध, गुरु, शुक्र र शनि संलग्न छन्
+BJ_CHANDRA_MOON_IN_PANAPHARA_FROM_THE_SUN: of middling conduct, wealth, learning, intelligence and skill
+BJ_CHANDRA_MOON_IN_PANAPHARA_FROM_THE_SUN: चन्द्र संलग्न छ
+BJ_CHANDRA_KEMADRUMA: dirty, sorrowful, low, poor, a servant and wicked, even when born to a royal line
+BJ_CHANDRA_MOON_FAVOURABLE_BY_HEMISPHERE: prosperity brought on by the Moon
+BJ_CHANDRA_MOON_FAVOURABLE_BY_HEMISPHERE: चन्द्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: शुक्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: रद्द
 ARISHTA_MALEFICS_FROM_THE_SUN: चन्द्र र केतु संलग्न छन्

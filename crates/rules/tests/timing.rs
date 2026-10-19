@@ -90,8 +90,8 @@ fn a_result_is_delivered_in_the_periods_of_what_formed_it() {
         }
         charts += 1;
     }
-    // Three or four wealth-giving grahas a chart on average, and 110 Nabhasa
-    // results, every chart answering one sankhya yoga at least, each delivered
-    // in every period.
-    assert_eq!((charts, givers, throughout), (93, 327, 110));
+    // Three or four wealth-giving grahas a chart on average, and 204 Nabhasa
+    // results, every chart answering one sankhya yoga at least by BPHS and one
+    // by Brihat Jataka, each delivered in every period.
+    assert_eq!((charts, givers, throughout), (93, 327, 204));
 }

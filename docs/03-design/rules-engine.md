@@ -790,6 +790,29 @@ and v. 32's weak malefics are the Sun, Mars and Saturn, whom no instant searched
 121 to 124, Sunapha to Ubhayachari graha by graha, ship from Saravali chs.
 13 and 14 and BPHS ch. 38 and are not repeated.
 
+**Brihat Jataka chs. 12 and 13, built (2026-10-19).** The Nabhasa yogas and
+the Moon's yogas, read in Iyer's 1885 translation with the Sanskrit checked,
+ship as `classical-bj-nabhasa-chandra.json`, 54 rules in the nabhasa set
+under `BJ_NABHASA_*` and `BJ_CHANDRA_*`. Twenty-nine state a yoga as
+another pack does and are held to it as twins: eighteen akriti figures to
+BPHS ch. 35, Sunapha, Anapha and Durudhara to Phaladeepika, v. 1's navamsha
+yoga to Jataka Parijata, and the Moon from the Sun, Adhi and the upachaya
+counts to BPHS ch. 37. The chapter's own readings: Srak and Sarpa exclude
+each other (C484); Vajra and Yava put all the seven in the kendras and hold
+on no sky, as v. 6 says (C483); the sankhya yogas stand down to the rest
+and the ashraya to all but the sankhya bar Gola (C485); and Kemadruma is
+the three's absence with no cancellation (C486).
+
+**Brihat Jataka ch. 15's pravrajya yogas, built (2026-10-19).** The chapter on
+renunciation, read in Iyer's 1885 translation against the Sanskrit, ships as
+`classical-bj-pravrajya.json`, 19 rules in the nabhasa set under `BJ_PRAVRAJYA_*`.
+V. 1 asks what BPHS ch. 79 vv. 2 and 3 ask, and its seven rules answer what
+BPHS's do, but pairs the orders with the grahas its own way; v. 2's combust
+leader is a reading of its own where BPHS only cancels; v. 3 drops BPHS's
+"Saturn alone" and asks the drekkana and the navamsha together; and v. 4's
+"yoga of kings" names ch. 11's 30 raja yogas by key. The planetary war of
+vv. 1 and 2 is not built (C490). Ch. 14's pairs ship already as `DWIGRAHA_*`.
+
 **Jataka Parijata ch. 7's named yogas, vv. 128 to 163, built (2026-10-19).**
 `classical-parijata-named.json`, 31 rules in the nabhasa set under
 `PARIJATA_*`, read off the page images of Sastri's 1932 translation with the
