@@ -32,6 +32,10 @@ const ADAPTER: &str = "adapters/ephemeris-teimeris/dart";
 /// platform names, floors, cache and refusals, against the public
 /// `package:teistro/prebuilt.dart` it reads its table and its check from.
 const FLUTTER: &str = "bindings/flutter";
+/// The Teimeris adapter's Flutter package: its hook is the SDK's bundler
+/// with the adapter's release, and its `teimeris()` names the library the
+/// loader opens inside an app.
+const FLUTTER_ADAPTER: &str = "adapters/ephemeris-teimeris/flutter";
 /// The file whose whole purpose is to be wrong: every line marked
 /// `// expect:` must be reported, which is how the Dart half of Phase 1's
 /// "a swapped latitude and longitude does not compile" is proved.
@@ -153,6 +157,17 @@ fn flutter_hook(root: &Path) -> Result<(), ()> {
     )
 }
 
+/// The adapter's Flutter package: its release and what each platform's
+/// loader is handed.
+fn flutter_adapter(root: &Path) -> Result<(), ()> {
+    companion(
+        root,
+        FLUTTER_ADAPTER,
+        "the adapter's hook composes with the SDK's bundler",
+        Some("the adapter opens embedded, by the name each loader finds"),
+    )
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("dart", "--version") {
         crate::skip::skip("no `dart` on this machine; the Dart binding's tests need it");
@@ -193,6 +208,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         })
         .and_then(|()| adapter(root))
         .and_then(|()| flutter_hook(root))
+        .and_then(|()| flutter_adapter(root))
         .and_then(|()| wrong_usages(&package))
         .and_then(|()| Binding::Dart.run(root, &Runtime::of(root)).map(drop))
         .and_then(|()| {
