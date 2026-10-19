@@ -250,10 +250,7 @@ const BPHS_LATE: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-
 /// their own, friends' and enemies' signs, the exalted graha with a friend,
 /// the horas, the Moon's drekkana, the rising navamsha and the trimshamshas,
 /// the friendly counts as Jataka Parijata ch. 8 writes them.
-const BJ_VARGAS: &str = include_str!(concat!(
-    env!("OUT_DIR"),
-    "/rules/classical-bj-vargas.json"
-));
+const BJ_VARGAS: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bj-vargas.json"));
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -562,7 +559,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 4745);
+        assert_eq!(rules.len(), 4818);
         for rule in &rules {
             let rank = rule
                 .source

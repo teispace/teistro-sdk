@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 56 078 items, 602 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 57 278 items, 615 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 7 879 883 bytes of JSON over the 93 charts, 84 729 bytes a
-chart, 100 369 bytes for the widest and 140 bytes an item. The verses'
-own cited words are **not** what weighs it — 838 195 bytes, 10% — so
+golden file: 8 047 692 bytes of JSON over the 93 charts, 86 534 bytes a
+chart, 101 478 bytes for the widest and 140 bytes an item. The verses'
+own cited words are **not** what weighs it — 858 991 bytes, 10% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 56078 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 56078 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 56078 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 56078 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 57278 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 57278 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 57278 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 57278 disagree |
 
-Every one of the 112 156 renderings — 56 078 in each of 2 strict
+Every one of the 114 556 renderings — 57 278 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -72,10 +72,10 @@ about.
 | `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
-| `sdk.reading.effect` | 20 335 |
+| `sdk.reading.effect` | 20 949 |
 | `sdk.reading.lifeClass` | 530 |
 | `sdk.reading.lifeSpan` | 182 |
-| `sdk.reading.participants` | 18 356 |
+| `sdk.reading.participants` | 18 942 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 506 |
@@ -112,7 +112,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 20 335 of the 56 078
+**The verse's own statement is not translated.** 20 949 of the 57 278
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -124,7 +124,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 3057 rules this pass composes carry a reading, and they
+rule: 12 of the 3130 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -240,11 +240,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 1464 of 1464 | 0 of 1464 |
-| `hi-Deva-IN` | `base` | 0 of 1464 | 1166 of 1464 |
-| `ne-Deva-NP` | `strict` | 1464 of 1464 | 1200 of 1464 |
-| `sa-Deva` | `base` | 0 of 1464 | 1166 of 1464 |
-| `sa-Latn` | `base` | 0 of 1464 | 1130 of 1464 |
+| `en-Latn` | `strict` | 1483 of 1483 | 0 of 1483 |
+| `hi-Deva-IN` | `base` | 0 of 1483 | 1175 of 1483 |
+| `ne-Deva-NP` | `strict` | 1483 of 1483 | 1209 of 1483 |
+| `sa-Deva` | `base` | 0 of 1483 | 1175 of 1483 |
+| `sa-Latn` | `base` | 0 of 1483 | 1139 of 1483 |
 
 ## What a rich renderer gets
 
@@ -258,8 +258,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 1464 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 1464 | 42 | `b` |
+| `en-Latn` | 21 of 1483 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 1483 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -281,7 +281,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 2928 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 2966 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -299,7 +299,7 @@ its limbs, which also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 74 of 75 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 2928
+own message, with no fallback and nothing to warn about: 2966
 renderings. What this chart cannot reach is named below, with the reason
 it needs another. A key missing from both fails, and so does a key
 excused that this chart emits — which is not a hypothetical: **three
@@ -967,6 +967,22 @@ BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_THE_SUN: a husband very harsh and over-wor
 BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_THE_SUN: Ascendant takes part
 BPHS_STRI_LAGNA_OR_MOON_HEMMED_BY_MALEFICS: the ruin of her father's line and her husband's
 BPHS_STRI_LAGNA_OR_MOON_HEMMED_BY_MALEFICS: Sun, Mercury and Mars take part
+BJ_VARGA_ONE_IN_OWN_HOUSE: of his family's common standing
+BJ_VARGA_ONE_IN_OWN_HOUSE: Saturn takes part
+BJ_VARGA_THREE_IN_FRIENDS_SIGNS: upheld by his kinsmen
+BJ_VARGA_THREE_IN_FRIENDS_SIGNS: Mars, Mercury and Venus take part
+BJ_VARGA_ONE_IN_AN_ENEMYS_SIGN_OR_DEBILITATED: poor
+BJ_VARGA_ONE_IN_AN_ENEMYS_SIGN_OR_DEBILITATED: Moon takes part
+BJ_VARGA_MARS_IN_HIS_OWN_TRIMSHAMSHA: married, strong, adorned, generous, bright and rash in his work
+BJ_VARGA_MARS_IN_HIS_OWN_TRIMSHAMSHA: Mars takes part
+BJ_VARGA_JUPITER_IN_HIS_OWN_TRIMSHAMSHA: rich, famous, happy, wise, bright, honoured by all, healthy, active and living in luxury
+BJ_VARGA_JUPITER_IN_HIS_OWN_TRIMSHAMSHA: Jupiter takes part
+BJ_VARGA_MERCURY_IN_HIS_OWN_TRIMSHAMSHA: intelligent, skilled in the fine arts, a fop, an author, clear of speech, skilled in crafts, keeping the sages' rules of life, bold in enterprise and much honoured
+BJ_VARGA_MERCURY_IN_HIS_OWN_TRIMSHAMSHA: Mercury takes part
+BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_MARS: bold in battle
+BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_MARS: Sun takes part
+BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_MERCURY: learned
+BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_MERCURY: Moon takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: Venus takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: cancelled
 ARISHTA_MALEFICS_FROM_THE_SUN: Moon and Ketu take part
@@ -1530,6 +1546,22 @@ BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_THE_SUN: a husband very harsh and over-wor
 BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_THE_SUN: लग्न संलग्न छ
 BPHS_STRI_LAGNA_OR_MOON_HEMMED_BY_MALEFICS: the ruin of her father's line and her husband's
 BPHS_STRI_LAGNA_OR_MOON_HEMMED_BY_MALEFICS: सूर्य, बुध र मंगल संलग्न छन्
+BJ_VARGA_ONE_IN_OWN_HOUSE: of his family's common standing
+BJ_VARGA_ONE_IN_OWN_HOUSE: शनि संलग्न छ
+BJ_VARGA_THREE_IN_FRIENDS_SIGNS: upheld by his kinsmen
+BJ_VARGA_THREE_IN_FRIENDS_SIGNS: मंगल, बुध र शुक्र संलग्न छन्
+BJ_VARGA_ONE_IN_AN_ENEMYS_SIGN_OR_DEBILITATED: poor
+BJ_VARGA_ONE_IN_AN_ENEMYS_SIGN_OR_DEBILITATED: चन्द्र संलग्न छ
+BJ_VARGA_MARS_IN_HIS_OWN_TRIMSHAMSHA: married, strong, adorned, generous, bright and rash in his work
+BJ_VARGA_MARS_IN_HIS_OWN_TRIMSHAMSHA: मंगल संलग्न छ
+BJ_VARGA_JUPITER_IN_HIS_OWN_TRIMSHAMSHA: rich, famous, happy, wise, bright, honoured by all, healthy, active and living in luxury
+BJ_VARGA_JUPITER_IN_HIS_OWN_TRIMSHAMSHA: गुरु संलग्न छ
+BJ_VARGA_MERCURY_IN_HIS_OWN_TRIMSHAMSHA: intelligent, skilled in the fine arts, a fop, an author, clear of speech, skilled in crafts, keeping the sages' rules of life, bold in enterprise and much honoured
+BJ_VARGA_MERCURY_IN_HIS_OWN_TRIMSHAMSHA: बुध संलग्न छ
+BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_MARS: bold in battle
+BJ_VARGA_SUN_IN_A_TRIMSHAMSHA_OF_MARS: सूर्य संलग्न छ
+BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_MERCURY: learned
+BJ_VARGA_MOON_IN_A_TRIMSHAMSHA_OF_MERCURY: चन्द्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: शुक्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: रद्द
 ARISHTA_MALEFICS_FROM_THE_SUN: चन्द्र र केतु संलग्न छन्

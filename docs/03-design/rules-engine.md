@@ -1242,6 +1242,21 @@ Ch. 20's rising-sign readings are separate rules beside the house's own
 evaluator, without which every navamsa reading would have answered no
 chart at all.
 
+**Brihat Jataka ch. 21, built (2026-10-20).** `classical-bj-vargas.json`,
+73 rules in the nabhasa set, `BJ_VARGA_*`:
+- v. 1's own and friendly counts, and v. 2's exalted graha with a friend
+  and its hostile counts, each count exact, since the verse raises the
+  effect a step a graha (C595, C596);
+- v. 3's two Aquarius readings, with their dispute;
+- vv. 4 and 5's horas (C597);
+- v. 6's Moon by drekkana, the four kinds by the verse's own note (C598);
+- v. 7's rising navamsha, plain and vargottama, and vv. 8 to 10's
+  trimshamshas by ch. 1 v. 7's degrees (C599).
+
+The friendly counts are Jataka Parijata ch. 8 v. 109's twins. Jataka
+Parijata's own-house counts are not: they read the moolatrikona as well,
+and so count the Moon in Taurus. Seven in their own houses is unseen.
+
 **Gathering, rather than deciding.** A rule answers one figure; a consumer
 asking what the fourth house says wants every figure that touches it at once.
 `Evaluator::house_reading` gives that: the sign, the grahas standing there,

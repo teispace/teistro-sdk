@@ -12,6 +12,25 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Brihat Jataka ch. 21, the grahas in the vargas** (`rules-engine.md`,
+C595 to C599). **Numbers:** none moved; 73 rules are added
+(`classical-bj-vargas.json`, `BJ_VARGA_*`), 4,818 shipped. Read from
+Iyer's 1885 translation:
+- one to seven grahas in their own houses, in friends' signs, and in
+  enemies' signs or debilitated, each count exact;
+- a graha exalted with a friend aspecting it or beside it;
+- Aquarius rising, and its dwadashamsha rising, as Satya and the Yavanas
+  read them;
+- the malefics and benefics in their horas;
+- the Moon in her own or a friend's drekkana, and in a serpent, armed,
+  quadruped or bird drekkana;
+- each sign's navamsha rising, plain and vargottama;
+- the trimshamshas.
+
+The friendly counts are Jataka Parijata ch. 8 v. 109's, and a test holds
+the two to the same charts. Seven in their own houses holds on no day
+searched from 1001 BCE to 2398.
+
 **Brihat Jataka chs. 16 to 20 join the readings** (`rules-engine.md`,
 C585 to C594). **Numbers:** none moved; 349 rules are added, 4,745
 shipped. Read from Iyer's 1885 translation:

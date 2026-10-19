@@ -2057,7 +2057,7 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 83] = [
+const UNSEEN: [(&str, &str); 84] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -2105,6 +2105,10 @@ const UNSEEN: [(&str, &str); 83] = [
     (
         "BJ_RAJA_VIRGO_MERCURY_RISING_PISCES_FIGURE",
         "Venus in Gemini three signs from Mercury in Virgo needs both near their greatest elongations on either side of the Sun, and no sky from 1000 BC to AD 2400 has it with the other five so.",
+    ),
+    (
+        "BJ_VARGA_SEVEN_IN_OWN_HOUSES",
+        "It asks the Sun in Leo, Mercury in Virgo and Venus in Libra together, which happens on 868 days from 1800 to 2398; Jupiter and Saturn are at home on 41 of those and Mars on none, and from 1001 BCE to 1800 no day holds all seven.",
     ),
     (
         "BPHS_BRAHMIN_CURSE_1",
