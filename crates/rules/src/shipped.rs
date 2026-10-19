@@ -179,6 +179,10 @@ const PHALADEEPIKA_LATE: &str = include_str!("../rules/classical-phaladeepika-la
 /// lying-in chamber and the marks of the body, most as Brihat Jataka ch. 5
 /// writes them.
 const PARIJATA_LATE: &str = include_str!("../rules/classical-parijata-late.json");
+/// BPHS chs. 24, 30, 33 and 80: the lords of the houses in the twelve
+/// houses, the upapada, the Karakamsha and the woman's chart, some as Brihat
+/// Jataka ch. 24, Phaladeepika ch. 10 and BPHS ch. 44 write them.
+const BPHS_LATE: &str = include_str!("../rules/classical-bphs-late.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -246,6 +250,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(SARAVALI_LATE));
     rules.append(&mut read(PHALADEEPIKA_LATE));
     rules.append(&mut read(PARIJATA_LATE));
+    rules.append(&mut read(BPHS_LATE));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
