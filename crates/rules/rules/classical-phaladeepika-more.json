@@ -1,0 +1,5002 @@
+{
+  "rules": [
+    {
+      "key": "PHALADEEPIKA_KALATRA_AFFLICTED_SEVENTH_LORD_AND_SEVENTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "15",
+        "rank": 1,
+        "note": "The lord of the seventh in an enemy's sign or debilitated, combust or aspected by a malefic, and the seventh held or aspected by a malefic. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 7
+              },
+              "dignities": [
+                "DEBILITATED",
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-combust",
+              "planet": {
+                "lordOf": 7
+              }
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": {
+                "lordOf": 7
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": 7
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of the wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_BENEFICS_SECOND_SEVENTH_ELEVENTH_FROM_THE_SEVENTH_LORD",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "10",
+        "rank": 1,
+        "note": "A benefic in each of the second, the seventh and the eleventh from the lord of the seventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1,
+          "from": {
+            "lordOf": 7
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1,
+          "from": {
+            "lordOf": 7
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            11
+          ],
+          "atLeast": 1,
+          "from": {
+            "lordOf": 7
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a happy wife with children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_BENEFIC_SEVENTH_NOT_A_DUSTHANA_LORD",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "6",
+        "rank": 1,
+        "note": "A benefic in the seventh that rules none of the sixth, the eighth and the twelfth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  7
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 6
+                  }
+                }
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 8
+                  }
+                }
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 12
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happiness from the wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_EUNUCH_SEVENTH_TWO_IN_THE_ELEVENTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "5",
+        "rank": 1,
+        "note": "A eunuch graha in the seventh, which ch. 2 makes Mercury, Saturn or Ketu, and two grahas in the eleventh, of the nine. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MERCURY",
+              "houses": [
+                7
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                7
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "KETU",
+              "houses": [
+                7
+              ]
+            }
+          ]
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "planet-in-house",
+            "planet": "SELF",
+            "houses": [
+              11
+            ]
+          },
+          "atLeast": 2,
+          "atMost": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "two wives"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_EVEN_SEVENTH_STRONG_BRIGHT_LORDS",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "9",
+        "rank": 1,
+        "note": "The seventh an even sign, its lord and Venus in even signs, and the lords of the fifth and the seventh strong and not combust. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 7,
+          "signs": [
+            "TAURUS",
+            "CANCER",
+            "VIRGO",
+            "SCORPIO",
+            "CAPRICORN",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "lordOf": 7
+          },
+          "signs": [
+            "TAURUS",
+            "CANCER",
+            "VIRGO",
+            "SCORPIO",
+            "CAPRICORN",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "TAURUS",
+            "CANCER",
+            "VIRGO",
+            "SCORPIO",
+            "CAPRICORN",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 5
+          }
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 7
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": {
+              "lordOf": 5
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": {
+              "lordOf": 7
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a wife and children, certainly"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_FIFTH_BEARS_FRUIT",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "1",
+        "rank": 1,
+        "note": "The fifth held or aspected by the ninth lord, by a benefic or by its own lord, from the lagna or from the Moon. The verse's 'shubhadhipa' is read, with Sastri, as the lord of the ninth, benefics and the house's own lord; its 'otherwise not' is this rule's absence, which Brihat Jataka ch. 23 v. 1 ships for sons as BJ_ANISHTA_NO_SONS, and is not built again. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 9
+                      },
+                      "as": 5
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 9
+                      },
+                      "target": 5
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        5
+                      ],
+                      "atLeast": 1
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "any-benefic",
+                      "target": 5
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 5
+                      },
+                      "as": 5
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 5
+                      },
+                      "target": 5
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 9
+                      },
+                      "as": {
+                        "from": "MOON",
+                        "house": 5
+                      }
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 9
+                      },
+                      "target": {
+                        "from": "MOON",
+                        "house": 5
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        5
+                      ],
+                      "atLeast": 1,
+                      "from": "MOON"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "any-benefic",
+                      "target": {
+                        "from": "MOON",
+                        "house": 5
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": {
+                          "from": "MOON",
+                          "house": 5
+                        }
+                      },
+                      "as": {
+                        "from": "MOON",
+                        "house": 5
+                      }
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": {
+                          "from": "MOON",
+                          "house": 5
+                        }
+                      },
+                      "target": {
+                        "from": "MOON",
+                        "house": 5
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the fifth bears fruit: children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_FIFTH_OR_EIGHTH_LORD_SEVENTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "2",
+        "rank": 1,
+        "note": "The lord of the fifth or of the eighth in the seventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 5,
+              "houseOccupied": 7
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 8,
+              "houseOccupied": 7
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of the wife, certainly"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_HOSTILE_MALEFIC_SEVENTH_EIGHTH_OR_SECOND",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "8",
+        "rank": 1,
+        "note": "A malefic debilitated or in an enemy's sign in the seventh, the eighth or the second; the seven are asked, a node having no enemy's sign. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  2,
+                  7,
+                  8
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED",
+                  "ENEMY",
+                  "GREAT_ENEMY"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the death of the wife, or in a woman's chart of the husband"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_JUPITER_SEVENTH_DEBILITATED",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "3",
+        "rank": 1,
+        "note": "Jupiter debilitated in the seventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "JUPITER",
+          "dignities": [
+            "DEBILITATED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the wife dies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_LORDS_OF_SECOND_SEVENTH_TWELFTH_ASPECTED_BY_JUPITER_IN_KENDRAS_OR_TRIKONAS",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "10",
+        "rank": 1,
+        "note": "The lords of the second, the seventh and the twelfth each aspected by Jupiter and in a kendra or a trikona; where Jupiter rules one of them, which he cannot aspect, it never holds (C510). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": {
+            "lordOf": 2
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 2
+          },
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": {
+            "lordOf": 7
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 7
+          },
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": {
+            "lordOf": 12
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 12
+          },
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a happy wife with children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_MALEFICS_TWELFTH_FOURTH_EIGHTH_FROM_VENUS",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "1",
+        "rank": 1,
+        "note": "A malefic in each of the twelfth, the fourth and the eighth from Venus. A plural over a list of houses is read as a malefic in every one of them, as Brihat Jataka ch. 23 v. 4 is read. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1,
+          "from": "VENUS"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1,
+          "from": "VENUS"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1,
+          "from": "VENUS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of the wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_MALEFIC_SEVENTH_LORD_AT_HOME",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "6",
+        "rank": 1,
+        "note": "A malefic in the seventh in its own sign, which is the seventh's lord, a malefic, in the seventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": 7
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 7,
+          "houseOccupied": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "good for the wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_MERCURY_SEVENTH_IN_TAURUS",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "3",
+        "rank": 1,
+        "note": "Mercury in the seventh in Taurus. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "TAURUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the wife dies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_MOON_AND_SATURN_SEVENTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon and Saturn together in the seventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a woman marries again; a man is without wife or son"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SATURN_AND_MARS_SEVENTH_IN_CANCER",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "3",
+        "rank": 1,
+        "note": "Saturn and Mars together in the seventh in Cancer. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 7,
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a chaste, fortunate and beautiful wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SATURN_OR_MARS_SEVENTH_IN_PISCES",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "3",
+        "rank": 1,
+        "note": "Saturn or Mars in the seventh in Pisces. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 7,
+          "signs": [
+            "PISCES"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                7
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                7
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the wife dies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SECOND_AND_SEVENTH_AFFLICTED",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "7",
+        "rank": 1,
+        "note": "The second and the seventh each held or aspected by a malefic; the verse adds that a malefic's aspect is the worse, which is a degree and is not built. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": 2
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": 7
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of the wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SECOND_AND_SEVENTH_BLESSED",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "7",
+        "rank": 1,
+        "note": "The second and the seventh each held or aspected by a benefic. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                2
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-benefic",
+              "target": 2
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-benefic",
+              "target": 7
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "husband and wife fortunate and happy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SEVENTH_AND_EIGHTH_AFFLICTED",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "7",
+        "rank": 1,
+        "note": "The seventh and the eighth each held or aspected by a malefic, which the verse reads in a woman's chart. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": 7
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                8
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "in a woman's chart, the loss of the husband"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SEVENTH_AND_EIGHTH_BLESSED",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "7",
+        "rank": 1,
+        "note": "The seventh and the eighth each held or aspected by a benefic, the woman's two houses of the verse. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-benefic",
+              "target": 7
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                8
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-benefic",
+              "target": 8
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "in a woman's chart, husband and wife fortunate and happy"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SEVENTH_BEARS_FRUIT",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "1",
+        "rank": 1,
+        "note": "The seventh held or aspected by the ninth lord, by a benefic or by its own lord, from the lagna or from the Moon. The verse's 'shubhadhipa' is read, with Sastri, as the lord of the ninth, benefics and the house's own lord; its 'otherwise not' is this rule's absence, which Brihat Jataka ch. 23 v. 1 ships for sons as BJ_ANISHTA_NO_SONS, and is not built again. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 9
+                      },
+                      "as": 7
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 9
+                      },
+                      "target": 7
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        7
+                      ],
+                      "atLeast": 1
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "any-benefic",
+                      "target": 7
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 7
+                      },
+                      "as": 7
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 7
+                      },
+                      "target": 7
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 9
+                      },
+                      "as": {
+                        "from": "MOON",
+                        "house": 7
+                      }
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 9
+                      },
+                      "target": {
+                        "from": "MOON",
+                        "house": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "count-in-houses",
+                      "planets": "any-benefic",
+                      "houses": [
+                        7
+                      ],
+                      "atLeast": 1,
+                      "from": "MOON"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "any-benefic",
+                      "target": {
+                        "from": "MOON",
+                        "house": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": {
+                          "from": "MOON",
+                          "house": 7
+                        }
+                      },
+                      "as": {
+                        "from": "MOON",
+                        "house": 7
+                      }
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": {
+                          "from": "MOON",
+                          "house": 7
+                        }
+                      },
+                      "target": {
+                        "from": "MOON",
+                        "house": 7
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the seventh bears fruit: a wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SEVENTH_LORD_AND_VENUS_IN_DUAL_SIGNS_OR_NAVAMSHAS",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "5",
+        "rank": 1,
+        "note": "The lord of the seventh and Venus, each in a dual sign or a dual navamsha. The verse's count of wives from the grahas joining the two is a number, not a yoga, and is not built. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "lordOf": 7
+              },
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "SAGITTARIUS",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": {
+                  "lordOf": 7
+                }
+              },
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "SAGITTARIUS",
+                "PISCES"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": "VENUS",
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "SAGITTARIUS",
+                "PISCES"
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "VENUS"
+              },
+              "signs": [
+                "GEMINI",
+                "VIRGO",
+                "SAGITTARIUS",
+                "PISCES"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "two wives"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SEVENTH_LORD_FIFTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "2",
+        "rank": 1,
+        "note": "The lord of the seventh in the fifth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 7,
+          "houseOccupied": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of the wife, or no son"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SEVENTH_OR_ITS_LORD_AFFLICTED",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "4",
+        "rank": 1,
+        "note": "The seventh or its lord joined or aspected by a malefic or between malefics, or the lord debilitated, in an enemy's sign or combust. Each is enough, as Sastri's 'or' reads the verse; the enemy's sign is the compound relation, as ch. 7 reads a hostile sign. V. 15 asks the lord's and the house's affliction together and ships apart. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-malefic",
+                  "target": 7
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    6
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    8
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1,
+              "from": {
+                "lordOf": 7
+              },
+              "except": [
+                {
+                  "lordOf": 7
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": {
+                "lordOf": 7
+              }
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    2
+                  ],
+                  "atLeast": 1,
+                  "from": {
+                    "lordOf": 7
+                  }
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    12
+                  ],
+                  "atLeast": 1,
+                  "from": {
+                    "lordOf": 7
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 7
+              },
+              "dignities": [
+                "DEBILITATED",
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-combust",
+              "planet": {
+                "lordOf": 7
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of the wife, certainly"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_STRONG_BENEFIC_SEVENTH_LORD",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the seventh a benefic, and strong. The verse's count of women from the grahas in the seventh is a number and is not built. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": 7
+          },
+          "class": "benefic"
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 7
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a good-natured wife and good sons"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_SUN_AND_RAHU_SEVENTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "2",
+        "rank": 1,
+        "note": "The Sun and Rahu in the seventh. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "loss of wealth through women"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_VENUS_AND_MOON_SEVENTH_FROM_MARS_AND_SATURN",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "5",
+        "rank": 1,
+        "note": "Venus and the Moon each in the seventh from Mars and from Saturn: the two of them opposite the other two (C510). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "MARS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "MARS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "SATURN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SATURN",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no wife, or no son"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_VENUS_HEMMED_BY_MALEFICS",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "1",
+        "rank": 1,
+        "note": "Venus between malefics: a malefic in the second and in the twelfth from her. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "atLeast": 1,
+              "from": "VENUS"
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "atLeast": 1,
+              "from": "VENUS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of the wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_VENUS_IN_A_VARGA_OF_MARS_OR_SATURN_OR_ASPECTED_BY_THEM",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "4",
+        "rank": 1,
+        "note": "Venus in a sign or a navamsha of Mars or Saturn, or aspected by Mars or Saturn. The verse's varga is not named; the sign and the navamsha are read (C510). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": "VENUS",
+              "signs": [
+                "ARIES",
+                "SCORPIO",
+                "CAPRICORN",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "VENUS"
+              },
+              "signs": [
+                "ARIES",
+                "SCORPIO",
+                "CAPRICORN",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": "VENUS"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "VENUS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "given to other men's wives"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_VENUS_JOINED_OR_ASPECTED_BY_A_MALEFIC",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "1",
+        "rank": 1,
+        "note": "Venus joined by a malefic in her sign, or aspected by one. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1,
+              "from": "VENUS"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": "VENUS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of the wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_VENUS_SEVENTH_IN_SCORPIO",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "3",
+        "rank": 1,
+        "note": "Venus in the seventh in Scorpio. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "SCORPIO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the wife dies"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_VENUS_WITH_A_MALEFIC_SEVENTH_FIFTH_OR_NINTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "4",
+        "rank": 1,
+        "note": "Venus joined by a malefic in the seventh, the fifth or the ninth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            5,
+            7,
+            9
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": "VENUS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no wife, or a crippled one"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_KALATRA_WANING_MOON_FIFTH_MALEFICS_TWELFTH_SEVENTH_FIRST",
+      "category": "kalatra",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "10",
+        "verse": "2",
+        "rank": 1,
+        "note": "The waning Moon in the fifth and a malefic in each of the twelfth, the seventh and the lagna, the Moon not counted among them; waning is read as the dark half. Brihat Jataka ch. 23 v. 4 states the figure and its outcome alike, and the two are one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "neither wife nor children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_FOUR_IN_ONE_SIGN_JUPITER_STRONGEST",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "2, 5",
+        "rank": 1,
+        "note": "Four or more grahas in one sign, Jupiter the strongest of them, whose order v. 5 gives. The verse asks strength of the strongest alone, where Brihat Jataka ch. 15 v. 1 and BPHS ch. 79 vv. 2 and 3 ask it of all four, so the three are not one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "JUPITER",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "JUPITER"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "JUPITER"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an ascetic versed in the Vedanta, eminent"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_FOUR_IN_ONE_SIGN_MARS_STRONGEST",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "2, 5",
+        "rank": 1,
+        "note": "Four or more grahas in one sign, Mars the strongest of them, whose order v. 5 gives. The verse asks strength of the strongest alone, where Brihat Jataka ch. 15 v. 1 and BPHS ch. 79 vv. 2 and 3 ask it of all four, so the three are not one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "MARS",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MARS"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "MARS"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Buddhist ascetic, skilled in base spells"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_FOUR_IN_ONE_SIGN_MERCURY_STRONGEST",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "2, 5",
+        "rank": 1,
+        "note": "Four or more grahas in one sign, Mercury the strongest of them, whose order v. 5 gives. The verse asks strength of the strongest alone, where Brihat Jataka ch. 15 v. 1 and BPHS ch. 79 vv. 2 and 3 ask it of all four, so the three are not one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "MERCURY",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MERCURY"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "MERCURY"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a mendicant who knows nothing of the schools"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_FOUR_IN_ONE_SIGN_MOON_STRONGEST",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "2, 5",
+        "rank": 1,
+        "note": "Four or more grahas in one sign, the Moon the strongest of them, whose order v. 5 gives. The verse asks strength of the strongest alone, where Brihat Jataka ch. 15 v. 1 and BPHS ch. 79 vv. 2 and 3 ask it of all four, so the three are not one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "MOON",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MOON"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "MOON"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an ascetic wandering among the places of pilgrimage"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_FOUR_IN_ONE_SIGN_SATURN_STRONGEST",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "2, 5",
+        "rank": 1,
+        "note": "Four or more grahas in one sign, Saturn the strongest of them, whose order v. 5 gives. The verse asks strength of the strongest alone, where Brihat Jataka ch. 15 v. 1 and BPHS ch. 79 vv. 2 and 3 ask it of all four, so the three are not one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "SATURN",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "SATURN"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "SATURN"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an outcast or a heretic"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_FOUR_IN_ONE_SIGN_SUN_STRONGEST",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "2, 5",
+        "rank": 1,
+        "note": "Four or more grahas in one sign, the Sun the strongest of them, whose order v. 5 gives. The verse asks strength of the strongest alone, where Brihat Jataka ch. 15 v. 1 and BPHS ch. 79 vv. 2 and 3 ask it of all four, so the three are not one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "SUN",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "SUN"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "SUN"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an ascetic who leads contemplatives, or one initiated"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_FOUR_IN_ONE_SIGN_VENUS_STRONGEST",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "2, 5",
+        "rank": 1,
+        "note": "Four or more grahas in one sign, Venus the strongest of them, whose order v. 5 gives. The verse asks strength of the strongest alone, where Brihat Jataka ch. 15 v. 1 and BPHS ch. 79 vv. 2 and 3 ask it of all four, so the three are not one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "VENUS",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "VENUS"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "VENUS"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "one who wears the ascetic's dress for a living, an outcast or a dancer"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_LAGNA_AT_THE_END_OF_A_BENEFICS_SIGN_JUPITER_IN_A_KENDRA_OR_TRIKONA",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "1",
+        "rank": 1,
+        "note": "The lagna at the end of its sign, read as its last navamsha, in a sign whose lord is a benefic, and Jupiter in a kendra or a trikona (C512). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-degrees",
+          "planet": "LAGNA",
+          "from": 26.6667,
+          "to": 30.0
+        },
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": 1
+          },
+          "class": "benefic"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "liberation"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_LAGNA_LORD_ASPECTS_THE_WANING_MOON",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lagna's lord aspecting the Moon in the dark half. The Moon is bereft of strength outside the bright half, in which the verse makes her strong, so waning is read as the dark half. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 1
+          },
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a wretched ascetic of hard penance, without wealth or companions, fed with difficulty"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_LAGNA_LORD_ASPECTS_THE_WANING_MOON_IN_A_RAJA_YOGA",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "7",
+        "rank": 1,
+        "note": "The figure of v. 6 in a chart that also holds a raja yoga, read as one of ch. 7's Maharaja yogas, the debilitated graha lifted among them. The Moon is bereft of strength outside the bright half, in which the verse makes her strong, so waning is read as the dark half. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 1
+          },
+          "target": "MOON"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_BRIGHT_BENEFIC_IN_THE_NINTH"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_FIVE_DIGNIFIED_IN_KENDRAS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_FOUR_WITH_DIG_BALA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_EXALTED"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_IN_A_KENDRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_IN_A_SOLAR_NAVAMSHA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_IN_PISCES"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_THREE_IN_OWN_NAVAMSHAS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_FULL_MOON_VARGOTTAMA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_JUPITER_AND_MOON_IN_KENDRAS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_JUPITER_RISING"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_LAGNA_AND_NINTH_LORDS_VARGOTTAMA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_MALEFICS_IN_UPACHAYAS_FROM_THE_LORDS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_MARS_AND_MERCURY_SECOND"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_MARS_RISING_IN_FIRE"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_MARS_SATURN_JUPITER_TENTH_ELEVENTH_FIRST"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_MOON_IN_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_JUPITER"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_MOON_IN_A_GREAT_FRIENDS_NAVAMSHA_ASPECTED_BY_VENUS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_ASPECTED_BY_ITS_LORD"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_ASPECTED_BY_ITS_LORD_IN_A_GOOD_HOUSE"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_DEBILITATED_IN_A_KENDRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_EXALTED_ONE_IN_A_KENDRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_LORDS_IN_MUTUAL_KENDRAS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_NEECHA_BHANGA_LORD_IN_A_KENDRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_NIGHT_MOON_IN_CANCER_TENTH"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_NINTH_AND_TENTH_LORDS_EXCHANGED"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_ONE_AT_HIGHEST_EXALTATION"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_ONE_DEBILITATED_RETROGRADE"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_ONE_LORD_OF_GAIN_IN_A_KENDRA_FROM_THE_MOON"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_PISCES_FIGURE"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_SAGITTARIUS_FIGURE"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_STRONG_LAGNA_LORD_IN_A_KENDRA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_STRONG_LAGNA_LORD_SECOND_WITH_VENUS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_STRONG_MERCURY_IN_A_KENDRA_ASPECTED_BY_JUPITER"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_SUN_AND_VENUS_FOURTH"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_SUN_IN_OWN_NAVAMSHA_MOON_IN_CANCER"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_THREE_DIGNIFIED_IN_KENDRAS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_TWO_DEBILITATED_RETROGRADE"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_TWO_WITH_DIG_BALA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_VARGOTTAMA_LAGNA_ASPECTED_BY_FOUR"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_VARGOTTAMA_MOON_ASPECTED_BY_A_STRONG_GRAHA"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_VENUS_ASPECTED_BY_JUPITER"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_VENUS_IN_ASHVINI_RISING"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_WATERY_MOON_AWAY_FROM_THE_KENDRAS"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_WATERY_MOON_RISING"
+            },
+            {
+              "type": "rule",
+              "key": "PHALADEEPIKA_MAHARAJA_WHITE_MOON_ASPECTED_BY_A_DIGNIFIED_GRAHA"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an initiated ascetic who rules the earth, virtuous, at whose feet kings bow"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_MOON_IN_A_NAVAMSHA_OF_MARS_ASPECTED_BY_SATURN",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "3",
+        "rank": 1,
+        "note": "The Moon in a navamsha of Mars, aspected by Saturn; the order is the navamsha lord's. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "MOON"
+          },
+          "signs": [
+            "ARIES",
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an ascetic of the order of Mars"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_MOON_IN_SATURNS_DREKKANA_ASPECTED_BY_MARS_AND_SATURN",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "3",
+        "rank": 1,
+        "note": "The Moon in a drekkana of Saturn, aspected by Mars and by Saturn. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "in-varga",
+          "varga": "D3",
+          "condition": {
+            "type": "planet-in-sign",
+            "planet": "MOON",
+            "signs": [
+              "CAPRICORN",
+              "AQUARIUS"
+            ]
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MARS",
+          "target": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an ascetic"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_MOON_SIGN_LORD_ASPECTED_BY_SATURN_ALONE",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "4",
+        "rank": 1,
+        "note": "The lord of the Moon's sign aspected by Saturn and by no other graha; the order is that lord's. BPHS ch. 79 v. 7 asks the lord weak as well, so the two are not one condition. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": {
+            "lordOf": "MOON"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SATURN"
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SELF",
+                  "target": {
+                    "lordOf": "MOON"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an ascetic of the order of the Moon sign's lord, surely"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_TENTH_LORD_AMONG_FOUR_IN_ONE_SIGN",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "2",
+        "rank": 1,
+        "note": "The lord of the tenth one of four or more grahas in one sign, the order its own, as others hold in the verse. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": {
+            "lordOf": 10
+          },
+          "minCount": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an ascetic of the order of the tenth lord"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_TENTH_LORD_WITH_FOUR_IN_A_KENDRA_OR_TRIKONA",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "1, 8",
+        "rank": 1,
+        "note": "The lord of the tenth with four other grahas in one sign, in a kendra or a trikona; v. 8 repeats the figure. Sastri's note gives the line a second reading, four grahas in kendras or trikonas, which is not built (C512). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": {
+            "lordOf": 10
+          },
+          "minCount": 5
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 10
+          },
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "liberation; a successful ascetic"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PRAVRAJYA_THREE_STRONG_IN_ONE_GOOD_HOUSE",
+      "category": "pravrajya",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "27",
+        "verse": "8",
+        "rank": 1,
+        "note": "Three or more strong grahas together in a house other than the sixth, the eighth and the twelfth. The verse's further clause, the order honoured when benefics are the more of them, is a degree and is not built. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            },
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      2
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            },
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      3
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            },
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      4
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            },
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      5
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            },
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      7
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            },
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      9
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            },
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      10
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            },
+            {
+              "type": "count-of",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      11
+                    ]
+                  },
+                  {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                ]
+              },
+              "atLeast": 3
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a successful ascetic"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_BENEFIC_FIFTH_IN_OWN_SIGN_OR_EXALTED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "3",
+        "rank": 1,
+        "note": "A benefic in the fifth, in its own sign or exalted. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  5
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "MOOLTRIKONA",
+                  "OWN_SIGN"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_FIFTHS_AFFLICTED_AND_UNRELIEVED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "2",
+        "rank": 1,
+        "note": "The fifth from the lagna, from Jupiter and from the Moon each held or aspected by a malefic, and none held or aspected by a benefic. Jupiter aspects the fifth from himself always, so his own aspect on it is not counted, or the verse could never hold (C511). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    5
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-malefic",
+                  "target": 5
+                }
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  5
+                ],
+                "atLeast": 1
+              }
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": 5
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    5
+                  ],
+                  "atLeast": 1,
+                  "from": "JUPITER"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-malefic",
+                  "target": {
+                    "from": "JUPITER",
+                    "house": 5
+                  }
+                }
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  5
+                ],
+                "atLeast": 1,
+                "from": "JUPITER"
+              }
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "for-any",
+                "planets": [
+                  "SUN",
+                  "MOON",
+                  "MARS",
+                  "MERCURY",
+                  "JUPITER",
+                  "VENUS",
+                  "SATURN"
+                ],
+                "then": {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "SELF",
+                      "target": {
+                        "from": "JUPITER",
+                        "house": 5
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": "JUPITER"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    5
+                  ],
+                  "atLeast": 1,
+                  "from": "MOON"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-malefic",
+                  "target": {
+                    "from": "MOON",
+                    "house": 5
+                  }
+                }
+              ]
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "count-in-houses",
+                "planets": "any-benefic",
+                "houses": [
+                  5
+                ],
+                "atLeast": 1,
+                "from": "MOON"
+              }
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "for-any",
+                "planets": [
+                  "SUN",
+                  "MOON",
+                  "MARS",
+                  "MERCURY",
+                  "JUPITER",
+                  "VENUS",
+                  "SATURN"
+                ],
+                "then": {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "planet-is",
+                      "planet": "SELF",
+                      "class": "benefic"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "SELF",
+                      "target": {
+                        "from": "MOON",
+                        "house": 5
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": "MOON"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no children at all"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_FIFTHS_HEMMED_LORDS_IN_DUSTHANAS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "2",
+        "rank": 1,
+        "note": "The fifth from the lagna, from Jupiter and from the Moon each between malefics, and the lords of the three in the sixth, the eighth or the twelfth. Sastri's 'or' sets this apart from the last. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1,
+          "from": "JUPITER"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1,
+          "from": "JUPITER"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "from": "JUPITER",
+              "house": 5
+            }
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "from": "MOON",
+              "house": 5
+            }
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no children at all"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_FIFTH_A_SIGN_OF_FEW_CHILDREN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "3",
+        "rank": 1,
+        "note": "The fifth Taurus, Leo, Virgo or Scorpio. The signs of few children are v. 3's four, Scorpio, Taurus, Virgo and Leo; Sastri's English drops Taurus, which the Sanskrit (ali-vrisha-stri-simha) names. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 5,
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "VIRGO",
+            "SCORPIO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "few children, and those late"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_FIFTH_LORD_AT_HOME_UNASPECTED_BY_BENEFICS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "9",
+        "rank": 1,
+        "note": "The lord of the fifth in the fifth, aspected by no benefic. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 5,
+          "houseOccupied": 5
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": {
+              "lordOf": 5
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_FIFTH_LORD_HOSTILE_COMBUST_OR_WITH_A_DUSTHANA_LORD",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "9",
+        "rank": 1,
+        "note": "The lord of the fifth debilitated, in an enemy's sign or combust, or joined by the lord of the twelfth, the sixth or the eighth, a graha other than itself. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 5
+              },
+              "dignities": [
+                "DEBILITATED",
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-combust",
+              "planet": {
+                "lordOf": 5
+              }
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lord-conjunct-lord",
+                  "house1": 5,
+                  "house2": 12
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 5
+                    },
+                    "as": {
+                      "lordOf": 12
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lord-conjunct-lord",
+                  "house1": 5,
+                  "house2": 6
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 5
+                    },
+                    "as": {
+                      "lordOf": 6
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lord-conjunct-lord",
+                  "house1": 5,
+                  "house2": 8
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 5
+                    },
+                    "as": {
+                      "lordOf": 8
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the loss of children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_FIFTH_LORD_JUPITER_MARS_AND_SUN_IN_MALE_NAVAMSHAS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "10",
+        "rank": 1,
+        "note": "The lord of the fifth, Jupiter, Mars and the Sun each in a male (odd) navamsha. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": {
+              "lordOf": 5
+            }
+          },
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "JUPITER"
+          },
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "MARS"
+          },
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SUN"
+          },
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "many sons"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_FIFTH_OF_SATURN_OR_MERCURY_WITH_MANDI_OR_SATURN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "8",
+        "rank": 1,
+        "note": "The fifth a sign of Saturn or Mercury, held by Mandi or Saturn or aspected by Saturn; Mandi is a point and aspects nothing, so only his place is asked (C511). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-is",
+          "houseRuled": 5,
+          "planets": [
+            "SATURN",
+            "MERCURY"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "point": "MANDI"
+              },
+              "as": 5
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                5
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": 5
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a son by adoption"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_JUPITER_ALONE_IN_A_CANCER_FIFTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "5",
+        "rank": 1,
+        "note": "Jupiter alone in the fifth in Cancer, no other of the nine there. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 5,
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                5
+              ]
+            },
+            {
+              "type": "no-planet-in-houses-from",
+              "reference": "LAGNA",
+              "houses": [
+                5
+              ],
+              "except": [
+                "JUPITER"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "many daughters"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_LAGNA_AND_FIFTH_LORDS_CONNECTED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "1",
+        "rank": 1,
+        "note": "The lords of the lagna and the fifth together, aspecting each other, or each in the other's sign. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lord-conjunct-lord",
+              "house1": 1,
+              "house2": 5
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 1
+                  },
+                  "target": {
+                    "lordOf": 5
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 5
+                  },
+                  "target": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "mutual-exchange",
+              "house1": 1,
+              "house2": 5
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "children, assured"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_LORDS_OF_THE_FIFTH_AND_JUPITER_WELL_PLACED",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "1",
+        "rank": 1,
+        "note": "The lords of the fifth from the lagna and from the Moon, and Jupiter, each in a house other than the sixth, the eighth and the twelfth; and the fifth held or aspected by a benefic or by the lord of such a house. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "from": "MOON",
+              "house": 5
+            }
+          },
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    5
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-benefic",
+                  "target": 5
+                }
+              ]
+            },
+            {
+              "type": "for-any",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "MERCURY",
+                "JUPITER",
+                "VENUS",
+                "SATURN"
+              ],
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 1
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 2
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 3
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 4
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 5
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 7
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 9
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 10
+                        }
+                      },
+                      {
+                        "type": "same-body",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 11
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "planet-in-house",
+                        "planet": "SELF",
+                        "houses": [
+                          5
+                        ]
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": 5
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "children, assured"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MALEFICS_TWELFTH_EIGHTH_FIFTH_FIRST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "6",
+        "rank": 1,
+        "note": "A malefic in each of the twelfth, the eighth, the fifth and the lagna; the second of four. A plural over a list of houses is read as a malefic in every one of them, as Brihat Jataka ch. 23 v. 4 is read. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the family line ends"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MALEFIC_FIFTH_LORD_AT_HOME",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "3",
+        "rank": 1,
+        "note": "A malefic in its own sign in the fifth, which is the fifth's lord, a malefic, in the fifth. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": 5
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 5,
+          "houseOccupied": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MALEFIC_FIFTH_LORD_AT_HOME_WITH_ANOTHER_MALEFIC",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "3",
+        "rank": 1,
+        "note": "The last figure with a second malefic in the fifth; Sastri reads the clause as any malefic in the fifth, and the verse's 'again' (punah) as adding to the figure before it (C511). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": 5
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 5,
+          "houseOccupied": 5
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "many sons"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MALEFIC_FOURTH_VENUS_SEVENTH_MOON_TENTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "6",
+        "rank": 1,
+        "note": "A malefic in the fourth, Venus in the seventh and the Moon in the tenth; the first of four. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the family line ends"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MALEFIC_RISING_LAGNA_LORD_FIFTH_FIFTH_LORD_THIRD_MOON_FOURTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "7",
+        "rank": 1,
+        "note": "A malefic in the lagna, its lord in the fifth, the fifth's lord in the third and the Moon in the fourth. Sastri's English leaves out the Moon in the fourth, which the Sanskrit (veshmani indau) names (C511). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 1,
+          "houseOccupied": 5
+        },
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 5,
+          "houseOccupied": 3
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "no son"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MOON_ELEVENTH_MALEFIC_FIFTH_FROM_JUPITER_MANY_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "4",
+        "rank": 1,
+        "note": "The Moon in the eleventh, a malefic in the fifth from Jupiter, and many grahas in the lagna, read as two or more of the nine (C511). Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1,
+          "from": "JUPITER"
+        },
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "planet-in-house",
+            "planet": "SELF",
+            "houses": [
+              1
+            ]
+          },
+          "atLeast": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a child late in life, after great effort"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MOON_FIFTH_MALEFICS_EIGHTH_TWELFTH_FIRST",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in the fifth and a malefic in each of the eighth, the twelfth and the lagna; the fourth of four. A plural over a list of houses is read as a malefic in every one of them, as Brihat Jataka ch. 23 v. 4 is read. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the family line ends"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MOON_FIFTH_ODD_ASPECTED_BY_THE_SUN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "7",
+        "rank": 1,
+        "note": "The Moon in the fifth in an odd sign or an odd navamsha, aspected by the Sun. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": "MOON",
+              "signs": [
+                "ARIES",
+                "GEMINI",
+                "LEO",
+                "LIBRA",
+                "SAGITTARIUS",
+                "AQUARIUS"
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "MOON"
+              },
+              "signs": [
+                "ARIES",
+                "GEMINI",
+                "LEO",
+                "LIBRA",
+                "SAGITTARIUS",
+                "AQUARIUS"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SUN",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sorrow through children, or no son"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_MOON_OR_MERCURY_ALONE_IN_A_CANCER_FIFTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "5",
+        "rank": 1,
+        "note": "The Moon or Mercury alone in the fifth in Cancer, no other of the nine there. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 5,
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    5
+                  ]
+                },
+                {
+                  "type": "no-planet-in-houses-from",
+                  "reference": "LAGNA",
+                  "houses": [
+                    5
+                  ],
+                  "except": [
+                    "MOON"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MERCURY",
+                  "houses": [
+                    5
+                  ]
+                },
+                {
+                  "type": "no-planet-in-houses-from",
+                  "reference": "LAGNA",
+                  "houses": [
+                    5
+                  ],
+                  "except": [
+                    "MERCURY"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "few children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_SATURN_ALONE_IN_A_CANCER_FIFTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "5",
+        "rank": 1,
+        "note": "Saturn alone in the fifth in Cancer, no other of the nine there. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 5,
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                5
+              ]
+            },
+            {
+              "type": "no-planet-in-houses-from",
+              "reference": "LAGNA",
+              "houses": [
+                5
+              ],
+              "except": [
+                "SATURN"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "many children"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_SATURN_RISING_JUPITER_EIGHTH_MARS_TWELFTH_FIFTH_OF_FEW_CHILDREN",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "4",
+        "rank": 1,
+        "note": "Saturn in the lagna, Jupiter in the eighth and Mars in the twelfth, the fifth a sign of few children. The signs of few children are v. 3's four, Scorpio, Taurus, Virgo and Leo; Sastri's English drops Taurus, which the Sanskrit (ali-vrisha-stri-simha) names. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": 5,
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "VIRGO",
+            "SCORPIO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a child late in life, after great effort"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_SUN_FIFTH_IN_A_SIGN_OF_FEW_CHILDREN_SATURN_EIGHTH_MARS_RISING",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "4",
+        "rank": 1,
+        "note": "The Sun in the fifth in a sign of few children, Saturn in the eighth and Mars in the lagna; the verse names only the sign of the Sun, and the fifth is Sastri's (C511). The signs of few children are v. 3's four, Scorpio, Taurus, Virgo and Leo; Sastri's English drops Taurus, which the Sanskrit (ali-vrisha-stri-simha) names. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": 5,
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "VIRGO",
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a child late in life, after great effort"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_SUN_MARS_OR_VENUS_ALONE_IN_A_CANCER_FIFTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "5",
+        "rank": 1,
+        "note": "The Sun, Mars or Venus alone in the fifth in Cancer, no other of the nine there. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 5,
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SUN",
+                  "houses": [
+                    5
+                  ]
+                },
+                {
+                  "type": "no-planet-in-houses-from",
+                  "reference": "LAGNA",
+                  "houses": [
+                    5
+                  ],
+                  "except": [
+                    "SUN"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MARS",
+                  "houses": [
+                    5
+                  ]
+                },
+                {
+                  "type": "no-planet-in-houses-from",
+                  "reference": "LAGNA",
+                  "houses": [
+                    5
+                  ],
+                  "except": [
+                    "MARS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "VENUS",
+                  "houses": [
+                    5
+                  ]
+                },
+                {
+                  "type": "no-planet-in-houses-from",
+                  "reference": "LAGNA",
+                  "houses": [
+                    5
+                  ],
+                  "except": [
+                    "VENUS"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "children by a second wife"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_VENUS_AND_MERCURY_SEVENTH_JUPITER_FIFTH_MALEFIC_FOURTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "6",
+        "rank": 1,
+        "note": "Venus and Mercury in the seventh, Jupiter in the fifth and a malefic in the fourth, the verse's plural read as at least one; the third of four. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the family line ends"
+        }
+      ]
+    },
+    {
+      "key": "PHALADEEPIKA_PUTRA_WEAK_FIFTH_LORD_UNBOUND_TO_THE_FIRST_AND_SEVENTH_LORDS",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "12",
+        "verse": "8",
+        "rank": 1,
+        "note": "The lord of the fifth weak and bound to neither the lagna's lord nor the seventh's by any of ch. 15 v. 30's five bonds: exchange, conjunction, mutual aspect, or a kendra or a trikona from each other. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, the Sanskrit checked in the same print."
+      },
+      "conditions": [
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 5
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "mutual-exchange",
+                "house1": 5,
+                "house2": 1
+              },
+              {
+                "type": "lord-conjunct-lord",
+                "house1": 5,
+                "house2": 1
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": {
+                      "lordOf": 5
+                    },
+                    "target": {
+                      "lordOf": 1
+                    }
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": {
+                      "lordOf": 1
+                    },
+                    "target": {
+                      "lordOf": 5
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "planet-in-kendra-from",
+                "planet": {
+                  "lordOf": 5
+                },
+                "reference": {
+                  "lordOf": 1
+                }
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": {
+                  "lordOf": 5
+                },
+                "reference": {
+                  "lordOf": 1
+                },
+                "houses": [
+                  5,
+                  9
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "mutual-exchange",
+                "house1": 5,
+                "house2": 7
+              },
+              {
+                "type": "lord-conjunct-lord",
+                "house1": 5,
+                "house2": 7
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": {
+                      "lordOf": 5
+                    },
+                    "target": {
+                      "lordOf": 7
+                    }
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": {
+                      "lordOf": 7
+                    },
+                    "target": {
+                      "lordOf": 5
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "planet-in-kendra-from",
+                "planet": {
+                  "lordOf": 5
+                },
+                "reference": {
+                  "lordOf": 7
+                }
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": {
+                  "lordOf": 5
+                },
+                "reference": {
+                  "lordOf": 7
+                },
+                "houses": [
+                  5,
+                  9
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a son by adoption"
+        }
+      ]
+    }
+  ]
+}

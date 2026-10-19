@@ -33,7 +33,7 @@ fn hours() -> Vec<BTreeSet<String>> {
         .filter(|rule| rule.category == "ashubha-janma")
         .cloned()
         .collect();
-    assert_eq!(pack.len(), 34);
+    assert_eq!(pack.len(), 93);
     let set = RuleRequest::shipped([ShippedRules::Arishtas])
         .with_rules(pack)
         .rule_set()

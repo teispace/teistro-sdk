@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 33 194 items, 356 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 38 739 items, 416 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 4 394 077 bytes of JSON over the 93 charts, 47 248 bytes a
-chart, 56 260 bytes for the widest and 132 bytes an item. The verses'
-own cited words are **not** what weighs it — 415 544 bytes, 9% — so
+golden file: 5 228 528 bytes of JSON over the 93 charts, 56 220 bytes a
+chart, 67 533 bytes for the widest and 134 bytes an item. The verses'
+own cited words are **not** what weighs it — 501 157 bytes, 9% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 33194 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 33194 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 33194 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 33194 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 38739 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 38739 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 38739 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 38739 disagree |
 
-Every one of the 66 388 renderings — 33 194 in each of 2 strict
+Every one of the 77 478 renderings — 38 739 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -72,10 +72,10 @@ about.
 | `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
-| `sdk.reading.effect` | 7915 |
+| `sdk.reading.effect` | 10 988 |
 | `sdk.reading.lifeClass` | 296 |
 | `sdk.reading.lifeSpan` | 176 |
-| `sdk.reading.participants` | 8217 |
+| `sdk.reading.participants` | 10 689 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 421 |
@@ -112,7 +112,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 7915 of the 33 194
+**The verse's own statement is not translated.** 10 988 of the 38 739
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -124,7 +124,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 1465 rules this pass composes carry a reading, and they
+rule: 12 of the 1898 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -240,11 +240,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 1168 of 1168 | 0 of 1168 |
-| `hi-Deva-IN` | `base` | 0 of 1168 | 1038 of 1168 |
-| `ne-Deva-NP` | `strict` | 1168 of 1168 | 1067 of 1168 |
-| `sa-Deva` | `base` | 0 of 1168 | 1038 of 1168 |
-| `sa-Latn` | `base` | 0 of 1168 | 1004 of 1168 |
+| `en-Latn` | `strict` | 1244 of 1244 | 0 of 1244 |
+| `hi-Deva-IN` | `base` | 0 of 1244 | 1070 of 1244 |
+| `ne-Deva-NP` | `strict` | 1244 of 1244 | 1099 of 1244 |
+| `sa-Deva` | `base` | 0 of 1244 | 1070 of 1244 |
+| `sa-Latn` | `base` | 0 of 1244 | 1036 of 1244 |
 
 ## What a rich renderer gets
 
@@ -258,8 +258,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 1168 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 1168 | 42 | `b` |
+| `en-Latn` | 21 of 1244 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 1244 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -281,7 +281,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 2336 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 2488 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -299,7 +299,7 @@ its limbs, which also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 74 of 75 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 2336
+own message, with no fallback and nothing to warn about: 2488
 renderings. What this chart cannot reach is named below, with the reason
 it needs another. A key missing from both fails, and so does a key
 excused that this chart emits — which is not a hypothetical: **three
@@ -749,6 +749,58 @@ PARIJATA_MARANA_BODY_TWENTY_SECOND_DREKKANA_FIERY_BURNT: the body burnt to ashes
 PARIJATA_MARANA_BODY_TWENTY_SECOND_DREKKANA_FIERY_BURNT: Ascendant takes part
 PARIJATA_A_MALEFIC_FALLEN: sinful deeds
 PARIJATA_A_MALEFIC_FALLEN: Moon takes part
+PHALADEEPIKA_KALATRA_SECOND_AND_SEVENTH_AFFLICTED: the loss of the wife
+PHALADEEPIKA_KALATRA_SECOND_AND_SEVENTH_AFFLICTED: Sun, Mercury and Mars take part
+PHALADEEPIKA_KALATRA_SEVENTH_AND_EIGHTH_AFFLICTED: in a woman's chart, the loss of the husband
+PHALADEEPIKA_KALATRA_SEVENTH_AND_EIGHTH_AFFLICTED: Mars and Sun take part
+PHALADEEPIKA_KALATRA_SEVENTH_BEARS_FRUIT: the seventh bears fruit: a wife
+PHALADEEPIKA_KALATRA_SEVENTH_BEARS_FRUIT: Mars takes part
+PHALADEEPIKA_KALATRA_SEVENTH_OR_ITS_LORD_AFFLICTED: the loss of the wife, certainly
+PHALADEEPIKA_KALATRA_SEVENTH_OR_ITS_LORD_AFFLICTED: Mars takes part
+PHALADEEPIKA_KALATRA_VENUS_IN_A_VARGA_OF_MARS_OR_SATURN_OR_ASPECTED_BY_THEM: given to other men's wives
+PHALADEEPIKA_KALATRA_VENUS_IN_A_VARGA_OF_MARS_OR_SATURN_OR_ASPECTED_BY_THEM: Venus takes part
+PHALADEEPIKA_KALATRA_VENUS_JOINED_OR_ASPECTED_BY_A_MALEFIC: the loss of the wife
+PHALADEEPIKA_KALATRA_VENUS_JOINED_OR_ASPECTED_BY_A_MALEFIC: Mars takes part
+PHALADEEPIKA_PUTRA_FIFTHS_AFFLICTED_AND_UNRELIEVED: no children at all
+PHALADEEPIKA_PUTRA_FIFTHS_AFFLICTED_AND_UNRELIEVED: Ketu, Sun, Jupiter, Saturn and Moon take part
+PHALADEEPIKA_PUTRA_FIFTH_LORD_HOSTILE_COMBUST_OR_WITH_A_DUSTHANA_LORD: the loss of children
+PHALADEEPIKA_PUTRA_FIFTH_LORD_HOSTILE_COMBUST_OR_WITH_A_DUSTHANA_LORD: Moon takes part
+PHALADEEPIKA_PUTRA_LORDS_OF_THE_FIFTH_AND_JUPITER_WELL_PLACED: children, assured
+PHALADEEPIKA_PUTRA_LORDS_OF_THE_FIFTH_AND_JUPITER_WELL_PLACED: Moon, Jupiter and Saturn take part
+BJ_JANMA_MOON_UNASPECTING_THE_LAGNA_FATHER_AWAY: the father not present at the birth
+BJ_JANMA_JUPITER_UNASPECTING_THE_LAGNA_AND_MOON_BORN_OF_ANOTHER: the child begotten by another than the mother's husband
+BJ_JANMA_SIGN_RISING_BOTH_WAYS: the child delivered hands first
+BJ_PRAKIRNA_KENDRAS_OCCUPIED: happy
+BJ_PRAKIRNA_KENDRAS_OCCUPIED: Jupiter takes part
+BJ_PRAKIRNA_JUPITER_MOON_LORD_OR_LAGNA_LORD_IN_A_KENDRA: happy in middle life
+BJ_PRAKIRNA_JUPITER_MOON_LORD_OR_LAGNA_LORD_IN_A_KENDRA: Jupiter takes part
+BJ_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: of a true woman's nature
+BJ_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: Moon takes part
+BJ_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: deceitful
+BJ_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: Moon takes part
+BJ_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: of many virtues
+BJ_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: Ascendant takes part
+BJ_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_MERCURY: a learned and able husband
+BJ_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_THE_SUN: a very gentle husband who works hard
+BJ_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_THE_SUN: Ascendant takes part
+BJ_STRI_MOON_IN_VIRGO_SCORPIO_TAURUS_OR_LEO_FEW_SONS: few sons
+BJ_STRI_MOON_IN_VIRGO_SCORPIO_TAURUS_OR_LEO_FEW_SONS: Moon takes part
+BJ_MARANA_MOVABLE_EIGHTH_PLACE_OF_DEATH: death in a foreign place
+BJ_MARANA_UNCONSCIOUS_LAGNA_UNASPECTED_BY_ITS_LORD_OR_A_BENEFIC: unconscious before death for as long as the lagna's unrisen part takes to rise
+PARIJATA_GARBHA_MALE_JUPITER_AND_SUN_ODD: a male child
+PARIJATA_GARBHA_MALE_JUPITER_AND_SUN_ODD: Jupiter and Sun take part
+PARIJATA_GARBHA_MALE_SATURN_IN_AN_ODD_HOUSE: a male child
+PARIJATA_GARBHA_MALE_SATURN_IN_AN_ODD_HOUSE: Saturn takes part
+PARIJATA_GARBHA_EUNUCH_VENUS_MOON_LAGNA_IN_ODD_NAVAMSHAS: a eunuch, only where no male or female yoga holds
+PARIJATA_GARBHA_EUNUCH_VENUS_MOON_LAGNA_IN_ODD_NAVAMSHAS: Venus, Moon and Ascendant take part
+PARIJATA_JANMA_NO_SEEMANTHA_MALEFIC_IN_A_MALEFICS_ELEVENTH: born without the seemantha
+PARIJATA_JANMA_NO_SEEMANTHA_MALEFIC_IN_A_MALEFICS_ELEVENTH: Saturn and Rahu take part
+PARIJATA_JANMA_JARAJA_JUPITER_NEITHER_SEES_NOR_JOINS_LAGNA_OR_MOON: begotten by another than the mother's husband
+PARIJATA_JANMA_JARAJA_JUPITER_SEES_NEITHER_LAGNA_NOR_MOON_APART_FROM_THE_SUN: begotten by another than the mother's husband
+PARIJATA_YOGA_ONE_IN_OWN_SIGNS: the equal of his kinsmen
+PARIJATA_YOGA_ONE_IN_OWN_SIGNS: Saturn takes part
+PARIJATA_DHANA_THREE_IN_FRIENDS_SIGNS: living on wealth he earned
+PARIJATA_DHANA_THREE_IN_FRIENDS_SIGNS: Mars, Mercury and Venus take part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: Venus takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: cancelled
 ARISHTA_MALEFICS_FROM_THE_SUN: Moon and Ketu take part
@@ -1094,6 +1146,58 @@ PARIJATA_MARANA_BODY_TWENTY_SECOND_DREKKANA_FIERY_BURNT: the body burnt to ashes
 PARIJATA_MARANA_BODY_TWENTY_SECOND_DREKKANA_FIERY_BURNT: लग्न संलग्न छ
 PARIJATA_A_MALEFIC_FALLEN: sinful deeds
 PARIJATA_A_MALEFIC_FALLEN: चन्द्र संलग्न छ
+PHALADEEPIKA_KALATRA_SECOND_AND_SEVENTH_AFFLICTED: the loss of the wife
+PHALADEEPIKA_KALATRA_SECOND_AND_SEVENTH_AFFLICTED: सूर्य, बुध र मंगल संलग्न छन्
+PHALADEEPIKA_KALATRA_SEVENTH_AND_EIGHTH_AFFLICTED: in a woman's chart, the loss of the husband
+PHALADEEPIKA_KALATRA_SEVENTH_AND_EIGHTH_AFFLICTED: मंगल र सूर्य संलग्न छन्
+PHALADEEPIKA_KALATRA_SEVENTH_BEARS_FRUIT: the seventh bears fruit: a wife
+PHALADEEPIKA_KALATRA_SEVENTH_BEARS_FRUIT: मंगल संलग्न छ
+PHALADEEPIKA_KALATRA_SEVENTH_OR_ITS_LORD_AFFLICTED: the loss of the wife, certainly
+PHALADEEPIKA_KALATRA_SEVENTH_OR_ITS_LORD_AFFLICTED: मंगल संलग्न छ
+PHALADEEPIKA_KALATRA_VENUS_IN_A_VARGA_OF_MARS_OR_SATURN_OR_ASPECTED_BY_THEM: given to other men's wives
+PHALADEEPIKA_KALATRA_VENUS_IN_A_VARGA_OF_MARS_OR_SATURN_OR_ASPECTED_BY_THEM: शुक्र संलग्न छ
+PHALADEEPIKA_KALATRA_VENUS_JOINED_OR_ASPECTED_BY_A_MALEFIC: the loss of the wife
+PHALADEEPIKA_KALATRA_VENUS_JOINED_OR_ASPECTED_BY_A_MALEFIC: मंगल संलग्न छ
+PHALADEEPIKA_PUTRA_FIFTHS_AFFLICTED_AND_UNRELIEVED: no children at all
+PHALADEEPIKA_PUTRA_FIFTHS_AFFLICTED_AND_UNRELIEVED: केतु, सूर्य, गुरु, शनि र चन्द्र संलग्न छन्
+PHALADEEPIKA_PUTRA_FIFTH_LORD_HOSTILE_COMBUST_OR_WITH_A_DUSTHANA_LORD: the loss of children
+PHALADEEPIKA_PUTRA_FIFTH_LORD_HOSTILE_COMBUST_OR_WITH_A_DUSTHANA_LORD: चन्द्र संलग्न छ
+PHALADEEPIKA_PUTRA_LORDS_OF_THE_FIFTH_AND_JUPITER_WELL_PLACED: children, assured
+PHALADEEPIKA_PUTRA_LORDS_OF_THE_FIFTH_AND_JUPITER_WELL_PLACED: चन्द्र, गुरु र शनि संलग्न छन्
+BJ_JANMA_MOON_UNASPECTING_THE_LAGNA_FATHER_AWAY: the father not present at the birth
+BJ_JANMA_JUPITER_UNASPECTING_THE_LAGNA_AND_MOON_BORN_OF_ANOTHER: the child begotten by another than the mother's husband
+BJ_JANMA_SIGN_RISING_BOTH_WAYS: the child delivered hands first
+BJ_PRAKIRNA_KENDRAS_OCCUPIED: happy
+BJ_PRAKIRNA_KENDRAS_OCCUPIED: गुरु संलग्न छ
+BJ_PRAKIRNA_JUPITER_MOON_LORD_OR_LAGNA_LORD_IN_A_KENDRA: happy in middle life
+BJ_PRAKIRNA_JUPITER_MOON_LORD_OR_LAGNA_LORD_IN_A_KENDRA: गुरु संलग्न छ
+BJ_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: of a true woman's nature
+BJ_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: चन्द्र संलग्न छ
+BJ_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: deceitful
+BJ_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: चन्द्र संलग्न छ
+BJ_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: of many virtues
+BJ_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: लग्न संलग्न छ
+BJ_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_MERCURY: a learned and able husband
+BJ_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_THE_SUN: a very gentle husband who works hard
+BJ_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_THE_SUN: लग्न संलग्न छ
+BJ_STRI_MOON_IN_VIRGO_SCORPIO_TAURUS_OR_LEO_FEW_SONS: few sons
+BJ_STRI_MOON_IN_VIRGO_SCORPIO_TAURUS_OR_LEO_FEW_SONS: चन्द्र संलग्न छ
+BJ_MARANA_MOVABLE_EIGHTH_PLACE_OF_DEATH: death in a foreign place
+BJ_MARANA_UNCONSCIOUS_LAGNA_UNASPECTED_BY_ITS_LORD_OR_A_BENEFIC: unconscious before death for as long as the lagna's unrisen part takes to rise
+PARIJATA_GARBHA_MALE_JUPITER_AND_SUN_ODD: a male child
+PARIJATA_GARBHA_MALE_JUPITER_AND_SUN_ODD: गुरु र सूर्य संलग्न छन्
+PARIJATA_GARBHA_MALE_SATURN_IN_AN_ODD_HOUSE: a male child
+PARIJATA_GARBHA_MALE_SATURN_IN_AN_ODD_HOUSE: शनि संलग्न छ
+PARIJATA_GARBHA_EUNUCH_VENUS_MOON_LAGNA_IN_ODD_NAVAMSHAS: a eunuch, only where no male or female yoga holds
+PARIJATA_GARBHA_EUNUCH_VENUS_MOON_LAGNA_IN_ODD_NAVAMSHAS: शुक्र, चन्द्र र लग्न संलग्न छन्
+PARIJATA_JANMA_NO_SEEMANTHA_MALEFIC_IN_A_MALEFICS_ELEVENTH: born without the seemantha
+PARIJATA_JANMA_NO_SEEMANTHA_MALEFIC_IN_A_MALEFICS_ELEVENTH: शनि र राहु संलग्न छन्
+PARIJATA_JANMA_JARAJA_JUPITER_NEITHER_SEES_NOR_JOINS_LAGNA_OR_MOON: begotten by another than the mother's husband
+PARIJATA_JANMA_JARAJA_JUPITER_SEES_NEITHER_LAGNA_NOR_MOON_APART_FROM_THE_SUN: begotten by another than the mother's husband
+PARIJATA_YOGA_ONE_IN_OWN_SIGNS: the equal of his kinsmen
+PARIJATA_YOGA_ONE_IN_OWN_SIGNS: शनि संलग्न छ
+PARIJATA_DHANA_THREE_IN_FRIENDS_SIGNS: living on wealth he earned
+PARIJATA_DHANA_THREE_IN_FRIENDS_SIGNS: मंगल, बुध र शुक्र संलग्न छन्
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: शुक्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: रद्द
 ARISHTA_MALEFICS_FROM_THE_SUN: चन्द्र र केतु संलग्न छन्

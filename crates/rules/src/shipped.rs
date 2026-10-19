@@ -138,6 +138,20 @@ const BJ_NABHASA_CHANDRA: &str = include_str!("../rules/classical-bj-nabhasa-cha
 /// and after, and the marring of a horoscope, its poverty, servitude and
 /// diseases, some as BPHS ch. 44 and Brihat Jataka ch. 23 write them.
 const PARIJATA_BHANGA: &str = include_str!("../rules/classical-parijata-bhanga.json");
+/// Phaladeepika chs. 10, 12 and 27: the seventh house and the wife, the
+/// fifth and children, and the ascetics, one yoga of them as Brihat Jataka
+/// ch. 23 writes it.
+const PHALADEEPIKA_MORE: &str = include_str!("../rules/classical-phaladeepika-more.json");
+/// Brihat Jataka chs. 5, 7, 22, 24 and 25: the circumstances of the birth, the
+/// life beyond reckoning, the happy births, a woman's horoscope, and the manner
+/// of death and the worlds before and after, ch. 25 as Jataka Parijata ch. 5A
+/// restates it.
+const BJ_MORE: &str = include_str!("../rules/classical-bj-more.json");
+/// Jataka Parijata ch. 3, ch. 8 and ch. 9: manifold births, the sex of the
+/// child, twins, the cord and the parentage; the counts of exalted, own,
+/// friendly and hostile grahas; the ganda nakshatras and the evil limbs of the
+/// day, some as BPHS chs. 85 to 87 write them.
+const PARIJATA_YOGA: &str = include_str!("../rules/classical-parijata-yoga.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -196,6 +210,9 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PARIJATA_RAJA));
     rules.append(&mut read(BJ_NABHASA_CHANDRA));
     rules.append(&mut read(PARIJATA_BHANGA));
+    rules.append(&mut read(PHALADEEPIKA_MORE));
+    rules.append(&mut read(BJ_MORE));
+    rules.append(&mut read(PARIJATA_YOGA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -364,7 +381,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (164, 13));
+        assert_eq!((strength, points), (219, 16));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -435,7 +452,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 2804);
+        assert_eq!(rules.len(), 3237);
         for rule in &rules {
             let rank = rule
                 .source

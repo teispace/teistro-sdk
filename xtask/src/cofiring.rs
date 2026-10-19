@@ -72,7 +72,7 @@ const SPAN_DAYS: f64 = 73_049.0;
 const SUPPORT: usize = 5;
 
 /// One text stating one condition twice, each with where it does.
-const REVIEWED: [(&[&str], &str); 8] = [
+const REVIEWED: [(&[&str], &str); 10] = [
     (
         &[
             "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -135,6 +135,22 @@ const REVIEWED: [(&[&str], &str); 8] = [
         "Jataka Parijata gives Saturn in Cancer and the Moon in Capricorn twice: ch. 5A v. 3 \
          as the manner of death, ch. 6 v. 97 as the disease",
     ),
+    (
+        &[
+            "PARIJATA_JANMA_JARAJA_LORDS_OF_ONE_AND_FOUR_EXCHANGED",
+            "PARIJATA_VIYONI_LORDS_OF_ONE_AND_FOUR_EXCHANGED",
+        ],
+        "Jataka Parijata ch. 3 gives the first and fourth lords exchanged twice: v. 5 a birth \
+         of another kind, v. 54 the child of another man, the same figure read of a human chart",
+    ),
+    (
+        &[
+            "PARIJATA_JANMA_KANINA_LUMINARIES_TOGETHER",
+            "PARIJATA_TOGETHER_SUN_MOON",
+        ],
+        "Jataka Parijata gives the Sun and the Moon together twice: ch. 3 v. 51 among the \
+         parentages, the child born before marriage, and ch. 8 among the conjunctions",
+    ),
 ];
 
 /// Rules the sky never holds, each with an instant (a Julian day in UT)
@@ -142,7 +158,7 @@ const REVIEWED: [(&[&str], &str); 8] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 168] = [
+const FIXTURES: [(&str, f64, f64, f64); 185] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -264,6 +280,12 @@ const FIXTURES: [(&str, f64, f64, f64); 168] = [
     ("BPHS_BROTHER_CURSE_9", 2_399_106.75, 27.7172, -166.358),
     (
         "BPHS_CANCER_RISING_WITH_JUPITER_AND_MOON_LIMITLESS",
+        2_404_926.5,
+        27.7172,
+        152.741,
+    ),
+    (
+        "BJ_AYUR_CANCER_RISING_WITH_JUPITER_AND_MOON_BEYOND_RECKONING",
         2_404_926.5,
         27.7172,
         152.741,
@@ -930,7 +952,19 @@ const FIXTURES: [(&str, f64, f64, f64); 168] = [
         85.324,
     ),
     (
+        "BJ_MARANA_MOON_IN_VIRGO_SEVENTH_WITH_A_MALEFIC_VENUS_IN_ARIES_SUN_RISING",
+        2_380_041.500_0,
+        27.7172,
+        85.324,
+    ),
+    (
         "PARIJATA_MARANA_SATURN_SECOND_MOON_FOURTH_MARS_TENTH_WORMS_IN_A_WOUND",
+        2_378_648.506_9,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_MARANA_SATURN_SECOND_MOON_FOURTH_MARS_TENTH_WORMS_IN_A_WOUND",
         2_378_648.506_9,
         27.7172,
         85.324,
@@ -942,13 +976,31 @@ const FIXTURES: [(&str, f64, f64, f64); 168] = [
         85.324,
     ),
     (
+        "BJ_MARANA_SUN_AND_MARS_SEVENTH_SATURN_EIGHTH_WANING_MOON_FOURTH_BIRDS",
+        2_386_221.965_3,
+        27.7172,
+        85.324,
+    ),
+    (
         "PARIJATA_MARANA_SUN_FIRST_MARS_FIFTH_SATURN_EIGHTH_MOON_NINTH_A_FALL",
         2_378_894.500_0,
         27.7172,
         85.324,
     ),
     (
+        "BJ_MARANA_SUN_FIRST_MARS_FIFTH_SATURN_EIGHTH_MOON_NINTH_A_FALL",
+        2_378_894.500_0,
+        27.7172,
+        85.324,
+    ),
+    (
         "PARIJATA_MARANA_SUN_FOURTH_MARS_TENTH_ASPECTED_BY_THE_WANING_MOON_IMPALED",
+        2_380_352.222_2,
+        27.7172,
+        85.324,
+    ),
+    (
+        "BJ_MARANA_SUN_FOURTH_MARS_TENTH_ASPECTED_BY_THE_WANING_MOON_IMPALED",
         2_380_352.222_2,
         27.7172,
         85.324,
@@ -965,10 +1017,76 @@ const FIXTURES: [(&str, f64, f64, f64); 168] = [
         27.7172,
         85.324,
     ),
+    (
+        "BJ_JANMA_BIPED_SIGN_RISING_WITH_SATURN_ASPECTED_BY_VENUS_AND_THE_MOON",
+        2_380_000.25,
+        27.7172,
+        29.306,
+    ),
+    (
+        "PHALADEEPIKA_KALATRA_VENUS_AND_MOON_SEVENTH_FROM_MARS_AND_SATURN",
+        2_406_841.5,
+        27.7172,
+        -21.251,
+    ),
+    (
+        "PHALADEEPIKA_PUTRA_SUN_FIFTH_IN_A_SIGN_OF_FEW_CHILDREN_SATURN_EIGHTH_MARS_RISING",
+        2_436_432.5,
+        27.7172,
+        -26.638,
+    ),
+    (
+        "PHALADEEPIKA_PUTRA_VENUS_AND_MERCURY_SEVENTH_JUPITER_FIFTH_MALEFIC_FOURTH",
+        2_379_520.5,
+        27.7172,
+        -67.337,
+    ),
+    (
+        "PARIJATA_GARBHA_MALE_HERMAPHRODITE_SATURN_WITH_MERCURY_SIXTH",
+        2_413_883.5,
+        27.7172,
+        -64.469,
+    ),
+    (
+        "PARIJATA_GARBHA_MANY_LAGNA_IN_SAGITTARIUS_LAST_NAVAMSHA",
+        2_380_862.5,
+        27.7172,
+        -59.061,
+    ),
+    (
+        "PARIJATA_GARBHA_TRIPLETS_TWO_BOYS_AND_A_GIRL",
+        2_404_407.5,
+        27.7172,
+        -147.429,
+    ),
+    (
+        "PARIJATA_GARBHA_TRIPLETS_TWO_GIRLS_AND_A_BOY",
+        2_382_381.5,
+        27.7172,
+        -38.206,
+    ),
+    (
+        "PARIJATA_GARBHA_TWIN_BOYS_FIVE_IN_GEMINI_OR_SAGITTARIUS_NAVAMSHAS",
+        2_411_498.5,
+        27.7172,
+        68.733,
+    ),
+    (
+        "PARIJATA_GARBHA_TWIN_GIRLS_FIVE_IN_VIRGO_OR_PISCES_NAVAMSHAS",
+        2_407_511.5,
+        27.7172,
+        38.386,
+    ),
+    (
+        "PARIJATA_RAJA_FIVE_IN_OWN_SIGNS",
+        2_384_900.5,
+        27.7172,
+        4.173,
+    ),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 62] = [
+const UNSEEN: [(&str, &str); 75] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -1175,11 +1293,23 @@ const UNSEEN: [(&str, &str); 62] = [
         "The Moon in the 8th and the Sun in the 4th stand five signs apart, so the Moon is 120 to 180 degrees past the Sun and waxing; the verse asks her waning.",
     ),
     (
+        "BJ_MARANA_WANING_MOON_EIGHTH_MARS_TENTH_SATURN_FIRST_SUN_FOURTH_CLUBBED",
+        "The Moon in the 8th and the Sun in the 4th stand five signs apart, so the Moon is 120 to 180 degrees past the Sun and waxing; the verse asks her waning.",
+    ),
+    (
         "PARIJATA_MARANA_WANING_MOON_TENTH_MARS_NINTH_SATURN_FIRST_SUN_FIFTH_SMOKE_OR_FIRE",
         "The Moon in the 10th and the Sun in the 5th stand six signs apart, 120 to 180 degrees past the Sun, so she is waxing; of 83 days 1800 to 2398 holding everything else, none has her waning.",
     ),
     (
+        "BJ_MARANA_WANING_MOON_TENTH_MARS_NINTH_SATURN_FIRST_SUN_FIFTH_SMOKE_OR_FIRE",
+        "The Moon in the 10th and the Sun in the 5th stand six signs apart, 120 to 180 degrees past the Sun, so she is waxing; of 83 days 1800 to 2398 holding everything else, none has her waning.",
+    ),
+    (
         "PARIJATA_MARANA_WANING_MOON_TENTH_SUN_SEVENTH_MARS_FOURTH_DEATH_IN_FILTH",
+        "The Moon in the 10th and the Sun in the 7th stand four signs apart, so the Moon is past the Sun by under 180 degrees and waxing; the verse asks her waning.",
+    ),
+    (
+        "BJ_MARANA_WANING_MOON_TENTH_SUN_SEVENTH_MARS_FOURTH_DEATH_IN_FILTH",
         "The Moon in the 10th and the Sun in the 7th stand four signs apart, so the Moon is past the Sun by under 180 degrees and waxing; the verse asks her waning.",
     ),
     (
@@ -1211,12 +1341,52 @@ const UNSEEN: [(&str, &str); 62] = [
         "It asks every graha but Jupiter weak, and the Sun, Mars and Saturn are never weak together: of 2,000 instants drawn over 1900 to 2100 the Sun is weak on 482, Mars on 54, both on 12, and the three on none.",
     ),
     (
+        "BJ_LOKA_MOKSHA_PISCES_RISING_IN_A_BENEFICS_NAVAMSHA_WITH_JUPITER_THE_REST_WEAK",
+        "It asks every graha but Jupiter weak, and the Sun, Mars and Saturn are never weak together: of 2,000 instants drawn over 1900 to 2100 the Sun is weak on 482, Mars on 54, both on 12, and the three on none.",
+    ),
+    (
         "PARIJATA_MOON_AND_MERCURY_TENTH_AFFLICTED_IN_FALLEN_NAVAMSHAS",
         "It holds on none of 24,848 instants drawn over 1900 to 2100 at Kathmandu, nor on any ten minutes of the days a sign-level search of 1800 to 2398 found for it: the Moon and Mercury in the 10th, each in its fallen navamsha, with a malefic, aspected by one, together.",
     ),
     (
         "PARIJATA_ROGA_SATURN_SIXTH_WITH_GULIKA_ASPECTED_BY_SUN_MARS_RAHU",
         "It holds on none of 24,848 instants drawn over 1900 to 2100 at Kathmandu, nor on any ten minutes of the days a sign-level search of 1800 to 2398 found with Saturn so aspected: Gulika, which moves through the day, must stand in the 6th with him as well.",
+    ),
+    (
+        "BJ_STRI_SATURN_MIDDLING_THE_SOFT_WEAK_THE_HARD_STRONG_ODD_LAGNA",
+        "It asks the Moon, Venus and Mercury below their required Shadbala together while the Sun, Mars and Jupiter pass theirs, and the Moon rarely falls below her six rupas: of 9,000 instants drawn over 1900 to 2100, none holds it.",
+    ),
+    (
+        "PARIJATA_VIYONI",
+        "It asks every malefic strong in its own dwadashamsha and every benefic weak and in none of its own, the Moon among them, and her Shadbala rarely falls below her six rupas: of 9,000 instants drawn over 1900 to 2100, none holds it.",
+    ),
+    (
+        "PARIJATA_VIYONI_LAGNA_ASPECTED_BY_VENUS_COW",
+        "It is a figure within the viyoni birth of v. 2, which asks every malefic strong in its own dwadashamsha and every benefic weak and in none of its own, the Moon among them and rarely below her six rupas: of 9,000 instants drawn over 1900 to 2100, none holds v. 2.",
+    ),
+    (
+        "PARIJATA_VIYONI_LAGNA_WITH_OR_ASPECTED_BY_SATURN_BUFFALO",
+        "It is a figure within the viyoni birth of v. 2, which asks every malefic strong in its own dwadashamsha and every benefic weak and in none of its own, the Moon among them and rarely below her six rupas: of 9,000 instants drawn over 1900 to 2100, none holds v. 2.",
+    ),
+    (
+        "PARIJATA_VIYONI_NODE_RISING_SHEEP_OR_GOAT",
+        "It is a figure within the viyoni birth of v. 2, which asks every malefic strong in its own dwadashamsha and every benefic weak and in none of its own, the Moon among them and rarely below her six rupas: of 9,000 instants drawn over 1900 to 2100, none holds v. 2.",
+    ),
+    (
+        "PARIJATA_VIYONI_MALEFICS_RISING_OTHER_KIND",
+        "It is a figure within the viyoni birth of v. 2, which asks every malefic strong in its own dwadashamsha and every benefic weak and in none of its own, the Moon among them and rarely below her six rupas: of 9,000 instants drawn over 1900 to 2100, none holds v. 2.",
+    ),
+    (
+        "PARIJATA_GARBHA_TRIPLETS_THREE_BOYS",
+        "The lagna and all seven must stand in two navamsha signs with Mercury in one of them: no day from 1800 to 2398 holds it at the level of signs, and none of 9,000 instants drawn over 1900 to 2100.",
+    ),
+    (
+        "PARIJATA_GARBHA_TRIPLETS_THREE_GIRLS",
+        "The lagna and all seven must stand in two navamsha signs with Mercury in one of them: no day from 1800 to 2398 holds it at the level of signs, and none of 9,000 instants drawn over 1900 to 2100.",
+    ),
+    (
+        "PARIJATA_RAJA_FOUR_EXALTED_AND_STRONG_IN_KENDRAS",
+        "Only the Sun, Mars, Jupiter and Saturn are exalted in signs square to one another, Aries, Capricorn, Cancer and Libra, and no day from 1800 to 2398 has the four exalted together.",
     ),
 ];
 

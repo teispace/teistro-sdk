@@ -46,6 +46,43 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
+**Jataka Parijata's births, counts and gandas, ch. 3, ch. 8 and ch. 9**
+(`rules-engine.md`). **Numbers:** none moved; this adds 169 rules. Ch. 3's
+viyoni births, the sex of the child, twins, triplets, eunuchs, the cord and
+the parentage; ch. 8's counts of exalted, own, friendly and hostile grahas;
+ch. 9's ganda nakshatras, their parts and padas, and the evil tithis, yogas
+and karanas, read in Sastri's 1932 translation against the verse and the
+Chowkhamba print. Eleven state another text's figure, BPHS chs. 85 to 87's
+or Brihat Jataka ch. 5's, and answer what it does; ch. 8's conjunctions are
+the shipped together readings and are not repeated. Eight the sky never
+holds are listed unseen, five of them the viyoni birth, which asks every
+malefic strong and every benefic weak; what the verses leave open is
+cruxes C500 to C503.
+
+**Brihat Jataka chs. 5, 7, 22, 24 and 25** (`rules-engine.md`). **Numbers:**
+none moved; this adds 189 rules. The chapters of Varahamihira's that still
+held unshipped yogas, read in Iyer's 1885 translation against the Sanskrit,
+join the nabhasa set: ch. 5's circumstances of the birth (`BJ_JANMA_*`, the
+father away or in custody, twins, the cord, the boat, the prison, the
+deserted child); ch. 7 v. 14's life beyond reckoning (`BJ_AYUR_*`, as BPHS
+ch. 43 v. 55); ch. 22's happy births (`BJ_PRAKIRNA_*`); ch. 24's woman's
+horoscope (`BJ_STRI_*`, the lagna and Moon by sign and trimshamsha, the
+seventh and the husband, widowhood and the ascetic); and ch. 25's manner of
+death and the worlds before and after (`BJ_MARANA_*`, `BJ_LOKA_*`), which
+Jataka Parijata ch. 5A restates: 57 of its rules copy Parijata's and answer
+what they do. Five the sky cannot hold are listed unseen; cruxes C520 to
+C526.
+
+**Phaladeepika chs. 10, 12 and 27** (`rules-engine.md`). **Numbers:** none
+moved; this adds 75 rules. Ch. 10's seventh house and the wife (`kalatra`),
+ch. 12's children (`miscellaneous`, as Brihat Jataka ch. 23's sons are) and
+ch. 27's ascetics (`pravrajya`), read in Sastri's 1937 translation with the
+Sanskrit beside it. Where Sastri's English drops what the Sanskrit names,
+Taurus among ch. 12 v. 3's signs of few children and the Moon in the fourth
+in v. 7, the rules follow the Sanskrit. Ch. 10 v. 1's fifth and seventh
+"bearing fruit" are as broad as the verse and hold on most charts. Cruxes
+C510 to C513.
+
 **Jataka Parijata's death and marring, ch. 5A and ch. 6** (`rules-engine.md`).
 **Numbers:** none moved; this adds 237 rules. Ch. 5A's manner and place of
 death, the body's end and the worlds before and after, and ch. 6's low

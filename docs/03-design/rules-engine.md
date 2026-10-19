@@ -813,6 +813,31 @@ leader is a reading of its own where BPHS only cancels; v. 3 drops BPHS's
 "yoga of kings" names ch. 11's 30 raja yogas by key. The planetary war of
 vv. 1 and 2 is not built (C490). Ch. 14's pairs ship already as `DWIGRAHA_*`.
 
+**Jataka Parijata ch. 3, ch. 8 and ch. 9, built (2026-10-19).** `classical-parijata-yoga.json`,
+169 rules. Ch. 3 is in `miscellaneous`: viyoni births, sex, twins and eunuchs (`PARIJATA_VIYONI*`,
+`PARIJATA_GARBHA_*`), then the cord, the rites, the father's absence and the parentage
+(`PARIJATA_JANMA_*`), with Mercury's aspect on navamshas read by rashi drishti. Ch. 8's counts
+of dignified grahas are exact counts of the seven. Ch. 9's ganda parts and padas, rikta tithis and
+evil yogas are `ashubha-janma` and `gandanta`. Eight are BPHS twins and three Brihat Jataka ch. 5's,
+each read from its own text to the same conditions; eight are unseen (C500 to C503).
+
+**Brihat Jataka chs. 5, 7, 22, 24 and 25, built (2026-10-19).** `classical-bj-more.json`,
+189 rules in the nabhasa set: ch. 5's birth circumstances, ch. 7 v. 14, ch. 22 vv. 1 to 5,
+ch. 24's woman's horoscope and ch. 25's death and worlds. Ch. 25 is the chapter Jataka Parijata
+ch. 5A restates, and 57 of its rules copy that encoding and are held to agree, departing where
+the Sanskrit does (v. 5's waning Moon, v. 11's sign lord, the drekkana lists of vv. 4 and 13,
+C525, C526). Ch. 24's trimshamshas are read by ch. 1 v. 7's degrees, and the half-sign classes
+by C520. Chs. 16 to 21's readings by placement are left to the readings table, which keeps one
+text a family.
+
+**Phaladeepika chs. 10, 12 and 27, built (2026-10-19).** `classical-phaladeepika-more.json`,
+75 rules in the nabhasa set: ch. 10's seventh house as `PHALADEEPIKA_KALATRA_*`, ch. 12's
+children as `PHALADEEPIKA_PUTRA_*` and ch. 27's ascetics as `PHALADEEPIKA_PRAVRAJYA_*`. Ch. 10
+v. 2's waning Moon in the fifth is Brihat Jataka ch. 23 v. 4's figure and is held to agree; ch. 27
+v. 2 asks strength only of the strongest of four, so it is not BPHS ch. 79's or Brihat Jataka
+ch. 15's. The timing verses, the counts of wives and children, ch. 11's woman's chart and ch. 16's
+bhavas are not built (C510 to C513).
+
 **Jataka Parijata ch. 5A and ch. 6, built (2026-10-19).** `classical-parijata-bhanga.json`,
 237 rules: ch. 5A's death and worlds (`PARIJATA_MARANA_*`, `PARIJATA_LOKA_*`), the 22nd
 drekkana read by the lagna's sign and third; ch. 6's poverty, servitude, limbs and diseases
