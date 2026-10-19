@@ -19,7 +19,8 @@ use teistro_rules::{Evaluator, Readings, Rule, shipped};
 /// The chapters this pack encodes.
 const CHAPTERS: [&str; 5] = ["20", "38", "39", "44", "46"];
 
-/// The rules of the given Saravali chapters.
+/// The rules of the given Saravali chapters; of ch. 46, vv. 1 to 21 only, its
+/// later verses being `saravali_late.rs`'s.
 fn chapters(numbers: &[&str]) -> Vec<Rule> {
     shipped::nabhasas()
         .iter()
@@ -30,9 +31,19 @@ fn chapters(numbers: &[&str]) -> Vec<Rule> {
                     .chapter
                     .as_deref()
                     .is_some_and(|chapter| numbers.contains(&chapter))
+                && !is_late(rule)
         })
         .cloned()
         .collect()
+}
+
+/// A rule of Saravali ch. 46 from v. 22 on.
+fn is_late(rule: &Rule) -> bool {
+    rule.source.chapter.as_deref() == Some("46")
+        && rule.source.verse.as_deref().is_some_and(|verse| {
+            let digits: String = verse.chars().take_while(char::is_ascii_digit).collect();
+            digits.parse::<u32>().is_ok_and(|first| first >= 22)
+        })
 }
 
 /// The yogas Saravali states as another shipped text does, each with that
