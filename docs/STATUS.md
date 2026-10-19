@@ -1173,8 +1173,10 @@ provider's DUT1).
    system or layout named in `chart.found` (`--dashas`, `--layouts`);
    §6 step 5 packages the binary with the release (archives, npm, the
    bundle and the registry entry, rehearsed with nothing published).
-   A research study's `dasha` takes a registered system too. Left: P7's
-   tasks wait on a study measured to outlast a client's timeout.
+   A research study's `dasha` takes a registered system too. P7 is
+   built (2026-10-19): a study was measured at 431 s, so a declaring
+   client's call outlasting two seconds becomes an
+   `io.modelcontextprotocol/tasks` task, polled and cancelled by id.
    A question that is **decided** may not be named in this step or in
    `## Next` — the same lint refuses it — because a settled question on
    a list of what remains is work someone will go looking for.
