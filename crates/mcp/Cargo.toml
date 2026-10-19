@@ -24,12 +24,18 @@ serde = "1"
 serde_json = "1"
 schemars = "1.2"
 
+# A task id's randomness, and the thread a task runs on, are the host's:
+# a wasm32 server makes no tasks.
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+getrandom = "0.3"
+
 [dev-dependencies]
 boon = "0.6"
 teistro-test-adapter = { path = "../test-adapter" }
 
 [build-dependencies]
 serde_json = "1"
+getrandom = "0.3"
 
 # The binary loads the adapter `--plugin` names, which is one `unsafe`
 # call with its SAFETY comment (`src/main.rs`); unsafe is `deny` rather

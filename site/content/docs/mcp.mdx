@@ -65,6 +65,12 @@ context carries; `teistro-mcp --help` lists them all.
   systems of your own, which a chart request then names by key.
 - `--max-items`, `--max-days` and `--max-message-bytes` bound a request;
   past a bound it is refused naming its field.
+- `--task-after MS` is how long a call is waited on before it is handed
+  back as a task, 2000 unless told. Only a client that declares the
+  `io.modelcontextprotocol/tasks` extension ever gets one, and it polls
+  the task with `tasks/get` and stops it with `tasks/cancel`. A large
+  research study can run for minutes, longer than a client's request
+  timeout. `none` turns tasks off.
 - `--http 127.0.0.1:8080` serves Streamable HTTP at `/mcp` instead of
   stdio, stateless, with `--http-workers`, `--http-rate` and
   `--allow-origin`. It checks no credentials: bind it to loopback, or put

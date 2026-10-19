@@ -1917,6 +1917,7 @@ name = "teistro-mcp"
 version = "0.0.0"
 dependencies = [
  "boon",
+ "getrandom 0.3.4",
  "schemars",
  "serde",
  "serde_json",

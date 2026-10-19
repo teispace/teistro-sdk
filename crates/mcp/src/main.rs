@@ -6,16 +6,20 @@ use std::io::{BufRead, Write as _};
 use std::net::TcpListener;
 use std::process::ExitCode;
 use std::sync::Arc;
+use std::time::Duration;
 
 use teistro_mcp::http::{self, Http, MakeServer};
-use teistro_mcp::{Adapter, Detail, Engine, Interrupt, LEGACY, Limits, MODERN, Server};
+use teistro_mcp::{
+    Adapter, Detail, Engine, Interrupt, LEGACY, Limits, MODERN, Server, TASK_PATIENCE,
+};
 
 const USAGE: &str = "teistro-mcp: the Teistro SDK as Model Context Protocol tools, over stdio
 or Streamable HTTP
 
 usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                    [--schemas DETAIL] [--max-message-bytes N] [--max-items N]
-                   [--max-days N] [--pack PATH]... [--layouts PATH]...
+                   [--max-days N] [--task-after MS] [--pack PATH]...
+                   [--layouts PATH]...
                    [--dashas PATH]...
                    [--http ADDRESS [--http-workers N] [--http-rate N]
                                    [--allow-origin ORIGIN]...]
@@ -51,6 +55,10 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                          told
                          (each takes `none` to bound nothing; a request past
                          a bound is refused naming its field and the bound)
+  --task-after MS        how long a call is waited on before it is handed
+                         back as a task its client polls, for a client
+                         declaring the io.modelcontextprotocol/tasks
+                         extension: 2000 unless told, `none` for never
   --http ADDRESS         serve Streamable HTTP at http://ADDRESS/mcp rather
                          than stdio (`127.0.0.1:8080`, or port 0 for any): the
                          2026-07-28 revision, stateless; authorization is left
@@ -72,6 +80,8 @@ struct Options {
     plugin_config: Option<String>,
     detail: Detail,
     limits: Limits,
+    /// How long a call is waited on before it becomes a task (P7).
+    patience: Option<Duration>,
     /// The address `--http` serves at, and how.
     http: Option<(String, Http)>,
     /// The files the operator adds to every context.
@@ -284,7 +294,8 @@ fn serve_http(options: Options, address: &str, http: &Http) -> ExitCode {
 fn server(options: &Options) -> Result<Server, teistro::Error> {
     let mut server = engine(options)?
         .with_detail(options.detail)
-        .with_limits(options.limits);
+        .with_limits(options.limits)
+        .with_task_patience(options.patience);
     for (path, bytes) in &options.added.packs {
         server = server.with_pack(Arc::clone(bytes)).map_err(|refusal| {
             teistro::Error::new(teistro::Status::Pack, format!("--pack {path}: {refusal}"))
@@ -340,6 +351,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
     let (mut plugin, mut plugin_config) = (None, None);
     let mut detail = Detail::default();
     let mut limits = Limits::default();
+    let mut patience = Some(TASK_PATIENCE);
     let (mut address, mut workers, mut origins) = (None, None, Vec::new());
     let mut rate = None;
     let mut added = Added::default();
@@ -383,6 +395,9 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
             "--max-message-bytes" => limits.message_bytes = bound(&arg, args.next())?,
             "--max-items" => limits.items = bound(&arg, args.next())?,
             "--max-days" => limits.days = bound(&arg, args.next())?,
+            "--task-after" => {
+                patience = bound::<u64>(&arg, args.next())?.map(Duration::from_millis);
+            }
             "--http" => address = Some(args.next().ok_or("`--http` takes an address")?),
             "--http-workers" => {
                 let count = args.next().ok_or("`--http-workers` takes a count")?;
@@ -427,6 +442,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
         plugin_config,
         detail,
         limits,
+        patience,
         http,
         added,
     }))

@@ -19,7 +19,7 @@ use std::io::{BufRead as _, BufReader, Read as _, Write as _};
 use std::net::{TcpListener, TcpStream};
 use std::process::{Command, Stdio};
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 use teistro_mcp::http::{self, Http, MakeServer};
@@ -45,6 +45,17 @@ impl Served {
         };
         let make: Arc<MakeServer> = Arc::new(move || Ok(Server::new(engine).with_limits(limits)));
         std::thread::spawn(move || http::serve(&listener, &http, &make));
+        Served { address }
+    }
+
+    /// The shipped transport, every call a task for a client declaring
+    /// the extension.
+    fn tasking() -> Served {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap().to_string();
+        let make: Arc<MakeServer> =
+            Arc::new(|| Ok(Server::new(Engine::Builtin).with_task_patience(Some(Duration::ZERO))));
+        std::thread::spawn(move || http::serve(&listener, &Http::default(), &make));
         Served { address }
     }
 
@@ -134,6 +145,9 @@ fn required(message: &Value) -> Vec<(&'static str, String)> {
     ];
     if let Some(name) = message["params"]["name"].as_str() {
         headers.push(("Mcp-Name", name.to_owned()));
+    }
+    if let Some(task) = message["params"]["taskId"].as_str() {
+        headers.push(("Mcp-Name", task.to_owned()));
     }
     headers
 }
@@ -442,4 +456,36 @@ fn the_binary_serves_the_endpoint_its_options_describe() {
     let _ = child.wait();
     assert!(address.is_some(), "no address in {line:?}");
     assert_eq!(statuses, Some(vec![200, 200, 429]));
+}
+
+/// **A task is the process's** (P7): begun on one worker, it is polled to
+/// its end through whichever worker serves each poll, its `Mcp-Name` the
+/// task's id.
+#[test]
+fn a_task_is_polled_through_every_worker() {
+    let served = Served::tasking();
+    let mut call = days(1, None);
+    call["params"]["_meta"]["io.modelcontextprotocol/clientCapabilities"] =
+        json!({ "extensions": { "io.modelcontextprotocol/tasks": {} } });
+    let created = post(&served, &call).json();
+    assert_eq!(created["result"]["resultType"], "task", "{created}");
+    let id = created["result"]["taskId"].as_str().unwrap().to_owned();
+    let started = Instant::now();
+    loop {
+        let poll = json!({ "jsonrpc": "2.0", "id": 2, "method": "tasks/get", "params": {
+            "_meta": call["params"]["_meta"].clone(), "taskId": id } });
+        let polled = post(&served, &poll);
+        assert_eq!(polled.status, 200, "{}", polled.body);
+        let task = polled.json()["result"].clone();
+        if task["status"] == "completed" {
+            assert_eq!(task["result"]["isError"], false, "{task}");
+            break;
+        }
+        assert_eq!(task["status"], "working", "{task}");
+        assert!(
+            started.elapsed() < Duration::from_secs(120),
+            "the task never ended"
+        );
+        std::thread::sleep(Duration::from_millis(50));
+    }
 }

@@ -122,6 +122,18 @@ answered. A program embedding the server sends progress through
 `Server::with_notify` and cancels from another thread through
 `Server::interrupt`.
 
+The server supports the `io.modelcontextprotocol/tasks` extension, for
+work longer than a client's request timeout: a large research study can
+run for minutes.
+- *When a call becomes a task:* only for a client that declares the
+  extension, and only when the call outlasts two seconds
+  (`--task-after MS`, or `none` to turn tasks off). The call is then
+  handed back as a task, which the client polls with `tasks/get` and
+  stops with `tasks/cancel`. A quicker call is answered inline.
+- *Embedding:* a program embedding the server sets the wait with
+  `Server::with_task_patience`.
+- *Over HTTP:* every worker shares the process's tasks.
+
 A request is bounded, and a request past a bound is refused naming its
 field, the bound and the option moving it: a message's bytes
 (`--max-message-bytes`), any array's members (`--max-items`) and the

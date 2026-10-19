@@ -12,6 +12,22 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Long work as a task over MCP** (`mcp-server.md`, P7). **Numbers:**
+none moved.
+
+- *What changes:* `teistro-mcp` speaks the `io.modelcontextprotocol/tasks`
+  extension. A client that declares it gets a call outlasting two seconds
+  (`--task-after MS`, `none` for never) back as a task handle, which it
+  polls with `tasks/get` and stops with `tasks/cancel`. A quicker call is
+  answered inline, as before.
+- *Why:* measured through the release binary, a 1,000-birth study at the
+  most permutations a test may draw took 431 s, seven times a default
+  client's request timeout.
+- *Who is unaffected:* a client that does not declare the extension is
+  answered exactly as before.
+- *For an embedding host:* `Server::with_task_patience` sets the wait,
+  and `TASK_PATIENCE` is the shipped one.
+
 **Shodashottari and Shattrimsha-sama** (`dasha-kernels.md`). **Numbers:**
 none moved; two dashas the catalogue named are computed, 31 in all. BPHS
 ch. 46 vv. 24 to 26: from Pushya, by eight, the Sun to Venus without

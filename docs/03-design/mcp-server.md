@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
 Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
-P8 to P10 built, P7 open, §6 step 5 (packaging) built. Closes Q35 (`QUESTIONS.md`), which the
+P7 to P10 built, §6 step 5 (packaging) built. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -447,6 +447,63 @@ in front.
 the case for the `io.modelcontextprotocol/tasks` extension: the call
 answers a task handle, `tasks/get` polls it. Taken up when a study is
 measured to outlast a client's timeout, not before.
+
+*Measured (2026-10-19), and so built.* Through the release binary at
+the shipped bounds, a `COMPARE` study of 1,000 births over every shipped
+rule group took 2.2 s at 999 permutations and 2.5 s at 99,999, and
+**431 s at 10,000,000**, the most a test may draw, which no bound of the
+server's limits. That is seven times the TypeScript SDK's default request
+timeout of 60 s. Progress was heard every 2.3 s on average (191
+notifications), but a client resets its timeout on progress only when
+it opts in, so the call outlasts a default client.
+
+*Built.* The extension as SEP-2663 finalised it: the server decides per
+request, a client declares the extension in its per-request
+capabilities and is never sent a task otherwise, and
+`server/discover` lists it under `capabilities.extensions`. A
+`tools/call` from a declaring client is computed on a thread of its own,
+in a fork of the server (the same engine, adapter, tools, packs and
+bounds, its own watch and contexts); it is answered as before if it ends
+within the server's patience, two seconds unless `--task-after` says
+otherwise (`none` for never), and as a `CreateTaskResult`
+(`resultType: "task"`) otherwise. So a quick call costs a declaring
+client nothing, and only the long call becomes a task. A cancellation of
+the request while it is still waited on passes to the work.
+
+`tasks/get` answers the task with its status, the latest progress as its
+`statusMessage`, `pollIntervalMs` of a second, and `ttlMs` unlimited
+while it works and its life plus an hour once it ends. A completed task
+carries the call's own result, a tool error included, and a failed one
+the JSON-RPC error, as the extension separates them. `tasks/cancel` is
+acknowledged at once and stops the work at its next engine request,
+cooperatively. `tasks/update` is acknowledged, since no task of this
+server asks for input.
+
+The refusals follow the extension:
+- an unknown task is `-32602` naming `taskId`;
+- an undeclaring client's task method is `-32021` with the required
+  capability;
+- a task method under the handshake revision, or with tasks turned off,
+  is `-32601`.
+
+The process keeps the tasks in one store, which every HTTP worker
+shares, so a poll finds a task whichever worker serves it. It keeps:
+- at most 8 working (a call past that is answered inline, as the
+  extension allows);
+- 256 ended ones, the oldest dropped first;
+- each ended one for an hour.
+
+A task id is 128 bits from the operating system, since the id is all
+that stands between one caller's task and another's (the extension's
+security note).
+
+Gated in `tests/tasks.rs`:
+- a declaring client's call, given no patience, is a handle polled to the
+  same `structuredContent` the inline call answers;
+- a call within the patience stays inline;
+- a tool error completes and a protocol error fails;
+- a cancelled task ends `cancelled`;
+- every refusal carries its code.
 
 **P8. Streamable HTTP, stateless.** The modern revision has no session,
 so the same dispatcher answers HTTP POST: `Mcp-Method`/`Mcp-Name`

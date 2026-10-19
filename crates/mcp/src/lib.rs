@@ -29,6 +29,7 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 use serde_json::{Map, Value, json};
 use teistro::records::{Answered, Record};
@@ -48,6 +49,7 @@ mod limits;
 mod prompts;
 mod resources;
 mod schemas;
+mod tasks;
 mod tool;
 mod tools;
 mod watch;
@@ -61,6 +63,9 @@ pub use watch::{Interrupt, Notify};
 pub const MODERN: &str = "2026-07-28";
 /// The handshake revision the server speaks after `initialize`.
 pub const LEGACY: &str = "2025-11-25";
+/// How long a call is waited on before it is handed back as a task, unless
+/// the operator says otherwise ([`Server::with_task_patience`]).
+pub const TASK_PATIENCE: Duration = tasks::PATIENCE;
 /// Every revision the server speaks, newest first.
 pub const SUPPORTED: [&str; 2] = [MODERN, LEGACY];
 
@@ -200,14 +205,16 @@ pub type OpenEngine = Box<dyn Fn() -> Result<Box<dyn EphemerisProvider>, Error> 
 /// The engine ahead of the server's own, and the operations of its own
 /// its manifest named when the server started: each is a tool,
 /// `engine.<name>` (ADR-0030).
+#[derive(Clone)]
 struct Plugin {
     name: String,
-    open: OpenEngine,
+    open: Arc<OpenEngine>,
     operations: Vec<NativeFunction>,
 }
 
 /// A pack loaded into every context the server builds: its bytes, and
 /// what its first load reported.
+#[derive(Clone)]
 struct Pack {
     bytes: Arc<[u8]>,
     loaded: Loaded,
@@ -215,7 +222,7 @@ struct Pack {
 
 /// What the operator adds to every context the server builds: its own
 /// layouts and dasha systems, registered, and its packs, loaded after.
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct Own {
     layouts: Vec<teistro::Layout>,
     dashas: Vec<teistro::DashaDefinition>,
@@ -273,6 +280,13 @@ pub struct Server {
     /// What a transport cancels a running call through, and what the
     /// engine's watch reads.
     watch: Arc<watch::Shared>,
+    /// The tasks a call becomes once it outlasts `patience` (P7): the
+    /// process's, shared by every server a transport builds.
+    tasks: Arc<tasks::Store>,
+    /// How long a call whose client declares the tasks extension is
+    /// waited on before it is handed back as a task; `None` never makes
+    /// one.
+    patience: Option<Duration>,
     /// The tool list, built on the first `tools/list`: it changes only
     /// with the binary and the engine, both fixed for the process.
     listed: Option<Map<String, Value>>,
@@ -292,6 +306,8 @@ impl core::fmt::Debug for Server {
             .field("detail", &self.detail)
             .field("limits", &self.limits)
             .field("watch", &self.watch)
+            .field("patience", &self.patience)
+            .field("tasks", &self.tasks)
             .field("listed", &self.listed.is_some())
             .field("layouts", &self.own.layouts.len())
             .field("dashas", &self.own.dashas.len())
@@ -313,6 +329,8 @@ impl Server {
             detail: Detail::Lean,
             limits: Limits::default(),
             watch: watch::Shared::new(),
+            tasks: tasks::Store::shared(),
+            patience: NATIVE.then_some(TASK_PATIENCE),
             listed: None,
             own: Own::default(),
             tools: Vec::new(),
@@ -469,6 +487,29 @@ impl Server {
         self
     }
 
+    /// The same server, waiting `patience` on a call whose client declares
+    /// the `io.modelcontextprotocol/tasks` extension before handing it back
+    /// as a task its client polls (P7), or never making one for `None`.
+    /// The shipped patience is [`TASK_PATIENCE`], two seconds. A wasm32
+    /// server makes no tasks, having no thread to run one on.
+    #[must_use]
+    pub fn with_task_patience(self, patience: Option<Duration>) -> Server {
+        Server {
+            patience: patience.filter(|_| NATIVE),
+            ..self
+        }
+    }
+
+    /// The same server, its tasks kept in `store`, so a transport's
+    /// workers all reach every task.
+    #[cfg(not(target_family = "wasm"))]
+    pub(crate) fn with_tasks(self, store: Arc<tasks::Store>) -> Server {
+        Server {
+            tasks: store,
+            ..self
+        }
+    }
+
     /// A handle that cancels a request while the server computes it, for
     /// the thread a transport reads its input on. A
     /// `notifications/cancelled` the server itself reads does the same.
@@ -499,7 +540,7 @@ impl Server {
         Ok(Server {
             plugin: Some(Plugin {
                 name,
-                open,
+                open: Arc::new(open),
                 operations: tools::reachable(operations),
             }),
             ..Server::new(fallback)
@@ -645,9 +686,10 @@ impl Server {
                     .clone();
                 Ok(complete(era, self.cacheable(era, list)))
             }
-            "tools/call" => {
+            "tools/call" => self.tools_call(params),
+            "tasks/get" | "tasks/update" | "tasks/cancel" => {
                 let era = self.era(params)?;
-                Ok(complete(era, self.call(params)?))
+                self.task(era, method, params)
             }
             "resources/list" => {
                 let era = self.era(params)?;
@@ -721,7 +763,8 @@ impl Server {
                     "no method `{method}`: the server answers `server/discover`, `tools/list`, \
                      `tools/call`, `resources/list`, `resources/templates/list` and \
                      `resources/read`, `prompts/list`, `prompts/get` and \
-                     `completion/complete`, and `initialize` and `ping` under {LEGACY}"
+                     `completion/complete`, `tasks/get`, `tasks/update` and `tasks/cancel` \
+                     under {MODERN}, and `initialize` and `ping` under {LEGACY}"
                 ),
             )),
         }
@@ -921,7 +964,7 @@ impl Server {
                 let (profile, settings, locale) = entry.key();
                 let mut chain = Vec::with_capacity(2);
                 if let Some(plugin) = &self.plugin {
-                    chain.push(Ephemeris::Provider((plugin.open)()?));
+                    chain.push(Ephemeris::Provider((*plugin.open)()?));
                 }
                 if self.engine != Engine::None || chain.is_empty() {
                     chain.push(self.engine.entry());
@@ -953,12 +996,22 @@ impl Server {
         let answer = json!({
             "resultType": "complete",
             "supportedVersions": SUPPORTED,
-            "capabilities": capabilities(),
+            "capabilities": self.modern_capabilities(),
             "instructions": INSTRUCTIONS,
             "ttlMs": self.ttl_ms(),
             "cacheScope": "public",
         });
         answer.as_object().cloned().unwrap_or_default()
+    }
+
+    /// What the modern revision's discovery says the server offers: the
+    /// handshake's, and the tasks extension when the server makes tasks.
+    fn modern_capabilities(&self) -> Value {
+        let mut offered = capabilities();
+        if let (Some(_), Some(offered)) = (self.patience, offered.as_object_mut()) {
+            offered.insert(String::from("extensions"), json!({ tasks::EXTENSION: {} }));
+        }
+        offered
     }
 
     /// How long a caller may keep what the server lists: a day for the
@@ -1109,11 +1162,253 @@ fn coded(id: &Value, fault: &Fault) -> (String, Option<i64>) {
 }
 
 fn failure(id: &Value, fault: &Fault) -> String {
+    json!({ "jsonrpc": "2.0", "id": id, "error": error_object(fault) }).to_string()
+}
+
+/// Long work as a task (P7).
+impl Server {
+    /// What a server like this one is built from on a task's thread: the
+    /// same engine, adapter, tools, packs and bounds, its own watch, and
+    /// the same task store. A context is not sent between threads, so
+    /// the fork builds its own.
+    fn fork(&self) -> Fork {
+        Fork {
+            engine: self.engine,
+            plugin: self.plugin.clone(),
+            detail: self.detail,
+            limits: self.limits,
+            watch: watch::Shared::new(),
+            tasks: Arc::clone(&self.tasks),
+            own: self.own.clone(),
+            tools: self.tools.clone(),
+        }
+    }
+
+    /// `tools/call`: as a task for a modern client declaring the
+    /// extension while the server makes tasks, and answered inline
+    /// otherwise.
+    fn tools_call(&mut self, params: &Value) -> Result<Value, Fault> {
+        let era = self.era(params)?;
+        if era == Era::Modern && declares_tasks(params) {
+            if let Some(patience) = self.patience {
+                return self.call_as_task(params, patience);
+            }
+        }
+        Ok(complete(era, self.call(params)?))
+    }
+
+    /// `tools/call` from a client declaring the tasks extension: computed
+    /// on a thread of its own, answered as usual within `patience`, and
+    /// as a `CreateTaskResult` once it outlasts it. A call past
+    /// [`tasks::MOST_WORKING`] working tasks is answered inline, as the
+    /// extension allows of any call; so is a describing tool, which
+    /// computes nothing.
+    fn call_as_task(&mut self, params: &Value, patience: Duration) -> Result<Value, Fault> {
+        let name = params.get("name").and_then(Value::as_str);
+        if matches!(name, Some(tools::DESCRIBE | schemas::DESCRIBE)) {
+            return Ok(complete(Era::Modern, self.call(params)?));
+        }
+        let fork = self.fork();
+        let Some(id) = self.tasks.begin(fork.watch.interrupt()) else {
+            return Ok(complete(Era::Modern, self.call(params)?));
+        };
+        let store = Arc::clone(&self.tasks);
+        let reported = id.clone();
+        fork.watch.set_notify(Arc::new(move |line: String| {
+            let said = serde_json::from_str::<Value>(&line).ok().and_then(|line| {
+                line.get("params")?
+                    .get("message")?
+                    .as_str()
+                    .map(str::to_owned)
+            });
+            if let Some(said) = said {
+                store.report(&reported, said);
+            }
+        }));
+        let store = Arc::clone(&self.tasks);
+        let (done, ended) = std::sync::mpsc::channel::<()>();
+        let (task, params) = (id.clone(), params.clone());
+        std::thread::spawn(move || {
+            let mut fork = fork.server();
+            let key = Value::String(task.clone());
+            fork.watch.begin(&key, Some(&key));
+            let answered =
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| fork.call(&params)));
+            let cancelled = fork.watch.end();
+            let status = match answered {
+                _ if cancelled => tasks::Status::Cancelled,
+                Ok(Ok(result)) => tasks::Status::Completed(complete(Era::Modern, result)),
+                Ok(Err(fault)) => tasks::Status::Failed(error_object(&fault)),
+                Err(_) => tasks::Status::Failed(error_object(&Fault::new(
+                    INTERNAL_ERROR,
+                    "the call panicked while it computed",
+                ))),
+            };
+            store.end(&task, status);
+            let _ = done.send(());
+        });
+        // Wait out the patience, handing a cancellation of the request on
+        // to the task while it is still the request's.
+        let deadline = Instant::now() + patience;
+        loop {
+            let left = deadline.saturating_duration_since(Instant::now());
+            match ended.recv_timeout(left.min(WAIT_STEP)) {
+                Ok(()) | Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                    if self.watch.stopping() {
+                        let _ = self.tasks.cancel(&id);
+                    }
+                    if left.is_zero() {
+                        let mut created = self.tasks.view(&id).map_err(task_fault)?;
+                        created.insert(String::from("resultType"), json!("task"));
+                        return Ok(stamped(created));
+                    }
+                }
+            }
+        }
+        match self.tasks.take_ended(&id) {
+            Some(tasks::Status::Completed(result)) => Ok(result),
+            Some(tasks::Status::Failed(error)) => Err(Fault {
+                code: error
+                    .get("code")
+                    .and_then(Value::as_i64)
+                    .unwrap_or(INTERNAL_ERROR),
+                message: error
+                    .get("message")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default()
+                    .to_owned(),
+                data: error.get("data").cloned(),
+            }),
+            // Cancelled while it was still the request's: the request's
+            // own watch keeps the answer from being sent.
+            Some(tasks::Status::Cancelled | tasks::Status::Working) | None => {
+                Ok(complete(Era::Modern, Map::new()))
+            }
+        }
+    }
+
+    /// `tasks/get`, `tasks/update` and `tasks/cancel`: the extension's,
+    /// so a modern request declaring it, for a task the server holds.
+    fn task(&self, era: Era, method: &str, params: &Value) -> Result<Value, Fault> {
+        if era == Era::Legacy || self.patience.is_none() {
+            return Err(Fault::new(
+                METHOD_NOT_FOUND,
+                format!(
+                    "`{method}` belongs to the {} extension, which this server offers \
+                     under {MODERN} only and when it makes tasks",
+                    tasks::EXTENSION
+                ),
+            ));
+        }
+        if !declares_tasks(params) {
+            return Err(Fault {
+                code: MISSING_CAPABILITY,
+                message: format!(
+                    "`{method}` is the {} extension's: declare it in \
+                     `_meta.{CAPABILITIES_META}.extensions`",
+                    tasks::EXTENSION
+                ),
+                data: Some(json!({ "requiredCapabilities": {
+                    "extensions": { tasks::EXTENSION: {} } } })),
+            });
+        }
+        let id = params
+            .get("taskId")
+            .and_then(Value::as_str)
+            .ok_or_else(|| Fault {
+                code: INVALID_PARAMS,
+                message: format!("`{method}` names its task in `taskId`, a string"),
+                data: Some(json!({ "field": "taskId" })),
+            })?;
+        let answered = match method {
+            "tasks/get" => self.tasks.view(id),
+            "tasks/cancel" => self.tasks.cancel(id).map(|()| Map::new()),
+            _ => self.tasks.known(id).map(|()| Map::new()),
+        };
+        Ok(complete(era, answered.map_err(task_fault)?))
+    }
+}
+
+/// A server's makings, without its contexts, sent to a task's thread.
+struct Fork {
+    engine: Engine,
+    plugin: Option<Plugin>,
+    detail: Detail,
+    limits: Limits,
+    watch: Arc<watch::Shared>,
+    tasks: Arc<tasks::Store>,
+    own: Own,
+    tools: Vec<Tool>,
+}
+
+impl Fork {
+    fn server(self) -> Server {
+        Server {
+            engine: self.engine,
+            plugin: self.plugin,
+            legacy: false,
+            detail: self.detail,
+            limits: self.limits,
+            watch: self.watch,
+            tasks: self.tasks,
+            patience: None,
+            listed: None,
+            own: self.own,
+            tools: self.tools,
+            contexts: HashMap::new(),
+        }
+    }
+}
+
+/// Whether the server can run a task: a native build has threads.
+const NATIVE: bool = cfg!(not(target_family = "wasm"));
+
+/// How often a call waited on checks whether its request was cancelled.
+const WAIT_STEP: Duration = Duration::from_millis(50);
+
+/// The code a request missing a capability the server needs is refused
+/// with.
+const MISSING_CAPABILITY: i64 = -32_021;
+const INTERNAL_ERROR: i64 = -32_603;
+
+/// Whether a request's client declares the tasks extension.
+fn declares_tasks(params: &Value) -> bool {
+    params
+        .get("_meta")
+        .and_then(|meta| meta.get(CAPABILITIES_META))
+        .and_then(|declared| declared.get("extensions"))
+        .and_then(|extensions| extensions.get(tasks::EXTENSION))
+        .is_some_and(Value::is_object)
+}
+
+/// A `CreateTaskResult`, which carries the server's identity as every
+/// modern result does, with its own `resultType`.
+fn stamped(mut created: Map<String, Value>) -> Value {
+    created.insert(
+        String::from("_meta"),
+        json!({ SERVER_INFO_META: server_info() }),
+    );
+    Value::Object(created)
+}
+
+fn task_fault(refused: tasks::Refused) -> Fault {
+    match refused {
+        tasks::Refused::Unknown(message) => Fault {
+            code: INVALID_PARAMS,
+            message,
+            data: Some(json!({ "field": "taskId" })),
+        },
+    }
+}
+
+/// A JSON-RPC error object, as a failed task carries it.
+fn error_object(fault: &Fault) -> Value {
     let mut error = Map::new();
     error.insert(String::from("code"), json!(fault.code));
     error.insert(String::from("message"), json!(fault.message));
     if let Some(data) = &fault.data {
         error.insert(String::from("data"), data.clone());
     }
-    json!({ "jsonrpc": "2.0", "id": id, "error": error }).to_string()
+    Value::Object(error)
 }

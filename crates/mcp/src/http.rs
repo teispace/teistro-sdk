@@ -94,16 +94,19 @@ pub fn serve(listener: &TcpListener, http: &Http, make: &Arc<MakeServer>) -> std
     let (send, connections) = mpsc::sync_channel::<TcpStream>(workers.saturating_mul(16));
     let connections = Arc::new(Mutex::new(connections));
     let buckets = Arc::new(Mutex::new(Buckets::default()));
+    // One store for every worker, so a task is polled wherever it began.
+    let tasks = crate::tasks::Store::shared();
     let (ready, started) = mpsc::channel();
     for _ in 0..workers {
-        let (make, connections, ready, http, buckets) = (
+        let (make, connections, ready, http, buckets, tasks) = (
             Arc::clone(make),
             Arc::clone(&connections),
             ready.clone(),
             http.clone(),
             Arc::clone(&buckets),
+            Arc::clone(&tasks),
         );
-        std::thread::spawn(move || work(&*make, &connections, &ready, &http, &buckets));
+        std::thread::spawn(move || work(&*make, &connections, &ready, &http, &buckets, &tasks));
     }
     drop(ready);
     for outcome in started.iter().take(workers) {
@@ -174,9 +177,13 @@ fn locked<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
 
 /// A worker's server, its progress written as events to the stream the
 /// running call answers on.
-fn built(make: &MakeServer, sink: &Sink) -> Result<Server, String> {
+fn built(
+    make: &MakeServer,
+    sink: &Sink,
+    tasks: Arc<crate::tasks::Store>,
+) -> Result<Server, String> {
     let sink = Arc::clone(sink);
-    let server = make().map_err(|why| why.to_string())?;
+    let server = make().map_err(|why| why.to_string())?.with_tasks(tasks);
     Ok(server.with_notify(move |notification| {
         if let Some(stream) = locked(&sink).as_mut() {
             let _ = write!(stream, "event: message\ndata: {notification}\n\n")
@@ -191,9 +198,10 @@ fn work(
     ready: &mpsc::Sender<Result<(), String>>,
     http: &Http,
     buckets: &Mutex<Buckets>,
+    tasks: &Arc<crate::tasks::Store>,
 ) {
     let sink: Sink = Arc::new(Mutex::new(None));
-    let mut server = match built(make, &sink) {
+    let mut server = match built(make, &sink, Arc::clone(tasks)) {
         Ok(server) => server,
         Err(why) => {
             let _ = ready.send(Err(why));
@@ -213,7 +221,7 @@ fn work(
         *locked(&sink) = None;
         linger(&stream);
         if answered.is_err() {
-            match built(make, &sink) {
+            match built(make, &sink, Arc::clone(tasks)) {
                 Ok(fresh) => server = fresh,
                 Err(_) => return,
             }
@@ -381,6 +389,8 @@ fn agree(head: &Head, body: &Value) -> Result<(), Fault> {
     let field = match method {
         Some("tools/call" | "prompts/get") => "name",
         Some("resources/read") => "uri",
+        // The tasks extension routes a task's methods by the task.
+        Some("tasks/get" | "tasks/update" | "tasks/cancel") => "taskId",
         _ => return Ok(()),
     };
     let name = params
