@@ -1635,6 +1635,17 @@ pack cannot quietly invent one that a consumer grouping by category would miss.
 All four held on the first run, which is the answer one wants and not the one
 that teaches anything.
 
+**A pack is embedded compact (2026-10-19).** The packs are kept laid out
+for reading, and were embedded as they were kept: at 4,396 rules the
+indentation was 2.7 MB of their 5.8 MB, and it pushed the full wasm
+module 24% past its size budget. `crates/rules/build.rs` writes each pack
+and table into `OUT_DIR` without the whitespace outside its strings, and
+`shipped.rs` and `table.rs` embed those copies. Gzipped, which is what a
+download pays, the packs shrink by a sixth (399 KB to 331 KB); raw, which
+is what a library's memory holds, by nearly half. `tests/compact.rs` holds
+each copy equal to its source as a JSON value, so the script cannot change
+a rule while it shortens one.
+
 **How fast a chart answers, measured (2026-09-16).** A rule names another by
 key for its cancellations, and the evaluator resolves that name by walking the
 set it was given — an O(n) scan per reference, with the sankhya yogas naming

@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The shipped packs are embedded compact** (`rules-engine.md`).
+**Numbers:** none moved; every pack reads the same value. The rule packs
+and tables were embedded as laid out for reading, and the indentation
+was 47% of their 5.8 MB, carried by every library, addon and wasm
+module. A build script now embeds each without the whitespace between
+its tokens, and a test holds each compact copy equal to its source.
+
 **Long work as a task over MCP** (`mcp-server.md`, P7). **Numbers:**
 none moved.
 

@@ -37,152 +37,215 @@ use crate::language::Condition;
 use crate::rule::Rule;
 
 /// The doshas the recording engine computes in code, as rules.
-const COMPUTED_DOSHAS: &str = include_str!("../rules/computed-doshas.json");
+const COMPUTED_DOSHAS: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/computed-doshas.json"));
 /// The yogas it computes in code: the Neecha Bhanga family.
-const COMPUTED_YOGAS: &str = include_str!("../rules/computed-yogas.json");
+const COMPUTED_YOGAS: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/computed-yogas.json"));
 /// The gandantas, read from BPHS ch. 92 rather than from any engine.
-const GANDANTA: &str = include_str!("../rules/classical-gandanta.json");
+const GANDANTA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-gandanta.json"));
 /// The other inauspicious births of BPHS ch. 85, with what chs. 86 to 94
 /// say of each and their remedies.
-const JANMA: &str = include_str!("../rules/classical-bphs-janma.json");
+const JANMA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bphs-janma.json"));
 /// The evils at birth of BPHS ch. 9 and the antidotes of ch. 10.
-const ARISHTA: &str = include_str!("../rules/classical-arishta.json");
+const ARISHTA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-arishta.json"));
 /// Varahamihira's Balarishta, Brihat Jataka ch. 6.
-const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
+const BALARISHTA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-balarishta.json"));
 /// Kalyana Varma's evils at birth, Saravali ch. 10, each with its life span.
-const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
+const SARAVALI: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-saravali.json"));
 /// Jataka Parijata ch. 4's evils at birth, their years and their antidotes.
-const PARIJATA: &str = include_str!("../rules/classical-parijata.json");
+const PARIJATA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-parijata.json"));
 /// Phaladeepika ch. 13's evils at birth and their antidotes.
-const PHALADEEPIKA: &str = include_str!("../rules/classical-phaladeepika-arishta.json");
+const PHALADEEPIKA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-phaladeepika-arishta.json"
+));
 /// The rest of Phaladeepika ch. 13 v. 8: the padas of the Moon that
 /// harm a parent, the native or the line.
-const PHALADEEPIKA_JANMA: &str = include_str!("../rules/classical-phaladeepika-janma.json");
+const PHALADEEPIKA_JANMA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-phaladeepika-janma.json"
+));
 /// The Nabhasa yogas of BPHS ch. 35.
-const NABHASA: &str = include_str!("../rules/classical-nabhasa.json");
+const NABHASA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-nabhasa.json"));
 /// The lunar yogas of BPHS ch. 37 and the solar yogas of ch. 38.
-const LUNAR_SOLAR: &str = include_str!("../rules/classical-lunar-solar.json");
+const LUNAR_SOLAR: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-lunar-solar.json"
+));
 /// The Pancha Mahapurusha yogas and the named yogas of BPHS ch. 36.
-const PARASHARA: &str = include_str!("../rules/classical-parashara.json");
+const PARASHARA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-parashara.json"));
 /// The arudha gains of BPHS ch. 29 and the Jaimini associations of ch. 39.
-const JAIMINI: &str = include_str!("../rules/classical-jaimini.json");
+const JAIMINI: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-jaimini.json"));
 /// The yogas of BPHS ch. 36 that ask a graha to be strong.
-const STRENGTH: &str = include_str!("../rules/classical-strength.json");
+const STRENGTH: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-strength.json"));
 /// The yogas leading to asceticism of BPHS ch. 79.
-const PRAVRAJYA: &str = include_str!("../rules/classical-pravrajya.json");
+const PRAVRAJYA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-pravrajya.json"));
 /// Saravali ch. 34's readings of a named set of grahas in a named house.
-const BHAVA: &str = include_str!("../rules/classical-bhava.json");
+const BHAVA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bhava.json"));
 /// BPHS ch. 44's fate of the corpse, read from the twenty-second decanate.
-const CORPSE: &str = include_str!("../rules/classical-corpse.json");
+const CORPSE: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-corpse.json"));
 /// BPHS ch. 41's combinations for wealth.
-const DHANA: &str = include_str!("../rules/classical-dhana.json");
+const DHANA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-dhana.json"));
 /// BPHS ch. 39's raja yogas and ch. 40's yogas for royal association.
-const RAJA: &str = include_str!("../rules/classical-raja.json");
+const RAJA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-raja.json"));
 /// BPHS ch. 44's manner and place of death and the worlds before and after.
-const MARANA: &str = include_str!("../rules/classical-marana.json");
+const MARANA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-marana.json"));
 /// Phaladeepika ch. 14's diseases, death and the births before and after.
-const PHALADEEPIKA_MARANA: &str = include_str!("../rules/classical-phaladeepika-marana.json");
+const PHALADEEPIKA_MARANA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-phaladeepika-marana.json"
+));
 /// BPHS ch. 83's curses in a former birth that deny a son, and its two
 /// figures for no son at all.
-const SHAPA: &str = include_str!("../rules/classical-bphs-shapa.json");
+const SHAPA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bphs-shapa.json"));
 /// BPHS ch. 43's combinations for the class of life.
-const AYUR: &str = include_str!("../rules/classical-ayur.json");
+const AYUR: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-ayur.json"));
 /// Jataka Parijata ch. 4's middle and long lives.
-const PARIJATA_AYUR: &str = include_str!("../rules/classical-parijata-ayur.json");
+const PARIJATA_AYUR: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-parijata-ayur.json"
+));
 /// BPHS ch. 42's combinations for penury.
-const PENURY: &str = include_str!("../rules/classical-penury.json");
+const PENURY: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-penury.json"));
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
 /// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
-const DWIGRAHA: &str = include_str!("../rules/classical-readings.json");
+const DWIGRAHA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-readings.json"));
 
 /// Phaladeepika ch. 6's yogas: the great men, the planets about the
 /// Moon and the Sun, the exchanges of lords and the yogas of each house.
-const PHALADEEPIKA_YOGA: &str = include_str!("../rules/classical-phaladeepika-yoga.json");
+const PHALADEEPIKA_YOGA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-phaladeepika-yoga.json"
+));
 
 /// Phaladeepika ch. 7's Maharaja yogas, the debilitated graha lifted
 /// among them.
-const PHALADEEPIKA_RAJA: &str = include_str!("../rules/classical-phaladeepika-raja.json");
+const PHALADEEPIKA_RAJA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-phaladeepika-raja.json"
+));
 
 /// Brihat Jataka ch. 11's raja yogas: the exalted grahas, the vargottama
 /// lagna and Moon, and the figures of named signs.
-const BJ_RAJA: &str = include_str!("../rules/classical-bj-raja.json");
+const BJ_RAJA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bj-raja.json"));
 
 /// Brihat Jataka ch. 23's evil yogas: want of wife and sons, the diseases,
 /// the senses and bondage.
-const BJ_ANISHTA: &str = include_str!("../rules/classical-bj-anishta.json");
+const BJ_ANISHTA: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bj-anishta.json"));
 
 /// Brihat Jataka ch. 15's pravrajya yogas: the strongest of four or more in
 /// one sign and its order, the combust leader, the lord of the Moon's sign
 /// and Saturn, and the ascetic born in a raja yoga.
-const BJ_PRAVRAJYA: &str = include_str!("../rules/classical-bj-pravrajya.json");
+const BJ_PRAVRAJYA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-bj-pravrajya.json"
+));
 
 /// Saravali ch. 35's raja yogas, vv. 7 to 185: the figures of named signs,
 /// the Moon aspected and in her navamshas, the Yavanas' houses, the
 /// yogas of the royal-born and the closing verses' nakshatras.
-const SARAVALI_RAJA: &str = include_str!("../rules/classical-saravali-raja.json");
+const SARAVALI_RAJA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-saravali-raja.json"
+));
 /// Saravali chs. 13 and 14: Sunapha, Anapha and Durudhara around the Moon and
 /// veshi, voshi and ubhayachari around the Sun, in general and graha by graha.
-const SARAVALI_LUMINARIES: &str = include_str!("../rules/classical-saravali-luminaries.json");
+const SARAVALI_LUMINARIES: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-saravali-luminaries.json"
+));
 /// Jataka Parijata ch. 7 vv. 128 to 163: the named yogas, Parvata to
 /// Hariharabrahma, four of them as BPHS ch. 36 writes them.
-const PARIJATA_NAMED: &str = include_str!("../rules/classical-parijata-named.json");
+const PARIJATA_NAMED: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-parijata-named.json"
+));
 /// Jataka Parijata ch. 7 vv. 1 to 127: the raja yogas, the Moon's and the
 /// Sun's yogas with their poverty and its cancellations, and the named yogas
 /// Bhaskara to Budha.
-const PARIJATA_RAJA: &str = include_str!("../rules/classical-parijata-raja.json");
+const PARIJATA_RAJA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-parijata-raja.json"
+));
 /// Brihat Jataka chs. 12 and 13: the thirty-two Nabhasa yogas, and the Moon's
 /// yogas, Sunapha to Kemadruma, with her place from the Sun and the benefics
 /// in the upachayas.
-const BJ_NABHASA_CHANDRA: &str = include_str!("../rules/classical-bj-nabhasa-chandra.json");
+const BJ_NABHASA_CHANDRA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-bj-nabhasa-chandra.json"
+));
 /// Jataka Parijata ch. 5A and ch. 6: the manner of death and the worlds before
 /// and after, and the marring of a horoscope, its poverty, servitude and
 /// diseases, some as BPHS ch. 44 and Brihat Jataka ch. 23 write them.
-const PARIJATA_BHANGA: &str = include_str!("../rules/classical-parijata-bhanga.json");
+const PARIJATA_BHANGA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-parijata-bhanga.json"
+));
 /// Phaladeepika chs. 10, 12 and 27: the seventh house and the wife, the
 /// fifth and children, and the ascetics, one yoga of them as Brihat Jataka
 /// ch. 23 writes it.
-const PHALADEEPIKA_MORE: &str = include_str!("../rules/classical-phaladeepika-more.json");
+const PHALADEEPIKA_MORE: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-phaladeepika-more.json"
+));
 /// Brihat Jataka chs. 5, 7, 22, 24 and 25: the circumstances of the birth, the
 /// life beyond reckoning, the happy births, a woman's horoscope, and the manner
 /// of death and the worlds before and after, ch. 25 as Jataka Parijata ch. 5A
 /// restates it.
-const BJ_MORE: &str = include_str!("../rules/classical-bj-more.json");
+const BJ_MORE: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bj-more.json"));
 /// Jataka Parijata ch. 3, ch. 8 and ch. 9: manifold births, the sex of the
 /// child, twins, the cord and the parentage; the counts of exalted, own,
 /// friendly and hostile grahas; the ganda nakshatras and the evil limbs of the
 /// day, some as BPHS chs. 85 to 87 write them.
-const PARIJATA_YOGA: &str = include_str!("../rules/classical-parijata-yoga.json");
+const PARIJATA_YOGA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-parijata-yoga.json"
+));
 /// Uttara Kalamrita, Kanda I section 4 and Kanda II vv. 79 to 105: the lords
 /// of the ninth and tenth and their kin, the houses destroyed and promoted,
 /// the Indu lagna's wealth, the atmakaraka's companions, and the lagnas'
 /// pairs, one yoga each as Phaladeepika ch. 7 and Jataka Parijata ch. 7 write
 /// them.
-const UTTARA_KALAMRITA: &str = include_str!("../rules/classical-uttara-kalamrita.json");
+const UTTARA_KALAMRITA: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-uttara-kalamrita.json"
+));
 /// BPHS chs. 12 to 23, the effects of the twelve houses: each verse that
 /// states a figure, from the body and wealth to the father, work, gains and
 /// losses, some as Brihat Jataka ch. 5, Jataka Parijata and Phaladeepika ch. 6
 /// write them.
-const BPHS_MORE: &str = include_str!("../rules/classical-bphs-more.json");
+const BPHS_MORE: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bphs-more.json"));
 /// Saravali chs. 20, 38, 39, 44 and 46: the ascetics of four or more grahas in
 /// one sign, the raja yogas undone, the long and unlimited lives, the counts of
 /// exalted, own, friendly and hostile grahas, and the manner of death, some as
 /// Brihat Jataka chs. 15 and 25, Phaladeepika ch. 27 and Jataka Parijata ch. 8
 /// write them.
-const SARAVALI_MORE: &str = include_str!("../rules/classical-saravali-more.json");
+const SARAVALI_MORE: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-saravali-more.json"
+));
 /// Saravali ch. 45, a woman's chart, most as Brihat Jataka ch. 24 writes it,
 /// and ch. 46 vv. 22 to 45, the 22nd drekkana's causes of death.
-const SARAVALI_LATE: &str = include_str!("../rules/classical-saravali-late.json");
+const SARAVALI_LATE: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-saravali-late.json"
+));
 /// Phaladeepika ch. 16, the effects of the twelve houses: each verse that
 /// states a figure, from the lagna lord's place to the doers of the tenth.
-const PHALADEEPIKA_LATE: &str = include_str!("../rules/classical-phaladeepika-late.json");
+const PHALADEEPIKA_LATE: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-phaladeepika-late.json"
+));
 /// Jataka Parijata ch. 3 vv. 61 to 79: the place of birth, the lamp, the
 /// lying-in chamber and the marks of the body, most as Brihat Jataka ch. 5
 /// writes them.
-const PARIJATA_LATE: &str = include_str!("../rules/classical-parijata-late.json");
+const PARIJATA_LATE: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/rules/classical-parijata-late.json"
+));
 /// BPHS chs. 24, 30, 33 and 80: the lords of the houses in the twelve
 /// houses, the upapada, the Karakamsha and the woman's chart, some as Brihat
 /// Jataka ch. 24, Phaladeepika ch. 10 and BPHS ch. 44 write them.
-const BPHS_LATE: &str = include_str!("../rules/classical-bphs-late.json");
+const BPHS_LATE: &str = include_str!(concat!(env!("OUT_DIR"), "/rules/classical-bphs-late.json"));
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {

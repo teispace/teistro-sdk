@@ -230,7 +230,7 @@ pub struct Tables {
 }
 
 /// The tables the SDK ships, as data.
-const CLASSICAL: &str = include_str!("../tables/classical.json");
+const CLASSICAL: &str = include_str!(concat!(env!("OUT_DIR"), "/tables/classical.json"));
 
 static CLASSICAL_TABLES: LazyLock<Tables> = LazyLock::new(|| {
     #[derive(Deserialize)]
