@@ -158,6 +158,11 @@ const PARIJATA_YOGA: &str = include_str!("../rules/classical-parijata-yoga.json"
 /// pairs, one yoga each as Phaladeepika ch. 7 and Jataka Parijata ch. 7 write
 /// them.
 const UTTARA_KALAMRITA: &str = include_str!("../rules/classical-uttara-kalamrita.json");
+/// BPHS chs. 12 to 23, the effects of the twelve houses: each verse that
+/// states a figure, from the body and wealth to the father, work, gains and
+/// losses, some as Brihat Jataka ch. 5, Jataka Parijata and Phaladeepika ch. 6
+/// write them.
+const BPHS_MORE: &str = include_str!("../rules/classical-bphs-more.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -220,6 +225,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(BJ_MORE));
     rules.append(&mut read(PARIJATA_YOGA));
     rules.append(&mut read(UTTARA_KALAMRITA));
+    rules.append(&mut read(BPHS_MORE));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
