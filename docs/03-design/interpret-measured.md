@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 45 045 items, 484 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 56 078 items, 602 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 6 219 684 bytes of JSON over the 93 charts, 66 878 bytes a
-chart, 80 840 bytes for the widest and 138 bytes an item. The verses'
-own cited words are **not** what weighs it — 607 408 bytes, 9% — so
+golden file: 7 879 883 bytes of JSON over the 93 charts, 84 729 bytes a
+chart, 100 369 bytes for the widest and 140 bytes an item. The verses'
+own cited words are **not** what weighs it — 838 195 bytes, 10% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 45045 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 45045 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 45045 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 45045 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 56078 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 56078 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 56078 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 56078 disagree |
 
-Every one of the 90 090 renderings — 45 045 in each of 2 strict
+Every one of the 112 156 renderings — 56 078 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -72,13 +72,13 @@ about.
 | `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
-| `sdk.reading.effect` | 14 249 |
-| `sdk.reading.lifeClass` | 424 |
+| `sdk.reading.effect` | 20 335 |
+| `sdk.reading.lifeClass` | 530 |
 | `sdk.reading.lifeSpan` | 182 |
-| `sdk.reading.participants` | 13 574 |
+| `sdk.reading.participants` | 18 356 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
-| `sdk.reading.status` | 447 |
+| `sdk.reading.status` | 506 |
 | `sdk.reading.timing` | 29 |
 | `sdk.reason.ashtakavarga` | 0 |
 | `sdk.reason.bhavaBala` | 0 |
@@ -112,7 +112,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 14 249 of the 45 045
+**The verse's own statement is not translated.** 20 335 of the 56 078
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -124,7 +124,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 2417 rules this pass composes carry a reading, and they
+rule: 12 of the 3057 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -240,11 +240,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 1343 of 1343 | 0 of 1343 |
-| `hi-Deva-IN` | `base` | 0 of 1343 | 1116 of 1343 |
-| `ne-Deva-NP` | `strict` | 1343 of 1343 | 1148 of 1343 |
-| `sa-Deva` | `base` | 0 of 1343 | 1116 of 1343 |
-| `sa-Latn` | `base` | 0 of 1343 | 1082 of 1343 |
+| `en-Latn` | `strict` | 1464 of 1464 | 0 of 1464 |
+| `hi-Deva-IN` | `base` | 0 of 1464 | 1166 of 1464 |
+| `ne-Deva-NP` | `strict` | 1464 of 1464 | 1200 of 1464 |
+| `sa-Deva` | `base` | 0 of 1464 | 1166 of 1464 |
+| `sa-Latn` | `base` | 0 of 1464 | 1130 of 1464 |
 
 ## What a rich renderer gets
 
@@ -258,8 +258,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 1343 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 1343 | 42 | `b` |
+| `en-Latn` | 21 of 1464 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 1464 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -281,7 +281,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 2686 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 2928 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -299,7 +299,7 @@ its limbs, which also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 74 of 75 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 2686
+own message, with no fallback and nothing to warn about: 2928
 renderings. What this chart cannot reach is named below, with the reason
 it needs another. A key missing from both fails, and so does a key
 excused that this chart emits — which is not a hypothetical: **three
@@ -851,6 +851,122 @@ SARAVALI_THREE_IN_FRIENDS_SIGNS: a helper of kin and friends, distinguished by v
 SARAVALI_THREE_IN_FRIENDS_SIGNS: Mars, Mercury and Venus take part
 SARAVALI_MARANA_MOVABLE_EIGHTH_PLACE_OF_DEATH: death abroad
 SARAVALI_MARANA_UNCONSCIOUS_LAGNA_UNASPECTED_BY_ITS_LORD_OR_A_BENEFIC: unconscious before death for as long as the lagna's navamsha takes to rise
+SARAVALI_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: true to a woman's nature, virtuous and fair of form
+SARAVALI_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: Moon takes part
+SARAVALI_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: deceitful
+SARAVALI_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: Moon takes part
+SARAVALI_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: of many virtues
+SARAVALI_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: Ascendant takes part
+SARAVALI_STRI_EMPTY_SEVENTH_UNASPECTED_BY_A_BENEFIC_HUSBAND_UNMANLY: a contemptible husband without strength
+SARAVALI_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_MERCURY: a skilled and learned husband
+SARAVALI_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_THE_SUN: a very hard-working and very harsh husband
+SARAVALI_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_THE_SUN: Ascendant takes part
+SARAVALI_STRI_MOON_IN_VIRGO_SCORPIO_TAURUS_OR_LEO_FEW_SONS: few sons
+SARAVALI_STRI_MOON_IN_VIRGO_SCORPIO_TAURUS_OR_LEO_FEW_SONS: Moon takes part
+SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LIBRA_THIRD: death through snakes or creatures of the water
+SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LIBRA_THIRD: Ascendant takes part
+PHALADEEPIKA_BHAVA_LAGNA_LORD_CONNECTED_TO_A_BENEFIC: lives in a good village, among good company
+PHALADEEPIKA_BHAVA_LAGNA_LORD_CONNECTED_TO_A_BENEFIC: Venus takes part
+PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_DUAL_SIGN: now moving, now settled
+PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_DUAL_SIGN: Jupiter takes part
+PHALADEEPIKA_BHAVA_LAGNA_LORD_BRIGHT: famous
+PHALADEEPIKA_BHAVA_LAGNA_LORD_WELL_PLACED: happy and prospering
+PHALADEEPIKA_BHAVA_LAGNA_LORD_WELL_PLACED: Jupiter takes part
+PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_MALEFICS_ENEMYS_OR_DEBILITATION_SIGN: lives in a mean place among low people
+PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_MALEFICS_ENEMYS_OR_DEBILITATION_SIGN: Mercury takes part
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_JUPITER: versed in the scriptures and the law
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_JUPITER: Mars takes part
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_VENUS: skilled in the talk of love
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_THE_MOON: knowing something of the arts
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_THE_MOON: Mars and Moon take part
+PHALADEEPIKA_BHAVA_MALEFICS_IN_THE_SECOND: foolish and without wealth
+PHALADEEPIKA_BHAVA_MALEFICS_IN_THE_SECOND: Sun and Mercury take part
+PHALADEEPIKA_BHAVA_SIXTH_LORD_WITH_OR_ASPECTED_BY_A_MALEFIC: intense and constant trouble from enemies, hard to remedy
+PHALADEEPIKA_BHAVA_SIXTH_LORD_WITH_OR_ASPECTED_BY_A_MALEFIC: Mercury takes part
+PARIJATA_JANMA_SIGN_RISING_BOTH_WAYS: delivered hands first
+PARIJATA_JANMA_LAMP_SUN_IN_A_MOVABLE_SIGN: the lamp one that is carried about
+PARIJATA_JANMA_LAMP_SUN_IN_A_MOVABLE_SIGN: Sun takes part
+PARIJATA_JANMA_CHAMBER_IN_THE_NORTH: the lying-in chamber in the north of the house
+PARIJATA_JANMA_CHAMBER_IN_THE_NORTH: Jupiter takes part
+BPHS_BHAVESHA_LAGNA_LORD_IN_THE_FOURTH: happiness from father and mother, many brothers, lustful, virtuous and handsome
+BPHS_BHAVESHA_LAGNA_LORD_IN_THE_FOURTH: Jupiter takes part
+BPHS_BHAVESHA_SECOND_LORD_IN_THE_TWELFTH: rash and without wealth, intent on others' fortune, no happiness from the eldest child
+BPHS_BHAVESHA_SECOND_LORD_IN_THE_TWELFTH: Mars takes part
+BPHS_BHAVESHA_THIRD_LORD_IN_THE_TWELFTH: spending on evil deeds, a cruel father, his fortune rising through women
+BPHS_BHAVESHA_THIRD_LORD_IN_THE_TWELFTH: Venus takes part
+BPHS_BHAVESHA_FOURTH_LORD_IN_THE_SECOND: enjoying pleasures, with every kind of wealth, with his family, honoured, rash and deceitful
+BPHS_BHAVESHA_FOURTH_LORD_IN_THE_SECOND: Mercury takes part
+BPHS_BHAVESHA_FIFTH_LORD_IN_THE_NINTH: a son who is a king or like one, or himself an author, famed, the light of his family
+BPHS_BHAVESHA_FIFTH_LORD_IN_THE_NINTH: Moon takes part
+BPHS_BHAVESHA_SIXTH_LORD_IN_THE_SECOND: rash, famed in his family, living abroad, happy, a speaker, ever intent on his own work
+BPHS_BHAVESHA_SIXTH_LORD_IN_THE_SECOND: Sun takes part
+BPHS_BHAVESHA_SEVENTH_LORD_IN_THE_SECOND: many women, wealth through marriage, slow to act
+BPHS_BHAVESHA_SEVENTH_LORD_IN_THE_SECOND: Mercury takes part
+BPHS_BHAVESHA_EIGHTH_LORD_IN_THE_TWELFTH: ever spending on evil deeds, and short-lived
+BPHS_BHAVESHA_EIGHTH_LORD_IN_THE_TWELFTH: Venus takes part
+BPHS_BHAVESHA_NINTH_LORD_IN_THE_TWELFTH: loss of fortune, ever spending on good works, made poor by guests
+BPHS_BHAVESHA_NINTH_LORD_IN_THE_TWELFTH: Mars takes part
+BPHS_BHAVESHA_TENTH_LORD_IN_THE_FOURTH: happy, devoted to the mother's welfare, lord of vehicles, land and houses, virtuous and wealthy
+BPHS_BHAVESHA_TENTH_LORD_IN_THE_FOURTH: Jupiter takes part
+BPHS_BHAVESHA_ELEVENTH_LORD_IN_THE_ELEVENTH: gain in every undertaking, learning and happiness growing day by day
+BPHS_BHAVESHA_ELEVENTH_LORD_IN_THE_ELEVENTH: Saturn takes part
+BPHS_BHAVESHA_TWELFTH_LORD_IN_THE_ELEVENTH: loss in gains, at times receiving wealth kept by another
+BPHS_BHAVESHA_TWELFTH_LORD_IN_THE_ELEVENTH: Saturn takes part
+BPHS_UPAPADA_BENEFICS_SIGN_JOINED_OR_ASPECTED_BY_A_BENEFIC: full happiness from sons and wife
+BPHS_UPAPADA_BENEFICS_SIGN_JOINED_OR_ASPECTED_BY_A_BENEFIC: Jupiter takes part
+BPHS_UPAPADA_IT_OR_THE_SECOND_FROM_IT_WITH_ITS_OWN_LORD: without a wife in the latter part of life
+BPHS_UPAPADA_IT_OR_THE_SECOND_FROM_IT_TOUCHED_BY_A_BENEFIC: a beautiful wife, of fine form and virtue
+BPHS_UPAPADA_IT_OR_THE_SECOND_FROM_IT_TOUCHED_BY_A_BENEFIC: Jupiter takes part
+BPHS_UPAPADA_SATURN_AND_RAHU_SECOND_FROM_IT: the wife given up through slander, or lost
+BPHS_UPAPADA_SATURN_AND_RAHU_IN_A_SIGN_OF_SATURN_IN_IT_OR_THE_SECOND_FROM_IT: the wife lame, with windy disease
+BPHS_UPAPADA_SATURN_AND_RAHU_IN_A_SIGN_OF_SATURN_IN_IT_OR_THE_SECOND_FROM_IT: cancelled
+BPHS_UPAPADA_NINTH_FROM_IT_AN_ODD_SIGN: many sons
+BPHS_UPAPADA_MALEFIC_SIXTH_FROM_THE_ARUDHA_LAGNA_UNTOUCHED_BY_A_BENEFIC: a thief
+BPHS_UPAPADA_MALEFIC_SIXTH_FROM_THE_ARUDHA_LAGNA_UNTOUCHED_BY_A_BENEFIC: Moon takes part
+BPHS_UPAPADA_BENEFIC_IN_THE_ARUDHA_LAGNA: lord of every land
+BPHS_UPAPADA_BENEFIC_IN_THE_ARUDHA_LAGNA: Jupiter takes part
+BPHS_UPAPADA_JUPITER_IN_THE_ARUDHA_LAGNA: knowing everything
+BPHS_UPAPADA_LORD_OF_THE_SECOND_FROM_IT_THERE_WITH_A_MALEFIC: a thief, for certain
+BPHS_UPAPADA_LORD_OF_THE_SECOND_FROM_IT_THERE_WITH_A_MALEFIC: Rahu takes part
+BPHS_KARAKAMSHA_IN_VIRGO: itch, corpulence and fear from sparks of fire
+BPHS_KARAKAMSHA_IN_VIRGO: Mercury takes part
+BPHS_KARAKAMSHA_MALEFIC_THIRD_FROM_IT: brave and mighty
+BPHS_KARAKAMSHA_MALEFIC_THIRD_FROM_IT: a farmer
+BPHS_KARAKAMSHA_MALEFIC_THIRD_FROM_IT: Moon takes part
+BPHS_KARAKAMSHA_KETU_ASPECTING_THE_FIFTH_FROM_IT: dysentery, or a disease of water
+BPHS_KARAKAMSHA_KETU_ASPECTING_THE_FIFTH_FROM_IT: Ketu and Mercury take part
+BPHS_KARAKAMSHA_SATURN_FIFTH_FROM_IT: a bearer of the bow
+BPHS_KARAKAMSHA_RAHU_FIFTH_FROM_IT: a worker of iron machines
+BPHS_KARAKAMSHA_SATURN_IN_IT_OR_THE_FIFTH: dull in the assembly
+BPHS_KARAKAMSHA_RAHU_IN_IT_OR_THE_FIFTH: a mathematician
+BPHS_KARAKAMSHA_MALEFIC_SIXTH_FROM_IT: a farmer
+BPHS_KARAKAMSHA_MALEFIC_SIXTH_FROM_IT: Mars takes part
+BPHS_KARAKAMSHA_BENEFIC_SIXTH_FROM_IT: idle
+BPHS_KARAKAMSHA_BENEFIC_SIXTH_FROM_IT: Venus takes part
+BPHS_KARAKAMSHA_EIGHTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_MALEFIC: a short life
+BPHS_KARAKAMSHA_EIGHTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_MALEFIC: Sun and Mercury take part
+BPHS_KARAKAMSHA_NINTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_MALEFIC: keeping his dharma in youth, a liar in old age
+BPHS_KARAKAMSHA_NINTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_MALEFIC: Moon and Mercury take part
+BPHS_KARAKAMSHA_TENTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_BENEFIC: steady wealth, grave, strong and wise
+BPHS_KARAKAMSHA_TENTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_BENEFIC: Jupiter takes part
+BPHS_KARAKAMSHA_MALEFIC_ELEVENTH_FROM_IT: gain by crooked ways, famed and valorous
+BPHS_KARAKAMSHA_MALEFIC_ELEVENTH_FROM_IT: Ketu takes part
+BPHS_KARAKAMSHA_TWELFTH_FROM_IT_EMPTY: good results
+BPHS_KARAKAMSHA_TWO_MALEFICS_IN_TRINES_FROM_IT: versed in mantra and tantra
+BPHS_KARAKAMSHA_TWO_MALEFICS_IN_TRINES_FROM_IT: Saturn and Rahu take part
+BPHS_KARAKAMSHA_TWO_MALEFICS_IN_TRINES_FROM_IT_ASPECTED_BY_A_MALEFIC: one who binds by spells
+BPHS_KARAKAMSHA_TWO_MALEFICS_IN_TRINES_FROM_IT_ASPECTED_BY_A_MALEFIC: Saturn, Rahu, Ketu and Mercury take part
+BPHS_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: of a woman's nature, with a maiden's virtues, good conduct and auspicious marks
+BPHS_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: Moon takes part
+BPHS_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: deceitful
+BPHS_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: Moon takes part
+BPHS_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: of many virtues
+BPHS_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: Ascendant takes part
+BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_MERCURY: a learned husband, skilled in the arts and wise
+BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_THE_SUN: a husband very harsh and over-worked
+BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_THE_SUN: Ascendant takes part
+BPHS_STRI_LAGNA_OR_MOON_HEMMED_BY_MALEFICS: the ruin of her father's line and her husband's
+BPHS_STRI_LAGNA_OR_MOON_HEMMED_BY_MALEFICS: Sun, Mercury and Mars take part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: Venus takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: cancelled
 ARISHTA_MALEFICS_FROM_THE_SUN: Moon and Ketu take part
@@ -1298,6 +1414,122 @@ SARAVALI_THREE_IN_FRIENDS_SIGNS: a helper of kin and friends, distinguished by v
 SARAVALI_THREE_IN_FRIENDS_SIGNS: मंगल, बुध र शुक्र संलग्न छन्
 SARAVALI_MARANA_MOVABLE_EIGHTH_PLACE_OF_DEATH: death abroad
 SARAVALI_MARANA_UNCONSCIOUS_LAGNA_UNASPECTED_BY_ITS_LORD_OR_A_BENEFIC: unconscious before death for as long as the lagna's navamsha takes to rise
+SARAVALI_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: true to a woman's nature, virtuous and fair of form
+SARAVALI_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: चन्द्र संलग्न छ
+SARAVALI_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: deceitful
+SARAVALI_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: चन्द्र संलग्न छ
+SARAVALI_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: of many virtues
+SARAVALI_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: लग्न संलग्न छ
+SARAVALI_STRI_EMPTY_SEVENTH_UNASPECTED_BY_A_BENEFIC_HUSBAND_UNMANLY: a contemptible husband without strength
+SARAVALI_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_MERCURY: a skilled and learned husband
+SARAVALI_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_THE_SUN: a very hard-working and very harsh husband
+SARAVALI_STRI_SETTING_SIGN_OR_NAVAMSHA_OF_THE_SUN: लग्न संलग्न छ
+SARAVALI_STRI_MOON_IN_VIRGO_SCORPIO_TAURUS_OR_LEO_FEW_SONS: few sons
+SARAVALI_STRI_MOON_IN_VIRGO_SCORPIO_TAURUS_OR_LEO_FEW_SONS: चन्द्र संलग्न छ
+SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LIBRA_THIRD: death through snakes or creatures of the water
+SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LIBRA_THIRD: लग्न संलग्न छ
+PHALADEEPIKA_BHAVA_LAGNA_LORD_CONNECTED_TO_A_BENEFIC: lives in a good village, among good company
+PHALADEEPIKA_BHAVA_LAGNA_LORD_CONNECTED_TO_A_BENEFIC: शुक्र संलग्न छ
+PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_DUAL_SIGN: now moving, now settled
+PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_DUAL_SIGN: गुरु संलग्न छ
+PHALADEEPIKA_BHAVA_LAGNA_LORD_BRIGHT: famous
+PHALADEEPIKA_BHAVA_LAGNA_LORD_WELL_PLACED: happy and prospering
+PHALADEEPIKA_BHAVA_LAGNA_LORD_WELL_PLACED: गुरु संलग्न छ
+PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_MALEFICS_ENEMYS_OR_DEBILITATION_SIGN: lives in a mean place among low people
+PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_MALEFICS_ENEMYS_OR_DEBILITATION_SIGN: बुध संलग्न छ
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_JUPITER: versed in the scriptures and the law
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_JUPITER: मंगल संलग्न छ
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_VENUS: skilled in the talk of love
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_THE_MOON: knowing something of the arts
+PHALADEEPIKA_BHAVA_SECOND_LORD_CONNECTED_TO_THE_MOON: मंगल र चन्द्र संलग्न छन्
+PHALADEEPIKA_BHAVA_MALEFICS_IN_THE_SECOND: foolish and without wealth
+PHALADEEPIKA_BHAVA_MALEFICS_IN_THE_SECOND: सूर्य र बुध संलग्न छन्
+PHALADEEPIKA_BHAVA_SIXTH_LORD_WITH_OR_ASPECTED_BY_A_MALEFIC: intense and constant trouble from enemies, hard to remedy
+PHALADEEPIKA_BHAVA_SIXTH_LORD_WITH_OR_ASPECTED_BY_A_MALEFIC: बुध संलग्न छ
+PARIJATA_JANMA_SIGN_RISING_BOTH_WAYS: delivered hands first
+PARIJATA_JANMA_LAMP_SUN_IN_A_MOVABLE_SIGN: the lamp one that is carried about
+PARIJATA_JANMA_LAMP_SUN_IN_A_MOVABLE_SIGN: सूर्य संलग्न छ
+PARIJATA_JANMA_CHAMBER_IN_THE_NORTH: the lying-in chamber in the north of the house
+PARIJATA_JANMA_CHAMBER_IN_THE_NORTH: गुरु संलग्न छ
+BPHS_BHAVESHA_LAGNA_LORD_IN_THE_FOURTH: happiness from father and mother, many brothers, lustful, virtuous and handsome
+BPHS_BHAVESHA_LAGNA_LORD_IN_THE_FOURTH: गुरु संलग्न छ
+BPHS_BHAVESHA_SECOND_LORD_IN_THE_TWELFTH: rash and without wealth, intent on others' fortune, no happiness from the eldest child
+BPHS_BHAVESHA_SECOND_LORD_IN_THE_TWELFTH: मंगल संलग्न छ
+BPHS_BHAVESHA_THIRD_LORD_IN_THE_TWELFTH: spending on evil deeds, a cruel father, his fortune rising through women
+BPHS_BHAVESHA_THIRD_LORD_IN_THE_TWELFTH: शुक्र संलग्न छ
+BPHS_BHAVESHA_FOURTH_LORD_IN_THE_SECOND: enjoying pleasures, with every kind of wealth, with his family, honoured, rash and deceitful
+BPHS_BHAVESHA_FOURTH_LORD_IN_THE_SECOND: बुध संलग्न छ
+BPHS_BHAVESHA_FIFTH_LORD_IN_THE_NINTH: a son who is a king or like one, or himself an author, famed, the light of his family
+BPHS_BHAVESHA_FIFTH_LORD_IN_THE_NINTH: चन्द्र संलग्न छ
+BPHS_BHAVESHA_SIXTH_LORD_IN_THE_SECOND: rash, famed in his family, living abroad, happy, a speaker, ever intent on his own work
+BPHS_BHAVESHA_SIXTH_LORD_IN_THE_SECOND: सूर्य संलग्न छ
+BPHS_BHAVESHA_SEVENTH_LORD_IN_THE_SECOND: many women, wealth through marriage, slow to act
+BPHS_BHAVESHA_SEVENTH_LORD_IN_THE_SECOND: बुध संलग्न छ
+BPHS_BHAVESHA_EIGHTH_LORD_IN_THE_TWELFTH: ever spending on evil deeds, and short-lived
+BPHS_BHAVESHA_EIGHTH_LORD_IN_THE_TWELFTH: शुक्र संलग्न छ
+BPHS_BHAVESHA_NINTH_LORD_IN_THE_TWELFTH: loss of fortune, ever spending on good works, made poor by guests
+BPHS_BHAVESHA_NINTH_LORD_IN_THE_TWELFTH: मंगल संलग्न छ
+BPHS_BHAVESHA_TENTH_LORD_IN_THE_FOURTH: happy, devoted to the mother's welfare, lord of vehicles, land and houses, virtuous and wealthy
+BPHS_BHAVESHA_TENTH_LORD_IN_THE_FOURTH: गुरु संलग्न छ
+BPHS_BHAVESHA_ELEVENTH_LORD_IN_THE_ELEVENTH: gain in every undertaking, learning and happiness growing day by day
+BPHS_BHAVESHA_ELEVENTH_LORD_IN_THE_ELEVENTH: शनि संलग्न छ
+BPHS_BHAVESHA_TWELFTH_LORD_IN_THE_ELEVENTH: loss in gains, at times receiving wealth kept by another
+BPHS_BHAVESHA_TWELFTH_LORD_IN_THE_ELEVENTH: शनि संलग्न छ
+BPHS_UPAPADA_BENEFICS_SIGN_JOINED_OR_ASPECTED_BY_A_BENEFIC: full happiness from sons and wife
+BPHS_UPAPADA_BENEFICS_SIGN_JOINED_OR_ASPECTED_BY_A_BENEFIC: गुरु संलग्न छ
+BPHS_UPAPADA_IT_OR_THE_SECOND_FROM_IT_WITH_ITS_OWN_LORD: without a wife in the latter part of life
+BPHS_UPAPADA_IT_OR_THE_SECOND_FROM_IT_TOUCHED_BY_A_BENEFIC: a beautiful wife, of fine form and virtue
+BPHS_UPAPADA_IT_OR_THE_SECOND_FROM_IT_TOUCHED_BY_A_BENEFIC: गुरु संलग्न छ
+BPHS_UPAPADA_SATURN_AND_RAHU_SECOND_FROM_IT: the wife given up through slander, or lost
+BPHS_UPAPADA_SATURN_AND_RAHU_IN_A_SIGN_OF_SATURN_IN_IT_OR_THE_SECOND_FROM_IT: the wife lame, with windy disease
+BPHS_UPAPADA_SATURN_AND_RAHU_IN_A_SIGN_OF_SATURN_IN_IT_OR_THE_SECOND_FROM_IT: रद्द
+BPHS_UPAPADA_NINTH_FROM_IT_AN_ODD_SIGN: many sons
+BPHS_UPAPADA_MALEFIC_SIXTH_FROM_THE_ARUDHA_LAGNA_UNTOUCHED_BY_A_BENEFIC: a thief
+BPHS_UPAPADA_MALEFIC_SIXTH_FROM_THE_ARUDHA_LAGNA_UNTOUCHED_BY_A_BENEFIC: चन्द्र संलग्न छ
+BPHS_UPAPADA_BENEFIC_IN_THE_ARUDHA_LAGNA: lord of every land
+BPHS_UPAPADA_BENEFIC_IN_THE_ARUDHA_LAGNA: गुरु संलग्न छ
+BPHS_UPAPADA_JUPITER_IN_THE_ARUDHA_LAGNA: knowing everything
+BPHS_UPAPADA_LORD_OF_THE_SECOND_FROM_IT_THERE_WITH_A_MALEFIC: a thief, for certain
+BPHS_UPAPADA_LORD_OF_THE_SECOND_FROM_IT_THERE_WITH_A_MALEFIC: राहु संलग्न छ
+BPHS_KARAKAMSHA_IN_VIRGO: itch, corpulence and fear from sparks of fire
+BPHS_KARAKAMSHA_IN_VIRGO: बुध संलग्न छ
+BPHS_KARAKAMSHA_MALEFIC_THIRD_FROM_IT: brave and mighty
+BPHS_KARAKAMSHA_MALEFIC_THIRD_FROM_IT: a farmer
+BPHS_KARAKAMSHA_MALEFIC_THIRD_FROM_IT: चन्द्र संलग्न छ
+BPHS_KARAKAMSHA_KETU_ASPECTING_THE_FIFTH_FROM_IT: dysentery, or a disease of water
+BPHS_KARAKAMSHA_KETU_ASPECTING_THE_FIFTH_FROM_IT: केतु र बुध संलग्न छन्
+BPHS_KARAKAMSHA_SATURN_FIFTH_FROM_IT: a bearer of the bow
+BPHS_KARAKAMSHA_RAHU_FIFTH_FROM_IT: a worker of iron machines
+BPHS_KARAKAMSHA_SATURN_IN_IT_OR_THE_FIFTH: dull in the assembly
+BPHS_KARAKAMSHA_RAHU_IN_IT_OR_THE_FIFTH: a mathematician
+BPHS_KARAKAMSHA_MALEFIC_SIXTH_FROM_IT: a farmer
+BPHS_KARAKAMSHA_MALEFIC_SIXTH_FROM_IT: मंगल संलग्न छ
+BPHS_KARAKAMSHA_BENEFIC_SIXTH_FROM_IT: idle
+BPHS_KARAKAMSHA_BENEFIC_SIXTH_FROM_IT: शुक्र संलग्न छ
+BPHS_KARAKAMSHA_EIGHTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_MALEFIC: अल्पायु
+BPHS_KARAKAMSHA_EIGHTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_MALEFIC: सूर्य र बुध संलग्न छन्
+BPHS_KARAKAMSHA_NINTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_MALEFIC: keeping his dharma in youth, a liar in old age
+BPHS_KARAKAMSHA_NINTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_MALEFIC: चन्द्र र बुध संलग्न छन्
+BPHS_KARAKAMSHA_TENTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_BENEFIC: steady wealth, grave, strong and wise
+BPHS_KARAKAMSHA_TENTH_FROM_IT_JOINED_OR_ASPECTED_BY_A_BENEFIC: गुरु संलग्न छ
+BPHS_KARAKAMSHA_MALEFIC_ELEVENTH_FROM_IT: gain by crooked ways, famed and valorous
+BPHS_KARAKAMSHA_MALEFIC_ELEVENTH_FROM_IT: केतु संलग्न छ
+BPHS_KARAKAMSHA_TWELFTH_FROM_IT_EMPTY: good results
+BPHS_KARAKAMSHA_TWO_MALEFICS_IN_TRINES_FROM_IT: versed in mantra and tantra
+BPHS_KARAKAMSHA_TWO_MALEFICS_IN_TRINES_FROM_IT: शनि र राहु संलग्न छन्
+BPHS_KARAKAMSHA_TWO_MALEFICS_IN_TRINES_FROM_IT_ASPECTED_BY_A_MALEFIC: one who binds by spells
+BPHS_KARAKAMSHA_TWO_MALEFICS_IN_TRINES_FROM_IT_ASPECTED_BY_A_MALEFIC: शनि, राहु, केतु र बुध संलग्न छन्
+BPHS_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: of a woman's nature, with a maiden's virtues, good conduct and auspicious marks
+BPHS_STRI_LAGNA_AND_MOON_IN_EVEN_SIGNS: चन्द्र संलग्न छ
+BPHS_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: deceitful
+BPHS_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_MARS_AND_A_TRIMSHAMSHA_OF_MERCURY: चन्द्र संलग्न छ
+BPHS_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: of many virtues
+BPHS_STRI_LAGNA_OR_MOON_IN_A_SIGN_OF_JUPITER_AND_A_TRIMSHAMSHA_OF_MARS: लग्न संलग्न छ
+BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_MERCURY: a learned husband, skilled in the arts and wise
+BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_THE_SUN: a husband very harsh and over-worked
+BPHS_STRI_SEVENTH_SIGN_OR_NAVAMSHA_OF_THE_SUN: लग्न संलग्न छ
+BPHS_STRI_LAGNA_OR_MOON_HEMMED_BY_MALEFICS: the ruin of her father's line and her husband's
+BPHS_STRI_LAGNA_OR_MOON_HEMMED_BY_MALEFICS: सूर्य, बुध र मंगल संलग्न छन्
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: शुक्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: रद्द
 ARISHTA_MALEFICS_FROM_THE_SUN: चन्द्र र केतु संलग्न छन्

@@ -72,7 +72,7 @@ const SPAN_DAYS: f64 = 73_049.0;
 const SUPPORT: usize = 5;
 
 /// One text stating one condition twice, each with where it does.
-const REVIEWED: [(&[&str], &str); 39] = [
+const REVIEWED: [(&[&str], &str); 91] = [
     (
         &[
             "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -380,6 +380,430 @@ const REVIEWED: [(&[&str], &str); 39] = [
         "Saravali gives the Sun, Mars, Jupiter, Venus and Saturn in one sign twice: ch. 20 v. 7 \
          among the ascetics, and among its sets of grahas together",
     ),
+    (
+        &[
+            "BPHS_DUAL_THIRD_PLACE_OF_DEATH",
+            "BPHS_STRI_SEVENTH_MOVABLE",
+        ],
+        "BPHS reads a movable lagna twice: ch. 44 v. 34 by its dual third, the place of death, \
+         and ch. 80 v. 17 by its movable seventh, in a woman's chart",
+    ),
+    (
+        &[
+            "PHALADEEPIKA_AVA",
+            "PHALADEEPIKA_BHAVA_LAGNA_LORD_IN_A_DUSTHANA",
+        ],
+        "Phaladeepika gives the lagna lord in a dusthana twice: ch. 6 vv. 57 to 69's Ava yoga, \
+         and ch. 16 v. 4 among the effects of the houses",
+    ),
+    (
+        &[
+            "PARIJATA_A_BENEFIC_FALLEN",
+            "PARIJATA_JANMA_A_BENEFIC_DEBILITATED",
+        ],
+        "Jataka Parijata gives a benefic debilitated twice: ch. 6 v. 35, and ch. 3 v. 69 among \
+         the circumstances of birth",
+    ),
+    (
+        &[
+            "BPHS_KARAKAMSHA_KETU_ASPECTING_THE_FIFTH_FROM_IT",
+            "BPHS_KARAKAMSHA_RAHU_FIFTH_FROM_IT",
+        ],
+        "BPHS ch. 33 gives one figure two ways: Ketu aspecting the fifth from the Karakamsha (v. \
+         37) is Rahu in it (v. 39), Ketu's seventh being Rahu's sign",
+    ),
+    (
+        &[
+            "BPHS_STRI_VENUS_EIGHTH",
+            "BPHS_VENUS_IN_EIGHTH_DEATH_BY_HUNGER",
+        ],
+        "BPHS gives Venus in the eighth twice: ch. 44 vv. 35-36 as the manner of death, and ch. \
+         80 v. 31 in a woman's chart",
+    ),
+    (
+        &["BPHS_STRI_SUN_EIGHTH", "BPHS_SUN_IN_EIGHTH_DEATH_BY_FIRE"],
+        "BPHS gives the Sun in the eighth twice: ch. 44 vv. 35-36 as the manner of death, and ch. \
+         80 v. 26 in a woman's chart",
+    ),
+    (
+        &[
+            "BPHS_JUPITER_IN_EIGHTH_DEATH_BY_DISEASE",
+            "BPHS_STRI_JUPITER_EIGHTH",
+        ],
+        "BPHS gives Jupiter in the eighth twice: ch. 44 vv. 35-36 as the manner of death, and ch. \
+         80 v. 30 in a woman's chart",
+    ),
+    (
+        &[
+            "BPHS_SATURN_IN_EIGHTH_DEATH_BY_THIRST",
+            "BPHS_STRI_SATURN_EIGHTH",
+        ],
+        "BPHS gives Saturn in the eighth twice: ch. 44 vv. 35-36 as the manner of death, and ch. \
+         80 v. 32 in a woman's chart",
+    ),
+    (
+        &[
+            "BPHS_MARS_IN_EIGHTH_DEATH_BY_WEAPONS",
+            "BPHS_STRI_MARS_EIGHTH",
+        ],
+        "BPHS gives Mars in the eighth twice: ch. 44 vv. 35-36 as the manner of death, and ch. 80 \
+         v. 28 in a woman's chart",
+    ),
+    (
+        &[
+            "BPHS_MERCURY_IN_EIGHTH_DEATH_BY_FEVER",
+            "BPHS_STRI_MERCURY_EIGHTH",
+        ],
+        "BPHS gives Mercury in the eighth twice: ch. 44 vv. 35-36 as the manner of death, and ch. \
+         80 v. 29 in a woman's chart",
+    ),
+    (
+        &[
+            "BPHS_MOON_IN_EIGHTH_DEATH_BY_WATER",
+            "BPHS_STRI_MOON_EIGHTH",
+        ],
+        "BPHS gives the Moon in the eighth twice: ch. 44 vv. 35-36 as the manner of death, and \
+         ch. 80 v. 27 in a woman's chart",
+    ),
+    (
+        &[
+            "SARAVALI_MARS_IN_BHAVA_7",
+            "SARAVALI_STRI_MARS_SEVENTH_WIDOWED_A_BRIDE",
+        ],
+        "Saravali gives Mars in the seventh twice: ch. 45 v. 16 in a woman's chart, and among the \
+         grahas in the houses",
+    ),
+    (
+        &[
+            "BPHS_KARAKAMSHA_KETU_IN_IT",
+            "BPHS_KARAKAMSHA_RAHU_SEVENTH_FROM_IT",
+        ],
+        "BPHS ch. 33 gives one figure two ways, the nodes standing opposite: Ketu in the \
+         Karakamsha (v. 18) is Rahu in its seventh (v. 48)",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_CANCER",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_AQUARIUS_FIRST",
+        ],
+        "Saravali reads the first decanate of Cancer rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 42 by the death the 22nd drekkana from it, Aquarius's first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_SCORPIO",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_GEMINI_SECOND",
+        ],
+        "Saravali reads the second decanate of Scorpio rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 27 by the death the 22nd drekkana from it, Gemini's second, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_LEO",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_PISCES_FIRST",
+        ],
+        "Saravali reads the first decanate of Leo rising twice: among the rising decanates, and \
+         in ch. 46 vv. 22, 44 by the death the 22nd drekkana from it, Pisces's first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_LIBRA",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_TAURUS_SECOND",
+        ],
+        "Saravali reads the second decanate of Libra rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 25 by the death the 22nd drekkana from it, Taurus's second, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_GEMINI",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_CAPRICORN_FIRST",
+        ],
+        "Saravali reads the first decanate of Gemini rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 40 by the death the 22nd drekkana from it, Capricorn's first, \
+         gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_SAGITTARIUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_CANCER_SECOND",
+        ],
+        "Saravali reads the second decanate of Sagittarius rising twice: among the rising \
+         decanates, and in ch. 46 vv. 22, 30 by the death the 22nd drekkana from it, Cancer's \
+         second, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_LIBRA",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_TAURUS_FIRST",
+        ],
+        "Saravali reads the first decanate of Libra rising twice: among the rising decanates, and \
+         in ch. 46 vv. 22, 25 by the death the 22nd drekkana from it, Taurus's first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_SCORPIO",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_GEMINI_THIRD",
+        ],
+        "Saravali reads the third decanate of Scorpio rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 28 by the death the 22nd drekkana from it, Gemini's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_SCORPIO",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_GEMINI_FIRST",
+        ],
+        "Saravali reads the first decanate of Scorpio rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 27 by the death the 22nd drekkana from it, Gemini's first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_GEMINI",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_CAPRICORN_SECOND",
+        ],
+        "Saravali reads the second decanate of Gemini rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 41 by the death the 22nd drekkana from it, Capricorn's second, \
+         gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_VIRGO",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_ARIES_SECOND",
+        ],
+        "Saravali reads the second decanate of Virgo rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 24 by the death the 22nd drekkana from it, Aries's second, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_LEO",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_PISCES_THIRD",
+        ],
+        "Saravali reads the third decanate of Leo rising twice: among the rising decanates, and \
+         in ch. 46 vv. 22, 45 by the death the 22nd drekkana from it, Pisces's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_TAURUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_SAGITTARIUS_FIRST",
+        ],
+        "Saravali reads the first decanate of Taurus rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 38 by the death the 22nd drekkana from it, Sagittarius's first, \
+         gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_CANCER",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_AQUARIUS_THIRD",
+        ],
+        "Saravali reads the third decanate of Cancer rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 43 by the death the 22nd drekkana from it, Aquarius's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_VIRGO",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_ARIES_THIRD",
+        ],
+        "Saravali reads the third decanate of Virgo rising twice: among the rising decanates, and \
+         in ch. 46 vv. 22, 24 by the death the 22nd drekkana from it, Aries's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_GEMINI",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_CAPRICORN_THIRD",
+        ],
+        "Saravali reads the third decanate of Gemini rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 41 by the death the 22nd drekkana from it, Capricorn's third, \
+         gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_LIBRA",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_TAURUS_THIRD",
+        ],
+        "Saravali reads the third decanate of Libra rising twice: among the rising decanates, and \
+         in ch. 46 vv. 22, 26 by the death the 22nd drekkana from it, Taurus's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_CANCER",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_AQUARIUS_SECOND",
+        ],
+        "Saravali reads the second decanate of Cancer rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 43 by the death the 22nd drekkana from it, Aquarius's second, \
+         gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_LEO",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_PISCES_SECOND",
+        ],
+        "Saravali reads the second decanate of Leo rising twice: among the rising decanates, and \
+         in ch. 46 vv. 22, 45 by the death the 22nd drekkana from it, Pisces's second, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_CAPRICORN",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LEO_SECOND",
+        ],
+        "Saravali reads the second decanate of Capricorn rising twice: among the rising \
+         decanates, and in ch. 46 vv. 22, 31 by the death the 22nd drekkana from it, Leo's \
+         second, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_SAGITTARIUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_CANCER_FIRST",
+        ],
+        "Saravali reads the first decanate of Sagittarius rising twice: among the rising \
+         decanates, and in ch. 46 vv. 22, 29 by the death the 22nd drekkana from it, Cancer's \
+         first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_SAGITTARIUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_CANCER_THIRD",
+        ],
+        "Saravali reads the third decanate of Sagittarius rising twice: among the rising \
+         decanates, and in ch. 46 vv. 22, 30 by the death the 22nd drekkana from it, Cancer's \
+         third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_TAURUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_SAGITTARIUS_THIRD",
+        ],
+        "Saravali reads the third decanate of Taurus rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 39 by the death the 22nd drekkana from it, Sagittarius's third, \
+         gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_TAURUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_SAGITTARIUS_SECOND",
+        ],
+        "Saravali reads the second decanate of Taurus rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 38 by the death the 22nd drekkana from it, Sagittarius's second, \
+         gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_ARIES",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_SCORPIO_THIRD",
+        ],
+        "Saravali reads the third decanate of Aries rising twice: among the rising decanates, and \
+         in ch. 46 vv. 22, 37 by the death the 22nd drekkana from it, Scorpio's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_CAPRICORN",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LEO_FIRST",
+        ],
+        "Saravali reads the first decanate of Capricorn rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 31 by the death the 22nd drekkana from it, Leo's first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_PISCES",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LIBRA_THIRD",
+        ],
+        "Saravali reads the third decanate of Pisces rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 35 by the death the 22nd drekkana from it, Libra's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_AQUARIUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_VIRGO_SECOND",
+        ],
+        "Saravali reads the second decanate of Aquarius rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 33 by the death the 22nd drekkana from it, Virgo's second, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_CAPRICORN",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LEO_THIRD",
+        ],
+        "Saravali reads the third decanate of Capricorn rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 32 by the death the 22nd drekkana from it, Leo's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_PISCES",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LIBRA_SECOND",
+        ],
+        "Saravali reads the second decanate of Pisces rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 35 by the death the 22nd drekkana from it, Libra's second, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_AQUARIUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_VIRGO_FIRST",
+        ],
+        "Saravali reads the first decanate of Aquarius rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 33 by the death the 22nd drekkana from it, Virgo's first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_ARIES",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_SCORPIO_FIRST",
+        ],
+        "Saravali reads the first decanate of Aries rising twice: among the rising decanates, and \
+         in ch. 46 vv. 22, 36 by the death the 22nd drekkana from it, Scorpio's first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_3_OF_AQUARIUS",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_VIRGO_THIRD",
+        ],
+        "Saravali reads the third decanate of Aquarius rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 34 by the death the 22nd drekkana from it, Virgo's third, gives",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_1_OF_PISCES",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_LIBRA_FIRST",
+        ],
+        "Saravali reads the first decanate of Pisces rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 35 by the death the 22nd drekkana from it, Libra's first, gives",
+    ),
+    (
+        &[
+            "SARAVALI_MERCURY_VENUS_IN_BHAVA_1",
+            "SARAVALI_STRI_VENUS_AND_MERCURY_RISING",
+        ],
+        "Saravali gives Mercury and Venus in the first twice: ch. 45 v. 26 in a woman's chart, \
+         and among the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_DECANATE_2_OF_ARIES",
+            "SARAVALI_MARANA_TWENTY_SECOND_DREKKANA_SCORPIO_SECOND",
+        ],
+        "Saravali reads the second decanate of Aries rising twice: among the rising decanates, \
+         and in ch. 46 vv. 22, 36 by the death the 22nd drekkana from it, Scorpio's second, gives",
+    ),
+    (
+        &[
+            "PARIJATA_JANMA_THREE_DEBILITATED",
+            "PARIJATA_YOGA_THREE_DEBILITATED",
+        ],
+        "Jataka Parijata gives three grahas debilitated twice: ch. 8 v. 111 among the counts of \
+         grahas, and ch. 3 v. 70 among the circumstances of birth",
+    ),
+    (
+        &[
+            "SARAVALI_MOON_VENUS_IN_BHAVA_1",
+            "SARAVALI_STRI_MOON_AND_VENUS_RISING",
+        ],
+        "Saravali gives the Moon and Venus in the first twice: ch. 45 v. 25 in a woman's chart, \
+         and among the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_MOON_MERCURY_IN_BHAVA_1",
+            "SARAVALI_STRI_MOON_AND_MERCURY_RISING",
+        ],
+        "Saravali gives the Moon and Mercury in the first twice: ch. 45 v. 25 in a woman's chart, \
+         and among the grahas in the houses",
+    ),
 ];
 
 /// Rules the sky never holds, each with an instant (a Julian day in UT)
@@ -387,7 +811,7 @@ const REVIEWED: [(&[&str], &str); 39] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 227] = [
+const FIXTURES: [(&str, f64, f64, f64); 230] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -1554,10 +1978,30 @@ const FIXTURES: [(&str, f64, f64, f64); 227] = [
         27.7172,
         85.324,
     ),
+    // Saravali ch. 45, Jataka Parijata ch. 3 vv. 61 to 79 and BPHS ch. 80: the
+    // half hours about a day the sign search found, at the place it names.
+    (
+        "BPHS_STRI_MOON_VENUS_SATURN_AND_MARS_RISING_FIFTH_TOUCHED_BY_A_MALEFIC",
+        2_381_300.5,
+        27.7172,
+        146.992,
+    ),
+    (
+        "PARIJATA_JANMA_HUMAN_SIGN_RISING_WITH_SATURN_ASPECTED_BY_VENUS_AND_THE_MOON",
+        2_380_000.5,
+        27.7172,
+        -60.941,
+    ),
+    (
+        "SARAVALI_STRI_STRONG_MERCURY_JUPITER_VENUS_WITH_THE_MOON_IN_AN_EVEN_LAGNA",
+        2_382_682.5,
+        27.7172,
+        56.166,
+    ),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 82] = [
+const UNSEEN: [(&str, &str); 83] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -1826,6 +2270,10 @@ const UNSEEN: [(&str, &str); 82] = [
     (
         "BJ_STRI_SATURN_MIDDLING_THE_SOFT_WEAK_THE_HARD_STRONG_ODD_LAGNA",
         "It asks the Moon, Venus and Mercury below their required Shadbala together while the Sun, Mars and Jupiter pass theirs, and the Moon rarely falls below her six rupas: of 9,000 instants drawn over 1900 to 2100, none holds it.",
+    ),
+    (
+        "SARAVALI_STRI_SATURN_MIDDLING_THE_SOFT_WEAK_THE_HARD_STRONG_ODD_LAGNA",
+        "Brihat Jataka ch. 24's figure, its conditions copied: of the same 9,000 instants, none holds it.",
     ),
     (
         "PARIJATA_VIYONI",

@@ -6817,7 +6817,7 @@
         "chapter": "30",
         "verse": "38",
         "rank": 1,
-        "note": "The seventh or the twelfth from the pada of the lagna joined or aspected by Rahu; Rahu aspects only under a reading that gives the nodes aspects (C566). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
+        "note": "The seventh or the twelfth from the pada of the lagna joined or aspected by Rahu; Rahu aspects his seventh on every reading, and the fifth and ninth only under a reading that gives the nodes more (C566). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
       },
       "conditions": [
         {
@@ -8195,7 +8195,7 @@
         "chapter": "33",
         "verse": "19",
         "rank": 1,
-        "note": "The Sun and Rahu in the Karakamsha aspected by a malefic. The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
+        "note": "The Sun and Rahu in the Karakamsha aspected by a malefic. The malefic is the Sun, Mars or Saturn: the other node aspects a node's sign from the seventh on every chart, so a malefic that may be a node asks nothing (C567). The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
       },
       "conditions": [
         {
@@ -8217,11 +8217,19 @@
           }
         },
         {
-          "type": "planet-aspects-planet",
-          "from": "any-malefic",
-          "target": {
-            "navamsha": {
-              "karaka": "AK"
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": {
+              "navamsha": {
+                "karaka": "AK"
+              }
             }
           }
         }
@@ -8628,7 +8636,7 @@
         "chapter": "33",
         "verse": "25",
         "rank": 1,
-        "note": "Ketu in the Karakamsha aspected by a malefic. The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
+        "note": "Ketu in the Karakamsha aspected by a malefic. The malefic is the Sun, Mars or Saturn: the other node aspects a node's sign from the seventh on every chart, so a malefic that may be a node asks nothing (C567). The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
       },
       "conditions": [
         {
@@ -8641,11 +8649,19 @@
           }
         },
         {
-          "type": "planet-aspects-planet",
-          "from": "any-malefic",
-          "target": {
-            "navamsha": {
-              "karaka": "AK"
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": {
+              "navamsha": {
+                "karaka": "AK"
+              }
             }
           }
         }
@@ -9562,7 +9578,7 @@
         "chapter": "33",
         "verse": "37",
         "rank": 1,
-        "note": "Ketu aspecting the fifth from the Karakamsha; Ketu aspects only under a reading that gives the nodes aspects (C567). The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
+        "note": "Ketu aspecting the fifth from the Karakamsha; Ketu aspects his seventh on every reading, and the fifth and ninth only under a reading that gives the nodes more (C567). The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
       },
       "conditions": [
         {
@@ -10950,7 +10966,7 @@
         "chapter": "33",
         "verse": "52",
         "rank": 1,
-        "note": "The ninth from the Karakamsha joined or aspected by Saturn and by Rahu; Rahu aspects only under a reading that gives the nodes aspects. The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
+        "note": "The ninth from the Karakamsha joined or aspected by Saturn and by Rahu; Rahu aspects his seventh on every reading, and the fifth and ninth only under a reading that gives the nodes more. The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
       },
       "conditions": [
         {
@@ -12790,7 +12806,7 @@
         "chapter": "33",
         "verse": "79",
         "rank": 1,
-        "note": "The Moon in the fourth from the Karakamsha aspected by Ketu; Ketu aspects only under a reading that gives the nodes aspects. The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
+        "note": "The Moon in the fourth from the Karakamsha aspected by Ketu; Ketu aspects his seventh on every reading, and the fifth and ninth only under a reading that gives the nodes more. The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
       },
       "conditions": [
         {
@@ -13606,7 +13622,7 @@
         "chapter": "33",
         "verse": "93-94",
         "rank": 1,
-        "note": "Ketu in the second or the third from the Karakamsha, aspected by a malefic. The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
+        "note": "Ketu in the second or the third from the Karakamsha, aspected by a malefic. The malefic is the Sun, Mars or Saturn: the other node aspects a node's sign from the seventh on every chart, so a malefic that may be a node asks nothing (C567). The Karakamsha is the sign the atmakaraka's navamsha names, read in the rasi chart as the shipped ch. 39 and 40 rules read it; the karakas are the seven of ch. 32 vv. 1 to 2 (C567). Read from the Sanskrit as the sanskritdocuments.org transcription gives it, whose verse numbers are cited; R. Santhanam's translation, which the other BPHS rules follow, is not on hand, and its numbering can stand a verse apart (C550)."
       },
       "conditions": [
         {
@@ -13639,9 +13655,17 @@
           ]
         },
         {
-          "type": "planet-aspects-planet",
-          "from": "any-malefic",
-          "target": "KETU"
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": "KETU"
+          }
         }
       ],
       "outcomes": [

@@ -65,6 +65,35 @@ it under the default deep-meets-plain match, and Garvita and a strong house
 lord count it. No recorded corpus answer moves: the corpus holds no exalted
 graha within a degree of its point.
 
+**BPHS chs. 24, 30, 33 and 80** (`rules-engine.md`). **Numbers:** none
+moved; this adds 419 rules. Ch. 24's lords of the twelve houses in each of
+the twelve (`BPHS_BHAVESHA_*`), with the further clause some verses add a
+rule of its own; ch. 30's upapada (`BPHS_UPAPADA_*`); ch. 33's Karakamsha,
+read in the rasi chart (`BPHS_KARAKAMSHA_*`); ch. 80's woman's chart
+(`BPHS_STRI_*`). Read from the Sanskrit and cited in its numbering (C550).
+61 share their conditions with the same figure in Brihat Jataka ch. 24,
+Phaladeepika ch. 10, Jataka Parijata ch. 3 or BPHS ch. 44, and a test holds
+each pair to one answer. Chs. 81 and 82, the marks of the body, name no
+chart and are not built. Cruxes C565 to C569.
+
+**Phaladeepika ch. 16 and Jataka Parijata ch. 3 vv. 61 to 79**
+(`rules-engine.md`). **Numbers:** none moved; this adds 105 rules.
+Phaladeepika ch. 16, the effects of the twelve houses, read in Sastri's
+translation with the Sanskrit beside it: 59 rules `PHALADEEPIKA_BHAVA_*`,
+following the Sanskrit where its connectives differ from the English
+(vv. 3, 8, 14 and 27). Jataka Parijata ch. 3's last verses, the place of
+birth, the lamp, the lying-in chamber and a mark on the body: 46 rules
+`PARIJATA_JANMA_*`, 22 of them Brihat Jataka ch. 5's figures copied with
+their cancellations. Cruxes C575 and C576.
+
+**Saravali ch. 45 and ch. 46 vv. 22 to 45** (`rules-engine.md`).
+**Numbers:** none moved; this adds 116 rules. Ch. 45's woman's chart, 73
+rules, 67 carrying Brihat Jataka ch. 24's conditions unchanged and six
+Saravali's own where the 1907 print differs, v. 20's Moon for Saturn among
+them. Ch. 46 vv. 22 to 45, 43 rules: the cause of death by the 22nd
+drekkana from the lagna's, one for each of the thirty-six, and by that
+drekkana's lord. Cruxes C560 and C561.
+
 **Uttara Kalamrita's yogas** (`rules-engine.md`). **Numbers:** none moved;
 this adds 123 rules. Kalidasa's book, read in V. Subrahmanya Sastri's
 translation with P. S. Sastri's and S. S. Sareen's beside it. From Kanda I

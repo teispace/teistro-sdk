@@ -419,7 +419,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (313, 22));
+        assert_eq!((strength, points), (344, 27));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -490,7 +490,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 3756);
+        assert_eq!(rules.len(), 4396);
         for rule in &rules {
             let rank = rule
                 .source
@@ -532,8 +532,10 @@ mod tests {
         // years. And a text may give one figure in two verses or three, each
         // with its own word, which one rule carries rather than a duplicate
         // for each verse: Saravali ch. 20's sets of grahas in one sign and
-        // ch. 38's Sun in the tenth degree of Libra. They are the only rules
-        // that say more than one thing.
+        // ch. 38's Sun in the tenth degree of Libra; BPHS ch. 33's Karakamsha
+        // figures its later verses give again, and the verses of chs. 24, 30
+        // and 80 that read one figure twice, as the visha kanya and her
+        // children. They are the only rules that say more than one thing.
         let two: Vec<&str> = rules
             .iter()
             .filter(|rule| rule.outcomes.len() > 1)
@@ -554,7 +556,15 @@ mod tests {
                 "SARAVALI_PRAVRAJYA_MARS_MERCURY_JUPITER_SATURN",
                 "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_MERCURY_VENUS_SATURN",
                 "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_JUPITER_VENUS_SATURN",
-                "SARAVALI_BHANGA_SUN_IN_THE_TENTH_DEGREE_OF_LIBRA"
+                "SARAVALI_BHANGA_SUN_IN_THE_TENTH_DEGREE_OF_LIBRA",
+                "BPHS_BHAVESHA_EIGHTH_LORD_IN_THE_EIGHTH_WEAK",
+                "BPHS_UPAPADA_SUN_JUPITER_AND_RAHU_NINTH_FROM_IT",
+                "BPHS_KARAKAMSHA_MALEFIC_THIRD_FROM_IT",
+                "BPHS_KARAKAMSHA_BENEFIC_THIRD_FROM_IT",
+                "BPHS_KARAKAMSHA_VENUS_IN_IT_OR_THE_FIFTH",
+                "BPHS_KARAKAMSHA_MERCURY_IN_IT_OR_THE_FIFTH",
+                "BPHS_STRI_VISHA_KANYA_BY_DAY_TITHI_AND_NAKSHATRA",
+                "BPHS_STRI_VISHA_KANYA_BY_THE_LAGNA_AND_MALEFICS_IN_ENEMY_SIGNS",
             ]
         );
         for rule in rules

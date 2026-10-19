@@ -813,6 +813,33 @@ leader is a reading of its own where BPHS only cancels; v. 3 drops BPHS's
 "yoga of kings" names ch. 11's 30 raja yogas by key. The planetary war of
 vv. 1 and 2 is not built (C490). Ch. 14's pairs ship already as `DWIGRAHA_*`.
 
+**BPHS chs. 24, 30, 33 and 80, built (2026-10-19).** `classical-bphs-late.json`, 419 rules
+in the nabhasa set: ch. 24's 144 lords in houses as `BPHS_BHAVESHA_*`, each a
+`lord-of-house-in-house` with the verse's further clause a rule of its own (a lord's place is a
+figure of lordship, which no readings table holds, so C559's deferral is closed by C565); ch. 30
+as `BPHS_UPAPADA_*` over `UPAPADA` and `{"arudha": 1}`, its v. 6 Sun read into every malefic;
+ch. 33 as `BPHS_KARAKAMSHA_*` over `{"navamsha": {"karaka": "AK"}}` in the rasi chart, as the
+ch. 39 and 40 rules read it; ch. 80 as `BPHS_STRI_*`, 52 of its figures Brihat Jataka ch. 24's
+and held to agree in `crates/rules/tests/bphs_late.rs`. Chs. 81 and 82 hold no chart figure
+(C565 to C569).
+
+**Phaladeepika ch. 16 and Jataka Parijata ch. 3's last verses, built (2026-10-19).**
+`classical-phaladeepika-late.json`, 59 rules `PHALADEEPIKA_BHAVA_*`: "connected" is ch. 15
+v. 30's five bonds, "well placed" outside the sixth, eighth and twelfth, and a plural two or
+more; v. 1's form, the timing verses 31 to 35 and the houses of gain and loss are not built.
+`classical-parijata-late.json`, 46 rules `PARIJATA_JANMA_*`, 22 copied from Brihat Jataka ch. 5
+vv. 8 to 17 and held to them by `parijata_late.rs`; the chamber's builder and side read the
+strongest graha by `planet-stronger-than`, and the bed, attendants, form and limbs are readings
+and are not built (C575, C576).
+
+**Saravali ch. 45 and ch. 46 vv. 22 to 45, built (2026-10-19).** `classical-saravali-late.json`,
+116 rules. Ch. 45 restates Brihat Jataka ch. 24, and where it does its rule carries Brihat
+Jataka's conditions unchanged, held equal by the test over the recorded charts; where the 1907
+print reads otherwise, as v. 20's Moon for Saturn, the verse is its own rule. Ch. 46 vv. 22 to
+45 read the 22nd drekkana from the lagna's, the eighth sign's in the third the lagna stands in,
+so each of the thirty-six is a lagna sign and a ten-degree span and at most one holds in a
+chart, Aries's first only with v. 23's malefic (C560, C561).
+
 **Uttara Kalamrita's yogas, built (2026-10-19).** `classical-uttara-kalamrita.json`,
 123 rules in the nabhasa set under `UTTARA_*`, citing chapter `I.4` (Kanda I section 4) or `II`
 (Kanda II): the ninth and tenth lords' raja yogas and their kin, the dusthana lords, the Indu
