@@ -30,14 +30,17 @@ final sdk = Teistro.open();
 // The modern positions.
 final drik = sdk.context(ephemeris: [teimeris()]);
 
-// The Nepali committee's reckoning, which reproduces Nepal's official
-// days: the tithi, nakshatra and yoga by the Surya Siddhanta with the
-// committee's bija, sunrise and the outer planets from Teimeris.
-final committee = sdk.context(
-  profile: 'nepali-committee',
-  ephemeris: [const NamedEphemeris(Ephemeris.suryaSiddhanta), teimeris()],
-);
+// Nepal's official days: the committee's reckoning, the tithi,
+// nakshatra and yoga by the Surya Siddhanta with the committee's bija,
+// the sunrise and the outer planets from Teimeris.
+final official = sdk.nepalOfficial(modern: [teimeris()], locale: 'ne-Deva-NP');
 ```
+
+`nepalOfficial` is `profile: 'nepali-committee'` over the chain
+`[NamedEphemeris(Ephemeris.suryaSiddhanta), teimeris()]`, which
+`sdk.context` takes as well: the Surya Siddhanta takes the adapter after it
+for its sunrise. Where the two setups differ on a day, the committee's is
+the one Nepal's official calendar follows.
 
 `teimeris(profile: 'max')` asks for the engine's corrected profile, and
 `teimeris(path: ...)` opens a library you bundled another way.

@@ -394,6 +394,10 @@ name = "almanac"
 required-features = ["builtin-ephemeris"]
 
 [[example]]
+name = "nepal_official"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
 name = "parity"
 required-features = ["builtin-ephemeris"]
 

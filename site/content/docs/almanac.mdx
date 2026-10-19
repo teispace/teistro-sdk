@@ -159,3 +159,75 @@ day(one)       शुक्रबार  24 horas, 30 muhurtas, 16 choghadiya
 `bindings/node/example/panchanga.mjs` computes the five limbs by hand
 from two longitudes, to show the arithmetic underneath; an application
 should ask `sdk.almanac`, which finds when each limb ends.
+
+## Nepal's official days
+
+Nepal's patro is computed by the Nepali committee from the Surya
+Siddhanta: the tithi, nakshatra and yoga by the text with the committee's
+bija, the sunrise from a modern ephemeris. That setup is a **preset** in
+every binding, the committee's profile over a chain whose first entry is
+the text: the Surya Siddhanta takes the engine after it for its sunrise.
+An app passes its engine, the Teimeris adapter's descriptor; with none,
+the sunrise is the built-in's, which is how this runs anywhere.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust']}>
+<Tab value="Node">
+
+```js title="bindings/node/example/nepal_official.mjs"
+const official = new Context({ ...nepalOfficial(), locale: 'en-Latn' });
+const modern = new Context({ profile: 'nepali-default', locale: 'en-Latn', ephemeris: 'BUILTIN' });
+```
+
+</Tab>
+<Tab value="Python">
+
+```python title="bindings/python/example/nepal_official.py"
+with teistro.context(**nepal_official(), locale="en-Latn") as official, teistro.context(
+    profile="nepali-default", locale="en-Latn", ephemeris=Ephemeris.BUILTIN
+) as modern:
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart title="bindings/dart/example/nepal_official.dart"
+final official = teistro.nepalOfficial(locale: 'en-Latn');
+```
+
+</Tab>
+<Tab value="Java">
+
+```java title="bindings/java/example/NepalOfficial.java"
+ContextOptions officialOptions = ContextOptions.builder().nepalOfficial().locale("en-Latn").build();
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust title="crates/sdk/examples/nepal_official.rs"
+let official = Context::builder()
+    .nepal_official([])
+    .locale("en-Latn")
+    .build()?;
+```
+
+</Tab>
+</Tabs>
+
+The modern reckoning, `nepali-default`, reads the same day from the
+modern sky, and the two name another sunrise tithi on a few days a month.
+The reason is always a tithi's end against the sunrise, so each row
+prints both ends:
+
+```text output="nepal_official"
+2025-11-01  sunrise 06:16  official Ekadashi until 02:55  modern Dashami until 09:27
+2025-11-02  sunrise 06:16  official Dwadashi until 01:26  modern Ekadashi until 07:47
+2025-11-09  sunrise 06:21  official Chaturthi until 10:02  modern Panchami until 02:11
+2025-11-10  sunrise 06:22  official Panchami until 08:04  modern Shashthi until 00:24
+2025-11-11  sunrise 06:23  official Shashthi until 06:24  modern Saptami until 23:24
+5 of 30 days name another sunrise tithi
+```
+
+The first row is Haribodhini Ekadashi, which Nepal kept on 1 November
+2025 (Kartik 15, 2082): by the text the Dashami had ended before sunrise,
+and by the modern sky it ran until 09:27.
