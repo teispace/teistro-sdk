@@ -31,10 +31,11 @@ in solar days, from the month's opening to the next. The record's new
 Crux C477.
 
 **Jataka Parijata's named yogas, ch. 7 vv. 128 to 163** (`rules-engine.md`).
-**Numbers:** none moved; this adds 21 rules. Parvata to Hariharabrahma, read
-in Sastri's 1932 translation against the verse: where a yoga shares its name
-with BPHS ch. 36's and differs, it ships as Jataka Parijata writes it, and
-the three it states alike answer what BPHS's do. Crux C481.
+**Numbers:** none moved; this adds 31 rules. Parvata to Hariharabrahma, read
+in Sastri's 1932 translation against the verse, and the two pages the
+translation's scans lack in the Chowkhamba print: where a yoga shares its
+name with BPHS ch. 36's and differs, it ships as Jataka Parijata writes it,
+and the four it states alike answer what BPHS's do. Crux C481.
 
 **Saravali's yogas of the luminaries, chs. 13 and 14** (`rules-engine.md`).
 **Numbers:** none moved; this adds 36 rules. Sunapha, Anapha and Durudhara
