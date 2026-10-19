@@ -349,7 +349,7 @@ fn the_locale_renders_a_message_by_its_typed_accessor() {
 }
 
 /// A day's lunar month is said with its kind: an adhika month the way a
-/// Nepali patro prints it, and a nija month by its name alone
+/// patro printed in Nepal says it, and a nija month by its name alone
 /// (`03-design/calendar-indian-lunisolar.md` §9).
 #[test]
 fn an_adhika_month_is_said_the_nepali_way() {
