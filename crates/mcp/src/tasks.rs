@@ -59,6 +59,10 @@ struct Entry {
     status: Status,
     message: Option<String>,
     interrupt: Interrupt,
+    /// Whether `tasks/cancel` was accepted while it worked: its work then
+    /// ends it cancelled, even when the work was done before it next asked
+    /// the engine and so never heard the interrupt.
+    cancelled: bool,
     /// When it ended, for [`KEPT`].
     ended: Option<Instant>,
 }
@@ -107,6 +111,7 @@ impl Store {
                 status: Status::Working,
                 message: None,
                 interrupt,
+                cancelled: false,
                 ended: None,
             },
         );
@@ -123,10 +128,14 @@ impl Store {
         }
     }
 
-    /// The task ends as `status`.
+    /// The task ends as `status`, or cancelled when a cancel was accepted.
     pub(crate) fn end(&self, id: &str, status: Status) {
         if let Some(task) = self.locked().get_mut(id) {
-            task.status = status;
+            task.status = if task.cancelled {
+                Status::Cancelled
+            } else {
+                status
+            };
             task.message = None;
             task.updated = SystemTime::now();
             task.ended = Some(Instant::now());
@@ -153,9 +162,10 @@ impl Store {
 
     /// Asks the task to stop: cooperative, so it may still complete.
     pub(crate) fn cancel(&self, id: &str) -> Result<(), Refused> {
-        let tasks = self.locked();
-        let task = tasks.get(id).ok_or_else(|| unknown(id))?;
+        let mut tasks = self.locked();
+        let task = tasks.get_mut(id).ok_or_else(|| unknown(id))?;
         if matches!(task.status, Status::Working) {
+            task.cancelled = true;
             task.interrupt.cancel(&Value::String(id.to_owned()));
         }
         Ok(())
@@ -292,6 +302,33 @@ mod tests {
         let leap = UNIX_EPOCH + Duration::from_millis(951_782_400_000 + 3_723_004);
         assert_eq!(iso(leap), "2000-02-29T01:02:03.004Z");
         assert_eq!(civil(-1), (1969, 12, 31));
+    }
+
+    fn status(store: &Store, id: &str) -> Value {
+        store.view(id).ok().unwrap().get("status").cloned().unwrap()
+    }
+
+    /// The race a slow machine runs: the work is done before it next asks
+    /// the engine, so it never hears the interrupt, and the accepted cancel
+    /// still decides how the task ends.
+    #[test]
+    fn an_accepted_cancel_ends_the_task_cancelled_however_its_work_ends() {
+        let store = Store::default();
+        let id = store
+            .begin(crate::watch::Shared::new().interrupt())
+            .unwrap();
+        assert!(store.cancel(&id).is_ok());
+        assert_eq!(status(&store, &id), "working");
+        store.end(&id, Status::Completed(json!({ "isError": false })));
+        assert_eq!(status(&store, &id), "cancelled");
+        assert!(!store.view(&id).ok().unwrap().contains_key("result"));
+        // A cancel after the end changes nothing.
+        let done = store
+            .begin(crate::watch::Shared::new().interrupt())
+            .unwrap();
+        store.end(&done, Status::Completed(json!({ "isError": false })));
+        assert!(store.cancel(&done).is_ok());
+        assert_eq!(status(&store, &done), "completed");
     }
 
     #[test]
