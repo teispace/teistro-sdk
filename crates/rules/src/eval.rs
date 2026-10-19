@@ -1131,7 +1131,12 @@ impl<'a> Evaluator<'a> {
                 let lord = self.lord_of(*house_ruled, rec);
                 self.dignity_meets(
                     self.at(lord).dignity,
-                    &[Dignity::OwnSign, Dignity::Exalted, Dignity::Mooltrikona],
+                    &[
+                        Dignity::OwnSign,
+                        Dignity::Exalted,
+                        Dignity::DeepExalted,
+                        Dignity::Mooltrikona,
+                    ],
                 )
             }
             Condition::LordOfHouseIs {

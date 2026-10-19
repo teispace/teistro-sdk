@@ -27,6 +27,14 @@ pub const FRIENDLY_HOUSES: [u8; 6] = [2, 3, 4, 10, 11, 12];
 /// ladder (`03-design/state-and-avasthas.md` §12).
 pub const DEEP_DEBILITATION_ORB_DEG: f64 = 1.0;
 
+/// How near the exact exaltation degree an exaltation must be to be a deep
+/// one, degrees: the band crux C18 names, the same degree as the
+/// debilitation's. The corpus holds no exalted graha within it, so it
+/// cannot bracket this orb as it does the other; without it no graha was
+/// ever deeply exalted, and a rule naming that dignity alone, Jataka
+/// Parijata's Lakshmi, could never hold.
+pub const DEEP_EXALTATION_ORB_DEG: f64 = 1.0;
+
 /// Whether a graha is one of the two shadow grahas, which own no sign
 /// and whose dignity ends at neutral.
 #[must_use]
@@ -212,8 +220,16 @@ pub fn dignity(graha: Graha, sign: Rashi, degrees_in_sign: f64, compound: Relati
     {
         return Dignity::Mooltrikona;
     }
-    if attributes.exaltation.is_some_and(|at| at.sign == sign) {
-        return Dignity::Exalted;
+    if let Some(at) = attributes.exaltation
+        && at.sign == sign
+    {
+        let deep = !is_shadow(graha)
+            && (degrees_in_sign - f64::from(at.degree)).abs() <= DEEP_EXALTATION_ORB_DEG;
+        return if deep {
+            Dignity::DeepExalted
+        } else {
+            Dignity::Exalted
+        };
     }
     if let Some(at) = attributes.debilitation
         && at.sign == sign
@@ -347,6 +363,24 @@ mod tests {
     }
 
     #[test]
+    fn an_exaltation_is_deep_within_a_degree_and_never_for_a_shadow() {
+        // Saturn's exaltation is Libra 20°.
+        assert_eq!(
+            dignity(Graha::Saturn, Rashi::Libra, 19.5, Relationship::Neutral),
+            Dignity::DeepExalted
+        );
+        assert_eq!(
+            dignity(Graha::Saturn, Rashi::Libra, 18.0, Relationship::Neutral),
+            Dignity::Exalted
+        );
+        // Rahu's is Taurus 20°, and it never takes the deep form.
+        assert_eq!(
+            dignity(Graha::Rahu, Rashi::Taurus, 20.0, Relationship::Neutral),
+            Dignity::Exalted
+        );
+    }
+
+    #[test]
     fn a_shadow_graha_falls_to_neutral_where_a_graha_takes_its_friendship() {
         // Neither owns a sign, so a friendship dignity never applies.
         for shadow in [Graha::Rahu, Graha::Ketu] {
@@ -389,6 +423,7 @@ mod tests {
                                 Dignity::OwnSign
                                     | Dignity::Mooltrikona
                                     | Dignity::Exalted
+                                    | Dignity::DeepExalted
                                     | Dignity::Debilitated
                                     | Dignity::DeepDebilitated
                             ),

@@ -226,7 +226,10 @@ pub fn may_hold(state: AvasthaLajjitadi, placement: Placement) -> bool {
 #[must_use]
 pub fn lajjitadi(placement: Placement, chart: &[Placement]) -> Lajjitadi {
     let mut holding = Vec::new();
-    if matches!(placement.dignity, Dignity::Exalted | Dignity::Mooltrikona) {
+    if matches!(
+        placement.dignity,
+        Dignity::Exalted | Dignity::DeepExalted | Dignity::Mooltrikona
+    ) {
         holding.push(AvasthaLajjitadi::Garvita);
     }
     let shares_with = |who: Graha| {
