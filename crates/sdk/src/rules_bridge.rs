@@ -203,6 +203,7 @@ pub fn rule_chart(
 /// carried and its divisional charts.
 ///
 /// ```no_run
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
 /// use teistro::rules::{Readings, shipped};
 /// use teistro::{ChartRequest, Context, Ephemeris, RuleInputs, UtcOffset};
@@ -216,6 +217,7 @@ pub fn rule_chart(
 /// let evaluator = inputs.evaluator(Readings::TEXTS).with_rules(rules);
 /// let present = rules.iter().filter(|rule| evaluator.evaluate(rule).present).count();
 /// # let _ = present;
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug, PartialEq)]

@@ -170,7 +170,7 @@ impl<'a> InterpretArea<'a> {
     /// # use teistro::{Context, Document, Ephemeris, SadeSatiRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let natal: Document = todo!();
     /// let now = JulianDay::<Utc>::literal(2_461_000.5);
     /// let report = sdk.chart().sade_sati(&natal, &SadeSatiRequest::at(now))?.value;
@@ -198,7 +198,7 @@ impl<'a> InterpretArea<'a> {
     /// # use teistro::{Context, Document, Ephemeris, GocharRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let natal: Document = todo!();
     /// let today = JulianDay::<Utc>::literal(2_461_000.5);
     /// let readings = sdk.chart().gochar(&natal, &GocharRequest::at(today))?.value;

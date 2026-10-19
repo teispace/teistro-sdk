@@ -329,6 +329,7 @@ impl ChartArea<'_> {
     /// the natal place in one batch, their grahas in the chart's zodiac.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// # use teistro::{ChartRequest, Context, Ephemeris, SarvatobhadraRequest, UtcOffset};
     /// use teistro::gochar::sarvatobhadra::VedhaPoint;
@@ -343,6 +344,7 @@ impl ChartArea<'_> {
     /// let star = read.points.iter().find(|p| p.point == VedhaPoint::Nakshatra);
     /// println!("{} of five struck", read.malefic_points);
     /// # let _ = star;
+    /// # }
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///

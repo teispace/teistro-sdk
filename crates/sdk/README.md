@@ -188,3 +188,16 @@ Every target that names `Ephemeris::Builtin` declares
 failing on them; `check-lints`'
 `target-declares-the-feature-it-needs` holds that by reading the
 sources.
+
+A doctest that needs the built-in runs inside
+`# #[cfg(feature = "builtin-ephemeris")] { … # }`, and the boundary's
+`abi` and `leaks` suites, which ask for `TsEphemeris::Builtin`, declare the
+feature the same way. The fast check's `families` job lints and tests the
+façade and the boundary with no built-in at all (`--no-default-features
+--features full`), which is the build an app that brings its own engine
+ships.
+
+**To measure a tier, turn the default features off.** The default enables
+`builtin-standard`, and the richest tier enabled wins, so
+`--features builtin-compact` on its own still builds `standard`:
+`--no-default-features --features full,builtin-compact` builds `compact`.

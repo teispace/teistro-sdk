@@ -851,6 +851,7 @@ mod tests {
         OptionTexts, TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_ephemeris, resolve,
     };
     use teistro_core::settings::DEFAULT_CACHE_CELLS;
+    #[cfg(feature = "builtin-ephemeris")]
     use teistro_port_ephemeris::EphemerisProvider;
 
     /// The knob's default is the port's default, in one place.

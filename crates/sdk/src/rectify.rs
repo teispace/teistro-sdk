@@ -46,7 +46,7 @@ impl ChartArea<'_> {
     /// # use teistro::quantity::{JulianDay, Place};
     /// # use teistro::rectification::{Rules, Window};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let place: Place = todo!();
     /// // "Between half past nine and ten": a half-hour window.
     /// let window = Window::between(JulianDay::literal(2_460_000.0), JulianDay::literal(2_460_000.0 + 0.5 / 24.0))?;
@@ -102,7 +102,7 @@ impl ChartArea<'_> {
     /// # use teistro::quantity::{JulianDay, Place};
     /// # use teistro::rectification::ConceptionRules;
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let place: Place = todo!();
     /// let at = JulianDay::literal(2_460_000.3);
     /// let read = sdk.chart().conception(at, &place, UtcOffset::UTC, &ConceptionRules::default())?.value;
@@ -147,7 +147,7 @@ impl ChartArea<'_> {
     /// # use teistro::quantity::{JulianDay, Place};
     /// # use teistro::rectification::{CircumstanceRules, Facts, Presentation};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let place: Place = todo!();
     /// let facts = Facts { father_present: Some(false), presentation: Some(Presentation::Head), ..Facts::default() };
     /// let at = JulianDay::literal(2_460_000.3);
@@ -194,7 +194,7 @@ impl ChartArea<'_> {
     /// # use teistro::{Context, Ephemeris, UtcOffset};
     /// # use teistro::quantity::{JulianDay, Place};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let place: Place = todo!();
     /// let read = sdk.chart().svarodaya(JulianDay::literal(2_460_000.3), &place, UtcOffset::UTC)?.value;
     /// println!("{:?} nadi, {:?}, turn {} of the day", read.run.nadi, read.run.tattva, read.run.turn);
@@ -263,7 +263,7 @@ impl ChartArea<'_> {
     /// # use teistro::quantity::{JulianDay, Place};
     /// # use teistro::rectification::{BaselineRequest, EventKind, LifeEvent};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let place: Place = todo!();
     /// let mut request = BaselineRequest::around(JulianDay::literal(2_451_779.1354), 60.0);
     /// request.events.push(LifeEvent::on(EventKind::Marriage, JulianDay::literal(2_459_000.5)));

@@ -121,7 +121,7 @@ impl ChartArea<'_> {
     /// ```no_run
     /// # use teistro::{Context, Document, Ephemeris, KootaRules};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (bride, groom): (Document, Document) = todo!();
     /// let koota = sdk.chart().matching(&bride, &groom, KootaRules::default())?;
     /// for row in &koota.kootas {
@@ -159,7 +159,7 @@ impl ChartArea<'_> {
     /// ```no_run
     /// # use teistro::{Context, Document, Ephemeris, PoruthamRules};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (bride, groom): (Document, Document) = todo!();
     /// let ten = sdk.chart().porutham(&bride, &groom, PoruthamRules::default())?;
     /// for row in &ten.considerations {
@@ -195,7 +195,7 @@ impl ChartArea<'_> {
     /// ```no_run
     /// # use teistro::{Context, Document, Ephemeris, KujaRules};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (bride, groom): (Document, Document) = todo!();
     /// let mars = sdk.chart().kuja(&bride, &groom, KujaRules::default())?;
     /// println!("bride {}, groom {}, both {}", mars.bride.dosha, mars.groom.dosha, mars.both);

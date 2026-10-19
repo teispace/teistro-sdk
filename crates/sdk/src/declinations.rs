@@ -54,7 +54,7 @@ impl ChartArea<'_> {
     /// # use teistro::catalogue::Graha;
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (instant, request): (JulianDay<Utc>, ChartRequest) = todo!();
     /// let chart = sdk.chart().reading(instant, &request)?.value;
     /// let read = sdk.chart().declinations(&chart)?;
@@ -96,7 +96,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Ephemeris, ParallelRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (instant, request): (JulianDay<Utc>, ChartRequest) = todo!();
     /// let chart = sdk.chart().reading(instant, &request)?.value;
     /// for row in sdk.chart().parallels(&chart, &ParallelRequest::default())? {
@@ -132,7 +132,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Ephemeris, ParallelRequest, SynastryRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (his, hers): ((JulianDay<Utc>, ChartRequest), (JulianDay<Utc>, ChartRequest)) = todo!();
     /// let first = sdk.chart().reading(his.0, &his.1)?.value;
     /// let second = sdk.chart().reading(hers.0, &hers.1)?.value;

@@ -436,6 +436,7 @@ impl ChartRequest {
     /// [`with_everything`](Self::with_everything) asks for it only by name.
     ///
     /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
     ///
@@ -445,6 +446,7 @@ impl ChartRequest {
     /// let chart = sdk.chart().reading(JulianDay::try_new(2_451_545.0)?, &request)?.value;
     /// let read = chart.avakahada.expect("asked for");
     /// assert!((1..=4).contains(&read.pada));
+    /// # }
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[must_use]
@@ -460,6 +462,7 @@ impl ChartRequest {
     /// for this section itself.
     ///
     /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro::{BirthEclipse, ChartRequest, Context, Ephemeris, UtcOffset};
     ///
@@ -471,6 +474,7 @@ impl ChartRequest {
     /// let (rose, sets) = (moment.rising.rose.expect("a sign rises"), moment.rising.sets.expect("and sets"));
     /// assert!(rose.get() < 2_451_545.0 && 2_451_545.0 < sets.get());
     /// assert_eq!(moment.eclipse, BirthEclipse::None);
+    /// # }
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[must_use]
@@ -485,6 +489,7 @@ impl ChartRequest {
     /// foundation is what it always was, to the byte.
     ///
     /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::catalogue::Graha;
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
@@ -499,6 +504,7 @@ impl ChartRequest {
     /// let uranus = chart.foundation.graha(Graha::Uranus).expect("asked for");
     /// assert!((314.0..316.0).contains(&uranus.longitude_deg));
     /// assert_eq!(chart.foundation.grahas.len(), 9);
+    /// # }
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[must_use]
@@ -526,6 +532,7 @@ impl ChartRequest {
     /// foundation is what it always was, to the byte.
     ///
     /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro::{Apogee, ChartRequest, Context, Ephemeris, UtcOffset};
     ///
@@ -541,6 +548,7 @@ impl ChartRequest {
     /// // stands half a circle on, in Sagittarius.
     /// assert!((263.0..264.0).contains(&lilith.longitude_deg));
     /// assert!(!lilith.is_retrograde());
+    /// # }
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[must_use]

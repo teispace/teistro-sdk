@@ -36,6 +36,7 @@ impl ChartArea<'_> {
     /// the sky is read on the middle day, the earlier of two.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::CalendarDate;
     /// # use teistro::catalogue::{Calendar, Rashi};
     /// # use teistro::quantity::{Altitude, Latitude, Longitude, Place};
@@ -59,6 +60,7 @@ impl ChartArea<'_> {
     /// println!("Saturn in the {} from Leo", leo.saturn.house);
     /// let score = read.baseline_score(Rashi::Leo, Period::Monthly);
     /// println!("the baseline engine's score: {}", score.overall);
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///

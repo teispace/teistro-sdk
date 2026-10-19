@@ -27,7 +27,7 @@ impl ChartArea<'_> {
     /// # use teistro::{AntisciaRequest, ChartRequest, Context, Ephemeris};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (instant, request): (JulianDay<Utc>, ChartRequest) = todo!();
     /// let chart = sdk.chart().reading(instant, &request)?.value;
     /// let read = sdk.chart().antiscia(&chart, &AntisciaRequest::default())?;
@@ -73,7 +73,7 @@ impl ChartArea<'_> {
     /// # use teistro::{AntisciaRequest, ChartRequest, Context, Ephemeris, SynastryRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (his, hers): ((JulianDay<Utc>, ChartRequest), (JulianDay<Utc>, ChartRequest)) = todo!();
     /// let first = sdk.chart().reading(his.0, &his.1)?.value;
     /// let second = sdk.chart().reading(hers.0, &hers.1)?.value;

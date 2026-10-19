@@ -207,7 +207,7 @@ impl ChartArea<'_> {
     /// # use teistro::{AspectRequest, ChartRequest, Context, Ephemeris};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (instant, request): (JulianDay<Utc>, ChartRequest) = todo!();
     /// let chart = sdk.chart().reading(instant, &request.with_outer_planets())?.value;
     /// for row in sdk.chart().western_aspects(&chart, &AspectRequest::default())? {
@@ -249,7 +249,7 @@ impl ChartArea<'_> {
     /// # use teistro::{AspectRequest, ChartRequest, ConfigurationRules, Context, Ephemeris};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (instant, request): (JulianDay<Utc>, ChartRequest) = todo!();
     /// let chart = sdk.chart().reading(instant, &request.with_outer_planets())?.value;
     /// let shapes = sdk.chart().western_configurations(
@@ -295,7 +295,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Ephemeris, SynastryRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (his, hers): ((JulianDay<Utc>, ChartRequest), (JulianDay<Utc>, ChartRequest)) = todo!();
     /// let first = sdk.chart().reading(his.0, &his.1.with_outer_planets())?.value;
     /// let second = sdk.chart().reading(hers.0, &hers.1.with_outer_planets())?.value;

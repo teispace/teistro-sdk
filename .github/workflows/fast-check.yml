@@ -91,6 +91,13 @@ jobs:
         run: cargo clippy -p teistro-wasm --lib --target wasm32-unknown-unknown --no-default-features --features builtin-compact -- -D warnings
       - name: Lint the wasm module's `panchanga` profile, for wasm32
         run: cargo clippy -p teistro-wasm --lib --target wasm32-unknown-unknown --no-default-features --features panchanga -- -D warnings
+      # The build an app that brings its own engine ships: every family and
+      # no built-in ephemeris, the test targets and doctests that need the
+      # built-in skipped by their own `required-features` and `cfg`.
+      - name: Lint and test the façade and the boundary with no built-in ephemeris
+        run: |
+          cargo clippy -p teistro -p teistro-ffi --all-targets --no-default-features --features full -- -D warnings
+          cargo test -p teistro -p teistro-ffi --no-default-features --features full
       - name: The chart area refused, with no family
         run: cargo test -p teistro-ffi --no-default-features --features builtin-compact --test families
       - name: Every chart family refused and every section written, with the chart area alone

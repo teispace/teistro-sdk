@@ -1253,6 +1253,7 @@ impl<'a> ChartArea<'a> {
     /// degrees do not depend on a clock, so none is asked for.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// # use teistro::{ChartRequest, Context, Ephemeris, GocharRequest, UtcOffset};
     /// # use teistro::gochar::Verdict;
@@ -1265,6 +1266,7 @@ impl<'a> ChartArea<'a> {
     /// let today = sdk.chart().gochar(&natal, &GocharRequest::at(JulianDay::<Utc>::literal(2_461_000.5)))?;
     /// let good = today.value[0].grahas.iter().filter(|g| g.verdict == Verdict::Good).count();
     /// # let _ = good;
+    /// # }
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///
@@ -1329,7 +1331,7 @@ impl<'a> ChartArea<'a> {
     /// # use teistro::gochar::hits::HitEvent;
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let natal: Document = todo!();
     /// let year = HitRequest::between(JulianDay::<Utc>::literal(2_460_676.5), JulianDay::literal(2_461_041.5));
     /// for hit in sdk.chart().hits(&natal, &year)?.value {
@@ -1372,7 +1374,7 @@ impl<'a> ChartArea<'a> {
     /// # use teistro::{Context, Document, Ephemeris, HitRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let family: Vec<Document> = todo!();
     /// let year = HitRequest::between(JulianDay::<Utc>::literal(2_460_676.5), JulianDay::literal(2_461_041.5));
     /// let lists = sdk.chart().hits_many(&family, &year)?.value;
@@ -1598,7 +1600,7 @@ impl<'a> ChartArea<'a> {
     /// # use teistro::{Context, Document, Ephemeris, SadeSatiRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let natal: Document = todo!();
     /// let now = JulianDay::<Utc>::literal(2_461_000.5);
     /// let report = sdk.chart().sade_sati(&natal, &SadeSatiRequest::at(now))?.value;
@@ -2003,6 +2005,7 @@ impl<'a> ChartArea<'a> {
     /// Lilly's ephemerides were.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// use teistro::{FortitudeRequest, House, PerfectionRequest};
@@ -2019,6 +2022,7 @@ impl<'a> ChartArea<'a> {
     /// if let Some(application) = matter.application {
     ///     println!("{:?} in {:.1} days, {} impediment(s) first", application.aspect, application.days, matter.impediments.len());
     /// }
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -2204,6 +2208,7 @@ impl<'a> ChartArea<'a> {
     /// `DECENNIALS` system's year and the settings' division.
     ///
     /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::catalogue::Graha;
     /// use teistro::dasha::Timeline;
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
@@ -2225,6 +2230,7 @@ impl<'a> ChartArea<'a> {
     /// assert_eq!(decennials.order()[0], Graha::Jupiter);
     /// let first = decennials.mahadasha(0, 0).map(|period| period.lord);
     /// assert_eq!(first, Some(Graha::Jupiter));
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -2247,6 +2253,7 @@ impl<'a> ChartArea<'a> {
     /// member is this from the Ascendant.
     ///
     /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::catalogue::{Graha, Rashi};
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// use teistro::{ChartRequest, Context, Ephemeris, LotPoint, LotRequest, UtcOffset};
@@ -2268,6 +2275,7 @@ impl<'a> ChartArea<'a> {
     /// assert_eq!(years.start(), at_birth);
     /// // The 13th year comes back to the Moon's sign.
     /// assert_eq!(years.sign_of_year(13), Some(at_birth));
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///

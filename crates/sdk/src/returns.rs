@@ -85,7 +85,7 @@ impl ChartArea<'_> {
     /// # use teistro::catalogue::Graha;
     /// # use teistro::quantity::{JulianDay, Place, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, from, to, residence): (Document, JulianDay<Utc>, JulianDay<Utc>, Place) = todo!();
     /// let returns = sdk.chart().returns(&birth, from, to, [Graha::Moon])?.value;
     /// for one in &returns {
@@ -150,7 +150,7 @@ impl ChartArea<'_> {
     /// # use teistro::catalogue::Graha;
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, from, to): (Document, JulianDay<Utc>, JulianDay<Utc>) = todo!();
     /// // The solar year in four: the return and the three quarti-solars.
     /// let offsets = [0].into_iter().chain(OffsetReturn::QUARTERS);

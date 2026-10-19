@@ -245,7 +245,7 @@ impl ChartArea<'_> {
     /// ```no_run
     /// # use teistro::{ChartRequest, Context, Document, Ephemeris, TithiRule};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, request): (Document, ChartRequest) = todo!();
     /// let years = sdk.chart().tithi_praveshas(&birth, TithiRule::NatalSign, 40)?;
     /// for year in &years {

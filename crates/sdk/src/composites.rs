@@ -28,7 +28,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Ephemeris, SynastryZodiac};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (his, hers): ((JulianDay<Utc>, ChartRequest), (JulianDay<Utc>, ChartRequest)) = todo!();
     /// let first = sdk.chart().reading(his.0, &his.1)?.value;
     /// let second = sdk.chart().reading(hers.0, &hers.1)?.value;

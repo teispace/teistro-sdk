@@ -382,7 +382,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Document, Ephemeris, ProgressionRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, request): (Document, ChartRequest) = todo!();
     /// let at_forty = JulianDay::<Utc>::try_new(birth.foundation.instant.get() + 40.0 * 365.25)?;
     /// let progressed = sdk.chart().progressed(&birth, at_forty, &ProgressionRequest::default(), &request)?;
@@ -546,7 +546,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ContactRequest, Context, Document, Ephemeris};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, from, to): (Document, JulianDay<Utc>, JulianDay<Utc>) = todo!();
     /// for contact in sdk.chart().progressed_contacts(&birth, from, to, &ContactRequest::default())? {
     ///     println!("{:?} {}° {:?} at {}", contact.graha, contact.angle, contact.to, contact.life.get());
@@ -635,7 +635,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ContactRequest, Context, Document, Ephemeris, ParallelRequest};
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, from, to): (Document, JulianDay<Utc>, JulianDay<Utc>) = todo!();
     /// let asked = ContactRequest::default().with_parallels(ParallelRequest::default());
     /// for row in sdk.chart().progressed_parallels(&birth, from, to, &asked)? {
@@ -759,7 +759,7 @@ impl ChartArea<'_> {
     /// # use teistro::catalogue::Graha;
     /// # use teistro::quantity::{JulianDay, Utc};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, from, to): (Document, JulianDay<Utc>, JulianDay<Utc>) = todo!();
     /// let asked = ContactRequest::default().with_grahas([Graha::Moon, Graha::Venus, Graha::Jupiter]);
     /// for contact in sdk.chart().progressed_mutual_contacts(&birth, from, to, &asked)? {

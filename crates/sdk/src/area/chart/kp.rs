@@ -28,6 +28,7 @@ impl ChartArea<'_> {
     /// and zodiac, so a stored chart answers it.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::{ChartRequest, Context, Ephemeris, KpRequest, UtcOffset};
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// # use teistro::catalogue::HouseSystem;
@@ -44,6 +45,7 @@ impl ChartArea<'_> {
     /// assert_eq!(kp.system, HouseSystem::Placidus);
     /// let lagna = kp.cusp(1).expect("twelve cusps");
     /// println!("lagna sub lord {:?}", lagna.lords.sub.lord);
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -110,6 +112,7 @@ impl ChartArea<'_> {
     /// checked as there.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::{ChartRequest, Context, Ephemeris, KpNumber, KpRequest, UtcOffset};
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).profile("kp-default").build()?;
@@ -121,6 +124,7 @@ impl ChartArea<'_> {
     /// // The querent says 74: the lagna is Cancer 14°53′20″.
     /// let horary = sdk.chart().kp_horary(&now, KpNumber::new(74)?, &KpRequest::new())?;
     /// assert_eq!(horary.cusp(1).map(|cusp| cusp.longitude), Some(KpNumber::new(74)?.start()));
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -145,6 +149,7 @@ impl ChartArea<'_> {
     /// Needs nothing but the chart, from [`ChartArea::kp`].
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::{ChartRequest, Context, Ephemeris, KpRequest, UtcOffset};
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).profile("kp-default").build()?;
@@ -157,6 +162,7 @@ impl ChartArea<'_> {
     /// let significators = sdk.chart().kp_significators(&kp);
     /// // The 7th house's significators, strongest first.
     /// println!("{:?}", significators.house(7).map(|house| house.in_order()));
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     #[must_use]
@@ -175,6 +181,7 @@ impl ChartArea<'_> {
     /// date on the clock the request names ([`KpRequest::on_clock`]).
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::{ChartRequest, Context, Ephemeris, KpRequest, UtcOffset};
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).profile("kp-default").build()?;
@@ -185,6 +192,7 @@ impl ChartArea<'_> {
     ///     .value;
     /// let ruling = sdk.chart().kp_ruling(&now, &KpRequest::new())?;
     /// println!("ruling planets {:?}", ruling.accepted());
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -203,6 +211,7 @@ impl ChartArea<'_> {
     /// whatever the number.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// # use teistro::{ChartRequest, Context, Ephemeris, KpNumber, KpRequest, UtcOffset};
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
     /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).profile("kp-default").build()?;
@@ -213,6 +222,7 @@ impl ChartArea<'_> {
     ///     .value;
     /// let reading = sdk.chart().kp_reading(&now, &KpRequest::new().for_number(KpNumber::new(74)?))?;
     /// println!("{:?} rule", reading.ruling.accepted());
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///

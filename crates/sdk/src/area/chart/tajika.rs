@@ -49,7 +49,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Document, Ephemeris};
     /// # use teistro::tajika::Reading;
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let document: Document = todo!();
     /// let years = sdk.chart().praveshas(&document, Reading::Sidereal, 40)?;
     /// let thirtieth = years.iter().find(|one| one.year == 30);
@@ -103,7 +103,7 @@ impl ChartArea<'_> {
     /// # use teistro::{Context, Document, Ephemeris};
     /// # use teistro::tajika::Reading;
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let document: Document = todo!();
     /// let months = sdk.chart().masa_praveshas(&document, Reading::Sidereal, 30)?;
     /// assert_eq!(months.first().map(|one| one.month), Some(1));
@@ -310,7 +310,7 @@ impl ChartArea<'_> {
     /// ```no_run
     /// # use teistro::{AnnualPlace, Asked, ChartRequest, Context, Document, Ephemeris, VarshaRequest};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, request): (Document, ChartRequest) = todo!();
     /// let asked = VarshaRequest::through(40)
     ///     .at(AnnualPlace::Birth)
@@ -617,7 +617,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Document, Ephemeris};
     /// # use teistro::tajika::{MaseshaRules, Reading};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, request): (Document, ChartRequest) = todo!();
     /// let months = sdk.chart().masa_praveshas(&birth, Reading::Sidereal, 30)?;
     /// let year = sdk.chart().reading(months[0].at, &request)?.value;
@@ -666,7 +666,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Document, Ephemeris};
     /// # use teistro::tajika::{MasaDashaRules, MunthaDegree, Reading};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, request): (Document, ChartRequest) = todo!();
     /// let months = sdk.chart().masa_praveshas(&birth, Reading::Sidereal, 30)?;
     /// let year = sdk.chart().reading(months[0].at, &request)?.value;
@@ -787,7 +787,7 @@ impl ChartArea<'_> {
     /// # use teistro::{ChartRequest, Context, Document, Ephemeris};
     /// # use teistro::tajika::{MaseshaRules, Reading};
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (birth, request): (Document, ChartRequest) = todo!();
     /// let months = sdk.chart().masa_praveshas(&birth, Reading::Sidereal, 30)?;
     /// let year = sdk.chart().reading(months[0].at, &request)?.value;
@@ -1428,7 +1428,7 @@ impl ChartArea<'_> {
     /// # use teistro::catalogue::DashaSystem;
     /// # use teistro::tajika::Reading;
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let natal: Document = todo!();
     /// # let request: ChartRequest = todo!();
     /// let annual = sdk.chart().annual(&natal, Reading::Sidereal, 40, &request)?;
@@ -1468,7 +1468,7 @@ impl ChartArea<'_> {
     /// # use teistro::{AnnualDashaRules, Context, Document, Ephemeris};
     /// # use teistro::tajika::ANNUAL_DASHAS;
     /// # fn main() -> Result<(), teistro::Error> {
-    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
     /// # let (natal, annual): (Document, Document) = todo!();
     /// let all_three =
     ///     sdk.chart().annual_dashas(&natal, &annual, 40, &ANNUAL_DASHAS, AnnualDashaRules::default())?;
