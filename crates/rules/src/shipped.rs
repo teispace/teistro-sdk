@@ -163,6 +163,12 @@ const UTTARA_KALAMRITA: &str = include_str!("../rules/classical-uttara-kalamrita
 /// losses, some as Brihat Jataka ch. 5, Jataka Parijata and Phaladeepika ch. 6
 /// write them.
 const BPHS_MORE: &str = include_str!("../rules/classical-bphs-more.json");
+/// Saravali chs. 20, 38, 39, 44 and 46: the ascetics of four or more grahas in
+/// one sign, the raja yogas undone, the long and unlimited lives, the counts of
+/// exalted, own, friendly and hostile grahas, and the manner of death, some as
+/// Brihat Jataka chs. 15 and 25, Phaladeepika ch. 27 and Jataka Parijata ch. 8
+/// write them.
+const SARAVALI_MORE: &str = include_str!("../rules/classical-saravali-more.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -226,6 +232,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PARIJATA_YOGA));
     rules.append(&mut read(UTTARA_KALAMRITA));
     rules.append(&mut read(BPHS_MORE));
+    rules.append(&mut read(SARAVALI_MORE));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
