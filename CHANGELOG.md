@@ -54,6 +54,56 @@ in solar days, from the month's opening to the next. The record's new
 `masa_dasha` reach it directly; read in Node, Python, Dart and Java.
 Crux C477.
 
+**A graha within a degree of its exaltation is deeply exalted**
+(`crates/state/src/dignity.rs`). **Numbers:** a dignity moves. A graha
+within `DEEP_EXALTATION_ORB_DEG` (one degree, crux C18's) of its
+exaltation point now reads `DEEP_EXALTED` where it read `EXALTED`; a shadow
+graha never does. **Fixed:** the ladder made a debilitation deep and never
+an exaltation, so Jataka Parijata's Lakshmi, which asks the ninth lord at
+its deep exaltation, could never hold. A rule naming `EXALTED` still meets
+it under the default deep-meets-plain match, and Garvita and a strong house
+lord count it. No recorded corpus answer moves: the corpus holds no exalted
+graha within a degree of its point.
+
+**Uttara Kalamrita's yogas** (`rules-engine.md`). **Numbers:** none moved;
+this adds 123 rules. Kalidasa's book, read in V. Subrahmanya Sastri's
+translation with P. S. Sastri's and S. S. Sareen's beside it. From Kanda I
+section 4: the ninth and tenth lords in their several relations, the same
+pairs counted from the ninth and the tenth, the sets of lords that give
+children and wealth, the lagna lord in the lagna's drekkanas, the full Moon
+in a kendra with Jupiter or Venus, the dusthana lords, the Indu lagna held
+by a benefic or a malefic, the arudha lagna and the upapada, and the grahas
+joining the atmakaraka. Four verses said of every house ship as twelve
+rules each under `house-based`. From Kanda II: the eighth and twelfth
+lords, the nodes with trikona lords, the exchanged lagna and Moon-sign
+lords, each lagna's named pairs, Saturn rising in Pisces, Libra or
+Sagittarius, and Vahninipata. Two restate Phaladeepika ch. 7 v. 9 and
+Jataka Parijata's Chandradhi and copy their conditions. Cruxes C540 to
+C549.
+
+**BPHS chs. 12 to 23, the effects of the houses** (`rules-engine.md`).
+**Numbers:** none moved; this adds 234 rules, keyed `BPHS_TANU_` to
+`BPHS_VYAYA_`. Every verse of the house chapters that states a figure a
+chart holds: the body and its diseases, wealth, brothers, the house and
+mother, sons, the sixth's diseases, the wife and the year of marriage, the
+length of life, the father, work and fame, gains, and losses. Read from the
+Sanskrit and cited in its numbering (C550). Ten copy the same figure's
+conditions from Jataka Parijata, Brihat Jataka ch. 5, Phaladeepika ch. 6,
+Saravali ch. 34 or BPHS ch. 44, and a test holds each pair to one answer.
+Readings by placement alone, the general methods and six verses whose term
+the text leaves undefined are not built (C551 to C559).
+
+**Saravali chs. 20, 38, 39, 44 and 46** (`rules-engine.md`). **Numbers:**
+none moved; this adds 162 rules. Ch. 20's ascetics: 39 sets of four or
+more grahas in one sign, each citing every verse that names it, with the
+strongest, combust and aspected leaders and the Moon and Saturn figures.
+Ch. 38's undoings of raja yoga, read without asking the chart for one.
+Ch. 39's long and unlimited lives. Ch. 44's exact counts of grahas exalted,
+in moolatrikona, own, friendly, debilitated and hostile signs. Ch. 46
+vv. 1 to 21's manner of death. 57 carry another shipped text's conditions
+unchanged, held equal by `crates/rules/tests/saravali_more.rs`. Seven the
+sky never holds are listed unseen. Cruxes C530 to C534.
+
 **Jataka Parijata's births, counts and gandas, ch. 3, ch. 8 and ch. 9**
 (`rules-engine.md`). **Numbers:** none moved; this adds 169 rules. Ch. 3's
 viyoni births, the sex of the child, twins, triplets, eunuchs, the cord and

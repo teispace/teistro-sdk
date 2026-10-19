@@ -4034,218 +4034,12 @@
           "atLeast": 1
         },
         {
-          "type": "or",
-          "conditions": [
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 5
-                  },
-                  "as": "SUN"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "SUN",
-                      "signs": [
-                        "ARIES"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "SUN",
-                      "from": 9,
-                      "to": 11
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 5
-                  },
-                  "as": "MOON"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "MOON",
-                      "signs": [
-                        "TAURUS"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "MOON",
-                      "from": 2,
-                      "to": 4
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 5
-                  },
-                  "as": "MARS"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "MARS",
-                      "signs": [
-                        "CAPRICORN"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "MARS",
-                      "from": 27,
-                      "to": 29
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 5
-                  },
-                  "as": "MERCURY"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "MERCURY",
-                      "signs": [
-                        "VIRGO"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "MERCURY",
-                      "from": 14,
-                      "to": 16
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 5
-                  },
-                  "as": "JUPITER"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "JUPITER",
-                      "signs": [
-                        "CANCER"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "JUPITER",
-                      "from": 4,
-                      "to": 6
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 5
-                  },
-                  "as": "VENUS"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "VENUS",
-                      "signs": [
-                        "PISCES"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "VENUS",
-                      "from": 26,
-                      "to": 28
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 5
-                  },
-                  "as": "SATURN"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "SATURN",
-                      "signs": [
-                        "LIBRA"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "SATURN",
-                      "from": 19,
-                      "to": 21
-                    }
-                  ]
-                }
-              ]
-            }
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 5
+          },
+          "dignities": [
+            "DEEP_EXALTED"
           ]
         },
         {
@@ -4306,21 +4100,10 @@
       },
       "conditions": [
         {
-          "type": "and",
-          "conditions": [
-            {
-              "type": "planet-in-sign",
-              "planet": "JUPITER",
-              "signs": [
-                "CANCER"
-              ]
-            },
-            {
-              "type": "planet-in-degrees",
-              "planet": "JUPITER",
-              "from": 4,
-              "to": 6
-            }
+          "type": "planet-dignity",
+          "planet": "JUPITER",
+          "dignities": [
+            "DEEP_EXALTED"
           ]
         },
         {
@@ -8805,218 +8588,12 @@
       },
       "conditions": [
         {
-          "type": "or",
-          "conditions": [
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 9
-                  },
-                  "as": "SUN"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "SUN",
-                      "signs": [
-                        "ARIES"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "SUN",
-                      "from": 9,
-                      "to": 11
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 9
-                  },
-                  "as": "MOON"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "MOON",
-                      "signs": [
-                        "TAURUS"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "MOON",
-                      "from": 2,
-                      "to": 4
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 9
-                  },
-                  "as": "MARS"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "MARS",
-                      "signs": [
-                        "CAPRICORN"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "MARS",
-                      "from": 27,
-                      "to": 29
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 9
-                  },
-                  "as": "MERCURY"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "MERCURY",
-                      "signs": [
-                        "VIRGO"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "MERCURY",
-                      "from": 14,
-                      "to": 16
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 9
-                  },
-                  "as": "JUPITER"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "JUPITER",
-                      "signs": [
-                        "CANCER"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "JUPITER",
-                      "from": 4,
-                      "to": 6
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 9
-                  },
-                  "as": "VENUS"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "VENUS",
-                      "signs": [
-                        "PISCES"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "VENUS",
-                      "from": 26,
-                      "to": 28
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "and",
-              "conditions": [
-                {
-                  "type": "same-body",
-                  "of": {
-                    "lordOf": 9
-                  },
-                  "as": "SATURN"
-                },
-                {
-                  "type": "and",
-                  "conditions": [
-                    {
-                      "type": "planet-in-sign",
-                      "planet": "SATURN",
-                      "signs": [
-                        "LIBRA"
-                      ]
-                    },
-                    {
-                      "type": "planet-in-degrees",
-                      "planet": "SATURN",
-                      "from": 19,
-                      "to": 21
-                    }
-                  ]
-                }
-              ]
-            }
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 9
+          },
+          "dignities": [
+            "DEEP_EXALTED"
           ]
         },
         {
@@ -9129,21 +8706,10 @@
       },
       "conditions": [
         {
-          "type": "and",
-          "conditions": [
-            {
-              "type": "planet-in-sign",
-              "planet": "SUN",
-              "signs": [
-                "ARIES"
-              ]
-            },
-            {
-              "type": "planet-in-degrees",
-              "planet": "SUN",
-              "from": 9,
-              "to": 11
-            }
+          "type": "planet-dignity",
+          "planet": "SUN",
+          "dignities": [
+            "DEEP_EXALTED"
           ]
         },
         {
@@ -9864,21 +9430,10 @@
       },
       "conditions": [
         {
-          "type": "and",
-          "conditions": [
-            {
-              "type": "planet-in-sign",
-              "planet": "VENUS",
-              "signs": [
-                "PISCES"
-              ]
-            },
-            {
-              "type": "planet-in-degrees",
-              "planet": "VENUS",
-              "from": 26,
-              "to": 28
-            }
+          "type": "planet-dignity",
+          "planet": "VENUS",
+          "dignities": [
+            "DEEP_EXALTED"
           ]
         },
         {
@@ -9968,21 +9523,10 @@
       },
       "conditions": [
         {
-          "type": "and",
-          "conditions": [
-            {
-              "type": "planet-in-sign",
-              "planet": "MERCURY",
-              "signs": [
-                "VIRGO"
-              ]
-            },
-            {
-              "type": "planet-in-degrees",
-              "planet": "MERCURY",
-              "from": 14,
-              "to": 16
-            }
+          "type": "planet-dignity",
+          "planet": "MERCURY",
+          "dignities": [
+            "DEEP_EXALTED"
           ]
         },
         {

@@ -813,6 +813,33 @@ leader is a reading of its own where BPHS only cancels; v. 3 drops BPHS's
 "yoga of kings" names ch. 11's 30 raja yogas by key. The planetary war of
 vv. 1 and 2 is not built (C490). Ch. 14's pairs ship already as `DWIGRAHA_*`.
 
+**Uttara Kalamrita's yogas, built (2026-10-19).** `classical-uttara-kalamrita.json`,
+123 rules in the nabhasa set under `UTTARA_*`, citing chapter `I.4` (Kanda I section 4) or `II`
+(Kanda II): the ninth and tenth lords' raja yogas and their kin, the dusthana lords, the Indu
+lagna's wealth, the padas, the atmakaraka's companions and the lagnas' named pairs, with four
+verses said of every house built once per house (C543). Two copy their twins, Phaladeepika ch. 7
+v. 9 and Jataka Parijata's Chandradhi, and a test holds each pair to one answer. v. 42's full Moon
+with Venus is not built, since the sky never holds it (C549); definitions, significations,
+dashas, queries, muhurta and the lagnas' lists of good and bad lords are left out (C540).
+
+**BPHS chs. 12 to 23, built (2026-10-19).** `classical-bphs-more.json`, 234 rules keyed by the
+house they treat (`BPHS_TANU_` for the first to `BPHS_VYAYA_` for the twelfth), read from the
+Sanskrit under five conventions C550 records: a clause with no subject belongs to the graha last
+named, a plural asks one, a trine from a graha is its fifth and ninth, a deep exaltation is
+`DEEP_EXALTED` (within a degree of the point, C18), and a house's karaka is ch. 32 v. 34's.
+`crates/rules/tests/bphs_more.rs` holds the ten pairs restating another shipped text to one
+answer on every recorded chart.
+
+**Saravali chs. 20, 38, 39, 44 and 46, built (2026-10-19).** `classical-saravali-more.json`,
+162 rules. A set the chapter names in more than one verse is one rule citing every verse, so a
+chart answers it once and each verse's reading travels with it; the gate reviews the pairs that
+then share a condition with a single-graha reading. Ch. 38's undoings do not ask the chart for a
+raja yoga; a reader joins them with the raja yogas the chart holds. Ch. 44's counts are exact,
+each graha on one rung of the dignity ladder, so two exalted and three exalted never answer
+together. Where Saravali restates Brihat Jataka, Phaladeepika or Jataka Parijata, the rule
+carries that text's conditions unchanged and `crates/rules/tests/saravali_more.rs` holds the pair
+equal over the recorded charts.
+
 **Jataka Parijata ch. 3, ch. 8 and ch. 9, built (2026-10-19).** `classical-parijata-yoga.json`,
 169 rules. Ch. 3 is in `miscellaneous`: viyoni births, sex, twins and eunuchs (`PARIJATA_VIYONI*`,
 `PARIJATA_GARBHA_*`), then the cord, the rites, the father's absence and the parentage

@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 38 739 items, 416 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 45 045 items, 484 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 5 228 528 bytes of JSON over the 93 charts, 56 220 bytes a
-chart, 67 533 bytes for the widest and 134 bytes an item. The verses'
-own cited words are **not** what weighs it — 501 157 bytes, 9% — so
+golden file: 6 219 684 bytes of JSON over the 93 charts, 66 878 bytes a
+chart, 80 840 bytes for the widest and 138 bytes an item. The verses'
+own cited words are **not** what weighs it — 607 408 bytes, 9% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 150 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 38739 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 38739 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 38739 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 38739 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 45045 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 45045 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 45045 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 45045 disagree |
 
-Every one of the 77 478 renderings — 38 739 in each of 2 strict
+Every one of the 90 090 renderings — 45 045 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -72,13 +72,13 @@ about.
 | `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
-| `sdk.reading.effect` | 10 988 |
-| `sdk.reading.lifeClass` | 296 |
-| `sdk.reading.lifeSpan` | 176 |
-| `sdk.reading.participants` | 10 689 |
+| `sdk.reading.effect` | 14 249 |
+| `sdk.reading.lifeClass` | 424 |
+| `sdk.reading.lifeSpan` | 182 |
+| `sdk.reading.participants` | 13 574 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
-| `sdk.reading.status` | 421 |
+| `sdk.reading.status` | 447 |
 | `sdk.reading.timing` | 29 |
 | `sdk.reason.ashtakavarga` | 0 |
 | `sdk.reason.bhavaBala` | 0 |
@@ -112,7 +112,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 10 988 of the 38 739
+**The verse's own statement is not translated.** 14 249 of the 45 045
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -124,7 +124,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 1898 rules this pass composes carry a reading, and they
+rule: 12 of the 2417 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -240,11 +240,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 1244 of 1244 | 0 of 1244 |
-| `hi-Deva-IN` | `base` | 0 of 1244 | 1070 of 1244 |
-| `ne-Deva-NP` | `strict` | 1244 of 1244 | 1099 of 1244 |
-| `sa-Deva` | `base` | 0 of 1244 | 1070 of 1244 |
-| `sa-Latn` | `base` | 0 of 1244 | 1036 of 1244 |
+| `en-Latn` | `strict` | 1343 of 1343 | 0 of 1343 |
+| `hi-Deva-IN` | `base` | 0 of 1343 | 1116 of 1343 |
+| `ne-Deva-NP` | `strict` | 1343 of 1343 | 1148 of 1343 |
+| `sa-Deva` | `base` | 0 of 1343 | 1116 of 1343 |
+| `sa-Latn` | `base` | 0 of 1343 | 1082 of 1343 |
 
 ## What a rich renderer gets
 
@@ -258,8 +258,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 1244 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 1244 | 42 | `b` |
+| `en-Latn` | 21 of 1343 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 1343 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -281,7 +281,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 2488 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 2686 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -299,7 +299,7 @@ its limbs, which also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 74 of 75 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 2488
+own message, with no fallback and nothing to warn about: 2686
 renderings. What this chart cannot reach is named below, with the reason
 it needs another. A key missing from both fails, and so does a key
 excused that this chart emits — which is not a hypothetical: **three
@@ -801,6 +801,56 @@ PARIJATA_YOGA_ONE_IN_OWN_SIGNS: the equal of his kinsmen
 PARIJATA_YOGA_ONE_IN_OWN_SIGNS: Saturn takes part
 PARIJATA_DHANA_THREE_IN_FRIENDS_SIGNS: living on wealth he earned
 PARIJATA_DHANA_THREE_IN_FRIENDS_SIGNS: Mars, Mercury and Venus take part
+UTTARA_RAJA_NINTH_AND_TENTH_LORDS_FROM_THE_TENTH_RELATED_STRONG_OR_IN_MUTUAL_KENDRAS: wealthy and a chief among men, the pair giving a small place in life
+UTTARA_RAJA_NINTH_AND_TENTH_LORDS_FROM_THE_TENTH_RELATED_STRONG_OR_IN_MUTUAL_KENDRAS: Sun and Mercury take part
+UTTARA_BHAVA_FIFTH_DESTROYED_ITS_LORD_EIGHTH_FROM_IT_COMBUST_FALLEN_OR_HOSTILE: the fifth house's matters wholly destroyed
+UTTARA_BHAVA_FIFTH_DESTROYED_ITS_LORD_EIGHTH_FROM_IT_COMBUST_FALLEN_OR_HOSTILE: Moon takes part
+UTTARA_BHAVA_FIFTH_LOST_ITS_LORD_AFFLICTED_AND_UNHELPED: the fifth house lost and fruitless
+UTTARA_BHAVA_FIFTH_LOST_ITS_LORD_AFFLICTED_AND_UNHELPED: Moon takes part
+UTTARA_BHAVA_SEVENTH_DESTROYED_ITS_LORD_EIGHTH_FROM_IT_COMBUST_FALLEN_OR_HOSTILE: the seventh house's matters wholly destroyed
+UTTARA_BHAVA_SEVENTH_DESTROYED_ITS_LORD_EIGHTH_FROM_IT_COMBUST_FALLEN_OR_HOSTILE: Mercury takes part
+UTTARA_RAJA_EIGHTH_LORD_IN_THE_TWELFTH_OR_SIXTH: a great king over kings, famous and wealthy
+UTTARA_RAJA_EIGHTH_LORD_IN_THE_TWELFTH_OR_SIXTH: Venus takes part
+UTTARA_RAJA_BENEFIC_IN_A_KENDRA_OR_TRIKONA_FROM_THE_ARUDHA_LAGNA: a king, and a learned one
+UTTARA_RAJA_BENEFIC_IN_A_KENDRA_OR_TRIKONA_FROM_THE_ARUDHA_LAGNA: Jupiter and Venus take part
+UTTARA_ATMAKARAKA_JOINED_BY_SUN: an adviser in a palace
+UTTARA_ATMAKARAKA_BENEFIC_THIRD: timidity
+UTTARA_ATMAKARAKA_BENEFIC_THIRD: Jupiter takes part
+BPHS_TANU_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA: bodily comfort always
+BPHS_TANU_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA: Jupiter takes part
+BPHS_TANU_BENEFIC_IN_A_KENDRA_OR_TRIKONA: every disease removed
+BPHS_TANU_BENEFIC_IN_A_KENDRA_OR_TRIKONA: Jupiter takes part
+BPHS_TANU_LAGNA_OR_MOON_WITH_MALEFICS_UNASPECTED_BY_BENEFICS: no bodily comfort
+BPHS_TANU_LAGNA_OR_MOON_WITH_MALEFICS_UNASPECTED_BY_BENEFICS: Saturn takes part
+BPHS_TANU_LAGNA_LORD_MERCURY_JUPITER_OR_VENUS_IN_A_KENDRA_OR_TRIKONA: long-lived, wealthy, intelligent and dear to the king
+BPHS_TANU_LAGNA_LORD_MERCURY_JUPITER_OR_VENUS_IN_A_KENDRA_OR_TRIKONA: Jupiter takes part
+BPHS_DHANA_SECOND_LORD_IN_A_DUSTHANA: loss of wealth, and defective eyes
+BPHS_DHANA_SECOND_LORD_IN_A_DUSTHANA: Mars takes part
+BPHS_DHANA_MALEFIC_IN_THE_SECOND: wealth destroyed
+BPHS_DHANA_MALEFIC_IN_THE_SECOND: Sun and Mercury take part
+BPHS_SAHAJA_THIRD_LORD_AND_MARS_WITH_MALEFICS_OR_IN_MALEFIC_SIGNS: brothers destroyed at once
+BPHS_SAHAJA_THIRD_LORD_AND_MARS_WITH_MALEFICS_OR_IN_MALEFIC_SIGNS: Mars and Saturn take part
+BPHS_SAHAJA_MARS_OR_THIRD_LORD_IN_A_KENDRA_TRIKONA_OR_DIGNITY: the happiness of brothers
+BPHS_SAHAJA_MARS_OR_THIRD_LORD_IN_A_KENDRA_TRIKONA_OR_DIGNITY: Mars takes part
+BPHS_SUKHA_FOURTH_LORD_IN_OWN_SIGN_OWN_NAVAMSHA_OR_EXALTATION: happiness of lands, vehicles and houses, and of music
+BPHS_SUKHA_FOURTH_LORD_IN_A_MOVABLE_SIGN_MARS_SIXTH_OR_TWELFTH: dumbness
+BPHS_SUKHA_FOURTH_LORD_IN_A_MOVABLE_SIGN_MARS_SIXTH_OR_TWELFTH: Mercury and Mars take part
+BPHS_PUTRA_MALEFIC_FIFTH_OR_SATURN_FIFTH_FROM_JUPITER: a son by another wife, and three wives
+BPHS_PUTRA_MALEFIC_FIFTH_OR_SATURN_FIFTH_FROM_JUPITER: Ketu takes part
+BPHS_KALATRA_VENUS_WITH_A_MALEFIC: the wife's death
+BPHS_KALATRA_VENUS_WITH_A_MALEFIC: Mars takes part
+BPHS_KALATRA_SEVENTH_OR_ITS_LORD_WITH_MALEFICS: loss of the wife, the more so when weak
+BPHS_KALATRA_SEVENTH_OR_ITS_LORD_WITH_MALEFICS: Sun takes part
+BPHS_AYU_EIGHTH_LORD_IN_OWN_SIGN_OWN_NAVAMSHA_OR_A_FRIENDS_SIGN: a long life
+BPHS_AYU_EIGHTH_LORD_IN_OWN_SIGN_OWN_NAVAMSHA_OR_A_FRIENDS_SIGN: Venus takes part
+BPHS_LABHA_ELEVENTH_LORD_IN_A_GOOD_HOUSE_EXALTED_OR_IN_A_LEO_NAVAMSHA: many gains
+BPHS_LABHA_ELEVENTH_LORD_IN_A_GOOD_HOUSE_EXALTED_OR_IN_A_LEO_NAVAMSHA: Saturn takes part
+BPHS_VYAYA_TWELFTH_LORD_WITH_A_BENEFIC_OR_DIGNIFIED_BENEFIC_TWELFTH: spending on good works
+BPHS_VYAYA_TWELFTH_LORD_WITH_A_BENEFIC_OR_DIGNIFIED_BENEFIC_TWELFTH: Venus takes part
+SARAVALI_THREE_IN_FRIENDS_SIGNS: a helper of kin and friends, distinguished by virtues, famous
+SARAVALI_THREE_IN_FRIENDS_SIGNS: Mars, Mercury and Venus take part
+SARAVALI_MARANA_MOVABLE_EIGHTH_PLACE_OF_DEATH: death abroad
+SARAVALI_MARANA_UNCONSCIOUS_LAGNA_UNASPECTED_BY_ITS_LORD_OR_A_BENEFIC: unconscious before death for as long as the lagna's navamsha takes to rise
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: Venus takes part
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: cancelled
 ARISHTA_MALEFICS_FROM_THE_SUN: Moon and Ketu take part
@@ -1198,6 +1248,56 @@ PARIJATA_YOGA_ONE_IN_OWN_SIGNS: the equal of his kinsmen
 PARIJATA_YOGA_ONE_IN_OWN_SIGNS: शनि संलग्न छ
 PARIJATA_DHANA_THREE_IN_FRIENDS_SIGNS: living on wealth he earned
 PARIJATA_DHANA_THREE_IN_FRIENDS_SIGNS: मंगल, बुध र शुक्र संलग्न छन्
+UTTARA_RAJA_NINTH_AND_TENTH_LORDS_FROM_THE_TENTH_RELATED_STRONG_OR_IN_MUTUAL_KENDRAS: wealthy and a chief among men, the pair giving a small place in life
+UTTARA_RAJA_NINTH_AND_TENTH_LORDS_FROM_THE_TENTH_RELATED_STRONG_OR_IN_MUTUAL_KENDRAS: सूर्य र बुध संलग्न छन्
+UTTARA_BHAVA_FIFTH_DESTROYED_ITS_LORD_EIGHTH_FROM_IT_COMBUST_FALLEN_OR_HOSTILE: the fifth house's matters wholly destroyed
+UTTARA_BHAVA_FIFTH_DESTROYED_ITS_LORD_EIGHTH_FROM_IT_COMBUST_FALLEN_OR_HOSTILE: चन्द्र संलग्न छ
+UTTARA_BHAVA_FIFTH_LOST_ITS_LORD_AFFLICTED_AND_UNHELPED: the fifth house lost and fruitless
+UTTARA_BHAVA_FIFTH_LOST_ITS_LORD_AFFLICTED_AND_UNHELPED: चन्द्र संलग्न छ
+UTTARA_BHAVA_SEVENTH_DESTROYED_ITS_LORD_EIGHTH_FROM_IT_COMBUST_FALLEN_OR_HOSTILE: the seventh house's matters wholly destroyed
+UTTARA_BHAVA_SEVENTH_DESTROYED_ITS_LORD_EIGHTH_FROM_IT_COMBUST_FALLEN_OR_HOSTILE: बुध संलग्न छ
+UTTARA_RAJA_EIGHTH_LORD_IN_THE_TWELFTH_OR_SIXTH: a great king over kings, famous and wealthy
+UTTARA_RAJA_EIGHTH_LORD_IN_THE_TWELFTH_OR_SIXTH: शुक्र संलग्न छ
+UTTARA_RAJA_BENEFIC_IN_A_KENDRA_OR_TRIKONA_FROM_THE_ARUDHA_LAGNA: a king, and a learned one
+UTTARA_RAJA_BENEFIC_IN_A_KENDRA_OR_TRIKONA_FROM_THE_ARUDHA_LAGNA: गुरु र शुक्र संलग्न छन्
+UTTARA_ATMAKARAKA_JOINED_BY_SUN: an adviser in a palace
+UTTARA_ATMAKARAKA_BENEFIC_THIRD: timidity
+UTTARA_ATMAKARAKA_BENEFIC_THIRD: गुरु संलग्न छ
+BPHS_TANU_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA: bodily comfort always
+BPHS_TANU_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA: गुरु संलग्न छ
+BPHS_TANU_BENEFIC_IN_A_KENDRA_OR_TRIKONA: every disease removed
+BPHS_TANU_BENEFIC_IN_A_KENDRA_OR_TRIKONA: गुरु संलग्न छ
+BPHS_TANU_LAGNA_OR_MOON_WITH_MALEFICS_UNASPECTED_BY_BENEFICS: no bodily comfort
+BPHS_TANU_LAGNA_OR_MOON_WITH_MALEFICS_UNASPECTED_BY_BENEFICS: शनि संलग्न छ
+BPHS_TANU_LAGNA_LORD_MERCURY_JUPITER_OR_VENUS_IN_A_KENDRA_OR_TRIKONA: long-lived, wealthy, intelligent and dear to the king
+BPHS_TANU_LAGNA_LORD_MERCURY_JUPITER_OR_VENUS_IN_A_KENDRA_OR_TRIKONA: गुरु संलग्न छ
+BPHS_DHANA_SECOND_LORD_IN_A_DUSTHANA: loss of wealth, and defective eyes
+BPHS_DHANA_SECOND_LORD_IN_A_DUSTHANA: मंगल संलग्न छ
+BPHS_DHANA_MALEFIC_IN_THE_SECOND: wealth destroyed
+BPHS_DHANA_MALEFIC_IN_THE_SECOND: सूर्य र बुध संलग्न छन्
+BPHS_SAHAJA_THIRD_LORD_AND_MARS_WITH_MALEFICS_OR_IN_MALEFIC_SIGNS: brothers destroyed at once
+BPHS_SAHAJA_THIRD_LORD_AND_MARS_WITH_MALEFICS_OR_IN_MALEFIC_SIGNS: मंगल र शनि संलग्न छन्
+BPHS_SAHAJA_MARS_OR_THIRD_LORD_IN_A_KENDRA_TRIKONA_OR_DIGNITY: the happiness of brothers
+BPHS_SAHAJA_MARS_OR_THIRD_LORD_IN_A_KENDRA_TRIKONA_OR_DIGNITY: मंगल संलग्न छ
+BPHS_SUKHA_FOURTH_LORD_IN_OWN_SIGN_OWN_NAVAMSHA_OR_EXALTATION: happiness of lands, vehicles and houses, and of music
+BPHS_SUKHA_FOURTH_LORD_IN_A_MOVABLE_SIGN_MARS_SIXTH_OR_TWELFTH: dumbness
+BPHS_SUKHA_FOURTH_LORD_IN_A_MOVABLE_SIGN_MARS_SIXTH_OR_TWELFTH: बुध र मंगल संलग्न छन्
+BPHS_PUTRA_MALEFIC_FIFTH_OR_SATURN_FIFTH_FROM_JUPITER: a son by another wife, and three wives
+BPHS_PUTRA_MALEFIC_FIFTH_OR_SATURN_FIFTH_FROM_JUPITER: केतु संलग्न छ
+BPHS_KALATRA_VENUS_WITH_A_MALEFIC: the wife's death
+BPHS_KALATRA_VENUS_WITH_A_MALEFIC: मंगल संलग्न छ
+BPHS_KALATRA_SEVENTH_OR_ITS_LORD_WITH_MALEFICS: loss of the wife, the more so when weak
+BPHS_KALATRA_SEVENTH_OR_ITS_LORD_WITH_MALEFICS: सूर्य संलग्न छ
+BPHS_AYU_EIGHTH_LORD_IN_OWN_SIGN_OWN_NAVAMSHA_OR_A_FRIENDS_SIGN: पूर्णायु
+BPHS_AYU_EIGHTH_LORD_IN_OWN_SIGN_OWN_NAVAMSHA_OR_A_FRIENDS_SIGN: शुक्र संलग्न छ
+BPHS_LABHA_ELEVENTH_LORD_IN_A_GOOD_HOUSE_EXALTED_OR_IN_A_LEO_NAVAMSHA: many gains
+BPHS_LABHA_ELEVENTH_LORD_IN_A_GOOD_HOUSE_EXALTED_OR_IN_A_LEO_NAVAMSHA: शनि संलग्न छ
+BPHS_VYAYA_TWELFTH_LORD_WITH_A_BENEFIC_OR_DIGNIFIED_BENEFIC_TWELFTH: spending on good works
+BPHS_VYAYA_TWELFTH_LORD_WITH_A_BENEFIC_OR_DIGNIFIED_BENEFIC_TWELFTH: शुक्र संलग्न छ
+SARAVALI_THREE_IN_FRIENDS_SIGNS: a helper of kin and friends, distinguished by virtues, famous
+SARAVALI_THREE_IN_FRIENDS_SIGNS: मंगल, बुध र शुक्र संलग्न छन्
+SARAVALI_MARANA_MOVABLE_EIGHTH_PLACE_OF_DEATH: death abroad
+SARAVALI_MARANA_UNCONSCIOUS_LAGNA_UNASPECTED_BY_ITS_LORD_OR_A_BENEFIC: unconscious before death for as long as the lagna's navamsha takes to rise
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: शुक्र संलग्न छ
 ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH: रद्द
 ARISHTA_MALEFICS_FROM_THE_SUN: चन्द्र र केतु संलग्न छन्

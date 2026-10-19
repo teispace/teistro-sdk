@@ -72,7 +72,7 @@ const SPAN_DAYS: f64 = 73_049.0;
 const SUPPORT: usize = 5;
 
 /// One text stating one condition twice, each with where it does.
-const REVIEWED: [(&[&str], &str); 10] = [
+const REVIEWED: [(&[&str], &str); 39] = [
     (
         &[
             "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -151,6 +151,235 @@ const REVIEWED: [(&[&str], &str); 10] = [
         "Jataka Parijata gives the Sun and the Moon together twice: ch. 3 v. 51 among the \
          parentages, the child born before marriage, and ch. 8 among the conjunctions",
     ),
+    (
+        &[
+            "SARAVALI_MARANA_VENUS_IN_THE_EIGHTH_DEATH_BY_THIRST",
+            "SARAVALI_VENUS_IN_BHAVA_8",
+        ],
+        "Saravali gives Venus in the eighth twice: ch. 46 v. 1 as the manner of death, and among \
+         the grahas in the houses",
+    ),
+    (
+        &[
+            "BPHS_MARS_IN_THIRD_DEATH_BY_WOUNDS",
+            "BPHS_SAHAJA_MARS_IN_THE_THIRD",
+        ],
+        "BPHS gives the figure twice: ch. 44 v. 25-31 (marana) and ch. 14 v. 14 (house-based)",
+    ),
+    (
+        &[
+            "SARAVALI_MARANA_SUN_IN_THE_EIGHTH_DEATH_BY_FIRE",
+            "SARAVALI_SUN_IN_BHAVA_8",
+        ],
+        "Saravali gives the Sun in the eighth twice: ch. 46 v. 1 as the manner of death, and \
+         among the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_JUPITER_IN_BHAVA_8",
+            "SARAVALI_MARANA_JUPITER_IN_THE_EIGHTH_DEATH_BY_DISEASE",
+        ],
+        "Saravali gives Jupiter in the eighth twice: ch. 46 v. 1 as the manner of death, and \
+         among the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_MARANA_SATURN_IN_THE_EIGHTH_DEATH_BY_HUNGER",
+            "SARAVALI_SATURN_IN_BHAVA_8",
+        ],
+        "Saravali gives Saturn in the eighth twice: ch. 46 v. 1 as the manner of death, and \
+         among the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_MARANA_MARS_IN_THE_EIGHTH_DEATH_BY_A_WEAPON",
+            "SARAVALI_MARS_IN_BHAVA_8",
+        ],
+        "Saravali gives Mars in the eighth twice: ch. 46 v. 1 as the manner of death, and among \
+         the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_MARANA_MERCURY_IN_THE_EIGHTH_DEATH_BY_FEVER",
+            "SARAVALI_MERCURY_IN_BHAVA_8",
+        ],
+        "Saravali gives Mercury in the eighth twice: ch. 46 v. 1 as the manner of death, and \
+         among the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_BHANGA_SATURN_RISING",
+            "SARAVALI_SATURN_IN_BHAVA_1",
+        ],
+        "Saravali gives Saturn rising twice: ch. 38 v. 12 among what cancels a raja yoga, and \
+         among the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_MARANA_MOON_IN_THE_EIGHTH_DEATH_BY_WATER",
+            "SARAVALI_MOON_IN_BHAVA_8",
+        ],
+        "Saravali gives the Moon in the eighth twice: ch. 46 v. 1 as the manner of death, and \
+         among the grahas in the houses",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MARS_MERCURY_VENUS",
+            "SARAVALI_TOGETHER_SUN_MARS_MERCURY_VENUS",
+        ],
+        "Saravali gives the Sun, Mars, Mercury and Venus in one sign twice: ch. 20 v. 13 among \
+         the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MARS_MERCURY_JUPITER",
+            "SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER",
+        ],
+        "Saravali gives the Sun, Mars, Mercury and Jupiter in one sign twice: ch. 20 v. 4, 12 \
+         among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_MARANA_SATURN_IN_CANCER_MOON_IN_CAPRICORN_DROPSY",
+            "SARAVALI_SATURN_IN_CANCER_ASPECTED_BY_MOON",
+        ],
+        "Saravali gives Saturn in Cancer with the Moon in Capricorn twice: ch. 46 v. 4 as the \
+         manner of death, and among the grahas aspected",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_MERCURY",
+            "SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY",
+        ],
+        "Saravali gives the Sun, the Moon, Mars and Mercury in one sign twice: ch. 20 v. 2, 16 \
+         among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "BPHS_BHAGYA_SATURN_SECOND_SUN_SEVENTH_FROM_SATURN",
+            "BPHS_SATURN_IN_SECOND_ASPECTED_BY_SUN",
+        ],
+        "BPHS gives the figure twice: ch. 20 v. 23-24 (arishta-father) and ch. 42 v. 18 (daridra)",
+    ),
+    (
+        &[
+            "BPHS_KALATRA_SECOND_AND_ELEVENTH_LORDS_EXCHANGED",
+            "BPHS_LABHA_SECOND_AND_ELEVENTH_LORDS_EXCHANGED",
+        ],
+        "BPHS gives the figure twice: ch. 18 v. 29 (kalatra) and ch. 22 v. 9 (dhana)",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MERCURY_JUPITER_SATURN",
+            "SARAVALI_TOGETHER_SUN_MERCURY_JUPITER_SATURN",
+        ],
+        "Saravali gives the Sun, Mercury, Jupiter and Saturn in one sign twice: ch. 20 v. 4 \
+         among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MOON_MERCURY_SATURN",
+            "SARAVALI_TOGETHER_SUN_MOON_MERCURY_SATURN",
+        ],
+        "Saravali gives the Sun, the Moon, Mercury and Saturn in one sign twice: ch. 20 v. 3 \
+         among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_MOON_MARS_MERCURY_VENUS",
+            "SARAVALI_TOGETHER_MOON_MARS_MERCURY_VENUS",
+        ],
+        "Saravali gives the Moon, Mars, Mercury and Venus in one sign twice: ch. 20 v. 16 among \
+         the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_JUPITER_VENUS_SATURN",
+            "SARAVALI_TOGETHER_SUN_JUPITER_VENUS_SATURN",
+        ],
+        "Saravali gives the Sun, Jupiter, Venus and Saturn in one sign twice: ch. 20 v. 16 among \
+         the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_VENUS",
+            "SARAVALI_TOGETHER_SUN_MOON_MARS_VENUS",
+        ],
+        "Saravali gives the Sun, the Moon, Mars and Venus in one sign twice: ch. 20 v. 16 among \
+         the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MARS_MERCURY_JUPITER_VENUS",
+            "SARAVALI_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS",
+        ],
+        "Saravali gives the Sun, Mars, Mercury, Jupiter and Venus in one sign twice: ch. 20 v. 9 \
+         among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_MERCURY_VENUS",
+            "SARAVALI_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS",
+        ],
+        "Saravali gives the Sun, the Moon, Mars, Mercury and Venus in one sign twice: ch. 20 v. \
+         8 among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MARS_MERCURY_VENUS_SATURN",
+            "SARAVALI_TOGETHER_SUN_MARS_MERCURY_VENUS_SATURN",
+        ],
+        "Saravali gives the Sun, Mars, Mercury, Venus and Saturn in one sign twice: ch. 20 v. 2, \
+         6 among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MOON_VENUS_SATURN",
+            "SARAVALI_TOGETHER_SUN_MOON_VENUS_SATURN",
+        ],
+        "Saravali gives the Sun, the Moon, Venus and Saturn in one sign twice: ch. 20 v. 12 \
+         among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_MOON_MARS_JUPITER_VENUS",
+            "SARAVALI_TOGETHER_MOON_MARS_JUPITER_VENUS",
+        ],
+        "Saravali gives the Moon, Mars, Jupiter and Venus in one sign twice: ch. 20 v. 16 among \
+         the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_MOON_MARS_MERCURY_JUPITER",
+            "SARAVALI_TOGETHER_MOON_MARS_MERCURY_JUPITER",
+        ],
+        "Saravali gives the Moon, Mars, Mercury and Jupiter in one sign twice: ch. 20 v. 13 \
+         among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_MOON_MARS_MERCURY_SATURN",
+            "SARAVALI_TOGETHER_MOON_MARS_MERCURY_SATURN",
+        ],
+        "Saravali gives the Moon, Mars, Mercury and Saturn in one sign twice: ch. 20 v. 14 among \
+         the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_MARS_MERCURY_JUPITER_SATURN",
+            "SARAVALI_TOGETHER_MARS_MERCURY_JUPITER_SATURN",
+        ],
+        "Saravali gives Mars, Mercury, Jupiter and Saturn in one sign twice: ch. 20 v. 6, 14 \
+         among the ascetics, and among its sets of grahas together",
+    ),
+    (
+        &[
+            "SARAVALI_PRAVRAJYA_SUN_MARS_JUPITER_VENUS_SATURN",
+            "SARAVALI_TOGETHER_SUN_MARS_JUPITER_VENUS_SATURN",
+        ],
+        "Saravali gives the Sun, Mars, Jupiter, Venus and Saturn in one sign twice: ch. 20 v. 7 \
+         among the ascetics, and among its sets of grahas together",
+    ),
 ];
 
 /// Rules the sky never holds, each with an instant (a Julian day in UT)
@@ -158,7 +387,7 @@ const REVIEWED: [(&[&str], &str); 10] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 185] = [
+const FIXTURES: [(&str, f64, f64, f64); 227] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -473,7 +702,7 @@ const FIXTURES: [(&str, f64, f64, f64); 185] = [
     // the verse's three they can share: 25 of 1800 narrowed instants.
     (
         "PHALADEEPIKA_MAHARAJA_NIGHT_MOON_IN_CANCER_TENTH",
-        2_383_287.250_0,
+        2_383_287.25,
         27.7172,
         85.324,
     ),
@@ -875,7 +1104,7 @@ const FIXTURES: [(&str, f64, f64, f64); 185] = [
     ),
     (
         "PARIJATA_ANGA_LEO_RISING_WITH_THE_LUMINARIES_ASPECTED_BY_SATURN_AND_MARS",
-        2_384_931.500_0,
+        2_384_931.5,
         27.7172,
         85.324,
     ),
@@ -893,7 +1122,7 @@ const FIXTURES: [(&str, f64, f64, f64); 185] = [
     ),
     (
         "PARIJATA_ANGA_MARS_IN_THE_FIRST_DREKKANA_OF_THE_LAGNA_ASPECTED_BY_SATURN_SUN_MOON",
-        2_403_741.000_0,
+        2_403_741.0,
         27.7172,
         85.324,
     ),
@@ -905,13 +1134,13 @@ const FIXTURES: [(&str, f64, f64, f64); 185] = [
     ),
     (
         "PARIJATA_ANGA_MOON_TENTH_MARS_SEVENTH_SUN_SECOND",
-        2_378_835.375_0,
+        2_378_835.375,
         27.7172,
         85.324,
     ),
     (
         "PARIJATA_DARIDRA_LAGNA_LORD_TWELFTH_MARS_WITH_THE_MOON_IN_A_CRUEL_TENTH",
-        2_378_631.500_0,
+        2_378_631.5,
         27.7172,
         85.324,
     ),
@@ -929,13 +1158,13 @@ const FIXTURES: [(&str, f64, f64, f64); 185] = [
     ),
     (
         "PARIJATA_DARIDRA_SUN_IN_ARIES_IN_A_LIBRA_NAVAMSHA_ASPECTED_BY_A_MALEFIC",
-        2_378_617.500_0,
+        2_378_617.5,
         27.7172,
         85.324,
     ),
     (
         "PARIJATA_DARIDRA_VENUS_FIRST_JUPITER_FIFTH_MARS_ELEVENTH_MOON_THIRD_ALL_FALLEN",
-        2_416_028.500_0,
+        2_416_028.5,
         27.7172,
         85.324,
     ),
@@ -947,13 +1176,13 @@ const FIXTURES: [(&str, f64, f64, f64); 185] = [
     ),
     (
         "PARIJATA_MARANA_MOON_IN_VIRGO_SEVENTH_WITH_A_MALEFIC_VENUS_IN_ARIES_SUN_RISING",
-        2_380_041.500_0,
+        2_380_041.5,
         27.7172,
         85.324,
     ),
     (
         "BJ_MARANA_MOON_IN_VIRGO_SEVENTH_WITH_A_MALEFIC_VENUS_IN_ARIES_SUN_RISING",
-        2_380_041.500_0,
+        2_380_041.5,
         27.7172,
         85.324,
     ),
@@ -983,13 +1212,13 @@ const FIXTURES: [(&str, f64, f64, f64); 185] = [
     ),
     (
         "PARIJATA_MARANA_SUN_FIRST_MARS_FIFTH_SATURN_EIGHTH_MOON_NINTH_A_FALL",
-        2_378_894.500_0,
+        2_378_894.5,
         27.7172,
         85.324,
     ),
     (
         "BJ_MARANA_SUN_FIRST_MARS_FIFTH_SATURN_EIGHTH_MOON_NINTH_A_FALL",
-        2_378_894.500_0,
+        2_378_894.5,
         27.7172,
         85.324,
     ),
@@ -1083,10 +1312,252 @@ const FIXTURES: [(&str, f64, f64, f64); 185] = [
         27.7172,
         4.173,
     ),
+    // BPHS chs. 12 to 23 and Saravali chs. 20, 38, 39, 44 and 46: found by
+    // sign day by day, 1800 to 2398, and confirmed at the place each names.
+    (
+        "BPHS_BHAGYA_SUN_DEEP_EXALTED_NINTH_LORD_ELEVENTH",
+        2_378_971.5,
+        27.7172,
+        -145.651,
+    ),
+    (
+        "BPHS_BHAGYA_VENUS_DEEP_EXALTED_WITH_THE_NINTH_LORD_SATURN_THIRD",
+        2_385_162.5,
+        27.7172,
+        9.244,
+    ),
+    (
+        "BPHS_DHANA_JUPITER_ELEVENTH_VENUS_SECOND_BENEFICS_WITH_THE_SECOND_LORD_AND_IN_THE_TWELFTH",
+        2_387_114.5,
+        27.7172,
+        108.579,
+    ),
+    (
+        "BPHS_DHANA_SECOND_AND_ELEVENTH_LORDS_IN_DUSTHANAS_MARS_ELEVENTH_RAHU_SECOND",
+        2_381_651.5,
+        27.7172,
+        126.853,
+    ),
+    (
+        "BPHS_KARMA_SUN_ELEVENTH_WITH_RAHU_MARS_AND_SATURN",
+        2_390_045.5,
+        27.7172,
+        167.89,
+    ),
+    (
+        "BPHS_PUTRA_JUPITER_DEEP_EXALTED_SECOND_LORD_WITH_RAHU_NINTH_LORD_NINTH",
+        2_400_571.5,
+        27.7172,
+        -126.567,
+    ),
+    (
+        "BPHS_PUTRA_MALEFICS_FOURTH_AND_SIXTH_FIFTH_LORD_DEEP_EXALTED_WITH_THE_LAGNA_LORD",
+        2_388_627.5,
+        27.7172,
+        -43.29,
+    ),
+    (
+        "BPHS_PUTRA_NINTH_LORD_RISING_FIFTH_LORD_DEBILITATED_KETU_AND_MERCURY_FIFTH",
+        2_398_851.5,
+        27.7172,
+        -8.867,
+    ),
+    (
+        "BPHS_PUTRA_SIX_GRAHAS_FIFTH_ITS_LORD_TWELFTH_LAGNA_LORD_AND_MOON_STRONG",
+        2_540_998.5,
+        27.7172,
+        -34.632,
+    ),
+    (
+        "BPHS_ROGA_FIFTH_LORD_SIXTH_SIXTH_LORD_WITH_JUPITER_TWELFTH_LORD_RISING",
+        2_384_552.5,
+        27.7172,
+        -56.53,
+    ),
+    (
+        "BPHS_VYAYA_RAHU_TWELFTH_WITH_MARS_SATURN_AND_THE_SUN_ITS_LORD_WITH_THE_SUN",
+        2_414_974.5,
+        27.7172,
+        146.319,
+    ),
+    (
+        "SARAVALI_AYUR_CANCER_RISING_WITH_JUPITER_AND_MOON_UNLIMITED",
+        2_404_926.5,
+        27.7172,
+        158.281,
+    ),
+    (
+        "SARAVALI_BHANGA_AQUARIUS_RISING_THREE_DEBILITATED_JUPITER_WITH_THE_SUN_NONE_EXALTED",
+        2_385_812.5,
+        27.7172,
+        141.59,
+    ),
+    (
+        "SARAVALI_BHANGA_LAGNA_LORD_HOSTILE_TO_THE_MOON_SUN_THIRD_MARS_SIXTH_SATURN_SEVENTH",
+        2_393_713.5,
+        27.7172,
+        15.17,
+    ),
+    (
+        "SARAVALI_BHANGA_MALEFICS_IN_KENDRAS_FALLEN_OR_HOSTILE_BENEFICS_HIDDEN",
+        2_431_765.5,
+        27.7172,
+        -106.764,
+    ),
+    (
+        "SARAVALI_BHANGA_SUN_DEEPLY_DEBILITATED_OTHERS_DIGNIFIED",
+        2_380_254.5,
+        27.7172,
+        -96.651,
+    ),
+    (
+        "SARAVALI_BHANGA_SUN_IN_THE_TENTH_DEGREE_OF_LIBRA",
+        2_378_792.5,
+        27.7172,
+        -95.678,
+    ),
+    ("SARAVALI_FIVE_DEBILITATED", 2_455_125.5, 27.7172, -90.773),
+    (
+        "SARAVALI_FIVE_IN_MOOLATRIKONA",
+        2_562_831.5,
+        27.7172,
+        -47.561,
+    ),
+    ("SARAVALI_FIVE_IN_OWN_SIGNS", 2_394_381.5, 27.7172, 19.537),
+    (
+        "SARAVALI_FOUR_IN_MOOLATRIKONA",
+        2_430_250.5,
+        27.7172,
+        -53.554,
+    ),
+    (
+        "SARAVALI_MARANA_MARS_TENTH_MOON_FOURTH_SATURN_SECOND_WORMS_IN_A_WOUND",
+        2_378_648.5,
+        27.7172,
+        103.298,
+    ),
+    (
+        "SARAVALI_MARANA_PISCES_RISING_SUN_MOON_SEVENTH_WITH_A_MALEFIC_VENUS_IN_ARIES",
+        2_380_041.5,
+        27.7172,
+        91.114,
+    ),
+    (
+        "SARAVALI_MARANA_SUN_AND_MARS_SEVENTH_SATURN_EIGHTH_MOON_FOURTH_BIRDS",
+        2_386_221.5,
+        27.7172,
+        -91.278,
+    ),
+    (
+        "SARAVALI_MARANA_SUN_FOURTH_MARS_TENTH_WITH_THE_WANING_MOON_ASPECTED_BY_SATURN_WOOD",
+        2_391_264.5,
+        27.7172,
+        12.237,
+    ),
+    (
+        "SARAVALI_MARANA_SUN_MARS_SATURN_MOON_IN_THE_LAGNA_EIGHTH_AND_TRINES_A_FALL",
+        2_378_894.5,
+        27.7172,
+        96.063,
+    ),
+    (
+        "SARAVALI_MARANA_WANING_MOON_EIGHTH_MARS_TENTH_SUN_FIRST_SATURN_FOURTH_CLUBBED",
+        2_378_597.5,
+        27.7172,
+        96.517,
+    ),
+    (
+        "SARAVALI_MARANA_WANING_MOON_TENTH_MARS_NINTH_SUN_FIRST_SATURN_FIFTH_SMOKE_OR_FIRE",
+        2_385_009.5,
+        27.7172,
+        91.388,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_MOON_MARS_MERCURY_JUPITER_SATURN",
+        2_379_849.5,
+        27.7172,
+        -57.476,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_STRONG_MOON_TENTH_IN_A_BENEFICS_NAVAMSHA_ASPECTED_BY_STRONG_SATURN",
+        2_389_559.5,
+        27.7172,
+        92.185,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_JUPITER_VENUS_SATURN",
+        2_386_257.5,
+        27.7172,
+        106.689,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_MERCURY_JUPITER_SATURN",
+        2_379_849.5,
+        27.7172,
+        -57.476,
+    ),
+    (
+        "SARAVALI_RAJA_SUN_VIRGO_MARS_JUPITER_SCORPIO_MOON_ARIES_UNASPECTED",
+        2_480_300.5,
+        27.7172,
+        -63.669,
+    ),
+    ("SARAVALI_SIX_DEBILITATED", 2_558_865.5, 27.7172, -98.605),
+    // Saravali ch. 20's strong sets and strongest leaders: drawn over 1900
+    // to 2100, Brihat Jataka ch. 15 v. 2's own instants, or the half hours
+    // about a day the sign search found, at Kathmandu.
+    (
+        "SARAVALI_PRAVRAJYA_MARS_STRONGEST_ASPECTED_BY_ANOTHER",
+        2_447_915.521_5,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_MARS_STRONGEST_COMBUST",
+        2_379_202.944_4,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_SATURN_STRONGEST_ASPECTED_BY_ANOTHER",
+        2_478_116.825_8,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_SATURN_STRONGEST_COMBUST",
+        2_379_857.0,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_STRONG_SUN_MARS_JUPITER_SATURN",
+        2_451_658.099_5,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_STRONG_MARS_MERCURY_JUPITER_VENUS_SATURN",
+        2_386_253.708_3,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_STRONG_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN",
+        2_386_256.75,
+        27.7172,
+        85.324,
+    ),
+    (
+        "SARAVALI_PRAVRAJYA_STRONG_SUN_MARS_MERCURY_JUPITER_VENUS_SATURN",
+        2_386_253.708_3,
+        27.7172,
+        85.324,
+    ),
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 75] = [
+const UNSEEN: [(&str, &str); 82] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -1387,6 +1858,34 @@ const UNSEEN: [(&str, &str); 75] = [
     (
         "PARIJATA_RAJA_FOUR_EXALTED_AND_STRONG_IN_KENDRAS",
         "Only the Sun, Mars, Jupiter and Saturn are exalted in signs square to one another, Aries, Capricorn, Cancer and Libra, and no day from 1800 to 2398 has the four exalted together.",
+    ),
+    (
+        "SARAVALI_AYUR_PISCES_RISING_LAST_NAVAMSHA_BENEFICS_IN_TAURUS_THE_REST_EXALTED",
+        "It asks Jupiter in Taurus, Saturn in Libra, the Sun in Aries, Mars in Capricorn and Mercury and Venus in Taurus: the slow pair stands so on 1,808 days from 1800 to 2398, and on none of them are the other four placed so.",
+    ),
+    (
+        "SARAVALI_SIX_EXALTED",
+        "Six exalted asks Jupiter in Cancer with Saturn in Libra, which holds on 1,339 days from 1800 to 2398, and no day of them has four more exalted.",
+    ),
+    (
+        "SARAVALI_SIX_IN_MOOLATRIKONA",
+        "No day from 1800 to 2398 has six of the seven in their moolatrikona spans.",
+    ),
+    (
+        "SARAVALI_SEVEN_IN_MOOLATRIKONA",
+        "Jupiter and Saturn are both in moolatrikona on 102 days from 1800 to 2398, and on none of them are the other five.",
+    ),
+    (
+        "SARAVALI_SIX_IN_OWN_SIGNS",
+        "No day from 1800 to 2398 has six of the seven in their own signs outside the moolatrikona span.",
+    ),
+    (
+        "SARAVALI_SEVEN_IN_OWN_SIGNS",
+        "No day from 1800 to 2398 has the seven in their own signs outside the moolatrikona span.",
+    ),
+    (
+        "SARAVALI_MARANA_WANING_MOON_TENTH_SUN_SEVENTH_MARS_FOURTH_FILTH",
+        "It asks a waning Moon in the tenth with the Sun in the seventh, which puts her three signs ahead of him and so always waxing.",
     ),
 ];
 
@@ -1742,9 +2241,18 @@ fn unseen_rows() -> String {
 
 /// Refuses a reviewed entry that no longer co-fires and a group nothing
 /// explains.
+///
+/// An entry is in use while some group holds all its keys. A group whose
+/// condition two texts each give twice holds two entries, and its `why`
+/// names only one of them, so the verdict cannot say which entries are in
+/// use; a group whose text says it a third time is unexplained and refused
+/// below.
 fn refusals(groups: &[Group<'_>]) -> Result<(), String> {
-    for (at, (keys, _)) in REVIEWED.iter().enumerate() {
-        if !groups.iter().any(|g| g.why == Why::Reviewed(at)) {
+    for (keys, _) in REVIEWED {
+        if !groups
+            .iter()
+            .any(|g| keys.iter().all(|key| g.keys.contains(key)))
+        {
             return Err(format!(
                 "the reviewed group of `{}` no longer co-fires; remove it from REVIEWED in \
                  xtask/src/cofiring.rs",

@@ -401,7 +401,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (219, 16));
+        assert_eq!((strength, points), (313, 22));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -472,7 +472,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 3237);
+        assert_eq!(rules.len(), 3756);
         for rule in &rules {
             let rank = rule
                 .source
@@ -511,7 +511,11 @@ mod tests {
         assert!(secondary.contains(&"KALSARPA") && secondary.contains(&"DAGDHA_RASHI_DOSHA"));
         // A verse may say more than one thing, and a rule carries each: the
         // Pancha Mahapurusha verses both describe the native and count his
-        // years, and they are the only rules that say two things.
+        // years. And a text may give one figure in two verses or three, each
+        // with its own word, which one rule carries rather than a duplicate
+        // for each verse: Saravali ch. 20's sets of grahas in one sign and
+        // ch. 38's Sun in the tenth degree of Libra. They are the only rules
+        // that say more than one thing.
         let two: Vec<&str> = rules
             .iter()
             .filter(|rule| rule.outcomes.len() > 1)
@@ -524,10 +528,21 @@ mod tests {
                 "MAHAPURUSHA_BHADRA",
                 "MAHAPURUSHA_HAMSA",
                 "MAHAPURUSHA_MALAVYA",
-                "MAHAPURUSHA_SASA"
+                "MAHAPURUSHA_SASA",
+                "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_MERCURY",
+                "SARAVALI_PRAVRAJYA_SUN_MARS_MERCURY_VENUS_SATURN",
+                "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_MERCURY_JUPITER",
+                "SARAVALI_PRAVRAJYA_SUN_MARS_MERCURY_JUPITER",
+                "SARAVALI_PRAVRAJYA_MARS_MERCURY_JUPITER_SATURN",
+                "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_MERCURY_VENUS_SATURN",
+                "SARAVALI_PRAVRAJYA_SUN_MOON_MARS_JUPITER_VENUS_SATURN",
+                "SARAVALI_BHANGA_SUN_IN_THE_TENTH_DEGREE_OF_LIBRA"
             ]
         );
-        for rule in rules.iter().filter(|rule| rule.outcomes.len() > 1) {
+        for rule in rules
+            .iter()
+            .filter(|rule| rule.key.starts_with("MAHAPURUSHA_"))
+        {
             assert_eq!(rule.outcomes.len(), 2, "{}", rule.key);
             assert!(rule.effect().is_some(), "{}", rule.key);
             let span = rule.life_span().unwrap_or_else(|| panic!("{}", rule.key));
