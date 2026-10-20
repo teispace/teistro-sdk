@@ -111,6 +111,7 @@ pub fn data_dir_from_env() -> PathBuf {
 #[rustfmt::skip]
 mod dispatch;
 mod passthrough;
+pub mod ranges;
 
 /// The plugin entry points, so this adapter can be **loaded** rather
 /// than linked (ADR-0029).
@@ -126,24 +127,35 @@ mod plugin {
     use serde::Deserialize;
     use teistro_port_ephemeris::ProviderError;
 
-    use crate::{TeimerisProvider, data_dir_from_env, profile_from_env};
+    use crate::{DATA_DIR_ENV, TeimerisProvider, profile_from_env};
 
     /// What a consumer may configure when they load this adapter.
     ///
-    /// Both fields are optional and both fall back to the environment,
-    /// so a caller who has already set `TEIMERIS_DATA_DIR` passes no
-    /// configuration at all. `deny_unknown_fields` because a misspelt
-    /// option that is silently ignored is worse than one that is
-    /// refused: the consumer would get the default and no reason for it.
+    /// Every field is optional. With none, the provider reads the data
+    /// built into the engine, 1800 to 2399, and the directory
+    /// `TEIMERIS_DATA_DIR` names when it is set. `deny_unknown_fields`
+    /// because a misspelt option that is silently ignored is worse than
+    /// one that is refused: the consumer would get the default and no
+    /// reason for it.
     #[derive(Debug, Default, Deserialize)]
     #[serde(rename_all = "camelCase", deny_unknown_fields)]
     struct Config {
-        /// `"embedded"`: the data built into the engine's binary, with no
-        /// directory and nothing hashed at run time — what an app on a
-        /// phone names. Not with `dataDir`, which names a directory.
+        /// `"embedded"`: the data built into the engine's binary, which is
+        /// read anyway unless `embedded` is `false`; kept for the
+        /// configurations that name it.
         data: Option<String>,
-        /// Where the engine's data files are.
+        /// Whether the data built into the engine is read; `true` when
+        /// left out.
+        embedded: Option<bool>,
+        /// A directory of data files, read after the built-in data.
         data_dir: Option<PathBuf>,
+        /// Block files added by path, each a range an app downloaded:
+        /// `["/cache/sepl_12.se1", "/cache/semo_12.se1"]`.
+        #[serde(default)]
+        files: Vec<PathBuf>,
+        /// Whether each named block file is checked against the published
+        /// manifest; `true` when left out.
+        verify: Option<bool>,
         /// `compatible` or `max`; the engine's own profile names.
         profile: Option<String>,
     }
@@ -165,22 +177,36 @@ mod plugin {
                 ))
             })?,
         };
-        match (config.data.as_deref(), config.data_dir) {
-            (None, data_dir) => {
-                let data_dir = data_dir.unwrap_or_else(data_dir_from_env);
-                TeimerisProvider::open_with(&data_dir, profile)
+        let embedded = match (config.data.as_deref(), config.embedded) {
+            (None, embedded) => embedded.unwrap_or(true),
+            (Some("embedded"), None | Some(true)) => true,
+            (Some("embedded"), Some(false)) => {
+                return Err(ProviderError::invalid(String::from(
+                    "the configuration names `data: \"embedded\"` and `embedded: false`; name one",
+                )));
             }
-            (Some("embedded"), None) => TeimerisProvider::embedded_with(profile),
-            (Some("embedded"), Some(dir)) => Err(ProviderError::invalid(format!(
-                "the configuration names `data: \"embedded\"` and `dataDir: {}`; name one: \
-                 the embedded data has no directory",
-                dir.display()
-            ))),
-            (Some(other), _) => Err(ProviderError::invalid(format!(
-                "`data: \"{other}\"` is not a source this adapter has; it has `\"embedded\"`, \
-                 or name a directory with `dataDir`"
-            ))),
+            (Some(other), _) => {
+                return Err(ProviderError::invalid(format!(
+                    "`data: \"{other}\"` is not a source this adapter has; it reads its \
+                     built-in data unless `embedded: false`, a directory named by `dataDir`, \
+                     and block files named by `files`"
+                )));
+            }
+        };
+        let mut data = TeimerisProvider::data()
+            .embedded(embedded)
+            .verify(config.verify.unwrap_or(true))
+            .profile(profile);
+        if let Some(dir) = config
+            .data_dir
+            .or_else(|| std::env::var_os(DATA_DIR_ENV).map(PathBuf::from))
+        {
+            data = data.data_dir(dir);
         }
+        for file in config.files {
+            data = data.file(file);
+        }
+        data.open()
     }
 
     teistro_port_ephemeris::export_provider!(TeimerisProvider, open);
@@ -333,20 +359,12 @@ impl TeimerisProvider {
     ///
     /// As [`TeimerisProvider::open`].
     pub fn open_with(data_dir: &Path, profile: Profile) -> Result<TeimerisProvider, ProviderError> {
-        let files = sefile::scan(data_dir).map_err(|error| ProviderError::DataMissing {
-            detail: format!("{}: {error}", data_dir.display()),
-        })?;
-        let Some(jd_range) = files.jd_range else {
-            return Err(ProviderError::DataMissing {
-                detail: format!("no planet block (sepl_*.se1) in {}", data_dir.display()),
-            });
-        };
-        let context = Context::builder()
-            .ephemeris_path(data_dir.to_string_lossy())
+        TeimerisProvider::data()
+            .embedded(false)
+            .data_dir(data_dir)
+            .verify(false)
             .profile(profile)
             .open()
-            .map_err(|error| map_error(&error, f64::NAN))?;
-        Ok(TeimerisProvider::over(context, files, jd_range))
     }
 
     /// Opens a context over the data **built into the engine's binary**,
@@ -358,7 +376,8 @@ impl TeimerisProvider {
     /// directory is one more thing to ship. What it covers is the tier the
     /// engine was built with (`TM_EMBED_TIER`, `MODERN` by default: 1800 to
     /// 2400), and the provenance it reports is the same as a directory of
-    /// the same files would give.
+    /// the same files would give. An app that needs other years adds them
+    /// with [`TeimerisProvider::data`].
     ///
     /// # Errors
     ///
@@ -374,29 +393,39 @@ impl TeimerisProvider {
     ///
     /// As [`TeimerisProvider::embedded`].
     pub fn embedded_with(profile: Profile) -> Result<TeimerisProvider, ProviderError> {
-        let carried = Context::embedded_files();
-        let star_catalogue = carried.iter().any(|file| file.name == "sefstars.txt");
-        let files = sefile::SeFiles::of(
-            carried.into_iter().map(|file| DataHash {
-                sha256: file.sha256.to_owned(),
-                bytes: file.size as u64,
-                file: file.name,
-            }),
-            star_catalogue,
-        );
-        let Some(jd_range) = files.jd_range else {
-            return Err(ProviderError::DataMissing {
-                detail: String::from(
-                    "the engine carries no planet block (sepl_*.se1): it was built with \
-                     TM_EMBED_TIER=NONE or a tier without one; open a data directory instead",
-                ),
-            });
-        };
-        let context = Context::builder()
-            .profile(profile)
-            .open()
-            .map_err(|error| map_error(&error, f64::NAN))?;
-        Ok(TeimerisProvider::over(context, files, jd_range))
+        TeimerisProvider::data().profile(profile).open()
+    }
+
+    /// What a provider reads, to be named before it opens: the engine's
+    /// built-in 1800 to 2399, directories of data files, and single files
+    /// added by path or as bytes, in the profile the environment names.
+    ///
+    /// ```no_run
+    /// use teistro_ephemeris_teimeris::TeimerisProvider;
+    /// use teistro_ephemeris_teimeris::ranges::Block;
+    ///
+    /// // The built-in years, and 1200 to 1799 the app downloaded.
+    /// let provider = TeimerisProvider::data()
+    ///     .file("/app/cache/sepl_12.se1")
+    ///     .file("/app/cache/semo_12.se1")
+    ///     .open()?;
+    ///
+    /// // Which files a span needs, and what they weigh.
+    /// let block = Block::of_year(1650).expect("the engine publishes it");
+    /// for file in block.required() {
+    ///     println!("{} {} bytes", file.file, file.bytes);
+    /// }
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
+    #[must_use]
+    pub fn data() -> Data {
+        Data {
+            embedded: true,
+            dirs: Vec::new(),
+            files: Vec::new(),
+            verify: true,
+            profile: profile_from_env(),
+        }
     }
 
     /// The provider over an opened context and the files it reads.
@@ -471,6 +500,313 @@ impl TeimerisProvider {
             )
             .map_err(|partial| map_error(&partial.error, f64::NAN))
         })
+    }
+}
+
+/// What a [`TeimerisProvider`] reads, named before it opens
+/// ([`TeimerisProvider::data`]).
+///
+/// The engine resolves a file by name in one order, and this is it: files
+/// added here, then the data built into the engine, then each directory
+/// in the order named. A file is read from the first place that has it,
+/// and the provenance the provider reports is that file's.
+///
+/// What the provider covers is the span of planet blocks it was given,
+/// and that span must be whole: a block missing between two others, or a
+/// planet block without its Moon, is refused at [`Data::open`] with the
+/// files to add, because asked inside it the engine would answer from its
+/// analytic fallback instead.
+#[derive(Clone)]
+pub struct Data {
+    embedded: bool,
+    dirs: Vec<PathBuf>,
+    files: Vec<Added>,
+    verify: bool,
+    profile: Profile,
+}
+
+/// A file or directory that cannot be read, in the port's words.
+fn unreadable(what: &Path, error: &std::io::Error) -> ProviderError {
+    ProviderError::DataMissing {
+        detail: format!("{}: {error}", what.display()),
+    }
+}
+
+/// A file added to [`Data`].
+#[derive(Clone)]
+enum Added {
+    Path(PathBuf),
+    Bytes {
+        name: String,
+        bytes: std::sync::Arc<[u8]>,
+    },
+}
+
+impl core::fmt::Debug for Data {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let files: Vec<String> = self
+            .files
+            .iter()
+            .map(|added| match added {
+                Added::Path(path) => path.display().to_string(),
+                Added::Bytes { name, bytes } => format!("{name} ({} bytes)", bytes.len()),
+            })
+            .collect();
+        f.debug_struct("Data")
+            .field("embedded", &self.embedded)
+            .field("dirs", &self.dirs)
+            .field("files", &files)
+            .field("verify", &self.verify)
+            .finish_non_exhaustive()
+    }
+}
+
+impl Data {
+    /// Whether the engine's built-in data is read: yes unless this says
+    /// no. Turned off, the built-in years are covered only by what is
+    /// named here.
+    #[must_use]
+    pub fn embedded(mut self, embedded: bool) -> Data {
+        self.embedded = embedded;
+        self
+    }
+
+    /// A directory of data files, read after the built-in data and the
+    /// directories named before it.
+    #[must_use]
+    pub fn data_dir(mut self, dir: impl Into<PathBuf>) -> Data {
+        self.dirs.push(dir.into());
+        self
+    }
+
+    /// One block file, by path: a range an app downloaded. Its name is
+    /// the file's own (`sepl_12.se1`), which is how the engine finds it.
+    #[must_use]
+    pub fn file(mut self, path: impl Into<PathBuf>) -> Data {
+        self.files.push(Added::Path(path.into()));
+        self
+    }
+
+    /// One block file held in memory, under the name the engine resolves
+    /// (`semo_12.se1`): a range fetched into memory, or read out of an
+    /// app's bundle, where there is no path to give.
+    #[must_use]
+    pub fn bytes(
+        mut self,
+        name: impl Into<String>,
+        bytes: impl Into<std::sync::Arc<[u8]>>,
+    ) -> Data {
+        self.files.push(Added::Bytes {
+            name: name.into(),
+            bytes: bytes.into(),
+        });
+        self
+    }
+
+    /// Whether each block file named here, added or in a directory, is
+    /// checked against the published manifest ([`ranges::verify`]): yes
+    /// unless this says no. A check reads each file once, about 3 ms for
+    /// a Moon block; the built-in data was checked when the engine was
+    /// built.
+    #[must_use]
+    pub fn verify(mut self, verify: bool) -> Data {
+        self.verify = verify;
+        self
+    }
+
+    /// The engine's accuracy profile.
+    #[must_use]
+    pub fn profile(mut self, profile: Profile) -> Data {
+        self.profile = profile;
+        self
+    }
+
+    /// Opens the provider.
+    ///
+    /// # Errors
+    ///
+    /// - a file that cannot be read, a directory that cannot be listed, or
+    ///   an added file that is not a block file;
+    /// - with `verify`, a block file that is not the published one
+    ///   ([`ranges::verify`] names it and what it should be);
+    /// - the same name added twice;
+    /// - nothing that covers any year: no planet block among the files and
+    ///   none built in;
+    /// - a span with a hole, named by the files that fill it;
+    /// - the engine's own refusal to open.
+    pub fn open(self) -> Result<TeimerisProvider, ProviderError> {
+        let (hashes, star_catalogue, shadowing) = self.gathered()?;
+        let files = sefile::SeFiles::of(hashes, star_catalogue);
+        let Some(jd_range) = files.jd_range.map(|range| ranges::recorded(&files, range)) else {
+            return Err(ProviderError::DataMissing {
+                detail: self.nothing_covered(),
+            });
+        };
+        let missing = files.missing();
+        if !missing.is_empty() {
+            return Err(ProviderError::DataMissing {
+                detail: Data::hole(&files, &missing),
+            });
+        }
+        let context = self.context(&shadowing)?;
+        Ok(TeimerisProvider::over(context, files, jd_range))
+    }
+
+    /// Every file the provider will read, hashed, in the engine's own
+    /// order so the first of a name is the one read; whether the star
+    /// catalogue is among them; and the directory files to register over
+    /// the engine's built-in copies of the same names.
+    fn gathered(&self) -> Result<(Vec<DataHash>, bool, Vec<PathBuf>), ProviderError> {
+        let mut hashes = self.added()?;
+        let carried = if self.embedded {
+            Context::embedded_files()
+        } else {
+            Vec::new()
+        };
+        let mut star_catalogue = carried.iter().any(|file| file.name == "sefstars.txt");
+        for file in carried {
+            if !hashes.iter().any(|seen| seen.file == file.name) {
+                hashes.push(DataHash {
+                    sha256: file.sha256.to_owned(),
+                    bytes: file.size as u64,
+                    file: file.name,
+                });
+            }
+        }
+        // A directory's file the engine would shadow with its own built-in
+        // copy is registered by path, so the file read is the file named;
+        // when the two are the same bytes there is nothing to register.
+        let mut shadowing: Vec<PathBuf> = Vec::new();
+        for dir in &self.dirs {
+            let found = sefile::scan(dir).map_err(|e| unreadable(dir, &e))?;
+            star_catalogue |= found.star_catalogue;
+            for hash in found.hashes {
+                if self.verify {
+                    ranges::verify(&hash)?;
+                }
+                if hashes.iter().any(|seen| seen.file == hash.file) {
+                    continue;
+                }
+                let embedded_copy = Context::find_embedded_file(&hash.file);
+                if embedded_copy.is_some_and(|copy| copy.sha256 != hash.sha256) {
+                    shadowing.push(dir.join(&hash.file));
+                }
+                hashes.push(hash);
+            }
+        }
+        Ok((hashes, star_catalogue, shadowing))
+    }
+
+    /// The added files, hashed and, with `verify`, checked.
+    fn added(&self) -> Result<Vec<DataHash>, ProviderError> {
+        let mut hashes: Vec<DataHash> = Vec::with_capacity(self.files.len());
+        for added in &self.files {
+            let hash = match added {
+                Added::Path(path) => DataHash::of_file(path).map_err(|e| unreadable(path, &e))?,
+                Added::Bytes { name, bytes } => DataHash::of_bytes(name, bytes),
+            };
+            if sefile::block_years(&hash.file).is_none() {
+                return Err(ProviderError::invalid(format!(
+                    "`{}` is not a block file; a range is added as its `sepl_*.se1`, \
+                     `semo_*.se1` and, for the asteroids, `seas_*.se1` files",
+                    hash.file
+                )));
+            }
+            if hashes.iter().any(|seen| seen.file == hash.file) {
+                return Err(ProviderError::invalid(format!(
+                    "`{}` is added twice; add each file once",
+                    hash.file
+                )));
+            }
+            if self.verify {
+                ranges::verify(&hash)?;
+            }
+            hashes.push(hash);
+        }
+        Ok(hashes)
+    }
+
+    /// The engine's context over the directories, with the added files and
+    /// the shadowing ones registered.
+    fn context(&self, shadowing: &[PathBuf]) -> Result<Context, ProviderError> {
+        let mut builder = Context::builder().profile(self.profile);
+        for dir in &self.dirs {
+            builder = builder.ephemeris_path(dir.to_string_lossy());
+        }
+        let context = builder
+            .open()
+            .map_err(|error| map_error(&error, f64::NAN))?;
+        let register = |result: teimeris::Result<&Context>| {
+            result
+                .map(|_| ())
+                .map_err(|error| map_error(&error, f64::NAN))
+        };
+        let paths = self.files.iter().filter_map(|added| match added {
+            Added::Path(path) => Some(path),
+            Added::Bytes { .. } => None,
+        });
+        for path in paths.chain(shadowing) {
+            let name = path
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            register(context.add_source_path(&name, &path.to_string_lossy()))?;
+        }
+        for added in &self.files {
+            if let Added::Bytes { name, bytes } = added {
+                register(context.add_source(name, bytes))?;
+            }
+        }
+        Ok(context)
+    }
+
+    /// Why nothing is covered, in the words of what was named.
+    fn nothing_covered(&self) -> String {
+        if self.dirs.is_empty() && self.files.is_empty() {
+            if self.embedded {
+                String::from(
+                    "the engine carries no planet block (sepl_*.se1): it was built with \
+                     TM_EMBED_TIER=NONE or a tier without one; open a data directory instead",
+                )
+            } else {
+                String::from(
+                    "nothing to read: the built-in data is turned off and no directory or \
+                     file is named",
+                )
+            }
+        } else {
+            let dirs: Vec<String> = self.dirs.iter().map(|d| d.display().to_string()).collect();
+            format!(
+                "no planet block (sepl_*.se1) in {}{}",
+                if dirs.is_empty() {
+                    String::from("the files added")
+                } else {
+                    dirs.join(", ")
+                },
+                if self.embedded {
+                    ""
+                } else {
+                    ", and the built-in data is turned off"
+                }
+            )
+        }
+    }
+
+    /// The refusal of a span with a hole: what it holds, and what to add.
+    fn hole(files: &sefile::SeFiles, missing: &[String]) -> String {
+        let wanted: Vec<String> = missing
+            .iter()
+            .map(|name| match ranges::published(name) {
+                Some(published) => format!("{name} ({} bytes)", published.bytes),
+                None => name.clone(),
+            })
+            .collect();
+        format!(
+            "the data has a hole: it holds {} and lacks {}; add those, or leave out the \
+             blocks beyond them",
+            files.names.join(", "),
+            wanted.join(", ")
+        )
     }
 }
 
@@ -891,16 +1227,198 @@ mod tests {
     }
 
     #[test]
-    fn the_plugin_configuration_names_one_source() {
-        assert!(plugin::open(r#"{"data":"embedded"}"#).is_ok());
-        let both = plugin::open(r#"{"data":"embedded","dataDir":"/tmp"}"#)
-            .err()
-            .unwrap_or_else(|| panic!("both refused"));
-        assert!(both.to_string().contains("name one"), "{both}");
-        let unknown = plugin::open(r#"{"data":"cloud"}"#)
-            .err()
-            .unwrap_or_else(|| panic!("an unknown source refused"));
-        assert!(unknown.to_string().contains("`\"embedded\"`"), "{unknown}");
+    fn the_plugin_configuration_reads_the_built_in_data_and_what_it_adds() {
+        let built_in = (
+            sefile::julian_day(1800, 1, 1),
+            sefile::julian_day(2399, 12, 31),
+        );
+        let opened = |json: &str| plugin::open(json).unwrap_or_else(|e| panic!("{json}: {e}"));
+        let refused = |json: &str| {
+            plugin::open(json)
+                .err()
+                .unwrap_or_else(|| panic!("{json} opened"))
+                .to_string()
+        };
+        assert_eq!(
+            opened(r#"{"data":"embedded"}"#).capabilities().jd_range,
+            built_in
+        );
+        if std::env::var_os(DATA_DIR_ENV).is_none() {
+            assert_eq!(opened("").capabilities().jd_range, built_in);
+            assert!(refused(r#"{"embedded":false}"#).contains("nothing to read"));
+        }
+        let dir = data_dir_from_env();
+        let both = opened(&format!(
+            r#"{{"data":"embedded","dataDir":{:?}}}"#,
+            dir.display().to_string()
+        ));
+        assert_eq!(
+            both.capabilities().jd_range.0,
+            sefile::civil_julian_day(600, 1, 1)
+        );
+        let file = dir.join("semo_12.se1").display().to_string();
+        let planets = dir.join("sepl_12.se1").display().to_string();
+        let added = opened(&format!(r#"{{"files":[{planets:?},{file:?}]}}"#));
+        assert_eq!(
+            added.capabilities().jd_range.0,
+            sefile::civil_julian_day(1200, 1, 1)
+        );
+        assert!(refused(r#"{"data":"cloud"}"#).contains("not a source"));
+        assert!(refused(r#"{"data":"embedded","embedded":false}"#).contains("name one"));
+        assert!(refused(r#"{"file":[]}"#).contains("unknown field"));
+    }
+
+    /// A temporary directory holding these files of the engine's data
+    /// directory, `cut` bytes short when `cut` is not zero.
+    fn copies(tag: &str, names: &[&str], cut: usize) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("teistro-teimeris-ranges-{tag}"));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap_or_else(|e| panic!("{e}"));
+        for name in names {
+            let bytes =
+                std::fs::read(data_dir_from_env().join(name)).unwrap_or_else(|e| panic!("{e}"));
+            let kept = bytes.get(..bytes.len() - cut).unwrap_or_default();
+            std::fs::write(dir.join(name), kept).unwrap_or_else(|e| panic!("{e}"));
+        }
+        dir
+    }
+
+    /// A range added to the built-in data answers as the same files in a
+    /// directory do, bit for bit, by path and as bytes; without it the
+    /// years are out of range.
+    #[test]
+    fn an_added_range_answers_as_the_directory_does() {
+        let dir = data_dir_from_env();
+        let jds = [sefile::civil_julian_day(1500, 6, 1), 2_451_545.0];
+        let bodies = [Body::Sun, Body::Moon, Body::Mars, Body::Pluto];
+        let on_disk = provider()
+            .positions(&request(&jds, &bodies))
+            .unwrap_or_else(|e| panic!("{e}"));
+        let by_path = TeimerisProvider::data()
+            .file(dir.join("sepl_12.se1"))
+            .file(dir.join("semo_12.se1"))
+            .open()
+            .unwrap_or_else(|e| panic!("{e}"));
+        let read = |name: &str| std::fs::read(dir.join(name)).unwrap_or_else(|e| panic!("{e}"));
+        let by_bytes = TeimerisProvider::data()
+            .bytes("sepl_12.se1", read("sepl_12.se1"))
+            .bytes("semo_12.se1", read("semo_12.se1"))
+            .open()
+            .unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(by_path.capabilities(), by_bytes.capabilities());
+        assert_eq!(
+            by_path.capabilities().jd_range,
+            (
+                sefile::civil_julian_day(1200, 1, 1),
+                sefile::julian_day(2399, 12, 31)
+            )
+        );
+        for added in [&by_path, &by_bytes] {
+            let grid = added
+                .positions(&request(&jds, &bodies))
+                .unwrap_or_else(|e| panic!("{e}"));
+            for index in 0..jds.len() * bodies.len() {
+                assert_eq!(grid.cell(index), on_disk.cell(index), "cell {index}");
+            }
+        }
+        let built_in = TeimerisProvider::embedded().unwrap_or_else(|e| panic!("{e}"));
+        let outside = built_in
+            .positions(&request(&jds[..1], &bodies))
+            .unwrap_or_else(|e| panic!("{e}"));
+        assert!(
+            outside
+                .cells()
+                .all(|cell| cell.status == CellStatus::OutOfRange),
+            "{:?}",
+            outside.cells().map(|c| c.status).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn a_range_that_cannot_be_served_whole_is_refused_with_what_to_add() {
+        let dir = data_dir_from_env();
+        let refusal = |data: Data| data.open().err().map(|e| e.to_string()).unwrap_or_default();
+        // A hole between the added block and the built-in one.
+        let hole = refusal(
+            TeimerisProvider::data()
+                .file(dir.join("sepl_06.se1"))
+                .file(dir.join("semo_06.se1")),
+        );
+        let sizes = |name: &str| ranges::published(name).map_or(0, |p| p.bytes);
+        for name in ["sepl_12.se1", "semo_12.se1"] {
+            assert!(
+                hole.contains(&format!("{name} ({} bytes)", sizes(name))),
+                "{hole}"
+            );
+        }
+        // A planet block without its Moon.
+        let moonless = refusal(TeimerisProvider::data().file(dir.join("sepl_12.se1")));
+        assert!(moonless.contains("lacks semo_12.se1"), "{moonless}");
+        // A download cut short, refused by name; read only when asked to.
+        let cut = copies("cut", &["sepl_12.se1", "semo_12.se1"], 100);
+        let short = refusal(
+            TeimerisProvider::data()
+                .file(cut.join("sepl_12.se1"))
+                .file(dir.join("semo_12.se1")),
+        );
+        assert!(
+            short.contains("sepl_12.se1") && short.contains("again"),
+            "{short}"
+        );
+        let in_dir = refusal(TeimerisProvider::data().data_dir(&cut));
+        assert!(in_dir.contains("again"), "{in_dir}");
+        // Twice, a file that is not a block, and nothing at all.
+        let twice = refusal(
+            TeimerisProvider::data()
+                .file(dir.join("sepl_12.se1"))
+                .file(dir.join("sepl_12.se1")),
+        );
+        assert!(twice.contains("twice"), "{twice}");
+        let stars = refusal(TeimerisProvider::data().file(dir.join("sefstars.txt")));
+        assert!(stars.contains("not a block file"), "{stars}");
+        let nothing = refusal(TeimerisProvider::data().embedded(false));
+        assert!(nothing.contains("nothing to read"), "{nothing}");
+        let unreadable = refusal(TeimerisProvider::data().file(dir.join("sepl_96.se1")));
+        assert!(unreadable.contains("sepl_96.se1"), "{unreadable}");
+    }
+
+    /// A directory's file of a name the engine carries is the file read
+    /// when the two differ, and the one whose provenance is reported.
+    #[test]
+    fn a_directory_file_is_read_over_the_engine_s_own_copy() {
+        let dir = copies("shadow", &["sepl_18.se1", "semo_18.se1"], 0);
+        let opened = TeimerisProvider::data()
+            .embedded(false)
+            .data_dir(&dir)
+            .open()
+            .unwrap_or_else(|e| panic!("{e}"));
+        let hashes = opened.capabilities().identity.data_hashes;
+        let names: Vec<&str> = hashes.iter().map(|h| h.file.as_str()).collect();
+        assert_eq!(names, ["semo_18.se1", "sepl_18.se1"]);
+        for hash in &hashes {
+            ranges::verify(hash).unwrap_or_else(|e| panic!("{e}"));
+        }
+        // A copy that differs is the one read: cut short, and checked only
+        // when asked, it is what fails, not the engine's whole copy.
+        let cut = copies("shadow-cut", &["sepl_18.se1", "semo_18.se1"], 4096);
+        let jds = [2_451_545.0];
+        let bodies = [Body::Sun];
+        let read = |embedded: bool| {
+            let opened = TeimerisProvider::data()
+                .embedded(embedded)
+                .data_dir(&cut)
+                .verify(false)
+                .open()
+                .unwrap_or_else(|e| panic!("{e}"));
+            opened
+                .positions(&request(&jds, &bodies))
+                .is_ok_and(|grid| grid.all_ok())
+        };
+        assert!(!read(false), "the cut copy was not the file read");
+        assert!(
+            read(true),
+            "the engine's own copy comes first when it is on"
+        );
     }
 
     #[test]
