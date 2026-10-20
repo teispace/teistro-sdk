@@ -27,6 +27,8 @@
 //! kernel says so rather than hoping.
 
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+
 use teistro_astro::events::{Longitudes, Search};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Karana, Masa, Nakshatra, Rashi, Tithi, Yoga};
@@ -146,7 +148,7 @@ pub fn nakshatra_at<S: Longitudes + ?Sized>(
     let source = Sidereal::over(tropical, zodiac);
     let window = Interval::literal(at.get(), at.get());
     let found = instants(boundaries(&source, Limb::Nakshatra, window)?);
-    spans(&source, Limb::Nakshatra, window, &found)?
+    spans(&source, Limb::Nakshatra, window, &found, None)?
         .into_iter()
         .find(|span| span.whole.contains_inclusive(at))
         .ok_or_else(|| {
@@ -261,15 +263,22 @@ pub fn limbs_with<S: Longitudes + ?Sized>(
         .collect();
     let karana_edges: Vec<f64> = elongation.iter().map(|(instant, _)| *instant).collect();
     Ok(Limbs {
-        tithi: spans(&source, Limb::Tithi, window, &tithi_edges)?,
-        karana: spans(&source, Limb::Karana, window, &karana_edges)?,
+        tithi: spans(&source, Limb::Tithi, window, &tithi_edges, known)?,
+        karana: spans(&source, Limb::Karana, window, &karana_edges, known)?,
         nakshatra: spans(
             &source,
             Limb::Nakshatra,
             window,
             &instants(found(Limb::Nakshatra)?),
+            known,
         )?,
-        yoga: spans(&source, Limb::Yoga, window, &instants(found(Limb::Yoga)?))?,
+        yoga: spans(
+            &source,
+            Limb::Yoga,
+            window,
+            &instants(found(Limb::Yoga)?),
+            known,
+        )?,
     })
 }
 
@@ -326,6 +335,29 @@ pub struct RangeCrossings {
     /// by its own reach.
     moon_signs: Vec<f64>,
     sun_signs: Vec<f64>,
+    /// What each span between two consecutive crossings of the run reads
+    /// at its middle, by its quantity and its two ends' bits: the reading
+    /// a day names the span's member by, read for the whole run as one
+    /// grid a quantity.
+    middles: BTreeMap<(u8, u64, u64), f64>,
+}
+
+/// A quantity's key in [`RangeCrossings`]' middles.
+fn quantity_key(quantity: Quantity) -> Option<u8> {
+    match quantity {
+        Quantity::ELONGATION => Some(0),
+        Quantity::Longitude(Body::Moon) => Some(1),
+        Quantity::MOON_PLUS_SUN => Some(2),
+        Quantity::Longitude(Body::Sun) => Some(3),
+        _ => None,
+    }
+}
+
+/// The instant a span is named at: its middle, reckoned as every span's
+/// is, so that a span read for a run and the same span read for a day
+/// are read at the same bits.
+fn middle_of(from: f64, to: f64) -> f64 {
+    Interval::literal(from, to).days().mul_add(0.5, from)
 }
 
 impl RangeCrossings {
@@ -349,15 +381,77 @@ impl RangeCrossings {
             )?;
             Ok(events.iter().map(|event| event.instant.get()).collect())
         };
+        let elongation = boundaries(&source, Limb::Karana, run)?;
+        let nakshatra = boundaries(&source, Limb::Nakshatra, run)?;
+        let yoga = boundaries(&source, Limb::Yoga, run)?;
+        let (moon_signs, sun_signs) = (signs(Body::Moon)?, signs(Body::Sun)?);
+        let tithi: Vec<f64> = elongation
+            .iter()
+            .filter(|(_, boundary)| is_tithi_boundary(*boundary))
+            .map(|(instant, _)| *instant)
+            .collect();
+        let karana = instants(elongation.clone());
+        let nakshatra_at = instants(nakshatra.clone());
+        let yoga_at = instants(yoga.clone());
+        // Every span between two consecutive crossings, by the quantity
+        // its member is read from: a tithi and a karana from the
+        // elongation, a nakshatra and a sign of the Moon from the Moon.
+        let mut middles = BTreeMap::new();
+        for (quantity, lists) in [
+            (Quantity::ELONGATION, [&tithi, &karana]),
+            (
+                Quantity::Longitude(Body::Moon),
+                [&nakshatra_at, &moon_signs],
+            ),
+            (Quantity::MOON_PLUS_SUN, [&yoga_at, &yoga_at]),
+            (Quantity::Longitude(Body::Sun), [&sun_signs, &sun_signs]),
+        ] {
+            let Some(key) = quantity_key(quantity) else {
+                continue;
+            };
+            let mut ends: Vec<(f64, f64)> = Vec::new();
+            for list in lists {
+                for pair in list.windows(2) {
+                    if let [from, to] = pair
+                        && !ends.iter().any(|(a, b)| {
+                            a.to_bits() == from.to_bits() && b.to_bits() == to.to_bits()
+                        })
+                    {
+                        ends.push((*from, *to));
+                    }
+                }
+            }
+            if ends.is_empty() {
+                continue;
+            }
+            let at: Vec<JulianDay<Ut1>> = ends
+                .iter()
+                .map(|(from, to)| JulianDay::<Ut1>::literal(middle_of(*from, *to)))
+                .collect();
+            let read = teistro_astro::events::values_of(quantity, &source, &at)?;
+            for ((from, to), degrees) in ends.into_iter().zip(read) {
+                middles.insert((key, from.to_bits(), to.to_bits()), degrees);
+            }
+        }
         Ok(RangeCrossings {
             zodiac,
             run,
-            elongation: boundaries(&source, Limb::Karana, run)?,
-            nakshatra: boundaries(&source, Limb::Nakshatra, run)?,
-            yoga: boundaries(&source, Limb::Yoga, run)?,
-            moon_signs: signs(Body::Moon)?,
-            sun_signs: signs(Body::Sun)?,
+            elongation,
+            nakshatra,
+            yoga,
+            moon_signs,
+            sun_signs,
+            middles,
         })
+    }
+
+    /// What the span from `from` to `to` reads at its middle, when it is
+    /// a span between two of the run's consecutive crossings.
+    fn middle(&self, quantity: Quantity, from: f64, to: f64) -> Option<f64> {
+        let key = quantity_key(quantity)?;
+        self.middles
+            .get(&(key, from.to_bits(), to.to_bits()))
+            .copied()
     }
 
     /// Whether these crossings answer for a window: found under the same
@@ -470,6 +564,7 @@ fn spans<S, T>(
     limb: Limb,
     window: Interval,
     found: &[f64],
+    known: Option<&RangeCrossings>,
 ) -> Result<Vec<Span<T>>, Error>
 where
     S: Longitudes + ?Sized,
@@ -486,8 +581,12 @@ where
             continue;
         }
         // The member is read in the middle of its own span, where no
-        // boundary is, so a solver's last bit cannot change the answer.
-        let index = classify(source, limb, whole.days().mul_add(0.5, *from))?;
+        // boundary is, so a solver's last bit cannot change the answer;
+        // a run read every span's middle already.
+        let index = match known.and_then(|known| known.middle(limb.quantity(), *from, *to)) {
+            Some(degrees) => Nas::try_from_degrees(degrees)?.division_index(limb.divisions()),
+            None => classify(source, limb, middle_of(*from, *to))?,
+        };
         if let Some(span) = Span::new(T::of(index), whole, window) {
             out.push(span);
         }
@@ -591,17 +690,16 @@ pub fn signs_known<S: Longitudes + ?Sized>(
         }
         None => sign_reach_days(body),
     };
-    let known = known
-        .filter(|known| known.answers(zodiac, window))
-        .and_then(|known| known.signs(body, window, reach));
-    let found: Vec<f64> = if let Some(found) = known {
-        found
-    } else {
-        let from = JulianDay::<Ut1>::literal(window.from.get() - reach);
-        let to = JulianDay::<Ut1>::literal(window.to.get() + reach);
-        let events = search.between(from, to)?;
-        events.iter().map(|event| event.instant.get()).collect()
-    };
+    let known = known.filter(|known| known.answers(zodiac, window));
+    let found: Vec<f64> =
+        if let Some(found) = known.and_then(|known| known.signs(body, window, reach)) {
+            found
+        } else {
+            let from = JulianDay::<Ut1>::literal(window.from.get() - reach);
+            let to = JulianDay::<Ut1>::literal(window.to.get() + reach);
+            let events = search.between(from, to)?;
+            events.iter().map(|event| event.instant.get()).collect()
+        };
     let mut out = Vec::new();
     let edges = sign_edges(&found, window, reach);
     for pair in edges.windows(2) {
@@ -612,8 +710,14 @@ pub fn signs_known<S: Longitudes + ?Sized>(
         if !whole.overlaps(window) {
             continue;
         }
-        let middle = JulianDay::<Ut1>::literal(whole.days().mul_add(0.5, *start));
-        let degrees = teistro_astro::events::value_of(quantity, &source, middle)?;
+        let degrees = match known.and_then(|known| known.middle(quantity, *start, *end)) {
+            Some(degrees) => degrees,
+            None => teistro_astro::events::value_of(
+                quantity,
+                &source,
+                JulianDay::<Ut1>::literal(middle_of(*start, *end)),
+            )?,
+        };
         let sign = Nas::try_from_degrees(degrees)?.sign();
         if let Some(span) = Span::new(sign, whole, window) {
             out.push(span);

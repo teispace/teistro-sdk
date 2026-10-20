@@ -222,6 +222,28 @@ fn largest<'m>(rows: &'m [Measured], operation: &str) -> Option<&'m Measured> {
     rows_of(rows, operation).into_iter().last()
 }
 
+/// The brief's acceptance for a range: fewer calls than three of its days
+/// make alone.
+fn range_claim(one_day: &Measured, almanac: &Measured) -> Claim {
+    Claim::stated(
+        "a range of almanac days costs less than three of its days alone",
+        verdict_of(almanac.calls < 3 * one_day.calls),
+        format!(
+            "{} calls for {} days, where one day alone makes {}: {:.1} days' worth",
+            count(usize::try_from(almanac.calls).unwrap_or_default()),
+            count(usize::try_from(almanac.size).unwrap_or_default()),
+            count(usize::try_from(one_day.calls).unwrap_or_default()),
+            ratio(almanac.calls, one_day.calls)
+        ),
+    )
+}
+
+/// How many times `of` the count `count` is.
+#[allow(clippy::cast_precision_loss, reason = "call counts are far below 2^52")]
+fn ratio(count: u64, of: u64) -> f64 {
+    count as f64 / of.max(1) as f64
+}
+
 /// A count that came from a ratio, written as the house style writes a
 /// number: rounded to the nearest, spaced from five digits.
 fn rounded(value: f64) -> String {
@@ -245,6 +267,10 @@ fn page(root: &Path) -> Result<String, String> {
     let charts = largest(&rows, "charts").ok_or("the example measures a batch of charts")?;
     let almanac = largest(&rows, "almanac").ok_or("the example measures a range of days")?;
     let sunrise = largest(&rows, "sunrise").ok_or("the example measures one sunrise")?;
+    let one_day = rows_of(&rows, "almanac")
+        .into_iter()
+        .next()
+        .ok_or("the example measures a range of days")?;
 
     let mut claims = Vec::new();
     claims.push(Claim::stated(
@@ -269,6 +295,7 @@ fn page(root: &Path) -> Result<String, String> {
             ),
         ));
     }
+    claims.push(range_claim(one_day, almanac));
     claims.push(Claim::stated(
         "the calls a batch makes are grids rather than cells",
         verdict_of(charts.mean_width > 4.0 && almanac.mean_width > 4.0),
@@ -325,7 +352,13 @@ fn page(root: &Path) -> Result<String, String> {
     ));
 
     Ok(fill(&text(
-        &rows, &memos, &claims, positions, charts, almanac, sunrise,
+        &rows,
+        &memos,
+        &claims,
+        positions,
+        charts,
+        [one_day, almanac],
+        sunrise,
     )))
 }
 
@@ -339,7 +372,7 @@ fn text(
     claims: &[Claim],
     positions: &Measured,
     charts: &Measured,
-    almanac: &Measured,
+    [one_day, almanac]: [&Measured; 2],
     sunrise: &Measured,
 ) -> String {
     let mut out = String::new();
@@ -398,28 +431,35 @@ fn text(
          grid of positions is **one call** whether it holds one instant or\n\
          {}: that is what the port was shaped for, and it is the control\n\
          everything else is compared with. A batch of {} charts is {} calls\n\
-         — {:.0} per chart, the same as one chart costs on its own — and a\n\
-         range of {} almanac days is {}, or {:.0} a day. Neither is a batch\n\
-         in any sense the ephemeris can see. They are loops that share a\n\
-         provenance stamp.\n",
+         — {:.0} per chart, the same as one chart costs on its own: a loop\n\
+         that shares a provenance stamp, and no batch the ephemeris can see.\n\
+         A range of {} almanac days is {} calls, {:.1} days' worth of the {}\n\
+         one day makes alone. It is a batch the ephemeris sees: the range\n\
+         finds its days' local days and moonrises together, every day's\n\
+         searches stepping in lockstep so that a round of all of them is one\n\
+         request, and it finds the limbs' and the signs' crossings once for\n\
+         the whole range (`teistro_astro::lockstep`,\n\
+         `teistro_panchanga::limb::RangeCrossings`). Every day is the day\n\
+         asked for alone to the bit; the content hashes say so.\n",
         count(usize::try_from(positions.size).unwrap_or_default()),
         count(usize::try_from(charts.size).unwrap_or_default()),
         count(usize::try_from(charts.calls).unwrap_or_default()),
         charts.per_item(),
         count(usize::try_from(almanac.size).unwrap_or_default()),
         count(usize::try_from(almanac.calls).unwrap_or_default()),
-        almanac.per_item()
+        ratio(almanac.calls, one_day.calls),
+        count(usize::try_from(one_day.calls).unwrap_or_default())
     );
 
     let _ = writeln!(
         out,
-        "## 3. The calls are cells, not grids\n\n\
+        "## 3. How wide the calls are\n\n\
          The widest call a batch of charts makes is {} cells — the grahas of\n\
          one chart, asked for once — and the widest an almanac makes is {}.\n\
-         Everything else is one instant and one or two bodies. The mean\n\
-         width is {:.2} for charts and {:.2} for an almanac: the SDK asks its\n\
-         ephemeris for **one cell at a time**, tens of thousands of times,\n\
-         through a port whose one required operation takes a grid.\n",
+         The mean width is {:.2} for charts and {:.2} for an almanac range: a\n\
+         chart still asks its ephemeris for one cell at a time, through a\n\
+         port whose one required operation takes a grid, where an almanac\n\
+         range's rounds ask for every day's next instants together.\n",
         count(usize::try_from(charts.widest).unwrap_or_default()),
         count(usize::try_from(almanac.widest).unwrap_or_default()),
         charts.mean_width,
@@ -431,15 +471,12 @@ fn text(
          them a single cell, none of them a repeat. Meeus's iteration\n\
          answers it, and it is serial by construction — each instant is\n\
          computed from the sample before it, so there is no grid to ask\n\
-         for. A day's {} calls are **not** made of searches like it: an\n\
-         attribution of every one of them to its caller (recorded in\n\
-         [`../07-roadmap/02-plan-performance-and-passthrough.md`](../07-roadmap/02-plan-performance-and-passthrough.md),\n\
-         A1) found 44% of them in the Moon's sign search, which reaches\n\
-         forty days either side of the day because the constant that\n\
-         sizes it was chosen for the Sun. The dominant cost is a window,\n\
-         not a round trip.\n",
+         for alone. Beside other days it is: a range's sunrises step in\n\
+         lockstep, so its days ask a round of them at a time, and a day of\n\
+         a range costs {} calls on average where one day alone costs {}.\n",
         count(usize::try_from(sunrise.calls).unwrap_or_default()),
-        rounded(almanac.per_item())
+        rounded(almanac.per_item()),
+        count(usize::try_from(one_day.calls).unwrap_or_default())
     );
 
     let _ = writeln!(

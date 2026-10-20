@@ -14,9 +14,10 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::completion::Completion;
 use teistro_astro::delta_t::DeltaTModel;
+use teistro_astro::lockstep::Lockstep;
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::rise_set::Solver;
-use teistro_calendar::solar::SolarModel;
+use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
 use teistro_core::catalogue::{Direction, Rashi, Ritu, Vara};
@@ -31,7 +32,9 @@ use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind};
 use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
-use teistro_time::local_day::{Carried, LocalDay, local_day, local_day_carrying, local_midnight};
+use teistro_time::local_day::{
+    Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
+};
 
 use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
@@ -458,6 +461,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             last: Some(last),
             ..Memo::default()
         };
+        self.ahead(first, count, place, &mut memo);
         for step in 0..count {
             let offset = i64::try_from(step).unwrap_or(0);
             let date = self.calendar.date_of(first.plus_days(offset))?;
@@ -638,15 +642,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         // a `CalendarDate` a caller builds carries no era numbers and one
         // the calendar renders does.
         let date = self.calendar.date_of(self.calendar.fixed_of(date)?)?;
-        let day = local_day_carrying(
-            self.model,
-            self.calendar,
-            self.clock,
-            place,
-            &date,
-            settings.day.polar_day_policy,
-            &mut memo.light,
-        )?;
+        let fixed = self.calendar.fixed_of(&date)?;
+        let (day, found_moon) = self.local_day_of(&date, fixed, place, memo)?;
         let window = self.window(&day)?;
         let daylight = Interval::new(day.sunrise, day.sunset)?;
         let night = Interval::new(day.sunset, day.next_sunrise)?;
@@ -659,7 +656,6 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(*place);
         }
-        let fixed = self.calendar.fixed_of(&date)?;
         let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
         let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?;
 
@@ -674,7 +670,18 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let muhurtas = period::muhurtas(daylight, night, previous_night, day.vara);
         let durmuhurtas = period::durmuhurtas(&muhurtas, day.vara, settings.panchanga.durmuhurta)?;
         let month = self.month(&longitudes, window, &limbs, (zodiac, frame), memo)?;
-        let moon = self.moon(&completion, place, &day, window, frame, zodiac)?;
+        // The Moon's own day reads geocentric longitudes, which are the
+        // range's crossings' source unless the almanac is topocentric.
+        let geocentric = known
+            .as_ref()
+            .filter(|_| frame.centre != teistro_port_ephemeris::Centre::Topocentric);
+        let moon = self.moon(
+            &completion,
+            place,
+            (&day, window),
+            (frame, zodiac, geocentric),
+            found_moon,
+        )?;
         let sun_signs =
             limb::signs_known(&longitudes, Body::Sun, window, zodiac, None, known.as_ref())?;
         let ritu = self.ritu(
@@ -727,6 +734,31 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             },
             frame,
         ))
+    }
+
+    /// A day's local day, and its Moon's rises and sets when the range
+    /// found them ahead ([`Almanac::ahead`]); a day found alone is
+    /// carried from the day before.
+    fn local_day_of(
+        &self,
+        date: &CalendarDate,
+        fixed: FixedDay,
+        place: &Place,
+        memo: &mut Memo,
+    ) -> Result<(LocalDay, Option<MoonAhead>), Error> {
+        if let Some(ahead) = memo.ahead.take_day(fixed) {
+            return Ok((ahead.day?, ahead.moon));
+        }
+        let day = local_day_carrying(
+            self.model,
+            self.calendar,
+            self.clock,
+            place,
+            date,
+            self.settings().day.polar_day_policy,
+            &mut memo.light,
+        )?;
+        Ok((day, None))
     }
 
     /// The window the day's limbs are clipped to: the arc under a sunrise
@@ -894,12 +926,33 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         &self,
         completion: &Completion<'_, P>,
         place: &Place,
-        day: &LocalDay,
-        window: Interval,
-        frame: Frame,
-        zodiac: Zodiac,
+        (day, window): (&LocalDay, Interval),
+        (frame, zodiac, known): (Frame, Zodiac, Option<&RangeCrossings>),
+        ahead: Option<MoonAhead>,
     ) -> Result<MoonDay, Error> {
-        let search = match self.settings().panchanga.moon_events {
+        let search = self.moon_search(day, window)?;
+        let (rises, sets) = match ahead {
+            Some(found) if found.search == search => (found.rises?, found.sets?),
+            _ => {
+                let solver = self.moon_solver(completion, place);
+                (
+                    events(&solver, HorizonEventKind::Rise, search)?,
+                    events(&solver, HorizonEventKind::Set, search)?,
+                )
+            }
+        };
+        let longitudes = completion.longitudes(frame);
+        Ok(MoonDay {
+            rises,
+            sets,
+            signs: limb::signs_known(&longitudes, Body::Moon, window, zodiac, None, known)?,
+            window: search,
+        })
+    }
+
+    /// The window a day's moonrises and moonsets are searched in.
+    fn moon_search(&self, day: &LocalDay, window: Interval) -> Result<Interval, Error> {
+        Ok(match self.settings().panchanga.moon_events {
             // The engine's reading: the first rise and set at or after
             // the local civil midnight (entry 18).
             MoonEvents::CivilDay => {
@@ -907,23 +960,89 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 Interval::new(midnight, next_by(midnight, 1.0))?
             }
             _ => window,
-        };
-        let solver = Solver::new(
+        })
+    }
+
+    /// The solver a day's moonrises and moonsets are found by.
+    fn moon_solver<'c>(&self, completion: &'c Completion<'_, P>, place: &Place) -> Solver<'c> {
+        Solver::new(
             completion,
             Body::Moon,
             *place,
             Horizon::from_convention(self.settings().day.sunrise),
             self.delta_t,
-        );
-        let rises = events(&solver, HorizonEventKind::Rise, search)?;
-        let sets = events(&solver, HorizonEventKind::Set, search)?;
-        let longitudes = completion.longitudes(frame);
-        Ok(MoonDay {
-            rises,
-            sets,
-            signs: Self::signs(&longitudes, Body::Moon, window, zodiac)?,
-            window: search,
-        })
+        )
+    }
+
+    /// What a range's days can find before any of them is computed, found
+    /// together: every day's local day, carried from the one before, and
+    /// every day's moonrises and moonsets, searched in lockstep so that a
+    /// round of every day's searches is one request
+    /// ([`teistro_astro::lockstep`]). Each search takes the steps it
+    /// takes for its day alone, so each day is what it is alone, to the
+    /// bit; a day's failure is kept for that day to report, as it would
+    /// have when the range reached it.
+    fn ahead(&self, first: FixedDay, count: usize, place: &Place, memo: &mut Memo) {
+        let settings = self.settings();
+        // Every day's light and the one after the last, found together:
+        // a day reads its own and the next one's.
+        let civil: Vec<FixedDay> = (0..=count)
+            .map(|step| first.plus_days(i64::try_from(step).unwrap_or(0)))
+            .collect();
+        let lights = civil_day_lights(self.model, self.clock, place, &civil);
+        let mut days = Vec::with_capacity(count);
+        for (step, pair) in lights.windows(2).enumerate() {
+            let fixed = first.plus_days(i64::try_from(step).unwrap_or(0));
+            let day = match pair {
+                [Ok(today), Ok(tomorrow)] => self.calendar.date_of(fixed).and_then(|date| {
+                    local_day_lit(
+                        self.model,
+                        self.clock,
+                        place,
+                        (&date, fixed),
+                        settings.day.polar_day_policy,
+                        (*today, *tomorrow),
+                    )
+                }),
+                [Err(error), _] | [_, Err(error)] => Err(error.clone()),
+                _ => Err(Error::internal("a pair of day lights came apart")),
+            };
+            days.push((fixed, day));
+        }
+        let searches: Vec<Option<Interval>> = days
+            .iter()
+            .map(|(_, day)| {
+                let day = day.as_ref().ok()?;
+                self.window(day)
+                    .and_then(|window| self.moon_search(day, window))
+                    .ok()
+            })
+            .collect();
+        let completion = Completion::new(self.provider, settings.provider.overrides, self.delta_t);
+        let solver = self.moon_solver(&completion, place);
+        let round = Lockstep::new();
+        let mut found = round
+            .run(searches.iter().flatten().flat_map(|search| {
+                [HorizonEventKind::Rise, HorizonEventKind::Set]
+                    .map(|kind| events_with(&solver, Some(&round), kind, *search))
+            }))
+            .into_iter();
+        memo.ahead = Ahead {
+            first,
+            days: days
+                .into_iter()
+                .zip(searches)
+                .map(|((_, day), search)| AheadDay {
+                    day,
+                    moon: search.map(|search| MoonAhead {
+                        search,
+                        rises: found.next().unwrap_or_else(|| Ok(Vec::new())),
+                        sets: found.next().unwrap_or_else(|| Ok(Vec::new())),
+                    }),
+                })
+                .map(Some)
+                .collect(),
+        };
     }
 
     /// The day's season under `panchanga.ritu`.
@@ -1032,10 +1151,49 @@ struct Memo {
     /// The last day of the range, when the days are a range: how far the
     /// crossings found for the first day are worth finding.
     last: Option<FixedDay>,
+    /// What the range found for its days before computing them.
+    ahead: Ahead,
     /// The limbs' and the signs' crossings found once for the range
     /// ([`RangeCrossings`]), by the frame their source was read in, read
     /// by every day whose window they cover.
     known: Option<(Frame, RangeCrossings)>,
+}
+
+/// A range's days as found ahead of computing them ([`Almanac::ahead`]).
+struct Ahead {
+    first: FixedDay,
+    days: Vec<Option<AheadDay>>,
+}
+
+impl Default for Ahead {
+    fn default() -> Self {
+        Ahead {
+            first: FixedDay::new(0),
+            days: Vec::new(),
+        }
+    }
+}
+
+impl Ahead {
+    /// What was found ahead for a day, once.
+    fn take_day(&mut self, day: FixedDay) -> Option<AheadDay> {
+        let at = usize::try_from(self.first.days_until(day)).ok()?;
+        self.days.get_mut(at)?.take()
+    }
+}
+
+/// One day found ahead: its local day, and its Moon's rises and sets when
+/// its window could be had.
+struct AheadDay {
+    day: Result<LocalDay, Error>,
+    moon: Option<MoonAhead>,
+}
+
+/// A day's moonrises and moonsets found ahead, in the window searched.
+struct MoonAhead {
+    search: Interval,
+    rises: Result<Vec<JulianDay<Utc>>, Error>,
+    sets: Result<Vec<JulianDay<Utc>>, Error>,
 }
 
 impl Memo {
@@ -1099,11 +1257,32 @@ fn events(
     kind: HorizonEventKind,
     window: Interval,
 ) -> Result<Vec<JulianDay<Utc>>, Error> {
+    teistro_astro::lockstep::finished(events_with(solver, None, kind, window)).unwrap_or_else(
+        || {
+            Err(Error::internal(
+                "an event search on the spot waited for a round",
+            ))
+        },
+    )
+}
+
+/// [`events`], its searches on the spot or in `round`'s requests.
+async fn events_with<'a>(
+    solver: &Solver<'a>,
+    round: Option<&Lockstep<'a>>,
+    kind: HorizonEventKind,
+    window: Interval,
+) -> Result<Vec<JulianDay<Utc>>, Error> {
     let mut found = Vec::new();
     let mut from = window.from.get();
     while from < window.to.get() {
         let remaining = window.to.get() - from;
-        let Some(event) = solver.event(kind, JulianDay::<Ut1>::literal(from), remaining)? else {
+        let start = JulianDay::<Ut1>::literal(from);
+        let event = match round {
+            Some(round) => solver.event_in(round, kind, start, remaining).await?,
+            None => solver.event(kind, start, remaining)?,
+        };
+        let Some(event) = event else {
             break;
         };
         let at = event.instant.get();
