@@ -1271,7 +1271,7 @@ class Plugin:
     """That adapter's own options."""
 
 
-EphemerisChoice = Ephemeris | Plugin
+EphemerisChoice = Ephemeris | Plugin | EphemerisProvider
 """One entry of an ephemeris chain: one of the SDK's own by name, or an
 adapter's descriptor."""
 
@@ -1287,7 +1287,9 @@ class NepalOfficial(TypedDict):
     ephemeris: list[EphemerisChoice]
 
 
-def nepal_official(modern: Plugin | Sequence[Plugin] = ()) -> NepalOfficial:
+def nepal_official(
+    modern: Plugin | EphemerisProvider | Sequence[Plugin | EphemerisProvider] = (),
+) -> NepalOfficial:
     """**Nepal's official days**: the options that open a context on the
     Nepali committee's reckoning, the setup the committee's own panchanga
     is computed by. The tithi, nakshatra and yoga come from the Surya
@@ -1299,10 +1301,11 @@ def nepal_official(modern: Plugin | Sequence[Plugin] = ()) -> NepalOfficial:
         from teistro_ephemeris_teimeris import teimeris
         official = sdk.context(**nepal_official(teimeris()), locale="ne-Deva-NP")
 
-    `modern` is an adapter's descriptor, or a sequence of them tried in
-    order; with none, the sunrise is the built-in ephemeris's.
+    `modern` is an adapter's descriptor or an ephemeris written in
+    Python, or a sequence of them tried in order; with none, the sunrise
+    is the built-in ephemeris's.
     """
-    engines = [modern] if isinstance(modern, Plugin) else list(modern)
+    engines = [modern] if isinstance(modern, (Plugin, EphemerisProvider)) else list(modern)
     chain: list[EphemerisChoice] = [Ephemeris.SURYA_SIDDHANTA, *engines]
     return {"profile": NEPAL_OFFICIAL_PROFILE, "ephemeris": chain}
 
@@ -1430,7 +1433,9 @@ class Teistro:
         (ADR-0029). An entry is an adapter's own descriptor -- `Plugin`,
         what a package like `teistro_ephemeris_teimeris` exports,
         carrying the platform binary it ships and that adapter's own
-        configuration -- or one of the SDK's own by name.
+        configuration --, an ephemeris written in Python, as `provider`
+        takes one (so one can stand behind `Ephemeris.SURYA_SIDDHANTA`),
+        or one of the SDK's own by name.
 
         A chain is a caller **saying** they will accept the fallback. One
         entry is one entry: a context asked for an engine and given the
@@ -1471,21 +1476,29 @@ class Teistro:
             layouts=layouts_json,
             dashas=json.dumps(list(dasha_systems), separators=(",", ":")) if dasha_systems else None,
         )
-        host = None if provider is None else HostProvider(self.library, provider)
-        # One rule, written once: a named ephemeris wins, and the older
-        # flag decides only when none was named (ADR-0028).
-        chain: list[EphemerisChoice]
-        if ephemeris is None:
-            chain = [Ephemeris.TEST if test_provider else Ephemeris.NONE]
-        elif isinstance(ephemeris, (Ephemeris, Plugin)):
-            chain = [ephemeris]
+        # One rule, written once: `provider` is a chain of one, a named
+        # ephemeris wins, and the older flag decides only when none was
+        # named (ADR-0028).
+        named: list[EphemerisChoice]
+        if provider is not None:
+            named = [provider]
+        elif ephemeris is None:
+            named = [Ephemeris.TEST if test_provider else Ephemeris.NONE]
+        elif isinstance(ephemeris, (Ephemeris, Plugin, EphemerisProvider)):
+            named = [ephemeris]
         else:
-            chain = list(ephemeris)
-        if not chain:
+            named = list(ephemeris)
+        if not named:
             raise ValueError(
                 "an ephemeris chain of none names nothing; give an entry or "
                 "omit it"
             )
+        # A provider is bound when the chain is read, so one without a name
+        # is refused there rather than passed over for the next entry.
+        chain: list[_Entry] = [
+            HostProvider(self.library, entry) if isinstance(entry, EphemerisProvider) else entry
+            for entry in named
+        ]
         # A chain of one is not a chain, so nothing is caught for it: a
         # bad *profile* is not an ephemeris failure, and catching it to
         # try the next entry would replace a refusal carrying its status,
@@ -1493,8 +1506,7 @@ class Teistro:
         if len(chain) == 1:
             return Context(
                 self,
-                self._open(chain[0], profile, settings_json, locale, rows_json, host),
-                host,
+                *self._open(chain[0], profile, settings_json, locale, rows_json),
                 layouts,
                 dasha_systems,
             )
@@ -1510,8 +1522,7 @@ class Teistro:
                 try:
                     return Context(
                         self,
-                        self._text(chain[index + 1 :], profile, settings_json, locale, rows_json, host),
-                        host,
+                        *self._text(chain[index + 1 :], profile, settings_json, locale, rows_json),
                         layouts,
                         dasha_systems,
                     )
@@ -1523,26 +1534,23 @@ class Teistro:
             try:
                 return Context(
                     self,
-                    self._open(entry, profile, settings_json, locale, rows_json, host),
-                    host,
+                    *self._open(entry, profile, settings_json, locale, rows_json),
                     layouts,
                     dasha_systems,
                 )
             except TeistroError as refusal:
-                named = entry.plugin if isinstance(entry, Plugin) else entry.key
-                refusals.append(f"{named}: {refusal}")
+                refusals.append(f"{_entry_name(entry)}: {refusal}")
         joined = "\n  ".join(refusals)
         raise ValueError(f"no ephemeris in the chain could be opened:\n  {joined}")
 
     def _text(
         self,
-        rest: Sequence[EphemerisChoice],
+        rest: Sequence[_Entry],
         profile: Optional[str],
         settings_json: Optional[str],
         locale: Optional[str],
         rows_json: _RowsJson,
-        host: Optional[HostProvider],
-    ) -> TeistroContext:
+    ) -> tuple[TeistroContext, Optional[HostProvider]]:
         """The Surya Siddhanta in front of the entries after it, as the
         façade opens it: the text reckons the limbs, and an adapter after
         it gives the day's modern sunrise and the outer planets -- the
@@ -1551,7 +1559,7 @@ class Teistro:
         façade passes over it; with none, the text stands alone, its
         modern sunrise the built-in's."""
         for entry in rest:
-            if not isinstance(entry, Plugin):
+            if isinstance(entry, Ephemeris):
                 continue
             try:
                 return self._open(
@@ -1560,28 +1568,25 @@ class Teistro:
                     settings_json,
                     locale,
                     rows_json,
-                    host,
                     before=Ephemeris.SURYA_SIDDHANTA,
                 )
             except TeistroError:
                 continue
-        return self._open(
-            Ephemeris.SURYA_SIDDHANTA, profile, settings_json, locale, rows_json, host
-        )
+        return self._open(Ephemeris.SURYA_SIDDHANTA, profile, settings_json, locale, rows_json)
 
     def _open(
         self,
-        entry: EphemerisChoice,
+        entry: _Entry,
         profile: Optional[str],
         settings_json: Optional[str],
         locale: Optional[str],
         rows_json: _RowsJson,
-        host: Optional[HostProvider],
         before: Ephemeris = Ephemeris.NONE,
-    ) -> TeistroContext:
-        """Opens the context on one entry of the chain; an adapter behind
-        `before`, if named."""
-        named = before if isinstance(entry, Plugin) else entry
+    ) -> tuple[TeistroContext, Optional[HostProvider]]:
+        """Opens the context on one entry of the chain, with the provider
+        written in Python it drives, if it is one; an adapter or a
+        provider behind `before`, if named."""
+        named = entry if isinstance(entry, Ephemeris) else before
         options = ContextOptions(
             flags=0,
             profile=profile,
@@ -1591,10 +1596,13 @@ class Teistro:
             dashas_json=rows_json.dashas,
             ephemeris=named,
         )
-        if not isinstance(entry, Plugin):
-            return TeistroContext._new(
-                self.library, options, None if host is None else host.vtable
-            )
+        if isinstance(entry, Ephemeris):
+            return TeistroContext._new(self.library, options, None), None
+        if isinstance(entry, HostProvider):
+            # The library puts a provider of the caller's own behind the
+            # Surya Siddhanta when the selector names the text, and alone
+            # otherwise.
+            return TeistroContext._new(self.library, options, entry.vtable), entry
         # The context takes its own reference to the adapter, so the
         # handle this loads is closed at once: what keeps the library
         # loaded is the context, and a consumer holds neither.
@@ -1602,9 +1610,23 @@ class Teistro:
             self.library, entry.plugin, json.dumps(dict(entry.config or {}))
         )
         try:
-            return TeistroContext._new_with_provider(self.library, options, loaded)
+            return TeistroContext._new_with_provider(self.library, options, loaded), None
         finally:
             loaded.close()
+
+
+#: A chain entry as the chain is opened: a provider written in Python is
+#: already bound into its vtable.
+_Entry = Ephemeris | Plugin | HostProvider
+
+
+def _entry_name(entry: _Entry) -> str:
+    """What a chain entry is called in a refusal."""
+    if isinstance(entry, Plugin):
+        return entry.plugin
+    if isinstance(entry, HostProvider):
+        return entry.provider.name
+    return entry.key
 
 
 def _candidates() -> list[str]:

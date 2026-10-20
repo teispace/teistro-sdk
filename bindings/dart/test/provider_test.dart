@@ -197,6 +197,70 @@ void main() {
     expect(provider.calls.single.jds, [2451545.0]);
   });
 
+  /// A provider written in Dart is a chain entry too, so the text takes
+  /// its modern sunrise from it under the committee's profile, and what it
+  /// throws there reaches the caller as itself.
+  test('a provider stands behind the Surya Siddhanta', () {
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final provider = StraightLine();
+    final official = teistro.nepalOfficial(
+      modern: [ProviderEphemeris(provider)],
+    );
+    addTearDown(official.dispose);
+    expect(
+      official
+          .positions(instants: [2451545.0], bodies: [Body.sun])
+          .provenance
+          .provider
+          .dataVersion,
+      contains('sunrise from a-provider-in-dart'),
+    );
+    provider.calls.clear();
+    try {
+      official.chart.found(
+        instant: 2451545.0,
+        place: place,
+        utcOffsetSeconds: 20700,
+      );
+    } on TeistroException {
+      // A straight line is no sky; what is held is that it was asked.
+    }
+    expect(provider.calls, isNotEmpty);
+    final failing = teistro.nepalOfficial(
+      modern: [ProviderEphemeris(_Throwing('the engine is not ready'))],
+    );
+    addTearDown(failing.dispose);
+    expect(
+      () => failing.chart.found(
+        instant: 2451545.0,
+        place: place,
+        utcOffsetSeconds: 20700,
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          'the engine is not ready',
+        ),
+      ),
+    );
+    // Bound when the chain is read, so a provider with no name is refused
+    // there rather than passed over for the next entry.
+    expect(
+      () => teistro.context(
+        ephemeris: [
+          ProviderEphemeris(_Nameless()),
+          const NamedEphemeris(Ephemeris.builtin),
+        ],
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
+
   test('a provider is checked at the door', () {
     expect(
       () => teistro.context(provider: _Nameless()),

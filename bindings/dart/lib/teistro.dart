@@ -213,8 +213,9 @@ final class Teistro {
   /// `ephemeris` is an **ordered chain**, tried in order (ADR-0029). An
   /// entry is an adapter's own descriptor — [PluginEphemeris], what a
   /// package like `teistro_ephemeris_teimeris` exports, carrying the
-  /// platform binary it ships and its own configuration — or one of the
-  /// SDK's own by name, [NamedEphemeris].
+  /// platform binary it ships and its own configuration —, an ephemeris
+  /// written in Dart, [ProviderEphemeris], as `provider` takes one, or one
+  /// of the SDK's own by name, [NamedEphemeris].
   ///
   /// **A list even for one**, which Dart needs because it has no
   /// untagged union, and which says the thing the ADR wants said: a
@@ -259,16 +260,41 @@ final class Teistro {
         'an ephemeris chain of none names nothing; give an entry or omit it',
       );
     }
-    final host = provider == null ? null : HostProvider(library, provider);
-    // One rule, written once: a named ephemeris wins, and the older flag
-    // decides only when none was named (ADR-0028).
+    // One rule, written once: `provider` is a chain of one, a named
+    // ephemeris wins, and the older flag decides only when none was named
+    // (ADR-0028).
     final chain =
         ephemeris ??
         <EphemerisChoice>[
-          NamedEphemeris(
-            testProvider && host == null ? Ephemeris.test : Ephemeris.none,
-          ),
+          if (provider != null)
+            ProviderEphemeris(provider)
+          else
+            NamedEphemeris(testProvider ? Ephemeris.test : Ephemeris.none),
         ];
+    // A provider is bound when the chain is read, so one with no name is
+    // refused there rather than passed over for the next entry; each one
+    // the opened context does not drive is disposed below.
+    final hosts = <EphemerisChoice, HostProvider>{};
+    try {
+      for (final entry in chain) {
+        if (entry case ProviderEphemeris(:final provider)) {
+          hosts[entry] = HostProvider(library, provider);
+        }
+      }
+    } on Object {
+      for (final host in hosts.values) {
+        host.dispose();
+      }
+      rethrow;
+    }
+    Context opened((TeistroContext, HostProvider?) inner) {
+      final (context, host) = inner;
+      for (final other in hosts.values) {
+        if (!identical(other, host)) other.dispose();
+      }
+      return Context._(this, context, host, layouts, dashaSystems);
+    }
+
     try {
       // A chain of one is not a chain, so nothing is caught for it.
       // Found by an existing test: a bad *profile* is not an ephemeris
@@ -277,8 +303,7 @@ final class Teistro {
       // "nothing could be opened". With one entry there is no next
       // entry, so the refusal is the refusal.
       if (chain.length == 1) {
-        return Context._(
-          this,
+        return opened(
           _open(
             chain.first,
             profile,
@@ -286,11 +311,8 @@ final class Teistro {
             locale,
             layoutsJson,
             dashasJson,
-            host,
+            hosts,
           ),
-          host,
-          layouts,
-          dashaSystems,
         );
       }
       // With more than one, every refusal is kept and reported together,
@@ -303,8 +325,7 @@ final class Teistro {
           // tried, and with nothing tried before it its refusal is the
           // refusal — the façade's chain, entry for entry.
           try {
-            return Context._(
-              this,
+            return opened(
               _text(
                 chain.sublist(index + 1),
                 profile,
@@ -312,11 +333,8 @@ final class Teistro {
                 locale,
                 layoutsJson,
                 dashasJson,
-                host,
+                hosts,
               ),
-              host,
-              layouts,
-              dashaSystems,
             );
           } on Object catch (refusal) {
             if (refusals.isEmpty) rethrow;
@@ -325,8 +343,7 @@ final class Teistro {
           }
         }
         try {
-          return Context._(
-            this,
+          return opened(
             _open(
               entry,
               profile,
@@ -334,11 +351,8 @@ final class Teistro {
               locale,
               layoutsJson,
               dashasJson,
-              host,
+              hosts,
             ),
-            host,
-            layouts,
-            dashaSystems,
           );
         } on Object catch (refusal) {
           refusals.add('${_names(entry)}: $refusal');
@@ -348,7 +362,9 @@ final class Teistro {
         'no ephemeris in the chain could be opened:\n  ${refusals.join('\n  ')}',
       );
     } on Object {
-      host?.dispose();
+      for (final host in hosts.values) {
+        host.dispose();
+      }
       rethrow;
     }
   }
@@ -357,6 +373,7 @@ final class Teistro {
   static String _names(EphemerisChoice entry) => switch (entry) {
     NamedEphemeris(:final name) => name.key,
     PluginEphemeris(:final plugin) => plugin,
+    ProviderEphemeris(:final provider) => provider.name,
   };
 
   /// The Surya Siddhanta in front of the entries after it, as the façade
@@ -366,16 +383,16 @@ final class Teistro {
   /// order and one that does not open is passed over, as the façade
   /// passes over it; with none, the text stands alone, its modern sunrise
   /// the built-in's.
-  TeistroContext _text(
+  (TeistroContext, HostProvider?) _text(
     List<EphemerisChoice> rest,
     String? profile,
     Map<String, Object?>? settings,
     String? locale,
     String? layoutsJson,
     String? dashasJson,
-    HostProvider? host,
+    Map<EphemerisChoice, HostProvider> hosts,
   ) {
-    for (final entry in rest.whereType<PluginEphemeris>()) {
+    for (final entry in rest.where((entry) => entry is! NamedEphemeris)) {
       try {
         return _open(
           entry,
@@ -384,7 +401,7 @@ final class Teistro {
           locale,
           layoutsJson,
           dashasJson,
-          host,
+          hosts,
           before: Ephemeris.suryaSiddhanta,
         );
       } on Object {
@@ -398,7 +415,7 @@ final class Teistro {
       locale,
       layoutsJson,
       dashasJson,
-      host,
+      hosts,
     );
   }
 
@@ -406,7 +423,8 @@ final class Teistro {
   /// reckoning, the setup the committee's own panchanga is computed by.
   /// The tithi, nakshatra and yoga come from the Surya Siddhanta with the
   /// committee's bija; the day's sunrise and the outer planets come from
-  /// `modern`, the adapters tried in order after the text.
+  /// `modern`, the adapters (or providers written in Dart) tried in order
+  /// after the text.
   ///
   /// ```dart
   /// final official = sdk.nepalOfficial(
@@ -418,7 +436,7 @@ final class Teistro {
   /// With no `modern`, the sunrise is the built-in ephemeris's. The other
   /// arguments are [context]'s.
   Context nepalOfficial({
-    List<PluginEphemeris> modern = const <PluginEphemeris>[],
+    List<EphemerisChoice> modern = const <EphemerisChoice>[],
     Map<String, Object?>? settings,
     String? locale,
     List<LayoutRow> layouts = const <LayoutRow>[],
@@ -432,16 +450,17 @@ final class Teistro {
     dashaSystems: dashaSystems,
   );
 
-  /// Opens the context on one entry of the chain; an adapter behind
-  /// `before`, if named.
-  TeistroContext _open(
+  /// Opens the context on one entry of the chain, with the provider
+  /// written in Dart it drives, if it is one; an adapter or a provider
+  /// behind `before`, if named.
+  (TeistroContext, HostProvider?) _open(
     EphemerisChoice entry,
     String? profile,
     Map<String, Object?>? settings,
     String? locale,
     String? layoutsJson,
     String? dashasJson,
-    HostProvider? host, {
+    Map<EphemerisChoice, HostProvider> hosts, {
     Ephemeris before = Ephemeris.none,
   }) {
     ContextOptions options(Ephemeris named) => ContextOptions(
@@ -455,11 +474,19 @@ final class Teistro {
     );
     switch (entry) {
       case NamedEphemeris(:final name):
-        return TeistroContext(
-          library,
-          options: options(name),
-          provider: host?.vtable,
-          providerUserData: host?.userData,
+        return (TeistroContext(library, options: options(name)), null);
+      case ProviderEphemeris():
+        // The library puts a provider of the caller's own behind the Surya
+        // Siddhanta when the selector names the text, and alone otherwise.
+        final host = hosts[entry]!;
+        return (
+          TeistroContext(
+            library,
+            options: options(before),
+            provider: host.vtable,
+            providerUserData: host.userData,
+          ),
+          host,
         );
       case PluginEphemeris(:final plugin, :final config):
         // The context takes its own reference to the adapter, so the
@@ -471,10 +498,13 @@ final class Teistro {
           configJson: jsonEncode(config ?? const <String, Object?>{}),
         );
         try {
-          return TeistroContext.newWithProvider(
-            library,
-            options: options(before),
-            provider: loaded,
+          return (
+            TeistroContext.newWithProvider(
+              library,
+              options: options(before),
+              provider: loaded,
+            ),
+            null,
           );
         } finally {
           loaded.dispose();
@@ -489,13 +519,13 @@ const String nepalOfficialProfile = 'nepali-committee';
 /// The chain [Teistro.nepalOfficial] opens: the Surya Siddhanta, then
 /// `modern` for the day's sunrise and the outer planets.
 List<EphemerisChoice> nepalOfficialChain([
-  List<PluginEphemeris> modern = const <PluginEphemeris>[],
+  List<EphemerisChoice> modern = const <EphemerisChoice>[],
 ]) => [const NamedEphemeris(Ephemeris.suryaSiddhanta), ...modern];
 
 /// One entry of an ephemeris chain (ADR-0029).
 ///
-/// Sealed, so the two kinds are the two kinds: the switch that opens one
-/// is exhaustive and a third would not compile until it was handled.
+/// Sealed, so the three kinds are the three kinds: the switch that opens
+/// one is exhaustive and a fourth would not compile until it was handled.
 sealed class EphemerisChoice {
   const EphemerisChoice();
 }
@@ -527,6 +557,16 @@ final class PluginEphemeris extends EphemerisChoice {
 
   /// That adapter's own options.
   final Map<String, Object?>? config;
+}
+
+/// An ephemeris written in Dart, as `provider` takes one, in a chain: how
+/// one stands behind [Ephemeris.suryaSiddhanta] for the day's modern
+/// sunrise.
+final class ProviderEphemeris extends EphemerisChoice {
+  const ProviderEphemeris(this.provider);
+
+  /// The provider.
+  final EphemerisProvider provider;
 }
 
 /// The engine's own operations, reached by the names it gives them.

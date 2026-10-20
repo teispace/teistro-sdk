@@ -101,6 +101,7 @@ import type {
   ChartBatchRequest,
   Charts,
   Context,
+  ContextInit,
   DashaPeriod,
   EphemerisProvider,
   Eclipses,
@@ -196,6 +197,7 @@ import type {
   SolarEclipseView,
   ShippedTheme,
   Theme,
+  nepalOfficial,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
 import type {
@@ -333,10 +335,23 @@ const wrongAnswer: EphemerisProvider = {
   positions: () => ({ lon: ['1'] }),
 };
 
+// A provider written in JavaScript is a chain entry too, which is how a
+// browser puts an engine behind the Surya Siddhanta.
+const chained: ContextInit = { profile: 'nepali-committee', ephemeris: ['SURYA_SIDDHANTA', provider] };
+declare const preset: typeof nepalOfficial;
+const official: ContextInit = preset([provider, { plugin: '/app/adapter.so' }]);
+const unnamed: ContextInit = {
+  // @ts-expect-error an entry is a name, an adapter's descriptor or a provider
+  ephemeris: ['SURYA_SIDDHANTA', { name: 'x' }],
+};
+
 export {
   barePlace,
+  chained,
   handshake,
   nameless,
+  official,
+  unnamed,
   place,
   provider,
   swappedPlace,

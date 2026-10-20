@@ -11,7 +11,8 @@ package com.teispace.teistro;
  * @param layoutsJson chart layouts of the caller's own, as JSON, or null
  * @param dashasJson dasha systems of the caller's own, as JSON, or null
  * @param ephemeris the ephemeris chain, tried in order: the SDK's own by
- *     name or an adapter's {@link Plugin}; empty for none
+ *     name, an adapter's {@link Plugin} or a provider written in Java;
+ *     empty for none
  * @param testProvider whether the context runs on the library's test provider
  * @param provider an ephemeris written in Java, or null; the context owns
  *     its binding and releases it when closed
@@ -151,8 +152,9 @@ public record ContextOptions(
          * setup the committee's own panchanga is computed by. The tithi,
          * nakshatra and yoga come from the Surya Siddhanta with the
          * committee's bija; the day's sunrise and the outer planets come from
-         * {@code modern}, the adapters tried in order after the text. With
-         * none, the sunrise is the built-in ephemeris's.
+         * {@code modern}, the adapters (or providers written in Java, by
+         * {@link EphemerisChoice#of(EphemerisProvider)}) tried in order after
+         * the text. With none, the sunrise is the built-in ephemeris's.
          *
          * <pre>{@code
          * ContextOptions official = ContextOptions.builder()
@@ -161,10 +163,10 @@ public record ContextOptions(
          *         .build();
          * }</pre>
          *
-         * @param modern the adapters that give the sunrise, in order
+         * @param modern the engines that give the sunrise, in order
          * @return this builder
          */
-        public Builder nepalOfficial(Plugin... modern) {
+        public Builder nepalOfficial(EphemerisChoice... modern) {
             java.util.List<EphemerisChoice> chain = new java.util.ArrayList<>();
             chain.add(EphemerisChoice.of(Ephemeris.SURYA_SIDDHANTA));
             chain.addAll(java.util.List.of(modern));

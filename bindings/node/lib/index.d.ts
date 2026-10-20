@@ -7724,15 +7724,17 @@ export interface PluginEphemeris {
 }
 
 /**
- * One entry of an ephemeris chain: one of the SDK's own by name, or an
- * adapter's descriptor.
+ * One entry of an ephemeris chain: one of the SDK's own by name, an
+ * adapter's descriptor, or an ephemeris written in JavaScript — the way a
+ * browser, which cannot open an adapter's binary, puts an engine behind
+ * `SURYA_SIDDHANTA`.
  *
  * `BUILTIN` is the analytic ephemeris the SDK carries, which needs no
  * files, no network and no licence beyond the SDK's own; `TEST` is the
  * test provider, whose positions are **not astronomy**. Those are the
  * **fallback** — in most cases a consumer plugs a real engine.
  */
-export type EphemerisChoice = Ephemeris | PluginEphemeris;
+export type EphemerisChoice = Ephemeris | PluginEphemeris | EphemerisProvider;
 
 /**
  * **Nepal's official days**: the options that open a context on the
@@ -7745,10 +7747,15 @@ export type EphemerisChoice = Ephemeris | PluginEphemeris;
  * const official = new Context({ ...nepalOfficial(teimeris()), locale: 'ne-Deva-NP' });
  * ```
  *
- * With no `modern`, the sunrise is the built-in ephemeris's.
+ * `modern` is an adapter's descriptor or an ephemeris written in
+ * JavaScript, or a list of them tried in order. With no `modern`, the
+ * sunrise is the built-in ephemeris's.
  */
 export function nepalOfficial(
-  modern?: PluginEphemeris | readonly PluginEphemeris[],
+  modern?:
+    | PluginEphemeris
+    | EphemerisProvider
+    | readonly (PluginEphemeris | EphemerisProvider)[],
 ): { readonly profile: string; readonly ephemeris: readonly EphemerisChoice[] };
 
 /** The profile `nepalOfficial` opens: the Nepali committee's. */

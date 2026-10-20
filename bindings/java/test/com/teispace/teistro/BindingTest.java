@@ -1517,6 +1517,37 @@ public final class BindingTest {
                     ContextOptions.builder().nepalOfficial().build().profile(), "the committee's profile");
         });
 
+        tests.put("a provider written in Java stands behind the Surya Siddhanta", () -> {
+            // A chain entry too, so the text takes its modern sunrise from
+            // it under the committee's profile, and what it throws there
+            // reaches the caller as itself.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            Line line = new Line(null);
+            try (Context sky = teistro.context(ContextOptions.builder()
+                    .nepalOfficial(EphemerisChoice.of(line)).build())) {
+                String stamp = sky.positions(new double[] {2_451_545.0}, List.of(Body.SUN)).provenance().provider()
+                        .dataVersion();
+                check(stamp.contains("sunrise from line"), "the provider's sunrise: " + stamp);
+                line.calls = 0;
+                try {
+                    sky.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.none());
+                } catch (TeistroException noSky) {
+                    // A straight line is no sky; what is held is that it was asked.
+                }
+                check(line.calls > 0, "the provider behind the text was asked");
+            }
+            IllegalStateException thrown = new IllegalStateException("the engine is not ready");
+            try (Context failing = teistro.context(ContextOptions.builder()
+                    .nepalOfficial(EphemerisChoice.of(new Line(thrown))).build())) {
+                try {
+                    failing.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.none());
+                    throw new AssertionError("the provider's exception did not reach the caller");
+                } catch (IllegalStateException found) {
+                    check(found == thrown, "the provider's own exception, not a copy");
+                }
+            }
+        });
+
         tests.put("an ephemeris is plugged in by naming its platform binary", () -> {
             // Runs only where the adapter is built, as every binding's plugin
             // test does: a checkout has neither the adapter nor its data.

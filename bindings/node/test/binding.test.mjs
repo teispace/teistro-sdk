@@ -947,6 +947,61 @@ test('the Surya Siddhanta takes its sunrise from the adapter after it', () => {
 });
 
 /**
+ * An ephemeris written in JavaScript is a chain entry too, which is how a
+ * browser (which cannot open an adapter's binary) puts an engine behind
+ * the Surya Siddhanta: the text asks it for the modern sunrise, and what
+ * it throws reaches the caller as its own error.
+ */
+test('the Surya Siddhanta takes its sunrise from a provider written in JavaScript', () => {
+  const day = { calendar: Calendar.Gregorian, year: 2025, eraYear: 0, month: 11, day: 1, resolution: Resolution.Defined, computedMonth: 0, computedDay: 0 };
+  const oneDay = { from: day, to: day, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const { calls, provider } = jsProvider();
+  const official = new Context(nepalOfficial(provider));
+  try {
+    const stamp = official.positions({ instants: [2451545.0], bodies: [Body.Sun] }).provenance
+      .provider.dataVersion;
+    assert.match(stamp, /sunrise from a-provider-in-javascript/u);
+  } finally {
+    official.dispose();
+  }
+  // The committee's profile takes the day's sunrise from the engine
+  // behind the text; another profile reckons it by the text and never asks.
+  calls.length = 0;
+  const chained = new Context({ profile: 'nepali-committee', ephemeris: ['SURYA_SIDDHANTA', provider] });
+  try {
+    chained.almanac.of(oneDay);
+  } finally {
+    chained.dispose();
+  }
+  assert.ok(calls.length > 0, 'the provider behind the text was never asked');
+  // Described when the chain is read, so a malformed provider is refused
+  // there rather than passed over for the next entry.
+  assert.throws(
+    () => new Context({ ephemeris: [{ bodies: [Body.Sun], positions() {} }, 'BUILTIN'] }),
+    /expected a `name`/u,
+  );
+  const thrown = new Error('the engine is not ready');
+  const failing = new Context(
+    nepalOfficial(
+      jsProvider({
+        positions() {
+          throw thrown;
+        },
+      }).provider,
+    ),
+  );
+  try {
+    assert.throws(
+      () =>
+        failing.almanac.of(oneDay),
+      (error) => error === thrown,
+    );
+  } finally {
+    failing.dispose();
+  }
+});
+
+/**
  * A wasm build cannot open a shared library, so a plugin there is refused
  * by name with what to give instead, and a chain falls past it as it
  * falls past a missing file.

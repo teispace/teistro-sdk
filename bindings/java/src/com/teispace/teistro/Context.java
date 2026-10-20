@@ -114,7 +114,11 @@ public final class Context implements AutoCloseable {
     }
 
     static Context open(Teistro teistro, ContextOptions options) {
-        List<EphemerisChoice> chain = options.ephemeris();
+        // A provider is a chain of one; with an ephemeris beside it the
+        // options have already been refused.
+        List<EphemerisChoice> chain = options.provider() == null
+                ? options.ephemeris()
+                : List.of(EphemerisChoice.of(options.provider()));
         if (chain.size() <= 1) {
             return open(teistro, options, chain.isEmpty() ? null : chain.get(0));
         }
@@ -158,7 +162,7 @@ public final class Context implements AutoCloseable {
      */
     private static Context text(Teistro teistro, ContextOptions options, List<EphemerisChoice> rest) {
         for (EphemerisChoice entry : rest) {
-            if (entry instanceof Plugin) {
+            if (!(entry instanceof EphemerisChoice.Own)) {
                 try {
                     return open(teistro, options, entry, Ephemeris.SURYA_SIDDHANTA);
                 } catch (TeistroException passedOver) {
@@ -169,15 +173,22 @@ public final class Context implements AutoCloseable {
         return open(teistro, options, EphemerisChoice.of(Ephemeris.SURYA_SIDDHANTA));
     }
 
-    /** Opens on one entry of the chain: none, one of the SDK's own, or a plugin. */
+    /** Opens on one entry of the chain: none, one of the SDK's own, a plugin or a provider. */
     private static Context open(Teistro teistro, ContextOptions options, EphemerisChoice entry) {
         return open(teistro, options, entry, Ephemeris.NONE);
     }
 
-    /** Opens on one entry of the chain, a plugin behind {@code before}. */
+    /**
+     * Opens on one entry of the chain, a plugin or a provider behind
+     * {@code before}: the library puts a provider of the caller's own behind
+     * the Surya Siddhanta when the selector names the text, and alone
+     * otherwise.
+     */
     private static Context open(Teistro teistro, ContextOptions options, EphemerisChoice entry, Ephemeris before) {
         Native lib = teistro.lib();
-        HostProvider host = options.provider() == null ? null : new HostProvider(lib, options.provider());
+        HostProvider host = entry instanceof EphemerisChoice.Provided provided
+                ? new HostProvider(lib, provided.provider())
+                : null;
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment raw = arena.allocate(Native.TsContextOptions.LAYOUT);
             Native.TsContextOptions.STRUCT_SIZE.set(raw, 0L, (int) Native.TsContextOptions.SIZE);

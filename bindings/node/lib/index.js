@@ -7087,7 +7087,9 @@ export class Context {
    *
    *   An entry is an adapter's own descriptor — what
    *   `@teistro/ephemeris-teimeris` and its like export, carrying the
-   *   platform binary they ship and their own configuration — or one of
+   *   platform binary they ship and their own configuration — an
+   *   ephemeris written in JavaScript (as `provider` takes one), which is
+   *   how a browser puts an engine behind the Surya Siddhanta, or one of
    *   the SDK's own by name: `BUILTIN` is the analytic ephemeris the SDK
    *   carries, which needs no files, no network and no licence beyond
    *   the SDK's own; `TEST` is the test provider, whose positions are
@@ -7118,9 +7120,7 @@ export class Context {
         'provider and ephemeris each name the ephemeris to compute with; give one of them',
       );
     }
-    const chain = ephemerisChain(ephemeris, testProvider);
-    const [info, positions, thrown] = describeProvider(provider);
-    this.#thrown = thrown;
+    const chain = ephemerisChain(ephemeris, testProvider, provider);
     const settled = clean({
       flags: 0,
       profile,
@@ -7129,7 +7129,9 @@ export class Context {
       layoutsJson: layouts === undefined ? undefined : JSON.stringify(layouts),
       dashasJson: dashaSystems === undefined ? undefined : JSON.stringify(dashaSystems),
     });
-    this.#inner = guarded(null, () => open(chain, settled, info, positions));
+    const [inner, thrown] = guarded(null, () => open(chain, settled));
+    this.#inner = inner;
+    this.#thrown = thrown;
 
     // The areas, built once and never rebuilt: each holds the one way in
     // and nothing else, so a consumer may destructure one and keep it
@@ -7315,7 +7317,10 @@ function hex(bytes) {
   return out;
 }
 
-function ephemerisChain(ephemeris, testProvider) {
+function ephemerisChain(ephemeris, testProvider, provider) {
+  // `provider` is a chain of one; with `ephemeris` beside it the caller
+  // named two answers, which the constructor has already refused.
+  if (provider !== undefined) return [described(provider)];
   // One rule, written once: a named ephemeris wins, and the older flag
   // decides only when none was named (ADR-0028).
   if (ephemeris === undefined) {
@@ -7325,18 +7330,40 @@ function ephemerisChain(ephemeris, testProvider) {
   if (entries.length === 0) {
     throw new TypeError('an ephemeris chain of none names nothing; give an entry or omit it');
   }
-  for (const entry of entries) {
-    const named = typeof entry === 'string';
-    if (!named && (entry === null || typeof entry.plugin !== 'string')) {
+  return entries.map((entry) => {
+    if (typeof entry === 'string') return entry;
+    if (isProvider(entry)) return described(entry);
+    if (entry === null || typeof entry !== 'object' || typeof entry.plugin !== 'string') {
       throw new TypeError(
-        `an ephemeris is a name (${Object.values(Ephemeris).map((name) => `'${name}'`).join(', ')}) ` +
-          "or an adapter's descriptor, " +
-          "which carries a `plugin` path; got " +
+        `an ephemeris is a name (${Object.values(Ephemeris).map((name) => `'${name}'`).join(', ')}), ` +
+          "an adapter's descriptor, which carries a `plugin` path, " +
+          'or an ephemeris written in JavaScript, which has `positions(request)`; got ' +
           JSON.stringify(entry),
       );
     }
-  }
-  return entries;
+    return entry;
+  });
+}
+
+/** Whether a chain entry is an ephemeris written in JavaScript. */
+function isProvider(entry) {
+  return entry !== null && typeof entry === 'object' && typeof entry.positions === 'function';
+}
+
+/**
+ * A provider written in JavaScript as a chain carries it: described once,
+ * when the chain is read, so a provider missing its `name` is a
+ * `TypeError` there rather than a refusal a longer chain would pass over.
+ */
+function described(provider) {
+  const [info, positions, thrown] = describeProvider(provider);
+  return { provider, info, positions, thrown };
+}
+
+/** What a chain entry is called in a refusal. */
+function entryName(entry) {
+  if (typeof entry === 'string') return entry;
+  return entry.plugin ?? entry.provider.name;
 }
 
 /**
@@ -7352,9 +7379,9 @@ function ephemerisChain(ephemeris, testProvider) {
  * because a chain that said only why its last entry failed would hide
  * the one the caller actually wanted.
  */
-function open(chain, settled, info, positions) {
+function open(chain, settled) {
   if (chain.length === 1) {
-    return attempt(chain[0], settled, info, positions);
+    return attempt(chain[0], settled);
   }
   const refusals = [];
   for (const [index, entry] of chain.entries()) {
@@ -7363,7 +7390,7 @@ function open(chain, settled, info, positions) {
       // tried, and with nothing tried before it its refusal is the
       // refusal — the façade's chain, entry for entry.
       try {
-        return text(chain.slice(index + 1), settled, info, positions);
+        return text(chain.slice(index + 1), settled);
       } catch (refusal) {
         if (refusals.length === 0) throw refusal;
         refusals.push(`${entry}: ${refusal.message}`);
@@ -7371,9 +7398,9 @@ function open(chain, settled, info, positions) {
       }
     }
     try {
-      return attempt(entry, settled, info, positions);
+      return attempt(entry, settled);
     } catch (refusal) {
-      refusals.push(`${typeof entry === 'string' ? entry : entry.plugin}: ${refusal.message}`);
+      refusals.push(`${entryName(entry)}: ${refusal.message}`);
     }
   }
   throw new Error(
@@ -7389,16 +7416,16 @@ function open(chain, settled, info, positions) {
  * does not open is passed over, as the façade passes over it; with none,
  * the text stands alone, its modern sunrise the built-in's.
  */
-function text(rest, settled, info, positions) {
+function text(rest, settled) {
   for (const entry of rest) {
     if (typeof entry === 'string') continue;
     try {
-      return attempt(entry, settled, info, positions, 'SURYA_SIDDHANTA');
+      return attempt(entry, settled, 'SURYA_SIDDHANTA');
     } catch {
       // Passed over; the text alone is the answer below.
     }
   }
-  return attempt('SURYA_SIDDHANTA', settled, info, positions);
+  return attempt('SURYA_SIDDHANTA', settled);
 }
 
 /**
@@ -7415,10 +7442,11 @@ function text(rest, settled, info, positions) {
  * const official = new Context({ ...nepalOfficial(teimeris()), locale: 'ne-Deva-NP' });
  * ```
  *
- * `modern` is an adapter's descriptor, or a list of them tried in order;
- * with none, the sunrise is the built-in ephemeris's.
+ * `modern` is an adapter's descriptor or an ephemeris written in
+ * JavaScript (a browser's engine), or a list of them tried in order; with
+ * none, the sunrise is the built-in ephemeris's.
  *
- * @param {PluginEphemeris|readonly PluginEphemeris[]} [modern]
+ * @param {PluginEphemeris|EphemerisProvider|readonly (PluginEphemeris|EphemerisProvider)[]} [modern]
  * @returns {{ profile: string, ephemeris: readonly EphemerisChoice[] }}
  */
 export function nepalOfficial(modern = []) {
@@ -7429,10 +7457,20 @@ export function nepalOfficial(modern = []) {
 /** The profile `nepalOfficial` opens: the Nepali committee's. */
 export const NEPAL_OFFICIAL_PROFILE = 'nepali-committee';
 
-/** One entry of the chain, opened; an adapter behind `before`, if named. */
-function attempt(entry, settled, info, positions, before = 'NONE') {
+/**
+ * One entry of the chain, opened, with where a provider written in
+ * JavaScript leaves what it threw; an adapter or a provider behind
+ * `before`, if named.
+ */
+function attempt(entry, settled, before = 'NONE') {
   if (typeof entry === 'string') {
-    return new native.Context({ ...settled, ephemeris: entry }, info, positions);
+    return [new native.Context({ ...settled, ephemeris: entry }), undefined];
+  }
+  if (entry.provider !== undefined) {
+    // The library puts a provider of the caller's own behind the Surya
+    // Siddhanta when the selector names the text, and alone otherwise.
+    const inner = new native.Context({ ...settled, ephemeris: before }, entry.info, entry.positions);
+    return [inner, entry.thrown];
   }
   // A plugin is a shared library, which a wasm module cannot open
   // (ADR-0029). Asked of the loaded native half rather than of a flag, so
@@ -7451,7 +7489,7 @@ function attempt(entry, settled, info, positions, before = 'NONE') {
   // context, and a consumer never holds either.
   const loaded = new native.Provider(entry.plugin, JSON.stringify(entry.config ?? {}));
   try {
-    return native.Context.newWithProvider({ ...settled, ephemeris: before }, loaded);
+    return [native.Context.newWithProvider({ ...settled, ephemeris: before }, loaded), undefined];
   } finally {
     loaded.dispose();
   }

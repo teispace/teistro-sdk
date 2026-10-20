@@ -16,14 +16,20 @@ import unittest
 from typing import Optional, Sequence
 
 from teistro import (
+    Altitude,
     Body,
+    Ephemeris,
     EphemerisProvider,
+    Latitude,
+    Observer,
     PositionAnswer,
     PositionQuery,
     ProviderCode,
     Status,
     TeistroError,
+    nepal_official,
 )
+from teistro._ffi import Longitude
 from tests.support import PROFILE, WithLibrary
 
 
@@ -160,6 +166,39 @@ class AProviderWrittenInPython(WithLibrary):
             self.teistro.context(profile=PROFILE, provider=Nameless())
         with self.assertRaises(ValueError):
             self.teistro.context(profile=PROFILE, provider=Empty())
+
+
+    def test_it_stands_behind_the_surya_siddhanta(self) -> None:
+        """A provider written in Python is a chain entry too, so the text
+        takes its modern sunrise from it under the committee's profile,
+        and what it raises there reaches the caller as itself."""
+        place = Observer(
+            latitude_deg=Latitude(27.7172),
+            longitude_deg=Longitude(85.324),
+            altitude_m=Altitude(1400),
+        )
+        provider = StraightLine()
+        with self.teistro.context(**nepal_official(provider)) as ctx:
+            sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
+            self.assertIn("sunrise from straight-line", sky.provenance.provider.data_version)
+            provider.asked = 0
+            try:
+                ctx.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700)
+            except TeistroError:
+                pass  # A straight line is no sky; what is held is that it was asked.
+        self.assertGreater(provider.asked, 0)
+        with self.teistro.context(**nepal_official(Raising())) as failing:
+            with self.assertRaises(RuntimeError) as caught:
+                failing.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700)
+        self.assertIn("not where it said it was", str(caught.exception))
+        # Bound when the chain is read, so a provider with no name is
+        # refused there rather than passed over for the next entry.
+
+        class Nameless(StraightLine):
+            name = ""
+
+        with self.assertRaises(ValueError):
+            self.teistro.context(ephemeris=[Nameless(), Ephemeris.BUILTIN])
 
 
 if __name__ == "__main__":
