@@ -29,6 +29,7 @@
   "include": [
     "index.d.ts",
     "engine.d.ts",
+    "web.d.ts",
     "typecheck/consumer.ts"
   ]
 }

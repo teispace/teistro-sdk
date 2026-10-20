@@ -50,6 +50,42 @@ fill it. Every block's files, sizes and digests are in
 [the ranges page](../../../docs/05-testing/teimeris-ranges-measured.md),
 read from the same manifest the check uses.
 
+## On the web
+
+A browser, a worker or an edge runtime cannot open the adapter's binary.
+There the engine is its own wasm module, `teimeris-wasm`, and
+`@teistro/ephemeris-teimeris/web` makes it a provider written in
+JavaScript, which the SDK's wasm build takes as `provider` or as an entry
+of an `ephemeris` chain:
+
+```js
+import * as engine from 'teimeris-wasm';
+import { Context, nepalOfficial } from '@teistro/sdk-wasm';
+import { teimerisWeb } from '@teistro/ephemeris-teimeris/web';
+
+await engine.init();
+// Nepal's official days: the Surya Siddhanta, its sunrise from Teimeris.
+const official = new Context(nepalOfficial(await teimerisWeb(engine)));
+```
+
+It reads the same built-in 1800 to 2399, and other years the same way, as
+bytes the app downloaded, each checked against the same published size
+and SHA-256 (with `crypto.subtle`, so the call is `await`ed):
+
+```js
+const bytes = async (name) => (await fetch(`/ephe/${name}`)).arrayBuffer();
+const provider = await teimerisWeb(engine, {
+  files: [
+    { name: 'sepl_12.se1', bytes: await bytes('sepl_12.se1') },
+    { name: 'semo_12.se1', bytes: await bytes('semo_12.se1') },
+  ],
+}); // adds 1200 to 1799
+```
+
+Only positions cross. The SDK computes a modern engine's ayanamsha and
+sunrise itself from them, so a month read this way is the native
+adapter's to the bit, under both setups: `cargo xtask check-wasm` holds
+it to the native day hashes.
 
 ## The typed façade
 

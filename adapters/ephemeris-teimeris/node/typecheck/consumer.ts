@@ -7,7 +7,8 @@
 // `cargo xtask check-node` compiles this; nothing here needs the
 // adapter's platform binary, because a type is not a call.
 
-import { Context } from '@teistro/sdk';
+import { Context, nepalOfficial } from '@teistro/sdk';
+import { teimerisWeb, type TeimerisWasm } from '../web.js';
 import teimeris, { engine, binary, platformPackage, type TmDatetime, type TmPosition, type TmStar } from '../index.js';
 
 // The descriptor is what an `ephemeris` chain takes.
@@ -80,4 +81,20 @@ const packaged: string = platformPackage();
 
 sdk.dispose();
 
-export { ranged, name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, moon, stars, cusps, ascendant, nothing, where, packaged };
+// In a browser: the engine's own wasm module, its built-in years and a
+// downloaded range, behind the Surya Siddhanta.
+declare const wasm: TeimerisWasm;
+declare const planets: ArrayBuffer;
+const official = async (): Promise<Context> =>
+  new Context(
+    nepalOfficial(
+      await teimerisWeb(wasm, {
+        files: [{ name: 'sepl_12.se1', bytes: planets }, { name: 'semo_12.se1', bytes: new Uint8Array(planets) }],
+        profile: 'max',
+      }),
+    ),
+  );
+// @ts-expect-error a file is named and carries its bytes
+const unnamed = (): unknown => teimerisWeb(wasm, { files: [{ bytes: planets }] });
+
+export { official, unnamed, ranged, name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, moon, stars, cusps, ascendant, nothing, where, packaged };

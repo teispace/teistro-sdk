@@ -1179,6 +1179,21 @@ mod tests {
         TeimerisProvider::open(&data_dir_from_env()).unwrap_or_else(|e| panic!("{e}"))
     }
 
+    /// The web provider (`../node/web.js`) hands a sidereal frame's
+    /// ayanamsha id to the engine as its mode, unmapped; that holds only
+    /// while the two numberings agree for every member.
+    #[test]
+    fn every_ayanamsha_id_is_the_engine_s_mode() {
+        for ayanamsha in Ayanamsha::ALL {
+            assert_eq!(
+                i32::from(ayanamsha.id()),
+                engine_mode(ayanamsha),
+                "{}",
+                ayanamsha.key()
+            );
+        }
+    }
+
     fn request<'a>(jds: &'a [f64], bodies: &'a [Body]) -> PositionRequest<'a> {
         PositionRequest {
             jds,

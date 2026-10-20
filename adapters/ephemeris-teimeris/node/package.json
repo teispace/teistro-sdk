@@ -10,6 +10,10 @@
     ".": {
       "types": "./index.d.ts",
       "default": "./index.js"
+    },
+    "./web": {
+      "types": "./web.d.ts",
+      "default": "./web.js"
     }
   },
   "files": [
@@ -17,6 +21,9 @@
     "index.d.ts",
     "engine.js",
     "engine.d.ts",
+    "web.js",
+    "web.d.ts",
+    "ranges.js",
     "LICENSE",
     "README.md"
   ],
