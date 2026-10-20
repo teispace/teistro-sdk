@@ -1072,10 +1072,9 @@ mod tests {
             missing.to_string().contains("`none` is required"),
             "{missing}"
         );
-        assert!(
-            numbers(&args(&json!({ "empty": [] })), "empty")
-                .unwrap()
-                .is_empty()
+        assert_eq!(
+            numbers(&args(&json!({ "empty": [] })), "empty").unwrap(),
+            Vec::<f64>::new()
         );
     }
 

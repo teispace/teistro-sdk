@@ -42,6 +42,7 @@ struct Timed {
     inner: TeimerisProvider,
     spent: Mutex<Duration>,
     calls: Mutex<u64>,
+    instants: Mutex<u64>,
 }
 
 impl EphemerisProvider for Timed {
@@ -53,6 +54,7 @@ impl EphemerisProvider for Timed {
         let answer = self.inner.positions(request);
         *self.spent.lock().unwrap() += at.elapsed();
         *self.calls.lock().unwrap() += 1;
+        *self.instants.lock().unwrap() += request.jds.len() as u64;
         answer
     }
     fn obliquity(&self, jd: f64, s: TimeScale) -> Result<Obliquity, ProviderError> {
@@ -91,6 +93,7 @@ fn how_much_of_a_search_is_inside_the_engines_lock() {
         inner: TeimerisProvider::open(&data_dir_from_env()).unwrap_or_else(|e| panic!("{e}")),
         spent: Mutex::new(Duration::ZERO),
         calls: Mutex::new(0),
+        instants: Mutex::new(0),
     };
     let cached = CachingProvider::new(&provider);
     let completion = Completion::new(
@@ -111,6 +114,7 @@ fn how_much_of_a_search_is_inside_the_engines_lock() {
     let whole = at.elapsed();
     let inside = *provider.spent.lock().unwrap();
     let calls = *provider.calls.lock().unwrap();
+    let instants = *provider.instants.lock().unwrap();
     let outside = whole.checked_sub(inside).unwrap_or(Duration::ZERO);
 
     println!("a year of the Moon's sign ingresses through the real engine");
@@ -125,15 +129,18 @@ fn how_much_of_a_search_is_inside_the_engines_lock() {
         outside,
         100.0 * outside.as_secs_f64() / whole.as_secs_f64()
     );
-    println!("  positions calls   {calls}");
+    println!("  positions calls   {calls}, {instants} instants");
     println!("  cache             {:?}", cached.stats());
 
     // The timing is the machine's; the workload is not, and it is what
     // makes the timing mean anything.
     assert_eq!(events.len(), 160, "the Moon crosses a sign every 2.3 days");
+    // Instants, not calls: a scan's crossings are refined together, a
+    // round at a time, so one call carries many of them, and a count of
+    // calls fell from over 500 to 164 with no less asked of the engine.
     assert!(
-        calls > 500,
-        "the search really did reach the engine: {calls}"
+        instants > 500 && calls < instants,
+        "the search really did reach the engine, in batches: {calls} calls, {instants} instants"
     );
     assert!(
         inside > Duration::ZERO && inside < whole,
