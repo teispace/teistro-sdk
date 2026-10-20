@@ -226,6 +226,8 @@ measures the fit and not a text (C600).
 
 | VS | rule | printed | where | committee sky | modern sky |
 |---:|---|---|---|---|---|
+| 2082 | SONAM_LHOSAR | 19 Jan | p. 21: सोनम ल्होसार/तामाङ ल्होसार | 19 Jan | 19 Jan |
+| 2083 | SONAM_LHOSAR | 7 Feb | p. 23: सोनम ल्होसार/तामाङ ल्होछार | 7 Feb | 7 Feb |
 | 2082 | PARASHURAMA_JAYANTI | 29 Apr | p. 3: परशुरामजयन्ती | 29 Apr | 29 Apr |
 | 2082 | SHANKARACHARYA_JAYANTI | 2 May | p. 3: आद्यजगत्गुरु शङ्कराचार्यजयन्ती | 2 May | 1 May ✗ |
 | 2082 | GANGA_SAPTAMI | 4 May | p. 3: गंगासप्तमी | 4 May | 3 May ✗ |
@@ -465,8 +467,8 @@ measures the fit and not a text (C600).
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 236 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 33 of 236 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 238 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 33 of 238 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 

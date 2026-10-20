@@ -37,7 +37,19 @@ const SPANS: [(Day, Day); 8] = [
 
 /// What the committee printed for the fitted rules: the Vikram year, the
 /// rule, the Gregorian day, and the page and the words it prints.
-const PRINTED: [(i32, &str, Day, &str); 236] = [
+const PRINTED: [(i32, &str, Day, &str); 238] = [
+    (
+        2082,
+        "SONAM_LHOSAR",
+        (2026, 1, 19),
+        "p. 21: सोनम ल्होसार/तामाङ ल्होसार",
+    ),
+    (
+        2083,
+        "SONAM_LHOSAR",
+        (2027, 2, 7),
+        "p. 23: सोनम ल्होसार/तामाङ ल्होछार",
+    ),
     (
         2082,
         "PARASHURAMA_JAYANTI",

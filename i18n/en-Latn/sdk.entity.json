@@ -3379,6 +3379,26 @@
       "name": "National Earthquake Safety Day",
       "prose": "National Earthquake Safety Day, Magh 2",
       "iast": "Rāṣṭriya bhūkampa surakṣā divasa"
+    },
+    "SONAM_LHOSAR": {
+      "name": "Sonam Lhosar",
+      "prose": "Sonam Lhosar, the Tamang new year",
+      "iast": "Sonam Lhosar"
+    },
+    "TAMU_LHOCHHAR": {
+      "name": "Tamu Lhochhar",
+      "prose": "Tamu Lhochhar, the Gurung new year, Poush 15",
+      "iast": "Tamu Lhochhar"
+    },
+    "SAHID_DIWAS": {
+      "name": "Martyrs' Day",
+      "prose": "Martyrs' Day, Magh 16",
+      "iast": "Sahida divasa"
+    },
+    "PRAJATANTRA_DIWAS": {
+      "name": "National Democracy Day",
+      "prose": "National Democracy Day, Phalgun 7",
+      "iast": "Rāṣṭriya prajātantra divasa"
     }
   }
 }

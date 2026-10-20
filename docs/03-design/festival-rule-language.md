@@ -322,13 +322,14 @@ A rule is a `DatedRule` in a request's `rules`, told apart by its
 `dated` list, each `{rule, day, on}`: the day, and the same day in the
 rule's own calendar. The list is left out of an answer when empty, so
 no answer that asks for none changes its hash. `NEPAL_PANCHANGA` ships
-the twelve sankrantis on the first of each Bikram Sambat month and four
-national days, read off the committee's print: every sankranti of VS 2082
+the twelve sankrantis on the first of each Bikram Sambat month, six
+national days and Tamu Lhochhar, read off the committee's print: every sankranti of VS 2082
 on its month's first day (pp. 2–24, printed by the month's name,
 "वैशाखसंक्रान्ति, नववर्षारम्भ" to "चैत्रसङ्क्रान्ति"), लोकतन्त्र दिवस on
 Baisakh 11, संविधानदिवस on Asoj 3, पृथ्वीजयन्ती on Poush 27 and the
-earthquake safety day on Magh 2, with VS 2083's Baisakh, Poush and Magh
-rows checked too (`crates/sdk/tests/festival.rs`). Each is an event in
+earthquake safety day on Magh 2, तमुल्होछार on Poush 15 (p. 19), सहिद
+दिवस on Magh 16 (p. 21) and राष्ट्रिय प्रजातन्त्र दिवस on Phalgun 7
+(p. 23), with VS 2083's Baisakh and Poush to Phalgun rows checked too (`crates/sdk/tests/festival.rs`). Each is an event in
 the iCalendar feed.
 
 **Settles:** the 24 solar festivals and the 165 fixed civil ones of the

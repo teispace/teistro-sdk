@@ -466,10 +466,13 @@ fn the_dated_days_are_the_committees_printed_rows() {
             ("TULA_SANKRANTI", (2025, 10, 18)),
             ("VRISHCHIKA_SANKRANTI", (2025, 11, 17)),
             ("DHANU_SANKRANTI", (2025, 12, 16)),
+            ("TAMU_LHOCHHAR", (2025, 12, 30)),
             ("PRITHVI_JAYANTI", (2026, 1, 11)),
             ("MAKARA_SANKRANTI", (2026, 1, 15)),
             ("NATIONAL_EARTHQUAKE_SAFETY_DAY", (2026, 1, 16)),
+            ("SAHID_DIWAS", (2026, 1, 30)),
             ("KUMBHA_SANKRANTI", (2026, 2, 13)),
+            ("PRAJATANTRA_DIWAS", (2026, 2, 19)),
             ("MINA_SANKRANTI", (2026, 3, 15)),
         ])
     );
@@ -478,11 +481,15 @@ fn the_dated_days_are_the_committees_printed_rows() {
         printed(&[("MESHA_SANKRANTI", (2026, 4, 14))])
     );
     assert_eq!(
-        kept((2027, 1, 10), (2027, 1, 16)),
+        kept((2026, 12, 30), (2027, 2, 19)),
         printed(&[
+            ("TAMU_LHOCHHAR", (2026, 12, 30)),
             ("PRITHVI_JAYANTI", (2027, 1, 11)),
             ("MAKARA_SANKRANTI", (2027, 1, 15)),
             ("NATIONAL_EARTHQUAKE_SAFETY_DAY", (2027, 1, 16)),
+            ("SAHID_DIWAS", (2027, 1, 30)),
+            ("KUMBHA_SANKRANTI", (2027, 2, 13)),
+            ("PRAJATANTRA_DIWAS", (2027, 2, 19)),
         ])
     );
 }

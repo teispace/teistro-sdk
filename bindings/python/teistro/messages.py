@@ -413,6 +413,10 @@ class FestivalKey(enum.StrEnum):
     SAMVIDHAN_DIWAS = "festival.SAMVIDHAN_DIWAS"
     PRITHVI_JAYANTI = "festival.PRITHVI_JAYANTI"
     NATIONAL_EARTHQUAKE_SAFETY_DAY = "festival.NATIONAL_EARTHQUAKE_SAFETY_DAY"
+    SONAM_LHOSAR = "festival.SONAM_LHOSAR"
+    TAMU_LHOCHHAR = "festival.TAMU_LHOCHHAR"
+    SAHID_DIWAS = "festival.SAHID_DIWAS"
+    PRAJATANTRA_DIWAS = "festival.PRAJATANTRA_DIWAS"
 
 
 class GanaKey(enum.StrEnum):
@@ -4176,6 +4180,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.PRADOSHA_VRATA")
 
     @property
+    def prajatantra_diwas(self) -> EntityForms:
+        """The forms of `festival.PRAJATANTRA_DIWAS` in the current locale."""
+        return self._r.entity("festival.PRAJATANTRA_DIWAS")
+
+    @property
     def pratipada_shraddha(self) -> EntityForms:
         """The forms of `festival.PRATIPADA_SHRADDHA` in the current locale."""
         return self._r.entity("festival.PRATIPADA_SHRADDHA")
@@ -4209,6 +4218,11 @@ class MessagesSdkEntityFestival:
     def rishi_panchami(self) -> EntityForms:
         """The forms of `festival.RISHI_PANCHAMI` in the current locale."""
         return self._r.entity("festival.RISHI_PANCHAMI")
+
+    @property
+    def sahid_diwas(self) -> EntityForms:
+        """The forms of `festival.SAHID_DIWAS` in the current locale."""
+        return self._r.entity("festival.SAHID_DIWAS")
 
     @property
     def samvidhan_diwas(self) -> EntityForms:
@@ -4266,9 +4280,19 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.SOMAVATI_AMAVASYA")
 
     @property
+    def sonam_lhosar(self) -> EntityForms:
+        """The forms of `festival.SONAM_LHOSAR` in the current locale."""
+        return self._r.entity("festival.SONAM_LHOSAR")
+
+    @property
     def sorha_shraddha_arambha(self) -> EntityForms:
         """The forms of `festival.SORHA_SHRADDHA_ARAMBHA` in the current locale."""
         return self._r.entity("festival.SORHA_SHRADDHA_ARAMBHA")
+
+    @property
+    def tamu_lhochhar(self) -> EntityForms:
+        """The forms of `festival.TAMU_LHOCHHAR` in the current locale."""
+        return self._r.entity("festival.TAMU_LHOCHHAR")
 
     @property
     def tilakunda_chaturthi(self) -> EntityForms:

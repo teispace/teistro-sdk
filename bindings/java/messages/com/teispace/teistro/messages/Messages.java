@@ -6106,6 +6106,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.PRAJATANTRA_DIWAS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms prajatantraDiwas() {
+                    return r.entity("festival.PRAJATANTRA_DIWAS");
+                }
+
+                /**
                  * The forms of `festival.PRATIPADA_SHRADDHA` in the current locale.
                  *
                  * @return the forms
@@ -6166,6 +6175,15 @@ public final class Messages {
                  */
                 public EntityForms rishiPanchami() {
                     return r.entity("festival.RISHI_PANCHAMI");
+                }
+
+                /**
+                 * The forms of `festival.SAHID_DIWAS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sahidDiwas() {
+                    return r.entity("festival.SAHID_DIWAS");
                 }
 
                 /**
@@ -6268,12 +6286,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.SONAM_LHOSAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sonamLhosar() {
+                    return r.entity("festival.SONAM_LHOSAR");
+                }
+
+                /**
                  * The forms of `festival.SORHA_SHRADDHA_ARAMBHA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms sorhaShraddhaArambha() {
                     return r.entity("festival.SORHA_SHRADDHA_ARAMBHA");
+                }
+
+                /**
+                 * The forms of `festival.TAMU_LHOCHHAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tamuLhochhar() {
+                    return r.entity("festival.TAMU_LHOCHHAR");
                 }
 
                 /**

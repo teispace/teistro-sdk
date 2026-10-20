@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Losar and three national days** (`festival-rules.md`).
+**Numbers:** `NEPAL_PANCHANGA` now keeps four more days that the
+committee prints in VS 2082 and VS 2083. Tamu Lhochhar falls on Poush 15,
+Martyrs' Day on Magh 16 and National Democracy Day on Phalgun 7, all as
+dated Bikram Sambat days. Sonam Lhosar falls on Magha's bright first at
+sunrise, and matches the print in both years under the committee's sky
+and under the modern one. Gyalpo and Tol Lhosar follow the Tibetan
+reckoning, so they wait for the Tibetan calendar. The measured page now
+counts 238 printed rows, of which 6 still part, each for a named reason.
+
 **The tabular Hijri calendar** (`calendars/hijri.md`).
 **Numbers:** `calendar.HIJRI_TABULAR` is the arithmetic Islamic calendar
 of the civil epoch (Friday, 16 July 622, Julian), and its dates carry the

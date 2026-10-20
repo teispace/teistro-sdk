@@ -440,7 +440,11 @@ enum FestivalKey {
   loktantraDiwas('festival.LOKTANTRA_DIWAS'),
   samvidhanDiwas('festival.SAMVIDHAN_DIWAS'),
   prithviJayanti('festival.PRITHVI_JAYANTI'),
-  nationalEarthquakeSafetyDay('festival.NATIONAL_EARTHQUAKE_SAFETY_DAY');
+  nationalEarthquakeSafetyDay('festival.NATIONAL_EARTHQUAKE_SAFETY_DAY'),
+  sonamLhosar('festival.SONAM_LHOSAR'),
+  tamuLhochhar('festival.TAMU_LHOCHHAR'),
+  sahidDiwas('festival.SAHID_DIWAS'),
+  prajatantraDiwas('festival.PRAJATANTRA_DIWAS');
 
   const FestivalKey(this.key);
 
@@ -1777,6 +1781,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get paushaPutradaEkadashi => _r.entity('festival.PAUSHA_PUTRADA_EKADASHI');
   EntityForms get pishachamochanaShraddha => _r.entity('festival.PISHACHAMOCHANA_SHRADDHA');
   EntityForms get pradoshaVrata => _r.entity('festival.PRADOSHA_VRATA');
+  EntityForms get prajatantraDiwas => _r.entity('festival.PRAJATANTRA_DIWAS');
   EntityForms get pratipadaShraddha => _r.entity('festival.PRATIPADA_SHRADDHA');
   EntityForms get prithviJayanti => _r.entity('festival.PRITHVI_JAYANTI');
   EntityForms get purnimaVrata => _r.entity('festival.PURNIMA_VRATA');
@@ -1784,6 +1789,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get ramaNavami => _r.entity('festival.RAMA_NAVAMI');
   EntityForms get raviSaptami => _r.entity('festival.RAVI_SAPTAMI');
   EntityForms get rishiPanchami => _r.entity('festival.RISHI_PANCHAMI');
+  EntityForms get sahidDiwas => _r.entity('festival.SAHID_DIWAS');
   EntityForms get samvidhanDiwas => _r.entity('festival.SAMVIDHAN_DIWAS');
   EntityForms get sankashtaChaturthi => _r.entity('festival.SANKASHTA_CHATURTHI');
   EntityForms get saptamiShraddha => _r.entity('festival.SAPTAMI_SHRADDHA');
@@ -1795,7 +1801,9 @@ final class MessagesSdkEntityFestival {
   EntityForms get simhaSankranti => _r.entity('festival.SIMHA_SANKRANTI');
   EntityForms get sitaNavami => _r.entity('festival.SITA_NAVAMI');
   EntityForms get somavatiAmavasya => _r.entity('festival.SOMAVATI_AMAVASYA');
+  EntityForms get sonamLhosar => _r.entity('festival.SONAM_LHOSAR');
   EntityForms get sorhaShraddhaArambha => _r.entity('festival.SORHA_SHRADDHA_ARAMBHA');
+  EntityForms get tamuLhochhar => _r.entity('festival.TAMU_LHOCHHAR');
   EntityForms get tilakundaChaturthi => _r.entity('festival.TILAKUNDA_CHATURTHI');
   EntityForms get trayodashiShraddha => _r.entity('festival.TRAYODASHI_SHRADDHA');
   EntityForms get tritiyaShraddha => _r.entity('festival.TRITIYA_SHRADDHA');

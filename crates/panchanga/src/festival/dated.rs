@@ -224,6 +224,24 @@ impl DatedRule {
                 2,
                 "Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 21: \"राष्ट्रिय भूकम्प सुरक्षा दिवस\" on Magh 2",
             ),
+            bs(
+                "TAMU_LHOCHHAR",
+                9,
+                15,
+                "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 20: \"तमुल्होछार\" on Poush 15",
+            ),
+            bs(
+                "SAHID_DIWAS",
+                10,
+                16,
+                "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 22: \"सहिद दिवस\" on Magh 16",
+            ),
+            bs(
+                "PRAJATANTRA_DIWAS",
+                11,
+                7,
+                "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 23: \"राष्ट्रिय प्रजातन्त्र दिवस\" on Phalgun 7",
+            ),
         ]
     }
 }

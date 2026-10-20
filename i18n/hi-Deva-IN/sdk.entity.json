@@ -2922,6 +2922,26 @@
       "name": "राष्ट्रीय भूकंप सुरक्षा दिवस",
       "prose": "राष्ट्रीय भूकंप सुरक्षा दिवस",
       "iast": "Rāṣṭriya bhūkampa surakṣā divasa"
+    },
+    "SONAM_LHOSAR": {
+      "name": "सोनम ल्होसार",
+      "prose": "सोनम ल्होसार",
+      "iast": "Sonam Lhosar"
+    },
+    "TAMU_LHOCHHAR": {
+      "name": "तमु ल्होछार",
+      "prose": "तमु ल्होछार",
+      "iast": "Tamu Lhochhar"
+    },
+    "SAHID_DIWAS": {
+      "name": "शहीद दिवस",
+      "prose": "शहीद दिवस",
+      "iast": "Sahida divasa"
+    },
+    "PRAJATANTRA_DIWAS": {
+      "name": "राष्ट्रीय प्रजातंत्र दिवस",
+      "prose": "राष्ट्रीय प्रजातंत्र दिवस",
+      "iast": "Rāṣṭriya prajātantra divasa"
     }
   }
 }
