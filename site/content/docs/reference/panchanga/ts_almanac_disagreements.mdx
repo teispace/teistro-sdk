@@ -9,11 +9,52 @@ Compares this context's reckoning of a range with another's at one place (`03-de
 
 `request_json` is `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "days", "festivals"}`: the days as `{"year", "month", "day"}`, `days` true when left out, `festivals` a festival request, and everything but `first`, the place and the offset optional. A key it does not read, a place or offset out of range, a festival request its reader refuses or a request comparing nothing is `INVALID_ARG`, named under `disagreements`; a null `other` is `INVALID_ARG` naming `other`. A range of more than a year and a day is `OUT_OF_RANGE`, and either context without an ephemeris `CAPABILITY`. A failure of either context's reckoning is recorded on this one.
 
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.disagreements
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.disagreements
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.disagreements
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().disagreements
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().disagreements
+```
+
+</Tab>
+<Tab value="C">
+
 ```c
 ts_status ts_almanac_disagreements(const ts_context * context, const ts_context * other, const char * request_json, ts_string * out_json);
 ```
 
-No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+</Tab>
+</Tabs>
+
+Reached from `almanac.disagreements` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

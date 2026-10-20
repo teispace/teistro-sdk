@@ -568,6 +568,7 @@ impl DisagreementAsked {
 /// What a [`DisagreementRequest`] answers: each comparison it asked,
 /// sealed by the first context's provenance, as the boundary writes it.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Disagreements {
     /// The days, full-keyed, when asked.
     pub days: Option<Envelope<Value>>,
