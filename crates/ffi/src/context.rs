@@ -883,7 +883,6 @@ mod tests {
         resolve,
     };
     use teistro_core::settings::DEFAULT_CACHE_CELLS;
-    #[cfg(feature = "builtin-ephemeris")]
     use teistro_port_ephemeris::EphemerisProvider;
 
     /// A provider handed to the boundary sits behind the Surya Siddhanta
