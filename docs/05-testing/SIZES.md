@@ -26,7 +26,7 @@ A native library is loaded, not downloaded, so only the wasm modules are held to
 | module | module | gzipped | budget, gzipped | left | glue | glue, gzipped |
 |---|--:|--:|--:|--:|--:|--:|
 | `full` | 10 922 869 | 2 510 433 | 2 570 000 | 2.3% | 57 609 | 12 407 |
-| `panchanga` | 3 450 277 | 1 088 208 | 1 110 000 | 2.0% | 57 609 | 12 407 |
+| `panchanga` | 3 450 277 | 1 088 208 | 1 160 000 | 6.2% | 57 609 | 12 407 |
 
 ## Bundled
 
@@ -52,3 +52,4 @@ A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fa
 | 2026-10-18 | `39100626430` | `panchanga` | 3 443 553 | 1 087 371 | the tithi pravesha, Sarvatobhadra and dossier records, and the dossier's rules and gochar sections |
 | 2026-10-19 | `39173568297` | `full` | 9 740 894 | 2 349 309 | Phaladeepika chs. 6 and 7, Brihat Jataka chs. 11 and 23 and Saravali chs. 15 to 19 and 35 add classical rules and readings to the set the module embeds |
 | 2026-10-20 | `39310853006` | `full` | 10 922 869 | 2 510 433 | the classical chapters finished on this branch ship 4,818 rules, embedded compact; the module grows with the rule packs it carries |
+| 2026-10-20 | `by hand` | `panchanga` | 3 576 669 | 1 134 514 | the range pipeline (lockstep horizon searches, a range's light and crossings found together) and the national panchanga's fitted festival days; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused |

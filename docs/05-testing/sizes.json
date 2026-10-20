@@ -305,8 +305,8 @@
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 3520000,
-      "gzip": 1110000
+      "raw": 3650000,
+      "gzip": 1160000
     }
   ],
   "history": [
@@ -381,6 +381,15 @@
       "raw": 10922869,
       "gzip": 2510433,
       "why": "the classical chapters finished on this branch ship 4,818 rules, embedded compact; the module grows with the rule packs it carries"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-20",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 3576669,
+      "gzip": 1134514,
+      "why": "the range pipeline (lockstep horizon searches, a range's light and crossings found together) and the national panchanga's fitted festival days; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
     }
   ]
 }
