@@ -163,7 +163,7 @@ impl<S: Longitudes + ?Sized> Longitudes for Sidereal<'_, S> {
 
 /// A zodiac to read longitudes in: which ayanamsha, on which basis, under
 /// which models.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Zodiac {
     /// The ayanamsha the day's limbs are measured from, or `None` for a
     /// tropical reading.

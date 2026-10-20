@@ -145,7 +145,7 @@ pub fn nakshatra_at<S: Longitudes + ?Sized>(
 ) -> Result<Span<Nakshatra>, Error> {
     let source = Sidereal::over(tropical, zodiac);
     let window = Interval::literal(at.get(), at.get());
-    let found = crossings(&source, Limb::Nakshatra, window)?;
+    let found = instants(boundaries(&source, Limb::Nakshatra, window)?);
     spans(&source, Limb::Nakshatra, window, &found)?
         .into_iter()
         .find(|span| span.whole.contains_inclusive(at))
@@ -225,11 +225,35 @@ pub fn limbs<S: Longitudes + ?Sized>(
     window: Interval,
     zodiac: Zodiac,
 ) -> Result<Limbs, Error> {
+    limbs_with(tropical, window, zodiac, None)
+}
+
+/// [`limbs`], reading the boundaries from crossings already found over a
+/// range ([`RangeCrossings`]) when they cover the window under the same
+/// zodiac, and searching for them otherwise. The answer is [`limbs`]'s
+/// either way, to the bit.
+///
+/// # Errors
+///
+/// As [`limbs`].
+pub fn limbs_with<S: Longitudes + ?Sized>(
+    tropical: &S,
+    window: Interval,
+    zodiac: Zodiac,
+    known: Option<&RangeCrossings>,
+) -> Result<Limbs, Error> {
     let source = Sidereal::over(tropical, zodiac);
+    let known = known.filter(|known| known.answers(zodiac, window));
+    let found = |limb: Limb| -> Result<Vec<(f64, f64)>, Error> {
+        match known {
+            Some(known) => Ok(known.limb(limb, window)),
+            None => boundaries(&source, limb, window),
+        }
+    };
     // One search at six degrees of the elongation answers the tithis and
     // the karanas alike, a tithi being two karanas: its boundaries are
     // the karana boundaries that fall on a multiple of twelve degrees.
-    let elongation = boundaries(&source, Limb::Karana, window)?;
+    let elongation = found(Limb::Karana)?;
     let tithi_edges: Vec<f64> = elongation
         .iter()
         .filter(|(_, boundary)| is_tithi_boundary(*boundary))
@@ -243,15 +267,160 @@ pub fn limbs<S: Longitudes + ?Sized>(
             &source,
             Limb::Nakshatra,
             window,
-            &crossings(&source, Limb::Nakshatra, window)?,
+            &instants(found(Limb::Nakshatra)?),
         )?,
-        yoga: spans(
-            &source,
-            Limb::Yoga,
-            window,
-            &crossings(&source, Limb::Yoga, window)?,
-        )?,
+        yoga: spans(&source, Limb::Yoga, window, &instants(found(Limb::Yoga)?))?,
     })
+}
+
+/// The crossings a run of days reads its limbs and its signs from,
+/// found once for the whole run.
+///
+/// A day's limbs are searched for over its window widened by
+/// [`LONGEST_SPAN_DAYS`], and its signs over the window widened by the
+/// body's reach, so consecutive days search over almost the same days
+/// again. The searches walk an anchored grid, on which a crossing found
+/// from any window that holds it refines to the same bits; so the
+/// crossings one search finds over a whole run, kept to a day's own
+/// widened window, are what that day's own search finds, and a run of
+/// days asks for them once.
+///
+/// ```
+/// use teistro_astro::ayanamsha::Basis;
+/// use teistro_astro::completion::Completion;
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_astro::precession::PrecessionModel;
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::interval::Interval;
+/// use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// use teistro_panchanga::limb::{RangeCrossings, Zodiac, limbs, limbs_with};
+/// use teistro_port_ephemeris::{Frame, TestProvider, Zodiac as FrameZodiac};
+///
+/// let provider = TestProvider::new();
+/// let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// let zodiac = Zodiac {
+///     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+///     basis: Basis::Mean,
+///     precession: PrecessionModel::Iau2006,
+///     delta_t: DeltaTModel::TableThenModel,
+/// };
+/// let run = Interval::literal(2_460_000.5, 2_460_010.5);
+/// let known = RangeCrossings::over(&longitudes, zodiac, run)?;
+/// for day in 0..10 {
+///     let from = 2_460_000.5 + f64::from(day);
+///     let window = Interval::literal(from, from + 1.0);
+///     assert_eq!(limbs_with(&longitudes, window, zodiac, Some(&known))?, limbs(&longitudes, window, zodiac)?);
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Debug)]
+pub struct RangeCrossings {
+    zodiac: Zodiac,
+    /// The windows this answers for lie inside it.
+    run: Interval,
+    elongation: Vec<(f64, f64)>,
+    nakshatra: Vec<(f64, f64)>,
+    yoga: Vec<(f64, f64)>,
+    /// The Moon's and the Sun's sign crossings, each over the run widened
+    /// by its own reach.
+    moon_signs: Vec<f64>,
+    sun_signs: Vec<f64>,
+}
+
+impl RangeCrossings {
+    /// The crossings every window inside `run` reads, found by one search
+    /// a limb and one a body.
+    ///
+    /// # Errors
+    ///
+    /// As [`limbs`].
+    pub fn over<S: Longitudes + ?Sized>(
+        tropical: &S,
+        zodiac: Zodiac,
+        run: Interval,
+    ) -> Result<RangeCrossings, Error> {
+        let source = Sidereal::over(tropical, zodiac);
+        let signs = |body: Body| -> Result<Vec<f64>, Error> {
+            let reach = sign_reach_days(body);
+            let events = Search::new(&source, Quantity::Longitude(body), Lattice::SIGNS).between(
+                JulianDay::<Ut1>::literal(run.from.get() - reach),
+                JulianDay::<Ut1>::literal(run.to.get() + reach),
+            )?;
+            Ok(events.iter().map(|event| event.instant.get()).collect())
+        };
+        Ok(RangeCrossings {
+            zodiac,
+            run,
+            elongation: boundaries(&source, Limb::Karana, run)?,
+            nakshatra: boundaries(&source, Limb::Nakshatra, run)?,
+            yoga: boundaries(&source, Limb::Yoga, run)?,
+            moon_signs: signs(Body::Moon)?,
+            sun_signs: signs(Body::Sun)?,
+        })
+    }
+
+    /// Whether these crossings answer for a window: found under the same
+    /// zodiac, over a run that holds the window, so that the run's own
+    /// widening covers the window's.
+    #[must_use]
+    pub fn answers(&self, zodiac: Zodiac, window: Interval) -> bool {
+        self.zodiac == zodiac
+            && self.run.from.get() <= window.from.get()
+            && window.to.get() <= self.run.to.get()
+    }
+
+    /// A limb's boundaries over a window widened as a day's own search
+    /// widens it, kept as that search keeps them: inside its ends, ends
+    /// included.
+    fn limb(&self, limb: Limb, window: Interval) -> Vec<(f64, f64)> {
+        let found = match limb {
+            Limb::Tithi | Limb::Karana => &self.elongation,
+            Limb::Nakshatra => &self.nakshatra,
+            Limb::Yoga => &self.yoga,
+        };
+        let (from, to) = (
+            JulianDay::<Ut1>::literal(window.from.get() - LONGEST_SPAN_DAYS).get(),
+            JulianDay::<Ut1>::literal(window.to.get() + LONGEST_SPAN_DAYS).get(),
+        );
+        found
+            .iter()
+            .copied()
+            .filter(|(at, _)| *at >= from && *at <= to)
+            .collect()
+    }
+
+    /// A body's sign crossings over a window widened by its reach, kept
+    /// as [`signs`]' own search keeps them; `None` for a body these
+    /// crossings were not found for.
+    fn signs(&self, body: Body, window: Interval, reach: f64) -> Option<Vec<f64>> {
+        let found = match body {
+            Body::Moon => &self.moon_signs,
+            Body::Sun => &self.sun_signs,
+            _ => return None,
+        };
+        // Only the reach the run was found at: the same bits, since a
+        // nearer or a further one keeps a different set of crossings.
+        if reach.to_bits() != sign_reach_days(body).to_bits() {
+            return None;
+        }
+        let (from, to) = (
+            JulianDay::<Ut1>::literal(window.from.get() - reach).get(),
+            JulianDay::<Ut1>::literal(window.to.get() + reach).get(),
+        );
+        Some(
+            found
+                .iter()
+                .copied()
+                .filter(|at| *at >= from && *at <= to)
+                .collect(),
+        )
+    }
+}
+
+/// Just the instants of a list of boundaries.
+fn instants(boundaries: Vec<(f64, f64)>) -> Vec<f64> {
+    boundaries.into_iter().map(|(instant, _)| instant).collect()
 }
 
 /// Whether a six-degree boundary of the elongation is also a tithi's.
@@ -263,18 +432,6 @@ pub fn limbs<S: Longitudes + ?Sized>(
 fn is_tithi_boundary(boundary_deg: f64) -> bool {
     let twelfths = boundary_deg / 12.0;
     (twelfths - twelfths.round()).abs() < 1e-6
-}
-
-/// Just the instants of a limb's crossings.
-fn crossings<S: Longitudes + ?Sized>(
-    source: &S,
-    limb: Limb,
-    window: Interval,
-) -> Result<Vec<f64>, Error> {
-    Ok(boundaries(source, limb, window)?
-        .into_iter()
-        .map(|(instant, _)| instant)
-        .collect())
 }
 
 /// The crossings of a limb's lattice inside the widened window, each with
@@ -402,6 +559,25 @@ pub fn signs_within<S: Longitudes + ?Sized>(
     zodiac: Zodiac,
     reach_days: Option<f64>,
 ) -> Result<Vec<Span<Rashi>>, Error> {
+    signs_known(tropical, body, window, zodiac, reach_days, None)
+}
+
+/// [`signs_within`], reading the crossings from a run's
+/// ([`RangeCrossings`]) when they cover the window under the same zodiac
+/// at the body's own reach. The answer is [`signs_within`]'s either way,
+/// to the bit.
+///
+/// # Errors
+///
+/// As [`signs_within`].
+pub fn signs_known<S: Longitudes + ?Sized>(
+    tropical: &S,
+    body: Body,
+    window: Interval,
+    zodiac: Zodiac,
+    reach_days: Option<f64>,
+    known: Option<&RangeCrossings>,
+) -> Result<Vec<Span<Rashi>>, Error> {
     let source = Sidereal::over(tropical, zodiac);
     let quantity = Quantity::Longitude(body);
     let search = Search::new(&source, quantity, Lattice::SIGNS);
@@ -415,10 +591,17 @@ pub fn signs_within<S: Longitudes + ?Sized>(
         }
         None => sign_reach_days(body),
     };
-    let from = JulianDay::<Ut1>::literal(window.from.get() - reach);
-    let to = JulianDay::<Ut1>::literal(window.to.get() + reach);
-    let events = search.between(from, to)?;
-    let found: Vec<f64> = events.iter().map(|event| event.instant.get()).collect();
+    let known = known
+        .filter(|known| known.answers(zodiac, window))
+        .and_then(|known| known.signs(body, window, reach));
+    let found: Vec<f64> = if let Some(found) = known {
+        found
+    } else {
+        let from = JulianDay::<Ut1>::literal(window.from.get() - reach);
+        let to = JulianDay::<Ut1>::literal(window.to.get() + reach);
+        let events = search.between(from, to)?;
+        events.iter().map(|event| event.instant.get()).collect()
+    };
     let mut out = Vec::new();
     let edges = sign_edges(&found, window, reach);
     for pair in edges.windows(2) {

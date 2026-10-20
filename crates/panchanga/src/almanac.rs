@@ -33,7 +33,7 @@ use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
 use teistro_time::local_day::{Carried, LocalDay, local_day, local_day_carrying, local_midnight};
 
-use crate::limb::{self, Limbs, Zodiac};
+use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
 use crate::period::{self, Durmuhurta, Kaalas, Muhurtas, Part};
@@ -454,7 +454,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let mut frame = None;
         // What one day found and the next can read rather than search
         // again: the day before's sunrise and sunset, and the lunation.
-        let mut memo = Memo::default();
+        let mut memo = Memo {
+            last: Some(last),
+            ..Memo::default()
+        };
         for step in 0..count {
             let offset = i64::try_from(step).unwrap_or(0);
             let date = self.calendar.date_of(first.plus_days(offset))?;
@@ -656,10 +659,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(*place);
         }
-        let limbs = limb::limbs(&longitudes, window, zodiac)?;
+        let fixed = self.calendar.fixed_of(&date)?;
+        let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
+        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?;
 
         let horas = hora::horas(&day, settings.day.hora_reckoning.try_into()?)?;
-        let fixed = self.calendar.fixed_of(&date)?;
         let previous_night = match memo.day.take() {
             Some((before, yesterday)) if before.plus_days(1) == fixed => {
                 Interval::new(yesterday.sunset, yesterday.next_sunrise).ok()
@@ -671,7 +675,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let durmuhurtas = period::durmuhurtas(&muhurtas, day.vara, settings.panchanga.durmuhurta)?;
         let month = self.month(&longitudes, window, &limbs, (zodiac, frame), memo)?;
         let moon = self.moon(&completion, place, &day, window, frame, zodiac)?;
-        let sun_signs = Self::signs(&longitudes, Body::Sun, window, zodiac)?;
+        let sun_signs =
+            limb::signs_known(&longitudes, Body::Sun, window, zodiac, None, known.as_ref())?;
         let ritu = self.ritu(
             (&date, place),
             &sun_signs,
@@ -683,7 +688,16 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             panchaka: omen::panchaka(
                 &limbs.nakshatra,
                 settings.panchanga.panchaka_start,
-                |within| limb::signs(&longitudes, Body::Moon, within, zodiac),
+                |within| {
+                    limb::signs_known(
+                        &longitudes,
+                        Body::Moon,
+                        within,
+                        zodiac,
+                        None,
+                        known.as_ref(),
+                    )
+                },
             )?,
             yogas: omen::yogas(
                 &settings.panchanga.muhurta_tables,
@@ -694,6 +708,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             varjyam: omen::varjyam(&limbs.nakshatra, settings.panchanga.varjyam)?,
             disha_shool: omen::disha_shool(day.vara),
         };
+        memo.known = known.map(|known| (frame, known));
         Ok((
             Panchanga {
                 kaalas: period::kaalas(daylight, day.vara),
@@ -1014,6 +1029,51 @@ struct Memo {
     lunation: Option<Lunation>,
     /// The next day's light, which the last day read as its tomorrow.
     light: Carried,
+    /// The last day of the range, when the days are a range: how far the
+    /// crossings found for the first day are worth finding.
+    last: Option<FixedDay>,
+    /// The limbs' and the signs' crossings found once for the range
+    /// ([`RangeCrossings`]), by the frame their source was read in, read
+    /// by every day whose window they cover.
+    known: Option<(Frame, RangeCrossings)>,
+}
+
+impl Memo {
+    /// The range's crossings for a day, read in the day's frame, found on
+    /// the first day that needs them: from this day's window to the range's last day and a day
+    /// past it, which a last day's window ends inside. A day outside them,
+    /// or under another zodiac, is searched for alone, so a crossing set
+    /// that does not cover a day never changes it; a single day asked for
+    /// alone has no range and searches as it always did.
+    fn crossings<S: teistro_astro::events::Longitudes + ?Sized>(
+        &mut self,
+        longitudes: &S,
+        (zodiac, frame): (Zodiac, Frame),
+        window: Interval,
+        day: FixedDay,
+    ) -> Result<Option<RangeCrossings>, Error> {
+        if let Some((read_in, known)) = self.known.take()
+            && read_in == frame
+            && known.answers(zodiac, window)
+        {
+            return Ok(Some(known));
+        }
+        let Some(last) = self.last else {
+            return Ok(None);
+        };
+        let left = day.days_until(last);
+        if left < 1 {
+            return Ok(None);
+        }
+        // A whole number of days, a few thousand at most.
+        #[allow(
+            clippy::cast_precision_loss,
+            reason = "a range's length in days is a small whole number"
+        )]
+        let to = window.from.get() + left as f64 + 2.0;
+        let run = Interval::new(window.from, JulianDay::<Utc>::literal(to))?;
+        RangeCrossings::over(longitudes, zodiac, run).map(Some)
+    }
 }
 
 /// A lunar month as the almanac names it: its span between two new
