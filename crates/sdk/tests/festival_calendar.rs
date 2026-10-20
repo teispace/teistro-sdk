@@ -74,7 +74,7 @@ fn every_observance_and_fast_is_one_event_on_its_own_day() {
     let starts = values(&unfolded, "DTSTART;VALUE=DATE:");
     assert_eq!(
         starts.len(),
-        answer.observances.len() + answer.ekadashis.len()
+        answer.observances.len() + answer.ekadashis.len() + answer.dated.len()
     );
     assert!(
         starts.len() > 20,

@@ -6406,6 +6406,11 @@ const OWN_RULE: &str = r#"{"key":"LAKSHMI_PUJA","source":"the tithi at sunrise",
 const OWN_FOLLOWING: &str =
     r#"{"key":"TWO_AFTER","source":"two days after Lakshmi puja","after":"LAKSHMI_PUJA","days":2}"#;
 
+/// Two dated rules of a consumer's own the runners hand in beside the
+/// Nepal pack: the first of Kartik, a Bikram Sambat date, and October's
+/// last Sunday, a weekday counted back from a Gregorian month's end.
+const OWN_DATED: &str = r#"{"key":"KARTIK_FIRST","source":"the first of Kartik","civilDate":{"calendar":"calendar.BIKRAM_SAMBAT","month":7,"day":1}},{"key":"LAST_SUNDAY","source":"October's last Sunday","civilWeekday":{"calendar":"calendar.GREGORIAN","month":10,"weekday":"vara.RAVIVARA","nth":-1}}"#;
+
 /// The festivals a panchanga request carries, the shipped pack, the pack
 /// amended by a rule of the consumer's own and the Nepal pack with a
 /// following rule of the consumer's own, as the report prints them.
@@ -6422,6 +6427,7 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
         ("shipped", r#""DHARMASINDHU""#.to_owned()),
         ("amended", format!(r#"["DHARMASINDHU",{OWN_RULE}]"#)),
         ("nepal", format!(r#"["NEPAL",{OWN_FOLLOWING}]"#)),
+        ("dated", format!(r#"["NEPAL",{OWN_DATED}]"#)),
     ] {
         let asked = teistro::FestivalRequest::from_json(&format!(r#"{{"rules":{rules}}}"#))
             .expect("a festival request");
@@ -6486,6 +6492,21 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
                     tag(&fast.excess),
                     tag(&fast.choice),
                     number(fast.tithis[1].from.get()),
+                ),
+            );
+        }
+        for (k, kept) in answer.dated.iter().enumerate() {
+            put(
+                report,
+                &key(&format!("-dated-{k}")),
+                format!(
+                    "{} {}-{} {} {}-{}",
+                    kept.rule,
+                    kept.day.month,
+                    kept.day.day,
+                    kept.on.calendar.full_key(),
+                    kept.on.month,
+                    kept.on.day,
                 ),
             );
         }

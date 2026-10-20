@@ -551,6 +551,13 @@ void putFestivals(String prefix, FestivalAnswer answer) {
       ].join(' '),
     );
   }
+  for (final (k, kept) in answer.dated.indexed) {
+    put(
+      '$prefix-dated-$k',
+      '${kept.rule} ${kept.day.month}-${kept.day.day} '
+          '${kept.on.calendar.fullKey} ${kept.on.month}-${kept.on.day}',
+    );
+  }
 }
 
 /// A muhurta answer's counts, hash and every window, as every runner
@@ -2790,6 +2797,24 @@ void main() {
     'decide': <Object?>[],
     'otherwise': 'LATER',
   };
+  // Two dated rules: the first of Kartik, and October's last Sunday.
+  const ownDated = <Map<String, Object?>>[
+    {
+      'key': 'KARTIK_FIRST',
+      'source': 'the first of Kartik',
+      'civilDate': {'calendar': 'calendar.BIKRAM_SAMBAT', 'month': 7, 'day': 1},
+    },
+    {
+      'key': 'LAST_SUNDAY',
+      'source': "October's last Sunday",
+      'civilWeekday': {
+        'calendar': 'calendar.GREGORIAN',
+        'month': 10,
+        'weekday': 'vara.RAVIVARA',
+        'nth': -1,
+      },
+    },
+  ];
   const ownFollowing = <String, Object?>{
     'key': 'TWO_AFTER',
     'source': 'two days after Lakshmi puja',
@@ -2800,6 +2825,7 @@ void main() {
     ('shipped', FestivalPack.dharmasindhu),
     ('amended', [FestivalPack.dharmasindhu, ownRule]),
     ('nepal', [FestivalPack.nepal, ownFollowing]),
+    ('dated', [FestivalPack.nepal, ...ownDated]),
   ]) {
     // The shipped pack is asked of the lean call, the others of the
     // almanac's: the two answer alike, so the report cannot tell.

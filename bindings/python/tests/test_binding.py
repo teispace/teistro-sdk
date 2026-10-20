@@ -764,7 +764,13 @@ class AnEngine(WithLibrary):
             self.assertTrue(ics.startswith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"))
             self.assertIn("X-WR-CALNAME:Dashain\r\n", ics)
             answer = sky.almanac.festivals(**season)
-            self.assertEqual(ics.count("BEGIN:VEVENT"), len(answer.observances) + len(answer.ekadashis))
+            self.assertEqual(
+                ics.count("BEGIN:VEVENT"), len(answer.observances) + len(answer.ekadashis) + len(answer.dated)
+            )
+            # Kartik's sankranti on the first of the Bikram Sambat month.
+            tula = answer.dated[0]
+            self.assertEqual((tula.rule, tula.day.month, tula.day.day), ("TULA_SANKRANTI", 10, 18))
+            self.assertEqual((tula.on.calendar, tula.on.month, tula.on.day), (Calendar.BIKRAM_SAMBAT, 7, 1))
             self.assertIn(
                 "DTSTART;VALUE=DATE:20251002\r\nDTEND;VALUE=DATE:20251003\r\nSUMMARY:Vijaya Dashami\r\n",
                 ics.replace("\r\n ", ""),
@@ -4114,7 +4120,8 @@ class AnEngine(WithLibrary):
             assert answer is not None
             self.assertIsInstance(answer, FestivalAnswer)
             self.assertEqual(
-                [o.rule for o in answer.observances], ["VIJAYA_DASHAMI", "LAKSHMI_PUJA", "BALI_PRATIPADA"]
+                [o.rule for o in answer.observances],
+                ["VIJAYA_DASHAMI", "SANKASHTA_CHATURTHI", "KARAKA_CHATURTHI", "LAKSHMI_PUJA", "BALI_PRATIPADA"],
             )
             dashami = answer.observances[0]
             self.assertEqual((dashami.day.calendar, dashami.day.month), (Calendar.GREGORIAN, 10))

@@ -9,7 +9,7 @@
 use serde::Serialize;
 use serde_json::Value;
 use teistro_core::error::Error;
-use teistro_panchanga::festival::{EkadashiRule, FestivalRule, FollowingRule};
+use teistro_panchanga::festival::{DatedRule, EkadashiRule, FestivalRule, FollowingRule};
 
 /// A pack of rules the SDK ships, which a request may name rather than
 /// spell out.
@@ -74,6 +74,15 @@ impl FestivalPack {
         }
     }
 
+    /// Its rules kept on a date of a calendar.
+    #[must_use]
+    pub fn dated(self) -> Vec<DatedRule> {
+        match self {
+            FestivalPack::Dharmasindhu | FestivalPack::Nepal => Vec::new(),
+            FestivalPack::NepalPanchanga => DatedRule::nepal_panchanga(),
+        }
+    }
+
     /// Its rules counted from another's day.
     #[must_use]
     pub fn following(self) -> Vec<FollowingRule> {
@@ -89,9 +98,9 @@ impl FestivalPack {
     }
 }
 
-/// What a festival reckoning is asked: karmakala rules, Ekadashi rules
-/// and rules counted from another's day, each key once across all three,
-/// because an answer is named by it.
+/// What a festival reckoning is asked: karmakala rules, Ekadashi rules,
+/// rules counted from another's day and rules kept on a date, each key
+/// once across all four, because an answer is named by it.
 ///
 /// ```
 /// use teistro::{FestivalPack, FestivalRequest};
@@ -125,6 +134,9 @@ pub struct FestivalRequest {
     rules: Vec<FestivalRule>,
     ekadashis: Vec<EkadashiRule>,
     following: Vec<FollowingRule>,
+    /// Left out when none, so a request without them hashes as it did.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    dated: Vec<DatedRule>,
 }
 
 impl From<FestivalPack> for FestivalRequest {
@@ -133,7 +145,7 @@ impl From<FestivalPack> for FestivalRequest {
     }
 }
 
-/// A rule of any of a request's three kinds, by its key.
+/// A rule of any of a request's four kinds, by its key.
 trait Keyed {
     fn key(&self) -> &str;
 }
@@ -151,6 +163,12 @@ impl Keyed for EkadashiRule {
 }
 
 impl Keyed for FollowingRule {
+    fn key(&self) -> &str {
+        &self.key
+    }
+}
+
+impl Keyed for DatedRule {
     fn key(&self) -> &str {
         &self.key
     }
@@ -177,6 +195,7 @@ impl FestivalRequest {
             rules,
             ekadashis: Vec::new(),
             following: Vec::new(),
+            dated: Vec::new(),
         }
     }
 
@@ -185,6 +204,7 @@ impl FestivalRequest {
         self.rules.retain(|held| held.key != key);
         self.ekadashis.retain(|held| held.key != key);
         self.following.retain(|held| held.key != key);
+        self.dated.retain(|held| held.key != key);
     }
 
     /// The same request with a rule added, or put in place of the one
@@ -221,6 +241,17 @@ impl FestivalRequest {
         self
     }
 
+    /// The same request with a rule kept on a date added, or put in place
+    /// of the one with its key; a rule of another kind with that key goes.
+    #[must_use]
+    pub fn with_dated(mut self, rule: DatedRule) -> FestivalRequest {
+        if let Err(rule) = replaced(&mut self.dated, rule) {
+            self.forget(&rule.key);
+            self.dated.push(rule);
+        }
+        self
+    }
+
     /// The same request with every rule of a pack, each as its kind's
     /// `with_` puts it.
     #[must_use]
@@ -230,9 +261,13 @@ impl FestivalRequest {
             .into_iter()
             .fold(self, FestivalRequest::with_rule)
             .with_ekadashis(pack.ekadashis());
-        pack.following()
+        let request = pack
+            .following()
             .into_iter()
-            .fold(request, FestivalRequest::with_following)
+            .fold(request, FestivalRequest::with_following);
+        pack.dated()
+            .into_iter()
+            .fold(request, FestivalRequest::with_dated)
     }
 
     /// The same request with each of these Ekadashi rules, as
@@ -260,6 +295,12 @@ impl FestivalRequest {
         &self.following
     }
 
+    /// The rules kept on a date, in order.
+    #[must_use]
+    pub fn dated(&self) -> &[DatedRule] {
+        &self.dated
+    }
+
     /// How many days the request reaches past an observance's own:
     /// the most any rule counts from another's.
     #[must_use]
@@ -272,24 +313,26 @@ impl FestivalRequest {
     }
 
     /// Refuses what no reckoning could answer, naming the field under
-    /// `rules`, `ekadashis` or `following`: a rule its own `check`
-    /// refuses, a key given twice across all three, which would answer two
+    /// `rules`, `ekadashis`, `following` or `dated`: a rule its own
+    /// `check` refuses, a key given twice across all four, which would answer two
     /// observances a reader cannot tell apart, or a rule counted from one
     /// that is not a karmakala rule of the request.
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` on `rules[i]`, `ekadashis[i]` or `following[i]` and
-    /// the rule's own field.
+    /// `INVALID_ARG` on `rules[i]`, `ekadashis[i]`, `following[i]` or
+    /// `dated[i]` and the rule's own field.
     pub fn check(&self) -> Result<(), Error> {
         let rules = self.rules.iter().map(|rule| (&rule.key, rule.check()));
         let ekadashis = self.ekadashis.iter().map(|rule| (&rule.key, rule.check()));
         let following = self.following.iter().map(|rule| (&rule.key, rule.check()));
+        let dated = self.dated.iter().map(|rule| (&rule.key, rule.check()));
         let mut seen = std::collections::BTreeSet::new();
         for (list, items) in [
             ("rules", rules.collect::<Vec<_>>()),
             ("ekadashis", ekadashis.collect()),
             ("following", following.collect()),
+            ("dated", dated.collect()),
         ] {
             for (index, (key, checked)) in items.into_iter().enumerate() {
                 let at = format!("{list}[{index}]");
@@ -319,7 +362,8 @@ impl FestivalRequest {
     /// `rules` names a [`FestivalPack`] (`"DHARMASINDHU"`), or is a list
     /// whose items each name a pack or spell a rule out, in order: an
     /// [`EkadashiRule`] when it has a `vedha`, a [`FollowingRule`] when it
-    /// has an `after`, else a [`FestivalRule`]. A
+    /// has an `after`, a [`DatedRule`] when it has a `civilDate` or a
+    /// `civilWeekday`, else a [`FestivalRule`]. A
     /// later rule replaces an earlier one with its key. A
     /// catalogue member anywhere in it may be written bare or in full
     /// (`masa.ASHWINA`), as every binding reads one back.
@@ -355,6 +399,15 @@ impl FestivalRequest {
                     let rule: FollowingRule = teistro_core::strict::read_value(item, &field)?;
                     rule.check().map_err(|why| why.under(&field))?;
                     request = request.with_following(rule);
+                }
+                Value::Object(spelt)
+                    if listed
+                        && (spelt.contains_key("civilDate")
+                            || spelt.contains_key("civilWeekday")) =>
+                {
+                    let rule: DatedRule = teistro_core::strict::read_value(item, &field)?;
+                    rule.check().map_err(|why| why.under(&field))?;
+                    request = request.with_dated(rule);
                 }
                 other if listed => {
                     let rule: FestivalRule = teistro_core::strict::read_value(other, &field)?;

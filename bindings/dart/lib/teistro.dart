@@ -14334,6 +14334,28 @@ final class FestivalUnjudged extends _Value {
   List<Object?> get _fields => [rule, tithi.from, tithi.to, why];
 }
 
+/// A day a dated rule gave (`03-design/festival-rule-language.md` §3.6):
+/// a sankranti on the first of a Bikram Sambat month, a national day.
+final class DatedObservance extends _Value {
+  const DatedObservance({
+    required this.rule,
+    required this.day,
+    required this.on,
+  });
+
+  /// The rule's key.
+  final String rule;
+
+  /// The day.
+  final CalendarDate day;
+
+  /// The same day in the rule's own calendar.
+  final CalendarDate on;
+
+  @override
+  List<Object?> get _fields => [rule, ..._dateFields(day), ..._dateFields(on)];
+}
+
 /// An Ekadashi fast: the day a rule gives the 11th, by its vedha and the
 /// excess the 11th and the 12th hold (`03-design/festival-rules.md` §8).
 final class EkadashiFast extends _Value {
@@ -14406,6 +14428,7 @@ final class FestivalAnswer {
     required this.observances,
     required this.ekadashis,
     required this.unjudged,
+    required this.dated,
     required this.provenance,
   });
 
@@ -14414,6 +14437,10 @@ final class FestivalAnswer {
   /// The Ekadashi fasts, each under each Ekadashi rule asked for.
   final List<EkadashiFast> ekadashis;
   final List<FestivalUnjudged> unjudged;
+
+  /// Each dated rule's days, in the order of the days; empty when none
+  /// was asked.
+  final List<DatedObservance> dated;
 
   /// What computed it: the widened days among the applied conventions as
   /// `festival.days`, and the hash of the value.
@@ -14813,6 +14840,14 @@ FestivalAnswer _festivalAnswer(String json) {
           rule: raw['rule']! as String,
           tithi: _festivalInterval(raw['tithi']),
           why: raw['why']! as String,
+        ),
+    ]),
+    dated: List.unmodifiable([
+      for (final raw in _festivalEach(value['dated'] ?? const <Object?>[]))
+        DatedObservance(
+          rule: raw['rule']! as String,
+          day: _serdeDate(_festivalAt(raw['day'])),
+          on: _serdeDate(_festivalAt(raw['on'])),
         ),
     ]),
     provenance: Provenance.fromJson(_festivalAt(envelope['provenance'])),

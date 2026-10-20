@@ -14,7 +14,7 @@ use teistro_core::time::UtcOffset;
 use teistro_muhurta::Answer;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::festival::{
-    FestivalDay, FestivalRule, Observances, ekadashis, following, observances,
+    FestivalDay, FestivalRule, Observances, dated, ekadashis, following, observances,
 };
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::year::LunarYear;
@@ -277,7 +277,8 @@ impl<'a> AlmanacArea<'a> {
         let counted = following(request.following(), &karmakala.observances, &viewed)?;
         let mut found = karmakala
             .merged(counted)
-            .merged(ekadashis(request.ekadashis(), &viewed)?);
+            .merged(ekadashis(request.ekadashis(), &viewed)?)
+            .merged(dated(request.dated(), &viewed)?);
         let inside = |date: &CalendarDate| {
             calendar
                 .fixed_of(date)
@@ -287,6 +288,7 @@ impl<'a> AlmanacArea<'a> {
             .observances
             .retain(|observance| inside(&observance.day));
         found.ekadashis.retain(|fast| inside(&fast.day));
+        found.dated.retain(|kept| inside(&kept.day));
         found.unjudged.retain(|unjudged| {
             start.is_some_and(|start| unjudged.tithi.to.get() > start)
                 && end.is_some_and(|end| unjudged.tithi.from.get() < end)

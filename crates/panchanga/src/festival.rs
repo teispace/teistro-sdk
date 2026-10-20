@@ -30,10 +30,12 @@ use crate::Panchanga;
 use crate::month::{self, LunarMonth};
 use crate::span::Span;
 
+mod dated;
 mod ekadashi;
 mod following;
 mod nepal_panchanga;
 
+pub use dated::{Dated, DatedObservance, DatedRule, dated};
 pub use ekadashi::{
     EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, Vedha, ekadashis,
 };
@@ -875,6 +877,10 @@ pub struct Observances {
     pub ekadashis: Vec<EkadashiFast>,
     /// The occurrences no day could be given to.
     pub unjudged: Vec<Unjudged>,
+    /// Each dated rule's days, in the order of the days; left out when
+    /// none, so an answer no dated rule was asked of is the one it was.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub dated: Vec<DatedObservance>,
 }
 
 impl Observances {
@@ -882,7 +888,7 @@ impl Observances {
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to
     /// serde, both ways.
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 11] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 15] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
@@ -894,6 +900,10 @@ impl Observances {
         ("ekadashis", "days.era.era", Kind::Era),
         ("ekadashis", "day.calendar", Kind::Calendar),
         ("ekadashis", "day.era.era", Kind::Era),
+        ("dated", "day.calendar", Kind::Calendar),
+        ("dated", "day.era.era", Kind::Era),
+        ("dated", "on.calendar", Kind::Calendar),
+        ("dated", "on.era.era", Kind::Era),
     ];
 
     /// Both answers as one, the occurrences no day was given to in the
@@ -904,6 +914,7 @@ impl Observances {
         self.observances.extend(other.observances);
         self.ekadashis.extend(other.ekadashis);
         self.unjudged.extend(other.unjudged);
+        self.dated.extend(other.dated);
         self.unjudged
             .sort_by(|a, b| a.tithi.from.get().total_cmp(&b.tithi.from.get()));
         self

@@ -2,7 +2,8 @@
 
 Status: `design`, 2026-10-20. Built: `MOONRISE` (§3.1), `DAY_MUHURTA`
 (§3.2), `GREATER` with the maintainer's rule (§3.3), `dayOfPaksha`
-(§3.4), and `ON_VARA` with `NONE` (§3.5); the rest is not. Cruxes C601
+(§3.4), `ON_VARA` with `NONE` (§3.5), and the civil dates (§3.6); the
+rest is not. Cruxes C601
 to C604, C606, C608, C614, C616 to C619
 (`01-research/feature-universe/19-verification-cruxes.md`).
 
@@ -305,6 +306,30 @@ Whether the solar month begins on the sankranti's own day follows the
 profile's civil convention. In Nepal the Bikram Sambat month begins on
 the sankranti's day under punya kala, the convention the SDK's calendar
 already applies (C619).
+
+**Built**, with one change: `SOLAR_DAY` is not a third form. A Bikram
+Sambat month is the solar month the Sun's sign names under Nepal's
+convention, so a solar day is a `civilDate` in that calendar, and its
+negative day is the one `civilDate` takes. Two forms say every row:
+
+```json
+{"key": "MAKARA_SANKRANTI", "source": "...", "civilDate": {"calendar": "BIKRAM_SAMBAT", "month": 10, "day": 1}}
+{"key": "SAFER_INTERNET_DAY", "source": "...", "civilWeekday": {"calendar": "GREGORIAN", "month": 2, "weekday": "MANGALAVARA", "nth": 2}}
+```
+
+A rule is a `DatedRule` in a request's `rules`, told apart by its
+`civilDate` or `civilWeekday`, and its days come back as the answer's
+`dated` list, each `{rule, day, on}`: the day, and the same day in the
+rule's own calendar. The list is left out of an answer when empty, so
+no answer that asks for none changes its hash. `NEPAL_PANCHANGA` ships
+the twelve sankrantis on the first of each Bikram Sambat month and four
+national days, read off the committee's print: every sankranti of VS 2082
+on its month's first day (pp. 2–24, printed by the month's name,
+"वैशाखसंक्रान्ति, नववर्षारम्भ" to "चैत्रसङ्क्रान्ति"), लोकतन्त्र दिवस on
+Baisakh 11, संविधानदिवस on Asoj 3, पृथ्वीजयन्ती on Poush 27 and the
+earthquake safety day on Magh 2, with VS 2083's Baisakh, Poush and Magh
+rows checked too (`crates/sdk/tests/festival.rs`). Each is an event in
+the iCalendar feed.
 
 **Settles:** the 24 solar festivals and the 165 fixed civil ones of the
 classification, Guriya parva (C621), and Safer internet day's weekday rule.

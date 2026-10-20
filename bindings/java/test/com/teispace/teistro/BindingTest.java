@@ -1590,8 +1590,13 @@ public final class BindingTest {
                 check(ics.startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"), "a calendar");
                 check(ics.contains("X-WR-CALNAME:Dashain\r\n"), "its name");
                 FestivalAnswer answer = sky.almanac().festivals(first, last, kathmandu, 20_700, panchanga);
-                same(answer.observances().size() + answer.ekadashis().size(), ics.split("BEGIN:VEVENT", -1).length - 1,
-                        "one event an occurrence");
+                same(answer.observances().size() + answer.ekadashis().size() + answer.dated().size(),
+                        ics.split("BEGIN:VEVENT", -1).length - 1, "one event an occurrence");
+                DatedObservance tula = answer.dated().get(0);
+                same("TULA_SANKRANTI", tula.rule(), "Kartik's sankranti");
+                same(java.util.List.of(10, 18), java.util.List.of(tula.day().month(), tula.day().day()), "on 18 October");
+                same(java.util.List.of(Calendar.BIKRAM_SAMBAT, 7, 1),
+                        java.util.List.of(tula.on().calendar(), tula.on().month(), tula.on().day()), "Kartik 1");
                 check(ics.replace("\r\n ", "").contains(
                         "DTSTART;VALUE=DATE:20251002\r\nDTEND;VALUE=DATE:20251003\r\nSUMMARY:Vijaya Dashami\r\n"),
                         "Vijaya Dashami on 2 October");

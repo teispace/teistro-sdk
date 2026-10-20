@@ -2655,7 +2655,7 @@ fn predicates_are_listed(root: &Path, outcome: &mut Outcome) {
 /// their own, each with why. A path is a file or a crate's `src`; it
 /// excuses what is under it and must still excuse something, so an entry
 /// outlives nothing it was written for.
-const SPELT_OTHERWISE: [(&str, &str); 5] = [
+const SPELT_OTHERWISE: [(&str, &str); 6] = [
     (
         "crates/ephemeris-kit/src/corpus.rs",
         "the conformance corpus's report format, whose outcomes the corpus \
@@ -2675,6 +2675,12 @@ const SPELT_OTHERWISE: [(&str, &str); 5] = [
         "crates/intl/src",
         "a pack's own format: CLDR's `ltr` and `rtl`, and the validator's \
          report on a pack",
+    ),
+    (
+        "crates/panchanga/src/festival/dated.rs",
+        "a dated rule's form, written as the field that holds it \
+         (`civilDate`, `civilWeekday`) as a following rule's `after` is: \
+         the enum is externally tagged, so its tags are field names",
     ),
     (
         "crates/port-ephemeris/src/native.rs",

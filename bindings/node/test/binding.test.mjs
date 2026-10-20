@@ -4165,7 +4165,7 @@ test('an almanac carries the festivals it was asked for', () => {
   assert.throws(() => ctx.almanac.festivals(days), /festivals: expected a festivals request/);
   assert.deepEqual(
     answer.observances.map((o) => o.rule),
-    ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],
+    ['VIJAYA_DASHAMI', 'SANKASHTA_CHATURTHI', 'KARAKA_CHATURTHI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],
   );
   assert.ok(Object.isFrozen(answer.observances[0].extents[0].window), 'frozen to its leaves');
   const [dashami] = answer.observances;
@@ -4699,7 +4699,16 @@ test('an almanac writes its festivals as an iCalendar feed', () => {
     assert.ok(ics.endsWith('END:VCALENDAR\r\n'));
     assert.ok(ics.includes('X-WR-CALNAME:Dashain\r\n'));
     const answer = ctx.almanac.festivals(season);
-    assert.equal(ics.split('BEGIN:VEVENT').length - 1, answer.observances.length + answer.ekadashis.length);
+    assert.equal(
+      ics.split('BEGIN:VEVENT').length - 1,
+      answer.observances.length + answer.ekadashis.length + answer.dated.length,
+    );
+    // Kartik's sankranti on the first of the Bikram Sambat month.
+    const [tula] = answer.dated;
+    assert.equal(tula.rule, 'TULA_SANKRANTI');
+    assert.deepEqual([tula.day.month, tula.day.day], [10, 18]);
+    assert.deepEqual([tula.on.calendar, tula.on.month, tula.on.day], ['calendar.BIKRAM_SAMBAT', 7, 1]);
+    assert.ok(Object.isFrozen(tula.on), 'frozen to its leaves');
     const unfolded = ics.replaceAll('\r\n ', '');
     assert.ok(unfolded.includes('DTSTART;VALUE=DATE:20251002\r\nDTEND;VALUE=DATE:20251003\r\nSUMMARY:Vijaya Dashami\r\n'));
     for (const line of ics.split('\r\n')) assert.ok(Buffer.byteLength(line) <= 75, line);

@@ -5376,6 +5376,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.DHANU_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dhanuSankranti() {
+                    return r.entity("festival.DHANU_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.DHANVANTARI_JAYANTI` in the current locale.
                  *
                  * @return the forms
@@ -5619,12 +5628,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.KANYA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kanyaSankranti() {
+                    return r.entity("festival.KANYA_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.KARAKA_CHATURTHI` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms karakaChaturthi() {
                     return r.entity("festival.KARAKA_CHATURTHI");
+                }
+
+                /**
+                 * The forms of `festival.KARKATA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms karkataSankranti() {
+                    return r.entity("festival.KARKATA_SANKRANTI");
                 }
 
                 /**
@@ -5643,6 +5670,15 @@ public final class Messages {
                  */
                 public EntityForms kumaraJatra() {
                     return r.entity("festival.KUMARA_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.KUMBHA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kumbhaSankranti() {
+                    return r.entity("festival.KUMBHA_SANKRANTI");
                 }
 
                 /**
@@ -5682,6 +5718,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.LOKTANTRA_DIWAS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms loktantraDiwas() {
+                    return r.entity("festival.LOKTANTRA_DIWAS");
+                }
+
+                /**
+                 * The forms of `festival.MAKARA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms makaraSankranti() {
+                    return r.entity("festival.MAKARA_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.MANGALA_CHATURTHI` in the current locale.
                  *
                  * @return the forms
@@ -5709,12 +5763,48 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.MESHA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms meshaSankranti() {
+                    return r.entity("festival.MESHA_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.MHA_PUJA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms mhaPuja() {
                     return r.entity("festival.MHA_PUJA");
+                }
+
+                /**
+                 * The forms of `festival.MINA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms minaSankranti() {
+                    return r.entity("festival.MINA_SANKRANTI");
+                }
+
+                /**
+                 * The forms of `festival.MITHUNA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mithunaSankranti() {
+                    return r.entity("festival.MITHUNA_SANKRANTI");
+                }
+
+                /**
+                 * The forms of `festival.NATIONAL_EARTHQUAKE_SAFETY_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nationalEarthquakeSafetyDay() {
+                    return r.entity("festival.NATIONAL_EARTHQUAKE_SAFETY_DAY");
                 }
 
                 /**
@@ -5835,6 +5925,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.PRITHVI_JAYANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms prithviJayanti() {
+                    return r.entity("festival.PRITHVI_JAYANTI");
+                }
+
+                /**
                  * The forms of `festival.PURNIMA_VRATA` in the current locale.
                  *
                  * @return the forms
@@ -5877,6 +5976,15 @@ public final class Messages {
                  */
                 public EntityForms rishiPanchami() {
                     return r.entity("festival.RISHI_PANCHAMI");
+                }
+
+                /**
+                 * The forms of `festival.SAMVIDHAN_DIWAS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms samvidhanDiwas() {
+                    return r.entity("festival.SAMVIDHAN_DIWAS");
                 }
 
                 /**
@@ -5943,6 +6051,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.SIMHA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms simhaSankranti() {
+                    return r.entity("festival.SIMHA_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.SITA_NAVAMI` in the current locale.
                  *
                  * @return the forms
@@ -6003,6 +6120,15 @@ public final class Messages {
                  */
                 public EntityForms tulasiVivaha() {
                     return r.entity("festival.TULASI_VIVAHA");
+                }
+
+                /**
+                 * The forms of `festival.TULA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tulaSankranti() {
+                    return r.entity("festival.TULA_SANKRANTI");
                 }
 
                 /**
@@ -6075,6 +6201,24 @@ public final class Messages {
                  */
                 public EntityForms vijayaEkadashi() {
                     return r.entity("festival.VIJAYA_EKADASHI");
+                }
+
+                /**
+                 * The forms of `festival.VRISHABHA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vrishabhaSankranti() {
+                    return r.entity("festival.VRISHABHA_SANKRANTI");
+                }
+
+                /**
+                 * The forms of `festival.VRISHCHIKA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vrishchikaSankranti() {
+                    return r.entity("festival.VRISHCHIKA_SANKRANTI");
                 }
 
                 /**

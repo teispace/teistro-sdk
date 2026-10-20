@@ -3299,6 +3299,86 @@
       "name": "Karaka Chaturthi",
       "prose": "Karaka chaturthi, Karva Chauth",
       "iast": "Karakacaturthī"
+    },
+    "MESHA_SANKRANTI": {
+      "name": "Mesha Sankranti",
+      "prose": "Mesha sankranti, the Bikram Sambat new year",
+      "iast": "Meṣasaṅkrānti"
+    },
+    "VRISHABHA_SANKRANTI": {
+      "name": "Vrishabha Sankranti",
+      "prose": "Vrishabha sankranti",
+      "iast": "Vṛṣabhasaṅkrānti"
+    },
+    "MITHUNA_SANKRANTI": {
+      "name": "Mithuna Sankranti",
+      "prose": "Mithuna sankranti",
+      "iast": "Mithunasaṅkrānti"
+    },
+    "KARKATA_SANKRANTI": {
+      "name": "Karkata Sankranti",
+      "prose": "Karkata sankranti, the sun's turn south",
+      "iast": "Karkaṭasaṅkrānti"
+    },
+    "SIMHA_SANKRANTI": {
+      "name": "Simha Sankranti",
+      "prose": "Simha sankranti",
+      "iast": "Siṃhasaṅkrānti"
+    },
+    "KANYA_SANKRANTI": {
+      "name": "Kanya Sankranti",
+      "prose": "Kanya sankranti",
+      "iast": "Kanyāsaṅkrānti"
+    },
+    "TULA_SANKRANTI": {
+      "name": "Tula Sankranti",
+      "prose": "Tula sankranti",
+      "iast": "Tulāsaṅkrānti"
+    },
+    "VRISHCHIKA_SANKRANTI": {
+      "name": "Vrishchika Sankranti",
+      "prose": "Vrishchika sankranti",
+      "iast": "Vṛścikasaṅkrānti"
+    },
+    "DHANU_SANKRANTI": {
+      "name": "Dhanu Sankranti",
+      "prose": "Dhanu sankranti",
+      "iast": "Dhanusaṅkrānti"
+    },
+    "MAKARA_SANKRANTI": {
+      "name": "Maghe Sankranti",
+      "prose": "Maghe sankranti, the sun's turn north",
+      "iast": "Makarasaṅkrānti"
+    },
+    "KUMBHA_SANKRANTI": {
+      "name": "Kumbha Sankranti",
+      "prose": "Kumbha sankranti",
+      "iast": "Kumbhasaṅkrānti"
+    },
+    "MINA_SANKRANTI": {
+      "name": "Mina Sankranti",
+      "prose": "Mina sankranti",
+      "iast": "Mīnasaṅkrānti"
+    },
+    "LOKTANTRA_DIWAS": {
+      "name": "Democracy Day",
+      "prose": "Democracy Day, Baisakh 11",
+      "iast": "Lokatantra divasa"
+    },
+    "SAMVIDHAN_DIWAS": {
+      "name": "Constitution Day",
+      "prose": "Constitution Day, Asoj 3",
+      "iast": "Saṃvidhāna divasa"
+    },
+    "PRITHVI_JAYANTI": {
+      "name": "Prithvi Jayanti",
+      "prose": "Prithvi Jayanti, National Unity Day",
+      "iast": "Pṛthvī jayantī"
+    },
+    "NATIONAL_EARTHQUAKE_SAFETY_DAY": {
+      "name": "National Earthquake Safety Day",
+      "prose": "National Earthquake Safety Day, Magh 2",
+      "iast": "Rāṣṭriya bhūkampa surakṣā divasa"
     }
   }
 }

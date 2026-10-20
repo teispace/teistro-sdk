@@ -6516,12 +6516,13 @@ export interface FestivalRequest {
   /**
    * A pack the SDK ships, by name; or a list whose items each name a pack
    * or spell a rule out, in order: an Ekadashi rule when it has a `vedha`,
-   * a following rule when it has an `after`, else a festival rule. A later
-   * rule replaces an earlier one with its key.
+   * a following rule when it has an `after`, a dated rule when it has a
+   * `civilDate` or a `civilWeekday`, else a festival rule. A later rule
+   * replaces an earlier one with its key.
    */
   readonly rules:
     | FestivalPack
-    | readonly (FestivalPack | FestivalRule | EkadashiRule | FollowingRule)[];
+    | readonly (FestivalPack | FestivalRule | EkadashiRule | FollowingRule | DatedRule)[];
 }
 
 /**
@@ -6550,6 +6551,43 @@ export interface FollowingRule {
   readonly days: number;
 }
 
+/**
+ * An observance kept on a date of a calendar
+ * (`03-design/festival-rule-language.md` §3.6): a sankranti on the first
+ * of a Bikram Sambat month, a national day. Exactly one of `civilDate`
+ * and `civilWeekday`.
+ */
+export type DatedRule = {
+  /** Its key in its pack, `'MAKARA_SANKRANTI'`; an observance is named by it. */
+  readonly key: string;
+  /** Where the rule is stated. */
+  readonly source: string;
+} & (
+  | {
+      /** A day of a month, 1 for the first; a negative day counts back from its end, -1 for the last. */
+      readonly civilDate: { readonly calendar: Calendar; readonly month: number; readonly day: number };
+    }
+  | {
+      /** The `nth` weekday of a month; a negative `nth` counts back from its end, -1 for the last. */
+      readonly civilWeekday: {
+        readonly calendar: Calendar;
+        readonly month: number;
+        readonly weekday: Vara;
+        readonly nth: number;
+      };
+    }
+);
+
+/** A day a dated rule gave. */
+export interface DatedObservance {
+  /** The rule's key. */
+  readonly rule: string;
+  /** The day. */
+  readonly day: CalendarDate;
+  /** The same day in the rule's own calendar. */
+  readonly on: CalendarDate;
+}
+
 /** A fifth of the daylight (*Dharmasindhu*, p. 6). */
 export type FestivalDayPart = 'PRATAH' | 'SANGAVA' | 'MADHYAHNA' | 'APARAHNA' | 'SAYAHNA';
 
@@ -6564,7 +6602,9 @@ export type FestivalWindow =
   /** A fifteenth of the night counted from sunset, 1 to 15; Shivaratri's niśītha is the 8th. */
   | { readonly window: 'NIGHT_MUHURTA'; readonly muhurta: number }
   /** Fifteenths of the daylight counted from sunrise, `from` to `to` inclusive, 1 to 15; purvahna is 1 to 6 (C602). */
-  | { readonly window: 'DAY_MUHURTA'; readonly from: number; readonly to: number };
+  | { readonly window: 'DAY_MUHURTA'; readonly from: number; readonly to: number }
+  /** The first moonrise after the day's sunrise; the Sankashta chaturthi's (*Dharmasindhu* p. 9). A day the Moon does not rise on leaves the occurrence unjudged. */
+  | { readonly window: 'MOONRISE' };
 
 /** One of the tithi's two days. */
 export type FestivalWhich = 'EARLIER' | 'LATER';
@@ -6923,6 +6963,8 @@ export interface FestivalAnswer {
   readonly ekadashis: readonly EkadashiFast[];
   /** The occurrences no day could be given to, and why. */
   readonly unjudged: readonly { readonly rule: string; readonly tithi: Interval; readonly why: string }[];
+  /** Each dated rule's days, in the order of the days; empty when none was asked. */
+  readonly dated: readonly DatedObservance[];
   /** What computed it: the widened days among the applied conventions as `festival.days`, and the hash of this value. */
   readonly provenance: Provenance;
 }

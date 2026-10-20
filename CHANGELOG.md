@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Days kept on a date** (`festival-rule-language.md` §3.6).
+**Numbers:** `NEPAL_PANCHANGA` gains the twelve sankrantis, each on the
+first of its Bikram Sambat month, and four national days (Democracy,
+Constitution, Prithvi Jayanti and earthquake safety), every one of VS
+2082's printed rows. A festival answer gains a `dated` list of
+`{rule, day, on}`. The list is left out when empty, so every answer that
+asks for no dated rule keeps its hash. A consumer writes such a rule as a
+`civilDate` (a day of a month in a named calendar, counted back from the
+end when negative) or a `civilWeekday` (the nth weekday of a month), and
+every binding reads the list. The iCalendar feed carries the dated days
+as events. The design's `SOLAR_DAY` is a `civilDate` in the Bikram Sambat
+calendar, whose months are the solar months.
+
+**Bindings' festival tests** follow the Sankashta and Karaka chaturthis
+into `DHARMASINDHU`'s October: the previous change moved them and its
+sweep, run against the wrong directory, checked nothing.
+
 **The chaturthis at moonrise** (`festival-rule-language.md` §3.1).
 **Numbers:** `DHARMASINDHU` gains `SANKASHTA_CHATURTHI`, every month's
 dark 4th at moonrise (p. 9), and `KARAKA_CHATURTHI`, Ashvina's (p. 76):

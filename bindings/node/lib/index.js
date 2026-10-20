@@ -5937,6 +5937,7 @@ function festivalsFrom(json) {
       day: dateFrom(fast.day),
     })),
     unjudged: value.unjudged,
+    dated: (value.dated ?? []).map((kept) => ({ ...kept, day: dateFrom(kept.day), on: dateFrom(kept.on) })),
     provenance: decodeProvenance(provenance),
   });
 }

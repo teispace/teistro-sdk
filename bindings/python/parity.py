@@ -642,6 +642,11 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
                 )
             ),
         )
+    for k, kept in enumerate(answer.dated):
+        put(
+            f"{prefix}-dated-{k}",
+            f"{kept.rule} {kept.day.month}-{kept.day.day} {kept.on.calendar.full_key} {kept.on.month}-{kept.on.day}",
+        )
 
 
 def put_ashta(prefix: str, matched: AshtaKoota) -> None:
@@ -2626,6 +2631,19 @@ def main() -> None:
             "decide": [],
             "otherwise": "LATER",
         }
+        # Two dated rules: the first of Kartik, and October's last Sunday.
+        own_dated = (
+            {
+                "key": "KARTIK_FIRST",
+                "source": "the first of Kartik",
+                "civilDate": {"calendar": "calendar.BIKRAM_SAMBAT", "month": 7, "day": 1},
+            },
+            {
+                "key": "LAST_SUNDAY",
+                "source": "October's last Sunday",
+                "civilWeekday": {"calendar": "calendar.GREGORIAN", "month": 10, "weekday": "vara.RAVIVARA", "nth": -1},
+            },
+        )
         own_following = {
             "key": "TWO_AFTER",
             "source": "two days after Lakshmi puja",
@@ -2636,6 +2654,7 @@ def main() -> None:
             ("shipped", {"rules": "DHARMASINDHU"}),
             ("amended", {"rules": ["DHARMASINDHU", own_rule]}),
             ("nepal", {"rules": ["NEPAL", own_following]}),
+            ("dated", {"rules": ["NEPAL", *own_dated]}),
         )
         # The shipped pack is asked of the lean call, the others of the
         # almanac's: the two answer alike, so the report cannot tell.

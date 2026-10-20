@@ -373,3 +373,71 @@ fn the_dark_fourth_at_moonrise_is_the_almanacs_sankashta_every_month() {
         .unwrap();
     assert_eq!(bhalachandra.extents[0].window.from, panchanga.moon.rises[0]);
 }
+
+/// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
+/// at Kathmandu: exactly the rows read off the committee's print, each
+/// sankranti on its month's first day (pp. 2-24), and the four national
+/// days; and VS 2083's rows checked (pp. 2, 21).
+#[test]
+fn the_dated_days_are_the_committees_printed_rows() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let kathmandu = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let kept = |from: (i32, u8, u8), to: (i32, u8, u8)| -> Vec<(String, (i32, u8, u8))> {
+        sdk.almanac()
+            .festivals(
+                &CalendarDate::defined(Calendar::Gregorian, from.0, from.1, from.2),
+                &CalendarDate::defined(Calendar::Gregorian, to.0, to.1, to.2),
+                &kathmandu,
+                UtcOffset::literal(5, 45, 0),
+                &FestivalRequest::from(FestivalPack::NepalPanchanga),
+            )
+            .unwrap()
+            .value
+            .dated
+            .into_iter()
+            .map(|kept| (kept.rule, (kept.day.year, kept.day.month, kept.day.day)))
+            .collect()
+    };
+    let printed = |rows: &[(&str, (i32, u8, u8))]| -> Vec<(String, (i32, u8, u8))> {
+        rows.iter()
+            .map(|(rule, day)| ((*rule).to_owned(), *day))
+            .collect()
+    };
+    assert_eq!(
+        kept((2025, 4, 14), (2026, 4, 13)),
+        printed(&[
+            ("MESHA_SANKRANTI", (2025, 4, 14)),
+            ("LOKTANTRA_DIWAS", (2025, 4, 24)),
+            ("VRISHABHA_SANKRANTI", (2025, 5, 15)),
+            ("MITHUNA_SANKRANTI", (2025, 6, 15)),
+            ("KARKATA_SANKRANTI", (2025, 7, 17)),
+            ("SIMHA_SANKRANTI", (2025, 8, 17)),
+            ("KANYA_SANKRANTI", (2025, 9, 17)),
+            ("SAMVIDHAN_DIWAS", (2025, 9, 19)),
+            ("TULA_SANKRANTI", (2025, 10, 18)),
+            ("VRISHCHIKA_SANKRANTI", (2025, 11, 17)),
+            ("DHANU_SANKRANTI", (2025, 12, 16)),
+            ("PRITHVI_JAYANTI", (2026, 1, 11)),
+            ("MAKARA_SANKRANTI", (2026, 1, 15)),
+            ("NATIONAL_EARTHQUAKE_SAFETY_DAY", (2026, 1, 16)),
+            ("KUMBHA_SANKRANTI", (2026, 2, 13)),
+            ("MINA_SANKRANTI", (2026, 3, 15)),
+        ])
+    );
+    assert_eq!(
+        kept((2026, 4, 14), (2026, 4, 14)),
+        printed(&[("MESHA_SANKRANTI", (2026, 4, 14))])
+    );
+    assert_eq!(
+        kept((2027, 1, 10), (2027, 1, 16)),
+        printed(&[
+            ("PRITHVI_JAYANTI", (2027, 1, 11)),
+            ("MAKARA_SANKRANTI", (2027, 1, 15)),
+            ("NATIONAL_EARTHQUAKE_SAFETY_DAY", (2027, 1, 16)),
+        ])
+    );
+}

@@ -80,6 +80,14 @@ final class AlmanacReads {
                     return new FestivalUnjudged(Reads.string(u, "rule"), Reads.interval(Reads.field(u, "tithi")),
                             Reads.string(u, "why"));
                 }),
+                // Left out of the answer when no dated rule gave a day.
+                value.containsKey("dated")
+                        ? Reads.each(value, "dated", raw -> {
+                            Map<?, ?> d = Reads.object(raw);
+                            return new DatedObservance(Reads.string(d, "rule"),
+                                    Reads.serdeDate(Reads.field(d, "day")), Reads.serdeDate(Reads.field(d, "on")));
+                        })
+                        : java.util.List.of(),
                 provenance(envelope));
     }
 

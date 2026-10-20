@@ -661,6 +661,7 @@ __all__ = [
     "MuhurtaPada",
     "FestivalPack",
     "FestivalRequest",
+    "DatedObservance",
     "FestivalAnswer",
     "DayDisagreement",
     "DayDisagreements",
@@ -7165,8 +7166,10 @@ class FestivalRequest(TypedDict):
     SDK ships, or a list whose items each name a pack or spell a rule out as
     a mapping in its record's spelling (an Ekadashi rule when it has a
     `vedha`, a following rule when it has an `after`, which counts `days`
-    civil days from that festival rule's day; a festival rule is kept on a
-    `tithi`, or on a `nakshatra` in a `paksha`), a later rule replacing an
+    civil days from that festival rule's day, a dated rule when it has a
+    `civilDate` or a `civilWeekday`, kept on a date of a calendar; a
+    festival rule is kept on a `tithi`, or on a `nakshatra` in a `paksha`),
+    a later rule replacing an
     earlier one with its key. A catalogue member may be a member, a full key
     or a bare one.
 
@@ -7290,6 +7293,22 @@ class FestivalUnjudged:
 
 
 @dataclass(frozen=True)
+class DatedObservance:
+    """A day a dated rule gave (`03-design/festival-rule-language.md`
+    §3.6): a sankranti on the first of a Bikram Sambat month, a national
+    day."""
+
+    rule: str
+    """The rule's key."""
+
+    day: CalendarDate
+    """The day."""
+
+    on: CalendarDate
+    """The same day in the rule's own calendar."""
+
+
+@dataclass(frozen=True)
 class FestivalAnswer:
     """What a set of festival rules gives over an almanac's days
     (`03-design/festival-rules.md` §7.3).
@@ -7303,6 +7322,10 @@ class FestivalAnswer:
     """Each Ekadashi rule's fasts, in the order of the tithis."""
 
     unjudged: Tuple[FestivalUnjudged, ...]
+    dated: Tuple[DatedObservance, ...]
+    """Each dated rule's days, in the order of the days; empty when none
+    was asked."""
+
     provenance: Provenance
     """What computed it: the widened days among the applied conventions as
     `festival.days`, and the hash of the value."""
@@ -14034,6 +14057,10 @@ def _festivals_answer(text: str) -> FestivalAnswer:
         ekadashis=tuple(_ekadashi_fast(f) for f in value["ekadashis"]),
         unjudged=tuple(
             FestivalUnjudged(rule=u["rule"], tithi=_interval(u["tithi"]), why=u["why"]) for u in value["unjudged"]
+        ),
+        dated=tuple(
+            DatedObservance(rule=d["rule"], day=_serde_date(d["day"]), on=_serde_date(d["on"]))
+            for d in value.get("dated", ())
         ),
         provenance=decode_provenance(envelope["provenance"]),
     )

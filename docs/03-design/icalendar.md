@@ -72,7 +72,8 @@ provenance and its content hash taken over the text. `FeedOptions` holds
 `name` ("Festivals"), `product` (`-//Teispace//Teistro SDK x.y.z//EN`),
 `refresh_minutes` (a day) and `stamp_unix_seconds`.
 
-- Each observance and each Ekadashi fast becomes an all-day event on its
+- Each observance, each Ekadashi fast and each dated day (a sankranti,
+  a national day) becomes an all-day event on its
   civil day, ordered by day, then rule key.
 - `SUMMARY` is the festival's name in the context's locale
   (`sdk.entity` `festival`), falling back to the rule's key when the

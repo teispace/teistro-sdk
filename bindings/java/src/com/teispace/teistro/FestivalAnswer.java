@@ -17,16 +17,19 @@ import com.teispace.teistro.record.Provenance;
  * @param observances each rule's day
  * @param ekadashis each Ekadashi rule's fasts, in the order of the tithis
  * @param unjudged the occurrences no day could be given to
+ * @param dated each dated rule's days, in the order of the days; empty when
+ *     none was asked
  * @param provenance what computed it: the widened days among the applied
  *     conventions as {@code festival.days}, and the hash of the value
  */
 public record FestivalAnswer(
         List<FestivalObservance> observances, List<EkadashiFast> ekadashis, List<FestivalUnjudged> unjudged,
-        Provenance provenance) {
+        List<DatedObservance> dated, Provenance provenance) {
     /** Keeps the lists unmodifiable. */
     public FestivalAnswer {
         observances = List.copyOf(observances);
         ekadashis = List.copyOf(ekadashis);
         unjudged = List.copyOf(unjudged);
+        dated = List.copyOf(dated);
     }
 }

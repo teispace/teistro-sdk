@@ -689,6 +689,11 @@ public final class ParityRunner {
                     fast.choice(),
                     number(fast.tithis().get(1).fromJd())));
         }
+        for (int k = 0; k < answer.dated().size(); k += 1) {
+            DatedObservance kept = answer.dated().get(k);
+            put(prefix + "-dated-" + k, kept.rule() + " " + kept.day().month() + "-" + kept.day().day() + " "
+                    + kept.on().calendar().fullKey() + " " + kept.on().month() + "-" + kept.on().day());
+        }
     }
 
     /** An Ashta Koota as every runner prints it, under {@code prefix}. */
@@ -2707,10 +2712,21 @@ public final class ParityRunner {
                 "source", "two days after Lakshmi puja",
                 "after", "LAKSHMI_PUJA",
                 "days", 2);
+        // Two dated rules: the first of Kartik, and October's last Sunday.
+        Map<String, Object> kartikFirst = map(
+                "key", "KARTIK_FIRST",
+                "source", "the first of Kartik",
+                "civilDate", map("calendar", "calendar.BIKRAM_SAMBAT", "month", 7, "day", 1));
+        Map<String, Object> lastSunday = map(
+                "key", "LAST_SUNDAY",
+                "source", "October's last Sunday",
+                "civilWeekday", map("calendar", "calendar.GREGORIAN", "month", 10, "weekday", "vara.RAVIVARA",
+                        "nth", -1));
         Map<String, Map<String, Object>> packs = new LinkedHashMap<>();
         packs.put("shipped", map("rules", "DHARMASINDHU"));
         packs.put("amended", map("rules", List.<Object>of("DHARMASINDHU", ownRule)));
         packs.put("nepal", map("rules", List.<Object>of("NEPAL", ownFollowing)));
+        packs.put("dated", map("rules", List.<Object>of("NEPAL", kartikFirst, lastSunday)));
         // The shipped pack is asked of the lean call, the others of the
         // almanac's: the two answer alike, so the report cannot tell.
         for (Map.Entry<String, Map<String, Object>> pack : packs.entrySet()) {

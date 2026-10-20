@@ -1766,6 +1766,19 @@ const ownRule = {
   decide: [],
   otherwise: 'LATER',
 };
+// Two dated rules: the first of Kartik, and October's last Sunday.
+const ownDated = [
+  {
+    key: 'KARTIK_FIRST',
+    source: 'the first of Kartik',
+    civilDate: { calendar: 'calendar.BIKRAM_SAMBAT', month: 7, day: 1 },
+  },
+  {
+    key: 'LAST_SUNDAY',
+    source: "October's last Sunday",
+    civilWeekday: { calendar: 'calendar.GREGORIAN', month: 10, weekday: 'vara.RAVIVARA', nth: -1 },
+  },
+];
 const ownFollowing = {
   key: 'TWO_AFTER',
   source: 'two days after Lakshmi puja',
@@ -1776,6 +1789,7 @@ for (const [name, rules] of [
   ['shipped', 'DHARMASINDHU'],
   ['amended', ['DHARMASINDHU', ownRule]],
   ['nepal', ['NEPAL', ownFollowing]],
+  ['dated', ['NEPAL', ...ownDated]],
 ]) {
   // The shipped pack is asked of the lean call, the others of the
   // almanac's: the two answer alike, so the report cannot tell.
@@ -1831,6 +1845,12 @@ for (const [name, rules] of [
         fast.choice,
         number(fast.tithis[1].from),
       ].join(' '),
+    );
+  });
+  festivals.dated.forEach((kept, k) => {
+    put(
+      key(`-dated-${k}`),
+      `${kept.rule} ${kept.day.month}-${kept.day.day} ${kept.on.calendar} ${kept.on.month}-${kept.on.day}`,
     );
   });
 }

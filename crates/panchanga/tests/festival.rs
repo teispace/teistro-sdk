@@ -22,9 +22,9 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
-    Case, Choice, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule,
-    Guard, Moonrise, Observances, Occurs, Predicate, Unjudged, Which, Window, ekadashis, following,
-    observances, yugma,
+    Case, Choice, DatedObservance, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule,
+    FollowingRule, Guard, Moonrise, Observances, Occurs, Predicate, Unjudged, Which, Window,
+    ekadashis, following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -1577,7 +1577,7 @@ fn string_paths(
 #[test]
 fn an_answer_names_its_catalogue_members_where_its_table_says() {
     // Every string an answer holds that is not a catalogue member.
-    const NOT_MEMBERS: [&str; 15] = [
+    const NOT_MEMBERS: [&str; 18] = [
         "observances.rule",
         "observances.decidedBy.rule",
         "observances.day.resolution.kind",
@@ -1593,6 +1593,9 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         "ekadashis.choice",
         "unjudged.rule",
         "unjudged.why",
+        "dated.rule",
+        "dated.day.resolution.kind",
+        "dated.on.resolution.kind",
     ];
     let tithis = [
         (Tithi::KrishnaShashthi, ghati(0, 30.0)),
@@ -1639,6 +1642,13 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
     for day in &mut fast.days {
         day.era = era;
     }
+    // A dated observance, its day named in both calendars.
+    let day = fast.day.clone();
+    answer.dated.push(DatedObservance {
+        rule: "JANMASHTAMI".to_owned(),
+        day: day.clone(),
+        on: day,
+    });
     let mut found = std::collections::BTreeSet::new();
     string_paths(&serde_json::to_value(&answer).unwrap(), "", &mut found);
     let members: std::collections::BTreeSet<String> = Observances::MEMBERS

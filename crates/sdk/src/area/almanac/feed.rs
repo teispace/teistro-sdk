@@ -247,7 +247,8 @@ impl AlmanacArea<'_> {
             .observances
             .iter()
             .map(|observance| (&observance.rule, &observance.day))
-            .chain(value.ekadashis.iter().map(|fast| (&fast.rule, &fast.day)));
+            .chain(value.ekadashis.iter().map(|fast| (&fast.rule, &fast.day)))
+            .chain(value.dated.iter().map(|kept| (&kept.rule, &kept.day)));
         let mut events: Vec<(FixedDay, &str, Event)> = Vec::new();
         for (rule, day) in occurrences {
             let fixed = system_of(day.calendar)?.fixed_of(day)?;
@@ -309,9 +310,11 @@ fn source_of<'a>(festivals: &'a FestivalRequest, rule: &str) -> Option<&'a str> 
     let yearly = festivals.rules().iter().map(|r| (&r.key, &r.source));
     let ekadashis = festivals.ekadashis().iter().map(|r| (&r.key, &r.source));
     let following = festivals.following().iter().map(|r| (&r.key, &r.source));
+    let dated = festivals.dated().iter().map(|r| (&r.key, &r.source));
     yearly
         .chain(ekadashis)
         .chain(following)
+        .chain(dated)
         .find(|(key, _)| key.as_str() == rule)
         .map(|(_, source)| source.as_str())
 }

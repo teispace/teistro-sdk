@@ -110,6 +110,8 @@ import type {
   EkadashiKinds,
   EkadashiRule,
   EkadashiVedha,
+  DatedObservance,
+  DatedRule,
   FestivalAnswer,
   FestivalPack,
   FestivalRequest,
@@ -2238,7 +2240,22 @@ function theFestivals(almanac: Almanac): string {
   const halfless: FestivalRule = { key: 'X', source: 'x', nakshatra: 'nakshatra.HASTA', at: { window: 'SUNRISE' }, decide: [], otherwise: 'LATER' };
   // The Terai's Holi, a day after the Holika fire.
   const terai: FollowingRule = { key: 'HOLI_TERAI', source: 'the committee', after: 'HOLIKA', days: 1 };
-  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, pradosha, mangala, terai] };
+  // The Sankashta chaturthi at moonrise, and two days kept on a date.
+  const sankashta: FestivalRule = { ...rule, key: 'SANKASHTA_CHATURTHI', at: { window: 'MOONRISE' } };
+  const maghe: DatedRule = {
+    key: 'MAKARA_SANKRANTI',
+    source: 'the committee',
+    civilDate: { calendar: 'calendar.BIKRAM_SAMBAT', month: 10, day: 1 },
+  };
+  const safer: DatedRule = {
+    key: 'SAFER_INTERNET_DAY',
+    source: 'the organisers',
+    civilWeekday: { calendar: 'calendar.GREGORIAN', month: 2, weekday: 'vara.MANGALAVARA', nth: 2 },
+  };
+  // @ts-expect-error a dated rule is kept on one date, not two
+  const twoDates: DatedRule = { ...maghe, civilWeekday: safer.civilWeekday };
+  const kept = answer.dated.map((one: DatedObservance) => `${one.rule} ${one.day.day} ${one.on.month}/${one.on.day}`);
+  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, pradosha, mangala, terai, sankashta, maghe, safer] };
   const pack: FestivalPack = 'NEPAL';
   // @ts-expect-error a following rule counts days, a number
   const spelt: FollowingRule = { ...terai, days: 'one' };
@@ -2248,7 +2265,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

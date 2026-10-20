@@ -753,7 +753,19 @@ void _engineTests() {
     );
     expect(
       'BEGIN:VEVENT'.allMatches(ics).length,
-      answer.observances.length + answer.ekadashis.length,
+      answer.observances.length +
+          answer.ekadashis.length +
+          answer.dated.length,
+    );
+    // Kartik's sankranti on the first of the Bikram Sambat month.
+    final tula = answer.dated.first;
+    expect(
+      (tula.rule, tula.day.month, tula.day.day),
+      ('TULA_SANKRANTI', 10, 18),
+    );
+    expect(
+      (tula.on.calendar, tula.on.month, tula.on.day),
+      (Calendar.bikramSambat, 7, 1),
     );
     expect(
       ics.replaceAll('\r\n ', ''),
@@ -2557,7 +2569,13 @@ void _engineTests() {
     expect(answer.observances.every((o) => o.marginSeconds >= 0), isTrue);
     expect(
       [for (final observance in answer.observances) observance.rule],
-      ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],
+      [
+        'VIJAYA_DASHAMI',
+        'SANKASHTA_CHATURTHI',
+        'KARAKA_CHATURTHI',
+        'LAKSHMI_PUJA',
+        'BALI_PRATIPADA',
+      ],
     );
     final dashami = answer.observances.first;
     expect(dashami.day.calendar, Calendar.gregorian);

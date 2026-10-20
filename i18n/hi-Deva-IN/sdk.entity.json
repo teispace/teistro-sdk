@@ -2842,6 +2842,86 @@
       "name": "करवा चौथ",
       "prose": "करवा चौथ",
       "iast": "Karakacaturthī"
+    },
+    "MESHA_SANKRANTI": {
+      "name": "मेष संक्रांति",
+      "prose": "मेष संक्रांति",
+      "iast": "Meṣasaṅkrānti"
+    },
+    "VRISHABHA_SANKRANTI": {
+      "name": "वृषभ संक्रांति",
+      "prose": "वृषभ संक्रांति",
+      "iast": "Vṛṣabhasaṅkrānti"
+    },
+    "MITHUNA_SANKRANTI": {
+      "name": "मिथुन संक्रांति",
+      "prose": "मिथुन संक्रांति",
+      "iast": "Mithunasaṅkrānti"
+    },
+    "KARKATA_SANKRANTI": {
+      "name": "कर्क संक्रांति",
+      "prose": "कर्क संक्रांति",
+      "iast": "Karkaṭasaṅkrānti"
+    },
+    "SIMHA_SANKRANTI": {
+      "name": "सिंह संक्रांति",
+      "prose": "सिंह संक्रांति",
+      "iast": "Siṃhasaṅkrānti"
+    },
+    "KANYA_SANKRANTI": {
+      "name": "कन्या संक्रांति",
+      "prose": "कन्या संक्रांति",
+      "iast": "Kanyāsaṅkrānti"
+    },
+    "TULA_SANKRANTI": {
+      "name": "तुला संक्रांति",
+      "prose": "तुला संक्रांति",
+      "iast": "Tulāsaṅkrānti"
+    },
+    "VRISHCHIKA_SANKRANTI": {
+      "name": "वृश्चिक संक्रांति",
+      "prose": "वृश्चिक संक्रांति",
+      "iast": "Vṛścikasaṅkrānti"
+    },
+    "DHANU_SANKRANTI": {
+      "name": "धनु संक्रांति",
+      "prose": "धनु संक्रांति",
+      "iast": "Dhanusaṅkrānti"
+    },
+    "MAKARA_SANKRANTI": {
+      "name": "मकर संक्रांति",
+      "prose": "मकर संक्रांति",
+      "iast": "Makarasaṅkrānti"
+    },
+    "KUMBHA_SANKRANTI": {
+      "name": "कुंभ संक्रांति",
+      "prose": "कुंभ संक्रांति",
+      "iast": "Kumbhasaṅkrānti"
+    },
+    "MINA_SANKRANTI": {
+      "name": "मीन संक्रांति",
+      "prose": "मीन संक्रांति",
+      "iast": "Mīnasaṅkrānti"
+    },
+    "LOKTANTRA_DIWAS": {
+      "name": "लोकतंत्र दिवस",
+      "prose": "लोकतंत्र दिवस",
+      "iast": "Lokatantra divasa"
+    },
+    "SAMVIDHAN_DIWAS": {
+      "name": "संविधान दिवस",
+      "prose": "संविधान दिवस",
+      "iast": "Saṃvidhāna divasa"
+    },
+    "PRITHVI_JAYANTI": {
+      "name": "पृथ्वी जयंती",
+      "prose": "पृथ्वी जयंती",
+      "iast": "Pṛthvī jayantī"
+    },
+    "NATIONAL_EARTHQUAKE_SAFETY_DAY": {
+      "name": "राष्ट्रीय भूकंप सुरक्षा दिवस",
+      "prose": "राष्ट्रीय भूकंप सुरक्षा दिवस",
+      "iast": "Rāṣṭriya bhūkampa surakṣā divasa"
     }
   }
 }
