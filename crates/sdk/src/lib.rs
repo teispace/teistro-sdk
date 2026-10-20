@@ -63,8 +63,10 @@ pub use area::NumerologyArea;
 #[cfg(feature = "research")]
 pub use area::ResearchArea;
 pub use area::{
-    AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, CalendarArea, EngineArea,
-    FestivalDays, FrameArea, IntlArea, KeysArea, TimeArea,
+    AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, CalendarArea, DayDisagreement,
+    DayDisagreements, EkadashiDisagreement, EngineArea, FestivalDays, FestivalDisagreement,
+    FestivalDisagreements, FrameArea, IntlArea, KeysArea, LimbChange, LimbDisagreement,
+    ReckonedLimb, TimeArea,
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};

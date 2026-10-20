@@ -41,8 +41,14 @@ pub struct AlmanacArea<'a> {
     context: &'a Context,
 }
 
+mod disagreement;
 #[cfg(feature = "muhurta")]
 mod muhurta;
+
+pub use disagreement::{
+    DayDisagreement, DayDisagreements, EkadashiDisagreement, FestivalDisagreement,
+    FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
+};
 
 impl<'a> AlmanacArea<'a> {
     pub(crate) fn of_context(context: &'a Context) -> AlmanacArea<'a> {

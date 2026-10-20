@@ -1,8 +1,8 @@
 # Where the official and the modern reckoning disagree
 
-Status: `draft`, 2026-10-20. Design for the consumer brief's P1-10 (its
-addendum 1, item 6), written before the code. The numbers in §4 are
-measured once the comparison is built, not before.
+Status: `built`, 2026-10-20. Design for the consumer brief's P1-10 (its
+addendum 1, item 6), written before the code and corrected by it. §4 is
+measured through the built comparison (`crates/sdk/tests/disagreements.rs`).
 
 An app in Nepal shows two reckonings of one day. The **official** one is
 the Nepali committee's: `nepali-committee` over the Surya Siddhanta, with
@@ -46,26 +46,37 @@ and nothing that is only words.
 let official = Context::builder().nepal_official([teimeris()]).build()?;
 let modern = Context::builder().profile("nepali-default").ephemeris([teimeris()]).build()?;
 let differ = official.almanac().disagreements(&modern, &from, &to, &place, offset)?;
-for day in &differ.value {
-    for limb in &day.limbs {
-        // limb.limb, limb.official.member, limb.other.member,
-        // limb.official.minutes_past, limb.other.minutes_past
+for day in &differ.value.days {
+    if let Some(tithi) = &day.tithi {
+        // tithi.official.member, tithi.other.member, and the instant each
+        // gives way: tithi.official.change?.minutes_from_sunrise
     }
 }
 ```
 
 `disagreements(other, from, to, place, offset)` reckons the range under
-both contexts, each in one crossing, and answers only the days on which
-some limb's member at sunrise differs: a `Vec<DayDisagreement>`, each with
-the date and one `LimbDisagreement` per limb that differs. Each side of a
-limb disagreement is a `Reckoned { member, ends, boundary, minutes_past }`:
-the member that side names at its sunrise, the instant **the official
-member** ends under that side's sky, that side's sunrise, and the signed
-minutes from the sunrise to that end. The official member ending after the
-official sunrise and before the other's is the whole explanation, and the
-numbers say it.
+both contexts, each in one crossing, and answers a `DayDisagreements`:
+the other context's profile and settings hash, how many days were
+compared, and only the days on which some limb's member at sunrise
+differs. Each `DayDisagreement` has the date and an optional
+`LimbDisagreement` per limb (`tithi`, `nakshatra`, `yoga`, `karana`),
+present when that limb differs. Each side of a limb disagreement is a
+`ReckonedLimb { member, span, sunrise, change }`: the member that side
+names at its sunrise, that member's whole span under its sky, its
+sunrise, and the `LimbChange { at, minutes_from_sunrise }` where the two
+members meet under that sky.
 
-Both contexts must be at the same place and clock; the call takes one
+Which instant that is follows from which side runs ahead. When the other
+names the member after the official one, the official member ended after
+the official sunrise and the other's began before the other's: the
+official change is its member's end and the other's its member's start.
+Run the other way round, they swap. Either way the two minutes have
+opposite signs (the test holds that), and the pair is the whole
+explanation. Two members that are not neighbours (a member one sky skips)
+name no single instant, and `change` is absent on both sides.
+
+A range holds at most 366 days, as `AlmanacArea::of`'s does; a decade is
+read a year at a time. Both contexts must be at the same place and clock; the call takes one
 place and one offset, so they cannot drift apart. The provenance is the
 official context's, with the other context's settings hash recorded
 beside it, so a cached comparison is invalidated when either changes.
@@ -78,31 +89,72 @@ because the first context is the one whose day the app shows.
 ## 3. The festival
 
 `festival_disagreements(other, from, to, place, offset, request)` runs one
-festival request under both contexts and answers each rule whose day
-differs: the rule, the day each reckoning gives with the case and guard
-that decided it (`Observance`), and the limb disagreements of the days
-between the two (the official day and the other's day, inclusive), which
-are where the deciding limb moved. A festival that one reckoning gives and
-the other does not (a kshaya tithi in one sky only) is a disagreement with
-one side absent, never dropped.
+festival request under both contexts and answers a `FestivalDisagreements`.
+Its `observances` hold each occurrence of a rule (paired by rule, amanta
+month, adhika and overlapping tithi) whose day differs, with each side's
+whole `Observance`: the day, the case between the tithi's two days and the
+extent of the rite's window each held, which is the reason. Its
+`ekadashis` do the same for the Ekadashi fasts, each side's `EkadashiFast`
+carrying the vedha and excess that decided. An occurrence that one
+reckoning gives and the other does not (a kshaya tithi in one sky only) is
+a disagreement with one side absent, never dropped.
 
 The festival's own boundary is the rule's time (`at`), which may be
-aparahna or nishitha rather than sunrise. A first version reports the
-sunrise limbs of the days involved and the case each side took; a reason
-measured against the rule's own window is §5's second item.
+aparahna or nishitha rather than sunrise; the observance's extents already
+measure each day against it. Linking a moved festival to the day
+disagreements between its two days is §5's second item.
 
 ## 4. Measured
 
-Filled in by the comparison itself: the share of days, festivals and
-Ekadashis that differ between the official and the modern reckoning over
-Kathmandu, 2020 to 2030, and the spread of the minutes past the boundary.
+Kathmandu, 2020 to 2030, one year per call: the official reckoning
+(`nepal_official`, the built-in ephemeris giving the sunrise) against
+`nepali-default` over the built-in ephemeris. Reproduced by:
+
+```text
+cargo test --release -p teistro --test disagreements -- --ignored --nocapture
+```
+
+| over 4,018 days | days | share |
+|---|---:|---:|
+| some limb's member at sunrise differs | 1,223 | 30.4% |
+| the tithi | 379 | 9.4% |
+| the nakshatra | 335 | 8.3% |
+| the nitya yoga | 356 | 8.9% |
+| the karana | 748 | 18.6% |
+
+Every one of the 379 tithi disagreements is two neighbouring members, so
+each has its instant on both sides; no member is skipped by one sky
+alone. The instant lies a median of 85 minutes from the official sunrise
+(90th percentile 208, largest 312) and 84 from the modern one (230, 362).
+The two instants are one boundary under two skies, on opposite sides of
+nearly one sunrise, so the skies place that boundary the sum of the two
+apart: an hour or more on most of these days.
+
+| over the same days | given by the official reckoning | on another day | under another month | on one side only |
+|---|---:|---:|---:|---:|
+| `NEPAL` observances | 312 | 16 | 3 | 4 |
+| `NEPAL_PANCHANGA` observances | 1,091 | 95 | 3 | 28 |
+| Ekadashi fasts (either pack) | 816 | 72 | 17 | 0 |
+
+**Under another month** is the year the two skies place an adhika month
+apart. In 2028 the text has an adhika Kartika the modern sky does not, so
+every month from it to January 2029 is named one apart. The first version
+paired occurrences by their month and read each fast there as two
+one-sided ones (36 of them). An occurrence is one rule over one tithi, so
+pairing is now by the overlapping tithi, and a different month is
+reported as a difference in its own right. A test holds the 2028 case.
+
+What the comparison costs is what the two reckonings cost, since it
+reckons each once: `05-testing/app-speed-measured.md` times both setups
+over Teimeris (a year of days in about 0.3 s for the committee's, 0.56 s
+for the modern), and the built-in ephemeris at some 25 times that.
 
 ## 5. Open
 
 1. **Bindings.** The record crosses the boundary as JSON first (a
    `disagreements` section beside the almanac's), and as a typed record
    once its shape has held through one consumer release.
-2. **The rule's own window as the boundary** for a festival (§3).
+2. **A moved festival linked to its days' limb disagreements** (§3).
 3. A reckoning on **a different engine** (the built-in against Teimeris)
    moves the sunrise as well as the limb; the record already carries each
    side's boundary, and the sentence names whichever moved.

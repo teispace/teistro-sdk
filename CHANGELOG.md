@@ -12,6 +12,32 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Where two reckonings disagree** (`setup-disagreements.md`).
+**Numbers:** none moved. `AlmanacArea::disagreements` reckons a range
+under two contexts. It answers the days on which some limb's member at
+sunrise differs, and for each such limb:
+- each side's member, its span and its sunrise;
+- the instant the two members meet under each sky, in minutes from that
+  sky's sunrise. The two signs are opposite, and that pair is the reason.
+
+`festival_disagreements` does the same for one festival request. It
+pairs each occurrence by rule, month and overlapping tithi, and keeps the
+moved ones and the ones only one side gives, each with its whole
+`Observance` or `EkadashiFast`. Rust only for now; the bindings get it as
+a JSON section.
+
+**Nepal's official days as a preset.** **Numbers:** none moved.
+`ContextBuilder::nepal_official(modern)` opens `nepali-committee` over
+`[SuryaSiddhanta, modern...]`. Every binding has the same preset:
+`nepalOfficial` in Node and Dart, `nepal_official` in Python, and
+`ContextOptions.Builder.nepalOfficial` in Java. A new `nepal_official`
+example in each prints November 2025 at Kathmandu beside `nepali-default`.
+
+**Fixed:** a binding's chain of `SURYA_SIDDHANTA` and then an adapter
+gave the text the built-in's sunrise rather than the adapter's. The
+boundary now places a provider behind the text when the selector names
+it, as the Rust chain always did.
+
 **The national panchanga's further festival days** (`festival-rules.md`
 §10, C600 to C623). **Numbers:** none moved. `DHARMASINDHU` and `NEPAL`
 answer as before. A third pack, `NEPAL_PANCHANGA`, is `NEPAL` plus:
@@ -20,7 +46,8 @@ answer as before. A third pack, `NEPAL_PANCHANGA`, is `NEPAL` plus:
 - 13 days counted from another rule's.
 
 `festival-measured.md` §6 holds the pack to the 132 printed days and names
-each parting's cause. The fits use three readings: the tithi at sunrise,
+each parting's cause. Measuring it moved one fit: Kuchhi Bhoye takes the
+earlier of a vriddhi Ashtami's two sunrises, as VS 2083 prints (C683). The fits use three readings: the tithi at sunrise,
 the later of two sunrises, and the share of a window.
 
 Two forms the language lacks are recorded as the cause of six partings:
