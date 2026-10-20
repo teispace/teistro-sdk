@@ -667,49 +667,133 @@ pub fn refine_with_rates<E>(
     tolerance: f64,
     caps: Caps,
 ) -> Result<Crossing, SolveError<E>> {
-    if !(tolerance.is_finite() && tolerance > 0.0) {
-        return Err(SolveError::Argument {
-            name: "tolerance",
-            value: tolerance,
-        });
+    let mut refinement = RatesRefinement::new(lo, hi, tolerance, caps)?;
+    while let Some(at) = refinement.next()? {
+        let reading = f(at).map_err(SolveError::Evaluation)?;
+        refinement.feed(at, reading);
     }
-    if !(lo.1 < 0.0 && hi.1 >= 0.0) {
-        return Err(SolveError::NotBracketed {
-            steps: 0,
-            last: lo.0,
-        });
+    Ok(refinement.finish())
+}
+
+/// [`refine_with_rates`] as a machine its caller drives: it names the
+/// instant it wants next ([`RatesRefinement::next`]), is fed the value
+/// and rate there ([`RatesRefinement::feed`]), and is read when it wants
+/// nothing more ([`RatesRefinement::finish`]).
+///
+/// It is what lets many refinements share their readings: a caller with
+/// a hundred brackets asks for the hundred next instants as one grid, a
+/// round at a time, where each driven alone would ask a hundred times a
+/// round. [`refine_with_rates`] is this machine fed by its closure, so a
+/// refinement driven either way takes the same steps and answers the
+/// same bits.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, RatesRefinement, refine_with_rates};
+///
+/// let curve = |t: f64| (((t - 0.3) * 1.5).sin(), 1.5 * ((t - 0.3) * 1.5).cos());
+/// let (lo, hi) = (curve(0.0), curve(1.0));
+/// let mut driven = RatesRefinement::new::<()>((0.0, lo.0, lo.1), (1.0, hi.0, hi.1), 1e-9, Caps::DEFAULT)?;
+/// while let Some(at) = driven.next::<()>()? {
+///     driven.feed(at, curve(at));
+/// }
+/// let closed = refine_with_rates(|t| Ok::<_, ()>(curve(t)), (0.0, lo.0, lo.1), (1.0, hi.0, hi.1), 1e-9, Caps::DEFAULT)?;
+/// assert_eq!(driven.finish(), closed);
+/// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct RatesRefinement {
+    lo: Sloped,
+    hi: Sloped,
+    tolerance: f64,
+    caps: Caps,
+    /// A quarter of the tolerance: how far inside the bracket a reading
+    /// is kept, and how far past a converged Newton point a probe goes.
+    least: f64,
+    estimate: f64,
+    /// The step before last, for the safeguard: a Newton step must at
+    /// least halve it or give way to a bisection.
+    before: f64,
+    /// Whether the last evaluation was a probe placed to close the
+    /// bracket: one that failed to means the rate misled the step, so the
+    /// next is a bisection, and a wrong rate costs at most every other
+    /// step's halving rather than creeping by a quarter tolerance at a
+    /// time.
+    probed: bool,
+    evaluations: u32,
+}
+
+impl RatesRefinement {
+    /// A refinement of the bracket from `lo`, below the line, to `hi`, at
+    /// or above it.
+    ///
+    /// # Errors
+    ///
+    /// As [`refine_with_rates`]: a tolerance that is not a positive
+    /// number, or ends that do not bracket the line.
+    pub fn new<E>(
+        lo: Sloped,
+        hi: Sloped,
+        tolerance: f64,
+        caps: Caps,
+    ) -> Result<RatesRefinement, SolveError<E>> {
+        if !(tolerance.is_finite() && tolerance > 0.0) {
+            return Err(SolveError::Argument {
+                name: "tolerance",
+                value: tolerance,
+            });
+        }
+        if !(lo.1 < 0.0 && hi.1 >= 0.0) {
+            return Err(SolveError::NotBracketed {
+                steps: 0,
+                last: lo.0,
+            });
+        }
+        Ok(RatesRefinement {
+            lo,
+            hi,
+            tolerance,
+            caps,
+            least: tolerance * 0.25,
+            estimate: lo.0 + (hi.0 - lo.0) * hermite_root(lo, hi),
+            before: hi.0 - lo.0,
+            probed: false,
+            evaluations: 0,
+        })
     }
-    let (mut lo, mut hi) = (lo, hi);
-    let least = tolerance * 0.25;
-    let mut estimate = lo.0 + (hi.0 - lo.0) * hermite_root(lo, hi);
-    // The step before last, for the safeguard: a Newton step must at
-    // least halve it or give way to a bisection.
-    let mut before = hi.0 - lo.0;
-    // Whether the last evaluation was a probe placed to close the
-    // bracket: one that failed to means the rate misled the step, so the
-    // next is a bisection, and a wrong rate costs at most every other
-    // step's halving rather than creeping by a quarter tolerance at a
-    // time.
-    let mut probed = false;
-    let mut evaluations = 0u32;
-    while hi.0 - lo.0 > tolerance {
-        if evaluations >= caps.refinements {
+
+    /// The instant to read next, or `None` once the bracket is at most
+    /// the tolerance wide or `f64` cannot split it further.
+    ///
+    /// # Errors
+    ///
+    /// `NotConverged` once the refinement has taken its cap of readings.
+    pub fn next<E>(&self) -> Result<Option<f64>, SolveError<E>> {
+        let (lo, hi) = (self.lo, self.hi);
+        if hi.0 - lo.0 <= self.tolerance {
+            return Ok(None);
+        }
+        if self.evaluations >= self.caps.refinements {
             return Err(SolveError::NotConverged {
-                steps: evaluations,
+                steps: self.evaluations,
                 width: hi.0 - lo.0,
             });
         }
-        let at = estimate.max(lo.0 + least).min(hi.0 - least);
+        let at = self.estimate.max(lo.0 + self.least).min(hi.0 - self.least);
         if at <= lo.0 || at >= hi.0 {
-            break; // `f64` cannot split the bracket further.
+            return Ok(None); // `f64` cannot split the bracket further.
         }
-        evaluations += 1;
-        let (value, rate) = f(at).map_err(SolveError::Evaluation)?;
+        Ok(Some(at))
+    }
+
+    /// The value and the rate read at `at`, the instant
+    /// [`RatesRefinement::next`] last named.
+    pub fn feed(&mut self, at: f64, (value, rate): (f64, f64)) {
+        self.evaluations += 1;
         let end = (at, value, rate);
         if value < 0.0 {
-            lo = end;
+            self.lo = end;
         } else {
-            hi = end;
+            self.hi = end;
         }
         let step = -value / rate;
         let newton = at + step;
@@ -718,24 +802,29 @@ pub fn refine_with_rates<E>(
         // of the line from this one. Asked before the Newton point is
         // checked against the bracket, because a step shorter than the
         // instant's last bit lands on the end it started from.
-        let converged = step.abs() < tolerance * 0.5;
-        let trusted = !probed && step.abs() <= before * 0.5;
-        probed = trusted && converged;
-        estimate = if probed {
-            newton + if value < 0.0 { least } else { -least }
-        } else if trusted && newton > lo.0 && newton < hi.0 {
-            before = step.abs();
+        let converged = step.abs() < self.tolerance * 0.5;
+        let trusted = !self.probed && step.abs() <= self.before * 0.5;
+        self.probed = trusted && converged;
+        self.estimate = if self.probed {
+            newton + if value < 0.0 { self.least } else { -self.least }
+        } else if trusted && newton > self.lo.0 && newton < self.hi.0 {
+            self.before = step.abs();
             newton
         } else {
-            before = (hi.0 - lo.0) * 0.5;
-            lo.0 + before
+            self.before = (self.hi.0 - self.lo.0) * 0.5;
+            self.lo.0 + self.before
         };
     }
-    Ok(Crossing {
-        instant: nearer_newton(lo, hi),
-        width: hi.0 - lo.0,
-        evaluations,
-    })
+
+    /// The crossing the readings fed so far place.
+    #[must_use]
+    pub fn finish(&self) -> Crossing {
+        Crossing {
+            instant: nearer_newton(self.lo, self.hi),
+            width: self.hi.0 - self.lo.0,
+            evaluations: self.evaluations,
+        }
+    }
 }
 
 /// The Newton step from whichever end of a narrowed bracket is nearer the
