@@ -76,7 +76,8 @@ pub(crate) struct Shared {
     /// The running call and the requests cancelled before they ran, under
     /// one lock so a cancellation cannot fall between the two.
     calls: Mutex<Calls>,
-    /// The engine requests the running call has made.
+    /// The engine work the running call has asked for: an instant of a
+    /// position request each, and one for any other request.
     work: AtomicU64,
     progress: Mutex<Option<Progress>>,
     notify: Mutex<Option<Notify>>,
@@ -194,18 +195,25 @@ impl Shared {
         self.stop.swap(false, Ordering::Relaxed)
     }
 
-    /// One request of the engine: refused once the call is cancelled,
-    /// and counted toward its progress.
-    fn step(&self) -> Result<(), ProviderError> {
+    /// One request of the engine, of `cost` instants: refused once the
+    /// call is cancelled, and counted toward its progress.
+    ///
+    /// The count is of instants, not requests: a batched search asks for
+    /// a whole range's instants in a few requests, and counting those
+    /// reported progress (and so let a closed stream be seen) only after
+    /// most of the call had run.
+    fn step(&self, cost: usize) -> Result<(), ProviderError> {
         if self.stop.load(Ordering::Relaxed) {
             return Err(ProviderError::Refused {
                 detail: String::from("the call was cancelled"),
             });
         }
-        let work = self.work.fetch_add(1, Ordering::Relaxed) + 1;
-        // A lock every request would cost a batch; the clock is read
-        // every so many.
-        if work % 64 == 0 {
+        let cost = u64::try_from(cost.max(1)).unwrap_or(u64::MAX);
+        let before = self.work.fetch_add(cost, Ordering::Relaxed);
+        let work = before.saturating_add(cost);
+        // A lock every instant would cost a batch; the clock is read
+        // each time the count passes another so many.
+        if work / 64 != before / 64 {
             if let Some(progress) = locked(&self.progress).as_mut() {
                 if progress.last.elapsed() >= EVERY {
                     progress.last = Instant::now();
@@ -217,7 +225,7 @@ impl Shared {
     }
 }
 
-/// A progress notification: the engine requests made so far, with no
+/// A progress notification: the engine instants answered so far, with no
 /// total, since a call does not know beforehand how many it will make.
 fn notification(token: &Value, work: u64) -> String {
     json!({
@@ -226,7 +234,7 @@ fn notification(token: &Value, work: u64) -> String {
         "params": {
             "progressToken": token,
             "progress": work,
-            "message": format!("{work} ephemeris requests answered"),
+            "message": format!("{work} ephemeris instants answered"),
         },
     })
     .to_string()
@@ -250,17 +258,17 @@ impl EphemerisProvider for Watched {
     }
 
     fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(request.jds.len())?;
         self.inner.positions(request)
     }
 
     fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(1)?;
         self.inner.obliquity(jd, scale)
     }
 
     fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(1)?;
         self.inner.delta_t_seconds(jd_ut1)
     }
 
@@ -270,12 +278,12 @@ impl EphemerisProvider for Watched {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
     ) -> Result<f64, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(1)?;
         self.inner.ayanamsha_deg(jd, scale, ayanamsha)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(1)?;
         self.inner.dut1_seconds(jd_utc)
     }
 
@@ -283,17 +291,17 @@ impl EphemerisProvider for Watched {
         &self,
         request: &HorizonRequest,
     ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(1)?;
         self.inner.horizon_event(request)
     }
 
     fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(1)?;
         self.inner.angles(request)
     }
 
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<CrossingEvent>, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(1)?;
         self.inner.crossings(request)
     }
 
@@ -302,7 +310,7 @@ impl EphemerisProvider for Watched {
     }
 
     fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
-        self.shared.step()?;
+        self.shared.step(1)?;
         self.inner.native_call(function, arguments_json)
     }
 }

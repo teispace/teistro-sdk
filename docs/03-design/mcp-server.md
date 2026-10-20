@@ -415,8 +415,9 @@ a thread of its own and hands a `notifications/cancelled` to
 `Server::interrupt`'s handle as it arrives; a cancelled call's answer
 is not sent, and a request cancelled before it begins is not answered.
 A call whose `_meta` carries a `progressToken` hears
-`notifications/progress` while it computes: the engine requests
-answered so far, with no `total`, since a call does not know its
+`notifications/progress` while it computes: the engine instants
+answered so far (a position request counts its instants, any other
+request one), with no `total`, since a call does not know its
 count beforehand, and at most one every quarter of a second. Over
 Streamable HTTP the 2026-07-28 revision cancels by closing the stream,
 which P8 maps to the same handle. Gated through the binary: progress
