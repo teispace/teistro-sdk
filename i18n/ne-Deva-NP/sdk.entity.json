@@ -4036,6 +4036,14 @@
     "KOKA_KAUSHIKI_SANGAM_MELA": {
       "name": "कोका कौशिकी सङ्गम मेला",
       "prose": "कोका कौशिकी सङ्गम मेला"
+    },
+    "VARUTHINI_EKADASHI": {
+      "name": "वरुथिनी एकादशी",
+      "prose": "वरुथिनी एकादशी"
+    },
+    "YOGINI_EKADASHI": {
+      "name": "योगिनी एकादशी",
+      "prose": "योगिनी एकादशी"
     }
   }
 }

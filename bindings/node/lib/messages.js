@@ -618,6 +618,7 @@ export function messages(r) {
           utpattikaEkadashi: () => r.entity('festival.UTPATTIKA_EKADASHI'),
           vaishakhaSnanaArambha: () => r.entity('festival.VAISHAKHA_SNANA_ARAMBHA'),
           vamanaDwadashi: () => r.entity('festival.VAMANA_DWADASHI'),
+          varuthiniEkadashi: () => r.entity('festival.VARUTHINI_EKADASHI'),
           vayuAshtami: () => r.entity('festival.VAYU_ASHTAMI'),
           vijayaDashami: () => r.entity('festival.VIJAYA_DASHAMI'),
           vijayaEkadashi: () => r.entity('festival.VIJAYA_EKADASHI'),
@@ -628,6 +629,7 @@ export function messages(r) {
           yalaPanchadan: () => r.entity('festival.YALA_PANCHADAN'),
           yamapanchakaArambha: () => r.entity('festival.YAMAPANCHAKA_ARAMBHA'),
           yamaDwitiya: () => r.entity('festival.YAMA_DWITIYA'),
+          yoginiEkadashi: () => r.entity('festival.YOGINI_EKADASHI'),
           yomariPunhi: () => r.entity('festival.YOMARI_PUNHI'),
         },
         gana: {

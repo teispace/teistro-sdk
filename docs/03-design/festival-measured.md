@@ -226,6 +226,10 @@ measures the fit and not a text (C600).
 
 | VS | rule | printed | where | committee sky | modern sky |
 |---:|---|---|---|---|---|
+| 2082 | VARUTHINI_EKADASHI | 24 Apr | p. 2: बरुथिनीएकादशीव्रत | 24 Apr | 24 Apr |
+| 2082 | VARUTHINI_EKADASHI | 13 Apr | p. 26: बरुथिनी एकादशीव्रत | 13 Apr | 13 Apr |
+| 2082 | YOGINI_EKADASHI | 21 Jun | p. 6: स्मार्तहरूको योगिनी एकादशीव्रत | 21 Jun | 21 Jun |
+| 2083 | YOGINI_EKADASHI | 10 Jul | p. 8: स्मार्तहरुको योगिनी एकादशीव्रत | 10 Jul | 11 Jul ✗ |
 | 2082 | GYALPO_LHOSAR | 18 Feb | p. 23: ग्याल्पो ल्होसार | 18 Feb | 18 Feb |
 | 2083 | GYALPO_LHOSAR | 9 Mar | p. 25: चन्द्रोदय, ग्याल्पो ल्होसार | 9 Mar | 9 Mar |
 | 2082 | SONAM_LHOSAR | 19 Jan | p. 21: सोनम ल्होसार/तामाङ ल्होसार | 19 Jan | 19 Jan |
@@ -783,8 +787,8 @@ measures the fit and not a text (C600).
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 554 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 57 of 554 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 558 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 58 of 558 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 

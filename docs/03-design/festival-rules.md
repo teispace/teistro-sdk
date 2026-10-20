@@ -907,12 +907,13 @@ The fitted window is kept, and the text's is recorded as the other reading.
 `NEPAL_PANCHANGA` adds three things to `NEPAL`'s rules and counted days:
 
 - 60 karmakala rules (`FestivalRule::nepal_panchanga`): the 58 fitted, and Sonam and Gyalpo Lhosar, read off the print;
-- 159 udaya rules (`AT_SUNRISE` in the same function): the festivals of
+- 161 udaya rules (`AT_SUNRISE` in the same function): the festivals of
   the consumer's list that its own sunrise rule reproduces, each kept only
   where the committee prints its day in VS 2082 or 2083, every printed
   day agreeing under the committee's sky. Ganga puja, Rameshwar puja and
   Guru Padmasambhava jayanti follow Dashahara into the adhika Jyeshtha
-  (C606), as VS 2083 prints them. The eleven the print does not confirm
+  (C606), as VS 2083 prints them. Varuthini and Yogini ekadashi are the
+  Smartas' day, as the print names them (C688). The nine the print does not confirm
   are listed, each with its reason, in `festival-classification.md`;
 - 14 counted days (`FollowingRule::nepal_panchanga`): 13 on the day of
   the rule they follow, and the Koka Kaushiki sangam mela on the day after
@@ -984,7 +985,7 @@ sunrise tithis of VS 2082 and 2083.
 sky and the modern sky. It holds the committee's sky to every day
 printed for the pack's rules in VS 2082 and 2083, and the page counts
 them. Every parting carries its cause and the day the pack gives, and the
-pass checks both. The 159 udaya rules part from the print on no day under
+pass checks both. The 161 udaya rules part from the print on no day under
 the committee's sky.
 
 Before the pass ran, an emulation of the first fitted rules predicted 114

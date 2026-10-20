@@ -12,23 +12,24 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
-**160 more of Nepal's festivals** (`festival-rules.md` §10.2,
+**162 more of Nepal's festivals** (`festival-rules.md` §10.2,
 `festival-classification.md`).
-**Numbers:** `NEPAL_PANCHANGA` now keeps 160 more festivals: 159 by the
+**Numbers:** `NEPAL_PANCHANGA` now keeps 162 more festivals: 161 by the
 udaya rule, among them the Tihar days, Tol Lhosar, Kushe Aunsi and the
 Newar jatras, and the Koka Kaushiki sangam mela on the day after Dhanya
 purnima. Each is a festival of a consumer's list whose own sunrise rule
 gives every day the consumer verified from 2013 to 2027. Each was then
 read off the committee's VS 2082 and VS 2083 pages, and every one of their
-314 printed days agrees under the committee's sky. Over the modern sky 24
+318 printed days agrees under the committee's sky. Over the modern sky 25
 of those days move, where a tithi's end crosses sunrise. Ganga puja,
 Rameshwar puja and Guru Padmasambhava jayanti follow Dashahara into VS
-2083's adhika Jyeshtha, as printed. Eleven of the consumer's rule
+2083's adhika Jyeshtha, as printed. Varuthini and Yogini ekadashi are
+the Smartas' day: where the observers part, the print names the Smartas'
+day and the Vaishnavas' the day after (C688). Nine of the consumer's rule
 festivals are not shipped, each named with its reason and a crux (C685 to
 C689): five the committee prints in neither year, Jamare aunsi, two the
-print moves (Biruda panchami, Thakali phalo parva), the two ekadashis
-whose source gives the 11th or the 12th, and Sankhu jatra. The measured
-page now counts 554 printed rows, of which the same 6 part. A year of the
+print moves (Biruda panchami, Thakali phalo parva), and Sankhu jatra. The measured
+page now counts 558 printed rows, of which the same 6 part. A year of the
 pack's festivals takes 29.8 ms under the committee's setup over Teimeris
 and 84.7 ms under the modern one, past its 80 ms target. Writing the
 canonical JSON that every answer is sealed with no longer allocates for

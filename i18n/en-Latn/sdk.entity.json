@@ -4044,6 +4044,14 @@
     "KOKA_KAUSHIKI_SANGAM_MELA": {
       "name": "Koka Kaushiki Sangam Mela",
       "prose": "Koka Kaushiki Sangam Mela"
+    },
+    "VARUTHINI_EKADASHI": {
+      "name": "Varuthini Ekadashi",
+      "prose": "Varuthini Ekadashi"
+    },
+    "YOGINI_EKADASHI": {
+      "name": "Yogini Ekadashi",
+      "prose": "Yogini Ekadashi"
     }
   }
 }

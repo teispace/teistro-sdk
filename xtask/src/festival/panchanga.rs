@@ -37,7 +37,31 @@ const SPANS: [(Day, Day); 8] = [
 
 /// What the committee printed for the fitted rules: the Vikram year, the
 /// rule, the Gregorian day, and the page and the words it prints.
-static PRINTED: [(i32, &str, Day, &str); 554] = [
+static PRINTED: [(i32, &str, Day, &str); 558] = [
+    (
+        2082,
+        "VARUTHINI_EKADASHI",
+        (2025, 4, 24),
+        "p. 2: बरुथिनीएकादशीव्रत",
+    ),
+    (
+        2082,
+        "VARUTHINI_EKADASHI",
+        (2026, 4, 13),
+        "p. 26: बरुथिनी एकादशीव्रत",
+    ),
+    (
+        2082,
+        "YOGINI_EKADASHI",
+        (2025, 6, 21),
+        "p. 6: स्मार्तहरूको योगिनी एकादशीव्रत",
+    ),
+    (
+        2083,
+        "YOGINI_EKADASHI",
+        (2026, 7, 10),
+        "p. 8: स्मार्तहरुको योगिनी एकादशीव्रत",
+    ),
     (2082, "GYALPO_LHOSAR", (2026, 2, 18), "p. 23: ग्याल्पो ल्होसार"),
     (
         2083,

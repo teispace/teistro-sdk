@@ -605,7 +605,9 @@ enum FestivalKey {
   nalaMachhindranathRathJatra('festival.NALA_MACHHINDRANATH_RATH_JATRA'),
   shitalashtami('festival.SHITALASHTAMI'),
   papmochaniEkadashi('festival.PAPMOCHANI_EKADASHI'),
-  kokaKaushikiSangamMela('festival.KOKA_KAUSHIKI_SANGAM_MELA');
+  kokaKaushikiSangamMela('festival.KOKA_KAUSHIKI_SANGAM_MELA'),
+  varuthiniEkadashi('festival.VARUTHINI_EKADASHI'),
+  yoginiEkadashi('festival.YOGINI_EKADASHI');
 
   const FestivalKey(this.key);
 
@@ -2132,6 +2134,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get utpattikaEkadashi => _r.entity('festival.UTPATTIKA_EKADASHI');
   EntityForms get vaishakhaSnanaArambha => _r.entity('festival.VAISHAKHA_SNANA_ARAMBHA');
   EntityForms get vamanaDwadashi => _r.entity('festival.VAMANA_DWADASHI');
+  EntityForms get varuthiniEkadashi => _r.entity('festival.VARUTHINI_EKADASHI');
   EntityForms get vayuAshtami => _r.entity('festival.VAYU_ASHTAMI');
   EntityForms get vijayaDashami => _r.entity('festival.VIJAYA_DASHAMI');
   EntityForms get vijayaEkadashi => _r.entity('festival.VIJAYA_EKADASHI');
@@ -2142,6 +2145,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get yalaPanchadan => _r.entity('festival.YALA_PANCHADAN');
   EntityForms get yamapanchakaArambha => _r.entity('festival.YAMAPANCHAKA_ARAMBHA');
   EntityForms get yamaDwitiya => _r.entity('festival.YAMA_DWITIYA');
+  EntityForms get yoginiEkadashi => _r.entity('festival.YOGINI_EKADASHI');
   EntityForms get yomariPunhi => _r.entity('festival.YOMARI_PUNHI');
 }
 

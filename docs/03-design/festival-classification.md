@@ -41,7 +41,7 @@ no rule. This page's classes split each of those counts:
 
 | track 04 | count | this page |
 |---|---|---|
-| lunar | 295 | rule, shipped 244; rule, not yet shipped 11; rule, needs a form 40 |
+| lunar | 295 | rule, shipped 246; rule, not yet shipped 9; rule, needs a form 40 |
 | Bikram Sambat | 68 | solar 24; fixed civil 44 |
 | Gregorian | 113 | fixed civil 113 |
 | both | 2 | solar 1 (Guriya parva, printed on Shrawan 1 in both editions, C621); rule, needs a form 1 (Walke parva) |
@@ -62,12 +62,12 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 246; rule, not yet shipped 11; rule, needs a form 43; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 248; rule, not yet shipped 9; rule, needs a form 43; solar 26; fixed civil 165; community 6; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (246)
+### Rule, shipped (248)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
@@ -310,6 +310,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `UTPATTIKA_EKADASHI` | Utpattika Ekadashi | उत्पत्तिका एकादशी |  | NEPAL_PANCHANGA |
 | `VAISHAKHA_SNANA_ARAMBHA` | Baisakh Snan Begins | वैशाख स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `VAMANA_DWADASHI` | Vamana Dwadashi | वामन द्वादशी |  | NEPAL_PANCHANGA |
+| `VARUTHINI_EKADASHI` | Varuthini Ekadashi | वरुथिनी एकादशी |  | NEPAL_PANCHANGA |
 | `VAYU_ASHTAMI` | Vayu Ashtami | वायु अष्टमी |  | NEPAL_PANCHANGA |
 | `VIJAYA_DASHAMI` | Bijaya Dashami | विजया दशमी |  | NEPAL |
 | `VIJAYA_EKADASHI` | Vijaya Ekadashi | विजया एकादशी |  | NEPAL_PANCHANGA |
@@ -318,11 +319,12 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `YALA_PANCHADAN` | Yala Panchadan | यल पञ्चदान | Newar | NEPAL_PANCHANGA |
 | `YAMAPANCHAKA_ARAMBHA` | Yamapanchak Begins | यमपञ्चक आरम्भ |  | NEPAL_PANCHANGA |
 | `YAMA_DWITIYA` | Bhai Tika | भाइटीका |  | NEPAL |
+| `YOGINI_EKADASHI` | Yogini Ekadashi | योगिनी एकादशी |  | NEPAL_PANCHANGA |
 | `YOMARI_PUNHI` | Yomari Punhi | योमरी पुन्ही | Newar | NEPAL_PANCHANGA |
 
-### Rule, not yet shipped (11)
+### Rule, not yet shipped (9)
 
-Each is a tithi in a month that the consumer's source gives, and each note says why no pack carries it: the committee does not print it, or prints another day, or its source's rule is not one rule. The other 160 of the 171 the source reproduces at sunrise are shipped, each gated by the committee's print of both years (`festival-rules.md` §10.2).
+Each is a tithi in a month that the consumer's source gives, and each note says why no pack carries it: the committee does not print it, or prints another day, or its source's rule is not one rule. The other 162 of the 171 the source reproduces at sunrise are shipped, each gated by the committee's print of both years (`festival-rules.md` §10.2).
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
@@ -335,8 +337,6 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `NEPALI_ARMY_DAY` | Nepali Army Day | नेपाली सेना दिवस |  | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
 | `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689) |
 | `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687) |
-| `VARUTHINI_EKADASHI` | Varuthini Ekadashi | वरुथिनी एकादशी |  | its source gives the 11th or the 12th: the named ekadashi's form (P1-6, C688) |
-| `YOGINI_EKADASHI` | Yogini Ekadashi | योगिनी एकादशी |  | its source gives the 11th or the 12th: the named ekadashi's form (P1-6, C688) |
 
 ### Rule, needs a form (43)
 

@@ -7816,6 +7816,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.VARUTHINI_EKADASHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms varuthiniEkadashi() {
+                    return r.entity("festival.VARUTHINI_EKADASHI");
+                }
+
+                /**
                  * The forms of `festival.VAYU_ASHTAMI` in the current locale.
                  *
                  * @return the forms
@@ -7903,6 +7912,15 @@ public final class Messages {
                  */
                 public EntityForms yamaDwitiya() {
                     return r.entity("festival.YAMA_DWITIYA");
+                }
+
+                /**
+                 * The forms of `festival.YOGINI_EKADASHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yoginiEkadashi() {
+                    return r.entity("festival.YOGINI_EKADASHI");
                 }
 
                 /**

@@ -573,7 +573,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 60] = [
 /// is printed. Each also gives every day a patro printed in Nepal verified
 /// for it from 2013 to 2027, by a back-test kept outside the repository
 /// (`festival-classification.md`).
-const AT_SUNRISE: [(&str, Masa, Tithi, &str); 159] = [
+const AT_SUNRISE: [(&str, Masa, Tithi, &str); 161] = [
     (
         "SAMVATSARA_ARAMBHA",
         Masa::Chaitra,
@@ -621,6 +621,12 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 159] = [
         Masa::Chaitra,
         Tithi::Amavasya,
         "Nepal's national panchanga, VS 2082 p. 2 and VS 2083 p. 2: मातातीर्थस्नान",
+    ),
+    (
+        "VARUTHINI_EKADASHI",
+        Masa::Chaitra,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 2: बरुथिनीएकादशीव्रत; VS 2082 p. 26: बरुथिनी एकादशीव्रत; the Smartas' day, as the print names it where the Vaishnavas' differs (C688)",
     ),
     (
         "RATO_MACHHINDRANATH_RATHAROHAN",
@@ -777,6 +783,12 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 159] = [
         Masa::Jyeshtha,
         Tithi::KrishnaDashami,
         "Nepal's national panchanga, VS 2082 p. 6 and VS 2083 p. 8: नक्वादिशी",
+    ),
+    (
+        "YOGINI_EKADASHI",
+        Masa::Jyeshtha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 6: स्मार्तहरूको योगिनी एकादशीव्रत; VS 2083 p. 8: स्मार्तहरुको योगिनी एकादशीव्रत; the Smartas' day, the Vaishnavas' printed the day after (C688)",
     ),
     (
         "JAGANNATH_RATH_JATRA",
