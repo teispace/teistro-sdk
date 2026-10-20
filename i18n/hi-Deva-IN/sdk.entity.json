@@ -2908,7 +2908,7 @@
       "prose": "लोकतंत्र दिवस",
       "iast": "Lokatantra divasa"
     },
-    "SAMVIDHAN_DIWAS": {
+    "CONSTITUTION_DAY": {
       "name": "संविधान दिवस",
       "prose": "संविधान दिवस",
       "iast": "Saṃvidhāna divasa"
@@ -2918,7 +2918,7 @@
       "prose": "पृथ्वी जयंती",
       "iast": "Pṛthvī jayantī"
     },
-    "NATIONAL_EARTHQUAKE_SAFETY_DAY": {
+    "EARTHQUAKE_SAFETY_DAY": {
       "name": "राष्ट्रीय भूकंप सुरक्षा दिवस",
       "prose": "राष्ट्रीय भूकंप सुरक्षा दिवस",
       "iast": "Rāṣṭriya bhūkampa surakṣā divasa"
@@ -2928,20 +2928,25 @@
       "prose": "सोनम ल्होसार",
       "iast": "Sonam Lhosar"
     },
-    "TAMU_LHOCHHAR": {
+    "TAMU_LHOSAR": {
       "name": "तमु ल्होछार",
       "prose": "तमु ल्होछार",
-      "iast": "Tamu Lhochhar"
+      "iast": "Tamu Lhosar"
     },
-    "SAHID_DIWAS": {
+    "MARTYRS_DAY": {
       "name": "शहीद दिवस",
       "prose": "शहीद दिवस",
       "iast": "Sahida divasa"
     },
-    "PRAJATANTRA_DIWAS": {
+    "DEMOCRACY_DAY": {
       "name": "राष्ट्रीय प्रजातंत्र दिवस",
       "prose": "राष्ट्रीय प्रजातंत्र दिवस",
       "iast": "Rāṣṭriya prajātantra divasa"
+    },
+    "GYALPO_LHOSAR": {
+      "name": "ग्याल्पो ल्होसार",
+      "prose": "ग्याल्पो ल्होसार",
+      "iast": "Gyalpo Lhosar"
     }
   }
 }

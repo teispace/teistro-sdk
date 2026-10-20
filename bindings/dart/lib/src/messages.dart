@@ -438,13 +438,14 @@ enum FestivalKey {
   kumbhaSankranti('festival.KUMBHA_SANKRANTI'),
   minaSankranti('festival.MINA_SANKRANTI'),
   loktantraDiwas('festival.LOKTANTRA_DIWAS'),
-  samvidhanDiwas('festival.SAMVIDHAN_DIWAS'),
+  constitutionDay('festival.CONSTITUTION_DAY'),
   prithviJayanti('festival.PRITHVI_JAYANTI'),
-  nationalEarthquakeSafetyDay('festival.NATIONAL_EARTHQUAKE_SAFETY_DAY'),
+  earthquakeSafetyDay('festival.EARTHQUAKE_SAFETY_DAY'),
   sonamLhosar('festival.SONAM_LHOSAR'),
-  tamuLhochhar('festival.TAMU_LHOCHHAR'),
-  sahidDiwas('festival.SAHID_DIWAS'),
-  prajatantraDiwas('festival.PRAJATANTRA_DIWAS');
+  tamuLhosar('festival.TAMU_LHOSAR'),
+  martyrsDay('festival.MARTYRS_DAY'),
+  democracyDay('festival.DEMOCRACY_DAY'),
+  gyalpoLhosar('festival.GYALPO_LHOSAR');
 
   const FestivalKey(this.key);
 
@@ -1718,9 +1719,11 @@ final class MessagesSdkEntityFestival {
   EntityForms get chatha => _r.entity('festival.CHATHA');
   EntityForms get chaturdashiShraddha => _r.entity('festival.CHATURDASHI_SHRADDHA');
   EntityForms get chaturthiShraddha => _r.entity('festival.CHATURTHI_SHRADDHA');
+  EntityForms get constitutionDay => _r.entity('festival.CONSTITUTION_DAY');
   EntityForms get dashaharaSnanaArambha => _r.entity('festival.DASHAHARA_SNANA_ARAMBHA');
   EntityForms get dashamiShraddha => _r.entity('festival.DASHAMI_SHRADDHA');
   EntityForms get dattatreyaJayanti => _r.entity('festival.DATTATREYA_JAYANTI');
+  EntityForms get democracyDay => _r.entity('festival.DEMOCRACY_DAY');
   EntityForms get dhanuSankranti => _r.entity('festival.DHANU_SANKRANTI');
   EntityForms get dhanvantariJayanti => _r.entity('festival.DHANVANTARI_JAYANTI');
   EntityForms get dilaCharhe => _r.entity('festival.DILA_CHARHE');
@@ -1728,6 +1731,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get dvaparaYugadi => _r.entity('festival.DVAPARA_YUGADI');
   EntityForms get dwadashiShraddha => _r.entity('festival.DWADASHI_SHRADDHA');
   EntityForms get dwitiyaShraddha => _r.entity('festival.DWITIYA_SHRADDHA');
+  EntityForms get earthquakeSafetyDay => _r.entity('festival.EARTHQUAKE_SAFETY_DAY');
   EntityForms get ekadashiShraddha => _r.entity('festival.EKADASHI_SHRADDHA');
   EntityForms get ekadashiSmarta => _r.entity('festival.EKADASHI_SMARTA');
   EntityForms get ekadashiSmartaRenunciant => _r.entity('festival.EKADASHI_SMARTA_RENUNCIANT');
@@ -1740,6 +1744,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get ghodeJatra => _r.entity('festival.GHODE_JATRA');
   EntityForms get gosaikundaSnanaArambha => _r.entity('festival.GOSAIKUNDA_SNANA_ARAMBHA');
   EntityForms get gosaikundaSnanaSamapti => _r.entity('festival.GOSAIKUNDA_SNANA_SAMAPTI');
+  EntityForms get gyalpoLhosar => _r.entity('festival.GYALPO_LHOSAR');
   EntityForms get haribodhiniEkadashi => _r.entity('festival.HARIBODHINI_EKADASHI');
   EntityForms get haritalika => _r.entity('festival.HARITALIKA');
   EntityForms get hatyamochanaSnana => _r.entity('festival.HATYAMOCHANA_SNANA');
@@ -1762,13 +1767,13 @@ final class MessagesSdkEntityFestival {
   EntityForms get loktantraDiwas => _r.entity('festival.LOKTANTRA_DIWAS');
   EntityForms get makaraSankranti => _r.entity('festival.MAKARA_SANKRANTI');
   EntityForms get mangalaChaturthi => _r.entity('festival.MANGALA_CHATURTHI');
+  EntityForms get martyrsDay => _r.entity('festival.MARTYRS_DAY');
   EntityForms get matsyanarayanaMela => _r.entity('festival.MATSYANARAYANA_MELA');
   EntityForms get matsyaJayanti => _r.entity('festival.MATSYA_JAYANTI');
   EntityForms get meshaSankranti => _r.entity('festival.MESHA_SANKRANTI');
   EntityForms get mhaPuja => _r.entity('festival.MHA_PUJA');
   EntityForms get minaSankranti => _r.entity('festival.MINA_SANKRANTI');
   EntityForms get mithunaSankranti => _r.entity('festival.MITHUNA_SANKRANTI');
-  EntityForms get nationalEarthquakeSafetyDay => _r.entity('festival.NATIONAL_EARTHQUAKE_SAFETY_DAY');
   EntityForms get navamiShraddha => _r.entity('festival.NAVAMI_SHRADDHA');
   EntityForms get navaratraArambha => _r.entity('festival.NAVARATRA_ARAMBHA');
   EntityForms get nepalSambatNewYear => _r.entity('festival.NEPAL_SAMBAT_NEW_YEAR');
@@ -1781,7 +1786,6 @@ final class MessagesSdkEntityFestival {
   EntityForms get paushaPutradaEkadashi => _r.entity('festival.PAUSHA_PUTRADA_EKADASHI');
   EntityForms get pishachamochanaShraddha => _r.entity('festival.PISHACHAMOCHANA_SHRADDHA');
   EntityForms get pradoshaVrata => _r.entity('festival.PRADOSHA_VRATA');
-  EntityForms get prajatantraDiwas => _r.entity('festival.PRAJATANTRA_DIWAS');
   EntityForms get pratipadaShraddha => _r.entity('festival.PRATIPADA_SHRADDHA');
   EntityForms get prithviJayanti => _r.entity('festival.PRITHVI_JAYANTI');
   EntityForms get purnimaVrata => _r.entity('festival.PURNIMA_VRATA');
@@ -1789,8 +1793,6 @@ final class MessagesSdkEntityFestival {
   EntityForms get ramaNavami => _r.entity('festival.RAMA_NAVAMI');
   EntityForms get raviSaptami => _r.entity('festival.RAVI_SAPTAMI');
   EntityForms get rishiPanchami => _r.entity('festival.RISHI_PANCHAMI');
-  EntityForms get sahidDiwas => _r.entity('festival.SAHID_DIWAS');
-  EntityForms get samvidhanDiwas => _r.entity('festival.SAMVIDHAN_DIWAS');
   EntityForms get sankashtaChaturthi => _r.entity('festival.SANKASHTA_CHATURTHI');
   EntityForms get saptamiShraddha => _r.entity('festival.SAPTAMI_SHRADDHA');
   EntityForms get setoMachhindranathJatra => _r.entity('festival.SETO_MACHHINDRANATH_JATRA');
@@ -1803,7 +1805,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get somavatiAmavasya => _r.entity('festival.SOMAVATI_AMAVASYA');
   EntityForms get sonamLhosar => _r.entity('festival.SONAM_LHOSAR');
   EntityForms get sorhaShraddhaArambha => _r.entity('festival.SORHA_SHRADDHA_ARAMBHA');
-  EntityForms get tamuLhochhar => _r.entity('festival.TAMU_LHOCHHAR');
+  EntityForms get tamuLhosar => _r.entity('festival.TAMU_LHOSAR');
   EntityForms get tilakundaChaturthi => _r.entity('festival.TILAKUNDA_CHATURTHI');
   EntityForms get trayodashiShraddha => _r.entity('festival.TRAYODASHI_SHRADDHA');
   EntityForms get tritiyaShraddha => _r.entity('festival.TRITIYA_SHRADDHA');

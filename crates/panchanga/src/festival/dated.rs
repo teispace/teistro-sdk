@@ -207,7 +207,7 @@ impl DatedRule {
                 "Nepal's national panchanga, VS 2082 p. 2: \"लोकतन्त्र दिवस\" on Baisakh 11",
             ),
             bs(
-                "SAMVIDHAN_DIWAS",
+                "CONSTITUTION_DAY",
                 6,
                 3,
                 "Nepal's national panchanga, VS 2082 p. 12: \"संविधानदिवस\" on Asoj 3",
@@ -219,25 +219,25 @@ impl DatedRule {
                 "Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 21: \"पृथ्वीजयन्ती, राष्ट्रिय एकता दिवस\" on Poush 27",
             ),
             bs(
-                "NATIONAL_EARTHQUAKE_SAFETY_DAY",
+                "EARTHQUAKE_SAFETY_DAY",
                 10,
                 2,
                 "Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 21: \"राष्ट्रिय भूकम्प सुरक्षा दिवस\" on Magh 2",
             ),
             bs(
-                "TAMU_LHOCHHAR",
+                "TAMU_LHOSAR",
                 9,
                 15,
                 "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 20: \"तमुल्होछार\" on Poush 15",
             ),
             bs(
-                "SAHID_DIWAS",
+                "MARTYRS_DAY",
                 10,
                 16,
                 "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 22: \"सहिद दिवस\" on Magh 16",
             ),
             bs(
-                "PRAJATANTRA_DIWAS",
+                "DEMOCRACY_DAY",
                 11,
                 7,
                 "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 23: \"राष्ट्रिय प्रजातन्त्र दिवस\" on Phalgun 7",

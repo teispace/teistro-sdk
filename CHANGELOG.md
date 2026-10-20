@@ -12,15 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
-**Losar and three national days** (`festival-rules.md`).
-**Numbers:** `NEPAL_PANCHANGA` now keeps four more days that the
-committee prints in VS 2082 and VS 2083. Tamu Lhochhar falls on Poush 15,
-Martyrs' Day on Magh 16 and National Democracy Day on Phalgun 7, all as
-dated Bikram Sambat days. Sonam Lhosar falls on Magha's bright first at
-sunrise, and matches the print in both years under the committee's sky
-and under the modern one. Gyalpo and Tol Lhosar follow the Tibetan
-reckoning, so they wait for the Tibetan calendar. The measured page now
-counts 238 printed rows, of which 6 still part, each for a named reason.
+**Three Lhosars and two national days** (`festival-rules.md`).
+**Numbers:** `NEPAL_PANCHANGA` now keeps five more days that the
+committee prints in VS 2082 and VS 2083. Tamu Lhosar falls on Poush 15,
+Martyrs' Day on Magh 16 and Democracy Day on Phalgun 7, all as dated
+Bikram Sambat days. Sonam Lhosar and Gyalpo Lhosar fall on Magha's and
+Phalgun's bright first at sunrise. Both match the print in both years,
+under the committee's sky and under the modern one, and a consumer's
+verified days from 2014 to 2027, 14 of 14 and 13 of 13. Gyalpo Lhosar is
+not the Tibetan Phugpa new year in Nepal's print: in 2027 the committee
+prints it on 9 March, a lunation after the Phugpa Losar. Tol Lhosar waits:
+its 2025 day breaks the sunrise rule. The dated days take the keys the
+festival classification gives them, so `SAMVIDHAN_DIWAS` is now
+`CONSTITUTION_DAY` and `NATIONAL_EARTHQUAKE_SAFETY_DAY` is
+`EARTHQUAKE_SAFETY_DAY`. The measured page now counts 240 printed rows,
+of which 6 still part, each for a named reason.
 
 **The tabular Hijri calendar** (`calendars/hijri.md`).
 **Numbers:** `calendar.HIJRI_TABULAR` is the arithmetic Islamic calendar

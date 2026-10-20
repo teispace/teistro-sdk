@@ -41,7 +41,7 @@ no rule. This page's classes split each of those counts:
 
 | track 04 | count | this page |
 |---|---|---|
-| lunar | 295 | rule, shipped 82; rule, not yet shipped 173; rule, needs a form 40 |
+| lunar | 295 | rule, shipped 84; rule, not yet shipped 171; rule, needs a form 40 |
 | Bikram Sambat | 68 | solar 24; fixed civil 44 |
 | Gregorian | 113 | fixed civil 113 |
 | both | 2 | solar 1 (Guriya parva, printed on Shrawan 1 in both editions, C621); rule, needs a form 1 (Walke parva) |
@@ -62,12 +62,12 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 84; rule, not yet shipped 173; rule, needs a form 43; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 86; rule, not yet shipped 171; rule, needs a form 43; solar 26; fixed civil 165; community 6; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (84)
+### Rule, shipped (86)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
@@ -105,6 +105,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `GHODE_JATRA` | Ghode Jatra | घोडेजात्रा | Newar | NEPAL_PANCHANGA |
 | `GOSAIKUNDA_SNANA_ARAMBHA` | Gosaikunda Snan Begins | गोसाइँकुण्ड स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `GOSAIKUNDA_SNANA_SAMAPTI` | Gosaikunda Snan Ends | गोसाइँकुण्ड स्नान समाप्ति |  | NEPAL_PANCHANGA |
+| `GYALPO_LHOSAR` | Gyalpo Lhosar | ग्याल्पो ल्होसार | Sherpa | NEPAL_PANCHANGA |
 | `HARIBODHINI_EKADASHI` | Haribodhini Ekadashi | हरिबोधिनी एकादशी |  | NEPAL_PANCHANGA |
 | `HARITALIKA` | Haritalika Teej | हरितालिका तीज |  | NEPAL |
 | `HATYAMOCHANA_SNANA` | Hatyamochan Snan | हत्यामोचन स्नान |  | NEPAL_PANCHANGA |
@@ -144,6 +145,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `SHILA_CHARHE` | Sila Charhe | सिला चह्रे | Newar | NEPAL_PANCHANGA |
 | `SHIVARATRI` | Maha Shivaratri | महाशिवरात्रि |  | NEPAL |
 | `SITA_NAVAMI` | Sita Jayanti | सीता जयन्ती |  | NEPAL_PANCHANGA |
+| `SONAM_LHOSAR` | Sonam Lhosar | सोनम ल्होसार | Tamang | NEPAL_PANCHANGA |
 | `SORHA_SHRADDHA_ARAMBHA` | Sorha Shraddha Begins | सोह्र श्राद्ध आरम्भ |  | NEPAL_PANCHANGA |
 | `TILAKUNDA_CHATURTHI` | Tilkunda Chaturthi | तिलकुन्द चतुर्थी |  | NEPAL_PANCHANGA |
 | `TRAYODASHI_SHRADDHA` | Trayodashi Shraddha | त्रयोदशी श्राद्ध |  | NEPAL_PANCHANGA |
@@ -158,7 +160,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `YAMAPANCHAKA_ARAMBHA` | Yamapanchak Begins | यमपञ्चक आरम्भ |  | NEPAL_PANCHANGA |
 | `YAMA_DWITIYA` | Bhai Tika | भाइटीका |  | NEPAL |
 
-### Rule, not yet shipped (173)
+### Rule, not yet shipped (171)
 
 The keys are proposed: each is a tithi in a month that the consumer's source reproduces at sunrise. A pack would carry each as an udaya rule after the back-test §10 of `festival-rules.md` gives the fitted rules.
 
@@ -231,7 +233,6 @@ The keys are proposed: each is a tithi in a month that the consumer's source rep
 | `GURU_NANAK_JAYANTI` | Guru Nanak Jayanti | गुरु नानक जयन्ती | Sikh |  |
 | `GURU_PADMASAMBHAVA_JAYANTI` | Guru Padmasambhava Jayanti | गुरु पद्मसम्भव जयन्ती | Buddhist |  |
 | `GURU_PURNIMA` | Guru Purnima | गुरु पूर्णिमा |  |  |
-| `GYALPO_LHOSAR` | Gyalpo Lhosar | ग्याल्पो ल्होसार | Sherpa |  |
 | `HALI_TIHAR` | Hali Tihar | हलि तिहार |  |  |
 | `HANUMAN_JAYANTI` | Hanuman Jayanti | हनुमान जयन्ती |  |  |
 | `HARIPARIVARTINI_EKADASHI` | Hariparivartini Ekadashi | हरिपरिवर्तिनी एकादशी |  |  |
@@ -315,7 +316,6 @@ The keys are proposed: each is a tithi in a month that the consumer's source rep
 | `SILANGA_MAHARUDRA_KOTIHOM_MELA` | Silanga Maharudra Kotihom Mela | सिलङ्गा महारुद्र कोटिहोम मेला |  |  |
 | `SITHI_NAKHA` | Sithi Nakha | सिथि नखः | Newar |  |
 | `SKANDA_SHASHTHI` | Skanda Shashthi | स्कन्द षष्ठी |  |  |
-| `SONAM_LHOSAR` | Sonam Lhosar | सोनाम ल्होसार | Tamang |  |
 | `SURYA_PUJA` | Surya Puja | सूर्य पूजा |  |  |
 | `SURYA_SHASHTHI` | Surya Shashthi | सूर्य षष्ठी |  |  |
 | `SWASTHANI_VRAT_BEGINS` | Swasthani Vrat Begins | स्वस्थानी व्रत आरम्भ |  |  |
@@ -407,13 +407,13 @@ A day of the solar month (C619), as `SOLAR_DAY` would say it (`festival-rule-lan
 | `KANDAKARAK_PUJA` | Kandakarak Puja | कण्डकारक पूजा |  |  |
 | `KHEER_KHANE_DIN` | Kheer Khane Din | खीर खाने दिन |  |  |
 | `KIRTIPUR_BAGH_BHAIRAV_JATRA` | Kirtipur Bagh Bhairav Jatra | कीर्तिपुर बाघभैरव जात्रा | Newar |  |
-| `MAGHE_SANKRANTI` | Maghe Sankranti | माघे सङ्क्रान्ति |  |  |
+| `MAGHE_SANKRANTI` | Maghe Sankranti | माघे सङ्क्रान्ति |  | shipped as `MAKARA_SANKRANTI` in NEPAL_PANCHANGA |
 | `MAGHI_THARU` | Maghi (Tharu) | माघी | Tharu |  |
 | `MAKAR_SNAN` | Makar Snan | मकर स्नान |  |  |
-| `NEPALI_NEW_YEAR` | Nepali New Year | नव वर्ष |  |  |
+| `NEPALI_NEW_YEAR` | Nepali New Year | नव वर्ष |  | shipped as `MESHA_SANKRANTI` in NEPAL_PANCHANGA |
 | `SINDOOR_JATRA` | Sindoor Jatra | सिन्दूर जात्रा | Newar |  |
 | `SIRUWA` | Siruwa | सिरुवा पर्व | Maithil, Tharu and Rajbanshi |  |
-| `TAMU_LHOSAR` | Tamu Lhosar | तमु ल्होसार | Gurung |  |
+| `TAMU_LHOSAR` | Tamu Lhosar | तमु ल्होसार | Gurung | shipped: a dated day in NEPAL_PANCHANGA, Poush 15 |
 | `THIMI_BALKUMARI_JATRA` | Thimi Balkumari Jatra | ठिमी बालकुमारी जात्रा | Newar |  |
 | `TOKHA_CHANDESHWARI_JATRA` | Tokha Chandeshwari Jatra | टोखा चण्डेश्वरी जात्रा | Newar |  |
 | `TOKHA_SAPAN_TIRTHA_SNAN` | Tokha Sapan Tirtha Snan | टोखा सपनतीर्थ स्नान |  |  |
@@ -449,6 +449,8 @@ An authority announces the day.
 ### Fixed civil (165)
 
 A date in the Bikram Sambat or the Gregorian calendar, fixed by law or by the body that keeps it. These are listed by key and English name only.
+
+Six of them ship as dated days in `NEPAL_PANCHANGA`, each on the Bikram Sambat date the committee prints: `LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY` and `DEMOCRACY_DAY`.
 
 | key | name |
 |---|---|

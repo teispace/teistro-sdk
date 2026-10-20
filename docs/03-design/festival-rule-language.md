@@ -323,7 +323,7 @@ A rule is a `DatedRule` in a request's `rules`, told apart by its
 rule's own calendar. The list is left out of an answer when empty, so
 no answer that asks for none changes its hash. `NEPAL_PANCHANGA` ships
 the twelve sankrantis on the first of each Bikram Sambat month, six
-national days and Tamu Lhochhar, read off the committee's print: every sankranti of VS 2082
+national days and Tamu Lhosar, read off the committee's print: every sankranti of VS 2082
 on its month's first day (pp. 2–24, printed by the month's name,
 "वैशाखसंक्रान्ति, नववर्षारम्भ" to "चैत्रसङ्क्रान्ति"), लोकतन्त्र दिवस on
 Baisakh 11, संविधानदिवस on Asoj 3, पृथ्वीजयन्ती on Poush 27 and the

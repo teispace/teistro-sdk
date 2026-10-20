@@ -3365,7 +3365,7 @@
       "prose": "Democracy Day, Baisakh 11",
       "iast": "Lokatantra divasa"
     },
-    "SAMVIDHAN_DIWAS": {
+    "CONSTITUTION_DAY": {
       "name": "Constitution Day",
       "prose": "Constitution Day, Asoj 3",
       "iast": "Saṃvidhāna divasa"
@@ -3375,7 +3375,7 @@
       "prose": "Prithvi Jayanti, National Unity Day",
       "iast": "Pṛthvī jayantī"
     },
-    "NATIONAL_EARTHQUAKE_SAFETY_DAY": {
+    "EARTHQUAKE_SAFETY_DAY": {
       "name": "National Earthquake Safety Day",
       "prose": "National Earthquake Safety Day, Magh 2",
       "iast": "Rāṣṭriya bhūkampa surakṣā divasa"
@@ -3385,20 +3385,25 @@
       "prose": "Sonam Lhosar, the Tamang new year",
       "iast": "Sonam Lhosar"
     },
-    "TAMU_LHOCHHAR": {
-      "name": "Tamu Lhochhar",
-      "prose": "Tamu Lhochhar, the Gurung new year, Poush 15",
-      "iast": "Tamu Lhochhar"
+    "TAMU_LHOSAR": {
+      "name": "Tamu Lhosar",
+      "prose": "Tamu Lhosar, the Gurung new year, Poush 15",
+      "iast": "Tamu Lhosar"
     },
-    "SAHID_DIWAS": {
+    "MARTYRS_DAY": {
       "name": "Martyrs' Day",
       "prose": "Martyrs' Day, Magh 16",
       "iast": "Sahida divasa"
     },
-    "PRAJATANTRA_DIWAS": {
-      "name": "National Democracy Day",
-      "prose": "National Democracy Day, Phalgun 7",
+    "DEMOCRACY_DAY": {
+      "name": "Democracy Day",
+      "prose": "Democracy Day, Phalgun 7",
       "iast": "Rāṣṭriya prajātantra divasa"
+    },
+    "GYALPO_LHOSAR": {
+      "name": "Gyalpo Lhosar",
+      "prose": "Gyalpo Lhosar, the Sherpa and Tibetan new year",
+      "iast": "Gyalpo Lhosar"
     }
   }
 }

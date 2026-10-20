@@ -906,7 +906,7 @@ The fitted window is kept, and the text's is recorded as the other reading.
 
 `NEPAL_PANCHANGA` adds three things to `NEPAL`'s rules and counted days:
 
-- 58 karmakala rules (`FestivalRule::nepal_panchanga`);
+- 60 karmakala rules (`FestivalRule::nepal_panchanga`): the 58 fitted, and Sonam and Gyalpo Lhosar, read off the print;
 - 13 counted days (`FollowingRule::nepal_panchanga`), each on the day of
   the rule it follows;
 - the same Ekadashi observers as `DHARMASINDHU`.

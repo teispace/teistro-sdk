@@ -374,10 +374,6 @@ fn the_dark_fourth_at_moonrise_is_the_almanacs_sankashta_every_month() {
     assert_eq!(bhalachandra.extents[0].window.from, panchanga.moon.rises[0]);
 }
 
-/// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
-/// at Kathmandu: exactly the rows read off the committee's print, each
-/// sankranti on its month's first day (pp. 2-24), and the four national
-/// days; and VS 2083's rows checked (pp. 2, 21).
 #[test]
 fn a_doubled_jyeshtha_keeps_dashahara_in_its_adhika_month_however_short_the_range() {
     let sdk = Context::builder().nepal_official([]).build().unwrap();
@@ -423,6 +419,10 @@ fn a_doubled_jyeshtha_keeps_dashahara_in_its_adhika_month_however_short_the_rang
     assert_eq!(dashahara((2025, 6, 1), (2025, 6, 10)).len(), 1);
 }
 
+/// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
+/// at Kathmandu: exactly the rows read off the committee's print, each
+/// sankranti on its month's first day (pp. 2-24), the six national days
+/// and Tamu Lhosar; and VS 2083's rows checked (pp. 2, 20-23).
 #[test]
 fn the_dated_days_are_the_committees_printed_rows() {
     let sdk = Context::builder().nepal_official([]).build().unwrap();
@@ -462,17 +462,17 @@ fn the_dated_days_are_the_committees_printed_rows() {
             ("KARKATA_SANKRANTI", (2025, 7, 17)),
             ("SIMHA_SANKRANTI", (2025, 8, 17)),
             ("KANYA_SANKRANTI", (2025, 9, 17)),
-            ("SAMVIDHAN_DIWAS", (2025, 9, 19)),
+            ("CONSTITUTION_DAY", (2025, 9, 19)),
             ("TULA_SANKRANTI", (2025, 10, 18)),
             ("VRISHCHIKA_SANKRANTI", (2025, 11, 17)),
             ("DHANU_SANKRANTI", (2025, 12, 16)),
-            ("TAMU_LHOCHHAR", (2025, 12, 30)),
+            ("TAMU_LHOSAR", (2025, 12, 30)),
             ("PRITHVI_JAYANTI", (2026, 1, 11)),
             ("MAKARA_SANKRANTI", (2026, 1, 15)),
-            ("NATIONAL_EARTHQUAKE_SAFETY_DAY", (2026, 1, 16)),
-            ("SAHID_DIWAS", (2026, 1, 30)),
+            ("EARTHQUAKE_SAFETY_DAY", (2026, 1, 16)),
+            ("MARTYRS_DAY", (2026, 1, 30)),
             ("KUMBHA_SANKRANTI", (2026, 2, 13)),
-            ("PRAJATANTRA_DIWAS", (2026, 2, 19)),
+            ("DEMOCRACY_DAY", (2026, 2, 19)),
             ("MINA_SANKRANTI", (2026, 3, 15)),
         ])
     );
@@ -483,13 +483,13 @@ fn the_dated_days_are_the_committees_printed_rows() {
     assert_eq!(
         kept((2026, 12, 30), (2027, 2, 19)),
         printed(&[
-            ("TAMU_LHOCHHAR", (2026, 12, 30)),
+            ("TAMU_LHOSAR", (2026, 12, 30)),
             ("PRITHVI_JAYANTI", (2027, 1, 11)),
             ("MAKARA_SANKRANTI", (2027, 1, 15)),
-            ("NATIONAL_EARTHQUAKE_SAFETY_DAY", (2027, 1, 16)),
-            ("SAHID_DIWAS", (2027, 1, 30)),
+            ("EARTHQUAKE_SAFETY_DAY", (2027, 1, 16)),
+            ("MARTYRS_DAY", (2027, 1, 30)),
             ("KUMBHA_SANKRANTI", (2027, 2, 13)),
-            ("PRAJATANTRA_DIWAS", (2027, 2, 19)),
+            ("DEMOCRACY_DAY", (2027, 2, 19)),
         ])
     );
 }

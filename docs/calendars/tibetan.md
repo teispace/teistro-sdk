@@ -3,13 +3,18 @@
 Status: `designed`, 2026-10-20. P2-1 step 5. Nothing is shipped yet. The
 arithmetic is prototyped and matches every Losar date the source lists.
 
-Nepal's national panchanga prints Gyalpo Lhosar, the Tibetan new year,
-on 18 February 2026 (VS 2082 p. 23). That is the first day of the first
-month of the Phugpa calendar: in Janson's words the most common version,
-the one the Dalai Lama follows. The Tsurphu version, and Bhutan's and
-Mongolia's, "frequently differ by a day or a month" (§1, appendix A). Unlike the Indian
-calendars it needs no ephemeris, no sunrise and no place. It is
-arithmetic, with two short tables standing in for a sine.
+The Tibetan new year, Losar, is the first day of the first month of the
+Tibetan calendar. This page designs the Phugpa calendar: in Janson's
+words the most common version, the one the Dalai Lama follows. The
+Tsurphu version, and Bhutan's and Mongolia's, "frequently differ by a day
+or a month" (§1, appendix A). Unlike the Indian calendars it needs no
+ephemeris, no sunrise and no place. It is arithmetic, with two short
+tables standing in for a sine.
+
+Nepal's day is not this calendar's. The committee prints Gyalpo Lhosar on
+Phalgun's bright first, and that is what `NEPAL_PANCHANGA` ships (see
+Measured). So the calendar is for a consumer that wants the Tibetan date
+or the Tibetan Losar itself, not for Nepal's holiday.
 
 ## Sources
 
@@ -54,15 +59,25 @@ that names Henning's value can follow if an almanac is found to print it.
 ## Measured
 
 A prototype of the table above, in exact fractions, gives Losar on the
-day Janson's Table 1 prints for all 120 years from 1927 to 2046. It also
-gives 18 February 2026, the committee's printed Gyalpo Lhosar.
+day Janson's Table 1 prints for all 120 years from 1927 to 2046.
 
-Two Lhosars the committee prints are not Tibetan dates. Sonam Lhosar
+**Gyalpo Lhosar in Nepal is a Hindu-month day.** The committee prints it
+on 18 February 2026 (VS 2082 p. 23), which is also the Phugpa Losar. But
+VS 2083 p. 25 prints "चन्द्रोदय, ग्याल्पो ल्होसार" on 9 March 2027, a
+lunation after the Phugpa Losar of 7 February. A consumer's fourteen-year
+list agrees with the print: of its 13 Gyalpo Lhosar days (2014 to 2027),
+the Phugpa Losar gives 9, and Phalgun's bright first at sunrise gives all
+13. The four that part (2019, 2021, 2024 and 2027) are the years Phalgun
+falls a lunation after the Tibetan first month. So `NEPAL_PANCHANGA` ships
+`GYALPO_LHOSAR` as that lunar rule, beside Sonam Lhosar.
+
+Two more Lhosars the committee prints are not Tibetan dates. Sonam Lhosar
 (19 January 2026, 7 February 2027) and Tol Lhosar (20 December 2025,
 8 January 2027) are the first of the bright fortnight of the Hindu months
 Magha and Paush: VS 2083's adhika Jyeshtha moves them a lunation against
 the Tibetan months, so Tol Lhosar is Tibetan 11/1 in one year and 12/1 in
-the next. Sonam Lhosar ships as a lunar rule in `NEPAL_PANCHANGA`. Tol
+the next. Sonam Lhosar ships as a lunar rule in `NEPAL_PANCHANGA`, and
+gives all 14 of the consumer's verified days, 2014 to 2027. Tol
 Lhosar does not yet, because its 2025 day breaks the sunrise rule: the new
 moon ends after sunrise that morning.
 
@@ -92,7 +107,8 @@ no shipped calendar repeats a month or a day.
 - **The festival day.** Losar is the first day of month 1, or the leap
   month 1 when there is one, and the day after month 12's day 30 when day 1
   is skipped (Janson §8). A `DatedRule` over the Tibetan calendar gives it
-  with the existing machinery: `TIBETAN_PHUGPA` 1/1.
+  with the existing machinery: `TIBETAN_PHUGPA` 1/1, under its own key,
+  since Nepal's `GYALPO_LHOSAR` is another day in some years.
 - **Names.** en-Latn names the months by number ("month 1"), as Janson and
   the almanacs in English do. Nepali and Hindi names wait on a vetted
   source.
@@ -104,4 +120,5 @@ no shipped calendar repeats a month or a day.
   table gives the Tibetan column.
 - Every day of the range converts and converts back, the marks included,
   and every leap month falls where (5.24) puts it.
-- The committee's print: Gyalpo Lhosar on 18 February 2026.
+- The committee's print, where it agrees: 18 February 2026 is both the
+  Phugpa Losar and the printed Gyalpo Lhosar.

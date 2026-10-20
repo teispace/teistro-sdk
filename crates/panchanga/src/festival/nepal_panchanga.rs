@@ -141,7 +141,7 @@ impl Fit {
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 59] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 60] = [
     (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
@@ -477,6 +477,13 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 59] = [
         Tithi::KrishnaChaturdashi,
         Fit::Share(SAYAHNA),
         "Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 22: (लैचःह्रेपूजा)",
+    ),
+    (
+        "GYALPO_LHOSAR",
+        Masa::Phalguna,
+        Tithi::ShuklaPratipada,
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2082 p. 23: ग्याल्पो ल्होसार on 18 February 2026, and VS 2083 p. 25: \"चन्द्रोदय, ग्याल्पो ल्होसार\" on 9 March 2027, a lunation after the Tibetan Phugpa new year",
     ),
     (
         "SONAM_LHOSAR",
