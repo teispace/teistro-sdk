@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The first crescent** (C684). **Numbers:** `NEPAL_PANCHANGA` gains
+`CHANDRODAYA`, the committee's monthly चन्द्रोदय, on all 25 of its rows in
+VS 2082 and 2083 over both skies; no other rule's day moved. It is the
+bright 2nd, on the earlier day when the 2nd holds the last muhurta before
+sunset wholly. The rule language's design had read the row as a fast at
+moonrise; it is the day after the new moon.
+
 **A festival year as an iCalendar feed** (`icalendar.md`, P2-2).
 **Numbers:** none moved. `AlmanacArea::festival_calendar` writes a
 range's observances and Ekadashi fasts as RFC 5545 text a calendar app

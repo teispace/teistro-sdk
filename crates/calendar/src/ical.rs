@@ -54,7 +54,7 @@ pub struct Feed {
     pub name: String,
     /// How often a subscriber should fetch the feed again, written as
     /// `REFRESH-INTERVAL` (RFC 7986) and as `X-PUBLISHED-TTL`, which
-    /// Outlook reads; none writes neither.
+    /// Outlook reads; none, or zero, writes neither.
     pub refresh_minutes: Option<u32>,
     /// Every event's `DTSTAMP`, in seconds since 1970-01-01T00:00:00Z.
     pub stamp_unix_seconds: i64,
@@ -98,7 +98,7 @@ pub fn write(feed: &Feed) -> Result<String, Error> {
     line(&mut out, "METHOD:PUBLISH");
     line(&mut out, &format!("NAME:{}", text(&feed.name)));
     line(&mut out, &format!("X-WR-CALNAME:{}", text(&feed.name)));
-    if let Some(minutes) = feed.refresh_minutes {
+    if let Some(minutes) = feed.refresh_minutes.filter(|&minutes| minutes > 0) {
         let duration = duration(minutes);
         line(
             &mut out,
@@ -200,9 +200,9 @@ fn date_time(unix_seconds: i64) -> Result<String, Error> {
 /// A DURATION value of whole minutes, in the largest units that write it
 /// exactly: `P1D`, `PT6H`, `PT90M`.
 fn duration(minutes: u32) -> String {
-    if minutes > 0 && minutes % 1_440 == 0 {
+    if minutes % 1_440 == 0 {
         format!("P{}D", minutes / 1_440)
-    } else if minutes > 0 && minutes % 60 == 0 {
+    } else if minutes % 60 == 0 {
         format!("PT{}H", minutes / 60)
     } else {
         format!("PT{minutes}M")
@@ -304,8 +304,10 @@ mod tests {
         assert!(text.contains("REFRESH-INTERVAL;VALUE=DURATION:P1D\r\nX-PUBLISHED-TTL:P1D\r\n"));
         assert_eq!(duration(360), "PT6H");
         assert_eq!(duration(90), "PT90M");
-        assert_eq!(duration(0), "PT0M");
         assert!(!write(&feed(Vec::new())).unwrap().contains("REFRESH"));
+        // A client told to fetch again every zero minutes would poll.
+        asked.refresh_minutes = Some(0);
+        assert!(!write(&asked).unwrap().contains("REFRESH"));
     }
 
     #[test]

@@ -277,6 +277,14 @@ pub fn records() -> Vec<Record> {
             run: days,
             schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
         },
+        Record {
+            name: "almanac.festival_calendar",
+            boundary: "ts_almanac_festival_calendar",
+            title: "A range's festivals as an iCalendar feed",
+            reads: None,
+            run: festival_calendar,
+            schemas: schemas!(crate::area::FestivalCalendarAsked => String),
+        },
         #[cfg(feature = "chart")]
         Record {
             name: "chart.found",
@@ -463,6 +471,13 @@ fn time_records() -> [Record; 4] {
 #[must_use]
 pub fn record(name: &str) -> Option<Record> {
     records().into_iter().find(|record| record.name == name)
+}
+
+/// `almanac.festival_calendar`: the feed's text, sealed with the festival
+/// answer's provenance (`03-design/icalendar.md`).
+fn festival_calendar(context: &Context, json: &str) -> Result<Answered, Error> {
+    let asked = crate::FestivalCalendarRequest::from_json(json)?;
+    Answered::sealed(context.almanac().festival_calendar_request(&asked)?)
 }
 
 /// `almanac.days`: the range's days founded once, with their own hashes

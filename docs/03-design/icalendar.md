@@ -86,7 +86,7 @@ provenance and its content hash taken over the text. `FeedOptions` holds
 At the boundary the call is `ts_almanac_festival_calendar`, a request
 record (`FestivalCalendarRequest`: the range, the place, the offset,
 `festivals`, `stampUnixSeconds`, and optionally `name`, `product` and
-`refreshMinutes`, null for none) and a text answer. Every binding has it
+`refreshMinutes`, zero for none) and a text answer. Every binding has it
 as `almanac.festivalCalendar`.
 
 ## 5. Acceptance
@@ -94,7 +94,8 @@ as `almanac.festivalCalendar`.
 - Unit tests on the writer's rules: escaping, folding at 75 octets on a
   character boundary (Devanagari is three octets a character), a line of
   exactly 75 left whole, CRLF, the all-day form across a year's end, the
-  refresh interval in its largest unit, and a year the format cannot
+  refresh interval in its largest unit (zero writing none, since a
+  client told to fetch every zero minutes would poll), and a year the format cannot
   write.
 - The façade's tests, over Dashain and Tihar 2025 at Kathmandu under
   `nepal_official`: one event for each observance and fast, ordered by

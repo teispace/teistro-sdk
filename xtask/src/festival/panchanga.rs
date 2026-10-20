@@ -37,7 +37,7 @@ const SPANS: [(Day, Day); 8] = [
 
 /// What the committee printed for the fitted rules: the Vikram year, the
 /// rule, the Gregorian day, and the page and the words it prints.
-const PRINTED: [(i32, &str, Day, &str); 211] = [
+const PRINTED: [(i32, &str, Day, &str); 236] = [
     (
         2082,
         "PARASHURAMA_JAYANTI",
@@ -639,6 +639,31 @@ const PRINTED: [(i32, &str, Day, &str); 211] = [
     (2083, "PRADOSHA_VRATA", (2027, 3, 20), "p. 25: शनिप्रदोषव्रत"),
     (2083, "BHAUMASHTAMI", (2027, 3, 30), "p. 26: भौमाष्टमीव्रत"),
     (2083, "PRADOSHA_VRATA", (2027, 4, 4), "p. 26: प्रदोषव्रत"),
+    (2082, "CHANDRODAYA", (2025, 4, 29), "p. 3: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2025, 5, 28), "p. 5: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2025, 6, 26), "p. 7: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2025, 7, 26), "p. 9: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2025, 8, 24), "p. 11: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2025, 9, 23), "p. 13: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2025, 10, 23), "p. 15: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2025, 11, 21), "p. 17: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2025, 12, 21), "p. 19: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2026, 1, 20), "p. 21: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2026, 2, 19), "p. 23: चन्द्रोदय"),
+    (2082, "CHANDRODAYA", (2026, 3, 20), "p. 25: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 4, 18), "p. 3: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 5, 18), "p. 5: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 6, 16), "p. 7: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 7, 15), "p. 9: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 8, 14), "p. 11: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 9, 12), "p. 13: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 10, 12), "p. 15: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 11, 10), "p. 17: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2026, 12, 10), "p. 19: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2027, 1, 9), "p. 21: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2027, 2, 8), "p. 23: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2027, 3, 9), "p. 25: चन्द्रोदय"),
+    (2083, "CHANDRODAYA", (2027, 4, 8), "p. 27: चन्द्रोदय"),
 ];
 
 /// Why the pack over the committee's sky parts from the print, per (year,

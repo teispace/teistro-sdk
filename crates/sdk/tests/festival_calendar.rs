@@ -150,7 +150,7 @@ fn a_request_a_binding_sends_writes_what_the_call_does_and_seals_the_text() {
             "last": {{"year": 2025, "month": 11, "day": 10}},
             "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
             "utcOffsetSeconds": 20700, "festivals": {{"rules": "NEPAL_PANCHANGA"}},
-            "stampUnixSeconds": {STAMP}, "name": "Nepal", "refreshMinutes": null}}"#
+            "stampUnixSeconds": {STAMP}, "name": "Nepal", "refreshMinutes": 0}}"#
     ))
     .unwrap();
     let sealed = sdk.almanac().festival_calendar_request(&asked).unwrap();

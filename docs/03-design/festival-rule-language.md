@@ -62,9 +62,17 @@ Ashunya-shayana vrata at moonrise.
  "otherwise": "LATER"}
 ```
 
-**Settles:** the monthly चन्द्रोदय fast (§5 of the classification), Kashi
-bada Ganesh (Magha's dark 4th, 12 of 14), and Ramanujacharya's jayanti as
-a candidate.
+**Settles:** Kashi bada Ganesh (Magha's dark 4th, 12 of 14), and
+Ramanujacharya's jayanti as a candidate.
+
+**Corrected (C684).** This page first said moonrise settles the monthly
+चन्द्रोदय row. Read off the committee's pages, every one of its 25 rows
+falls on the day after the new moon: it names the first evening the
+crescent is seen, not a fast at moonrise. `NEPAL_PANCHANGA` keeps it as
+`CHANDRODAYA` with the forms the language already has: the bright 2nd,
+the earlier day when it holds the last muhurta before sunset wholly
+(`DAY_MUHURTA` 15 to 15, `WHOLLY`), the later otherwise, 25 of 25 over
+both skies.
 
 ### 3.2 A range of day muhurtas: `DAY_MUHURTA`
 

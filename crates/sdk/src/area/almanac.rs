@@ -50,6 +50,7 @@ pub use disagreement::{
     DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
     FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
 };
+pub(crate) use feed::FestivalCalendarAsked;
 pub use feed::{FeedOptions, FestivalCalendarRequest};
 
 impl<'a> AlmanacArea<'a> {

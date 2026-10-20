@@ -343,6 +343,7 @@ export function messages(r) {
           budhashtami: () => r.entity('festival.BUDHASHTAMI'),
           chaiteDashain: () => r.entity('festival.CHAITE_DASHAIN'),
           champaShashthi: () => r.entity('festival.CHAMPA_SHASHTHI'),
+          chandrodaya: () => r.entity('festival.CHANDRODAYA'),
           chatha: () => r.entity('festival.CHATHA'),
           chaturdashiShraddha: () => r.entity('festival.CHATURDASHI_SHRADDHA'),
           chaturthiShraddha: () => r.entity('festival.CHATURTHI_SHRADDHA'),

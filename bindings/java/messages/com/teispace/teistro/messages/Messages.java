@@ -5313,6 +5313,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.CHANDRODAYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chandrodaya() {
+                    return r.entity("festival.CHANDRODAYA");
+                }
+
+                /**
                  * The forms of `festival.CHATHA` in the current locale.
                  *
                  * @return the forms

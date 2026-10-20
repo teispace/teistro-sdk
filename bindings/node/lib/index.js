@@ -7159,7 +7159,7 @@ export class AlmanacArea extends Area {
    * @param {number} [request.stampUnixSeconds] every event's `DTSTAMP`; now when left out
    * @param {string} [request.name] the calendar's name; "Festivals" when left out
    * @param {string} [request.product] the `PRODID`; the SDK's own when left out
-   * @param {number | null} [request.refreshMinutes] how often a subscriber fetches it again; a day when left out, none when null
+   * @param {number} [request.refreshMinutes] how often a subscriber fetches it again; a day when left out, none when zero
    * @returns {string} the feed, CRLF lines
    */
   festivalCalendar(request) {

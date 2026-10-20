@@ -394,6 +394,7 @@ class FestivalKey(enum.StrEnum):
     BHAUMASHTAMI = "festival.BHAUMASHTAMI"
     BUDHASHTAMI = "festival.BUDHASHTAMI"
     SOMAVATI_AMAVASYA = "festival.SOMAVATI_AMAVASYA"
+    CHANDRODAYA = "festival.CHANDRODAYA"
 
 
 class GanaKey(enum.StrEnum):
@@ -3820,6 +3821,11 @@ class MessagesSdkEntityFestival:
     def champa_shashthi(self) -> EntityForms:
         """The forms of `festival.CHAMPA_SHASHTHI` in the current locale."""
         return self._r.entity("festival.CHAMPA_SHASHTHI")
+
+    @property
+    def chandrodaya(self) -> EntityForms:
+        """The forms of `festival.CHANDRODAYA` in the current locale."""
+        return self._r.entity("festival.CHANDRODAYA")
 
     @property
     def chatha(self) -> EntityForms:

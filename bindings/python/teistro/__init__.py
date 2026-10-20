@@ -2600,7 +2600,7 @@ class AlmanacArea(_Area):
         rule's source and the answer's provenance, its `UID` stable for the
         rule, the day and the place. The same request writes the same
         bytes; `stamp_unix_seconds` is now when left out, and
-        `refresh_minutes=None` writes no refresh interval.
+        `refresh_minutes=None` (or zero) writes no refresh interval.
 
         >>> # ics = sdk.almanac.festival_calendar(from_date=..., to_date=..., place=kathmandu,
         >>> #     utc_offset_seconds=20700, festivals={"rules": "NEPAL_PANCHANGA"}, name="Nepal 2026")
@@ -2618,7 +2618,7 @@ class AlmanacArea(_Area):
             "altitudeM": place.altitude_m,
             "utcOffsetSeconds": utc_offset_seconds,
             "stampUnixSeconds": int(time.time()) if stamp_unix_seconds is None else stamp_unix_seconds,
-            "refreshMinutes": refresh_minutes,
+            "refreshMinutes": 0 if refresh_minutes is None else refresh_minutes,
         }
         if to_date is not None:
             asked["last"] = parts(to_date)

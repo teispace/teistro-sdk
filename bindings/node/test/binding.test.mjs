@@ -4705,6 +4705,7 @@ test('an almanac writes its festivals as an iCalendar feed', () => {
     for (const line of ics.split('\r\n')) assert.ok(Buffer.byteLength(line) <= 75, line);
     assert.equal(ctx.almanac.festivalCalendar({ ...season, stampUnixSeconds: 1767225600, name: 'Dashain' }), ics);
     assert.ok(ctx.almanac.festivalCalendar(season).includes('DTSTAMP:'), 'stamped now when left out');
+    assert.ok(!ctx.almanac.festivalCalendar({ ...season, refreshMinutes: 0 }).includes('REFRESH-INTERVAL'), 'zero is no refresh');
     assert.throws(
       () => ctx.almanac.festivalCalendar({ ...season, place: { latitude: 91, longitude: 85.324 } }),
       (error) => error.field === 'festivalCalendar.latitudeDeg',

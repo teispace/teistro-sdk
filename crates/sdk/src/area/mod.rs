@@ -83,6 +83,7 @@ pub(crate) fn drik_sun<'p>(
 }
 
 #[cfg(feature = "muhurta")]
+pub(crate) use almanac::FestivalCalendarAsked;
 pub use almanac::MuhurtaDays;
 pub use almanac::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, DayDisagreement, DayDisagreements,

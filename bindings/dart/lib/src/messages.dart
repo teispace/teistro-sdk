@@ -421,7 +421,8 @@ enum FestivalKey {
   raviSaptami('festival.RAVI_SAPTAMI'),
   bhaumashtami('festival.BHAUMASHTAMI'),
   budhashtami('festival.BUDHASHTAMI'),
-  somavatiAmavasya('festival.SOMAVATI_AMAVASYA');
+  somavatiAmavasya('festival.SOMAVATI_AMAVASYA'),
+  chandrodaya('festival.CHANDRODAYA');
 
   const FestivalKey(this.key);
 
@@ -1639,6 +1640,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get budhashtami => _r.entity('festival.BUDHASHTAMI');
   EntityForms get chaiteDashain => _r.entity('festival.CHAITE_DASHAIN');
   EntityForms get champaShashthi => _r.entity('festival.CHAMPA_SHASHTHI');
+  EntityForms get chandrodaya => _r.entity('festival.CHANDRODAYA');
   EntityForms get chatha => _r.entity('festival.CHATHA');
   EntityForms get chaturdashiShraddha => _r.entity('festival.CHATURDASHI_SHRADDHA');
   EntityForms get chaturthiShraddha => _r.entity('festival.CHATURTHI_SHRADDHA');

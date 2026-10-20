@@ -54,6 +54,9 @@ enum Fit {
     Share(Window),
     /// The udaya day, kept only when it is this vara (C618).
     OnVara(Vara),
+    /// The earlier day when the tithi holds its last day muhurta wholly,
+    /// the muhurta before sunset; the later otherwise (C684).
+    Crescent,
 }
 
 impl Fit {
@@ -86,6 +89,12 @@ impl Fit {
                     "{}: the day holding more of it, in time; the earlier on a tie, both holding it wholly being one, and when neither holds it (C601, C603)",
                     Fit::name(window)
                 ),
+            ),
+            Fit::Crescent => (
+                Window::DayMuhurta { from: 15, to: 15 },
+                vec![Guard::new([Predicate::Wholly { day: Which::Earlier }], Earlier)],
+                Later,
+                "the earlier day when the tithi holds its last muhurta before sunset wholly, the later otherwise (C684)".to_owned(),
             ),
             Fit::OnVara(vara) => {
                 let on = |day| Predicate::OnVara { day, vara };
@@ -543,7 +552,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
 /// The fitted rules kept in every month, the adhika included, as the
 /// committee prints them in both editions: key, what is kept, fit, and
 /// where the days are printed (§3.4, §3.5).
-const EVERY_MONTH: [(&str, Occurs, Fit, &str); 6] = [
+const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
     (
         "PRADOSHA_VRATA",
         Occurs::DayOfPaksha { day_of_paksha: 13 },
@@ -581,6 +590,14 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 6] = [
         },
         Fit::OnVara(Vara::Somavara),
         "Nepal's national panchanga, VS 2083 pp. 6 and 16: सोमबारे औसी; Dharmasindhu p. 20 names the new moon on a Monday; VS 2083 p. 24 does not name Monday 8 March 2027's new moon, a day it prints as दर्शश्राद्ध",
+    ),
+    (
+        "CHANDRODAYA",
+        Occurs::Tithi {
+            tithi: Tithi::ShuklaDvitiya,
+        },
+        Fit::Crescent,
+        "Nepal's national panchanga, the first row of every bright half of VS 2082 (pp. 3–25) and VS 2083 (pp. 3–27): चन्द्रोदय, the first evening the crescent is named, the day after the new moon's; 18 February 2026 is not printed, its 2nd beginning 26 minutes before sunset, and every printed day's began at least 166 minutes before",
     ),
 ];
 

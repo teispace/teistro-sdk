@@ -1310,7 +1310,7 @@ function theFeed(ctx: Context): string {
     place: { latitude: 27.7172, longitude: 85.324 },
     utcOffsetSeconds: 20700,
     festivals: { rules: 'NEPAL' },
-    refreshMinutes: null,
+    refreshMinutes: 0,
   };
   const ics: string = ctx.almanac.festivalCalendar(asked);
   // @ts-expect-error a feed names its festivals

@@ -3284,6 +3284,11 @@
       "name": "Somavati Amavasya",
       "prose": "Somavati Amavasya",
       "iast": "Somavatī Amāvāsyā"
+    },
+    "CHANDRODAYA": {
+      "name": "Chandrodaya",
+      "prose": "Chandrodaya, the first crescent",
+      "iast": "Candrodaya"
     }
   }
 }

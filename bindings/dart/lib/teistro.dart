@@ -1358,8 +1358,8 @@ final class AlmanacArea extends _Area {
   /// festival's name in this context's locale, its description the rule's
   /// source and the answer's provenance, its `UID` stable for the rule,
   /// the day and the place. The same request writes the same bytes;
-  /// [stampUnixSeconds] is now when left out, and a null [refreshMinutes]
-  /// writes no refresh interval.
+  /// [stampUnixSeconds] is now when left out, and a null (or zero)
+  /// [refreshMinutes] writes no refresh interval.
   ///
   /// ```dart
   /// final ics = sdk.almanac.festivalCalendar(
@@ -1395,7 +1395,7 @@ final class AlmanacArea extends _Area {
           stampUnixSeconds ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
       if (name != null) 'name': name,
       if (product != null) 'product': product,
-      'refreshMinutes': refreshMinutes,
+      'refreshMinutes': refreshMinutes ?? 0,
     });
     return _context._guarded(
       () => _context._inner.almanacFestivalCalendar(asked),

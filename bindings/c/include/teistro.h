@@ -9453,7 +9453,7 @@ ts_status ts_almanac_disagreements(const ts_context * context, const ts_context 
  * `{"year", "month", "day"}`, `festivals` a festival request,
  * `stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,
  * `altitudeM`, `name`, `product` and `refreshMinutes` optional
- * (`refreshMinutes` a day when left out, none when null). A key it does
+ * (`refreshMinutes` a day when left out, none when zero). A key it does
  * not read or one it needs left out, a place or offset out of range, or a
  * festival request its reader refuses is `INVALID_ARG`, named under
  * `festivalCalendar`. A range of more than a year and a day, or a day

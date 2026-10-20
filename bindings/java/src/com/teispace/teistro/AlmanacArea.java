@@ -296,7 +296,7 @@ public final class AlmanacArea {
             asked.put("product", options.product());
         }
         if (options.noRefresh()) {
-            asked.put("refreshMinutes", null);
+            asked.put("refreshMinutes", 0);
         } else if (options.refreshMinutes() != null) {
             asked.put("refreshMinutes", options.refreshMinutes());
         }

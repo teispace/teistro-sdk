@@ -8062,8 +8062,8 @@ export interface FestivalCalendarRequest {
   readonly name?: string;
   /** The `PRODID`; the SDK's own when left out. */
   readonly product?: string;
-  /** How often a subscriber fetches it again; a day when left out, none when null. */
-  readonly refreshMinutes?: number | null;
+  /** How often a subscriber fetches it again; a day when left out, none when zero. */
+  readonly refreshMinutes?: number;
 }
 
 /** Two reckonings of one range at one place, as `almanac.disagreements` compares them. */

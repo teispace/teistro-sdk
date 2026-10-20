@@ -63,7 +63,7 @@ impl FeedOptions {
         self
     }
 
-    /// With another refresh interval, or none.
+    /// With another refresh interval, or none (`None`, or zero).
     #[must_use]
     pub const fn with_refresh_minutes(mut self, minutes: Option<u32>) -> FeedOptions {
         self.refresh_minutes = minutes;
@@ -105,24 +105,17 @@ pub(crate) struct FestivalCalendarAsked {
     #[serde(default)]
     altitude_m: f64,
     utc_offset_seconds: i32,
+    /// The festivals, as a festival request.
+    #[cfg_attr(feature = "schema", schemars(with = "crate::festival_request::Asked"))]
     festivals: Value,
     stamp_unix_seconds: i64,
     #[serde(default)]
     name: Option<String>,
     #[serde(default)]
     product: Option<String>,
-    /// Absent is a day; null is none.
-    #[serde(default = "daily")]
+    /// A day when left out; zero writes none.
+    #[serde(default)]
     refresh_minutes: Option<u32>,
-}
-
-/// A feed is fetched again daily unless a request says otherwise.
-#[expect(
-    clippy::unnecessary_wraps,
-    reason = "serde's default for an optional field"
-)]
-const fn daily() -> Option<u32> {
-    Some(1_440)
 }
 
 impl FestivalCalendarRequest {
@@ -131,7 +124,7 @@ impl FestivalCalendarRequest {
     /// (Gregorian when left out), `latitudeDeg`, `longitudeDeg`,
     /// `altitudeM` and `utcOffsetSeconds`; `festivals`, a festival
     /// request; `stampUnixSeconds`; and optionally `name`, `product` and
-    /// `refreshMinutes` (a day when left out, none when null).
+    /// `refreshMinutes` (a day when left out, none when zero).
     ///
     /// ```
     /// use teistro::FestivalCalendarRequest;
@@ -141,9 +134,9 @@ impl FestivalCalendarRequest {
     ///         "last": {"year": 2026, "month": 12, "day": 31},
     ///         "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
     ///         "festivals": {"rules": "NEPAL"}, "stampUnixSeconds": 1767225600,
-    ///         "name": "Nepal", "refreshMinutes": null}"#,
+    ///         "name": "Nepal", "refreshMinutes": 0}"#,
     /// )?;
-    /// assert_eq!((asked.feed.name.as_str(), asked.feed.refresh_minutes), ("Nepal", None));
+    /// assert_eq!((asked.feed.name.as_str(), asked.feed.refresh_minutes), ("Nepal", Some(0)));
     /// let stampless = FestivalCalendarRequest::from_json(
     ///     r#"{"first": {"year": 2026, "month": 1, "day": 1},
     ///         "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
@@ -170,8 +163,10 @@ impl FestivalCalendarAsked {
     fn request(self) -> Result<FestivalCalendarRequest, Error> {
         let calendar = self.calendar.unwrap_or(Calendar::Gregorian);
         let festivals = FestivalRequest::from_json(&self.festivals.to_string())?;
-        let mut feed =
-            FeedOptions::new(self.stamp_unix_seconds).with_refresh_minutes(self.refresh_minutes);
+        let mut feed = FeedOptions::new(self.stamp_unix_seconds);
+        if let Some(minutes) = self.refresh_minutes {
+            feed = feed.with_refresh_minutes(Some(minutes));
+        }
         if let Some(name) = self.name {
             feed = feed.with_name(name);
         }

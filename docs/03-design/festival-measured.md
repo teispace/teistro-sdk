@@ -434,11 +434,36 @@ measures the fit and not a text (C600).
 | 2083 | PRADOSHA_VRATA | 20 Mar | p. 25: शनिप्रदोषव्रत | 20 Mar | 20 Mar |
 | 2083 | BHAUMASHTAMI | 30 Mar | p. 26: भौमाष्टमीव्रत | 30 Mar | 30 Mar |
 | 2083 | PRADOSHA_VRATA | 4 Apr | p. 26: प्रदोषव्रत | 4 Apr | 4 Apr |
+| 2082 | CHANDRODAYA | 29 Apr | p. 3: चन्द्रोदय | 29 Apr | 29 Apr |
+| 2082 | CHANDRODAYA | 28 May | p. 5: चन्द्रोदय | 28 May | 28 May |
+| 2082 | CHANDRODAYA | 26 Jun | p. 7: चन्द्रोदय | 26 Jun | 26 Jun |
+| 2082 | CHANDRODAYA | 26 Jul | p. 9: चन्द्रोदय | 26 Jul | 26 Jul |
+| 2082 | CHANDRODAYA | 24 Aug | p. 11: चन्द्रोदय | 24 Aug | 24 Aug |
+| 2082 | CHANDRODAYA | 23 Sep | p. 13: चन्द्रोदय | 23 Sep | 23 Sep |
+| 2082 | CHANDRODAYA | 23 Oct | p. 15: चन्द्रोदय | 23 Oct | 23 Oct |
+| 2082 | CHANDRODAYA | 21 Nov | p. 17: चन्द्रोदय | 21 Nov | 21 Nov |
+| 2082 | CHANDRODAYA | 21 Dec | p. 19: चन्द्रोदय | 21 Dec | 21 Dec |
+| 2082 | CHANDRODAYA | 20 Jan | p. 21: चन्द्रोदय | 20 Jan | 20 Jan |
+| 2082 | CHANDRODAYA | 19 Feb | p. 23: चन्द्रोदय | 19 Feb | 19 Feb |
+| 2082 | CHANDRODAYA | 20 Mar | p. 25: चन्द्रोदय | 20 Mar | 20 Mar |
+| 2083 | CHANDRODAYA | 18 Apr | p. 3: चन्द्रोदय | 18 Apr | 18 Apr |
+| 2083 | CHANDRODAYA | 18 May | p. 5: चन्द्रोदय | 18 May | 18 May |
+| 2083 | CHANDRODAYA | 16 Jun | p. 7: चन्द्रोदय | 16 Jun | 16 Jun |
+| 2083 | CHANDRODAYA | 15 Jul | p. 9: चन्द्रोदय | 15 Jul | 15 Jul |
+| 2083 | CHANDRODAYA | 14 Aug | p. 11: चन्द्रोदय | 14 Aug | 14 Aug |
+| 2083 | CHANDRODAYA | 12 Sep | p. 13: चन्द्रोदय | 12 Sep | 12 Sep |
+| 2083 | CHANDRODAYA | 12 Oct | p. 15: चन्द्रोदय | 12 Oct | 12 Oct |
+| 2083 | CHANDRODAYA | 10 Nov | p. 17: चन्द्रोदय | 10 Nov | 10 Nov |
+| 2083 | CHANDRODAYA | 10 Dec | p. 19: चन्द्रोदय | 10 Dec | 10 Dec |
+| 2083 | CHANDRODAYA | 9 Jan | p. 21: चन्द्रोदय | 9 Jan | 9 Jan |
+| 2083 | CHANDRODAYA | 8 Feb | p. 23: चन्द्रोदय | 8 Feb | 8 Feb |
+| 2083 | CHANDRODAYA | 9 Mar | p. 25: चन्द्रोदय | 9 Mar | 9 Mar |
+| 2083 | CHANDRODAYA | 8 Apr | p. 27: चन्द्रोदय | 8 Apr | 8 Apr |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 12 of 211 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 36 of 211 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 12 of 236 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 36 of 236 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 
