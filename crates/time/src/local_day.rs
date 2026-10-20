@@ -206,9 +206,79 @@ pub fn local_day(
     date: &CalendarDate,
     policy: PolarDayPolicy,
 ) -> Result<LocalDay, Error> {
+    local_day_carrying(
+        model,
+        calendar,
+        clock,
+        place,
+        date,
+        policy,
+        &mut Carried::default(),
+    )
+}
+
+/// What one local day leaves for the next: the next civil day's light at
+/// the place, which is that day's own.
+///
+/// A day reads its own light and the next day's, so a range asking day
+/// after day would reckon every light but the ends twice. A carry spends
+/// it once. It holds for one model and one clock; the day and the place
+/// are checked, and a carry from any other day or place is reckoned
+/// afresh, so a stale one costs a reading and never changes an answer.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Carried(Option<(FixedDay, Place, DayLight)>);
+
+/// [`local_day`], taking the day's light from `carried` when the day
+/// before left it there and leaving the next day's for the day after.
+/// The answer is [`local_day`]'s to the bit: a light is a function of the
+/// model, the clock, the place and the day, and a carry is used only for
+/// the same day and place.
+///
+/// ```
+/// use teistro_calendar::{CalendarDate, Gregorian};
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_core::settings::PolarDayPolicy;
+/// use teistro_core::time::UtcOffset;
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_time::local_day::{Carried, local_day, local_day_carrying};
+///
+/// let text = SuryaSiddhanta::text();
+/// let clock = UtcOffset::literal(5, 45, 0);
+/// let place = Place::new(
+///     Latitude::literal(27.7172),
+///     Longitude::literal(85.324),
+///     Altitude::literal(1400.0),
+/// );
+/// let policy = PolarDayPolicy::Undefined;
+/// let mut carried = Carried::default();
+/// for day in 1..=3 {
+///     let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, day);
+///     let ranged = local_day_carrying(&text, &Gregorian, &clock, &place, &date, policy, &mut carried)?;
+///     assert_eq!(ranged, local_day(&text, &Gregorian, &clock, &place, &date, policy)?);
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`local_day`].
+pub fn local_day_carrying(
+    model: &dyn SolarModel,
+    calendar: &dyn CalendarSystem,
+    clock: &dyn LocalClock,
+    place: &Place,
+    date: &CalendarDate,
+    policy: PolarDayPolicy,
+    carried: &mut Carried,
+) -> Result<LocalDay, Error> {
     let day = calendar.fixed_of(date)?;
-    let today = civil_day_light(model, clock, place, day)?;
+    let today = match carried.0.take() {
+        Some((left_for, at, light)) if left_for == day && at == *place => light,
+        _ => civil_day_light(model, clock, place, day)?,
+    };
     let tomorrow = civil_day_light(model, clock, place, day.plus_days(1))?;
+    carried.0 = Some((day.plus_days(1), *place, tomorrow));
     let (sunrise, sunset, next_sunrise, state) = match (today, tomorrow) {
         (DayLight::Arc(arc), DayLight::Arc(next)) => {
             (arc.sunrise, arc.sunset, next.sunrise, DayState::Normal)
@@ -366,6 +436,40 @@ mod tests {
                 );
             }
             assert!(end <= local.next_sunrise.get(), "{date}");
+        }
+    }
+
+    /// Through a polar night and out of it, under every policy that
+    /// synthesises a day, a carried range is its days alone, to the bit.
+    #[test]
+    fn a_carried_range_is_its_days_through_a_polar_season() {
+        const TROMSO: Place = Place::new(
+            Latitude::literal(69.6492),
+            Longitude::literal(18.9553),
+            Altitude::literal(10.0),
+        );
+        let text = SuryaSiddhanta::text();
+        let clock = UtcOffset::literal(1, 0, 0);
+        for policy in [PolarDayPolicy::NearestEvent, PolarDayPolicy::CivilMidnight] {
+            let mut carried = Carried::default();
+            let start = Gregorian
+                .fixed_of(&CalendarDate::defined(Calendar::Gregorian, 2023, 11, 15))
+                .unwrap();
+            for offset in 0..75 {
+                let date = Gregorian.date_of(start.plus_days(offset)).unwrap();
+                let ranged = local_day_carrying(
+                    &text,
+                    &Gregorian,
+                    &clock,
+                    &TROMSO,
+                    &date,
+                    policy,
+                    &mut carried,
+                )
+                .unwrap();
+                let alone = local_day(&text, &Gregorian, &clock, &TROMSO, &date, policy).unwrap();
+                assert_eq!(ranged, alone, "{date} under {policy:?}");
+            }
         }
     }
 

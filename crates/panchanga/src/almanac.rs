@@ -31,7 +31,7 @@ use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind};
 use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
-use teistro_time::local_day::{LocalDay, local_day, local_midnight};
+use teistro_time::local_day::{Carried, LocalDay, local_day, local_day_carrying, local_midnight};
 
 use crate::limb::{self, Limbs, Zodiac};
 use crate::month::{self, LunarMonth};
@@ -635,13 +635,14 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         // a `CalendarDate` a caller builds carries no era numbers and one
         // the calendar renders does.
         let date = self.calendar.date_of(self.calendar.fixed_of(date)?)?;
-        let day = local_day(
+        let day = local_day_carrying(
             self.model,
             self.calendar,
             self.clock,
             place,
             &date,
             settings.day.polar_day_policy,
+            &mut memo.light,
         )?;
         let window = self.window(&day)?;
         let daylight = Interval::new(day.sunrise, day.sunset)?;
@@ -1011,6 +1012,8 @@ struct Memo {
     day: Option<(FixedDay, LocalDay)>,
     /// The lunation the last day fell in.
     lunation: Option<Lunation>,
+    /// The next day's light, which the last day read as its tomorrow.
+    light: Carried,
 }
 
 /// A lunar month as the almanac names it: its span between two new
