@@ -306,6 +306,10 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
     }
 }
 
+/// The latitude, degrees, within which the lagna is followed by
+/// [`crate::window::lagna_cuts_forward`].
+const FORWARD_LATITUDE_DEG: f64 = 60.0;
+
 impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
     fn civil_day(&self, date: &CalendarDate) -> Result<Interval, Error> {
         let fixed = self.calendar.fixed_of(date)?;
@@ -356,6 +360,13 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
 
     fn lagna_at(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
         self.founder.ascendant_at(at, &self.place, &self.chart)
+    }
+
+    fn lagna_moves_forward(&self) -> bool {
+        // Forward wherever `tan φ tan ε < 1`, inside 66.5° of latitude;
+        // sixty leaves room for the obliquity and for a provider's own
+        // angles.
+        self.place.latitude.get().abs() <= FORWARD_LATITUDE_DEG
     }
 
     fn sky_at(&self, at: JulianDay<Utc>) -> Result<Sky, Error> {

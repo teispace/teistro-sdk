@@ -326,10 +326,23 @@ fn os() -> String {
     output("uname", &["-sr"]).unwrap_or_else(|| std::env::consts::OS.to_owned())
 }
 
+/// Whether `TEISTRO_APP_SPEED_ONLY` (`setup:request`, comma-separated)
+/// lets a row run: a profiler's way to time one request alone. Unset, every
+/// row runs; a partial run is a profile, not a record.
+fn wanted(setup: Setup, request: &str) -> bool {
+    var("TEISTRO_APP_SPEED_ONLY").is_none_or(|only| {
+        only.split(',')
+            .any(|row| row.trim() == format!("{}:{request}", setup.key))
+    })
+}
+
 fn main() {
     let mut timings = Vec::new();
     for setup in SETUPS {
         for request in REQUESTS {
+            if !wanted(setup, request) {
+                continue;
+            }
             let timing = measure(setup, request);
             eprintln!(
                 "{:<20} {:<10} {:>10.3} ms  ({} runs)",

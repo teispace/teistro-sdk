@@ -33,7 +33,7 @@ use crate::day::{Native, clauses as day_clauses};
 use crate::instant::{Limbs, Sky, clauses as instant_clauses};
 use crate::judge::{Judgement, Ranking};
 use crate::season::{Blackout, BlackoutKind};
-use crate::window::{day_cuts, lagna_cuts, tyajya, windows};
+use crate::window::{day_cuts, lagna_cuts, lagna_cuts_forward, tyajya, windows};
 
 /// What the search reads.
 pub trait Sources {
@@ -72,6 +72,14 @@ pub trait Sources {
     ///
     /// As `Founder::ascendant_at`.
     fn lagna_at(&self, at: JulianDay<Utc>) -> Result<f64, Error>;
+
+    /// Whether the lagna only moves forward here, so a search may skip a
+    /// run of samples that starts and ends in one navamsa
+    /// ([`crate::window::lagna_cuts_forward`]). False unless the sources
+    /// know it, which costs evaluations and never changes a cut.
+    fn lagna_moves_forward(&self) -> bool {
+        false
+    }
 
     /// The lagna and the nine grahas at an instant.
     ///
@@ -289,7 +297,11 @@ fn cut_day<S: Sources + ?Sized>(
         span.from.plus_days(-LAGNA_MARGIN_DAYS)?,
         span.to.plus_days(LAGNA_MARGIN_DAYS)?,
     )?;
-    let lagna = lagna_cuts(followed, |at| sources.lagna_at(at))?;
+    let lagna = if sources.lagna_moves_forward() {
+        lagna_cuts_forward(followed, |at| sources.lagna_at(at))?
+    } else {
+        lagna_cuts(followed, |at| sources.lagna_at(at))?
+    };
     let tyajya = tyajya(&lagna, span);
     let mut cuts = day_cuts(day);
     cuts.extend(lagna.iter().map(|c| c.at));

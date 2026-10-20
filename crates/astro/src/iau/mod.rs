@@ -483,6 +483,15 @@ pub fn gst06b(uta: f64, utb: f64, tta: f64, ttb: f64) -> f64 {
     anp(gmst06(uta, utb, tta, ttb) + ee06b(tta, ttb))
 }
 
+/// [`gst06b`] from the IAU 2006 mean obliquity and the IAU 2000B nutation
+/// in longitude the caller already holds for the TT date, radians: the
+/// same value bit for bit, for a caller that needs the obliquity too and
+/// would otherwise sum the nutation series twice.
+#[must_use]
+pub fn gst06b_with(uta: f64, utb: f64, tta: f64, ttb: f64, epsa: f64, dpsi: f64) -> f64 {
+    anp(gmst06(uta, utb, tta, ttb) + ee00(tta, ttb, epsa, dpsi))
+}
+
 /// `ERFA_GMAX` then `ERFA_GMIN`: the larger of the value and the lower
 /// bound, then the smaller of that and the upper bound, by the C macros'
 /// comparisons.

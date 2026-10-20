@@ -1220,14 +1220,32 @@ pub fn houses_at(
     chart: &ChartFrame,
     policy: PolarPolicy,
 ) -> Result<Houses, Error> {
+    Ok(houses_and_obliquity_at(system, ut1, tt, place, chart, policy)?.0)
+}
+
+/// [`houses_at`] and the obliquity record the houses were built on, from
+/// one sum of the nutation series.
+///
+/// # Errors
+///
+/// As [`houses`].
+pub fn houses_and_obliquity_at(
+    system: HouseSystem,
+    ut1: JulianDay<Ut1>,
+    tt: JulianDay<Tt>,
+    place: &Place,
+    chart: &ChartFrame,
+    policy: PolarPolicy,
+) -> Result<(Houses, teistro_port_ephemeris::Obliquity), Error> {
+    let (armc_deg, obliquity) = sky::sidereal_time_and_obliquity(ut1, tt, place.longitude);
     let input = Input {
-        armc_deg: sky::sidereal_time_deg(ut1, tt, place.longitude),
+        armc_deg,
         latitude_deg: place.latitude.get(),
-        obliquity_deg: sky::obliquity(tt).true_deg,
+        obliquity_deg: obliquity.true_deg,
         sun_declination_deg: chart.sun_declination_deg,
         sidereal_offset_deg: chart.sidereal_offset_deg,
     };
-    houses(system, &input, policy)
+    Ok((houses(system, &input, policy)?, obliquity))
 }
 
 /// What a chart brings to the houses beside its instant and place.

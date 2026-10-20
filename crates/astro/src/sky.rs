@@ -38,15 +38,52 @@ pub struct Spherical {
 /// ```
 #[must_use]
 pub fn obliquity(tt: JulianDay<Tt>) -> Obliquity {
+    obliquity_parts(tt).0
+}
+
+/// The obliquity record and the two radian values it was built from, the
+/// mean obliquity and the nutation in longitude, which apparent sidereal
+/// time reads too.
+fn obliquity_parts(tt: JulianDay<Tt>) -> (Obliquity, f64, f64) {
     let (date1, date2) = tt.split();
     let mean = iau::obl06(date1, date2);
     let nutation = iau::nut00b(date1, date2);
-    Obliquity {
+    let record = Obliquity {
         mean_deg: mean * RAD2DEG,
         true_deg: (mean + nutation.deps) * RAD2DEG,
         nutation_lon_deg: nutation.dpsi * RAD2DEG,
         nutation_obl_deg: nutation.deps * RAD2DEG,
-    }
+    };
+    (record, mean, nutation.dpsi)
+}
+
+/// Local apparent sidereal time at a longitude, degrees, and the obliquity
+/// record, from one sum of the nutation series: [`sidereal_time_deg`] and
+/// [`obliquity`] bit for bit, for the caller that needs both (the angles
+/// of a chart, asked a thousand times a day by a lagna search).
+///
+/// ```
+/// use teistro_astro::sky::{obliquity, sidereal_time_and_obliquity, sidereal_time_deg};
+/// use teistro_core::quantity::{JulianDay, Longitude, Tt, Ut1};
+///
+/// let ut1 = JulianDay::<Ut1>::literal(2_460_483.25);
+/// let tt = JulianDay::<Tt>::literal(2_460_483.250_8);
+/// let at = Longitude::literal(85.324);
+/// let (armc, eps) = sidereal_time_and_obliquity(ut1, tt, at);
+/// assert_eq!(armc.to_bits(), sidereal_time_deg(ut1, tt, at).to_bits());
+/// assert_eq!(eps, obliquity(tt));
+/// ```
+#[must_use]
+pub fn sidereal_time_and_obliquity(
+    ut1: JulianDay<Ut1>,
+    tt: JulianDay<Tt>,
+    longitude: Longitude,
+) -> (f64, Obliquity) {
+    let (record, mean, dpsi) = obliquity_parts(tt);
+    let (uta, utb) = ut1.split();
+    let (tta, ttb) = tt.split();
+    let greenwich = normalise_deg(iau::gst06b_with(uta, utb, tta, ttb, mean, dpsi) * RAD2DEG);
+    (normalise_deg(greenwich + longitude.get()), record)
 }
 
 /// Greenwich apparent sidereal time, degrees, from the UT1 instant (the

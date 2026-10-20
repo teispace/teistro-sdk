@@ -75,6 +75,85 @@ where
     Ok(cuts)
 }
 
+/// [`lagna_cuts`] for a lagna that only moves forward, as it does
+/// everywhere outside the polar circles (the ascendant's rate,
+/// `cos ε + tan φ sin ε sin θ` over a positive denominator, is positive
+/// for every sidereal time when `tan φ tan ε < 1`): the same cuts, bit
+/// for bit, from about a quarter fewer evaluations. The refinement of each
+/// cut, some sixteen halvings from a minute to a millisecond, is the
+/// same; most of the minute samples between cuts are not taken.
+///
+/// The minute samples are the same ones, but a run of them is skipped
+/// whole when its two ends lie in one navamsa. A lagna moving forward
+/// by less than a turn cannot leave a navamsa and come back to it, and a
+/// run of sixteen minutes is far less than a turn. The runs that do
+/// change are halved over the same samples until two neighbours differ,
+/// and each such pair is refined exactly as [`lagna_cuts`] refines it.
+///
+/// # Errors
+///
+/// Whatever `lagna_at` returns.
+pub fn lagna_cuts_forward<F>(within: Interval, mut lagna_at: F) -> Result<Vec<LagnaCut>, Error>
+where
+    F: FnMut(JulianDay<Utc>) -> Result<f64, Error>,
+{
+    // The sample instants, built by the same sum as `lagna_cuts` so each
+    // is the same value to the bit.
+    let (from, to) = (within.from.get(), within.to.get());
+    let mut grid = vec![from];
+    let mut t = from;
+    while t < to {
+        t = (t + SAMPLE_DAYS).min(to);
+        grid.push(t);
+    }
+    let mut cuts = Vec::new();
+    let last = grid.len() - 1;
+    let mut start = sampled(&grid, 0, &mut lagna_at)?;
+    while start.0 < last {
+        let end = sampled(&grid, (start.0 + STRIDE).min(last), &mut lagna_at)?;
+        halve(&grid, start, end, &mut lagna_at, &mut cuts)?;
+        start = end;
+    }
+    Ok(cuts)
+}
+
+/// The sample at an index of the grid, with the navamsa the lagna is in.
+fn sampled<F>(grid: &[f64], i: usize, lagna_at: &mut F) -> Result<(usize, (f64, u8)), Error>
+where
+    F: FnMut(JulianDay<Utc>) -> Result<f64, Error>,
+{
+    let at = grid.get(i).copied().unwrap_or(f64::NAN);
+    Ok((i, (at, navamsa_of(lagna_at(JulianDay::literal(at))?))))
+}
+
+/// How many minute samples [`lagna_cuts_forward`] skips at once: sixteen
+/// minutes, in which a lagna outside the polar circles moves well under
+/// a turn (a turn takes a day).
+const STRIDE: usize = 16;
+
+/// Halves a run of samples whose ends differ until two neighbours do, and
+/// refines each such pair.
+fn halve<F>(
+    grid: &[f64],
+    a: (usize, (f64, u8)),
+    b: (usize, (f64, u8)),
+    lagna_at: &mut F,
+    cuts: &mut Vec<LagnaCut>,
+) -> Result<(), Error>
+where
+    F: FnMut(JulianDay<Utc>) -> Result<f64, Error>,
+{
+    if a.1.1 == b.1.1 {
+        return Ok(());
+    }
+    if b.0 - a.0 == 1 {
+        return refine(a.1, b.1, lagna_at, cuts);
+    }
+    let m = sampled(grid, usize::midpoint(a.0, b.0), lagna_at)?;
+    halve(grid, a, m, lagna_at, cuts)?;
+    halve(grid, m, b, lagna_at, cuts)
+}
+
 /// Finds every change of navamsa between two samples that differ.
 fn refine<F>(
     a: (f64, u8),
@@ -259,7 +338,7 @@ pub fn windows(day: Interval, cuts: impl IntoIterator<Item = JulianDay<Utc>>) ->
     reason = "tests fail by panicking"
 )]
 mod tests {
-    use super::{lagna_cuts, tyajya, tyajya_of, windows};
+    use super::{lagna_cuts, lagna_cuts_forward, tyajya, tyajya_of, windows};
     use crate::clause::ClauseKind;
     use teistro_core::catalogue::Rashi;
     use teistro_core::interval::Interval;
@@ -293,6 +372,46 @@ mod tests {
             assert_eq!(usize::from(cut.navamsa), (k + 1) % 108);
         }
         assert_eq!(cuts.iter().filter(|c| c.sign_changed).count(), 12);
+    }
+
+    #[test]
+    fn a_forward_lagna_is_cut_bit_for_bit_as_the_minute_scan_cuts_it() {
+        // An uneven forward lagna, fast and slow as a temperate one is,
+        // over a day and a quarter that starts and ends off the grid.
+        let uneven = |at: JulianDay<teistro_core::quantity::Utc>| {
+            let x = (at.get() - T0) * std::f64::consts::TAU;
+            Ok((at.get() - T0) * 360.0 + 40.0 * x.sin() + 7.3)
+        };
+        let day = Interval::literal(T0 + 0.013, T0 + 1.271);
+        let mut scanned = 0_u32;
+        let all = lagna_cuts(day, |at| {
+            scanned += 1;
+            uneven(at)
+        })
+        .unwrap();
+        let mut halved = 0_u32;
+        let forward = lagna_cuts_forward(day, |at| {
+            halved += 1;
+            uneven(at)
+        })
+        .unwrap();
+        assert_eq!(forward, all);
+        assert!(all.len() > 130, "{}", all.len());
+        for (f, a) in forward.iter().zip(&all) {
+            assert_eq!(f.at.get().to_bits(), a.at.get().to_bits());
+        }
+        // 4,312 against 3,152 when written: the 1,812 minute samples
+        // become some 650, and the refinements are the same.
+        assert!(halved * 4 < scanned * 3, "{halved} of {scanned}");
+    }
+
+    #[test]
+    fn a_forward_scan_of_less_than_a_minute_is_the_minute_scan() {
+        let day = Interval::literal(T0 + 0.004_6, T0 + 0.004_9);
+        assert_eq!(
+            lagna_cuts_forward(day, steady).unwrap(),
+            lagna_cuts(day, steady).unwrap()
+        );
     }
 
     #[test]

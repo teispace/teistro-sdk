@@ -19,7 +19,7 @@ use teistro_astro::completion::{Completed, Completion, Implementation};
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::events::{Direction, Lattice, Longitudes, Quantity, Search, StationKind};
 use teistro_astro::houses::{
-    ChartFrame, Input as HouseInput, cusps_from_angles, houses, houses_at,
+    ChartFrame, Input as HouseInput, cusps_from_angles, houses, houses_and_obliquity_at, houses_at,
 };
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
@@ -1916,11 +1916,12 @@ fn angles_in(
         sidereal_offset_deg: zodiac.offset_deg,
         sun_declination_deg: None,
     };
-    let built = houses_at(HouseSystem::WholeSign, ut1, tt, place, &frame, policy)?;
+    let (built, obliquity) =
+        houses_and_obliquity_at(HouseSystem::WholeSign, ut1, tt, place, &frame, policy)?;
     Ok(ChartAngles {
         ascendant_deg: zodiac.of_tropical(built.angles.ascendant_deg),
         midheaven_deg: zodiac.of_tropical(built.angles.midheaven_deg),
-        obliquity_deg: teistro_astro::sky::obliquity(tt).true_deg,
+        obliquity_deg: obliquity.true_deg,
     })
 }
 
