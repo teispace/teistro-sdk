@@ -163,6 +163,14 @@ pub struct DataHash {
     pub bytes: u64,
 }
 
+/// A digest as lower-case hex.
+fn hex(digest: &[u8]) -> String {
+    digest.iter().fold(String::with_capacity(64), |mut s, b| {
+        let _ = write!(s, "{b:02x}");
+        s
+    })
+}
+
 impl DataHash {
     /// Hashes a file, streaming.
     ///
@@ -182,19 +190,27 @@ impl DataHash {
             hasher.update(buffer.get(..read).unwrap_or_default());
             bytes += read as u64;
         }
-        let digest = hasher.finalize();
-        let sha256 = digest.iter().fold(String::with_capacity(64), |mut s, b| {
-            let _ = write!(s, "{b:02x}");
-            s
-        });
         Ok(DataHash {
             file: path
                 .file_name()
                 .map(|n| n.to_string_lossy().into_owned())
                 .unwrap_or_default(),
-            sha256,
+            sha256: hex(&hasher.finalize()),
             bytes,
         })
+    }
+
+    /// Hashes a file held in memory under its name: what a file handed
+    /// over as bytes (downloaded, or read out of an app's bundle) is
+    /// described by, the same as [`DataHash::of_file`] describes it on
+    /// disk.
+    #[must_use]
+    pub fn of_bytes(file: &str, bytes: &[u8]) -> DataHash {
+        DataHash {
+            file: file.to_owned(),
+            sha256: hex(&Sha256::digest(bytes)),
+            bytes: bytes.len() as u64,
+        }
     }
 
     /// The hash as the envelope carries it, when the hex is well formed.
@@ -541,6 +557,7 @@ mod tests {
             "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
         );
         assert!(hash.envelope_hash().is_some());
+        assert_eq!(DataHash::of_bytes("sample.txt", b"abc"), hash);
         let identity = Identity {
             name: String::from("test"),
             version: String::from("1"),
