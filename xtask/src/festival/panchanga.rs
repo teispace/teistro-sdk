@@ -670,7 +670,7 @@ const PRINTED: [(i32, &str, Day, &str); 236] = [
 /// rule): the day it gives within a fortnight of the printed one, or none,
 /// and the cause. The pass fails on a parting with no entry, on an entry
 /// whose row agrees, and on an entry whose day is not the one found.
-const PARTS: [(i32, &str, Option<Day>, &str); 12] = [
+const PARTS: [(i32, &str, Option<Day>, &str); 6] = [
     (
         2082,
         "HILE_JATRA",
@@ -685,51 +685,15 @@ const PARTS: [(i32, &str, Option<Day>, &str); 12] = [
     ),
     (
         2083,
-        "ANALA_PUNHI",
-        None,
-        "the print's अनलापुन्हि is the adhika month's full moon, and the rule keeps the nija Jyeshtha's (C607)",
-    ),
-    (
-        2083,
-        "DASHAHARA_SNANA_ARAMBHA",
-        None,
-        "the committee prints it in the adhika Jyeshtha, and the rule keeps the nija month (C606)",
-    ),
-    (
-        2083,
         "DURVA_ASHTAMI",
         Some((2026, 9, 19)),
         "the committee prints Shravana's dark 8th, inside the solar Bhadra, where Bhadrapada's bright 8th falls in the solar Ashwin (C608)",
     ),
     (
         2083,
-        "GANGA_DASHAHARA",
-        None,
-        "the committee prints it in the adhika Jyeshtha, and the rule keeps the nija month (C606)",
-    ),
-    (
-        2083,
         "GAURA_SAPTAMI",
         Some((2026, 9, 18)),
         "the committee prints Shravana's dark 7th, inside the solar Bhadra, where Bhadrapada's bright 7th falls in the solar Ashwin (C608)",
-    ),
-    (
-        2083,
-        "GOSAIKUNDA_SNANA_ARAMBHA",
-        None,
-        "counted from DASHAHARA_SNANA_ARAMBHA, in the adhika Jyeshtha by the print (C606)",
-    ),
-    (
-        2083,
-        "GOSAIKUNDA_SNANA_SAMAPTI",
-        None,
-        "counted from GANGA_DASHAHARA, in the adhika Jyeshtha by the print (C606)",
-    ),
-    (
-        2083,
-        "HATYAMOCHANA_SNANA",
-        None,
-        "counted from GANGA_DASHAHARA, in the adhika Jyeshtha by the print (C606)",
     ),
     (
         2083,

@@ -4205,8 +4205,8 @@ test('an almanac carries the festivals it was asked for', () => {
     otherwise: 'LATER',
   };
   const moved = ctx.almanac.of({ ...days, festivals: { rules: ['DHARMASINDHU', sunrise] } }).festivals;
-  assert.equal(moved.observances.length, 3);
-  assert.equal(moved.observances[1].decidedBy.by, 'OTHERWISE');
+  assert.equal(moved.observances.length, 5);
+  assert.equal(moved.observances.find((o) => o.rule === 'LAKSHMI_PUJA')?.decidedBy.by, 'OTHERWISE');
   assert.notEqual(moved.provenance.inputHash, answer.provenance.inputHash);
 
   // Nepal's pack, and a day of the consumer's own counted two days from

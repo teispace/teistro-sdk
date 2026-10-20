@@ -2,8 +2,8 @@
 
 Status: `design`, 2026-10-20. Built: `MOONRISE` (§3.1), `DAY_MUHURTA`
 (§3.2), `GREATER` with the maintainer's rule (§3.3), `dayOfPaksha`
-(§3.4), `ON_VARA` with `NONE` (§3.5), and the civil dates (§3.6); the
-rest is not. Cruxes C601
+(§3.4), `ON_VARA` with `NONE` (§3.5), the civil dates (§3.6) and the
+four-valued `inAdhika` (§3.7); the rest is not. Cruxes C601
 to C604, C606, C608, C614, C616 to C619
 (`01-research/feature-universe/19-verification-cruxes.md`).
 
@@ -24,7 +24,7 @@ rows (§4): which form would express each row, or why none does.
 | cases | `EARLIER_ONLY`, `LATER_ONLY`, `BOTH` (both wholly), `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS` |
 | predicates | `CASE`, `JOINED` (the tithi with a nakshatra), `STANDS` (a nakshatra in a window), `LASTS` (ghatis past an edge), `WHOLLY`; since this page, `GREATER` (§3.3) |
 | choice | `EARLIER`, `LATER`, `BY_YUGMA` |
-| the adhika month | `inAdhika`: the nija month only, or both |
+| the adhika month | `inAdhika`: the nija month only, or both; since this page, the adhika alone, or the adhika when the month is doubled (§3.7) |
 | counted days | a following rule: 0 to 15 civil days after another rule's day |
 
 ## 2. How a form is chosen
@@ -340,7 +340,9 @@ classification, Guriya parva (C621), and Safer internet day's weekday rule.
 {"inAdhika": "FIRST"}
 ```
 
-Today `inAdhika` is a yes or no. It becomes one of four values:
+`inAdhika` was a yes or no. It is one of four values, and the old two are
+still read and written as `false` and `true`, so a rule written before
+keeps its bytes and its hash:
 
 | value | meaning |
 |---|---|
@@ -357,8 +359,21 @@ VS 2083. The text's malamasa rules (p. 4, page image) keep the regular
 and occasional rites in the adhika month and bar new optional ones from
 it. So `FIRST` is a per-rule choice and not a default.
 
-**Settles:** C606 (the five partings of VS 2083), Padmini and Parama
-ekadashi; C607 if Anala punhi is the adhika month's name.
+**Built.** `FIRST` is decided from the lunation beside the occurrence's
+own: an adhika month runs new moon to new moon under both conventions, so
+it comes just before the amanta nija month of its name, and just after the
+dark fortnight a purnimanta almanac names after it. Days that stop before
+that lunation leave the occurrence unjudged and say why, rather than
+guess; the SDK reads a month further for a request with a `FIRST` rule,
+so a range of any length answers as a year does. `NEPAL_PANCHANGA` keeps
+`DASHAHARA_SNANA_ARAMBHA` and `GANGA_DASHAHARA` `FIRST`, which carries
+the three bathing rites counted from them, and `ANALA_PUNHI` `ONLY`: the
+committee's sky now gives the printed day for all six VS 2083 rows, and
+VS 2082, with no adhika month, prints Anala punhi nowhere and the pack
+keeps none.
+
+**Settles:** C606 (the five partings of VS 2083) and C607, both closed;
+Padmini and Parama ekadashi wait on the Ekadashi table taking the form.
 
 ### 3.8 The Sun's sign: `SUN_IN`
 
@@ -554,7 +569,7 @@ should come from that text and not from a fit (C614).
 | C602 | purvahna | **day muhurtas 1–6** | the first half of the day (p. 21) |
 | C603 | neither day | **the earlier, as the maintainer decided**, for a rule with no source of its own | the later, the consumer's sunrise fallback; no verified year has the case |
 | C604 | weighing by | **time** | the fraction of each day's window |
-| C606 | a doubled month | **`NIJA`**, `FIRST` per rule where a source says so | `FIRST` for every rule |
+| C606 | a doubled month | **`NIJA`**, `FIRST` per rule where a source says so (built) | `FIRST` for every rule |
 | C608 | a barred day | **not encoded**; `SUN_IN` with no replacement | the paksha before, as VS 2083 prints Durva ashtami |
 | C617 | a two-day listing | **one day**, the rule's | `BOTH` |
 | C618 | a weekday | **`ON_VARA` with `NONE`** | one rule per weekday-tithi pair, outside the language |

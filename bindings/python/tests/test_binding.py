@@ -4158,8 +4158,9 @@ class AnEngine(WithLibrary):
             }
             moved = ctx.almanac.of(**days, festivals={"rules": ["DHARMASINDHU", sunrise]}).festivals
             assert moved is not None
-            self.assertEqual(moved.observances[1].decided_by.by, "OTHERWISE")
-            self.assertIsNone(moved.observances[1].decided_by.index)
+            (lakshmi,) = (o for o in moved.observances if o.rule == "LAKSHMI_PUJA")
+            self.assertEqual(lakshmi.decided_by.by, "OTHERWISE")
+            self.assertIsNone(lakshmi.decided_by.index)
             self.assertNotEqual(moved.provenance.input_hash, answer.provenance.input_hash)
 
             # Nepal's pack, and a day of the consumer's own counted two days

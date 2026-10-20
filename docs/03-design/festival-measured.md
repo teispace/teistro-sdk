@@ -335,12 +335,12 @@ measures the fit and not a text (C600).
 | 2083 | GANGA_SAPTAMI | 23 Apr | p. 3: गंगासप्तमी | 23 Apr | 23 Apr |
 | 2083 | SITA_NAVAMI | 25 Apr | p. 3: सीताजयन्ती | 25 Apr | 25 Apr |
 | 2083 | KURMA_JAYANTI | 1 May | p. 3: कूर्मजयन्ती | 1 May | 1 May |
-| 2083 | DASHAHARA_SNANA_ARAMBHA | 17 May | p. 5: दशहरास्नानारम्भ | none ✗ | none ✗ |
-| 2083 | GOSAIKUNDA_SNANA_ARAMBHA | 17 May | p. 5: गोसाइकुण्डस्नानारम्भ | none ✗ | none ✗ |
-| 2083 | GANGA_DASHAHARA | 26 May | p. 5: गङ्गादशहरा | none ✗ | none ✗ |
-| 2083 | GOSAIKUNDA_SNANA_SAMAPTI | 26 May | p. 5: गोसाइँकुण्ड स्नानसमाप्ति | none ✗ | none ✗ |
-| 2083 | HATYAMOCHANA_SNANA | 26 May | p. 5: हत्यामोचन तीर्थस्नान | none ✗ | none ✗ |
-| 2083 | ANALA_PUNHI | 31 May | p. 5: अनलापुन्हि | none ✗ | none ✗ |
+| 2083 | DASHAHARA_SNANA_ARAMBHA | 17 May | p. 5: दशहरास्नानारम्भ | 17 May | 17 May |
+| 2083 | GOSAIKUNDA_SNANA_ARAMBHA | 17 May | p. 5: गोसाइकुण्डस्नानारम्भ | 17 May | 17 May |
+| 2083 | GANGA_DASHAHARA | 26 May | p. 5: गङ्गादशहरा | 26 May | 25 May ✗ |
+| 2083 | GOSAIKUNDA_SNANA_SAMAPTI | 26 May | p. 5: गोसाइँकुण्ड स्नानसमाप्ति | 26 May | 25 May ✗ |
+| 2083 | HATYAMOCHANA_SNANA | 26 May | p. 5: हत्यामोचन तीर्थस्नान | 26 May | 25 May ✗ |
+| 2083 | ANALA_PUNHI | 31 May | p. 5: अनलापुन्हि | 31 May | 31 May |
 | 2083 | KUMARA_JATRA | 21 Jun | p. 7: कुमारयात्रा | 21 Jun | 21 Jun |
 | 2083 | NIRJALA_EKADASHI | 25 Jun | p. 7: निर्जला एकादशीव्रत | 25 Jun | 25 Jun |
 | 2083 | DILA_CHARHE | 13 Jul | p. 8: (दिल्ला चःह्रे पूजा) | 13 Jul | 13 Jul |
@@ -465,20 +465,14 @@ measures the fit and not a text (C600).
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 12 of 236 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 36 of 236 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 236 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 33 of 236 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 
 - VS 2082 HILE_JATRA (1 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
 - VS 2083 AMUKTABHARANA_SAPTAMI (18 Sep): counted from GAURA_SAPTAMI (C608)
-- VS 2083 ANALA_PUNHI (none within a fortnight): the print's अनलापुन्हि is the adhika month's full moon, and the rule keeps the nija Jyeshtha's (C607)
-- VS 2083 DASHAHARA_SNANA_ARAMBHA (none within a fortnight): the committee prints it in the adhika Jyeshtha, and the rule keeps the nija month (C606)
 - VS 2083 DURVA_ASHTAMI (19 Sep): the committee prints Shravana's dark 8th, inside the solar Bhadra, where Bhadrapada's bright 8th falls in the solar Ashwin (C608)
-- VS 2083 GANGA_DASHAHARA (none within a fortnight): the committee prints it in the adhika Jyeshtha, and the rule keeps the nija month (C606)
 - VS 2083 GAURA_SAPTAMI (18 Sep): the committee prints Shravana's dark 7th, inside the solar Bhadra, where Bhadrapada's bright 7th falls in the solar Ashwin (C608)
-- VS 2083 GOSAIKUNDA_SNANA_ARAMBHA (none within a fortnight): counted from DASHAHARA_SNANA_ARAMBHA, in the adhika Jyeshtha by the print (C606)
-- VS 2083 GOSAIKUNDA_SNANA_SAMAPTI (none within a fortnight): counted from GANGA_DASHAHARA, in the adhika Jyeshtha by the print (C606)
-- VS 2083 HATYAMOCHANA_SNANA (none within a fortnight): counted from GANGA_DASHAHARA, in the adhika Jyeshtha by the print (C606)
 - VS 2083 HILE_JATRA (20 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
 - VS 2083 NUWAKOT_DUPCHESHWAR_MELA (23 Dec): the committee prints the mela on the full moon, a day after Dattatreya's 14th (C611)

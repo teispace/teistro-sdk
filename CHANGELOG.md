@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A doubled month** (`festival-rule-language.md` §3.7).
+**Numbers:** in VS 2083, `NEPAL_PANCHANGA` now keeps Dashahara's
+beginning and end, the Gosaikunda bathing and Hatyamochan bathing in the
+adhika Jyeshtha, as the committee prints them and as *Dharmasindhu* p. 38
+directs. It keeps Anala punhi on that month's full moon, and in VS 2082,
+which has no adhika month, it keeps none. A rule's `inAdhika` is now
+`"NIJA"`, `"ALSO"`, `"ONLY"` or `"FIRST"`. `false` and `true` still read as
+the first two and are written that way, so every rule written before keeps
+its bytes. A `FIRST` rule reads the lunation beside its own, so the SDK
+reads a month further for a request that holds one, and nothing else
+pays for it. The pack disagrees with the print on 6 of 236 rows over the
+committee's sky, down from 12.
+
 **Days kept on a date** (`festival-rule-language.md` §3.6).
 **Numbers:** `NEPAL_PANCHANGA` gains the twelve sankrantis, each on the
 first of its Bikram Sambat month, and four national days (Democracy,

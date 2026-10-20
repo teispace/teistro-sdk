@@ -341,10 +341,10 @@ pub struct FestivalRule {
     /// written flat as `tithi`, or as `nakshatra` with `paksha`.
     #[serde(flatten)]
     pub occurs: Occurs,
-    /// Whether an adhika month holds it too (C171); only the nija month
+    /// Which of a doubled month's two holds it (C171): the nija month
     /// by default.
     #[serde(default)]
-    pub in_adhika: bool,
+    pub in_adhika: InAdhika,
     /// The time of the rite.
     pub at: Window,
     /// The guards, in order; the first that holds decides.
@@ -434,6 +434,124 @@ impl Occurs {
             Occurs::Nakshatra { .. } => false,
         }
     }
+}
+
+/// Which of a doubled month's two a rule is kept in.
+///
+/// A year with an adhika month names it twice, the adhika first and the
+/// nija after (§3.7). `NIJA` and `ALSO` are written `false` and `true`,
+/// as the yes-or-no they replace was, so a rule written before keeps its
+/// spelling and its hash; each is read in either form.
+///
+/// ```
+/// use teistro_panchanga::festival::InAdhika;
+///
+/// let first: InAdhika = serde_json::from_str(r#""FIRST""#)?;
+/// assert_eq!(first, InAdhika::First);
+/// assert_eq!(serde_json::to_string(&InAdhika::Also)?, "true");
+/// assert_eq!(serde_json::from_str::<InAdhika>(r#""NIJA""#)?, InAdhika::Nija);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(with = "InAdhikaSchema"))]
+#[serde(try_from = "InAdhikaWire", into = "InAdhikaWire")]
+#[non_exhaustive]
+pub enum InAdhika {
+    /// The nija month alone, `false`.
+    #[default]
+    Nija,
+    /// Both, `true`.
+    Also,
+    /// The adhika month alone: Padmini and Parama ekadashi, with no month
+    /// named.
+    Only,
+    /// The adhika month when the named month is doubled, the nija month
+    /// otherwise: Dashahara in a doubled Jyeshtha (*Dharmasindhu* p. 38).
+    First,
+}
+
+impl InAdhika {
+    /// The four, in the order they are written.
+    pub const ALL: [InAdhika; 4] = [
+        InAdhika::Nija,
+        InAdhika::Also,
+        InAdhika::Only,
+        InAdhika::First,
+    ];
+
+    /// The value's key, `"FIRST"`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            InAdhika::Nija => "NIJA",
+            InAdhika::Also => "ALSO",
+            InAdhika::Only => "ONLY",
+            InAdhika::First => "FIRST",
+        }
+    }
+}
+
+/// The two forms [`InAdhika`] is written in.
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(untagged)]
+enum InAdhikaWire {
+    Flag(bool),
+    Key(String),
+}
+
+impl TryFrom<InAdhikaWire> for InAdhika {
+    type Error = String;
+
+    fn try_from(wire: InAdhikaWire) -> Result<InAdhika, String> {
+        match wire {
+            InAdhikaWire::Flag(true) => Ok(InAdhika::Also),
+            InAdhikaWire::Flag(false) => Ok(InAdhika::Nija),
+            InAdhikaWire::Key(key) => InAdhika::ALL
+                .into_iter()
+                .find(|value| value.key() == key)
+                .ok_or_else(|| {
+                    format!(
+                        "`inAdhika` is `true`, `false`, \"NIJA\", \"ALSO\", \"ONLY\" or \"FIRST\", not {key:?}"
+                    )
+                }),
+        }
+    }
+}
+
+impl From<InAdhika> for InAdhikaWire {
+    fn from(value: InAdhika) -> InAdhikaWire {
+        match value {
+            InAdhika::Nija => InAdhikaWire::Flag(false),
+            InAdhika::Also => InAdhikaWire::Flag(true),
+            InAdhika::Only | InAdhika::First => InAdhikaWire::Key(value.key().to_owned()),
+        }
+    }
+}
+
+/// The shape [`InAdhika`] is read in, for its schema.
+#[cfg(feature = "schema")]
+#[derive(schemars::JsonSchema)]
+#[schemars(untagged)]
+#[allow(dead_code, reason = "a schema's shape, never built")]
+enum InAdhikaSchema {
+    /// `true` for `ALSO`, `false` for `NIJA`.
+    Flag(bool),
+    /// One of the four by key.
+    Key(InAdhikaKey),
+}
+
+/// The four keys, for [`InAdhikaSchema`].
+#[cfg(feature = "schema")]
+#[derive(schemars::JsonSchema)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[allow(dead_code, reason = "a schema's shape, never built")]
+enum InAdhikaKey {
+    Nija,
+    Also,
+    Only,
+    First,
 }
 
 /// The shape [`Occurs`] is read in, for its schema: the reader refuses
@@ -957,7 +1075,7 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
     }
     let tithis = occurrences(days);
     let nakshatras = distinct(days.iter().flat_map(|day| day.nakshatra.iter()));
-    let mut kept: Vec<(&FestivalRule, Interval, LunarMonth)> = Vec::new();
+    let mut kept: Vec<(&FestivalRule, Interval, Result<LunarMonth, String>)> = Vec::new();
     for rule in rules {
         match rule.occurs {
             Occurs::Tithi { .. } | Occurs::DayOfPaksha { .. } => {
@@ -985,7 +1103,11 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
     kept.sort_by(|a, b| a.1.from.get().total_cmp(&b.1.from.get()));
     let mut answer = Observances::default();
     for (rule, whole, month) in kept {
-        match judge(rule, whole, month, days)? {
+        let judged = match month {
+            Ok(month) => judge(rule, whole, month, days)?,
+            Err(why) => Err(why),
+        };
+        match judged {
             Ok(Some(observance)) => answer.observances.push(observance),
             Ok(None) => {}
             Err(why) => answer.unjudged.push(Unjudged {
@@ -1029,29 +1151,63 @@ fn running_at_middle(span: Interval, tithis: &[Span<Tithi>]) -> Option<&Span<Tit
 /// The month is read at a sunrise inside it: the first at or after the
 /// tithi begins, except for the new moon, which ends its month, and so
 /// the last sunrise before it ends.
+///
+/// `None` when the rule does not keep it; an error when whether it does
+/// turns on a month the days do not reach.
 fn month_of(
     rule: &FestivalRule,
     occurrence: &Span<Tithi>,
     days: &[FestivalDay],
-) -> Option<LunarMonth> {
-    let day = if occurrence.member == Tithi::Amavasya {
+) -> Option<Result<LunarMonth, String>> {
+    let at = if occurrence.member == Tithi::Amavasya {
         days.iter()
-            .rev()
-            .find(|day| day.sunrise.get() < occurrence.whole.to.get())
+            .rposition(|day| day.sunrise.get() < occurrence.whole.to.get())
     } else {
         days.iter()
-            .find(|day| day.sunrise.get() >= occurrence.whole.from.get())
+            .position(|day| day.sunrise.get() >= occurrence.whole.from.get())
     }?;
+    let day = days.get(at)?;
     let month = month::of(
         day.month.amanta,
         occurrence.member,
         rule.convention,
         day.month.kind,
     );
-    let named = rule
-        .month
-        .is_none_or(|wanted| month.under(rule.convention) == wanted);
-    (named && (rule.in_adhika || month.kind != MonthKind::Adhika)).then_some(month)
+    let name = month.under(rule.convention);
+    if rule.month.is_some_and(|wanted| name != wanted) {
+        return None;
+    }
+    let adhika = month.kind == MonthKind::Adhika;
+    match rule.in_adhika {
+        InAdhika::Also => Some(Ok(month)),
+        InAdhika::Nija => (!adhika).then_some(Ok(month)),
+        InAdhika::Only | InAdhika::First if adhika => Some(Ok(month)),
+        InAdhika::Only => None,
+        InAdhika::First => match doubled(days, at, name) {
+            Some(true) => None,
+            Some(false) => Some(Ok(month)),
+            None => Some(Err(format!(
+                "the days do not reach the month next to this {}, which says whether it is doubled",
+                name.key()
+            ))),
+        },
+    }
+}
+
+/// Whether the year doubles the month a nija day's occurrence is named,
+/// read from the lunation beside the day's own: an adhika month is new
+/// moon to new moon under both conventions, so it comes just before the
+/// amanta nija month of its name, and so just after the dark fortnight a
+/// purnimanta almanac names after it. `None` when the days stop first.
+fn doubled(days: &[FestivalDay], at: usize, name: Masa) -> Option<bool> {
+    let own = &days.get(at)?.month;
+    let other = |day: &&FestivalDay| day.month.amanta != own.amanta || day.month.kind != own.kind;
+    let beside = if own.amanta == name {
+        days.get(..at)?.iter().rev().find(other)
+    } else {
+        days.get(at..)?.iter().find(other)
+    }?;
+    Some(beside.month.amanta == name && beside.month.kind == MonthKind::Adhika)
 }
 
 /// The two days an occurrence is judged between (C172): the sunrise day
@@ -1426,13 +1582,13 @@ impl FestivalRule {
                 "SANKASHTA_CHATURTHI",
                 "Dharmasindhu p. 9: the dark 4th at moonrise (चन्द्रोदयव्यापिनी); the day whose moonrise alone holds it, the earlier, joined to the 3rd, when both do, the later when neither does; every month, the adhika too",
                 None,
-                true,
+                InAdhika::Also,
             ),
             rule(
                 "KARAKA_CHATURTHI",
                 "Dharmasindhu p. 76: Ashvina's dark 4th, at moonrise, decided as the Sankashta chaturthi (p. 9)",
                 Some(Masa::Ashwina),
-                false,
+                InAdhika::Nija,
             ),
         ]
     }
@@ -1487,7 +1643,7 @@ impl FestivalRule {
             month: None,
             convention: Convention::Amanta,
             occurs: Tithi::Purnima.into(),
-            in_adhika: true,
+            in_adhika: InAdhika::Also,
             at: Window::Sunset,
             decide: vec![Guard::new([case(Case::EarlierOnly)], Choice::Earlier)],
             otherwise: Choice::Later,
@@ -1526,7 +1682,7 @@ impl FestivalRule {
                 month: Some(Masa::Chaitra),
                 convention: Convention::Amanta,
                 occurs: Tithi::ShuklaNavami.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: MADHYAHNA,
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
                 otherwise: Later,
@@ -1537,7 +1693,7 @@ impl FestivalRule {
                 month: Some(Masa::Shravana),
                 convention: Convention::Amanta,
                 occurs: Tithi::KrishnaAshtami.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: Window::Nishitha,
                 decide: vec![
                     Guard::new([joined(L, Nakshatra::Rohini, Some(Window::Nishitha))], Later),
@@ -1552,7 +1708,7 @@ impl FestivalRule {
                 month: Some(Masa::Ashwina),
                 convention: Convention::Amanta,
                 occurs: Tithi::ShuklaDashami.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: APARAHNA,
                 decide: vec![
                     Guard::new([case(Case::LaterOnly), shravana(L)], Later),
@@ -1587,7 +1743,7 @@ impl FestivalRule {
                 month: Some(Masa::Ashwina),
                 convention: Convention::Amanta,
                 occurs: Tithi::Amavasya.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: Window::Pradosha,
                 decide: vec![Guard::new(
                     [Predicate::Lasts {
@@ -1613,7 +1769,7 @@ impl FestivalRule {
                 month: Some(Masa::Bhadrapada),
                 convention: Convention::Amanta,
                 occurs: Tithi::ShuklaTritiya.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: Window::Sunrise,
                 decide: vec![Guard::new([case(Case::Neither)], Earlier)],
                 otherwise: Later,
@@ -1624,7 +1780,7 @@ impl FestivalRule {
                 month: Some(Masa::Ashwina),
                 convention: Convention::Amanta,
                 occurs: Tithi::ShuklaPratipada.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: Window::Sunrise,
                 decide: vec![
                     Guard::new([case(Case::Both)], Earlier),
@@ -1645,7 +1801,7 @@ impl FestivalRule {
                 month: Some(Masa::Kartika),
                 convention: Convention::Amanta,
                 occurs: Tithi::ShuklaDvitiya.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: APARAHNA,
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
                 otherwise: Later,
@@ -1656,7 +1812,7 @@ impl FestivalRule {
                 month: Some(Masa::Magha),
                 convention: Convention::Amanta,
                 occurs: Tithi::KrishnaChaturdashi.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: Window::NightMuhurta { muhurta: 8 },
                 decide: vec![
                     Guard::new([case(Case::EarlierOnly)], Earlier),
@@ -1687,7 +1843,7 @@ impl FestivalRule {
                 month: Some(Masa::Shravana),
                 convention: Convention::Amanta,
                 occurs: Tithi::Purnima.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: Window::Sunrise,
                 decide: vec![Guard::new([lasts(6)], Later)],
                 otherwise: Earlier,
@@ -1698,7 +1854,7 @@ impl FestivalRule {
                 month: Some(Masa::Kartika),
                 convention: Convention::Amanta,
                 occurs: Tithi::ShuklaPratipada.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: Window::Sunrise,
                 decide: vec![Guard::new([lasts(18)], Later)],
                 otherwise: Earlier,
@@ -1709,7 +1865,7 @@ impl FestivalRule {
                 month: Some(Masa::Phalguna),
                 convention: Convention::Amanta,
                 occurs: Tithi::Purnima.into(),
-                in_adhika: false,
+                in_adhika: InAdhika::Nija,
                 at: Window::Pradosha,
                 decide: vec![
                     Guard::new([case(Case::EarlierOnly)], Earlier),
@@ -1733,7 +1889,7 @@ impl FestivalRule {
             month: Some(Masa::Shravana),
             convention: Convention::Amanta,
             occurs: Tithi::Purnima.into(),
-            in_adhika: false,
+            in_adhika: InAdhika::Nija,
             at: Window::Sunrise,
             decide: vec![
                 Guard::new([case(Case::Both)], Earlier),
@@ -1778,7 +1934,7 @@ impl FestivalRule {
                 nakshatra: Nakshatra::Hasta,
                 paksha: Paksha::Shukla,
             },
-            in_adhika: false,
+            in_adhika: InAdhika::Nija,
             at: APARAHNA,
             decide: vec![Guard::new(
                 [

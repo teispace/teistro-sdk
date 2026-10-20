@@ -30,8 +30,8 @@ use teistro_core::catalogue::{Masa, Tithi, Vara};
 use teistro_core::settings::LunarMonth as Convention;
 
 use super::{
-    APARAHNA, Case, Choice, DayPart, FestivalRule, FollowingRule, Guard, MADHYAHNA, Occurs,
-    Predicate, Which, Window, case,
+    APARAHNA, Case, Choice, DayPart, FestivalRule, FollowingRule, Guard, InAdhika, MADHYAHNA,
+    Occurs, Predicate, Which, Window, case,
 };
 
 /// Purvahna: the daylight's first six muhurtas, its first two fifths
@@ -189,7 +189,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         Masa::Jyeshtha,
         Tithi::ShuklaPratipada,
         Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 5: दशहरास्नानारम्भ; VS 2083 prints it in the adhika month (C606)",
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 5: दशहरास्नानारम्भ; VS 2083 prints it in the adhika month, as *Dharmasindhu* p. 38 keeps Dashahara in a doubled Jyeshtha (C606)",
     ),
     (
         "KUMARA_JATRA",
@@ -203,7 +203,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         Masa::Jyeshtha,
         Tithi::ShuklaDashami,
         Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 5: गङ्गादशहरा; VS 2083 prints it in the adhika month (C606)",
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 5: गङ्गादशहरा; VS 2083 prints it in the adhika month, as *Dharmasindhu* p. 38 keeps Dashahara in a doubled Jyeshtha (C606)",
     ),
     (
         "NIRJALA_EKADASHI",
@@ -217,7 +217,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         Masa::Jyeshtha,
         Tithi::Purnima,
         Fit::Udaya,
-        "Nepal's national panchanga, VS 2083 p. 5: अनलापुन्हि; the print names only the adhika month's full moon (C607)",
+        "Nepal's national panchanga, VS 2083 p. 5: अनलापुन्हि, the adhika month's full moon; VS 2082, with no adhika month, prints none (C607)",
     ),
     (
         "DILA_CHARHE",
@@ -690,6 +690,17 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn nepal_panchanga() -> Vec<FestivalRule> {
+        // The rules a doubled Jyeshtha keeps in its adhika month (C606),
+        // and the one the print names only there (C607); a monthly rule
+        // is kept in an adhika month too.
+        fn in_adhika(key: &str, month: Option<Masa>) -> InAdhika {
+            match key {
+                "DASHAHARA_SNANA_ARAMBHA" | "GANGA_DASHAHARA" => InAdhika::First,
+                "ANALA_PUNHI" => InAdhika::Only,
+                _ if month.is_none() => InAdhika::Also,
+                _ => InAdhika::Nija,
+            }
+        }
         let yearly = RULES.iter().map(|&(key, month, tithi, fit, printed)| {
             (key, Some(month), tithi.into(), fit, printed)
         });
@@ -706,7 +717,7 @@ impl FestivalRule {
                     month,
                     convention: Convention::Amanta,
                     occurs,
-                    in_adhika: month.is_none(),
+                    in_adhika: in_adhika(key, month),
                     at,
                     decide,
                     otherwise,

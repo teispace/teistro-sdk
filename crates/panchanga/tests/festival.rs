@@ -23,8 +23,8 @@ use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     Case, Choice, DatedObservance, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule,
-    FollowingRule, Guard, Moonrise, Observances, Occurs, Predicate, Unjudged, Which, Window,
-    ekadashis, following, observances, yugma,
+    FollowingRule, Guard, InAdhika, Moonrise, Observances, Occurs, Predicate, Unjudged, Which,
+    Window, ekadashis, following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -150,7 +150,7 @@ fn a_rule(tithi: Tithi, decide: Vec<Guard>, otherwise: Choice) -> FestivalRule {
         month: Some(Masa::Shravana),
         convention: Convention::Amanta,
         occurs: tithi.into(),
-        in_adhika: false,
+        in_adhika: InAdhika::Nija,
         at: Window::Part {
             part: DayPart::Madhyahna,
         },
@@ -250,7 +250,7 @@ fn a_rule_holds_in_its_own_nija_month_only_unless_it_asks_for_the_adhika() {
         observances(&[janmashtami()], &adhika).unwrap().observances
     );
     let mut in_adhika = janmashtami();
-    in_adhika.in_adhika = true;
+    in_adhika.in_adhika = InAdhika::Also;
     assert_eq!(
         observances(&[in_adhika], &adhika)
             .unwrap()
@@ -288,6 +288,93 @@ fn a_rule_holds_in_its_own_nija_month_only_unless_it_asks_for_the_adhika() {
         .len(),
         1
     );
+}
+
+#[test]
+fn a_doubled_month_keeps_a_first_rule_in_its_adhika_and_an_only_rule_nowhere_else() {
+    let tithis = [
+        (Tithi::KrishnaSaptami, ghati(1, 40.0)),
+        (Tithi::KrishnaAshtami, ghati(2, 42.0)),
+        (Tithi::KrishnaDashami, ghati(5, 0.0)),
+    ];
+    let none: [(Nakshatra, f64); 0] = [];
+    let kept = |in_adhika: InAdhika, days: &[FestivalDay]| {
+        let mut rule = janmashtami();
+        rule.in_adhika = in_adhika;
+        let answer = observances(&[rule], days).unwrap();
+        (answer.observances.len(), answer.unjudged.len())
+    };
+    let adhika = days_of(&tithis, &none, Masa::Shravana, MonthKind::Adhika);
+    let nija = days_of(&tithis, &none, Masa::Shravana, MonthKind::Nija);
+    // The month before the 8th's day, which says whether it is doubled.
+    let after = |before: Masa, kind: MonthKind| {
+        let mut days = nija.clone();
+        days[0].month = month::of(before, Tithi::KrishnaShashthi, Convention::Amanta, kind);
+        days
+    };
+    let doubled = after(Masa::Shravana, MonthKind::Adhika);
+    let single = after(Masa::Ashadha, MonthKind::Nija);
+    for (value, on_adhika, on_doubled, on_single) in [
+        (InAdhika::Nija, (0, 0), (1, 0), (1, 0)),
+        (InAdhika::Also, (1, 0), (1, 0), (1, 0)),
+        (InAdhika::Only, (1, 0), (0, 0), (0, 0)),
+        (InAdhika::First, (1, 0), (0, 0), (1, 0)),
+    ] {
+        assert_eq!(kept(value, &adhika), on_adhika, "{value:?} adhika");
+        assert_eq!(kept(value, &doubled), on_doubled, "{value:?} doubled");
+        assert_eq!(kept(value, &single), on_single, "{value:?} single");
+    }
+    // Days that never leave the nija month cannot say: unjudged, not guessed.
+    let mut first = janmashtami();
+    first.in_adhika = InAdhika::First;
+    let answer = observances(&[first.clone()], &nija).unwrap();
+    assert_eq!(answer.observances, []);
+    assert_eq!(
+        answer.unjudged[0].why,
+        "the days do not reach the month next to this SHRAVANA, which says whether it is doubled"
+    );
+    // Purnimanta names amanta Shravana's dark half Bhadrapada; an adhika
+    // Bhadrapada comes after it, before the nija Bhadrapada's bright half.
+    first.convention = Convention::Purnimanta;
+    first.month = Some(Masa::Bhadrapada);
+    let mut days = nija.clone();
+    days[4].month = month::of(
+        Masa::Bhadrapada,
+        Tithi::ShuklaPratipada,
+        Convention::Amanta,
+        MonthKind::Adhika,
+    );
+    assert_eq!(
+        observances(&[first.clone()], &days).unwrap().observances,
+        []
+    );
+    days[4].month = month::of(
+        Masa::Bhadrapada,
+        Tithi::ShuklaPratipada,
+        Convention::Amanta,
+        MonthKind::Nija,
+    );
+    assert_eq!(observances(&[first], &days).unwrap().observances.len(), 1);
+}
+
+#[test]
+fn in_adhika_reads_both_its_spellings_and_writes_the_old_one_where_it_can() {
+    for value in InAdhika::ALL {
+        let key = serde_json::to_value(value.key()).unwrap();
+        assert_eq!(serde_json::from_value::<InAdhika>(key).unwrap(), value);
+        let written = serde_json::to_value(value).unwrap();
+        assert_eq!(
+            serde_json::from_value::<InAdhika>(written.clone()).unwrap(),
+            value
+        );
+        let flag = matches!(value, InAdhika::Nija | InAdhika::Also);
+        assert_eq!(written.is_boolean(), flag, "{value:?}");
+    }
+    let wrong = serde_json::from_str::<InAdhika>(r#""BOTH""#).unwrap_err();
+    assert!(wrong.to_string().contains(r#"not "BOTH""#), "{wrong}");
+    // A rule written before keeps its bytes.
+    let rule = janmashtami();
+    assert_eq!(serde_json::to_value(&rule).unwrap()["inAdhika"], false);
 }
 
 fn shipped(key: &str) -> FestivalRule {
@@ -1349,7 +1436,7 @@ fn on_vara(occurs: Occurs, vara: Vara) -> FestivalRule {
     FestivalRule {
         month: None,
         occurs,
-        in_adhika: true,
+        in_adhika: InAdhika::Also,
         at: Window::Sunrise,
         decide: vec![
             Guard::new(

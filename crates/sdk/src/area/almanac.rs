@@ -9,12 +9,13 @@ use teistro_calendar::CalendarDate;
 use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
+use teistro_core::settings::LunarMonth;
 use teistro_core::time::UtcOffset;
 #[cfg(feature = "muhurta")]
 use teistro_muhurta::Answer;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::festival::{
-    FestivalDay, FestivalRule, Observances, dated, ekadashis, following, observances,
+    FestivalDay, FestivalRule, InAdhika, Observances, dated, ekadashis, following, observances,
 };
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::year::LunarYear;
@@ -52,6 +53,7 @@ pub use disagreement::{
     DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
     FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
 };
+#[cfg(feature = "schema")]
 pub(crate) use feed::FestivalCalendarAsked;
 pub use feed::{FeedOptions, FestivalCalendarRequest};
 
@@ -234,6 +236,12 @@ impl<'a> AlmanacArea<'a> {
         request: &FestivalRequest,
         days: Envelope<Vec<FestivalDay>>,
     ) -> Result<Envelope<Observances>, Error> {
+        // A rule kept in a doubled month's adhika alone reads the lunation
+        // beside its own (C606): the one before, under amanta, which ends
+        // at most a lunar month and a day before the occurrence's day, or,
+        // for a purnimanta dark fortnight, the one after. Only a request
+        // with such a rule pays for the month.
+        const LUNATION: i64 = 31;
         let calendar = system_of(from.calendar)?;
         let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
         // Two days each side, which the rules' own pairs need, and as many
@@ -242,11 +250,29 @@ impl<'a> AlmanacArea<'a> {
         // after, so an observance in the range always reaches its count
         // rather than leaving the counted one unjudged.
         let widen = 2 + i64::from(request.reach());
+        let firsts = || {
+            request
+                .rules()
+                .iter()
+                .filter(|rule| rule.in_adhika == InAdhika::First)
+        };
+        let back = widen
+            + if firsts().next().is_some() {
+                LUNATION
+            } else {
+                0
+            };
+        let ahead = widen
+            + if firsts().any(|rule| rule.convention == LunarMonth::Purnimanta) {
+                LUNATION
+            } else {
+                0
+            };
         let (before, after) = (
-            calendar.date_of(first.plus_days(-widen))?,
+            calendar.date_of(first.plus_days(-back))?,
             (
                 calendar.date_of(last.plus_days(1))?,
-                calendar.date_of(last.plus_days(widen))?,
+                calendar.date_of(last.plus_days(ahead))?,
             ),
         );
         let (earlier, later) = self.with_almanac(from, offset, |almanac| {

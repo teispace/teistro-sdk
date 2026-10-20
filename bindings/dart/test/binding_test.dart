@@ -753,9 +753,7 @@ void _engineTests() {
     );
     expect(
       'BEGIN:VEVENT'.allMatches(ics).length,
-      answer.observances.length +
-          answer.ekadashis.length +
-          answer.dated.length,
+      answer.observances.length + answer.ekadashis.length + answer.dated.length,
     );
     // Kartik's sankranti on the first of the Bikram Sambat month.
     final tula = answer.dated.first;
@@ -2633,7 +2631,7 @@ void _engineTests() {
           ),
         ).festivals!;
     expect(
-      moved.observances[1].decidedBy,
+      moved.observances.singleWhere((o) => o.rule == 'LAKSHMI_PUJA').decidedBy,
       const FestivalDecided(by: 'OTHERWISE'),
     );
     expect(moved.provenance.inputHash, isNot(answer.provenance.inputHash));

@@ -984,7 +984,7 @@ committee's sky:
 |---|---|---|
 | a predicate that weighs two parts | 3 | C601 |
 | purvahna read as pratah | 3 | C602 |
-| Jyeshtha's rites kept in the adhika month in VS 2083 | 6 | C606, C607 |
+| Jyeshtha's rites kept in the adhika month in VS 2083 | 6, all given since `inAdhika: FIRST` and `ONLY` | C606, C607 |
 | the solar Bhadra in VS 2083 | 3 | C608 |
 | the print's Hile jatra being Ramechhap's | 2 | C609 |
 | Dupcheshwar's mela on the full moon | 1 | C611 |
@@ -1005,5 +1005,5 @@ difference between the two is a finding.
 | C601 | two partial holdings | **the share table: the earlier day unless the later holds the window wholly** (970 of 1,054) | a `GREATER` predicate, the day holding more (985 of 1,054, the consumer's own) |
 | C602 | purvahna | **pratah, the first fifth**, until a day-muhurta window exists | day muhurtas 1–6, the first two fifths (the consumer's); the first half of the day (*Dharmasindhu* p. 21) |
 | C603 | neither day holds the window | **the later**, the consumer's sunrise fallback, which always gives the later | the earlier (the maintainer's decision); no verified year has the case |
-| C606 | Jyeshtha's rites in a year with an adhika Jyeshtha | **the nija month**, as the consumer projects | the adhika month, as the committee printed in VS 2083 and *Dharmasindhu* p. 38 directs for Dashahara |
+| C606 | Jyeshtha's rites in a year with an adhika Jyeshtha | **the adhika month**, as the committee printed in VS 2083 and *Dharmasindhu* p. 38 directs for Dashahara (`inAdhika: FIRST`) | the nija month, as the consumer projects |
 | C610 | Vijaya ekadashi | **the later of two sunrises**, as VS 2083 prints | the earlier, the consumer's |

@@ -379,6 +379,51 @@ fn the_dark_fourth_at_moonrise_is_the_almanacs_sankashta_every_month() {
 /// sankranti on its month's first day (pp. 2-24), and the four national
 /// days; and VS 2083's rows checked (pp. 2, 21).
 #[test]
+fn a_doubled_jyeshtha_keeps_dashahara_in_its_adhika_month_however_short_the_range() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let kathmandu = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    // The range alone never leaves the month it asks about: the SDK reads
+    // the lunation beside it, so a short range answers as a year does.
+    let dashahara = |from: (i32, u8, u8), to: (i32, u8, u8)| {
+        let answer = sdk
+            .almanac()
+            .festivals(
+                &CalendarDate::defined(Calendar::Gregorian, from.0, from.1, from.2),
+                &CalendarDate::defined(Calendar::Gregorian, to.0, to.1, to.2),
+                &kathmandu,
+                UtcOffset::literal(5, 45, 0),
+                &FestivalRequest::from(FestivalPack::NepalPanchanga),
+            )
+            .unwrap()
+            .value;
+        assert!(
+            answer
+                .unjudged
+                .iter()
+                .all(|row| row.rule != "GANGA_DASHAHARA"),
+            "{:?}",
+            answer.unjudged
+        );
+        answer
+            .observances
+            .into_iter()
+            .filter(|kept| kept.rule == "GANGA_DASHAHARA")
+            .map(|kept| (kept.day.year, kept.day.month, kept.day.day))
+            .collect::<Vec<_>>()
+    };
+    // VS 2083 p. 5 prints it on 26 May, the adhika Jyeshtha's bright 10th;
+    // the nija month's, a lunation later, keeps none.
+    assert_eq!(dashahara((2026, 5, 24), (2026, 5, 28)), [(2026, 5, 26)]);
+    assert_eq!(dashahara((2026, 6, 20), (2026, 6, 28)), []);
+    // VS 2082 doubles no month, so the nija Jyeshtha keeps it.
+    assert_eq!(dashahara((2025, 6, 1), (2025, 6, 10)).len(), 1);
+}
+
+#[test]
 fn the_dated_days_are_the_committees_printed_rows() {
     let sdk = Context::builder().nepal_official([]).build().unwrap();
     let kathmandu = Place::new(

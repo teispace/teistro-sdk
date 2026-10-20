@@ -6566,6 +6566,7 @@ export type DatedRule = {
   | {
       /** A day of a month, 1 for the first; a negative day counts back from its end, -1 for the last. */
       readonly civilDate: { readonly calendar: Calendar; readonly month: number; readonly day: number };
+      readonly civilWeekday?: never;
     }
   | {
       /** The `nth` weekday of a month; a negative `nth` counts back from its end, -1 for the last. */
@@ -6575,6 +6576,7 @@ export type DatedRule = {
         readonly weekday: Vara;
         readonly nth: number;
       };
+      readonly civilDate?: never;
     }
 );
 
@@ -6672,8 +6674,13 @@ export interface FestivalRuleFields {
   readonly month?: Masa;
   /** The convention the month is named in; `'AMANTA'` by default. */
   readonly convention?: LunarMonth;
-  /** Whether an adhika month holds it too; only the nija month by default (C171). */
-  readonly inAdhika?: boolean;
+  /**
+   * Which of a doubled month's two holds it (C171): `'NIJA'` (or `false`, the default)
+   * the nija month alone, `'ALSO'` (or `true`) both, `'ONLY'` the adhika alone, and
+   * `'FIRST'` the adhika when the named month is doubled, the nija otherwise. A rule
+   * read back writes `NIJA` and `ALSO` as `false` and `true`.
+   */
+  readonly inAdhika?: boolean | 'NIJA' | 'ALSO' | 'ONLY' | 'FIRST';
   /** The time of the rite. */
   readonly at: FestivalWindow;
   /** The guards, in order; the first whose predicates all hold decides. */

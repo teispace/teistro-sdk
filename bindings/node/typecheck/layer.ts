@@ -2222,6 +2222,19 @@ function theFestivals(almanac: Almanac): string {
     decide: [{ when: [{ is: 'CASE', case: 'LATER_ONLY' }], choose: 'LATER' }],
     otherwise: 'EARLIER',
   };
+  // Dashahara kept in a doubled Jyeshtha's adhika month.
+  const dashahara: FestivalRule = { ...pradosha, key: 'DASHAHARA', inAdhika: 'FIRST' };
+  const unread: FestivalRule = {
+    key: 'BOTH',
+    source: 'the committee',
+    tithi: 'tithi.SHUKLA_DASHAMI',
+    // @ts-expect-error inAdhika is one of the four, or a yes or no
+    inAdhika: 'BOTH',
+    at: { window: 'PRADOSHA' },
+    decide: [],
+    otherwise: 'EARLIER',
+  };
+  void [dashahara, unread];
   const mangala: FestivalRule = {
     ...pradosha,
     key: 'MANGALA_CHATURTHI',
