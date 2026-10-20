@@ -414,8 +414,14 @@ fn the_grid_turns_a_scans_round_trips_into_one() {
 
     // The walk asks once per sample and once per refinement step.
     assert_eq!(walked.requests(), 401 + refinements as usize);
-    // The grid asks once for all 401, and the refinements are unchanged.
-    assert_eq!(gridded.requests(), 1 + refinements as usize);
+    // The grid asks once for all 401, and the refinements go together,
+    // a round at a time: as many requests as the longest one has steps.
+    let rounds = walk
+        .iter()
+        .map(|event| event.evaluations)
+        .max()
+        .unwrap_or(0);
+    assert_eq!(gridded.requests(), 1 + rounds as usize);
 }
 
 /// A crossing is a property of the crossing, not of the question.
@@ -584,7 +590,7 @@ fn several_lattices_scanned_once_answer_what_each_answers_alone() {
         Search::new(&longitudes, quantity, Lattice::NAKSHATRAS).step_days()
     );
     assert_eq!(each.len(), lattices.len());
-    let mut refinements = 0;
+    let mut rounds = 0;
     for (lattice, found) in lattices.iter().zip(&each) {
         let alone = Search::new(&longitudes, quantity, *lattice)
             .with_step_days(step)
@@ -596,12 +602,16 @@ fn several_lattices_scanned_once_answer_what_each_answers_alone() {
             assert_eq!(a.instant.get().to_bits(), b.instant.get().to_bits());
             assert_eq!((a.boundary_deg, a.direction), (b.boundary_deg, b.direction));
         }
-        refinements += found.iter().map(|e| e.evaluations as usize).sum::<usize>();
+        rounds = found
+            .iter()
+            .map(|e| e.evaluations as usize)
+            .fold(rounds, usize::max);
     }
     // One grid for the scan, however many lattices it was tested against:
     // four hundred days at the nakshatras' step is fewer instants than a
-    // grid holds, so the scan is one request and the rest refinements.
-    assert_eq!(counted.requests(), 1 + refinements);
+    // grid holds, so the scan is one request, and every lattice's
+    // refinements go together, one request a round.
+    assert_eq!(counted.requests(), 1 + rounds);
     // And `between` is every lattice's crossings in time order.
     let merged = search.between(from, to).unwrap();
     assert_eq!(merged.len(), each.iter().map(Vec::len).sum::<usize>());

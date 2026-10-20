@@ -38,7 +38,7 @@ use teistro_port_ephemeris::{
 };
 
 use crate::completion::{Completed, Completion, CompletionError, Implementation};
-use crate::solve::{Caps, first_zero, refine_known, refine_with_rates};
+use crate::solve::{Caps, RatesRefinement, SolveError, first_zero, refine_known};
 
 /// The tolerance a crossing is found to, days: a hundredth of a second,
 /// a hundredth of the target the kernel is held to against the engines.
@@ -480,9 +480,116 @@ struct Scan<'a, 's, S: Longitudes + ?Sized> {
     singles: Vec<(f64, f64)>,
     pairs: Vec<[(f64, f64); 2]>,
     events: Vec<Vec<Event>>,
+    /// The crossings found and not yet refined, in the order a serial
+    /// scan would have refined them ([`Scan::settle`]).
+    pending: Vec<Pending>,
+}
+
+/// A crossing the scan has bracketed, refining: the line it crosses and
+/// how the curve meets it, and the refinement under way.
+struct Pending {
+    /// Which of the search's lattices the line is of.
+    lattice: usize,
+    line: f64,
+    /// The bracket's earlier raw and unwrapped values, which every reading
+    /// inside it is measured from, as the serial refinement measured it.
+    raw_lo: f64,
+    unwrapped_lo: f64,
+    rising: bool,
+    refinement: RatesRefinement,
 }
 
 impl<S: Longitudes + ?Sized> Scan<'_, '_, S> {
+    /// Refine every pending crossing, a round at a time: each round asks
+    /// for the next instant of every refinement still going as one grid,
+    /// where refining them one by one asked once per instant. Each
+    /// refinement takes the steps it took alone and is fed the same
+    /// readings, so the crossings are the serial scan's to the bit, and
+    /// they are kept in the order it would have found them.
+    fn settle(&mut self) -> Result<(), Error> {
+        let search = self.search;
+        let wraps = search.quantity.wraps();
+        let mut going: Vec<usize> = (0..self.pending.len()).collect();
+        let mut asked: Vec<usize> = Vec::with_capacity(going.len());
+        while !going.is_empty() {
+            self.instants.clear();
+            asked.clear();
+            for &at in &going {
+                let Some(pending) = self.pending.get(at) else {
+                    continue;
+                };
+                match pending.refinement.next::<Error>() {
+                    Ok(Some(instant)) => {
+                        asked.push(at);
+                        self.instants.push(JulianDay::literal(instant));
+                    }
+                    Ok(None) => {}
+                    Err(error) => {
+                        let line = pending.line;
+                        return Err(error.into_error(|| format!("the crossing of {line}°")));
+                    }
+                }
+            }
+            if asked.is_empty() {
+                break;
+            }
+            // A round is asked as grids of the search's chunk, as the
+            // scan's own samples are.
+            let mut readings = Vec::with_capacity(self.instants.len());
+            for part in self.instants.chunks(search.chunk.max(1)) {
+                evaluate_many(
+                    search.quantity,
+                    search.source,
+                    part,
+                    &mut self.values,
+                    &mut self.singles,
+                    &mut self.pairs,
+                )?;
+                readings.extend_from_slice(&self.values);
+            }
+            for ((&at, instant), &(value, rate)) in asked.iter().zip(&self.instants).zip(&readings)
+            {
+                let Some(pending) = self.pending.get_mut(at) else {
+                    continue;
+                };
+                // The signed distance to the line along the unwrapped
+                // curve, measured exactly as the serial refinement did.
+                let advance = if wraps {
+                    difference_deg(value, pending.raw_lo)
+                } else {
+                    value - pending.raw_lo
+                };
+                let signed = |distance: f64| if pending.rising { distance } else { -distance };
+                let reading = (
+                    signed(pending.unwrapped_lo + advance - pending.line),
+                    signed(rate),
+                );
+                pending.refinement.feed(instant.get(), reading);
+            }
+            core::mem::swap(&mut going, &mut asked);
+        }
+        for pending in self.pending.drain(..) {
+            let refined = pending.refinement.finish();
+            if let Some(found) = self.events.get_mut(pending.lattice) {
+                found.push(Event {
+                    instant: JulianDay::literal(refined.instant),
+                    boundary_deg: if wraps {
+                        normalise_deg(pending.line)
+                    } else {
+                        pending.line
+                    },
+                    direction: if pending.rising {
+                        Direction::Rising
+                    } else {
+                        Direction::Falling
+                    },
+                    evaluations: refined.evaluations,
+                });
+            }
+        }
+        Ok(())
+    }
+
     /// The quantity at several samples of the fine grid, as one grid.
     fn read(&mut self, indices: impl Iterator<Item = i64>) -> Result<Vec<Sample>, Error> {
         let indices: Vec<i64> = indices.collect();
@@ -713,13 +820,21 @@ impl<S: Longitudes + ?Sized> Scan<'_, '_, S> {
             hi.raw + turn_deg(hi.raw - lo.raw, search.quantity.wraps()),
         );
         if unwrapped_hi - unwrapped_lo != 0.0 {
-            for (lattice, found) in search.lattices.iter().zip(self.events.iter_mut()) {
-                search.cross(
-                    lattice,
-                    (t_lo, lo.raw, unwrapped_lo, lo.rate),
-                    (t_hi, unwrapped_hi, hi.rate),
-                    found,
-                )?;
+            for (index, (lattice, found)) in search
+                .lattices
+                .iter()
+                .zip(self.events.iter_mut())
+                .enumerate()
+            {
+                let lo = (t_lo, lo.raw, unwrapped_lo, lo.rate);
+                let hi = (t_hi, unwrapped_hi, hi.rate);
+                if matches!(search.quantity, Quantity::Speed(_)) {
+                    // A speed has no rate to refine with, and is refined
+                    // where it is found.
+                    search.cross(lattice, lo, hi, found)?;
+                } else {
+                    search.queue(index, lattice, lo, hi, &mut self.pending)?;
+                }
             }
         }
         Ok(())
@@ -1281,6 +1396,7 @@ impl Search<'_, dyn Longitudes + '_> {
             singles: Vec::new(),
             pairs: Vec::new(),
             events: vec![Vec::new(); self.lattices.len()],
+            pending: Vec::new(),
         };
 
         // The scan visits every sample between the ends, and knows all of
@@ -1331,6 +1447,7 @@ impl Search<'_, dyn Longitudes + '_> {
                 previous = Some(sample);
             }
         }
+        scan.settle()?;
         let mut events = scan.events;
         // A cell may reach outside the window at either end, since the
         // ends are grid points rather than the caller's own instants. A
@@ -1396,10 +1513,12 @@ impl<S: Longitudes + ?Sized> Search<'_, S> {
         self.step_days() * stride
     }
 
-    /// Every line of one lattice the curve passed between two samples,
-    /// refined and pushed onto `found`: `lo` is the earlier sample's
-    /// instant, raw value, unwrapped value and rate, `hi` the later's
-    /// instant, unwrapped value and rate.
+    /// Every line of one lattice a speed passed between two samples,
+    /// refined on the spot and pushed onto `found`: `lo` is the earlier
+    /// sample's instant, raw value, unwrapped value and rate, `hi` the
+    /// later's instant, unwrapped value and rate. A speed has no rate to
+    /// refine with, so it is not queued for [`Scan::settle`] as a
+    /// longitude or a composite is ([`Search::queue`]).
     fn cross(
         &self,
         lattice: &Lattice,
@@ -1433,17 +1552,13 @@ impl<S: Longitudes + ?Sized> Search<'_, S> {
             // without one.
             let lo = (t_lo, signed(unwrapped_lo - line), signed(rate_lo));
             let hi = (t_hi, signed(unwrapped_hi - line), signed(rate_hi));
-            let refined = if matches!(self.quantity, Quantity::Speed(_)) {
-                refine_known(
-                    |t| gap(t).map(|(value, _)| value),
-                    (lo.0, lo.1),
-                    (hi.0, hi.1),
-                    self.tolerance_days,
-                    self.caps,
-                )
-            } else {
-                refine_with_rates(gap, lo, hi, self.tolerance_days, self.caps)
-            }
+            let refined = refine_known(
+                |t| gap(t).map(|(value, _)| value),
+                (lo.0, lo.1),
+                (hi.0, hi.1),
+                self.tolerance_days,
+                self.caps,
+            )
             .map_err(|error| error.into_error(|| format!("the crossing of {line}°")))?;
             found.push(Event {
                 instant: JulianDay::literal(refined.instant),
@@ -1454,6 +1569,39 @@ impl<S: Longitudes + ?Sized> Search<'_, S> {
                     Direction::Falling
                 },
                 evaluations: refined.evaluations,
+            });
+        }
+        Ok(())
+    }
+
+    /// Every line of one lattice the curve passed between two samples,
+    /// bracketed and queued for [`Scan::settle`] to refine, for a
+    /// quantity that comes with its rate. The brackets are the ones the
+    /// scan refined on the spot before, signed the same way.
+    fn queue(
+        &self,
+        lattice_index: usize,
+        lattice: &Lattice,
+        (t_lo, raw_lo, unwrapped_lo, rate_lo): (f64, f64, f64, f64),
+        (t_hi, unwrapped_hi, rate_hi): (f64, f64, f64),
+        pending: &mut Vec<Pending>,
+    ) -> Result<(), Error> {
+        let rising = unwrapped_hi > unwrapped_lo;
+        let signed = |distance: f64| if rising { distance } else { -distance };
+        for k in lines_between(lattice, unwrapped_lo, unwrapped_hi) {
+            let line = line_deg(lattice, k);
+            let lo = (t_lo, signed(unwrapped_lo - line), signed(rate_lo));
+            let hi = (t_hi, signed(unwrapped_hi - line), signed(rate_hi));
+            let refinement = RatesRefinement::new(lo, hi, self.tolerance_days, self.caps).map_err(
+                |error: SolveError<Error>| error.into_error(|| format!("the crossing of {line}°")),
+            )?;
+            pending.push(Pending {
+                lattice: lattice_index,
+                line,
+                raw_lo,
+                unwrapped_lo,
+                rising,
+                refinement,
             });
         }
         Ok(())
