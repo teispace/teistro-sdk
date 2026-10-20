@@ -1,0 +1,203 @@
+{
+  "machine": "iOS simulator, iPhone 18 Pro",
+  "os": "iOS 27.0",
+  "arch": "aarch64",
+  "commit": "34f88dcb",
+  "teimeris": "0.1.0",
+  "data": "embedded",
+  "memo": "cold: a fresh context every run",
+  "timings": [
+    {
+      "setup": "drik-teimeris",
+      "request": "open",
+      "runs": 21,
+      "median_ms": 0.024,
+      "min_ms": 0.023,
+      "max_ms": 0.045
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "day",
+      "runs": 21,
+      "median_ms": 1.893,
+      "min_ms": 1.723,
+      "max_ms": 2.253
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "month",
+      "runs": 21,
+      "median_ms": 33.297,
+      "min_ms": 32.157,
+      "max_ms": 40.578
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "year",
+      "runs": 14,
+      "median_ms": 294.188,
+      "min_ms": 284.196,
+      "max_ms": 308.595
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "festivals",
+      "runs": 16,
+      "median_ms": 254.529,
+      "min_ms": 238.824,
+      "max_ms": 272.341
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "muhurta",
+      "runs": 21,
+      "median_ms": 179.17,
+      "min_ms": 171.919,
+      "max_ms": 186.799
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "chart",
+      "runs": 21,
+      "median_ms": 1.403,
+      "min_ms": 1.344,
+      "max_ms": 1.53
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "matching",
+      "runs": 21,
+      "median_ms": 0.016,
+      "min_ms": 0.014,
+      "max_ms": 0.093
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "open",
+      "runs": 21,
+      "median_ms": 0.022,
+      "min_ms": 0.021,
+      "max_ms": 0.028
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "day",
+      "runs": 21,
+      "median_ms": 0.721,
+      "min_ms": 0.702,
+      "max_ms": 0.894
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "month",
+      "runs": 21,
+      "median_ms": 19.633,
+      "min_ms": 18.354,
+      "max_ms": 24.743
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "year",
+      "runs": 21,
+      "median_ms": 168.331,
+      "min_ms": 162.571,
+      "max_ms": 184.42
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "festivals",
+      "runs": 21,
+      "median_ms": 128.875,
+      "min_ms": 122.863,
+      "max_ms": 145.835
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "muhurta",
+      "runs": 21,
+      "median_ms": 92.546,
+      "min_ms": 89.722,
+      "max_ms": 97.775
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "chart",
+      "runs": 21,
+      "median_ms": 1.379,
+      "min_ms": 1.32,
+      "max_ms": 1.583
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "matching",
+      "runs": 21,
+      "median_ms": 0.016,
+      "min_ms": 0.015,
+      "max_ms": 0.023
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "open",
+      "runs": 21,
+      "median_ms": 0.013,
+      "min_ms": 0.013,
+      "max_ms": 0.015
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "day",
+      "runs": 21,
+      "median_ms": 30.669,
+      "min_ms": 29.561,
+      "max_ms": 35.846
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "month",
+      "runs": 7,
+      "median_ms": 633.234,
+      "min_ms": 607.2,
+      "max_ms": 649.714
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "year",
+      "runs": 3,
+      "median_ms": 5246.608,
+      "min_ms": 5225.776,
+      "max_ms": 5282.793
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "festivals",
+      "runs": 3,
+      "median_ms": 5259.763,
+      "min_ms": 5240.255,
+      "max_ms": 5314.048
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "muhurta",
+      "runs": 3,
+      "median_ms": 2732.742,
+      "min_ms": 2719.887,
+      "max_ms": 2762.191
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "chart",
+      "runs": 21,
+      "median_ms": 2.749,
+      "min_ms": 2.603,
+      "max_ms": 3.04
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "matching",
+      "runs": 21,
+      "median_ms": 0.017,
+      "min_ms": 0.014,
+      "max_ms": 0.03
+    }
+  ]
+}

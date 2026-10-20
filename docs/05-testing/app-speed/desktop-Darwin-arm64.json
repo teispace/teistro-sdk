@@ -2,65 +2,66 @@
   "machine": "Apple M2 Pro",
   "os": "Darwin 27.0.0",
   "arch": "aarch64",
-  "commit": "f1258970",
+  "commit": "34f88dcb",
   "teimeris": "0.1.0",
+  "data": "embedded",
   "memo": "cold: a fresh context every run",
   "timings": [
     {
       "setup": "drik-teimeris",
       "request": "open",
       "runs": 21,
-      "median_ms": 4.345,
-      "min_ms": 4.136,
-      "max_ms": 4.843
+      "median_ms": 0.02,
+      "min_ms": 0.018,
+      "max_ms": 0.042
     },
     {
       "setup": "drik-teimeris",
       "request": "day",
       "runs": 21,
-      "median_ms": 1.976,
-      "min_ms": 1.864,
-      "max_ms": 2.107
+      "median_ms": 1.674,
+      "min_ms": 1.592,
+      "max_ms": 4.02
     },
     {
       "setup": "drik-teimeris",
       "request": "month",
       "runs": 21,
-      "median_ms": 60.447,
-      "min_ms": 59.604,
-      "max_ms": 62.753
+      "median_ms": 37.816,
+      "min_ms": 34.598,
+      "max_ms": 53.97
     },
     {
       "setup": "drik-teimeris",
       "request": "year",
-      "runs": 7,
-      "median_ms": 555.757,
-      "min_ms": 546.167,
-      "max_ms": 745.455
+      "runs": 12,
+      "median_ms": 337.745,
+      "min_ms": 299.181,
+      "max_ms": 415.396
     },
     {
       "setup": "drik-teimeris",
       "request": "festivals",
-      "runs": 8,
-      "median_ms": 527.12,
-      "min_ms": 517.944,
-      "max_ms": 538.05
+      "runs": 14,
+      "median_ms": 285.331,
+      "min_ms": 271.224,
+      "max_ms": 365.771
     },
     {
       "setup": "drik-teimeris",
       "request": "muhurta",
-      "runs": 11,
-      "median_ms": 348.752,
-      "min_ms": 313.739,
-      "max_ms": 458.959
+      "runs": 19,
+      "median_ms": 218.225,
+      "min_ms": 196.171,
+      "max_ms": 249.993
     },
     {
       "setup": "drik-teimeris",
       "request": "chart",
       "runs": 21,
-      "median_ms": 1.352,
-      "min_ms": 1.268,
-      "max_ms": 1.821
+      "median_ms": 1.294,
+      "min_ms": 1.254,
+      "max_ms": 3.16
     },
     {
       "setup": "drik-teimeris",
@@ -68,71 +69,71 @@
       "runs": 21,
       "median_ms": 0.014,
       "min_ms": 0.013,
-      "max_ms": 0.025
+      "max_ms": 0.048
     },
     {
       "setup": "committee-teimeris",
       "request": "open",
       "runs": 21,
-      "median_ms": 4.472,
-      "min_ms": 4.123,
-      "max_ms": 4.986
+      "median_ms": 0.02,
+      "min_ms": 0.019,
+      "max_ms": 0.027
     },
     {
       "setup": "committee-teimeris",
       "request": "day",
       "runs": 21,
-      "median_ms": 1.004,
-      "min_ms": 0.9,
-      "max_ms": 1.157
+      "median_ms": 0.792,
+      "min_ms": 0.708,
+      "max_ms": 1.98
     },
     {
       "setup": "committee-teimeris",
       "request": "month",
       "runs": 21,
-      "median_ms": 34.133,
-      "min_ms": 32.971,
-      "max_ms": 37.627
+      "median_ms": 22.616,
+      "min_ms": 19.383,
+      "max_ms": 31.245
     },
     {
       "setup": "committee-teimeris",
       "request": "year",
-      "runs": 13,
-      "median_ms": 296.021,
-      "min_ms": 289.594,
-      "max_ms": 331.416
+      "runs": 17,
+      "median_ms": 228.554,
+      "min_ms": 198.459,
+      "max_ms": 291.047
     },
     {
       "setup": "committee-teimeris",
       "request": "festivals",
-      "runs": 15,
-      "median_ms": 256.102,
-      "min_ms": 252.353,
-      "max_ms": 315.685
+      "runs": 21,
+      "median_ms": 179.341,
+      "min_ms": 132.516,
+      "max_ms": 292.671
     },
     {
       "setup": "committee-teimeris",
       "request": "muhurta",
       "runs": 21,
-      "median_ms": 126.281,
-      "min_ms": 122.806,
-      "max_ms": 143.845
+      "median_ms": 96.242,
+      "min_ms": 89.687,
+      "max_ms": 203.738
     },
     {
       "setup": "committee-teimeris",
       "request": "chart",
       "runs": 21,
-      "median_ms": 1.334,
-      "min_ms": 1.248,
-      "max_ms": 1.519
+      "median_ms": 1.302,
+      "min_ms": 1.203,
+      "max_ms": 2.592
     },
     {
       "setup": "committee-teimeris",
       "request": "matching",
       "runs": 21,
       "median_ms": 0.014,
-      "min_ms": 0.012,
-      "max_ms": 0.02
+      "min_ms": 0.013,
+      "max_ms": 0.017
     },
     {
       "setup": "drik-builtin",
@@ -146,57 +147,57 @@
       "setup": "drik-builtin",
       "request": "day",
       "runs": 21,
-      "median_ms": 45.389,
-      "min_ms": 44.558,
-      "max_ms": 60.46
+      "median_ms": 34.637,
+      "min_ms": 32.799,
+      "max_ms": 41.078
     },
     {
       "setup": "drik-builtin",
       "request": "month",
-      "runs": 3,
-      "median_ms": 1502.143,
-      "min_ms": 1501.817,
-      "max_ms": 1518.446
+      "runs": 5,
+      "median_ms": 824.607,
+      "min_ms": 715.365,
+      "max_ms": 962.432
     },
     {
       "setup": "drik-builtin",
       "request": "year",
       "runs": 3,
-      "median_ms": 15704.7,
-      "min_ms": 14392.519,
-      "max_ms": 16682.499
+      "median_ms": 6539.752,
+      "min_ms": 6152.375,
+      "max_ms": 6624.829
     },
     {
       "setup": "drik-builtin",
       "request": "festivals",
       "runs": 3,
-      "median_ms": 14681.329,
-      "min_ms": 14166.863,
-      "max_ms": 15044.396
+      "median_ms": 5886.097,
+      "min_ms": 5853.396,
+      "max_ms": 5919.551
     },
     {
       "setup": "drik-builtin",
       "request": "muhurta",
       "runs": 3,
-      "median_ms": 4957.409,
-      "min_ms": 4558.823,
-      "max_ms": 5545.018
+      "median_ms": 3068.646,
+      "min_ms": 3047.067,
+      "max_ms": 3070.931
     },
     {
       "setup": "drik-builtin",
       "request": "chart",
       "runs": 21,
-      "median_ms": 2.657,
-      "min_ms": 2.558,
-      "max_ms": 2.852
+      "median_ms": 2.723,
+      "min_ms": 2.574,
+      "max_ms": 3.043
     },
     {
       "setup": "drik-builtin",
       "request": "matching",
       "runs": 21,
-      "median_ms": 0.015,
+      "median_ms": 0.013,
       "min_ms": 0.012,
-      "max_ms": 0.027
+      "max_ms": 0.015
     }
   ]
 }

@@ -16,88 +16,132 @@ Every gated median is inside 2× its budget.
 
 ## `android-arm64-android-emulator-sdk-gphone64-arm64`
 
-Android emulator, `sdk_gphone64_arm64` (Android 15, API 35, aarch64), commit `9fc38bc1`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
+Android emulator, `sdk_gphone64_arm64` (Android 15, API 35, aarch64), commit `34f88dcb`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
 
 | request | budget | target | drik, Teimeris | committee, Surya Siddhanta + Teimeris | drik, built-in | built-in ÷ Teimeris |
 |---|---:|---:|---:|---:|---:|---:|
-| open (a context opened, the engine with it) | — | 3.00 ms | 0.018 | 0.022 | 0.015 | 0.8× |
-| day (one almanac day) | 2.00 ms | 0.500 ms | 1.84 | 0.871 | 40.7 | 22.1× |
-| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 56.5 | 30.9 | 1333 | 23.6× |
-| year (a year of almanac days) | — | — | 521 | 284 | 12184 | 23.4× |
-| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 485 | 234 | 12302 | 25.3× |
-| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 280 | 115 | 3994 | 14.3× |
-| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.39 | 1.39 | 2.66 | 1.9× |
-| matching (Ashta Koota between two cast charts) | — | — | 0.023 | 0.023 | 0.023 | 1.0× |
+| open (a context opened, the engine with it) | — | 3.00 ms | 0.018 | 0.021 | 0.014 | 0.8× |
+| day (one almanac day) | 2.00 ms | 0.500 ms | 1.54 | 0.703 | 31.0 | 20.2× |
+| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 34.3 | 18.7 | 626 | 18.3× |
+| year (a year of almanac days) | — | — | 295 | 170 | 5323 | 18.0× |
+| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 251 | 124 | 5320 | 21.2× |
+| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 182 | 90.3 | 2768 | 15.2× |
+| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.37 | 1.38 | 2.66 | 1.9× |
+| matching (Ashta Koota between two cast charts) | — | — | 0.023 | 0.024 | 0.023 | 1.0× |
 
 Medians in milliseconds. The spread of every row:
 
 | setup | request | runs | fastest | slowest |
 |---|---|---:|---:|---:|
-| drik-teimeris | open | 21 | 0.017 | 0.024 |
-| drik-teimeris | day | 21 | 1.79 | 2.02 |
-| drik-teimeris | month | 21 | 55.4 | 59.5 |
-| drik-teimeris | year | 8 | 515 | 531 |
-| drik-teimeris | festivals | 9 | 479 | 502 |
-| drik-teimeris | muhurta | 15 | 276 | 286 |
-| drik-teimeris | chart | 21 | 1.36 | 1.55 |
-| drik-teimeris | matching | 21 | 0.023 | 0.065 |
-| committee-teimeris | open | 21 | 0.019 | 0.036 |
-| committee-teimeris | day | 21 | 0.858 | 0.932 |
-| committee-teimeris | month | 21 | 30.6 | 33.6 |
-| committee-teimeris | year | 15 | 278 | 290 |
-| committee-teimeris | festivals | 17 | 233 | 246 |
-| committee-teimeris | muhurta | 21 | 113 | 121 |
-| committee-teimeris | chart | 21 | 1.35 | 1.50 |
-| committee-teimeris | matching | 21 | 0.023 | 0.031 |
-| drik-builtin | open | 21 | 0.013 | 0.017 |
-| drik-builtin | day | 21 | 40.4 | 42.3 |
-| drik-builtin | month | 4 | 1326 | 1339 |
-| drik-builtin | year | 3 | 12173 | 12198 |
-| drik-builtin | festivals | 3 | 12283 | 12388 |
-| drik-builtin | muhurta | 3 | 3978 | 4021 |
-| drik-builtin | chart | 21 | 2.60 | 2.77 |
-| drik-builtin | matching | 21 | 0.023 | 0.029 |
+| drik-teimeris | open | 21 | 0.017 | 0.029 |
+| drik-teimeris | day | 21 | 1.49 | 1.65 |
+| drik-teimeris | month | 21 | 32.6 | 37.5 |
+| drik-teimeris | year | 14 | 288 | 309 |
+| drik-teimeris | festivals | 16 | 245 | 265 |
+| drik-teimeris | muhurta | 21 | 175 | 187 |
+| drik-teimeris | chart | 21 | 1.34 | 1.44 |
+| drik-teimeris | matching | 21 | 0.023 | 0.051 |
+| committee-teimeris | open | 21 | 0.019 | 0.024 |
+| committee-teimeris | day | 21 | 0.693 | 0.763 |
+| committee-teimeris | month | 21 | 18.4 | 21.5 |
+| committee-teimeris | year | 21 | 166 | 198 |
+| committee-teimeris | festivals | 21 | 121 | 131 |
+| committee-teimeris | muhurta | 21 | 86.2 | 95.0 |
+| committee-teimeris | chart | 21 | 1.33 | 1.88 |
+| committee-teimeris | matching | 21 | 0.023 | 0.036 |
+| drik-builtin | open | 21 | 0.013 | 0.088 |
+| drik-builtin | day | 21 | 30.3 | 32.8 |
+| drik-builtin | month | 7 | 611 | 629 |
+| drik-builtin | year | 3 | 5320 | 5352 |
+| drik-builtin | festivals | 3 | 5297 | 5344 |
+| drik-builtin | muhurta | 3 | 2766 | 2790 |
+| drik-builtin | chart | 21 | 2.58 | 3.09 |
+| drik-builtin | matching | 21 | 0.023 | 0.033 |
 
 ## `desktop-Darwin-arm64`
 
-Apple M2 Pro (Darwin 27.0.0, aarch64), commit `f1258970`, Teimeris 0.1.0, its data read from files. Memo: cold: a fresh context every run.
+Apple M2 Pro (Darwin 27.0.0, aarch64), commit `34f88dcb`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
 
 | request | budget | target | drik, Teimeris | committee, Surya Siddhanta + Teimeris | drik, built-in | built-in ÷ Teimeris |
 |---|---:|---:|---:|---:|---:|---:|
-| open (a context opened, the engine with it) | — | 3.00 ms | 4.34 | 4.47 | 0.013 | 0.0× |
-| day (one almanac day) | 2.00 ms | 0.500 ms | 1.98 | 1.00 | 45.4 | 23.0× |
-| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 60.4 | 34.1 | 1502 | 24.9× |
-| year (a year of almanac days) | — | — | 556 | 296 | 15705 | 28.3× |
-| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 527 | 256 | 14681 | 27.9× |
-| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 349 | 126 | 4957 | 14.2× |
-| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.35 | 1.33 | 2.66 | 2.0× |
-| matching (Ashta Koota between two cast charts) | — | — | 0.014 | 0.014 | 0.015 | 1.1× |
+| open (a context opened, the engine with it) | — | 3.00 ms | 0.020 | 0.020 | 0.013 | 0.6× |
+| day (one almanac day) | 2.00 ms | 0.500 ms | 1.67 | 0.792 | 34.6 | 20.7× |
+| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 37.8 | 22.6 | 825 | 21.8× |
+| year (a year of almanac days) | — | — | 338 | 229 | 6540 | 19.4× |
+| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 285 | 179 | 5886 | 20.6× |
+| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 218 | 96.2 | 3069 | 14.1× |
+| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.29 | 1.30 | 2.72 | 2.1× |
+| matching (Ashta Koota between two cast charts) | — | — | 0.014 | 0.014 | 0.013 | 0.9× |
 
 Medians in milliseconds. The spread of every row:
 
 | setup | request | runs | fastest | slowest |
 |---|---|---:|---:|---:|
-| drik-teimeris | open | 21 | 4.14 | 4.84 |
-| drik-teimeris | day | 21 | 1.86 | 2.11 |
-| drik-teimeris | month | 21 | 59.6 | 62.8 |
-| drik-teimeris | year | 7 | 546 | 745 |
-| drik-teimeris | festivals | 8 | 518 | 538 |
-| drik-teimeris | muhurta | 11 | 314 | 459 |
-| drik-teimeris | chart | 21 | 1.27 | 1.82 |
-| drik-teimeris | matching | 21 | 0.013 | 0.025 |
-| committee-teimeris | open | 21 | 4.12 | 4.99 |
-| committee-teimeris | day | 21 | 0.900 | 1.16 |
-| committee-teimeris | month | 21 | 33.0 | 37.6 |
-| committee-teimeris | year | 13 | 290 | 331 |
-| committee-teimeris | festivals | 15 | 252 | 316 |
-| committee-teimeris | muhurta | 21 | 123 | 144 |
-| committee-teimeris | chart | 21 | 1.25 | 1.52 |
-| committee-teimeris | matching | 21 | 0.012 | 0.020 |
+| drik-teimeris | open | 21 | 0.018 | 0.042 |
+| drik-teimeris | day | 21 | 1.59 | 4.02 |
+| drik-teimeris | month | 21 | 34.6 | 54.0 |
+| drik-teimeris | year | 12 | 299 | 415 |
+| drik-teimeris | festivals | 14 | 271 | 366 |
+| drik-teimeris | muhurta | 19 | 196 | 250 |
+| drik-teimeris | chart | 21 | 1.25 | 3.16 |
+| drik-teimeris | matching | 21 | 0.013 | 0.048 |
+| committee-teimeris | open | 21 | 0.019 | 0.027 |
+| committee-teimeris | day | 21 | 0.708 | 1.98 |
+| committee-teimeris | month | 21 | 19.4 | 31.2 |
+| committee-teimeris | year | 17 | 198 | 291 |
+| committee-teimeris | festivals | 21 | 133 | 293 |
+| committee-teimeris | muhurta | 21 | 89.7 | 204 |
+| committee-teimeris | chart | 21 | 1.20 | 2.59 |
+| committee-teimeris | matching | 21 | 0.013 | 0.017 |
 | drik-builtin | open | 21 | 0.013 | 0.016 |
-| drik-builtin | day | 21 | 44.6 | 60.5 |
-| drik-builtin | month | 3 | 1502 | 1518 |
-| drik-builtin | year | 3 | 14393 | 16682 |
-| drik-builtin | festivals | 3 | 14167 | 15044 |
-| drik-builtin | muhurta | 3 | 4559 | 5545 |
-| drik-builtin | chart | 21 | 2.56 | 2.85 |
-| drik-builtin | matching | 21 | 0.012 | 0.027 |
+| drik-builtin | day | 21 | 32.8 | 41.1 |
+| drik-builtin | month | 5 | 715 | 962 |
+| drik-builtin | year | 3 | 6152 | 6625 |
+| drik-builtin | festivals | 3 | 5853 | 5920 |
+| drik-builtin | muhurta | 3 | 3047 | 3071 |
+| drik-builtin | chart | 21 | 2.57 | 3.04 |
+| drik-builtin | matching | 21 | 0.012 | 0.015 |
+
+## `ios-sim-arm64-ios-simulator-iphone-18-pro`
+
+iOS simulator, iPhone 18 Pro (iOS 27.0, aarch64), commit `34f88dcb`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
+
+| request | budget | target | drik, Teimeris | committee, Surya Siddhanta + Teimeris | drik, built-in | built-in ÷ Teimeris |
+|---|---:|---:|---:|---:|---:|---:|
+| open (a context opened, the engine with it) | — | 3.00 ms | 0.024 | 0.022 | 0.013 | 0.5× |
+| day (one almanac day) | 2.00 ms | 0.500 ms | 1.89 | 0.721 | 30.7 | 16.2× |
+| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 33.3 | 19.6 | 633 | 19.0× |
+| year (a year of almanac days) | — | — | 294 | 168 | 5247 | 17.8× |
+| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 255 | 129 | 5260 | 20.7× |
+| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 179 | 92.5 | 2733 | 15.3× |
+| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.40 | 1.38 | 2.75 | 2.0× |
+| matching (Ashta Koota between two cast charts) | — | — | 0.016 | 0.016 | 0.017 | 1.1× |
+
+Medians in milliseconds. The spread of every row:
+
+| setup | request | runs | fastest | slowest |
+|---|---|---:|---:|---:|
+| drik-teimeris | open | 21 | 0.023 | 0.045 |
+| drik-teimeris | day | 21 | 1.72 | 2.25 |
+| drik-teimeris | month | 21 | 32.2 | 40.6 |
+| drik-teimeris | year | 14 | 284 | 309 |
+| drik-teimeris | festivals | 16 | 239 | 272 |
+| drik-teimeris | muhurta | 21 | 172 | 187 |
+| drik-teimeris | chart | 21 | 1.34 | 1.53 |
+| drik-teimeris | matching | 21 | 0.014 | 0.093 |
+| committee-teimeris | open | 21 | 0.021 | 0.028 |
+| committee-teimeris | day | 21 | 0.702 | 0.894 |
+| committee-teimeris | month | 21 | 18.4 | 24.7 |
+| committee-teimeris | year | 21 | 163 | 184 |
+| committee-teimeris | festivals | 21 | 123 | 146 |
+| committee-teimeris | muhurta | 21 | 89.7 | 97.8 |
+| committee-teimeris | chart | 21 | 1.32 | 1.58 |
+| committee-teimeris | matching | 21 | 0.015 | 0.023 |
+| drik-builtin | open | 21 | 0.013 | 0.015 |
+| drik-builtin | day | 21 | 29.6 | 35.8 |
+| drik-builtin | month | 7 | 607 | 650 |
+| drik-builtin | year | 3 | 5226 | 5283 |
+| drik-builtin | festivals | 3 | 5240 | 5314 |
+| drik-builtin | muhurta | 3 | 2720 | 2762 |
+| drik-builtin | chart | 21 | 2.60 | 3.04 |
+| drik-builtin | matching | 21 | 0.014 | 0.030 |
