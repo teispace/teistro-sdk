@@ -24,12 +24,15 @@ pub enum Calendar {
     BikramSambat = 4,
     /// Indian Lunisolar
     IndianLunisolar = 5,
+    /// Indian National: the Saka-era civil calendar of 1957
+    IndianNational = 6,
 }
 
-const BY_KEY: [(&str, Calendar); 6] = [
+const BY_KEY: [(&str, Calendar); 7] = [
     ("BIKRAM_SAMBAT", Calendar::BikramSambat),
     ("GREGORIAN", Calendar::Gregorian),
     ("INDIAN_LUNISOLAR", Calendar::IndianLunisolar),
+    ("INDIAN_NATIONAL", Calendar::IndianNational),
     ("ISO_WEEK", Calendar::IsoWeek),
     ("JULIAN", Calendar::Julian),
     ("MIXED", Calendar::Mixed),
@@ -43,13 +46,14 @@ impl Calendar {
     pub const KIND: Kind = Kind::Calendar;
 
     /// Every member, in id order.
-    pub const ALL: [Calendar; 6] = [
+    pub const ALL: [Calendar; 7] = [
         Calendar::Gregorian,
         Calendar::Julian,
         Calendar::Mixed,
         Calendar::IsoWeek,
         Calendar::BikramSambat,
         Calendar::IndianLunisolar,
+        Calendar::IndianNational,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -62,6 +66,7 @@ impl Calendar {
             Calendar::IsoWeek => "ISO_WEEK",
             Calendar::BikramSambat => "BIKRAM_SAMBAT",
             Calendar::IndianLunisolar => "INDIAN_LUNISOLAR",
+            Calendar::IndianNational => "INDIAN_NATIONAL",
         }
     }
 
@@ -75,6 +80,7 @@ impl Calendar {
             Calendar::IsoWeek => "calendar.ISO_WEEK",
             Calendar::BikramSambat => "calendar.BIKRAM_SAMBAT",
             Calendar::IndianLunisolar => "calendar.INDIAN_LUNISOLAR",
+            Calendar::IndianNational => "calendar.INDIAN_NATIONAL",
         }
     }
 
@@ -88,6 +94,7 @@ impl Calendar {
             Calendar::IsoWeek => "Iso Week",
             Calendar::BikramSambat => "Bikram Sambat",
             Calendar::IndianLunisolar => "Indian Lunisolar",
+            Calendar::IndianNational => "Indian National: the Saka-era civil calendar of 1957",
         }
     }
 
@@ -101,6 +108,7 @@ impl Calendar {
             Calendar::IsoWeek => None,
             Calendar::BikramSambat => None,
             Calendar::IndianLunisolar => None,
+            Calendar::IndianNational => None,
         }
     }
 
@@ -114,6 +122,7 @@ impl Calendar {
             Calendar::IsoWeek => Mark::Verified,
             Calendar::BikramSambat => Mark::Verified,
             Calendar::IndianLunisolar => Mark::Verified,
+            Calendar::IndianNational => Mark::Verified,
         }
     }
 
@@ -127,6 +136,7 @@ impl Calendar {
             Calendar::IsoWeek => false,
             Calendar::BikramSambat => false,
             Calendar::IndianLunisolar => false,
+            Calendar::IndianNational => false,
         }
     }
 
@@ -140,6 +150,7 @@ impl Calendar {
             Calendar::IsoWeek => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
             Calendar::BikramSambat => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
             Calendar::IndianLunisolar => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
+            Calendar::IndianNational => &[Source { text: "Report of the Calendar Reform Committee, 1955, part C", reference: "docs/calendars/indian-national.md" }],
         }
     }
 
@@ -153,6 +164,7 @@ impl Calendar {
             Calendar::IsoWeek => &[],
             Calendar::BikramSambat => &[],
             Calendar::IndianLunisolar => &[],
+            Calendar::IndianNational => &[],
         }
     }
 
@@ -184,6 +196,7 @@ impl Calendar {
             3 => Some(Calendar::IsoWeek),
             4 => Some(Calendar::BikramSambat),
             5 => Some(Calendar::IndianLunisolar),
+            6 => Some(Calendar::IndianNational),
             _ => None,
         }
     }

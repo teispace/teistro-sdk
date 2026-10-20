@@ -3792,6 +3792,7 @@ export type Calendar =
   | 'calendar.ISO_WEEK'
   | 'calendar.BIKRAM_SAMBAT'
   | 'calendar.INDIAN_LUNISOLAR'
+  | 'calendar.INDIAN_NATIONAL'
   | 'unknown';
 
 /** Every Calendar by name; the values are the strings the union accepts. */
@@ -3820,6 +3821,10 @@ export declare const Calendar: {
    * Indian Lunisolar
    */
   readonly IndianLunisolar: 'calendar.INDIAN_LUNISOLAR';
+  /**
+   * Indian National: the Saka-era civil calendar of 1957
+   */
+  readonly IndianNational: 'calendar.INDIAN_NATIONAL';
 };
 
 /**

@@ -1278,7 +1278,8 @@
             "MIXED",
             "ISO_WEEK",
             "BIKRAM_SAMBAT",
-            "INDIAN_LUNISOLAR"
+            "INDIAN_LUNISOLAR",
+            "INDIAN_NATIONAL"
           ],
           "type": "string"
         },
@@ -1290,7 +1291,8 @@
             "calendar.MIXED",
             "calendar.ISO_WEEK",
             "calendar.BIKRAM_SAMBAT",
-            "calendar.INDIAN_LUNISOLAR"
+            "calendar.INDIAN_LUNISOLAR",
+            "calendar.INDIAN_NATIONAL"
           ],
           "type": "string",
           "writeOnly": true

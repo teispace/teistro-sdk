@@ -48,6 +48,15 @@
    "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} BS"
   }
  },
+ "INDIAN_NATIONAL": {
+  "monthName": ".input {$month :integer} .match $month 1 {{Chaitra}} 2 {{Vaisakha}} 3 {{Jyaistha}} 4 {{Asadha}} 5 {{Sravana}} 6 {{Bhadra}} 7 {{Asvina}} 8 {{Kartika}} 9 {{Agrahayana}} 10 {{Pausa}} 11 {{Magha}} 12 {{Phalguna}} * {{{$month}}}",
+  "monthShort": ".input {$month :integer} .match $month 1 {{Cha}} 2 {{Vai}} 3 {{Jya}} 4 {{Asa}} 5 {{Sra}} 6 {{Bha}} 7 {{Asv}} 8 {{Kar}} 9 {{Agr}} 10 {{Pau}} 11 {{Mag}} 12 {{Pha}} * {{{$month}}}",
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} Saka",
+   "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} Saka",
+   "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} Saka"
+  }
+ },
  "time": {
   "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
   "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",

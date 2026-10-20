@@ -1820,6 +1820,7 @@ export const Calendar = /* @__PURE__ */ Object.freeze({
   IsoWeek: 'calendar.ISO_WEEK',
   BikramSambat: 'calendar.BIKRAM_SAMBAT',
   IndianLunisolar: 'calendar.INDIAN_LUNISOLAR',
+  IndianNational: 'calendar.INDIAN_NATIONAL',
 });
 
 /**
@@ -1833,6 +1834,7 @@ export const CalendarById = /* @__PURE__ */ new Map([
   [3, 'calendar.ISO_WEEK'],
   [4, 'calendar.BIKRAM_SAMBAT'],
   [5, 'calendar.INDIAN_LUNISOLAR'],
+  [6, 'calendar.INDIAN_NATIONAL'],
 ]);
 
 /** Every Era by name. */

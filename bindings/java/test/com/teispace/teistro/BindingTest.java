@@ -206,6 +206,12 @@ public final class BindingTest {
                 same(2083, bs.year(), "Bikram Sambat runs 56 or 57 years ahead");
                 same(fixed, calendar.fixedOf(bs), "the same day");
                 same(today.day(), calendar.convert(bs, Calendar.GREGORIAN).day(), "and back");
+                CalendarDate independence = new CalendarDate(Calendar.GREGORIAN, null, 1947, 0, 8, 15,
+                        Resolution.DEFINED, 0, 0);
+                CalendarDate saka = calendar.convert(independence, Calendar.INDIAN_NATIONAL);
+                same(1869, saka.year(), "Shravana 24, 1869 (Saka)");
+                same(5, saka.month(), "Shravana");
+                same(24, saka.day(), "the 24th");
                 check(calendar.isLeap(Calendar.GREGORIAN, 2024), "2024 is a leap year");
                 check(!calendar.isLeap(Calendar.GREGORIAN, 2100), "2100 is not");
                 same(28, calendar.monthLength(Calendar.GREGORIAN, 2026, 2), "February 2026");

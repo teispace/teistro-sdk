@@ -2937,6 +2937,10 @@ typedef enum ts_calendar {
      * Indian Lunisolar
      */
     TS_CALENDAR_INDIAN_LUNISOLAR = 5,
+    /**
+     * Indian National: the Saka-era civil calendar of 1957
+     */
+    TS_CALENDAR_INDIAN_NATIONAL = 6,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CALENDAR_UNKNOWN = -1,
 } ts_calendar;

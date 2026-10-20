@@ -729,8 +729,9 @@ test('every catalogue enum has a complete id table', () => {
   // list's five further `TsHitKind`s and `TsMoonPhase`, four; 1357 since
   // the chart request's `TsLilith`, three; 1375 since the fixed karakas'
   // `TsSignification`, thirteen, and `TsChosenBy`, five; 1377 since the
-  // dispositors' `TsChainEnd`, two.
-  assert.equal(entries, 1377, 'every member of every enum is in a table');
+  // dispositors' `TsChainEnd`, two; 1378 since `TsCalendar` gained the
+  // Indian national calendar.
+  assert.equal(entries, 1378, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4382,6 +4383,10 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   );
   const gregorian = ctx.calendar.convert(day.date, Calendar.Gregorian);
   assert.deepEqual([gregorian.year, gregorian.month, gregorian.day], [2000, 1, 1]);
+  // India's independence in the Indian national calendar: Shravana 24, 1869.
+  const independence = { ...gregorian, year: 1947, eraYear: 1947, month: 8, day: 15 };
+  const saka = ctx.calendar.convert(independence, Calendar.IndianNational);
+  assert.deepEqual([saka.era, saka.year, saka.month, saka.day], ['era.SHAKA', 1869, 5, 24]);
   assert.equal(day.vara, 'vara.SHANIVARA');
   assert.ok(day.sunrise < day.sunset && day.sunset < 2451545 && 2451545 < day.nextSunrise);
   assert.equal(day.polar, null);

@@ -19,6 +19,7 @@ pub mod date;
 pub mod fixed;
 pub mod gregorian;
 pub mod ical;
+pub mod indian_national;
 pub mod iso_week;
 pub mod julian;
 pub mod lunisolar;

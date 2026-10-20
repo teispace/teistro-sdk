@@ -4255,6 +4255,12 @@
           "value": 5,
           "doc": "Indian Lunisolar",
           "key": "INDIAN_LUNISOLAR"
+        },
+        {
+          "name": "IndianNational",
+          "value": 6,
+          "doc": "Indian National: the Saka-era civil calendar of 1957",
+          "key": "INDIAN_NATIONAL"
         }
       ],
       "source": "catalogue/catalogue.json"

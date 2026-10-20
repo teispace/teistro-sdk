@@ -28,6 +28,15 @@ export function messages(r) {
           monthName: (p) => r.render('sdk.calendar.GREGORIAN.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.GREGORIAN.monthShort', { month: p.month }),
         },
+        indianNational: {
+          date: {
+            full: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.date.full', { day: p.day, monthName: p.monthName, weekdayName: p.weekdayName, year: p.year }),
+            long: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.date.long', { day: p.day, monthName: p.monthName, year: p.year }),
+            numeric: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.date.numeric', { day: p.day, month: p.month, year: p.year }),
+          },
+          monthName: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.monthName', { month: p.month }),
+          monthShort: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.monthShort', { month: p.month }),
+        },
         isoWeek: {
           date: {
             full: () => r.render('sdk.calendar.ISO_WEEK.date.full'),

@@ -39,6 +39,11 @@ public enum Calendar implements Catalogued {
      */
     INDIAN_LUNISOLAR(5, "INDIAN_LUNISOLAR"),
 
+    /**
+     * Indian National: the Saka-era civil calendar of 1957
+     */
+    INDIAN_NATIONAL(6, "INDIAN_NATIONAL"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

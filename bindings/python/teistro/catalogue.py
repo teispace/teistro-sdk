@@ -2272,6 +2272,9 @@ class Calendar(Catalogued):
     INDIAN_LUNISOLAR = 5
     """Indian Lunisolar"""
 
+    INDIAN_NATIONAL = 6
+    """Indian National: the Saka-era civil calendar of 1957"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -6230,6 +6233,7 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "ISO_WEEK",
         4: "BIKRAM_SAMBAT",
         5: "INDIAN_LUNISOLAR",
+        6: "INDIAN_NATIONAL",
         -1: "UNKNOWN",
     },
     "Era": {

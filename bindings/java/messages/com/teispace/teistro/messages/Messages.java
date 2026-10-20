@@ -2377,6 +2377,101 @@ public final class Messages {
 
 
             /**
+             * The messages under `INDIAN_NATIONAL`.
+             *
+             * @return the group
+             */
+            public SdkCalendarIndianNational indianNational() {
+                return new SdkCalendarIndianNational(r);
+            }
+
+            /** The messages under `SdkCalendarIndianNational`, each rendered by its own key. */
+            public static final class SdkCalendarIndianNational {
+                private final Renderer r;
+
+                SdkCalendarIndianNational(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `date`.
+                 *
+                 * @return the group
+                 */
+                public SdkCalendarIndianNationalDate date() {
+                    return new SdkCalendarIndianNationalDate(r);
+                }
+
+                /** The messages under `SdkCalendarIndianNationalDate`, each rendered by its own key. */
+                public static final class SdkCalendarIndianNationalDate {
+                    private final Renderer r;
+
+                    SdkCalendarIndianNationalDate(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.calendar.INDIAN_NATIONAL.date.full`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param weekdayName `weekdayName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String full(long day, String monthName, String weekdayName, long year) {
+                        return r.render("sdk.calendar.INDIAN_NATIONAL.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("weekdayName", weekdayName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.INDIAN_NATIONAL.date.long`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String long_(long day, String monthName, long year) {
+                        return r.render("sdk.calendar.INDIAN_NATIONAL.date.long", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.INDIAN_NATIONAL.date.numeric`
+                     *
+                     * @param day `day`
+                     * @param month `month`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String numeric(long day, long month, long year) {
+                        return r.render("sdk.calendar.INDIAN_NATIONAL.date.numeric", Map.ofEntries(Map.entry("day", day), Map.entry("month", month), Map.entry("year", year)));
+                    }
+                }
+
+
+                /**
+                 * `sdk.calendar.INDIAN_NATIONAL.monthName`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthName(long month) {
+                    return r.render("sdk.calendar.INDIAN_NATIONAL.monthName", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.INDIAN_NATIONAL.monthShort`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthShort(long month) {
+                    return r.render("sdk.calendar.INDIAN_NATIONAL.monthShort", Map.ofEntries(Map.entry("month", month)));
+                }
+            }
+
+
+            /**
              * The messages under `ISO_WEEK`.
              *
              * @return the group

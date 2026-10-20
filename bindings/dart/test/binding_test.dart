@@ -226,6 +226,15 @@ void main() {
     final ctx = context();
     final date = gregorian(2015, 4, 14);
     final bs = ctx.calendar.convert(date, Calendar.bikramSambat);
+    // India's independence in the Indian national calendar.
+    final saka = ctx.calendar.convert(
+      gregorian(1947, 8, 15),
+      Calendar.indianNational,
+    );
+    expect(
+      [saka.era, saka.year, saka.month, saka.day],
+      [Era.shaka, 1869, 5, 24],
+    );
     expect(bs.year, 2072);
     expect(bs.month, 1);
     expect(bs.day, 1);

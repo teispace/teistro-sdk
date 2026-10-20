@@ -1150,6 +1150,31 @@ final class MessagesSdkCalendarGregorian {
       _r.render('sdk.calendar.GREGORIAN.monthShort', {'month': month});
 }
 
+final class MessagesSdkCalendarIndianNationalDate {
+  const MessagesSdkCalendarIndianNationalDate(this._r);
+
+  final Renderer _r;
+
+  String full({required int day, required String monthName, required String weekdayName, required int year}) =>
+      _r.render('sdk.calendar.INDIAN_NATIONAL.date.full', {'day': day, 'monthName': monthName, 'weekdayName': weekdayName, 'year': year});
+  String long({required int day, required String monthName, required int year}) =>
+      _r.render('sdk.calendar.INDIAN_NATIONAL.date.long', {'day': day, 'monthName': monthName, 'year': year});
+  String numeric({required int day, required int month, required int year}) =>
+      _r.render('sdk.calendar.INDIAN_NATIONAL.date.numeric', {'day': day, 'month': month, 'year': year});
+}
+
+final class MessagesSdkCalendarIndianNational {
+  const MessagesSdkCalendarIndianNational(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkCalendarIndianNationalDate get date => MessagesSdkCalendarIndianNationalDate(_r);
+  String monthName({required int month}) =>
+      _r.render('sdk.calendar.INDIAN_NATIONAL.monthName', {'month': month});
+  String monthShort({required int month}) =>
+      _r.render('sdk.calendar.INDIAN_NATIONAL.monthShort', {'month': month});
+}
+
 final class MessagesSdkCalendarIsoWeekDate {
   const MessagesSdkCalendarIsoWeekDate(this._r);
 
@@ -1282,6 +1307,7 @@ final class MessagesSdkCalendar {
 
   MessagesSdkCalendarBikramSambat get bikramSambat => MessagesSdkCalendarBikramSambat(_r);
   MessagesSdkCalendarGregorian get gregorian => MessagesSdkCalendarGregorian(_r);
+  MessagesSdkCalendarIndianNational get indianNational => MessagesSdkCalendarIndianNational(_r);
   MessagesSdkCalendarIsoWeek get isoWeek => MessagesSdkCalendarIsoWeek(_r);
   MessagesSdkCalendarJulian get julian => MessagesSdkCalendarJulian(_r);
   MessagesSdkCalendarMixed get mixed => MessagesSdkCalendarMixed(_r);

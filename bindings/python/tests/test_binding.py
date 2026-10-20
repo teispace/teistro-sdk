@@ -219,6 +219,12 @@ class TheCalendars(WithLibrary):
     def tearDown(self) -> None:
         self.ctx.close()
 
+    def test_independence_is_shravana_24_1869_in_the_indian_national_calendar(self) -> None:
+        saka = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 1947, 8, 15), Calendar.INDIAN_NATIONAL)
+        self.assertEqual((saka.year, saka.month, saka.day), (1869, 5, 24))
+        assert saka.era is not None
+        self.assertEqual(saka.era.key, "SHAKA")
+
     def test_the_new_year_of_2072_bs_is_14_april_2015(self) -> None:
         bs = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
         self.assertEqual((bs.year, bs.month, bs.day), (2072, 1, 1))

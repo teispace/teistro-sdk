@@ -2774,6 +2774,8 @@ enum Calendar implements KeyOf<Calendar> {
   bikramSambat(4, 'BIKRAM_SAMBAT'),
   /// Indian Lunisolar
   indianLunisolar(5, 'INDIAN_LUNISOLAR'),
+  /// Indian National: the Saka-era civil calendar of 1957
+  indianNational(6, 'INDIAN_NATIONAL'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

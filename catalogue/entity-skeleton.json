@@ -696,7 +696,8 @@
     "MIXED": {},
     "ISO_WEEK": {},
     "BIKRAM_SAMBAT": {},
-    "INDIAN_LUNISOLAR": {}
+    "INDIAN_LUNISOLAR": {},
+    "INDIAN_NATIONAL": {}
   },
   "era": {
     "VIKRAMA": {},

@@ -5562,6 +5562,11 @@ class MessagesSdkCalendar:
         return MessagesSdkCalendarGregorian(self._r)
 
     @property
+    def indian_national(self) -> MessagesSdkCalendarIndianNational:
+        """The messages under `INDIAN_NATIONAL`."""
+        return MessagesSdkCalendarIndianNational(self._r)
+
+    @property
     def iso_week(self) -> MessagesSdkCalendarIsoWeek:
         """The messages under `ISO_WEEK`."""
         return MessagesSdkCalendarIsoWeek(self._r)
@@ -5909,6 +5914,62 @@ class MessagesSdkCalendarIsoWeekDate:
         """`sdk.calendar.ISO_WEEK.date.numeric`"""
         return self._r.render(
             "sdk.calendar.ISO_WEEK.date.numeric",
+            {"day": day, "month": month, "year": year},
+        )
+
+
+class MessagesSdkCalendarIndianNational:
+    """The messages under `MessagesSdkCalendarIndianNational`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def date(self) -> MessagesSdkCalendarIndianNationalDate:
+        """The messages under `date`."""
+        return MessagesSdkCalendarIndianNationalDate(self._r)
+
+    def month_name(self, *, month: int) -> str:
+        """`sdk.calendar.INDIAN_NATIONAL.monthName`"""
+        return self._r.render(
+            "sdk.calendar.INDIAN_NATIONAL.monthName",
+            {"month": month},
+        )
+
+    def month_short(self, *, month: int) -> str:
+        """`sdk.calendar.INDIAN_NATIONAL.monthShort`"""
+        return self._r.render(
+            "sdk.calendar.INDIAN_NATIONAL.monthShort",
+            {"month": month},
+        )
+
+
+class MessagesSdkCalendarIndianNationalDate:
+    """The messages under `MessagesSdkCalendarIndianNationalDate`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def full(self, *, day: int, month_name: str, weekday_name: str, year: int) -> str:
+        """`sdk.calendar.INDIAN_NATIONAL.date.full`"""
+        return self._r.render(
+            "sdk.calendar.INDIAN_NATIONAL.date.full",
+            {"day": day, "monthName": month_name, "weekdayName": weekday_name, "year": year},
+        )
+
+    def long(self, *, day: int, month_name: str, year: int) -> str:
+        """`sdk.calendar.INDIAN_NATIONAL.date.long`"""
+        return self._r.render(
+            "sdk.calendar.INDIAN_NATIONAL.date.long",
+            {"day": day, "monthName": month_name, "year": year},
+        )
+
+    def numeric(self, *, day: int, month: int, year: int) -> str:
+        """`sdk.calendar.INDIAN_NATIONAL.date.numeric`"""
+        return self._r.render(
+            "sdk.calendar.INDIAN_NATIONAL.date.numeric",
             {"day": day, "month": month, "year": year},
         )
 

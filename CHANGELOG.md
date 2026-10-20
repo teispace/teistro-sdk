@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Indian national calendar** (`calendars/indian-national.md`).
+**Numbers:** `calendar.INDIAN_NATIONAL` is the Saka-era civil calendar
+that India adopted in 1957. 1 Chaitra falls on 22 March, or on 21 March
+in a Gregorian leap year. Chaitra has 30 days, or 31 in a leap year,
+Vaishakha to Bhadra have 31 and the rest 30. Dates convert both ways
+through every calendar API and binding, carry the `SHAKA` era, and are
+named in en-Latn and ne-Deva-NP.
+
 **A doubled month** (`festival-rule-language.md` §3.7).
 **Numbers:** in VS 2083, `NEPAL_PANCHANGA` now keeps Dashahara's
 beginning and end, the Gosaikunda bathing and Hatyamochan bathing in the

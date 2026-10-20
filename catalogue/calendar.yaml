@@ -45,3 +45,10 @@ members:
       - text: "calendar-time-architecture"
         ref: "docs/02-architecture/04-calendar-time-architecture.md"
     mark: V
+  - key: INDIAN_NATIONAL
+    id: 6
+    doc: "Indian National: the Saka-era civil calendar of 1957"
+    sources:
+      - text: "Report of the Calendar Reform Committee, 1955, part C"
+        ref: "docs/calendars/indian-national.md"
+    mark: V

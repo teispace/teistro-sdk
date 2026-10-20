@@ -48,6 +48,15 @@
    "full": "{$weekdayName}, {$year :integer useGrouping=false} {$monthName} {$day :integer} गते"
   }
  },
+ "INDIAN_NATIONAL": {
+  "monthName": ".input {$month :integer} .match $month 1 {{चैत्र}} 2 {{वैशाख}} 3 {{ज्येष्ठ}} 4 {{आषाढ}} 5 {{श्रावण}} 6 {{भाद्र}} 7 {{आश्विन}} 8 {{कार्तिक}} 9 {{अग्रहायण}} 10 {{पौष}} 11 {{माघ}} 12 {{फाल्गुन}} * {{{$month}}}",
+  "monthShort": "{sdk.calendar.INDIAN_NATIONAL.monthName :msg}",
+  "date": {
+   "numeric": "शक {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
+   "long": "शक {$year :integer useGrouping=false} {$monthName} {$day :integer}",
+   "full": "{$weekdayName}, शक {$year :integer useGrouping=false} {$monthName} {$day :integer}"
+  }
+ },
  "time": {
   "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
   "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",
