@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**160 more of Nepal's festivals** (`festival-rules.md` §10.2,
+`festival-classification.md`).
+**Numbers:** `NEPAL_PANCHANGA` now keeps 160 more festivals: 159 by the
+udaya rule, among them the Tihar days, Tol Lhosar, Kushe Aunsi and the
+Newar jatras, and the Koka Kaushiki sangam mela on the day after Dhanya
+purnima. Each is a festival of a consumer's list whose own sunrise rule
+gives every day the consumer verified from 2013 to 2027. Each was then
+read off the committee's VS 2082 and VS 2083 pages, and every one of their
+314 printed days agrees under the committee's sky. Over the modern sky 24
+of those days move, where a tithi's end crosses sunrise. Ganga puja,
+Rameshwar puja and Guru Padmasambhava jayanti follow Dashahara into VS
+2083's adhika Jyeshtha, as printed. Eleven of the consumer's rule
+festivals are not shipped, each named with its reason and a crux (C685 to
+C689): five the committee prints in neither year, Jamare aunsi, two the
+print moves (Biruda panchami, Thakali phalo parva), the two ekadashis
+whose source gives the 11th or the 12th, and Sankhu jatra. The measured
+page now counts 554 printed rows, of which the same 6 part. A year of the
+pack's festivals takes 29.8 ms under the committee's setup over Teimeris
+and 84.7 ms under the modern one, past its 80 ms target. Writing the
+canonical JSON that every answer is sealed with no longer allocates for
+each string and number. The bytes, and so every hash, are unchanged.
+
 **Three Lhosars and two national days** (`festival-rules.md`).
 **Numbers:** `NEPAL_PANCHANGA` now keeps five more days that the
 committee prints in VS 2082 and VS 2083. Tamu Lhosar falls on Poush 15,
@@ -21,8 +43,7 @@ Phalgun's bright first at sunrise. Both match the print in both years,
 under the committee's sky and under the modern one, and a consumer's
 verified days from 2014 to 2027, 14 of 14 and 13 of 13. Gyalpo Lhosar is
 not the Tibetan Phugpa new year in Nepal's print: in 2027 the committee
-prints it on 9 March, a lunation after the Phugpa Losar. Tol Lhosar waits:
-its 2025 day breaks the sunrise rule. The dated days take the keys the
+prints it on 9 March, a lunation after the Phugpa Losar. The dated days take the keys the
 festival classification gives them, so `SAMVIDHAN_DIWAS` is now
 `CONSTITUTION_DAY` and `NATIONAL_EARTHQUAKE_SAFETY_DAY` is
 `EARTHQUAKE_SAFETY_DAY`. The measured page now counts 240 printed rows,

@@ -907,8 +907,16 @@ The fitted window is kept, and the text's is recorded as the other reading.
 `NEPAL_PANCHANGA` adds three things to `NEPAL`'s rules and counted days:
 
 - 60 karmakala rules (`FestivalRule::nepal_panchanga`): the 58 fitted, and Sonam and Gyalpo Lhosar, read off the print;
-- 13 counted days (`FollowingRule::nepal_panchanga`), each on the day of
-  the rule it follows;
+- 159 udaya rules (`AT_SUNRISE` in the same function): the festivals of
+  the consumer's list that its own sunrise rule reproduces, each kept only
+  where the committee prints its day in VS 2082 or 2083, every printed
+  day agreeing under the committee's sky. Ganga puja, Rameshwar puja and
+  Guru Padmasambhava jayanti follow Dashahara into the adhika Jyeshtha
+  (C606), as VS 2083 prints them. The eleven the print does not confirm
+  are listed, each with its reason, in `festival-classification.md`;
+- 14 counted days (`FollowingRule::nepal_panchanga`): 13 on the day of
+  the rule they follow, and the Koka Kaushiki sangam mela on the day after
+  Dhanya purnima;
 - the same Ekadashi observers as `DHARMASINDHU`.
 
 Its keys do not repeat `NEPAL`'s, so a request may name either. Five of
@@ -973,12 +981,14 @@ sunrise tithis of VS 2082 and 2083.
 ### 10.4 What is measured
 
 `festival-measured.md` §6 finds the pack at Kathmandu over the committee's
-sky and the modern sky. It holds the committee's sky to the 132 days
-printed for the pack's rules in VS 2082 and 2083. Every parting carries
-its cause and the day the pack gives, and the pass checks both.
+sky and the modern sky. It holds the committee's sky to every day
+printed for the pack's rules in VS 2082 and 2083, and the page counts
+them. Every parting carries its cause and the day the pack gives, and the
+pass checks both. The 159 udaya rules part from the print on no day under
+the committee's sky.
 
-The emulation predicts 114 agreements and 18 partings under the
-committee's sky:
+Before the pass ran, an emulation of the first fitted rules predicted 114
+agreements and 18 partings under the committee's sky:
 
 | cause | partings | crux |
 |---|---|---|
@@ -991,11 +1001,10 @@ committee's sky:
 
 Seven rows are not printed in either year (C613).
 
-The modern sky parts from the committee's on 18 rows. The print takes the
-committee's day on every one of them but Mha puja and the Nepal Sambat new
-year of VS 2083, which follow the modern sky. Until the pass has run,
-these figures are the emulation's. The pass's figures replace them, and a
-difference between the two is a finding.
+In the emulation the modern sky parted from the committee's on 18 rows,
+and the print took the committee's day on every one of them but Mha puja
+and the Nepal Sambat new year of VS 2083, which follow the modern sky. The
+measured page's figures replace the emulation's.
 
 ### 10.5 Forks
 

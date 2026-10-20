@@ -1,6 +1,6 @@
 # Festival classification
 
-Status: `research`, 2026-10-20. Cruxes C600, C613, C619 and C622 to C623
+Status: `research`, 2026-10-20. Cruxes C600, C613, C619, C622 to C623 and C685 to C692
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.
@@ -13,7 +13,7 @@ its day:
 | class | what decides the day |
 |---|---|
 | **rule, shipped** | a festival rule in a pack the SDK ships (`NEPAL` or `NEPAL_PANCHANGA`) |
-| **rule, not yet shipped** | a tithi in a month, at sunrise or in a window, which the language holds today; the consumer's source reproduces each at sunrise, and no pack carries it yet |
+| **rule, not yet shipped** | a tithi in a month, which the language holds today, that no pack carries: the print does not confirm it, or its source's rule is not one rule |
 | **rule, needs a form** | a rule the language cannot say yet, or a rule the evidence does not settle (`festival-rule-language.md` §4) |
 | **solar** | a day of the solar month, or a sankranti (C619) |
 | **fixed civil** | a Bikram Sambat or Gregorian date fixed by law, an institution or an organisation |
@@ -41,7 +41,7 @@ no rule. This page's classes split each of those counts:
 
 | track 04 | count | this page |
 |---|---|---|
-| lunar | 295 | rule, shipped 84; rule, not yet shipped 171; rule, needs a form 40 |
+| lunar | 295 | rule, shipped 244; rule, not yet shipped 11; rule, needs a form 40 |
 | Bikram Sambat | 68 | solar 24; fixed civil 44 |
 | Gregorian | 113 | fixed civil 113 |
 | both | 2 | solar 1 (Guriya parva, printed on Shrawan 1 in both editions, C621); rule, needs a form 1 (Walke parva) |
@@ -62,281 +62,281 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 86; rule, not yet shipped 171; rule, needs a form 43; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 246; rule, not yet shipped 11; rule, needs a form 43; solar 26; fixed civil 165; community 6; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (86)
+### Rule, shipped (246)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
 | key | name | नाम | community | pack |
 |---|---|---|---|---|
+| `ACHALA_SAPTAMI` | Achala Saptami | अचला सप्तमी |  | NEPAL_PANCHANGA |
+| `ADUKHA_NAVAMI` | Adukha Navami | अदुःख नवमी | Newar | NEPAL_PANCHANGA |
 | `AJA_EKADASHI` | Aja Ekadashi | अजा एकादशी |  | NEPAL_PANCHANGA |
+| `AKHILBALI_PURTI` | Akhilbali Purti | अखिलबलि पूर्ति |  | NEPAL_PANCHANGA |
+| `AKSHAYA_TRITIYA` | Akshaya Tritiya | अक्षय तृतीया |  | NEPAL_PANCHANGA |
+| `AMALAKI_EKADASHI` | Amalaki Ekadashi | आमलकी एकादशी |  | NEPAL_PANCHANGA |
 | `AMAVASYA_SHRADDHA` | Aunsi Shraddha | औँसी श्राद्ध |  | NEPAL_PANCHANGA |
 | `AMUKTABHARANA_SAPTAMI` | Amuktabharana Saptami | अमुक्ताभरण सप्तमी |  | NEPAL_PANCHANGA |
 | `ANALA_PUNHI` | Anala Punhi | अनला पुन्ही |  | NEPAL_PANCHANGA |
+| `ANANTA_CHATURDASHI` | Ananta Chaturdashi | अनन्त चतुर्दशी |  | NEPAL_PANCHANGA |
+| `ANNAPURNA_JATRA` | Annapurna Jatra | अन्नपूर्ण जात्रा |  | NEPAL_PANCHANGA |
+| `APARA_EKADASHI` | Apara Ekadashi | अपरा एकादशी |  | NEPAL_PANCHANGA |
+| `ARGHA_SARAI_PARVA` | Argha Sarai Parva | अर्घा सराय पर्व |  | NEPAL_PANCHANGA |
+| `ARYAGHAT_MADHAV_NARAYAN_MELA` | Aryaghat Madhav Narayan Mela | आर्यघाट माधवनारायण मेला |  | NEPAL_PANCHANGA |
 | `ASHTAMI_SHRADDHA` | Ashtami Shraddha | अष्टमी श्राद्ध |  | NEPAL_PANCHANGA |
+| `BAISAKH_SNAN_ENDS` | Baisakh Snan Ends | वैशाख स्नान समाप्ति |  | NEPAL_PANCHANGA |
+| `BAKHUMADA` | Bakhumada | बखुमद |  | NEPAL_PANCHANGA |
+| `BALAJU_BAISDHARA_MELA` | Balaju Baisdhara Mela | बालाजु बाइसधारा मेला |  | NEPAL_PANCHANGA |
+| `BALAMBU_MAHALAXMI_JATRA` | Balambu Mahalaxmi Jatra | बलम्बु महालक्ष्मी जात्रा | Newar | NEPAL_PANCHANGA |
 | `BALA_CHATURDASHI` | Bala Charhe | बाला चह्रे | Newar | NEPAL_PANCHANGA |
+| `BALA_CHATURDASHI_BALA` | Bala Chaturdashi | बाला चतुर्दशी |  | NEPAL_PANCHANGA |
 | `BALI_PRATIPADA` | Bali Puja | बलि पूजा |  | NEPAL |
+| `BASANTA_PANCHAMI` | Basanta Panchami | वसन्त पञ्चमी |  | NEPAL_PANCHANGA |
+| `BHAKTAPUR_CHANDI_BHAGAWATI_JATRA` | Bhaktapur Chandi Bhagawati Jatra | भक्तपुर चण्डी भगवती जात्रा | Newar | NEPAL_PANCHANGA |
+| `BHAKTAPUR_SIDDHA_POKHARI_MELA` | Bhaktapur Siddha Pokhari Mela | भक्तपुर सिद्धपोखरी मेला |  | NEPAL_PANCHANGA |
+| `BHAL_BHAL_ASHTAMI` | Bhal Bhal Ashtami | भलभल अष्टमी | Newar | NEPAL_PANCHANGA |
 | `BHIMA_EKADASHI` | Bhima Ekadashi | भीमा एकादशी |  | NEPAL_PANCHANGA |
+| `BHISHMASHTAMI` | Bhishmashtami | भीष्माष्टमी |  | NEPAL_PANCHANGA |
+| `BHISHMA_DWADASHI` | Bhishma Dwadashi | भीष्म द्वादशी |  | NEPAL_PANCHANGA |
 | `BHISHMA_PANCHAKA_ARAMBHA` | Bhishma Panchak Begins | भीष्मपञ्चक आरम्भ |  | NEPAL_PANCHANGA |
+| `BILVA_NIMANTRAN` | Bilva Nimantran | बिल्व निमन्त्रण |  | NEPAL_PANCHANGA |
+| `BISHALNAGAR_VAISHNAVI_DEVI_JATRA` | Bishalnagar Vaishnavi Devi Jatra | विशालनगर वैष्णवी देवी जात्रा | Newar | NEPAL_PANCHANGA |
+| `BUDDHAVATAR` | Buddhavatar | बुद्धावतार |  | NEPAL_PANCHANGA |
+| `BUDDHA_JAYANTI` | Buddha Jayanti | बुद्ध जयन्ती | Buddhist | NEPAL_PANCHANGA |
+| `CHAALA` | Chaala | चाँल |  | NEPAL_PANCHANGA |
 | `CHAITE_DASHAIN` | Chaite Dashain | चैते दसैँ |  | NEPAL_PANCHANGA |
 | `CHAMPA_SHASHTHI` | Champa Shashthi | चम्पा षष्ठी |  | NEPAL_PANCHANGA |
+| `CHANDI_PURNIMA` | Chandi Purnima | चण्डी पूर्णिमा |  | NEPAL_PANCHANGA |
+| `CHANDRA_SHASHTHI` | Chandra Shashthi | चन्द्र षष्ठी |  | NEPAL_PANCHANGA |
+| `CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN` | Changunarayan Akhanda Deep Darshan | चाँगुनारायण अखण्ड दीप दर्शन |  | NEPAL_PANCHANGA |
+| `CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA` | Changunarayan Chhinnamasta Kileshwor Mulrath Jatra | चाँगुनारायण छिन्नमस्ता किलेश्वर मूलरथ जात्रा | Newar | NEPAL_PANCHANGA |
+| `CHANGUNARAYAN_KALASH_JATRA` | Changunarayan Kalash Jatra | चाँगुनारायण कलश जात्रा | Newar | NEPAL_PANCHANGA |
+| `CHANGU_MADHAV_NARAYAN_MELA` | Changu Madhav Narayan Mela | चाँगु माधवनारायण मेला |  | NEPAL_PANCHANGA |
 | `CHATHA` | Chatha | चथा | Newar | NEPAL_PANCHANGA |
 | `CHATURDASHI_SHRADDHA` | Chaturdashi Shraddha | चतुर्दशी श्राद्ध |  | NEPAL_PANCHANGA |
+| `CHATURMAS_BEGINS` | Chaturmas Begins | चतुर्मास आरम्भ |  | NEPAL_PANCHANGA |
+| `CHATURMAS_ENDS` | Chaturmas Ends | चतुर्मास समाप्ति |  | NEPAL_PANCHANGA |
 | `CHATURTHI_SHRADDHA` | Chaturthi Shraddha | चतुर्थी श्राद्ध |  | NEPAL_PANCHANGA |
+| `CHHATH` | Chhath | छठ पर्व | Maithil and Bhojpuri | NEPAL_PANCHANGA |
+| `CHIR_SWAYEGU` | Chir Swayegu | चीर स्वायेगु | Newar | NEPAL_PANCHANGA |
+| `CHONAM_PARVA` | Chonam Parva | चोनाम पर्व |  | NEPAL_PANCHANGA |
+| `DAKSHINAMURTI_PUJA` | Dakshinamurti Puja | दक्षिणामूर्ति पूजा |  | NEPAL_PANCHANGA |
+| `DAR_KHANE_DIN` | Dar Khane Din | दर खाने दिन |  | NEPAL_PANCHANGA |
 | `DASHAHARA_SNANA_ARAMBHA` | Dashahara Snan Begins | दशहरा स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `DASHAMI_SHRADDHA` | Dashami Shraddha | दशमी श्राद्ध |  | NEPAL_PANCHANGA |
 | `DATTATREYA_JAYANTI` | Dattatreya Jayanti | दत्तात्रेय जयन्ती |  | NEPAL_PANCHANGA |
+| `DEOPATAN_GANGAMAI_RATH_JATRA` | Deopatan Gangamai Rath Jatra | देवपाटन गङ्गामाई रथ जात्रा | Newar | NEPAL_PANCHANGA |
+| `DEOPATAN_TRISHUL_JATRA` | Deopatan Trishul Jatra | देवपाटन त्रिशूल जात्रा | Newar | NEPAL_PANCHANGA |
+| `DEVI_VISARJAN` | Devi Visarjan | देवी विसर्जन |  | NEPAL_PANCHANGA |
+| `DHANTERAS` | Dhanteras | धनतेरस |  | NEPAL_PANCHANGA |
 | `DHANVANTARI_JAYANTI` | Dhanvantari Jayanti | धन्वन्तरि जयन्ती |  | NEPAL_PANCHANGA |
+| `DHANYA_PURNIMA` | Dhanya Purnima | धान्य पूर्णिमा |  | NEPAL_PANCHANGA |
+| `DHAPAKHEL_NAGDAHA` | Dhapakhel Nagdaha | धापाखेल नागदह |  | NEPAL_PANCHANGA |
 | `DILA_CHARHE` | Dila Charhe | दिला चह्रे | Newar | NEPAL_PANCHANGA |
+| `DILLA_PUNHI` | Dilla Punhi | दिल्ला पुन्ही | Newar | NEPAL_PANCHANGA |
+| `DRONA_NAVAMI` | Drona Navami | द्रोण नवमी |  | NEPAL_PANCHANGA |
 | `DURVA_ASHTAMI` | Durva Ashtami | दूर्वाष्टमी |  | NEPAL_PANCHANGA |
 | `DVAPARA_YUGADI` | Dwaparyugadi | द्वापरयुगादि |  | NEPAL_PANCHANGA |
 | `DWADASHI_SHRADDHA` | Dwadashi Shraddha | द्वादशी श्राद्ध |  | NEPAL_PANCHANGA |
 | `DWITIYA_SHRADDHA` | Dwitiya Shraddha | द्वितीया श्राद्ध |  | NEPAL_PANCHANGA |
 | `EKADASHI_SHRADDHA` | Ekadashi Shraddha | एकादशी श्राद्ध |  | NEPAL_PANCHANGA |
+| `FULKHARKA_GANGAJAMUNA_MELA` | Fulkharka Gangajamuna Mela | फूलखर्क गङ्गाजमुना मेला |  | NEPAL_PANCHANGA |
 | `GAIDU_PUJA` | Gaidu Puja | गैडु पूजा |  | NEPAL_PANCHANGA |
+| `GAI_JATRA` | Gai Jatra | गाईजात्रा | Newar | NEPAL_PANCHANGA |
 | `GANESHA_CHATURTHI` | Ganesh Chaturthi | गणेश चतुर्थी |  | NEPAL_PANCHANGA |
 | `GANGA_DASHAHARA` | Ganga Dashahara | गङ्गा दशहरा |  | NEPAL_PANCHANGA |
+| `GANGA_PUJA` | Ganga Puja | गङ्गा पूजा |  | NEPAL_PANCHANGA |
 | `GANGA_SAPTAMI` | Ganga Saptami | गङ्गा सप्तमी |  | NEPAL_PANCHANGA |
+| `GATILA` | Gatila | गातिला |  | NEPAL_PANCHANGA |
 | `GAURA_SAPTAMI` | Gaura Saptami | गौरा सप्तमी |  | NEPAL_PANCHANGA |
+| `GAURI_VRAT` | Gauri Vrat | गौरी व्रत |  | NEPAL_PANCHANGA |
+| `GAYA_MAUNI_AUNSI` | Gaya Mauni Aunsi | गया मौनी औँसी |  | NEPAL_PANCHANGA |
 | `GHODE_JATRA` | Ghode Jatra | घोडेजात्रा | Newar | NEPAL_PANCHANGA |
+| `GITA_JAYANTI` | Gita Jayanti | गीता जयन्ती |  | NEPAL_PANCHANGA |
+| `GOPASHTAMI` | Gopashtami | गोपाष्टमी |  | NEPAL_PANCHANGA |
+| `GORAKHNATH_JAYANTI` | Gorakhnath Jayanti | गोरखनाथ जयन्ती |  | NEPAL_PANCHANGA |
 | `GOSAIKUNDA_SNANA_ARAMBHA` | Gosaikunda Snan Begins | गोसाइँकुण्ड स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `GOSAIKUNDA_SNANA_SAMAPTI` | Gosaikunda Snan Ends | गोसाइँकुण्ड स्नान समाप्ति |  | NEPAL_PANCHANGA |
+| `GOVARDHAN_PUJA` | Govardhan Puja | गोवर्धन पूजा |  | NEPAL_PANCHANGA |
+| `GOVINDA_DWADASHI` | Govinda Dwadashi | गोविन्द द्वादशी |  | NEPAL_PANCHANGA |
+| `GUGA_NAVAMI` | Guga Navami | गुगा नवमी |  | NEPAL_PANCHANGA |
+| `GUHYESHWARI_JATRA` | Guhyeshwari Jatra | गुह्येश्वरी जात्रा | Newar | NEPAL_PANCHANGA |
+| `GUNLA_BEGINS` | Gunla Begins | गुँला पर्व आरम्भ | Newar | NEPAL_PANCHANGA |
+| `GUNLA_ENDS` | Gunla Ends | गुँला पर्व समाप्ति | Newar | NEPAL_PANCHANGA |
+| `GURU_NANAK_JAYANTI` | Guru Nanak Jayanti | गुरु नानक जयन्ती | Sikh | NEPAL_PANCHANGA |
+| `GURU_PADMASAMBHAVA_JAYANTI` | Guru Padmasambhava Jayanti | गुरु पद्मसम्भव जयन्ती | Buddhist | NEPAL_PANCHANGA |
+| `GURU_PURNIMA` | Guru Purnima | गुरु पूर्णिमा |  | NEPAL_PANCHANGA |
 | `GYALPO_LHOSAR` | Gyalpo Lhosar | ग्याल्पो ल्होसार | Sherpa | NEPAL_PANCHANGA |
+| `HALI_TIHAR` | Hali Tihar | हलि तिहार |  | NEPAL_PANCHANGA |
+| `HANUMAN_JAYANTI` | Hanuman Jayanti | हनुमान जयन्ती |  | NEPAL_PANCHANGA |
 | `HARIBODHINI_EKADASHI` | Haribodhini Ekadashi | हरिबोधिनी एकादशी |  | NEPAL_PANCHANGA |
+| `HARIPARIVARTINI_EKADASHI` | Hariparivartini Ekadashi | हरिपरिवर्तिनी एकादशी |  | NEPAL_PANCHANGA |
+| `HARISHAYANI_EKADASHI` | Harishayani Ekadashi | हरिशयनी एकादशी |  | NEPAL_PANCHANGA |
 | `HARITALIKA` | Haritalika Teej | हरितालिका तीज |  | NEPAL |
 | `HATYAMOCHANA_SNANA` | Hatyamochan Snan | हत्यामोचन स्नान |  | NEPAL_PANCHANGA |
+| `HETAUDA_KUSHMANDA_SAROBAR_MELA` | Hetauda Kushmanda Sarobar Mela | हेटौडा कुष्माण्ड सरोवर मेला |  | NEPAL_PANCHANGA |
 | `HILE_JATRA` | Hile Jatra | हिले जात्रा |  | NEPAL_PANCHANGA |
 | `HOLI_HILLS` | Holi (Hills) | होली (पहाड) |  | NEPAL |
 | `HOLI_TERAI` | Holi (Terai) | होली (तराई) |  | NEPAL |
+| `INDIRA_EKADASHI` | Indira Ekadashi | इन्दिरा एकादशी |  | NEPAL_PANCHANGA |
+| `INDRADAHA_SNAN` | Indradaha Snan | इन्द्रदह स्नान | Newar | NEPAL_PANCHANGA |
+| `INDRADHWAJA_UTTHAN` | Indradhwaja Utthan | इन्द्रध्वज उत्थान | Newar | NEPAL_PANCHANGA |
+| `INDRA_JATRA` | Indra Jatra | इन्द्रजात्रा | Newar | NEPAL_PANCHANGA |
+| `JAGANNATH_RATH_JATRA` | Jagannath Rath Jatra | जगन्नाथ रथ जात्रा |  | NEPAL_PANCHANGA |
 | `JANMASHTAMI` | Krishna Janmashtami | कृष्ण जन्माष्टमी |  | NEPAL; excluded by the consumer at 12 of 14 (C616) |
+| `JITIYA` | Jitiya | जितिया पर्व | Tharu and Maithil | NEPAL_PANCHANGA |
+| `JYA_PUNHI` | Jya Punhi | ज्या पुन्ही | Newar | NEPAL_PANCHANGA |
+| `KABIR_JAYANTI` | Kabir Jayanti | कबीर जयन्ती |  | NEPAL_PANCHANGA |
+| `KAG_TIHAR` | Kag Tihar | काग तिहार |  | NEPAL_PANCHANGA |
 | `KALI_YUGADI` | Kaliyugadi | कलियुगादि |  | NEPAL_PANCHANGA |
+| `KAMIKA_EKADASHI` | Kamika Ekadashi | कामिका एकादशी |  | NEPAL_PANCHANGA |
+| `KARTIK_SNAN_BEGINS` | Kartik Snan Begins | कार्तिक स्नान आरम्भ |  | NEPAL_PANCHANGA |
+| `KARTIK_SNAN_ENDS` | Kartik Snan Ends | कार्तिक स्नान समाप्ति |  | NEPAL_PANCHANGA |
+| `KATIN_PUNHI` | Katin Punhi | कतिं पुन्ही | Newar | NEPAL_PANCHANGA |
+| `KAYA_ASHTAMI` | Kaya Ashtami | कायः अष्टमी | Newar | NEPAL_PANCHANGA |
+| `KHADGA_JATRA` | Khadga Jatra | खड्ग जात्रा | Newar | NEPAL_PANCHANGA |
+| `KHANCHI_SARAI_PARVA` | Khanchi Sarai Parva | खाँचीमा सराय पर्व |  | NEPAL_PANCHANGA |
+| `KIRTIPUR_INDRAYANI_JATRA` | Kirtipur Indrayani Jatra | कीर्तिपुर इन्द्रायणी जात्रा | Newar | NEPAL_PANCHANGA |
+| `KOKA_KAUSHIKI_SANGAM_MELA` | Koka Kaushiki Sangam Mela | कोका कौशिकी सङ्गम मेला |  | NEPAL_PANCHANGA |
+| `KOKHAJA_BIYE` | Kokhaja Biye | कोखजा बिये |  | NEPAL_PANCHANGA |
 | `KUCHHI_BHOYE` | Kuchhi Bhoye | कुछिभ्वय् | Newar | NEPAL_PANCHANGA |
+| `KUKUR_TIHAR` | Kukur Tihar | कुकुर तिहार |  | NEPAL_PANCHANGA |
 | `KUMARA_JATRA` | Kumar Jatra | कुमार जात्रा | Newar | NEPAL_PANCHANGA |
+| `KUMAR_SHASHTHI` | Kumar Shashthi | कुमार षष्ठी |  | NEPAL_PANCHANGA |
 | `KURMA_JAYANTI` | Kurma Jayanti | कूर्म जयन्ती |  | NEPAL_PANCHANGA |
+| `KUSHE_AUNSI` | Kushe Aunsi | कुशे औँसी |  | NEPAL_PANCHANGA |
+| `KUSHMANDA_NAVAMI` | Kushmanda Navami | कूष्माण्ड नवमी |  | NEPAL_PANCHANGA |
+| `KWATI_PUNHI` | Kwati Punhi | क्वाति पुन्ही | Newar | NEPAL_PANCHANGA |
 | `LAI_CHARHE` | Lai Charhe | लै चह्रे | Newar | NEPAL_PANCHANGA |
 | `LAKSHMI_PUJA` | Laxmi Puja | लक्ष्मी पूजा |  | NEPAL |
 | `LAXMI_PRASAD_DEVKOTA_JAYANTI` | Laxmi Prasad Devkota Jayanti | महाकवि लक्ष्मीप्रसाद देवकोटा जयन्ती |  | NEPAL_PANCHANGA |
+| `MAGHA_SHRADDHA` | Magha Shraddha | मघा श्राद्ध |  | NEPAL_PANCHANGA |
+| `MAGH_SNAN_BEGINS` | Magh Snan Begins | माघ स्नान आरम्भ |  | NEPAL_PANCHANGA |
+| `MAGH_SNAN_ENDS` | Magh Snan Ends | माघ स्नान समाप्ति |  | NEPAL_PANCHANGA |
+| `MAHAVIR_JAYANTI` | Mahavir Jayanti | महावीर जयन्ती | Jain | NEPAL_PANCHANGA |
+| `MAHA_ASHTAMI` | Maha Ashtami | महाअष्टमी |  | NEPAL_PANCHANGA |
+| `MAHA_NAVAMI` | Maha Navami | महानवमी |  | NEPAL_PANCHANGA |
+| `MASTA_PURNIMA` | Masta Purnima | मष्ट पूर्णिमा |  | NEPAL_PANCHANGA |
+| `MATA_TIRTHA_AUNSI` | Mata Tirtha Aunsi | मातातीर्थ औँसी |  | NEPAL_PANCHANGA |
 | `MATSYANARAYANA_MELA` | Machhenarayan Mela | मच्छेनारायण मेला |  | NEPAL_PANCHANGA |
 | `MATSYA_JAYANTI` | Matsya Jayanti | मत्स्य जयन्ती |  | NEPAL_PANCHANGA |
 | `MHA_PUJA` | Mha Puja | म्हः पूजा | Newar | NEPAL_PANCHANGA |
+| `MOHINI_EKADASHI` | Mohini Ekadashi | मोहिनी एकादशी |  | NEPAL_PANCHANGA |
+| `MOKSHADA_EKADASHI` | Mokshada Ekadashi | मोक्षदा एकादशी |  | NEPAL_PANCHANGA |
+| `MOTIRAM_JAYANTI` | Motiram Jayanti | मोतीराम जयन्ती |  | NEPAL_PANCHANGA |
+| `MUKHA_ASHTAMI` | Mukha Ashtami | मुखः अष्टमी | Newar | NEPAL_PANCHANGA |
+| `MUSYADULI` | Musyaduli | मुस्याडुली |  | NEPAL_PANCHANGA |
+| `NAG_PANCHAMI` | Nag Panchami | नाग पञ्चमी |  | NEPAL_PANCHANGA |
+| `NAKWA_DISHI` | Nakwa Dishi | नक्वः दिसि | Newar | NEPAL_PANCHANGA |
+| `NALA_MACHHINDRANATH_RATH_JATRA` | Nala Machhindranath Rath Jatra | नाला मच्छिन्द्रनाथ रथ जात्रा | Newar | NEPAL_PANCHANGA |
+| `NARAK_CHATURDASHI` | Narak Chaturdashi | नरक चतुर्दशी |  | NEPAL_PANCHANGA |
 | `NAVAMI_SHRADDHA` | Navami Shraddha | नवमी श्राद्ध |  | NEPAL_PANCHANGA |
 | `NAVARATRA_ARAMBHA` | Ghatasthapana | घटस्थापना |  | NEPAL |
 | `NEPAL_SAMBAT_NEW_YEAR` | Nepal Sambat New Year | नेपाल संवत् नयाँ वर्ष | Newar | NEPAL_PANCHANGA |
 | `NIRJALA_EKADASHI` | Nirjala Ekadashi | निर्जला एकादशी |  | NEPAL_PANCHANGA |
 | `NUWAKOT_DUPCHESHWAR_MELA` | Nuwakot Dupcheshwar Mela | नुवाकोट दुप्चेश्वर मेला |  | NEPAL_PANCHANGA |
+| `PACHALI_BHAIRAV_JATRA` | Pachali Bhairav Jatra | पचली भैरव जात्रा | Newar | NEPAL_PANCHANGA |
 | `PAHAN_CHARHE` | Pahan Charhe | पाहाँ चह्रे | Newar | NEPAL_PANCHANGA |
 | `PANCHAMI_SHRADDHA` | Panchami Shraddha | पञ्चमी श्राद्ध |  | NEPAL_PANCHANGA |
+| `PANGA_VAISHNAVI_DEVI_JATRA` | Panga Vaishnavi Devi Jatra | पाँगा वैष्णवी देवी जात्रा | Newar | NEPAL_PANCHANGA |
+| `PAPANKUSHA_EKADASHI` | Papankusha Ekadashi | पापाङ्कुशा एकादशी |  | NEPAL_PANCHANGA |
+| `PAPMOCHANI_EKADASHI` | Papmochani Ekadashi | पापमोचनी एकादशी |  | NEPAL_PANCHANGA |
 | `PARASHURAMA_JAYANTI` | Parashuram Jayanti | परशुराम जयन्ती |  | NEPAL_PANCHANGA |
+| `PASHUPATINATH_DAMAN_PUSHPARPAN` | Pashupatinath Daman Pushparpan | पशुपतिनाथमा दमन पुष्पार्पण |  | NEPAL_PANCHANGA |
 | `PASHUPATI_HALESI_MELA` | Pashupatinath and Halesi Mahadev Mela | पशुपतिनाथ तथा हलेसी महादेव मेला |  | NEPAL_PANCHANGA |
 | `PAUSHA_PUTRADA_EKADASHI` | Paush Putrada Ekadashi | पौष पुत्रदा एकादशी |  | NEPAL_PANCHANGA |
+| `PHULPATI` | Phulpati | फूलपाती |  | NEPAL_PANCHANGA |
 | `PISHACHAMOCHANA_SHRADDHA` | Pishachmochan Shraddha | पिशाचमोचन श्राद्ध |  | NEPAL_PANCHANGA |
 | `PRATIPADA_SHRADDHA` | Pratipada Shraddha | प्रतिपदा श्राद्ध |  | NEPAL_PANCHANGA |
+| `PUNCHALI_BHUJA` | Punchali Bhuja | पुञ्चली भुजा |  | NEPAL_PANCHANGA |
+| `RADHASHTAMI` | Radhashtami | राधाष्टमी |  | NEPAL_PANCHANGA |
 | `RAKSHABANDHAN` | Raksha Bandhan | रक्षाबन्धन |  | NEPAL |
+| `RAMA_EKADASHI` | Rama Ekadashi | रमा एकादशी |  | NEPAL_PANCHANGA |
 | `RAMA_NAVAMI` | Ram Navami | राम नवमी |  | NEPAL |
+| `RAMESHWAR_PUJA` | Rameshwar Puja | रामेश्वर पूजा |  | NEPAL_PANCHANGA |
+| `RATO_MACHHINDRANATH_RATHAROHAN` | Rato Machhindranath Ratharohan | रातो मच्छिन्द्रनाथ रथारोहण | Newar | NEPAL_PANCHANGA |
+| `RATO_MACHHINDRANATH_RATH_JATRA_BEGINS` | Rato Machhindranath Rath Jatra Begins | रातो मच्छिन्द्रनाथ रथ जात्रा आरम्भ | Newar | NEPAL_PANCHANGA |
 | `RISHI_PANCHAMI` | Rishi Panchami | ऋषिपञ्चमी |  | NEPAL_PANCHANGA |
+| `ROPAI_JATRA` | Ropai Jatra | रोपाइँ जात्रा |  | NEPAL_PANCHANGA |
+| `SAFALA_EKADASHI` | Safala Ekadashi | सफला एकादशी |  | NEPAL_PANCHANGA |
+| `SAKWO_CHANGU_WONE` | Sakwo Changu Wone | सक्व चाँगु वने | Newar | NEPAL_PANCHANGA |
+| `SAMVATSARA_ARAMBHA` | Samvatsara Arambha | संवत्सरारम्भ |  | NEPAL_PANCHANGA |
+| `SANSKRIT_DAY` | Sanskrit Day | संस्कृत दिवस |  | NEPAL_PANCHANGA |
 | `SAPTAMI_SHRADDHA` | Saptami Shraddha | सप्तमी श्राद्ध |  | NEPAL_PANCHANGA |
+| `SATYAYUGADI` | Satyayugadi | सत्ययुगादि |  | NEPAL_PANCHANGA |
 | `SETO_MACHHINDRANATH_JATRA` | Seto Machhindranath Rath Jatra | सेतो मच्छिन्द्रनाथ रथ जात्रा | Newar | NEPAL_PANCHANGA |
+| `SETO_MACHHINDRANATH_SNAN` | Seto Machhindranath Snan | सेतो मच्छिन्द्रनाथ स्नान | Newar | NEPAL_PANCHANGA |
+| `SHADANANDA_JAYANTI` | Shadananda Jayanti | षडानन्द जयन्ती |  | NEPAL_PANCHANGA |
+| `SHALYA_DASHAMI` | Shalya Dashami | शल्य दशमी |  | NEPAL_PANCHANGA |
+| `SHANI_JAYANTI` | Shani Jayanti | शनि जयन्ती |  | NEPAL_PANCHANGA |
 | `SHANKARACHARYA_JAYANTI` | Shankaracharya Jayanti | शङ्कराचार्य जयन्ती |  | NEPAL_PANCHANGA |
 | `SHASHTHI_SHRADDHA` | Shashthi Shraddha | षष्ठी श्राद्ध |  | NEPAL_PANCHANGA |
+| `SHATTILA_EKADASHI` | Shattila Ekadashi | षट्तिला एकादशी |  | NEPAL_PANCHANGA |
 | `SHILA_CHARHE` | Sila Charhe | सिला चह्रे | Newar | NEPAL_PANCHANGA |
+| `SHITALASHTAMI` | Shitalashtami | शीतलाष्टमी |  | NEPAL_PANCHANGA |
 | `SHIVARATRI` | Maha Shivaratri | महाशिवरात्रि |  | NEPAL |
+| `SHIVA_BAIKUNTHA_CHATURDASHI` | Shiva Baikuntha Chaturdashi | शिव बैकुण्ठ चतुर्दशी |  | NEPAL_PANCHANGA |
+| `SHRAWAN_PUTRADA_EKADASHI` | Shrawan Putrada Ekadashi | श्रावण पुत्रदा एकादशी |  | NEPAL_PANCHANGA |
+| `SHREEGHA_JATRA` | Shreegha Jatra | श्रीघः जात्रा | Newar | NEPAL_PANCHANGA |
+| `SHREE_BALLABH_JAYANTI` | Shree Ballabh Jayanti | श्री बल्लभ जयन्ती |  | NEPAL_PANCHANGA |
+| `SILANGA_MAHARUDRA_KOTIHOM_MELA` | Silanga Maharudra Kotihom Mela | सिलङ्गा महारुद्र कोटिहोम मेला |  | NEPAL_PANCHANGA |
 | `SITA_NAVAMI` | Sita Jayanti | सीता जयन्ती |  | NEPAL_PANCHANGA |
+| `SITHI_NAKHA` | Sithi Nakha | सिथि नखः | Newar | NEPAL_PANCHANGA |
+| `SKANDA_SHASHTHI` | Skanda Shashthi | स्कन्द षष्ठी |  | NEPAL_PANCHANGA |
 | `SONAM_LHOSAR` | Sonam Lhosar | सोनम ल्होसार | Tamang | NEPAL_PANCHANGA |
 | `SORHA_SHRADDHA_ARAMBHA` | Sorha Shraddha Begins | सोह्र श्राद्ध आरम्भ |  | NEPAL_PANCHANGA |
+| `SURYA_PUJA` | Surya Puja | सूर्य पूजा |  | NEPAL_PANCHANGA |
+| `SURYA_SHASHTHI` | Surya Shashthi | सूर्य षष्ठी |  | NEPAL_PANCHANGA |
+| `SWASTHANI_VRAT_BEGINS` | Swasthani Vrat Begins | स्वस्थानी व्रत आरम्भ |  | NEPAL_PANCHANGA |
+| `SWASTHANI_VRAT_ENDS` | Swasthani Vrat Ends | स्वस्थानी व्रत समाप्ति |  | NEPAL_PANCHANGA |
+| `SWONTI_CHARHE` | Swonti Charhe | स्वन्ति चह्रे | Newar | NEPAL_PANCHANGA |
+| `SYAKWA_TYAKWA` | Syakwa Tyakwa | स्याक्वत्याक्व | Newar | NEPAL_PANCHANGA |
+| `THANKOT_MAHALAXMI_JATRA` | Thankot Mahalaxmi Jatra | थानकोट महालक्ष्मी जात्रा | Newar | NEPAL_PANCHANGA |
 | `TILAKUNDA_CHATURTHI` | Tilkunda Chaturthi | तिलकुन्द चतुर्थी |  | NEPAL_PANCHANGA |
+| `TOL_LHOSAR` | Tol Lhosar | तोल ल्होसार |  | NEPAL_PANCHANGA |
 | `TRAYODASHI_SHRADDHA` | Trayodashi Shraddha | त्रयोदशी श्राद्ध |  | NEPAL_PANCHANGA |
+| `TRETAYUGADI` | Tretayugadi | त्रेतायुगादि |  | NEPAL_PANCHANGA |
 | `TRITIYA_SHRADDHA` | Tritiya Shraddha | तृतीया श्राद्ध |  | NEPAL_PANCHANGA |
 | `TULASI_VIVAHA` | Tulsi Vivah | तुलसी विवाह |  | NEPAL_PANCHANGA |
+| `TULSIDAS_JAYANTI` | Tulsidas Jayanti | तुलसीदास जयन्ती |  | NEPAL_PANCHANGA |
+| `UBHAULI` | Ubhauli | उभौली | Kirat | NEPAL_PANCHANGA |
+| `UDHAULI` | Udhauli | उँधौली | Kirat | NEPAL_PANCHANGA |
 | `UPAKARMA_MADHYANDINA` | Janai Purnima | जनै पूर्णिमा |  | NEPAL |
 | `UPANGA_LALITA_VRATA` | Upanga Lalita Vrat | उपाङ्ग ललिता व्रत |  | NEPAL_PANCHANGA |
+| `UTPATTIKA_EKADASHI` | Utpattika Ekadashi | उत्पत्तिका एकादशी |  | NEPAL_PANCHANGA |
 | `VAISHAKHA_SNANA_ARAMBHA` | Baisakh Snan Begins | वैशाख स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `VAMANA_DWADASHI` | Vamana Dwadashi | वामन द्वादशी |  | NEPAL_PANCHANGA |
+| `VAYU_ASHTAMI` | Vayu Ashtami | वायु अष्टमी |  | NEPAL_PANCHANGA |
 | `VIJAYA_DASHAMI` | Bijaya Dashami | विजया दशमी |  | NEPAL |
 | `VIJAYA_EKADASHI` | Vijaya Ekadashi | विजया एकादशी |  | NEPAL_PANCHANGA |
+| `VIVAH_PANCHAMI` | Vivah Panchami | विवाह पञ्चमी |  | NEPAL_PANCHANGA |
+| `WATU_MAGH_JATRA` | Watu Magh Jatra | वटु माघ जात्रा | Newar | NEPAL_PANCHANGA |
+| `YALA_PANCHADAN` | Yala Panchadan | यल पञ्चदान | Newar | NEPAL_PANCHANGA |
 | `YAMAPANCHAKA_ARAMBHA` | Yamapanchak Begins | यमपञ्चक आरम्भ |  | NEPAL_PANCHANGA |
 | `YAMA_DWITIYA` | Bhai Tika | भाइटीका |  | NEPAL |
+| `YOMARI_PUNHI` | Yomari Punhi | योमरी पुन्ही | Newar | NEPAL_PANCHANGA |
 
-### Rule, not yet shipped (171)
+### Rule, not yet shipped (11)
 
-The keys are proposed: each is a tithi in a month that the consumer's source reproduces at sunrise. A pack would carry each as an udaya rule after the back-test §10 of `festival-rules.md` gives the fitted rules.
+Each is a tithi in a month that the consumer's source gives, and each note says why no pack carries it: the committee does not print it, or prints another day, or its source's rule is not one rule. The other 160 of the 171 the source reproduces at sunrise are shipped, each gated by the committee's print of both years (`festival-rules.md` §10.2).
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
-| `ACHALA_SAPTAMI` | Achala Saptami | अचला सप्तमी |  |  |
-| `ADUKHA_NAVAMI` | Adukha Navami | अदुःख नवमी | Newar |  |
-| `AKHILBALI_PURTI` | Akhilbali Purti | अखिलबलि पूर्ति |  |  |
-| `AKSHAYA_TRITIYA` | Akshaya Tritiya | अक्षय तृतीया |  |  |
-| `AMALAKI_EKADASHI` | Amalaki Ekadashi | आमलकी एकादशी |  |  |
-| `ANANTA_CHATURDASHI` | Ananta Chaturdashi | अनन्त चतुर्दशी |  |  |
-| `ANNAPURNA_JATRA` | Annapurna Jatra | अन्नपूर्ण जात्रा |  |  |
-| `APARA_EKADASHI` | Apara Ekadashi | अपरा एकादशी |  |  |
-| `ARGHA_SARAI_PARVA` | Argha Sarai Parva | अर्घा सराय पर्व |  |  |
-| `ARYAGHAT_MADHAV_NARAYAN_MELA` | Aryaghat Madhav Narayan Mela | आर्यघाट माधवनारायण मेला |  |  |
-| `ARYA_DIWAS` | Arya Diwas | आर्य दिवस |  |  |
-| `BAISAKH_SNAN_ENDS` | Baisakh Snan Ends | वैशाख स्नान समाप्ति |  |  |
-| `BAKHUMADA` | Bakhumada | बखुमद |  |  |
-| `BALAJU_BAISDHARA_MELA` | Balaju Baisdhara Mela | बालाजु बाइसधारा मेला |  |  |
-| `BALAMBU_MAHALAXMI_JATRA` | Balambu Mahalaxmi Jatra | बलम्बु महालक्ष्मी जात्रा | Newar |  |
-| `BALA_CHATURDASHI_BALA` | Bala Chaturdashi | बाला चतुर्दशी |  |  |
-| `BASANTA_PANCHAMI` | Basanta Panchami | वसन्त पञ्चमी |  |  |
-| `BHAKTAPUR_CHANDI_BHAGAWATI_JATRA` | Bhaktapur Chandi Bhagawati Jatra | भक्तपुर चण्डी भगवती जात्रा | Newar |  |
-| `BHAKTAPUR_SIDDHA_POKHARI_MELA` | Bhaktapur Siddha Pokhari Mela | भक्तपुर सिद्धपोखरी मेला |  |  |
-| `BHAL_BHAL_ASHTAMI` | Bhal Bhal Ashtami | भलभल अष्टमी | Newar |  |
-| `BHISHMASHTAMI` | Bhishmashtami | भीष्माष्टमी |  |  |
-| `BHISHMA_DWADASHI` | Bhishma Dwadashi | भीष्म द्वादशी |  |  |
-| `BILVA_NIMANTRAN` | Bilva Nimantran | बिल्व निमन्त्रण |  |  |
-| `BIRUDA_PANCHAMI` | Biruda Panchami | बिरुडा पञ्चमी |  |  |
-| `BISHALNAGAR_VAISHNAVI_DEVI_JATRA` | Bishalnagar Vaishnavi Devi Jatra | विशालनगर वैष्णवी देवी जात्रा | Newar |  |
-| `BUDDHAVATAR` | Buddhavatar | बुद्धावतार |  |  |
-| `BUDDHA_JAYANTI` | Buddha Jayanti | बुद्ध जयन्ती | Buddhist |  |
-| `CHAALA` | Chaala | चाँल |  |  |
-| `CHANDI_PURNIMA` | Chandi Purnima | चण्डी पूर्णिमा |  |  |
-| `CHANDRA_SHASHTHI` | Chandra Shashthi | चन्द्र षष्ठी |  |  |
-| `CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN` | Changunarayan Akhanda Deep Darshan | चाँगुनारायण अखण्ड दीप दर्शन |  |  |
-| `CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA` | Changunarayan Chhinnamasta Kileshwor Mulrath Jatra | चाँगुनारायण छिन्नमस्ता किलेश्वर मूलरथ जात्रा | Newar |  |
-| `CHANGUNARAYAN_KALASH_JATRA` | Changunarayan Kalash Jatra | चाँगुनारायण कलश जात्रा | Newar |  |
-| `CHANGU_MADHAV_NARAYAN_MELA` | Changu Madhav Narayan Mela | चाँगु माधवनारायण मेला |  |  |
-| `CHATURMAS_BEGINS` | Chaturmas Begins | चतुर्मास आरम्भ |  |  |
-| `CHATURMAS_ENDS` | Chaturmas Ends | चतुर्मास समाप्ति |  |  |
-| `CHHATH` | Chhath | छठ पर्व | Maithil and Bhojpuri |  |
-| `CHIR_SWAYEGU` | Chir Swayegu | चीर स्वायेगु | Newar |  |
-| `CHONAM_PARVA` | Chonam Parva | चोनाम पर्व |  |  |
-| `DAKSHINAMURTI_PUJA` | Dakshinamurti Puja | दक्षिणामूर्ति पूजा |  |  |
-| `DAR_KHANE_DIN` | Dar Khane Din | दर खाने दिन |  |  |
-| `DEOPATAN_GANGAMAI_RATH_JATRA` | Deopatan Gangamai Rath Jatra | देवपाटन गङ्गामाई रथ जात्रा | Newar |  |
-| `DEOPATAN_TRISHUL_JATRA` | Deopatan Trishul Jatra | देवपाटन त्रिशूल जात्रा | Newar |  |
-| `DEVI_VISARJAN` | Devi Visarjan | देवी विसर्जन |  |  |
-| `DHANTERAS` | Dhanteras | धनतेरस |  |  |
-| `DHANYA_PURNIMA` | Dhanya Purnima | धान्य पूर्णिमा |  |  |
-| `DHAPAKHEL_NAGDAHA` | Dhapakhel Nagdaha | धापाखेल नागदह |  |  |
-| `DILLA_PUNHI` | Dilla Punhi | दिल्ला पुन्ही | Newar |  |
-| `DRONA_NAVAMI` | Drona Navami | द्रोण नवमी |  |  |
-| `FULKHARKA_GANGAJAMUNA_MELA` | Fulkharka Gangajamuna Mela | फूलखर्क गङ्गाजमुना मेला |  |  |
-| `GAI_JATRA` | Gai Jatra | गाईजात्रा | Newar |  |
-| `GANGA_PUJA` | Ganga Puja | गङ्गा पूजा |  |  |
-| `GATILA` | Gatila | गातिला |  |  |
-| `GAURI_VRAT` | Gauri Vrat | गौरी व्रत |  |  |
-| `GAYA_MAUNI_AUNSI` | Gaya Mauni Aunsi | गया मौनी औँसी |  |  |
-| `GITA_JAYANTI` | Gita Jayanti | गीता जयन्ती |  |  |
-| `GOPASHTAMI` | Gopashtami | गोपाष्टमी |  |  |
-| `GORAKHNATH_JAYANTI` | Gorakhnath Jayanti | गोरखनाथ जयन्ती |  |  |
-| `GOVARDHAN_PUJA` | Govardhan Puja | गोवर्धन पूजा |  |  |
-| `GOVINDA_DWADASHI` | Govinda Dwadashi | गोविन्द द्वादशी |  |  |
-| `GUGA_NAVAMI` | Guga Navami | गुगा नवमी |  |  |
-| `GUHYESHWARI_JATRA` | Guhyeshwari Jatra | गुह्येश्वरी जात्रा | Newar |  |
-| `GUNLA_BEGINS` | Gunla Begins | गुँला पर्व आरम्भ | Newar |  |
-| `GUNLA_ENDS` | Gunla Ends | गुँला पर्व समाप्ति | Newar |  |
-| `GURU_NANAK_JAYANTI` | Guru Nanak Jayanti | गुरु नानक जयन्ती | Sikh |  |
-| `GURU_PADMASAMBHAVA_JAYANTI` | Guru Padmasambhava Jayanti | गुरु पद्मसम्भव जयन्ती | Buddhist |  |
-| `GURU_PURNIMA` | Guru Purnima | गुरु पूर्णिमा |  |  |
-| `HALI_TIHAR` | Hali Tihar | हलि तिहार |  |  |
-| `HANUMAN_JAYANTI` | Hanuman Jayanti | हनुमान जयन्ती |  |  |
-| `HARIPARIVARTINI_EKADASHI` | Hariparivartini Ekadashi | हरिपरिवर्तिनी एकादशी |  |  |
-| `HARISHAYANI_EKADASHI` | Harishayani Ekadashi | हरिशयनी एकादशी |  |  |
-| `HETAUDA_KUSHMANDA_SAROBAR_MELA` | Hetauda Kushmanda Sarobar Mela | हेटौडा कुष्माण्ड सरोवर मेला |  |  |
-| `INDIRA_EKADASHI` | Indira Ekadashi | इन्दिरा एकादशी |  |  |
-| `INDRADAHA_SNAN` | Indradaha Snan | इन्द्रदह स्नान | Newar |  |
-| `INDRADHWAJA_UTTHAN` | Indradhwaja Utthan | इन्द्रध्वज उत्थान | Newar |  |
-| `INDRA_JATRA` | Indra Jatra | इन्द्रजात्रा | Newar |  |
-| `JAGANNATH_RATH_JATRA` | Jagannath Rath Jatra | जगन्नाथ रथ जात्रा |  |  |
-| `JAMARE_AUNSI` | Jamare Aunsi | जमरे औँसी |  |  |
-| `JITIYA` | Jitiya | जितिया पर्व | Tharu and Maithil |  |
-| `JYAPU_DIWAS` | Jyapu Diwas | ज्यापु दिवस | Newar |  |
-| `JYA_PUNHI` | Jya Punhi | ज्या पुन्ही | Newar |  |
-| `KABIR_JAYANTI` | Kabir Jayanti | कबीर जयन्ती |  |  |
-| `KAG_TIHAR` | Kag Tihar | काग तिहार |  |  |
-| `KAMIKA_EKADASHI` | Kamika Ekadashi | कामिका एकादशी |  |  |
-| `KARTIK_SNAN_BEGINS` | Kartik Snan Begins | कार्तिक स्नान आरम्भ |  |  |
-| `KARTIK_SNAN_ENDS` | Kartik Snan Ends | कार्तिक स्नान समाप्ति |  |  |
-| `KATIN_PUNHI` | Katin Punhi | कतिं पुन्ही | Newar |  |
-| `KAYA_ASHTAMI` | Kaya Ashtami | कायः अष्टमी | Newar |  |
-| `KHADGA_JATRA` | Khadga Jatra | खड्ग जात्रा | Newar |  |
-| `KHANCHI_SARAI_PARVA` | Khanchi Sarai Parva | खाँचीमा सराय पर्व |  |  |
-| `KIRTIPUR_INDRAYANI_JATRA` | Kirtipur Indrayani Jatra | कीर्तिपुर इन्द्रायणी जात्रा | Newar |  |
-| `KOKA_KAUSHIKI_SANGAM_MELA` | Koka Kaushiki Sangam Mela | कोका कौशिकी सङ्गम मेला |  |  |
-| `KOKHAJA_BIYE` | Kokhaja Biye | कोखजा बिये |  |  |
-| `KUKUR_TIHAR` | Kukur Tihar | कुकुर तिहार |  |  |
-| `KUMAR_SHASHTHI` | Kumar Shashthi | कुमार षष्ठी |  |  |
-| `KUSHE_AUNSI` | Kushe Aunsi | कुशे औँसी |  |  |
-| `KUSHMANDA_NAVAMI` | Kushmanda Navami | कूष्माण्ड नवमी |  |  |
-| `KWATI_PUNHI` | Kwati Punhi | क्वाति पुन्ही | Newar |  |
-| `MADHAV_NARAYAN_MAHOTSAV` | Madhav Narayan Mahotsav | माधवनारायण महोत्सव |  |  |
-| `MAGHA_SHRADDHA` | Magha Shraddha | मघा श्राद्ध |  |  |
-| `MAGH_SNAN_BEGINS` | Magh Snan Begins | माघ स्नान आरम्भ |  |  |
-| `MAGH_SNAN_ENDS` | Magh Snan Ends | माघ स्नान समाप्ति |  |  |
-| `MAHAVIR_JAYANTI` | Mahavir Jayanti | महावीर जयन्ती | Jain |  |
-| `MAHA_ASHTAMI` | Maha Ashtami | महाअष्टमी |  |  |
-| `MAHA_NAVAMI` | Maha Navami | महानवमी |  |  |
-| `MASTA_PURNIMA` | Masta Purnima | मष्ट पूर्णिमा |  |  |
-| `MATA_TIRTHA_AUNSI` | Mata Tirtha Aunsi | मातातीर्थ औँसी |  |  |
-| `MATINA_PARU` | Matina Paru | मतिना पारु | Newar |  |
-| `MOHINI_EKADASHI` | Mohini Ekadashi | मोहिनी एकादशी |  |  |
-| `MOKSHADA_EKADASHI` | Mokshada Ekadashi | मोक्षदा एकादशी |  |  |
-| `MOTIRAM_JAYANTI` | Motiram Jayanti | मोतीराम जयन्ती |  |  |
-| `MUKHA_ASHTAMI` | Mukha Ashtami | मुखः अष्टमी | Newar |  |
-| `MUSYADULI` | Musyaduli | मुस्याडुली |  |  |
-| `NAG_PANCHAMI` | Nag Panchami | नाग पञ्चमी |  |  |
-| `NAKWA_DISHI` | Nakwa Dishi | नक्वः दिसि | Newar |  |
-| `NALA_MACHHINDRANATH_RATH_JATRA` | Nala Machhindranath Rath Jatra | नाला मच्छिन्द्रनाथ रथ जात्रा | Newar |  |
-| `NARAK_CHATURDASHI` | Narak Chaturdashi | नरक चतुर्दशी |  |  |
-| `NEPALI_ARMY_DAY` | Nepali Army Day | नेपाली सेना दिवस |  |  |
-| `PACHALI_BHAIRAV_JATRA` | Pachali Bhairav Jatra | पचली भैरव जात्रा | Newar |  |
-| `PANGA_VAISHNAVI_DEVI_JATRA` | Panga Vaishnavi Devi Jatra | पाँगा वैष्णवी देवी जात्रा | Newar |  |
-| `PAPANKUSHA_EKADASHI` | Papankusha Ekadashi | पापाङ्कुशा एकादशी |  |  |
-| `PAPMOCHANI_EKADASHI` | Papmochani Ekadashi | पापमोचनी एकादशी |  |  |
-| `PASHUPATINATH_DAMAN_PUSHPARPAN` | Pashupatinath Daman Pushparpan | पशुपतिनाथमा दमन पुष्पार्पण |  |  |
-| `PHULPATI` | Phulpati | फूलपाती |  |  |
-| `PUNCHALI_BHUJA` | Punchali Bhuja | पुञ्चली भुजा |  |  |
-| `RADHASHTAMI` | Radhashtami | राधाष्टमी |  |  |
-| `RAMA_EKADASHI` | Rama Ekadashi | रमा एकादशी |  |  |
-| `RAMESHWAR_PUJA` | Rameshwar Puja | रामेश्वर पूजा |  |  |
-| `RATO_MACHHINDRANATH_RATHAROHAN` | Rato Machhindranath Ratharohan | रातो मच्छिन्द्रनाथ रथारोहण | Newar |  |
-| `RATO_MACHHINDRANATH_RATH_JATRA_BEGINS` | Rato Machhindranath Rath Jatra Begins | रातो मच्छिन्द्रनाथ रथ जात्रा आरम्भ | Newar |  |
-| `ROPAI_JATRA` | Ropai Jatra | रोपाइँ जात्रा |  |  |
-| `SAFALA_EKADASHI` | Safala Ekadashi | सफला एकादशी |  |  |
-| `SAKWO_CHANGU_WONE` | Sakwo Changu Wone | सक्व चाँगु वने | Newar |  |
-| `SAMVATSARA_ARAMBHA` | Samvatsara Arambha | संवत्सरारम्भ |  |  |
-| `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar |  |
-| `SANSKRIT_DAY` | Sanskrit Day | संस्कृत दिवस |  |  |
-| `SATYAYUGADI` | Satyayugadi | सत्ययुगादि |  |  |
-| `SETO_MACHHINDRANATH_SNAN` | Seto Machhindranath Snan | सेतो मच्छिन्द्रनाथ स्नान | Newar |  |
-| `SHADANANDA_JAYANTI` | Shadananda Jayanti | षडानन्द जयन्ती |  |  |
-| `SHALYA_DASHAMI` | Shalya Dashami | शल्य दशमी |  |  |
-| `SHANI_JAYANTI` | Shani Jayanti | शनि जयन्ती |  |  |
-| `SHATTILA_EKADASHI` | Shattila Ekadashi | षट्तिला एकादशी |  |  |
-| `SHITALASHTAMI` | Shitalashtami | शीतलाष्टमी |  |  |
-| `SHIVA_BAIKUNTHA_CHATURDASHI` | Shiva Baikuntha Chaturdashi | शिव बैकुण्ठ चतुर्दशी |  |  |
-| `SHRAWAN_PUTRADA_EKADASHI` | Shrawan Putrada Ekadashi | श्रावण पुत्रदा एकादशी |  |  |
-| `SHREEGHA_JATRA` | Shreegha Jatra | श्रीघः जात्रा | Newar |  |
-| `SHREE_BALLABH_JAYANTI` | Shree Ballabh Jayanti | श्री बल्लभ जयन्ती |  |  |
-| `SILANGA_MAHARUDRA_KOTIHOM_MELA` | Silanga Maharudra Kotihom Mela | सिलङ्गा महारुद्र कोटिहोम मेला |  |  |
-| `SITHI_NAKHA` | Sithi Nakha | सिथि नखः | Newar |  |
-| `SKANDA_SHASHTHI` | Skanda Shashthi | स्कन्द षष्ठी |  |  |
-| `SURYA_PUJA` | Surya Puja | सूर्य पूजा |  |  |
-| `SURYA_SHASHTHI` | Surya Shashthi | सूर्य षष्ठी |  |  |
-| `SWASTHANI_VRAT_BEGINS` | Swasthani Vrat Begins | स्वस्थानी व्रत आरम्भ |  |  |
-| `SWASTHANI_VRAT_ENDS` | Swasthani Vrat Ends | स्वस्थानी व्रत समाप्ति |  |  |
-| `SWONTI_CHARHE` | Swonti Charhe | स्वन्ति चह्रे | Newar |  |
-| `SYAKWA_TYAKWA` | Syakwa Tyakwa | स्याक्वत्याक्व | Newar |  |
-| `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali |  |
-| `THANKOT_MAHALAXMI_JATRA` | Thankot Mahalaxmi Jatra | थानकोट महालक्ष्मी जात्रा | Newar |  |
-| `TOL_LHOSAR` | Tol Lhosar | तोल ल्होसार |  |  |
-| `TRETAYUGADI` | Tretayugadi | त्रेतायुगादि |  |  |
-| `TULSIDAS_JAYANTI` | Tulsidas Jayanti | तुलसीदास जयन्ती |  |  |
-| `UBHAULI` | Ubhauli | उभौली | Kirat |  |
-| `UDHAULI` | Udhauli | उँधौली | Kirat |  |
-| `UTPATTIKA_EKADASHI` | Utpattika Ekadashi | उत्पत्तिका एकादशी |  |  |
-| `VARUTHINI_EKADASHI` | Varuthini Ekadashi | वरुथिनी एकादशी |  |  |
-| `VAYU_ASHTAMI` | Vayu Ashtami | वायु अष्टमी |  |  |
-| `VIVAH_PANCHAMI` | Vivah Panchami | विवाह पञ्चमी |  |  |
-| `WATU_MAGH_JATRA` | Watu Magh Jatra | वटु माघ जात्रा | Newar |  |
-| `YALA_PANCHADAN` | Yala Panchadan | यल पञ्चदान | Newar |  |
-| `YOGINI_EKADASHI` | Yogini Ekadashi | योगिनी एकादशी |  |  |
-| `YOMARI_PUNHI` | Yomari Punhi | योमरी पुन्ही | Newar |  |
+| `ARYA_DIWAS` | Arya Diwas | आर्य दिवस |  | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
+| `BIRUDA_PANCHAMI` | Biruda Panchami | बिरुडा पञ्चमी |  | VS 2082 prints Bhadrapada's bright 5th (28 August 2025), VS 2083 Shravana's dark 5th (1 September 2026), as Gaura saptami moves (C608, C686) |
+| `JAMARE_AUNSI` | Jamare Aunsi | जमरे औँसी |  | one verified day; VS 2083 does not print it on the sunrise rule's day, 10 October 2026 (C685) |
+| `JYAPU_DIWAS` | Jyapu Diwas | ज्यापु दिवस | Newar | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
+| `MADHAV_NARAYAN_MAHOTSAV` | Madhav Narayan Mahotsav | माधवनारायण महोत्सव |  | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
+| `MATINA_PARU` | Matina Paru | मतिना पारु | Newar | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
+| `NEPALI_ARMY_DAY` | Nepali Army Day | नेपाली सेना दिवस |  | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
+| `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689) |
+| `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687) |
+| `VARUTHINI_EKADASHI` | Varuthini Ekadashi | वरुथिनी एकादशी |  | its source gives the 11th or the 12th: the named ekadashi's form (P1-6, C688) |
+| `YOGINI_EKADASHI` | Yogini Ekadashi | योगिनी एकादशी |  | its source gives the 11th or the 12th: the named ekadashi's form (P1-6, C688) |
 
 ### Rule, needs a form (43)
 

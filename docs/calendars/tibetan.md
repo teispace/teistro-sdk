@@ -76,10 +76,12 @@ Two more Lhosars the committee prints are not Tibetan dates. Sonam Lhosar
 8 January 2027) are the first of the bright fortnight of the Hindu months
 Magha and Paush: VS 2083's adhika Jyeshtha moves them a lunation against
 the Tibetan months, so Tol Lhosar is Tibetan 11/1 in one year and 12/1 in
-the next. Sonam Lhosar ships as a lunar rule in `NEPAL_PANCHANGA`, and
-gives all 14 of the consumer's verified days, 2014 to 2027. Tol
-Lhosar does not yet, because its 2025 day breaks the sunrise rule: the new
-moon ends after sunrise that morning.
+the next. Both ship as lunar rules at sunrise in `NEPAL_PANCHANGA`.
+Sonam Lhosar gives all 14 of the consumer's verified days, 2014 to 2027,
+and Tol Lhosar both printed days under the committee's sky. Over the
+modern sky Tol Lhosar's 2025 day moves to 21 December, because there Paush's
+new moon ends after sunrise on the 20th. An earlier note here read that as
+the sunrise rule failing. It was the sky.
 
 ## The design
 

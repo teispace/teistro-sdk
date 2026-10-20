@@ -167,8 +167,8 @@ fn push_canonical(value: &Value, digits: Digits, out: &mut String) {
         Value::Null => out.push_str("null"),
         Value::Bool(true) => out.push_str("true"),
         Value::Bool(false) => out.push_str("false"),
-        Value::Number(number) => out.push_str(&number_form(number, digits)),
-        Value::String(text) => out.push_str(&string_form(text)),
+        Value::Number(number) => push_number(number, digits, out),
+        Value::String(text) => push_string(text, out),
         Value::Array(items) => {
             out.push('[');
             for (index, item) in items.iter().enumerate() {
@@ -189,7 +189,7 @@ fn push_canonical(value: &Value, digits: Digits, out: &mut String) {
                 if index > 0 {
                     out.push(',');
                 }
-                out.push_str(&string_form(key));
+                push_string(key, out);
                 out.push(':');
                 if let Some(nested) = fields.get(key) {
                     push_canonical(nested, digits, out);
@@ -202,16 +202,18 @@ fn push_canonical(value: &Value, digits: Digits, out: &mut String) {
 
 /// A number in the grammar: a decimal, never an exponent, trailing zeros
 /// trimmed, and no negative nought.
-fn number_form(number: &serde_json::Number, digits: Digits) -> String {
+fn push_number(number: &serde_json::Number, digits: Digits, out: &mut String) {
     if let Some(integer) = number.as_i64() {
-        return integer.to_string();
+        let _ = write!(out, "{integer}");
+    } else if let Some(integer) = number.as_u64() {
+        let _ = write!(out, "{integer}");
+    } else {
+        out.push_str(
+            &number
+                .as_f64()
+                .map_or_else(|| String::from("0"), |double| decimal(double, digits)),
+        );
     }
-    if let Some(integer) = number.as_u64() {
-        return integer.to_string();
-    }
-    number
-        .as_f64()
-        .map_or_else(|| String::from("0"), |double| decimal(double, digits))
 }
 
 /// A double as a plain decimal.
@@ -245,10 +247,17 @@ pub fn decimal(value: f64, digits: Digits) -> String {
 }
 
 /// A string with the escapes JSON requires and no others, so two writers
-/// agree.
-fn string_form(text: &str) -> String {
-    let mut out = String::with_capacity(text.len() + 2);
+/// agree. Most strings need none, and are copied whole.
+fn push_string(text: &str, out: &mut String) {
     out.push('"');
+    if !text
+        .bytes()
+        .any(|byte| byte < b' ' || byte == b'"' || byte == b'\\')
+    {
+        out.push_str(text);
+        out.push('"');
+        return;
+    }
     for character in text.chars() {
         match character {
             '"' => out.push_str("\\\""),
@@ -263,7 +272,6 @@ fn string_form(text: &str) -> String {
         }
     }
     out.push('"');
-    out
 }
 
 /// A semantic version.
@@ -897,6 +905,21 @@ mod tests {
         assert_eq!(back.provenance.cache_key(), (hash, hash, 1));
         assert_eq!(envelope.map(|v| v * 2).value, 84);
         assert!(json.contains("\"kind\":\"DIVERGENT\""));
+    }
+
+    #[test]
+    fn canonical_json_escapes_what_json_requires_and_nothing_else() {
+        let text = "plain नेपाल";
+        assert_eq!(canonical_json(text), "\"plain नेपाल\"");
+        let escaped = "a\"b\\c\nd\re\tf\u{1}g/h";
+        assert_eq!(
+            canonical_json(escaped),
+            "\"a\\\"b\\\\c\\nd\\re\\tf\\u0001g/h\""
+        );
+        assert_eq!(
+            canonical_json(&(-3_i64, u64::MAX, 0.5_f64, -0.0_f64)),
+            "[-3,18446744073709551615,0.5,0]"
+        );
     }
 
     #[test]

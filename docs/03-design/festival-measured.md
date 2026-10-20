@@ -466,11 +466,325 @@ measures the fit and not a text (C600).
 | 2083 | CHANDRODAYA | 8 Feb | p. 23: चन्द्रोदय | 8 Feb | 8 Feb |
 | 2083 | CHANDRODAYA | 9 Mar | p. 25: चन्द्रोदय | 9 Mar | 9 Mar |
 | 2083 | CHANDRODAYA | 8 Apr | p. 27: चन्द्रोदय | 8 Apr | 8 Apr |
+| 2082 | SAMVATSARA_ARAMBHA | 19 Mar | p. 24: वत्सरारम्भ | 19 Mar | 19 Mar |
+| 2083 | SAMVATSARA_ARAMBHA | 7 Apr | p. 27: वत्सरारम्भ | 7 Apr | 7 Apr |
+| 2082 | GAURI_VRAT | 21 Mar | p. 25: गौरीव्रत | 21 Mar | 21 Mar |
+| 2083 | GAURI_VRAT | 9 Apr | p. 27: गौरीव्रत | 9 Apr | 9 Apr |
+| 2082 | MAHAVIR_JAYANTI | 31 Mar | p. 25: महावीरजयन्ती | 31 Mar | 31 Mar |
+| 2082 | BALAJU_BAISDHARA_MELA | 2 Apr | p. 25: बालाजु बाइसधारा मेला | 2 Apr | 2 Apr |
+| 2082 | HANUMAN_JAYANTI | 2 Apr | p. 25: हनुमानजयन्ती | 2 Apr | 2 Apr |
+| 2082 | BISHALNAGAR_VAISHNAVI_DEVI_JATRA | 3 Apr | p. 26: विशालनगरमा वैष्णवीदेवीयात्रा | 3 Apr | 3 Apr |
+| 2082 | CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA | 27 Apr | p. 2: चाँगुनारायण छिन्नमस्ता कीलेश्वर मूलरथयात्रा | 27 Apr | 27 Apr |
+| 2083 | CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA | 17 Apr | p. 2: चाँगुनारायण छिन्नमस्ता कीलेश्वर मूलरथयात्रा | 17 Apr | 17 Apr |
+| 2082 | MATA_TIRTHA_AUNSI | 27 Apr | p. 2: मातातीर्थस्नान | 27 Apr | 27 Apr |
+| 2083 | MATA_TIRTHA_AUNSI | 17 Apr | p. 2: मातातीर्थस्नान | 17 Apr | 17 Apr |
+| 2082 | RATO_MACHHINDRANATH_RATHAROHAN | 28 Apr | p. 3: ल.पु.मत्स्येन्द्रनाथ रथारोहण | 28 Apr | 28 Apr |
+| 2083 | RATO_MACHHINDRANATH_RATHAROHAN | 18 Apr | p. 3: ल.पु.मत्स्येन्द्रनाथ रथारोहण | 18 Apr | 18 Apr |
+| 2082 | AKSHAYA_TRITIYA | 30 Apr | p. 3: अक्षयतृतीया | 30 Apr | 30 Apr |
+| 2083 | AKSHAYA_TRITIYA | 20 Apr | p. 3: अक्षयतृतीया | 20 Apr | 20 Apr |
+| 2082 | TRETAYUGADI | 30 Apr | p. 3: त्रेतायुगादि | 30 Apr | 30 Apr |
+| 2083 | TRETAYUGADI | 20 Apr | p. 3: त्रेतायुगादि | 20 Apr | 20 Apr |
+| 2082 | RATO_MACHHINDRANATH_RATH_JATRA_BEGINS | 1 May | p. 3: ल.पु.श्रीमत्स्येन्द्रनाथ रथयात्रारम्भ | 1 May | 1 May |
+| 2083 | RATO_MACHHINDRANATH_RATH_JATRA_BEGINS | 21 Apr | p. 3: ल.पु.श्रीमत्स्येन्द्रनाथ रथयात्रारम्भ | 21 Apr | 20 Apr ✗ |
+| 2082 | PASHUPATINATH_DAMAN_PUSHPARPAN | 5 May | p. 3: श्रीपशुपतिनाथमा दमनार्पण | 5 May | 5 May |
+| 2083 | PASHUPATINATH_DAMAN_PUSHPARPAN | 24 Apr | p. 3: श्रीपशुपतिनाथमा दमनार्पण | 24 Apr | 24 Apr |
+| 2082 | MOHINI_EKADASHI | 8 May | p. 3: मोहिनी एकादशीव्रत | 8 May | 8 May |
+| 2083 | MOHINI_EKADASHI | 27 Apr | p. 3: मोहिनीएकादशीव्रत | 27 Apr | 27 Apr |
+| 2082 | BAISAKH_SNAN_ENDS | 12 May | p. 3: वैशाखस्नानसमाप्ति | 12 May | 12 May |
+| 2083 | BAISAKH_SNAN_ENDS | 1 May | p. 3: वैशाखस्नानसमाप्ति | 1 May | 1 May |
+| 2082 | BUDDHA_JAYANTI | 12 May | p. 3: गौतमबुद्धजयन्ती | 12 May | 12 May |
+| 2083 | BUDDHA_JAYANTI | 1 May | p. 3: गौतमबुद्धजयन्ती | 1 May | 1 May |
+| 2082 | CHANDI_PURNIMA | 12 May | p. 3: चण्डीपूर्णिमा | 12 May | 12 May |
+| 2083 | CHANDI_PURNIMA | 1 May | p. 3: चण्डीपूर्णिमा | 1 May | 1 May |
+| 2082 | GORAKHNATH_JAYANTI | 12 May | p. 3: गोरखनाथजयन्ती | 12 May | 12 May |
+| 2083 | GORAKHNATH_JAYANTI | 1 May | p. 3: गोरखनाथजयन्ती | 1 May | 1 May |
+| 2082 | UBHAULI | 12 May | p. 3: उभौलीपर्व | 12 May | 12 May |
+| 2083 | UBHAULI | 1 May | p. 3: उभौलीपर्व | 1 May | 1 May |
+| 2082 | APARA_EKADASHI | 23 May | p. 4: अपराएकादशीव्रत | 23 May | 23 May |
+| 2083 | APARA_EKADASHI | 13 May | p. 4: अपराएकादशीव्रत | 13 May | 13 May |
+| 2082 | SHANI_JAYANTI | 27 May | p. 4: शनिजयन्ती | 27 May | 27 May |
+| 2083 | SHANI_JAYANTI | 16 May | p. 4: शनिजयन्ती | 16 May | 16 May |
+| 2082 | BHAKTAPUR_CHANDI_BHAGAWATI_JATRA | 1 Jun | p. 5: भ.पु.चण्डीभगवतीयात्रा | 1 Jun | 1 Jun |
+| 2083 | BHAKTAPUR_CHANDI_BHAGAWATI_JATRA | 20 Jun | p. 7: भ.पु.चण्डीभगवतीयात्रा | 20 Jun | 20 Jun |
+| 2082 | KUMAR_SHASHTHI | 1 Jun | p. 5: कुमारषष्ठी (सिथिनख) | 1 Jun | 1 Jun |
+| 2083 | KUMAR_SHASHTHI | 20 Jun | p. 7: कुमारषष्ठी | 20 Jun | 20 Jun |
+| 2082 | SITHI_NAKHA | 1 Jun | p. 5: कुमारषष्ठी (सिथिनख) | 1 Jun | 1 Jun |
+| 2083 | SITHI_NAKHA | 20 Jun | p. 7: (सिथिनख) | 20 Jun | 20 Jun |
+| 2082 | VAYU_ASHTAMI | 3 Jun | p. 5: वायुअष्टमी | 3 Jun | 3 Jun |
+| 2083 | VAYU_ASHTAMI | 22 Jun | p. 7: वायु अष्टमी | 22 Jun | 22 Jun |
+| 2082 | GANGA_PUJA | 5 Jun | p. 5: रामेश्वरगङ्गापूजा | 5 Jun | 5 Jun |
+| 2083 | GANGA_PUJA | 26 May | p. 5: रामेश्वरगङ्गापूजा | 26 May | 25 May ✗ |
+| 2082 | GURU_PADMASAMBHAVA_JAYANTI | 5 Jun | p. 5: वज्रगुरु पद्मसम्भवजयन्ती | 5 Jun | 5 Jun |
+| 2083 | GURU_PADMASAMBHAVA_JAYANTI | 26 May | p. 5: वज्रगुरु पद्मसम्भवजयन्ती | 26 May | 25 May ✗ |
+| 2082 | RAMESHWAR_PUJA | 5 Jun | p. 5: रामेश्वरगङ्गापूजा | 5 Jun | 5 Jun |
+| 2083 | RAMESHWAR_PUJA | 26 May | p. 5: रामेश्वरगङ्गापूजा | 26 May | 25 May ✗ |
+| 2082 | JYA_PUNHI | 11 Jun | p. 5: (ज्याः पुन्हि) | 11 Jun | 11 Jun |
+| 2083 | JYA_PUNHI | 29 Jun | p. 7: (ज्याः पुन्हि) | 29 Jun | 29 Jun |
+| 2082 | KABIR_JAYANTI | 11 Jun | p. 5: कवीरजयन्ती | 11 Jun | 11 Jun |
+| 2083 | KABIR_JAYANTI | 29 Jun | p. 7: कवीरजयन्ती | 29 Jun | 29 Jun |
+| 2082 | MASTA_PURNIMA | 11 Jun | p. 5: मष्टपूर्णिमा | 11 Jun | 11 Jun |
+| 2083 | MASTA_PURNIMA | 29 Jun | p. 7: मष्टपूर्णिमा | 29 Jun | 29 Jun |
+| 2082 | BHAL_BHAL_ASHTAMI | 19 Jun | p. 6: भलभलअष्टमी | 19 Jun | 19 Jun |
+| 2083 | BHAL_BHAL_ASHTAMI | 8 Jul | p. 8: भलभलअष्टमी | 8 Jul | 8 Jul |
+| 2082 | DEOPATAN_TRISHUL_JATRA | 19 Jun | p. 6: देउपाटनमा त्रिशूलयात्रा | 19 Jun | 19 Jun |
+| 2083 | DEOPATAN_TRISHUL_JATRA | 8 Jul | p. 8: देउपाटनमा त्रिशूलयात्रा | 8 Jul | 8 Jul |
+| 2082 | NAKWA_DISHI | 20 Jun | p. 6: नक्वादिशी | 20 Jun | 21 Jun ✗ |
+| 2083 | NAKWA_DISHI | 9 Jul | p. 8: नक्वादिशी | 9 Jul | 10 Jul ✗ |
+| 2082 | JAGANNATH_RATH_JATRA | 27 Jun | p. 7: श्रीजगन्नाथरथयात्रा | 27 Jun | 27 Jun |
+| 2083 | JAGANNATH_RATH_JATRA | 16 Jul | p. 9: श्रीजगन्नाथरथयात्रा | 16 Jul | 16 Jul |
+| 2082 | DEOPATAN_GANGAMAI_RATH_JATRA | 2 Jul | p. 7: देउपाटनमा गङ्गामाई रथयात्रा | 2 Jul | 2 Jul |
+| 2083 | DEOPATAN_GANGAMAI_RATH_JATRA | 21 Jul | p. 9: देउपाटनमा गङ्गामाई रथयात्रा | 21 Jul | 20 Jul ✗ |
+| 2082 | SURYA_PUJA | 2 Jul | p. 7: सूर्यपूजा | 2 Jul | 2 Jul |
+| 2083 | SURYA_PUJA | 21 Jul | p. 9: सूर्यपूजा | 21 Jul | 20 Jul ✗ |
+| 2082 | CHATURMAS_BEGINS | 6 Jul | p. 7: चतुर्मासव्रत सुरु | 6 Jul | 6 Jul |
+| 2083 | CHATURMAS_BEGINS | 25 Jul | p. 9: चतुर्मासव्रत सुरु | 25 Jul | 25 Jul |
+| 2082 | HARISHAYANI_EKADASHI | 6 Jul | p. 7: हरिशयनीएकादशीव्रत | 6 Jul | 6 Jul |
+| 2083 | HARISHAYANI_EKADASHI | 25 Jul | p. 9: हरिशयनी एकादशीव्रत | 25 Jul | 25 Jul |
+| 2082 | DAKSHINAMURTI_PUJA | 10 Jul | p. 7: दक्षिणामूर्तिपूजा | 10 Jul | 10 Jul |
+| 2083 | DAKSHINAMURTI_PUJA | 29 Jul | p. 9: दक्षिणामूर्तिपूजा | 29 Jul | 29 Jul |
+| 2082 | DILLA_PUNHI | 10 Jul | p. 7: (दिल्लापून्हि) | 10 Jul | 10 Jul |
+| 2083 | DILLA_PUNHI | 29 Jul | p. 9: (दिल्लापून्हि) | 29 Jul | 29 Jul |
+| 2082 | GURU_PURNIMA | 10 Jul | p. 7: गुरुपूर्णिमा | 10 Jul | 10 Jul |
+| 2083 | GURU_PURNIMA | 29 Jul | p. 9: गुरुपूर्णिमा | 29 Jul | 29 Jul |
+| 2082 | KAMIKA_EKADASHI | 21 Jul | p. 8: कामिकाएकादशीव्रत | 21 Jul | 21 Jul |
+| 2083 | KAMIKA_EKADASHI | 9 Aug | p. 10: कामिकाएकादशीव्रत | 9 Aug | 9 Aug |
+| 2082 | GUNLA_BEGINS | 25 Jul | p. 9: गुँलाधर्मारम्भ | 25 Jul | 25 Jul |
+| 2083 | GUNLA_BEGINS | 13 Aug | p. 11: गुँलाधर्मारम्भ | 13 Aug | 13 Aug |
+| 2082 | DHAPAKHEL_NAGDAHA | 29 Jul | p. 9: धापाखेल नागदह | 29 Jul | 29 Jul |
+| 2083 | DHAPAKHEL_NAGDAHA | 17 Aug | p. 11: धापाखेल नागदह | 17 Aug | 17 Aug |
+| 2082 | NAG_PANCHAMI | 29 Jul | p. 9: नागपञ्चमी | 29 Jul | 29 Jul |
+| 2083 | NAG_PANCHAMI | 17 Aug | p. 11: नागपञ्चमी | 17 Aug | 17 Aug |
+| 2082 | TULSIDAS_JAYANTI | 31 Jul | p. 9: गोस्वामी तुलसीदासजयन्ती | 31 Jul | 31 Jul |
+| 2083 | TULSIDAS_JAYANTI | 19 Aug | p. 11: गोस्वामी तुलसीदास जयन्ती | 19 Aug | 19 Aug |
+| 2082 | YALA_PANCHADAN | 1 Aug | p. 9: (यल पञ्चदान) | 1 Aug | 1 Aug |
+| 2083 | YALA_PANCHADAN | 20 Aug | p. 11: (यँलपञ्चदान) | 20 Aug | 20 Aug |
+| 2082 | SHRAWAN_PUTRADA_EKADASHI | 5 Aug | p. 9: पुत्रदाएकादशीव्रत | 5 Aug | 5 Aug |
+| 2083 | SHRAWAN_PUTRADA_EKADASHI | 23 Aug | p. 11: पुत्रदाएकादशीव्रत | 23 Aug | 23 Aug |
+| 2082 | KWATI_PUNHI | 9 Aug | p. 9: व्याँजानके गुँ पुन्हि | 9 Aug | 9 Aug |
+| 2083 | KWATI_PUNHI | 28 Aug | p. 11: व्याँजानके गुँ पुन्हि | 28 Aug | 28 Aug |
+| 2082 | SANSKRIT_DAY | 9 Aug | p. 9: संस्कृतदिवस | 9 Aug | 9 Aug |
+| 2083 | SANSKRIT_DAY | 28 Aug | p. 11: संस्कृतदिवस | 28 Aug | 28 Aug |
+| 2082 | GAI_JATRA | 10 Aug | p. 10: गाईजात्रा | 10 Aug | 10 Aug |
+| 2083 | GAI_JATRA | 29 Aug | p. 12: गाईजात्रा | 29 Aug | 29 Aug |
+| 2082 | ROPAI_JATRA | 11 Aug | p. 10: रोपाईजात्रा | 11 Aug | 11 Aug |
+| 2083 | ROPAI_JATRA | 30 Aug | p. 12: रोपाईजात्रा | 30 Aug | 30 Aug |
+| 2083 | CHANDRA_SHASHTHI | 2 Sep | p. 12: चन्द्रषष्ठी | 2 Sep | 2 Sep |
+| 2082 | GUGA_NAVAMI | 17 Aug | p. 10: गूँगानवमी | 17 Aug | 17 Aug |
+| 2083 | GUGA_NAVAMI | 5 Sep | p. 12: गूँगानवमी | 5 Sep | 5 Sep |
+| 2082 | KUSHE_AUNSI | 23 Aug | p. 10: कुशेऔंसी, बाबुको मुख हेर्नेदिन | 23 Aug | 23 Aug |
+| 2083 | KUSHE_AUNSI | 11 Sep | p. 12: कुशेऔंसी, बाबुको मुख हेर्नेदिन | 11 Sep | 11 Sep |
+| 2082 | MOTIRAM_JAYANTI | 23 Aug | p. 10: मोतिजयन्ती | 23 Aug | 23 Aug |
+| 2083 | MOTIRAM_JAYANTI | 11 Sep | p. 12: मोतीजयन्ती | 11 Sep | 11 Sep |
+| 2082 | GUNLA_ENDS | 24 Aug | p. 11: गुँलाधर्मसमाप्ति | 24 Aug | 24 Aug |
+| 2083 | GUNLA_ENDS | 12 Sep | p. 13: गुँलाधर्मसमाप्ति | 12 Sep | 12 Sep |
+| 2082 | DAR_KHANE_DIN | 25 Aug | p. 11: दरखाने दिन | 25 Aug | 25 Aug |
+| 2083 | DAR_KHANE_DIN | 13 Sep | p. 13: दरखाने दिन | 13 Sep | 13 Sep |
+| 2082 | KOKHAJA_BIYE | 28 Aug | p. 11: (क्वखजाविय) | 28 Aug | 28 Aug |
+| 2083 | KOKHAJA_BIYE | 16 Sep | p. 13: (क्वखजाविय) | 16 Sep | 16 Sep |
+| 2082 | SURYA_SHASHTHI | 29 Aug | p. 11: सूर्यषष्ठी | 29 Aug | 29 Aug |
+| 2083 | SURYA_SHASHTHI | 17 Sep | p. 13: सूर्यषष्ठी | 17 Sep | 17 Sep |
+| 2082 | KAYA_ASHTAMI | 31 Aug | p. 11: काय अष्टमी | 31 Aug | 31 Aug |
+| 2083 | KAYA_ASHTAMI | 19 Sep | p. 13: काय अष्टमी | 19 Sep | 19 Sep |
+| 2082 | ADUKHA_NAVAMI | 1 Sep | p. 11: अदुःखनवमीव्रत | 1 Sep | 1 Sep |
+| 2083 | ADUKHA_NAVAMI | 20 Sep | p. 13: अदुःखनवमीव्रत | 20 Sep | 20 Sep |
+| 2082 | HARIPARIVARTINI_EKADASHI | 3 Sep | p. 11: हरिपरिवर्तिनी एकादशीव्रत | 3 Sep | 3 Sep |
+| 2083 | HARIPARIVARTINI_EKADASHI | 22 Sep | p. 13: हरिपरिवर्तिनी एकादशीव्रत | 22 Sep | 22 Sep |
+| 2082 | INDRADHWAJA_UTTHAN | 4 Sep | p. 11: इन्द्रध्वजोत्थान (मतविए) | 4 Sep | 4 Sep |
+| 2083 | INDRADHWAJA_UTTHAN | 23 Sep | p. 13: इन्द्रध्वजोत्थान (मतविए) | 23 Sep | 23 Sep |
+| 2082 | ANANTA_CHATURDASHI | 6 Sep | p. 11: अनन्त चतुर्दशीव्रत | 6 Sep | 6 Sep |
+| 2083 | ANANTA_CHATURDASHI | 25 Sep | p. 13: अनन्त चतुर्दशीव्रत | 25 Sep | 25 Sep |
+| 2082 | INDRA_JATRA | 6 Sep | p. 11: कुमारीइन्द्रयात्रा | 6 Sep | 6 Sep |
+| 2083 | INDRA_JATRA | 25 Sep | p. 13: कुमारीइन्द्रयात्रा | 25 Sep | 25 Sep |
+| 2082 | BHAKTAPUR_SIDDHA_POKHARI_MELA | 7 Sep | p. 11: भ.पु.सिद्धपोखरीमेला | 7 Sep | 7 Sep |
+| 2083 | BHAKTAPUR_SIDDHA_POKHARI_MELA | 26 Sep | p. 13: भ.पु.सिद्धपोखरीमेला | 26 Sep | 26 Sep |
+| 2082 | CHONAM_PARVA | 7 Sep | p. 11: चेपाङचोनामपर्व | 7 Sep | 7 Sep |
+| 2083 | CHONAM_PARVA | 26 Sep | p. 13: चेपाङ-चोनामपर्व | 26 Sep | 26 Sep |
+| 2082 | INDRADAHA_SNAN | 7 Sep | p. 11: इन्द्रदहस्नान | 7 Sep | 7 Sep |
+| 2083 | INDRADAHA_SNAN | 26 Sep | p. 13: इन्द्रदहस्नान | 26 Sep | 26 Sep |
+| 2082 | PUNCHALI_BHUJA | 8 Sep | p. 12: पुञ्चलीभूजा | 8 Sep | 8 Sep |
+| 2083 | PUNCHALI_BHUJA | 27 Sep | p. 14: पुञ्चलीभूजा | 27 Sep | 27 Sep |
+| 2082 | GATILA | 10 Sep | p. 12: (गातिला) | 10 Sep | 10 Sep |
+| 2083 | GATILA | 29 Sep | p. 14: (गातिला) | 29 Sep | 29 Sep |
+| 2082 | JITIYA | 15 Sep | p. 12: (जितियापर्व) | 15 Sep | 14 Sep ✗ |
+| 2083 | JITIYA | 4 Oct | p. 14: (जितियापर्व) | 4 Oct | 4 Oct |
+| 2082 | INDIRA_EKADASHI | 17 Sep | p. 12: इन्दिराएकादशीव्रत | 17 Sep | 17 Sep |
+| 2083 | INDIRA_EKADASHI | 6 Oct | p. 14: इन्दिराएकादशीव्रत | 6 Oct | 6 Oct |
+| 2082 | MAGHA_SHRADDHA | 19 Sep | p. 12: मघाश्राद्ध | 19 Sep | 19 Sep |
+| 2083 | MAGHA_SHRADDHA | 8 Oct | p. 14: मघाश्राद्ध | 8 Oct | 8 Oct |
+| 2082 | PACHALI_BHAIRAV_JATRA | 27 Sep | p. 13: पचलीभैरवयात्रा | 27 Sep | 27 Sep |
+| 2083 | PACHALI_BHAIRAV_JATRA | 15 Oct | p. 15: पचलीभैरवयात्रा | 15 Oct | 15 Oct |
+| 2082 | BILVA_NIMANTRAN | 28 Sep | p. 13: विल्व निमन्त्रण | 28 Sep | 28 Sep |
+| 2083 | BILVA_NIMANTRAN | 16 Oct | p. 15: बिल्वनिमन्त्रण | 16 Oct | 16 Oct |
+| 2082 | PHULPATI | 29 Sep | p. 13: फूलपाती | 29 Sep | 29 Sep |
+| 2083 | PHULPATI | 17 Oct | p. 15: फूलपाती | 17 Oct | 18 Oct ✗ |
+| 2082 | MAHA_ASHTAMI | 30 Sep | p. 13: महाअष्टमीव्रत | 30 Sep | 30 Sep |
+| 2083 | MAHA_ASHTAMI | 18 Oct | p. 15: महाष्टमीव्रत | 18 Oct | 19 Oct ✗ |
+| 2082 | BUDDHAVATAR | 1 Oct | p. 13: बौद्धावतार | 1 Oct | 1 Oct |
+| 2083 | BUDDHAVATAR | 20 Oct | p. 15: बौद्धावतार | 20 Oct | 20 Oct |
+| 2082 | MAHA_NAVAMI | 1 Oct | p. 13: महानवमी | 1 Oct | 1 Oct |
+| 2083 | MAHA_NAVAMI | 20 Oct | p. 15: महानवमी | 20 Oct | 20 Oct |
+| 2082 | SYAKWA_TYAKWA | 1 Oct | p. 13: (स्याक्वत्याक्व) | 1 Oct | 1 Oct |
+| 2083 | SYAKWA_TYAKWA | 20 Oct | p. 15: (स्याक्वत्याक्व) | 20 Oct | 20 Oct |
+| 2083 | CHAALA | 21 Oct | p. 15: (चालं) | 21 Oct | 21 Oct |
+| 2082 | DEVI_VISARJAN | 2 Oct | p. 13: देवी विसर्जन | 2 Oct | 2 Oct |
+| 2083 | DEVI_VISARJAN | 21 Oct | p. 15: देवी विसर्जन | 21 Oct | 21 Oct |
+| 2082 | KHADGA_JATRA | 2 Oct | p. 13: खड्गयात्रा | 2 Oct | 2 Oct |
+| 2083 | KHADGA_JATRA | 21 Oct | p. 15: खड्गयात्रा | 21 Oct | 21 Oct |
+| 2082 | ANNAPURNA_JATRA | 3 Oct | p. 13: अन्नपूर्णयात्रा | 3 Oct | 3 Oct |
+| 2083 | ANNAPURNA_JATRA | 22 Oct | p. 15: अन्नपूर्णायात्रा | 22 Oct | 22 Oct |
+| 2082 | PAPANKUSHA_EKADASHI | 3 Oct | p. 13: पापाङ्कुशा एकादशीव्रत | 3 Oct | 3 Oct |
+| 2083 | PAPANKUSHA_EKADASHI | 22 Oct | p. 15: पापाङ्कुशा एकादशीव्रत | 22 Oct | 22 Oct |
+| 2082 | KHANCHI_SARAI_PARVA | 5 Oct | p. 13: खाँचीमा सरायपर्व | 5 Oct | 5 Oct |
+| 2083 | KHANCHI_SARAI_PARVA | 24 Oct | p. 15: खाँचीमा सरायपर्व | 24 Oct | 24 Oct |
+| 2082 | AKHILBALI_PURTI | 6 Oct | p. 13: अखिलबलिपूर्ति (सिघया) | 6 Oct | 6 Oct |
+| 2083 | AKHILBALI_PURTI | 25 Oct | p. 15: अखिलबलिपूर्ति | 25 Oct | 25 Oct |
+| 2082 | SHREEGHA_JATRA | 6 Oct | p. 13: (सिघया) | 6 Oct | 6 Oct |
+| 2083 | SHREEGHA_JATRA | 25 Oct | p. 15: (सिघया) | 25 Oct | 25 Oct |
+| 2082 | ARGHA_SARAI_PARVA | 7 Oct | p. 13: अर्घासरायपर्व | 7 Oct | 7 Oct |
+| 2083 | ARGHA_SARAI_PARVA | 26 Oct | p. 15: अर्घामा सरायपर्व | 26 Oct | 26 Oct |
+| 2082 | KARTIK_SNAN_BEGINS | 7 Oct | p. 13: कार्तिकस्नान | 7 Oct | 7 Oct |
+| 2083 | KARTIK_SNAN_BEGINS | 26 Oct | p. 15: कार्तिकस्नान आरम्भ | 26 Oct | 26 Oct |
+| 2082 | KATIN_PUNHI | 7 Oct | p. 13: कतिं पुन्हि | 7 Oct | 7 Oct |
+| 2083 | KATIN_PUNHI | 26 Oct | p. 15: कतिं पुन्हि | 26 Oct | 26 Oct |
+| 2082 | RADHASHTAMI | 14 Oct | p. 14: राधाष्टमी | 14 Oct | 14 Oct |
+| 2083 | RADHASHTAMI | 2 Nov | p. 16: राधाष्टमी | 2 Nov | 2 Nov |
+| 2082 | RAMA_EKADASHI | 17 Oct | p. 14: रमाएकादशीव्रत | 17 Oct | 17 Oct |
+| 2083 | RAMA_EKADASHI | 5 Nov | p. 16: रमाएकादशीव्रत | 5 Nov | 5 Nov |
+| 2082 | DHANTERAS | 18 Oct | p. 14: धन्तेरस | 18 Oct | 18 Oct |
+| 2083 | DHANTERAS | 6 Nov | p. 16: धन्तेरस | 6 Nov | 6 Nov |
+| 2082 | KAG_TIHAR | 19 Oct | p. 14: कागतिहार | 19 Oct | 19 Oct |
+| 2083 | KAG_TIHAR | 7 Nov | p. 16: कागतिहार | 7 Nov | 7 Nov |
+| 2082 | SWONTI_CHARHE | 19 Oct | p. 14: (स्वन्तिचह्रेपूजा) | 19 Oct | 19 Oct |
+| 2083 | SWONTI_CHARHE | 7 Nov | p. 16: (स्वन्तिचह्रेपूजा) | 7 Nov | 7 Nov |
+| 2082 | KUKUR_TIHAR | 20 Oct | p. 14: कुकुरतिहार | 20 Oct | 20 Oct |
+| 2083 | KUKUR_TIHAR | 8 Nov | p. 16: कुकुरतिहार | 8 Nov | 8 Nov |
+| 2082 | NARAK_CHATURDASHI | 20 Oct | p. 14: नरक चतुर्दशी | 20 Oct | 20 Oct |
+| 2083 | NARAK_CHATURDASHI | 8 Nov | p. 16: नरक चतुर्दशी | 8 Nov | 8 Nov |
+| 2082 | GOVARDHAN_PUJA | 22 Oct | p. 15: गोवर्धनपूजा | 22 Oct | 22 Oct |
+| 2083 | GOVARDHAN_PUJA | 10 Nov | p. 17: गोवर्धनपूजा | 10 Nov | 10 Nov |
+| 2082 | HALI_TIHAR | 22 Oct | p. 15: हलितिहार | 22 Oct | 22 Oct |
+| 2083 | HALI_TIHAR | 10 Nov | p. 17: हलितिहार | 10 Nov | 10 Nov |
+| 2082 | CHHATH | 27 Oct | p. 15: छठपर्व | 27 Oct | 28 Oct ✗ |
+| 2083 | CHHATH | 15 Nov | p. 17: छठपर्व | 15 Nov | 15 Nov |
+| 2082 | GOPASHTAMI | 29 Oct | p. 15: गोपअष्टमी | 29 Oct | 30 Oct ✗ |
+| 2083 | GOPASHTAMI | 17 Nov | p. 17: गोपाष्टमी | 17 Nov | 17 Nov |
+| 2082 | MUKHA_ASHTAMI | 29 Oct | p. 15: मुखअष्टमी | 29 Oct | 30 Oct ✗ |
+| 2083 | MUKHA_ASHTAMI | 17 Nov | p. 17: मुखाष्टमी | 17 Nov | 17 Nov |
+| 2082 | SILANGA_MAHARUDRA_KOTIHOM_MELA | 29 Oct | p. 15: बैतडी सिलङ्गामा महारुद्र कोटीहोममेला | 29 Oct | 30 Oct ✗ |
+| 2083 | SILANGA_MAHARUDRA_KOTIHOM_MELA | 17 Nov | p. 17: बैतडी सिलङ्गामा महारुद्र कोटीहोममेला | 17 Nov | 17 Nov |
+| 2082 | HETAUDA_KUSHMANDA_SAROBAR_MELA | 30 Oct | p. 15: हेटौडा कुष्माण्ड सरोवरमेला | 30 Oct | 31 Oct ✗ |
+| 2083 | HETAUDA_KUSHMANDA_SAROBAR_MELA | 18 Nov | p. 17: हेटौडा कुष्माण्ड सरोवरमेला | 18 Nov | 18 Nov |
+| 2082 | KUSHMANDA_NAVAMI | 30 Oct | p. 15: कुष्माण्डनवमी | 30 Oct | 31 Oct ✗ |
+| 2083 | KUSHMANDA_NAVAMI | 18 Nov | p. 17: कुष्माण्डनवमी | 18 Nov | 18 Nov |
+| 2082 | SAKWO_CHANGU_WONE | 30 Oct | p. 15: साँखुचाँगुमेला (सकोचंगुवने) | 30 Oct | 31 Oct ✗ |
+| 2083 | SAKWO_CHANGU_WONE | 18 Nov | p. 17: साँखुचाँगुमेला(सकोचंगुवने) | 18 Nov | 18 Nov |
+| 2082 | SATYAYUGADI | 30 Oct | p. 15: सत्ययुगादि | 30 Oct | 31 Oct ✗ |
+| 2083 | SATYAYUGADI | 18 Nov | p. 17: सत्ययुगादि | 18 Nov | 18 Nov |
+| 2082 | BALAMBU_MAHALAXMI_JATRA | 31 Oct | p. 15: बलम्बु महालक्ष्मीयात्रा | 31 Oct | 1 Nov ✗ |
+| 2083 | BALAMBU_MAHALAXMI_JATRA | 19 Nov | p. 17: बलम्बु महालक्ष्मीयात्रा | 19 Nov | 20 Nov ✗ |
+| 2082 | FULKHARKA_GANGAJAMUNA_MELA | 31 Oct | p. 15: धादिङ फूलखर्क गङ्गाजमुनामेला | 31 Oct | 1 Nov ✗ |
+| 2083 | FULKHARKA_GANGAJAMUNA_MELA | 19 Nov | p. 17: धादिङ फूलखर्क गङ्गाजमुनामेला | 19 Nov | 20 Nov ✗ |
+| 2082 | CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN | 2 Nov | p. 15: चाँगुनारायण अखण्डदीपदर्शन | 2 Nov | 2 Nov |
+| 2083 | CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN | 21 Nov | p. 17: चाँगुनारायण अखण्डदीपदर्शन | 21 Nov | 21 Nov |
+| 2082 | SHIVA_BAIKUNTHA_CHATURDASHI | 4 Nov | p. 15: बैकुण्ठ चतुर्दशीव्रत | 4 Nov | 4 Nov |
+| 2083 | SHIVA_BAIKUNTHA_CHATURDASHI | 23 Nov | p. 17: बैकुण्ठ चतुर्दशीव्रत | 23 Nov | 23 Nov |
+| 2082 | CHATURMAS_ENDS | 5 Nov | p. 15: चतुर्मासव्रत समाप्ति | 5 Nov | 5 Nov |
+| 2083 | CHATURMAS_ENDS | 24 Nov | p. 17: कार्तिकस्नान चतुर्मासव्रत समाप्ति | 24 Nov | 24 Nov |
+| 2082 | GURU_NANAK_JAYANTI | 5 Nov | p. 15: गुरुनानकजयन्ती | 5 Nov | 5 Nov |
+| 2083 | GURU_NANAK_JAYANTI | 24 Nov | p. 17: गुरुनानकजयन्ती | 24 Nov | 24 Nov |
+| 2082 | KARTIK_SNAN_ENDS | 5 Nov | p. 15: कार्तिकस्नान चतुर्मासव्रत समाप्ति | 5 Nov | 5 Nov |
+| 2083 | KARTIK_SNAN_ENDS | 24 Nov | p. 17: कार्तिकस्नान चतुर्मासव्रत समाप्ति | 24 Nov | 24 Nov |
+| 2082 | THANKOT_MAHALAXMI_JATRA | 6 Nov | p. 16: थानकोट महालक्ष्मीयात्रा | 6 Nov | 6 Nov |
+| 2083 | THANKOT_MAHALAXMI_JATRA | 25 Nov | p. 18: थानकोट महालक्ष्मीयात्रा | 25 Nov | 25 Nov |
+| 2082 | GUHYESHWARI_JATRA | 14 Nov | p. 16: गुह्येश्वरीयात्रा | 14 Nov | 14 Nov |
+| 2083 | GUHYESHWARI_JATRA | 3 Dec | p. 18: गुह्येश्वरीयात्रा | 3 Dec | 3 Dec |
+| 2082 | UTPATTIKA_EKADASHI | 15 Nov | p. 16: उत्पत्तिका एकादशीव्रत | 15 Nov | 15 Nov |
+| 2083 | UTPATTIKA_EKADASHI | 4 Dec | p. 18: उत्पत्तिका एकादशीव्रत | 4 Dec | 4 Dec |
+| 2082 | BALA_CHATURDASHI_BALA | 19 Nov | p. 16: बालाचतुर्दशी | 19 Nov | 19 Nov |
+| 2083 | BALA_CHATURDASHI_BALA | 7 Dec | p. 18: बालाचतुर्दशी | 7 Dec | 7 Dec |
+| 2082 | SHADANANDA_JAYANTI | 25 Nov | p. 17: आबाल ब्रह्मचारी षडानन्दजयन्ती | 25 Nov | 25 Nov |
+| 2083 | SHADANANDA_JAYANTI | 14 Dec | p. 19: आबाल ब्रह्मचारी षडानन्दजयन्ती | 14 Dec | 14 Dec |
+| 2082 | VIVAH_PANCHAMI | 25 Nov | p. 17: विवाहपञ्चमी | 25 Nov | 25 Nov |
+| 2083 | VIVAH_PANCHAMI | 14 Dec | p. 19: विवाहपञ्चमी | 14 Dec | 14 Dec |
+| 2082 | BAKHUMADA | 28 Nov | p. 17: (वखुमद) | 28 Nov | 28 Nov |
+| 2083 | BAKHUMADA | 17 Dec | p. 19: (वखुमद) | 17 Dec | 17 Dec |
+| 2082 | PANGA_VAISHNAVI_DEVI_JATRA | 29 Nov | p. 17: पाङ्गा वैष्णवदेवीयात्रा | 29 Nov | 29 Nov |
+| 2083 | PANGA_VAISHNAVI_DEVI_JATRA | 18 Dec | p. 19: पाङ्गा वैष्णवदेवीयात्रा | 18 Dec | 18 Dec |
+| 2082 | KIRTIPUR_INDRAYANI_JATRA | 30 Nov | p. 17: कीर्तिपुरमा इन्द्राणीयात्रा | 30 Nov | 30 Nov |
+| 2083 | KIRTIPUR_INDRAYANI_JATRA | 19 Dec | p. 19: कीर्तिपुरमा इन्द्राणीयात्रा | 19 Dec | 19 Dec |
+| 2082 | GITA_JAYANTI | 1 Dec | p. 17: गीताजयन्ती | 1 Dec | 1 Dec |
+| 2083 | GITA_JAYANTI | 20 Dec | p. 19: गीताजयन्ती | 20 Dec | 20 Dec |
+| 2082 | MOKSHADA_EKADASHI | 1 Dec | p. 17: मोक्षदा एकादशीव्रत | 1 Dec | 1 Dec |
+| 2083 | MOKSHADA_EKADASHI | 20 Dec | p. 19: मोक्षदा एकादशीव्रत | 20 Dec | 20 Dec |
+| 2082 | DHANYA_PURNIMA | 4 Dec | p. 17: धान्यपूर्णिमा | 4 Dec | 4 Dec |
+| 2083 | DHANYA_PURNIMA | 24 Dec | p. 19: धान्यपूर्णिमा | 24 Dec | 24 Dec |
+| 2082 | UDHAULI | 4 Dec | p. 17: उधौलीपर्व | 4 Dec | 4 Dec |
+| 2083 | UDHAULI | 24 Dec | p. 19: उधौलीपर्व | 24 Dec | 24 Dec |
+| 2082 | YOMARI_PUNHI | 4 Dec | p. 17: (योमरीपून्हि, थिंलापून्हि) | 4 Dec | 4 Dec |
+| 2083 | YOMARI_PUNHI | 24 Dec | p. 19: (योमरीपून्हि) | 24 Dec | 24 Dec |
+| 2082 | SAFALA_EKADASHI | 15 Dec | p. 18: सफला एकादशीव्रत | 15 Dec | 15 Dec |
+| 2083 | SAFALA_EKADASHI | 3 Jan | p. 20: सफला एकादशीव्रत | 3 Jan | 3 Jan |
+| 2082 | GAYA_MAUNI_AUNSI | 19 Dec | p. 18: गयामौनी औसी | 19 Dec | 19 Dec |
+| 2083 | GAYA_MAUNI_AUNSI | 7 Jan | p. 20: गयामौनी औंसी | 7 Jan | 7 Jan |
+| 2082 | TOL_LHOSAR | 20 Dec | p. 19: तोल ल्होसार | 20 Dec | 21 Dec ✗ |
+| 2083 | TOL_LHOSAR | 8 Jan | p. 21: तोल ल्होसार | 8 Jan | 8 Jan |
+| 2082 | SETO_MACHHINDRANATH_SNAN | 28 Dec | p. 19: श्रीश्वेतमत्स्येन्द्रनाथस्नान (जनबहाद्यन्हव) | 28 Dec | 28 Dec |
+| 2083 | SETO_MACHHINDRANATH_SNAN | 16 Jan | p. 21: श्रीश्वेतमत्स्येन्द्रनाथस्नान (जनबाद्यन्हव) | 16 Jan | 16 Jan |
+| 2082 | MUSYADULI | 31 Dec | p. 19: मुस्याडुली | 31 Dec | 31 Dec |
+| 2083 | MUSYADULI | 19 Jan | p. 21: मुस्याडुली | 19 Jan | 19 Jan |
+| 2082 | CHANGUNARAYAN_KALASH_JATRA | 3 Jan | p. 19: (चाँगुनारायण कलशयात्रा) | 3 Jan | 3 Jan |
+| 2083 | CHANGUNARAYAN_KALASH_JATRA | 22 Jan | p. 21: (चाँगुनारायण कलशयात्रा) | 22 Jan | 22 Jan |
+| 2082 | MAGH_SNAN_BEGINS | 3 Jan | p. 19: माघस्नानसुरु | 3 Jan | 3 Jan |
+| 2083 | MAGH_SNAN_BEGINS | 22 Jan | p. 21: माघस्नानसुरु | 22 Jan | 22 Jan |
+| 2082 | SWASTHANI_VRAT_BEGINS | 3 Jan | p. 19: श्रीस्वस्थानीव्रत सुरु | 3 Jan | 3 Jan |
+| 2083 | SWASTHANI_VRAT_BEGINS | 22 Jan | p. 21: श्रीस्वस्थानीव्रत सुरु | 22 Jan | 22 Jan |
+| 2082 | SHATTILA_EKADASHI | 14 Jan | p. 20: षट्तिला एकादशीव्रत | 14 Jan | 14 Jan |
+| 2083 | SHATTILA_EKADASHI | 2 Feb | p. 22: षट्तिला एकादशीव्रत | 2 Feb | 2 Feb |
+| 2082 | ARYAGHAT_MADHAV_NARAYAN_MELA | 18 Jan | p. 20: आर्यघाटमा माधवनारायण मेला | 18 Jan | 18 Jan |
+| 2083 | ARYAGHAT_MADHAV_NARAYAN_MELA | 6 Feb | p. 22: आर्यघाटमा माधवनारायण मेला | 6 Feb | 6 Feb |
+| 2082 | SHREE_BALLABH_JAYANTI | 19 Jan | p. 21: श्रीवल्लभजयन्ती | 19 Jan | 19 Jan |
+| 2083 | SHREE_BALLABH_JAYANTI | 7 Feb | p. 23: श्रीवल्लभजयन्ती | 7 Feb | 7 Feb |
+| 2082 | BASANTA_PANCHAMI | 23 Jan | p. 21: वसन्तपञ्चमी | 23 Jan | 23 Jan |
+| 2083 | BASANTA_PANCHAMI | 11 Feb | p. 23: वसन्तपञ्चमी | 11 Feb | 11 Feb |
+| 2082 | SKANDA_SHASHTHI | 24 Jan | p. 21: स्कन्दषष्ठी | 24 Jan | 24 Jan |
+| 2083 | SKANDA_SHASHTHI | 12 Feb | p. 23: स्कन्दषष्ठी | 12 Feb | 12 Feb |
+| 2082 | ACHALA_SAPTAMI | 25 Jan | p. 21: अचलासप्तमी | 25 Jan | 25 Jan |
+| 2083 | ACHALA_SAPTAMI | 13 Feb | p. 23: अचलासप्तमी | 13 Feb | 13 Feb |
+| 2082 | BHISHMASHTAMI | 26 Jan | p. 21: भीष्माष्टमी | 26 Jan | 26 Jan |
+| 2083 | BHISHMASHTAMI | 14 Feb | p. 23: भीष्माष्टमी | 14 Feb | 14 Feb |
+| 2082 | DRONA_NAVAMI | 27 Jan | p. 21: द्रोणनवमी | 27 Jan | 27 Jan |
+| 2083 | DRONA_NAVAMI | 15 Feb | p. 23: द्रोणनवमी | 15 Feb | 15 Feb |
+| 2082 | SHALYA_DASHAMI | 28 Jan | p. 21: शल्यदशमी | 28 Jan | 28 Jan |
+| 2083 | SHALYA_DASHAMI | 16 Feb | p. 23: शल्यदशमी | 16 Feb | 16 Feb |
+| 2082 | BHISHMA_DWADASHI | 30 Jan | p. 21: भीष्मद्वादशी | 30 Jan | 30 Jan |
+| 2083 | BHISHMA_DWADASHI | 18 Feb | p. 23: भीष्मद्वादशी | 18 Feb | 18 Feb |
+| 2082 | CHANGU_MADHAV_NARAYAN_MELA | 30 Jan | p. 21: चाँगुमाधवनारायणमेला | 30 Jan | 30 Jan |
+| 2083 | CHANGU_MADHAV_NARAYAN_MELA | 18 Feb | p. 23: चाँगुनारायणमेला | 18 Feb | 18 Feb |
+| 2082 | WATU_MAGH_JATRA | 30 Jan | p. 21: वटुमाघयात्रा | 30 Jan | 30 Jan |
+| 2083 | WATU_MAGH_JATRA | 18 Feb | p. 23: वटुमाघयात्रा | 18 Feb | 18 Feb |
+| 2082 | MAGH_SNAN_ENDS | 1 Feb | p. 21: माघस्नान समाप्ति | 1 Feb | 1 Feb |
+| 2083 | MAGH_SNAN_ENDS | 20 Feb | p. 23: माघस्नान समाप्ति | 20 Feb | 20 Feb |
+| 2082 | SWASTHANI_VRAT_ENDS | 1 Feb | p. 21: श्रीस्वस्थानीव्रतसमाप्ति | 1 Feb | 1 Feb |
+| 2083 | SWASTHANI_VRAT_ENDS | 20 Feb | p. 23: श्रीस्वस्थानीव्रतसमाप्ति | 20 Feb | 20 Feb |
+| 2082 | CHIR_SWAYEGU | 24 Feb | p. 23: चिरोत्थान | 24 Feb | 24 Feb |
+| 2083 | CHIR_SWAYEGU | 16 Mar | p. 25: चिरस्वाय | 16 Mar | 16 Mar |
+| 2082 | AMALAKI_EKADASHI | 27 Feb | p. 23: आमलकी एकादशीव्रत | 27 Feb | 27 Feb |
+| 2083 | AMALAKI_EKADASHI | 18 Mar | p. 25: आमलकी एकादशीव्रत | 18 Mar | 18 Mar |
+| 2082 | GOVINDA_DWADASHI | 28 Feb | p. 23: गोविन्दद्वादशी | 28 Feb | 28 Feb |
+| 2083 | GOVINDA_DWADASHI | 19 Mar | p. 25: गोविन्दद्वादशी | 19 Mar | 19 Mar |
+| 2082 | NALA_MACHHINDRANATH_RATH_JATRA | 6 Mar | p. 24: नालायात्रा | 6 Mar | 6 Mar |
+| 2083 | NALA_MACHHINDRANATH_RATH_JATRA | 25 Mar | p. 26: नालायात्रा, नाला मत्स्येन्द्रनाथ यात्रा | 25 Mar | 25 Mar |
+| 2082 | SHITALASHTAMI | 11 Mar | p. 24: शीतलाष्टमी | 11 Mar | 11 Mar |
+| 2083 | SHITALASHTAMI | 30 Mar | p. 26: शीतलाष्टमी | 30 Mar | 30 Mar |
+| 2082 | PAPMOCHANI_EKADASHI | 15 Mar | p. 24: पापमोचनी एकादशीव्रत | 15 Mar | 15 Mar |
+| 2083 | PAPMOCHANI_EKADASHI | 2 Apr | p. 26: पापमोचनी एकादशीव्रत | 2 Apr | 2 Apr |
+| 2082 | KOKA_KAUSHIKI_SANGAM_MELA | 5 Dec | p. 18: कोशिकोका सङ्गममा मेला | 5 Dec | 5 Dec |
+| 2083 | KOKA_KAUSHIKI_SANGAM_MELA | 25 Dec | p. 20: कोशीकोका सङ्गममा मेला | 25 Dec | 25 Dec |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 240 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 33 of 240 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 554 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 57 of 554 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 

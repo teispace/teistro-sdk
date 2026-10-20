@@ -23,6 +23,10 @@
 //! - **on a vara**: the udaya day, kept only when it is the vara the rule
 //!   names, and not at all otherwise (C618).
 //!
+//! Most of the days are the plain udaya rule (`AT_SUNRISE`): the
+//! festivals of a patro printed in Nepal that its own sunrise rule
+//! reproduces, each gated by the committee's print of both years.
+//!
 //! The pradosha fast and the weekday fasts are kept in every month, the
 //! adhika included, on a day of either paksha (§3.4) or the new moon.
 
@@ -564,6 +568,968 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 60] = [
     ),
 ];
 
+/// The days the committee prints on the udaya rule, each read off both
+/// editions: key, month (amanta, the nija month), tithi, and where the day
+/// is printed. Each also gives every day a patro printed in Nepal verified
+/// for it from 2013 to 2027, by a back-test kept outside the repository
+/// (`festival-classification.md`).
+const AT_SUNRISE: [(&str, Masa, Tithi, &str); 159] = [
+    (
+        "SAMVATSARA_ARAMBHA",
+        Masa::Chaitra,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 24 and VS 2083 p. 27: वत्सरारम्भ",
+    ),
+    (
+        "GAURI_VRAT",
+        Masa::Chaitra,
+        Tithi::ShuklaTritiya,
+        "Nepal's national panchanga, VS 2082 p. 25 and VS 2083 p. 27: गौरीव्रत",
+    ),
+    (
+        "MAHAVIR_JAYANTI",
+        Masa::Chaitra,
+        Tithi::ShuklaTrayodashi,
+        "Nepal's national panchanga, VS 2082 p. 25: महावीरजयन्ती",
+    ),
+    (
+        "BALAJU_BAISDHARA_MELA",
+        Masa::Chaitra,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 25: बालाजु बाइसधारा मेला",
+    ),
+    (
+        "HANUMAN_JAYANTI",
+        Masa::Chaitra,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 25: हनुमानजयन्ती",
+    ),
+    (
+        "BISHALNAGAR_VAISHNAVI_DEVI_JATRA",
+        Masa::Chaitra,
+        Tithi::KrishnaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 26: विशालनगरमा वैष्णवीदेवीयात्रा",
+    ),
+    (
+        "CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA",
+        Masa::Chaitra,
+        Tithi::Amavasya,
+        "Nepal's national panchanga, VS 2082 p. 2 and VS 2083 p. 2: चाँगुनारायण छिन्नमस्ता कीलेश्वर मूलरथयात्रा",
+    ),
+    (
+        "MATA_TIRTHA_AUNSI",
+        Masa::Chaitra,
+        Tithi::Amavasya,
+        "Nepal's national panchanga, VS 2082 p. 2 and VS 2083 p. 2: मातातीर्थस्नान",
+    ),
+    (
+        "RATO_MACHHINDRANATH_RATHAROHAN",
+        Masa::Vaishakha,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: ल.पु.मत्स्येन्द्रनाथ रथारोहण",
+    ),
+    (
+        "AKSHAYA_TRITIYA",
+        Masa::Vaishakha,
+        Tithi::ShuklaTritiya,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: अक्षयतृतीया",
+    ),
+    (
+        "TRETAYUGADI",
+        Masa::Vaishakha,
+        Tithi::ShuklaTritiya,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: त्रेतायुगादि",
+    ),
+    (
+        "RATO_MACHHINDRANATH_RATH_JATRA_BEGINS",
+        Masa::Vaishakha,
+        Tithi::ShuklaChaturthi,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: ल.पु.श्रीमत्स्येन्द्रनाथ रथयात्रारम्भ",
+    ),
+    (
+        "PASHUPATINATH_DAMAN_PUSHPARPAN",
+        Masa::Vaishakha,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: श्रीपशुपतिनाथमा दमनार्पण",
+    ),
+    (
+        "MOHINI_EKADASHI",
+        Masa::Vaishakha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 3: मोहिनी एकादशीव्रत; VS 2083 p. 3: मोहिनीएकादशीव्रत",
+    ),
+    (
+        "BAISAKH_SNAN_ENDS",
+        Masa::Vaishakha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: वैशाखस्नानसमाप्ति",
+    ),
+    (
+        "BUDDHA_JAYANTI",
+        Masa::Vaishakha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: गौतमबुद्धजयन्ती",
+    ),
+    (
+        "CHANDI_PURNIMA",
+        Masa::Vaishakha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: चण्डीपूर्णिमा",
+    ),
+    (
+        "GORAKHNATH_JAYANTI",
+        Masa::Vaishakha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: गोरखनाथजयन्ती",
+    ),
+    (
+        "UBHAULI",
+        Masa::Vaishakha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: उभौलीपर्व",
+    ),
+    (
+        "APARA_EKADASHI",
+        Masa::Vaishakha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 4 and VS 2083 p. 4: अपराएकादशीव्रत",
+    ),
+    (
+        "SHANI_JAYANTI",
+        Masa::Vaishakha,
+        Tithi::Amavasya,
+        "Nepal's national panchanga, VS 2082 p. 4 and VS 2083 p. 4: शनिजयन्ती",
+    ),
+    (
+        "BHAKTAPUR_CHANDI_BHAGAWATI_JATRA",
+        Masa::Jyeshtha,
+        Tithi::ShuklaShashthi,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: भ.पु.चण्डीभगवतीयात्रा",
+    ),
+    (
+        "KUMAR_SHASHTHI",
+        Masa::Jyeshtha,
+        Tithi::ShuklaShashthi,
+        "Nepal's national panchanga, VS 2082 p. 5: कुमारषष्ठी (सिथिनख); VS 2083 p. 7: कुमारषष्ठी",
+    ),
+    (
+        "SITHI_NAKHA",
+        Masa::Jyeshtha,
+        Tithi::ShuklaShashthi,
+        "Nepal's national panchanga, VS 2082 p. 5: कुमारषष्ठी (सिथिनख); VS 2083 p. 7: (सिथिनख)",
+    ),
+    (
+        "VAYU_ASHTAMI",
+        Masa::Jyeshtha,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 5: वायुअष्टमी; VS 2083 p. 7: वायु अष्टमी",
+    ),
+    (
+        "GANGA_PUJA",
+        Masa::Jyeshtha,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 5: रामेश्वरगङ्गापूजा; in VS 2083 on the adhika Jyeshtha's bright 10th, as Dashahara (C606, C691)",
+    ),
+    (
+        "GURU_PADMASAMBHAVA_JAYANTI",
+        Masa::Jyeshtha,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 5: वज्रगुरु पद्मसम्भवजयन्ती; in VS 2083 on the adhika Jyeshtha's bright 10th, as Dashahara (C606, C691)",
+    ),
+    (
+        "RAMESHWAR_PUJA",
+        Masa::Jyeshtha,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 5: रामेश्वरगङ्गापूजा; in VS 2083 on the adhika Jyeshtha's bright 10th, as Dashahara (C606, C691)",
+    ),
+    (
+        "JYA_PUNHI",
+        Masa::Jyeshtha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: (ज्याः पुन्हि)",
+    ),
+    (
+        "KABIR_JAYANTI",
+        Masa::Jyeshtha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: कवीरजयन्ती",
+    ),
+    (
+        "MASTA_PURNIMA",
+        Masa::Jyeshtha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: मष्टपूर्णिमा",
+    ),
+    (
+        "BHAL_BHAL_ASHTAMI",
+        Masa::Jyeshtha,
+        Tithi::KrishnaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 6 and VS 2083 p. 8: भलभलअष्टमी",
+    ),
+    (
+        "DEOPATAN_TRISHUL_JATRA",
+        Masa::Jyeshtha,
+        Tithi::KrishnaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 6 and VS 2083 p. 8: देउपाटनमा त्रिशूलयात्रा",
+    ),
+    (
+        "NAKWA_DISHI",
+        Masa::Jyeshtha,
+        Tithi::KrishnaDashami,
+        "Nepal's national panchanga, VS 2082 p. 6 and VS 2083 p. 8: नक्वादिशी",
+    ),
+    (
+        "JAGANNATH_RATH_JATRA",
+        Masa::Ashadha,
+        Tithi::ShuklaDvitiya,
+        "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: श्रीजगन्नाथरथयात्रा",
+    ),
+    (
+        "DEOPATAN_GANGAMAI_RATH_JATRA",
+        Masa::Ashadha,
+        Tithi::ShuklaSaptami,
+        "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: देउपाटनमा गङ्गामाई रथयात्रा",
+    ),
+    (
+        "SURYA_PUJA",
+        Masa::Ashadha,
+        Tithi::ShuklaSaptami,
+        "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: सूर्यपूजा",
+    ),
+    (
+        "CHATURMAS_BEGINS",
+        Masa::Ashadha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: चतुर्मासव्रत सुरु",
+    ),
+    (
+        "HARISHAYANI_EKADASHI",
+        Masa::Ashadha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 7: हरिशयनीएकादशीव्रत; VS 2083 p. 9: हरिशयनी एकादशीव्रत",
+    ),
+    (
+        "DAKSHINAMURTI_PUJA",
+        Masa::Ashadha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: दक्षिणामूर्तिपूजा",
+    ),
+    (
+        "DILLA_PUNHI",
+        Masa::Ashadha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: (दिल्लापून्हि)",
+    ),
+    (
+        "GURU_PURNIMA",
+        Masa::Ashadha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: गुरुपूर्णिमा",
+    ),
+    (
+        "KAMIKA_EKADASHI",
+        Masa::Ashadha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 8 and VS 2083 p. 10: कामिकाएकादशीव्रत",
+    ),
+    (
+        "GUNLA_BEGINS",
+        Masa::Shravana,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: गुँलाधर्मारम्भ",
+    ),
+    (
+        "DHAPAKHEL_NAGDAHA",
+        Masa::Shravana,
+        Tithi::ShuklaPanchami,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: धापाखेल नागदह",
+    ),
+    (
+        "NAG_PANCHAMI",
+        Masa::Shravana,
+        Tithi::ShuklaPanchami,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: नागपञ्चमी",
+    ),
+    (
+        "TULSIDAS_JAYANTI",
+        Masa::Shravana,
+        Tithi::ShuklaSaptami,
+        "Nepal's national panchanga, VS 2082 p. 9: गोस्वामी तुलसीदासजयन्ती; VS 2083 p. 11: गोस्वामी तुलसीदास जयन्ती",
+    ),
+    (
+        "YALA_PANCHADAN",
+        Masa::Shravana,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 9: (यल पञ्चदान); VS 2083 p. 11: (यँलपञ्चदान)",
+    ),
+    (
+        "SHRAWAN_PUTRADA_EKADASHI",
+        Masa::Shravana,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: पुत्रदाएकादशीव्रत",
+    ),
+    (
+        "KWATI_PUNHI",
+        Masa::Shravana,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: व्याँजानके गुँ पुन्हि",
+    ),
+    (
+        "SANSKRIT_DAY",
+        Masa::Shravana,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: संस्कृतदिवस",
+    ),
+    (
+        "GAI_JATRA",
+        Masa::Shravana,
+        Tithi::KrishnaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: गाईजात्रा",
+    ),
+    (
+        "ROPAI_JATRA",
+        Masa::Shravana,
+        Tithi::KrishnaDvitiya,
+        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: रोपाईजात्रा",
+    ),
+    (
+        "CHANDRA_SHASHTHI",
+        Masa::Shravana,
+        Tithi::KrishnaShashthi,
+        "Nepal's national panchanga, VS 2083 p. 12: चन्द्रषष्ठी",
+    ),
+    (
+        "GUGA_NAVAMI",
+        Masa::Shravana,
+        Tithi::KrishnaNavami,
+        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: गूँगानवमी",
+    ),
+    (
+        "KUSHE_AUNSI",
+        Masa::Shravana,
+        Tithi::Amavasya,
+        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: कुशेऔंसी, बाबुको मुख हेर्नेदिन",
+    ),
+    (
+        "MOTIRAM_JAYANTI",
+        Masa::Shravana,
+        Tithi::Amavasya,
+        "Nepal's national panchanga, VS 2082 p. 10: मोतिजयन्ती; VS 2083 p. 12: मोतीजयन्ती",
+    ),
+    (
+        "GUNLA_ENDS",
+        Masa::Bhadrapada,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: गुँलाधर्मसमाप्ति",
+    ),
+    (
+        "DAR_KHANE_DIN",
+        Masa::Bhadrapada,
+        Tithi::ShuklaDvitiya,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: दरखाने दिन",
+    ),
+    (
+        "KOKHAJA_BIYE",
+        Masa::Bhadrapada,
+        Tithi::ShuklaPanchami,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: (क्वखजाविय)",
+    ),
+    (
+        "SURYA_SHASHTHI",
+        Masa::Bhadrapada,
+        Tithi::ShuklaShashthi,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: सूर्यषष्ठी",
+    ),
+    (
+        "KAYA_ASHTAMI",
+        Masa::Bhadrapada,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: काय अष्टमी",
+    ),
+    (
+        "ADUKHA_NAVAMI",
+        Masa::Bhadrapada,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: अदुःखनवमीव्रत",
+    ),
+    (
+        "HARIPARIVARTINI_EKADASHI",
+        Masa::Bhadrapada,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: हरिपरिवर्तिनी एकादशीव्रत",
+    ),
+    (
+        "INDRADHWAJA_UTTHAN",
+        Masa::Bhadrapada,
+        Tithi::ShuklaDwadashi,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: इन्द्रध्वजोत्थान (मतविए)",
+    ),
+    (
+        "ANANTA_CHATURDASHI",
+        Masa::Bhadrapada,
+        Tithi::ShuklaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: अनन्त चतुर्दशीव्रत",
+    ),
+    (
+        "INDRA_JATRA",
+        Masa::Bhadrapada,
+        Tithi::ShuklaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: कुमारीइन्द्रयात्रा",
+    ),
+    (
+        "BHAKTAPUR_SIDDHA_POKHARI_MELA",
+        Masa::Bhadrapada,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: भ.पु.सिद्धपोखरीमेला",
+    ),
+    (
+        "CHONAM_PARVA",
+        Masa::Bhadrapada,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 11: चेपाङचोनामपर्व; VS 2083 p. 13: चेपाङ-चोनामपर्व",
+    ),
+    (
+        "INDRADAHA_SNAN",
+        Masa::Bhadrapada,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: इन्द्रदहस्नान",
+    ),
+    (
+        "PUNCHALI_BHUJA",
+        Masa::Bhadrapada,
+        Tithi::KrishnaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: पुञ्चलीभूजा",
+    ),
+    (
+        "GATILA",
+        Masa::Bhadrapada,
+        Tithi::KrishnaTritiya,
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: (गातिला)",
+    ),
+    (
+        "JITIYA",
+        Masa::Bhadrapada,
+        Tithi::KrishnaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: (जितियापर्व)",
+    ),
+    (
+        "INDIRA_EKADASHI",
+        Masa::Bhadrapada,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: इन्दिराएकादशीव्रत",
+    ),
+    (
+        "MAGHA_SHRADDHA",
+        Masa::Bhadrapada,
+        Tithi::KrishnaTrayodashi,
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: मघाश्राद्ध",
+    ),
+    (
+        "PACHALI_BHAIRAV_JATRA",
+        Masa::Ashwina,
+        Tithi::ShuklaPanchami,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: पचलीभैरवयात्रा",
+    ),
+    (
+        "BILVA_NIMANTRAN",
+        Masa::Ashwina,
+        Tithi::ShuklaShashthi,
+        "Nepal's national panchanga, VS 2082 p. 13: विल्व निमन्त्रण; VS 2083 p. 15: बिल्वनिमन्त्रण",
+    ),
+    (
+        "PHULPATI",
+        Masa::Ashwina,
+        Tithi::ShuklaSaptami,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: फूलपाती",
+    ),
+    (
+        "MAHA_ASHTAMI",
+        Masa::Ashwina,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 13: महाअष्टमीव्रत; VS 2083 p. 15: महाष्टमीव्रत",
+    ),
+    (
+        "BUDDHAVATAR",
+        Masa::Ashwina,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: बौद्धावतार",
+    ),
+    (
+        "MAHA_NAVAMI",
+        Masa::Ashwina,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: महानवमी",
+    ),
+    (
+        "SYAKWA_TYAKWA",
+        Masa::Ashwina,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: (स्याक्वत्याक्व)",
+    ),
+    (
+        "CHAALA",
+        Masa::Ashwina,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2083 p. 15: (चालं)",
+    ),
+    (
+        "DEVI_VISARJAN",
+        Masa::Ashwina,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: देवी विसर्जन",
+    ),
+    (
+        "KHADGA_JATRA",
+        Masa::Ashwina,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: खड्गयात्रा",
+    ),
+    (
+        "ANNAPURNA_JATRA",
+        Masa::Ashwina,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 13: अन्नपूर्णयात्रा; VS 2083 p. 15: अन्नपूर्णायात्रा",
+    ),
+    (
+        "PAPANKUSHA_EKADASHI",
+        Masa::Ashwina,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: पापाङ्कुशा एकादशीव्रत",
+    ),
+    (
+        "KHANCHI_SARAI_PARVA",
+        Masa::Ashwina,
+        Tithi::ShuklaTrayodashi,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: खाँचीमा सरायपर्व",
+    ),
+    (
+        "AKHILBALI_PURTI",
+        Masa::Ashwina,
+        Tithi::ShuklaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 13: अखिलबलिपूर्ति (सिघया); VS 2083 p. 15: अखिलबलिपूर्ति",
+    ),
+    (
+        "SHREEGHA_JATRA",
+        Masa::Ashwina,
+        Tithi::ShuklaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: (सिघया), the Newar name (C692)",
+    ),
+    (
+        "ARGHA_SARAI_PARVA",
+        Masa::Ashwina,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 13: अर्घासरायपर्व; VS 2083 p. 15: अर्घामा सरायपर्व",
+    ),
+    (
+        "KARTIK_SNAN_BEGINS",
+        Masa::Ashwina,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 13: कार्तिकस्नान; VS 2083 p. 15: कार्तिकस्नान आरम्भ",
+    ),
+    (
+        "KATIN_PUNHI",
+        Masa::Ashwina,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: कतिं पुन्हि",
+    ),
+    (
+        "RADHASHTAMI",
+        Masa::Ashwina,
+        Tithi::KrishnaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: राधाष्टमी",
+    ),
+    (
+        "RAMA_EKADASHI",
+        Masa::Ashwina,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: रमाएकादशीव्रत",
+    ),
+    (
+        "DHANTERAS",
+        Masa::Ashwina,
+        Tithi::KrishnaDwadashi,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: धन्तेरस",
+    ),
+    (
+        "KAG_TIHAR",
+        Masa::Ashwina,
+        Tithi::KrishnaTrayodashi,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: कागतिहार",
+    ),
+    (
+        "SWONTI_CHARHE",
+        Masa::Ashwina,
+        Tithi::KrishnaTrayodashi,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: (स्वन्तिचह्रेपूजा)",
+    ),
+    (
+        "KUKUR_TIHAR",
+        Masa::Ashwina,
+        Tithi::KrishnaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: कुकुरतिहार",
+    ),
+    (
+        "NARAK_CHATURDASHI",
+        Masa::Ashwina,
+        Tithi::KrishnaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: नरक चतुर्दशी",
+    ),
+    (
+        "GOVARDHAN_PUJA",
+        Masa::Kartika,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: गोवर्धनपूजा",
+    ),
+    (
+        "HALI_TIHAR",
+        Masa::Kartika,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: हलितिहार",
+    ),
+    (
+        "CHHATH",
+        Masa::Kartika,
+        Tithi::ShuklaShashthi,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: छठपर्व",
+    ),
+    (
+        "GOPASHTAMI",
+        Masa::Kartika,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 15: गोपअष्टमी; VS 2083 p. 17: गोपाष्टमी",
+    ),
+    (
+        "MUKHA_ASHTAMI",
+        Masa::Kartika,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 15: मुखअष्टमी; VS 2083 p. 17: मुखाष्टमी",
+    ),
+    (
+        "SILANGA_MAHARUDRA_KOTIHOM_MELA",
+        Masa::Kartika,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: बैतडी सिलङ्गामा महारुद्र कोटीहोममेला",
+    ),
+    (
+        "HETAUDA_KUSHMANDA_SAROBAR_MELA",
+        Masa::Kartika,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: हेटौडा कुष्माण्ड सरोवरमेला",
+    ),
+    (
+        "KUSHMANDA_NAVAMI",
+        Masa::Kartika,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: कुष्माण्डनवमी",
+    ),
+    (
+        "SAKWO_CHANGU_WONE",
+        Masa::Kartika,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 15: साँखुचाँगुमेला (सकोचंगुवने); VS 2083 p. 17: साँखुचाँगुमेला(सकोचंगुवने)",
+    ),
+    (
+        "SATYAYUGADI",
+        Masa::Kartika,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: सत्ययुगादि",
+    ),
+    (
+        "BALAMBU_MAHALAXMI_JATRA",
+        Masa::Kartika,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: बलम्बु महालक्ष्मीयात्रा",
+    ),
+    (
+        "FULKHARKA_GANGAJAMUNA_MELA",
+        Masa::Kartika,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: धादिङ फूलखर्क गङ्गाजमुनामेला",
+    ),
+    (
+        "CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN",
+        Masa::Kartika,
+        Tithi::ShuklaDwadashi,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: चाँगुनारायण अखण्डदीपदर्शन",
+    ),
+    (
+        "SHIVA_BAIKUNTHA_CHATURDASHI",
+        Masa::Kartika,
+        Tithi::ShuklaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: बैकुण्ठ चतुर्दशीव्रत",
+    ),
+    (
+        "CHATURMAS_ENDS",
+        Masa::Kartika,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 15: चतुर्मासव्रत समाप्ति; VS 2083 p. 17: कार्तिकस्नान चतुर्मासव्रत समाप्ति",
+    ),
+    (
+        "GURU_NANAK_JAYANTI",
+        Masa::Kartika,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: गुरुनानकजयन्ती",
+    ),
+    (
+        "KARTIK_SNAN_ENDS",
+        Masa::Kartika,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: कार्तिकस्नान चतुर्मासव्रत समाप्ति",
+    ),
+    (
+        "THANKOT_MAHALAXMI_JATRA",
+        Masa::Kartika,
+        Tithi::KrishnaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: थानकोट महालक्ष्मीयात्रा",
+    ),
+    (
+        "GUHYESHWARI_JATRA",
+        Masa::Kartika,
+        Tithi::KrishnaDashami,
+        "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: गुह्येश्वरीयात्रा",
+    ),
+    (
+        "UTPATTIKA_EKADASHI",
+        Masa::Kartika,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: उत्पत्तिका एकादशीव्रत",
+    ),
+    (
+        "BALA_CHATURDASHI_BALA",
+        Masa::Kartika,
+        Tithi::KrishnaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: बालाचतुर्दशी",
+    ),
+    (
+        "SHADANANDA_JAYANTI",
+        Masa::Margashirsha,
+        Tithi::ShuklaPanchami,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: आबाल ब्रह्मचारी षडानन्दजयन्ती",
+    ),
+    (
+        "VIVAH_PANCHAMI",
+        Masa::Margashirsha,
+        Tithi::ShuklaPanchami,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: विवाहपञ्चमी",
+    ),
+    (
+        "BAKHUMADA",
+        Masa::Margashirsha,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: (वखुमद)",
+    ),
+    (
+        "PANGA_VAISHNAVI_DEVI_JATRA",
+        Masa::Margashirsha,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: पाङ्गा वैष्णवदेवीयात्रा",
+    ),
+    (
+        "KIRTIPUR_INDRAYANI_JATRA",
+        Masa::Margashirsha,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: कीर्तिपुरमा इन्द्राणीयात्रा",
+    ),
+    (
+        "GITA_JAYANTI",
+        Masa::Margashirsha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: गीताजयन्ती",
+    ),
+    (
+        "MOKSHADA_EKADASHI",
+        Masa::Margashirsha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: मोक्षदा एकादशीव्रत",
+    ),
+    (
+        "DHANYA_PURNIMA",
+        Masa::Margashirsha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: धान्यपूर्णिमा",
+    ),
+    (
+        "UDHAULI",
+        Masa::Margashirsha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: उधौलीपर्व",
+    ),
+    (
+        "YOMARI_PUNHI",
+        Masa::Margashirsha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 17: (योमरीपून्हि, थिंलापून्हि); VS 2083 p. 19: (योमरीपून्हि)",
+    ),
+    (
+        "SAFALA_EKADASHI",
+        Masa::Margashirsha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 18 and VS 2083 p. 20: सफला एकादशीव्रत",
+    ),
+    (
+        "GAYA_MAUNI_AUNSI",
+        Masa::Margashirsha,
+        Tithi::Amavasya,
+        "Nepal's national panchanga, VS 2082 p. 18: गयामौनी औसी; VS 2083 p. 20: गयामौनी औंसी",
+    ),
+    (
+        "TOL_LHOSAR",
+        Masa::Pausha,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 21: तोल ल्होसार",
+    ),
+    (
+        "SETO_MACHHINDRANATH_SNAN",
+        Masa::Pausha,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 19: श्रीश्वेतमत्स्येन्द्रनाथस्नान (जनबहाद्यन्हव); VS 2083 p. 21: श्रीश्वेतमत्स्येन्द्रनाथस्नान (जनबाद्यन्हव)",
+    ),
+    (
+        "MUSYADULI",
+        Masa::Pausha,
+        Tithi::ShuklaDwadashi,
+        "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 21: मुस्याडुली",
+    ),
+    (
+        "CHANGUNARAYAN_KALASH_JATRA",
+        Masa::Pausha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 21: (चाँगुनारायण कलशयात्रा)",
+    ),
+    (
+        "MAGH_SNAN_BEGINS",
+        Masa::Pausha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 21: माघस्नानसुरु",
+    ),
+    (
+        "SWASTHANI_VRAT_BEGINS",
+        Masa::Pausha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 21: श्रीस्वस्थानीव्रत सुरु",
+    ),
+    (
+        "SHATTILA_EKADASHI",
+        Masa::Pausha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 22: षट्तिला एकादशीव्रत",
+    ),
+    (
+        "ARYAGHAT_MADHAV_NARAYAN_MELA",
+        Masa::Pausha,
+        Tithi::Amavasya,
+        "Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 22: आर्यघाटमा माधवनारायण मेला",
+    ),
+    (
+        "SHREE_BALLABH_JAYANTI",
+        Masa::Magha,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: श्रीवल्लभजयन्ती",
+    ),
+    (
+        "BASANTA_PANCHAMI",
+        Masa::Magha,
+        Tithi::ShuklaPanchami,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: वसन्तपञ्चमी",
+    ),
+    (
+        "SKANDA_SHASHTHI",
+        Masa::Magha,
+        Tithi::ShuklaShashthi,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: स्कन्दषष्ठी",
+    ),
+    (
+        "ACHALA_SAPTAMI",
+        Masa::Magha,
+        Tithi::ShuklaSaptami,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: अचलासप्तमी",
+    ),
+    (
+        "BHISHMASHTAMI",
+        Masa::Magha,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: भीष्माष्टमी",
+    ),
+    (
+        "DRONA_NAVAMI",
+        Masa::Magha,
+        Tithi::ShuklaNavami,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: द्रोणनवमी",
+    ),
+    (
+        "SHALYA_DASHAMI",
+        Masa::Magha,
+        Tithi::ShuklaDashami,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: शल्यदशमी",
+    ),
+    (
+        "BHISHMA_DWADASHI",
+        Masa::Magha,
+        Tithi::ShuklaDwadashi,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: भीष्मद्वादशी",
+    ),
+    (
+        "CHANGU_MADHAV_NARAYAN_MELA",
+        Masa::Magha,
+        Tithi::ShuklaDwadashi,
+        "Nepal's national panchanga, VS 2082 p. 21: चाँगुमाधवनारायणमेला; VS 2083 p. 23: चाँगुनारायणमेला",
+    ),
+    (
+        "WATU_MAGH_JATRA",
+        Masa::Magha,
+        Tithi::ShuklaDwadashi,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: वटुमाघयात्रा",
+    ),
+    (
+        "MAGH_SNAN_ENDS",
+        Masa::Magha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: माघस्नान समाप्ति",
+    ),
+    (
+        "SWASTHANI_VRAT_ENDS",
+        Masa::Magha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: श्रीस्वस्थानीव्रतसमाप्ति",
+    ),
+    (
+        "CHIR_SWAYEGU",
+        Masa::Phalguna,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 23: चिरोत्थान; VS 2083 p. 25: चिरस्वाय",
+    ),
+    (
+        "AMALAKI_EKADASHI",
+        Masa::Phalguna,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 25: आमलकी एकादशीव्रत",
+    ),
+    (
+        "GOVINDA_DWADASHI",
+        Masa::Phalguna,
+        Tithi::ShuklaDwadashi,
+        "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 25: गोविन्दद्वादशी",
+    ),
+    (
+        "NALA_MACHHINDRANATH_RATH_JATRA",
+        Masa::Phalguna,
+        Tithi::KrishnaTritiya,
+        "Nepal's national panchanga, VS 2082 p. 24: नालायात्रा; VS 2083 p. 26: नालायात्रा, नाला मत्स्येन्द्रनाथ यात्रा",
+    ),
+    (
+        "SHITALASHTAMI",
+        Masa::Phalguna,
+        Tithi::KrishnaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 24 and VS 2083 p. 26: शीतलाष्टमी",
+    ),
+    (
+        "PAPMOCHANI_EKADASHI",
+        Masa::Phalguna,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 24 and VS 2083 p. 26: पापमोचनी एकादशीव्रत",
+    ),
+];
+
 /// The fitted rules kept in every month, the adhika included, as the
 /// committee prints them in both editions: key, what is kept, fit, and
 /// where the days are printed (§3.4, §3.5).
@@ -686,6 +1652,14 @@ const SAME_DAY: [(&str, &str, &str); 13] = [
     ),
 ];
 
+/// The days printed the day after another rule's day: key, the rule, and
+/// where.
+const DAY_AFTER: [(&str, &str, &str); 1] = [(
+    "KOKA_KAUSHIKI_SANGAM_MELA",
+    "DHANYA_PURNIMA",
+    "Nepal's national panchanga, VS 2082 p. 18: कोशिकोका सङ्गममा मेला; VS 2083 p. 20: कोशीकोका सङ्गममा मेला: the day after DHANYA_PURNIMA, as a patro printed in Nepal gives it on all 13 of its verified days from 2013 to 2025 (C690)",
+)];
+
 impl FestivalRule {
     /// The days Nepal's national panchanga prints beyond [`FestivalRule::nepal`],
     /// each rule fitted to the committee's VS 2082 and 2083 editions and
@@ -709,7 +1683,11 @@ impl FestivalRule {
         // is kept in an adhika month too.
         fn in_adhika(key: &str, month: Option<Masa>) -> InAdhika {
             match key {
-                "DASHAHARA_SNANA_ARAMBHA" | "GANGA_DASHAHARA" => InAdhika::First,
+                "DASHAHARA_SNANA_ARAMBHA"
+                | "GANGA_DASHAHARA"
+                | "GANGA_PUJA"
+                | "RAMESHWAR_PUJA"
+                | "GURU_PADMASAMBHAVA_JAYANTI" => InAdhika::First,
                 "ANALA_PUNHI" => InAdhika::Only,
                 _ if month.is_none() => InAdhika::Also,
                 _ => InAdhika::Nija,
@@ -718,10 +1696,14 @@ impl FestivalRule {
         let yearly = RULES.iter().map(|&(key, month, tithi, fit, printed)| {
             (key, Some(month), tithi.into(), fit, printed)
         });
+        let at_sunrise = AT_SUNRISE.iter().map(|&(key, month, tithi, printed)| {
+            (key, Some(month), tithi.into(), Fit::Udaya, printed)
+        });
         let monthly = EVERY_MONTH
             .iter()
             .map(|&(key, occurs, fit, printed)| (key, None, occurs, fit, printed));
         yearly
+            .chain(at_sunrise)
             .chain(monthly)
             .map(|(key, month, occurs, fit, printed)| {
                 let (at, decide, otherwise, reading) = fit.decide();
@@ -742,9 +1724,9 @@ impl FestivalRule {
 }
 
 impl FollowingRule {
-    /// The days Nepal's national panchanga prints on another rule's day,
-    /// beyond [`FollowingRule::nepal`]: each counts no days from a rule of
-    /// [`FestivalRule::nepal`] or [`FestivalRule::nepal_panchanga`].
+    /// The days Nepal's national panchanga prints on another rule's day, or
+    /// the day after it, beyond [`FollowingRule::nepal`]: each counts from a
+    /// rule of [`FestivalRule::nepal`] or [`FestivalRule::nepal_panchanga`].
     ///
     /// ```
     /// use teistro_panchanga::festival::FollowingRule;
@@ -756,13 +1738,19 @@ impl FollowingRule {
     /// ```
     #[must_use]
     pub fn nepal_panchanga() -> Vec<FollowingRule> {
-        SAME_DAY
+        let same_day = SAME_DAY
             .iter()
-            .map(|&(key, after, source)| FollowingRule {
+            .map(|&(key, after, source)| (key, after, 0, source));
+        let day_after = DAY_AFTER
+            .iter()
+            .map(|&(key, after, source)| (key, after, 1, source));
+        same_day
+            .chain(day_after)
+            .map(|(key, after, days, source)| FollowingRule {
                 key: key.to_owned(),
                 source: source.to_owned(),
                 after: after.to_owned(),
-                days: 0,
+                days,
             })
             .collect()
     }

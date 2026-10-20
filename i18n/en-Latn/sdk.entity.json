@@ -3404,6 +3404,646 @@
       "name": "Gyalpo Lhosar",
       "prose": "Gyalpo Lhosar, the Sherpa and Tibetan new year",
       "iast": "Gyalpo Lhosar"
+    },
+    "SAMVATSARA_ARAMBHA": {
+      "name": "Samvatsara Arambha",
+      "prose": "Samvatsara Arambha"
+    },
+    "GAURI_VRAT": {
+      "name": "Gauri Vrat",
+      "prose": "Gauri Vrat"
+    },
+    "MAHAVIR_JAYANTI": {
+      "name": "Mahavir Jayanti",
+      "prose": "Mahavir Jayanti"
+    },
+    "BALAJU_BAISDHARA_MELA": {
+      "name": "Balaju Baisdhara Mela",
+      "prose": "Balaju Baisdhara Mela"
+    },
+    "HANUMAN_JAYANTI": {
+      "name": "Hanuman Jayanti",
+      "prose": "Hanuman Jayanti"
+    },
+    "BISHALNAGAR_VAISHNAVI_DEVI_JATRA": {
+      "name": "Bishalnagar Vaishnavi Devi Jatra",
+      "prose": "Bishalnagar Vaishnavi Devi Jatra"
+    },
+    "CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA": {
+      "name": "Changunarayan Chhinnamasta Kileshwor Mulrath Jatra",
+      "prose": "Changunarayan Chhinnamasta Kileshwor Mulrath Jatra"
+    },
+    "MATA_TIRTHA_AUNSI": {
+      "name": "Mata Tirtha Aunsi",
+      "prose": "Mata Tirtha Aunsi"
+    },
+    "RATO_MACHHINDRANATH_RATHAROHAN": {
+      "name": "Rato Machhindranath Ratharohan",
+      "prose": "Rato Machhindranath Ratharohan"
+    },
+    "AKSHAYA_TRITIYA": {
+      "name": "Akshaya Tritiya",
+      "prose": "Akshaya Tritiya"
+    },
+    "TRETAYUGADI": {
+      "name": "Tretayugadi",
+      "prose": "Tretayugadi"
+    },
+    "RATO_MACHHINDRANATH_RATH_JATRA_BEGINS": {
+      "name": "Rato Machhindranath Rath Jatra Begins",
+      "prose": "Rato Machhindranath Rath Jatra Begins"
+    },
+    "PASHUPATINATH_DAMAN_PUSHPARPAN": {
+      "name": "Pashupatinath Daman Pushparpan",
+      "prose": "Pashupatinath Daman Pushparpan"
+    },
+    "MOHINI_EKADASHI": {
+      "name": "Mohini Ekadashi",
+      "prose": "Mohini Ekadashi"
+    },
+    "BAISAKH_SNAN_ENDS": {
+      "name": "Baisakh Snan Ends",
+      "prose": "Baisakh Snan Ends"
+    },
+    "BUDDHA_JAYANTI": {
+      "name": "Buddha Jayanti",
+      "prose": "Buddha Jayanti"
+    },
+    "CHANDI_PURNIMA": {
+      "name": "Chandi Purnima",
+      "prose": "Chandi Purnima"
+    },
+    "GORAKHNATH_JAYANTI": {
+      "name": "Gorakhnath Jayanti",
+      "prose": "Gorakhnath Jayanti"
+    },
+    "UBHAULI": {
+      "name": "Ubhauli",
+      "prose": "Ubhauli"
+    },
+    "APARA_EKADASHI": {
+      "name": "Apara Ekadashi",
+      "prose": "Apara Ekadashi"
+    },
+    "SHANI_JAYANTI": {
+      "name": "Shani Jayanti",
+      "prose": "Shani Jayanti"
+    },
+    "BHAKTAPUR_CHANDI_BHAGAWATI_JATRA": {
+      "name": "Bhaktapur Chandi Bhagawati Jatra",
+      "prose": "Bhaktapur Chandi Bhagawati Jatra"
+    },
+    "KUMAR_SHASHTHI": {
+      "name": "Kumar Shashthi",
+      "prose": "Kumar Shashthi"
+    },
+    "SITHI_NAKHA": {
+      "name": "Sithi Nakha",
+      "prose": "Sithi Nakha"
+    },
+    "VAYU_ASHTAMI": {
+      "name": "Vayu Ashtami",
+      "prose": "Vayu Ashtami"
+    },
+    "GANGA_PUJA": {
+      "name": "Ganga Puja",
+      "prose": "Ganga Puja"
+    },
+    "GURU_PADMASAMBHAVA_JAYANTI": {
+      "name": "Guru Padmasambhava Jayanti",
+      "prose": "Guru Padmasambhava Jayanti"
+    },
+    "RAMESHWAR_PUJA": {
+      "name": "Rameshwar Puja",
+      "prose": "Rameshwar Puja"
+    },
+    "JYA_PUNHI": {
+      "name": "Jya Punhi",
+      "prose": "Jya Punhi"
+    },
+    "KABIR_JAYANTI": {
+      "name": "Kabir Jayanti",
+      "prose": "Kabir Jayanti"
+    },
+    "MASTA_PURNIMA": {
+      "name": "Masta Purnima",
+      "prose": "Masta Purnima"
+    },
+    "BHAL_BHAL_ASHTAMI": {
+      "name": "Bhal Bhal Ashtami",
+      "prose": "Bhal Bhal Ashtami"
+    },
+    "DEOPATAN_TRISHUL_JATRA": {
+      "name": "Deopatan Trishul Jatra",
+      "prose": "Deopatan Trishul Jatra"
+    },
+    "NAKWA_DISHI": {
+      "name": "Nakwa Dishi",
+      "prose": "Nakwa Dishi"
+    },
+    "JAGANNATH_RATH_JATRA": {
+      "name": "Jagannath Rath Jatra",
+      "prose": "Jagannath Rath Jatra"
+    },
+    "DEOPATAN_GANGAMAI_RATH_JATRA": {
+      "name": "Deopatan Gangamai Rath Jatra",
+      "prose": "Deopatan Gangamai Rath Jatra"
+    },
+    "SURYA_PUJA": {
+      "name": "Surya Puja",
+      "prose": "Surya Puja"
+    },
+    "CHATURMAS_BEGINS": {
+      "name": "Chaturmas Begins",
+      "prose": "Chaturmas Begins"
+    },
+    "HARISHAYANI_EKADASHI": {
+      "name": "Harishayani Ekadashi",
+      "prose": "Harishayani Ekadashi"
+    },
+    "DAKSHINAMURTI_PUJA": {
+      "name": "Dakshinamurti Puja",
+      "prose": "Dakshinamurti Puja"
+    },
+    "DILLA_PUNHI": {
+      "name": "Dilla Punhi",
+      "prose": "Dilla Punhi"
+    },
+    "GURU_PURNIMA": {
+      "name": "Guru Purnima",
+      "prose": "Guru Purnima"
+    },
+    "KAMIKA_EKADASHI": {
+      "name": "Kamika Ekadashi",
+      "prose": "Kamika Ekadashi"
+    },
+    "GUNLA_BEGINS": {
+      "name": "Gunla Begins",
+      "prose": "Gunla Begins"
+    },
+    "DHAPAKHEL_NAGDAHA": {
+      "name": "Dhapakhel Nagdaha",
+      "prose": "Dhapakhel Nagdaha"
+    },
+    "NAG_PANCHAMI": {
+      "name": "Nag Panchami",
+      "prose": "Nag Panchami"
+    },
+    "TULSIDAS_JAYANTI": {
+      "name": "Tulsidas Jayanti",
+      "prose": "Tulsidas Jayanti"
+    },
+    "YALA_PANCHADAN": {
+      "name": "Yala Panchadan",
+      "prose": "Yala Panchadan"
+    },
+    "SHRAWAN_PUTRADA_EKADASHI": {
+      "name": "Shrawan Putrada Ekadashi",
+      "prose": "Shrawan Putrada Ekadashi"
+    },
+    "KWATI_PUNHI": {
+      "name": "Kwati Punhi",
+      "prose": "Kwati Punhi"
+    },
+    "SANSKRIT_DAY": {
+      "name": "Sanskrit Day",
+      "prose": "Sanskrit Day"
+    },
+    "GAI_JATRA": {
+      "name": "Gai Jatra",
+      "prose": "Gai Jatra"
+    },
+    "ROPAI_JATRA": {
+      "name": "Ropai Jatra",
+      "prose": "Ropai Jatra"
+    },
+    "CHANDRA_SHASHTHI": {
+      "name": "Chandra Shashthi",
+      "prose": "Chandra Shashthi"
+    },
+    "GUGA_NAVAMI": {
+      "name": "Guga Navami",
+      "prose": "Guga Navami"
+    },
+    "KUSHE_AUNSI": {
+      "name": "Kushe Aunsi",
+      "prose": "Kushe Aunsi"
+    },
+    "MOTIRAM_JAYANTI": {
+      "name": "Motiram Jayanti",
+      "prose": "Motiram Jayanti"
+    },
+    "GUNLA_ENDS": {
+      "name": "Gunla Ends",
+      "prose": "Gunla Ends"
+    },
+    "DAR_KHANE_DIN": {
+      "name": "Dar Khane Din",
+      "prose": "Dar Khane Din"
+    },
+    "KOKHAJA_BIYE": {
+      "name": "Kokhaja Biye",
+      "prose": "Kokhaja Biye"
+    },
+    "SURYA_SHASHTHI": {
+      "name": "Surya Shashthi",
+      "prose": "Surya Shashthi"
+    },
+    "KAYA_ASHTAMI": {
+      "name": "Kaya Ashtami",
+      "prose": "Kaya Ashtami"
+    },
+    "ADUKHA_NAVAMI": {
+      "name": "Adukha Navami",
+      "prose": "Adukha Navami"
+    },
+    "HARIPARIVARTINI_EKADASHI": {
+      "name": "Hariparivartini Ekadashi",
+      "prose": "Hariparivartini Ekadashi"
+    },
+    "INDRADHWAJA_UTTHAN": {
+      "name": "Indradhwaja Utthan",
+      "prose": "Indradhwaja Utthan"
+    },
+    "ANANTA_CHATURDASHI": {
+      "name": "Ananta Chaturdashi",
+      "prose": "Ananta Chaturdashi"
+    },
+    "INDRA_JATRA": {
+      "name": "Indra Jatra",
+      "prose": "Indra Jatra"
+    },
+    "BHAKTAPUR_SIDDHA_POKHARI_MELA": {
+      "name": "Bhaktapur Siddha Pokhari Mela",
+      "prose": "Bhaktapur Siddha Pokhari Mela"
+    },
+    "CHONAM_PARVA": {
+      "name": "Chonam Parva",
+      "prose": "Chonam Parva"
+    },
+    "INDRADAHA_SNAN": {
+      "name": "Indradaha Snan",
+      "prose": "Indradaha Snan"
+    },
+    "PUNCHALI_BHUJA": {
+      "name": "Punchali Bhuja",
+      "prose": "Punchali Bhuja"
+    },
+    "GATILA": {
+      "name": "Gatila",
+      "prose": "Gatila"
+    },
+    "JITIYA": {
+      "name": "Jitiya",
+      "prose": "Jitiya"
+    },
+    "INDIRA_EKADASHI": {
+      "name": "Indira Ekadashi",
+      "prose": "Indira Ekadashi"
+    },
+    "MAGHA_SHRADDHA": {
+      "name": "Magha Shraddha",
+      "prose": "Magha Shraddha"
+    },
+    "PACHALI_BHAIRAV_JATRA": {
+      "name": "Pachali Bhairav Jatra",
+      "prose": "Pachali Bhairav Jatra"
+    },
+    "BILVA_NIMANTRAN": {
+      "name": "Bilva Nimantran",
+      "prose": "Bilva Nimantran"
+    },
+    "PHULPATI": {
+      "name": "Phulpati",
+      "prose": "Phulpati"
+    },
+    "MAHA_ASHTAMI": {
+      "name": "Maha Ashtami",
+      "prose": "Maha Ashtami"
+    },
+    "BUDDHAVATAR": {
+      "name": "Buddhavatar",
+      "prose": "Buddhavatar"
+    },
+    "MAHA_NAVAMI": {
+      "name": "Maha Navami",
+      "prose": "Maha Navami"
+    },
+    "SYAKWA_TYAKWA": {
+      "name": "Syakwa Tyakwa",
+      "prose": "Syakwa Tyakwa"
+    },
+    "CHAALA": {
+      "name": "Chaala",
+      "prose": "Chaala"
+    },
+    "DEVI_VISARJAN": {
+      "name": "Devi Visarjan",
+      "prose": "Devi Visarjan"
+    },
+    "KHADGA_JATRA": {
+      "name": "Khadga Jatra",
+      "prose": "Khadga Jatra"
+    },
+    "ANNAPURNA_JATRA": {
+      "name": "Annapurna Jatra",
+      "prose": "Annapurna Jatra"
+    },
+    "PAPANKUSHA_EKADASHI": {
+      "name": "Papankusha Ekadashi",
+      "prose": "Papankusha Ekadashi"
+    },
+    "KHANCHI_SARAI_PARVA": {
+      "name": "Khanchi Sarai Parva",
+      "prose": "Khanchi Sarai Parva"
+    },
+    "AKHILBALI_PURTI": {
+      "name": "Akhilbali Purti",
+      "prose": "Akhilbali Purti"
+    },
+    "SHREEGHA_JATRA": {
+      "name": "Shreegha Jatra",
+      "prose": "Shreegha Jatra"
+    },
+    "ARGHA_SARAI_PARVA": {
+      "name": "Argha Sarai Parva",
+      "prose": "Argha Sarai Parva"
+    },
+    "KARTIK_SNAN_BEGINS": {
+      "name": "Kartik Snan Begins",
+      "prose": "Kartik Snan Begins"
+    },
+    "KATIN_PUNHI": {
+      "name": "Katin Punhi",
+      "prose": "Katin Punhi"
+    },
+    "RADHASHTAMI": {
+      "name": "Radhashtami",
+      "prose": "Radhashtami"
+    },
+    "RAMA_EKADASHI": {
+      "name": "Rama Ekadashi",
+      "prose": "Rama Ekadashi"
+    },
+    "DHANTERAS": {
+      "name": "Dhanteras",
+      "prose": "Dhanteras"
+    },
+    "KAG_TIHAR": {
+      "name": "Kag Tihar",
+      "prose": "Kag Tihar"
+    },
+    "SWONTI_CHARHE": {
+      "name": "Swonti Charhe",
+      "prose": "Swonti Charhe"
+    },
+    "KUKUR_TIHAR": {
+      "name": "Kukur Tihar",
+      "prose": "Kukur Tihar"
+    },
+    "NARAK_CHATURDASHI": {
+      "name": "Narak Chaturdashi",
+      "prose": "Narak Chaturdashi"
+    },
+    "GOVARDHAN_PUJA": {
+      "name": "Govardhan Puja",
+      "prose": "Govardhan Puja"
+    },
+    "HALI_TIHAR": {
+      "name": "Hali Tihar",
+      "prose": "Hali Tihar"
+    },
+    "CHHATH": {
+      "name": "Chhath",
+      "prose": "Chhath"
+    },
+    "GOPASHTAMI": {
+      "name": "Gopashtami",
+      "prose": "Gopashtami"
+    },
+    "MUKHA_ASHTAMI": {
+      "name": "Mukha Ashtami",
+      "prose": "Mukha Ashtami"
+    },
+    "SILANGA_MAHARUDRA_KOTIHOM_MELA": {
+      "name": "Silanga Maharudra Kotihom Mela",
+      "prose": "Silanga Maharudra Kotihom Mela"
+    },
+    "HETAUDA_KUSHMANDA_SAROBAR_MELA": {
+      "name": "Hetauda Kushmanda Sarobar Mela",
+      "prose": "Hetauda Kushmanda Sarobar Mela"
+    },
+    "KUSHMANDA_NAVAMI": {
+      "name": "Kushmanda Navami",
+      "prose": "Kushmanda Navami"
+    },
+    "SAKWO_CHANGU_WONE": {
+      "name": "Sakwo Changu Wone",
+      "prose": "Sakwo Changu Wone"
+    },
+    "SATYAYUGADI": {
+      "name": "Satyayugadi",
+      "prose": "Satyayugadi"
+    },
+    "BALAMBU_MAHALAXMI_JATRA": {
+      "name": "Balambu Mahalaxmi Jatra",
+      "prose": "Balambu Mahalaxmi Jatra"
+    },
+    "FULKHARKA_GANGAJAMUNA_MELA": {
+      "name": "Fulkharka Gangajamuna Mela",
+      "prose": "Fulkharka Gangajamuna Mela"
+    },
+    "CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN": {
+      "name": "Changunarayan Akhanda Deep Darshan",
+      "prose": "Changunarayan Akhanda Deep Darshan"
+    },
+    "SHIVA_BAIKUNTHA_CHATURDASHI": {
+      "name": "Shiva Baikuntha Chaturdashi",
+      "prose": "Shiva Baikuntha Chaturdashi"
+    },
+    "CHATURMAS_ENDS": {
+      "name": "Chaturmas Ends",
+      "prose": "Chaturmas Ends"
+    },
+    "GURU_NANAK_JAYANTI": {
+      "name": "Guru Nanak Jayanti",
+      "prose": "Guru Nanak Jayanti"
+    },
+    "KARTIK_SNAN_ENDS": {
+      "name": "Kartik Snan Ends",
+      "prose": "Kartik Snan Ends"
+    },
+    "THANKOT_MAHALAXMI_JATRA": {
+      "name": "Thankot Mahalaxmi Jatra",
+      "prose": "Thankot Mahalaxmi Jatra"
+    },
+    "GUHYESHWARI_JATRA": {
+      "name": "Guhyeshwari Jatra",
+      "prose": "Guhyeshwari Jatra"
+    },
+    "UTPATTIKA_EKADASHI": {
+      "name": "Utpattika Ekadashi",
+      "prose": "Utpattika Ekadashi"
+    },
+    "BALA_CHATURDASHI_BALA": {
+      "name": "Bala Chaturdashi",
+      "prose": "Bala Chaturdashi"
+    },
+    "SHADANANDA_JAYANTI": {
+      "name": "Shadananda Jayanti",
+      "prose": "Shadananda Jayanti"
+    },
+    "VIVAH_PANCHAMI": {
+      "name": "Vivah Panchami",
+      "prose": "Vivah Panchami"
+    },
+    "BAKHUMADA": {
+      "name": "Bakhumada",
+      "prose": "Bakhumada"
+    },
+    "PANGA_VAISHNAVI_DEVI_JATRA": {
+      "name": "Panga Vaishnavi Devi Jatra",
+      "prose": "Panga Vaishnavi Devi Jatra"
+    },
+    "KIRTIPUR_INDRAYANI_JATRA": {
+      "name": "Kirtipur Indrayani Jatra",
+      "prose": "Kirtipur Indrayani Jatra"
+    },
+    "GITA_JAYANTI": {
+      "name": "Gita Jayanti",
+      "prose": "Gita Jayanti"
+    },
+    "MOKSHADA_EKADASHI": {
+      "name": "Mokshada Ekadashi",
+      "prose": "Mokshada Ekadashi"
+    },
+    "DHANYA_PURNIMA": {
+      "name": "Dhanya Purnima",
+      "prose": "Dhanya Purnima"
+    },
+    "UDHAULI": {
+      "name": "Udhauli",
+      "prose": "Udhauli"
+    },
+    "YOMARI_PUNHI": {
+      "name": "Yomari Punhi",
+      "prose": "Yomari Punhi"
+    },
+    "SAFALA_EKADASHI": {
+      "name": "Safala Ekadashi",
+      "prose": "Safala Ekadashi"
+    },
+    "GAYA_MAUNI_AUNSI": {
+      "name": "Gaya Mauni Aunsi",
+      "prose": "Gaya Mauni Aunsi"
+    },
+    "TOL_LHOSAR": {
+      "name": "Tol Lhosar",
+      "prose": "Tol Lhosar"
+    },
+    "SETO_MACHHINDRANATH_SNAN": {
+      "name": "Seto Machhindranath Snan",
+      "prose": "Seto Machhindranath Snan"
+    },
+    "MUSYADULI": {
+      "name": "Musyaduli",
+      "prose": "Musyaduli"
+    },
+    "CHANGUNARAYAN_KALASH_JATRA": {
+      "name": "Changunarayan Kalash Jatra",
+      "prose": "Changunarayan Kalash Jatra"
+    },
+    "MAGH_SNAN_BEGINS": {
+      "name": "Magh Snan Begins",
+      "prose": "Magh Snan Begins"
+    },
+    "SWASTHANI_VRAT_BEGINS": {
+      "name": "Swasthani Vrat Begins",
+      "prose": "Swasthani Vrat Begins"
+    },
+    "SHATTILA_EKADASHI": {
+      "name": "Shattila Ekadashi",
+      "prose": "Shattila Ekadashi"
+    },
+    "ARYAGHAT_MADHAV_NARAYAN_MELA": {
+      "name": "Aryaghat Madhav Narayan Mela",
+      "prose": "Aryaghat Madhav Narayan Mela"
+    },
+    "SHREE_BALLABH_JAYANTI": {
+      "name": "Shree Ballabh Jayanti",
+      "prose": "Shree Ballabh Jayanti"
+    },
+    "BASANTA_PANCHAMI": {
+      "name": "Basanta Panchami",
+      "prose": "Basanta Panchami"
+    },
+    "SKANDA_SHASHTHI": {
+      "name": "Skanda Shashthi",
+      "prose": "Skanda Shashthi"
+    },
+    "ACHALA_SAPTAMI": {
+      "name": "Achala Saptami",
+      "prose": "Achala Saptami"
+    },
+    "BHISHMASHTAMI": {
+      "name": "Bhishmashtami",
+      "prose": "Bhishmashtami"
+    },
+    "DRONA_NAVAMI": {
+      "name": "Drona Navami",
+      "prose": "Drona Navami"
+    },
+    "SHALYA_DASHAMI": {
+      "name": "Shalya Dashami",
+      "prose": "Shalya Dashami"
+    },
+    "BHISHMA_DWADASHI": {
+      "name": "Bhishma Dwadashi",
+      "prose": "Bhishma Dwadashi"
+    },
+    "CHANGU_MADHAV_NARAYAN_MELA": {
+      "name": "Changu Madhav Narayan Mela",
+      "prose": "Changu Madhav Narayan Mela"
+    },
+    "WATU_MAGH_JATRA": {
+      "name": "Watu Magh Jatra",
+      "prose": "Watu Magh Jatra"
+    },
+    "MAGH_SNAN_ENDS": {
+      "name": "Magh Snan Ends",
+      "prose": "Magh Snan Ends"
+    },
+    "SWASTHANI_VRAT_ENDS": {
+      "name": "Swasthani Vrat Ends",
+      "prose": "Swasthani Vrat Ends"
+    },
+    "CHIR_SWAYEGU": {
+      "name": "Chir Swayegu",
+      "prose": "Chir Swayegu"
+    },
+    "AMALAKI_EKADASHI": {
+      "name": "Amalaki Ekadashi",
+      "prose": "Amalaki Ekadashi"
+    },
+    "GOVINDA_DWADASHI": {
+      "name": "Govinda Dwadashi",
+      "prose": "Govinda Dwadashi"
+    },
+    "NALA_MACHHINDRANATH_RATH_JATRA": {
+      "name": "Nala Machhindranath Rath Jatra",
+      "prose": "Nala Machhindranath Rath Jatra"
+    },
+    "SHITALASHTAMI": {
+      "name": "Shitalashtami",
+      "prose": "Shitalashtami"
+    },
+    "PAPMOCHANI_EKADASHI": {
+      "name": "Papmochani Ekadashi",
+      "prose": "Papmochani Ekadashi"
+    },
+    "KOKA_KAUSHIKI_SANGAM_MELA": {
+      "name": "Koka Kaushiki Sangam Mela",
+      "prose": "Koka Kaushiki Sangam Mela"
     }
   }
 }
