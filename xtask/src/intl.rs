@@ -82,9 +82,50 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
     let tree = Tree::load(&root.join("i18n")).expect("the i18n/ sources load");
     let unnamed = unnamed_members(&tree, &document_kinds());
     let naming = named_or_listed(&unnamed, UNNAMED);
+    let festivals = every_festival_is_named(&tree);
     let keywords = dart_parses(&written);
     let declared = every_key_type_is_declared(&written);
-    i32::from(failures != 0 || naming != 0 || keywords != 0 || declared != 0)
+    i32::from(failures != 0 || naming != 0 || festivals != 0 || keywords != 0 || declared != 0)
+}
+
+/// That every rule key a shipped festival pack answers with is named in
+/// every strict locale's `festival` group: an observance carries its rule's
+/// key, and a reader shows the name. A pack's rules are not a catalogue
+/// kind, so [`unnamed_members`] does not see them; six fitted rules once
+/// shipped with no name in any locale and every gate green.
+fn every_festival_is_named(tree: &Tree) -> usize {
+    let strict: Vec<_> = tree
+        .locales
+        .iter()
+        .filter(|(_, locale)| locale.meta.completeness == Completeness::Strict)
+        .collect();
+    let keys: BTreeSet<String> = teistro::FestivalPack::ALL
+        .into_iter()
+        .flat_map(|pack| {
+            let rules = pack.rules().into_iter().map(|rule| rule.key);
+            let ekadashis = pack.ekadashis().into_iter().map(|rule| rule.key);
+            let following = pack.following().into_iter().map(|rule| rule.key);
+            rules.chain(ekadashis).chain(following).collect::<Vec<_>>()
+        })
+        .collect();
+    let mut failures = 0;
+    for key in &keys {
+        for (tag, locale) in &strict {
+            if locale.entity(&format!("festival.{key}")).is_none() {
+                println!(
+                    "FAIL  festival.{key}: a shipped pack answers with it and {tag} does not name it"
+                );
+                failures += 1;
+            }
+        }
+    }
+    if failures == 0 {
+        println!(
+            "ok    every rule key of every shipped festival pack ({}) is named in every strict locale",
+            keys.len()
+        );
+    }
+    failures
 }
 
 /// Every Dart keyword, as the language lists them: a word from this list

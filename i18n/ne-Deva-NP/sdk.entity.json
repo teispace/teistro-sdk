@@ -3246,6 +3246,36 @@
       "name": "वैशाख स्नान सुरु",
       "prose": "वैशाख स्नान सुरु",
       "iast": "Vaiśākha Snāna Ārambha"
+    },
+    "PRADOSHA_VRATA": {
+      "name": "प्रदोषव्रत",
+      "prose": "प्रदोषव्रत",
+      "iast": "Pradoṣavrata"
+    },
+    "MANGALA_CHATURTHI": {
+      "name": "मंगलचौथीव्रत",
+      "prose": "मंगलचौथीव्रत",
+      "iast": "Maṅgalacaturthī"
+    },
+    "RAVI_SAPTAMI": {
+      "name": "रविसप्तमीव्रत",
+      "prose": "रविसप्तमीव्रत",
+      "iast": "Ravisaptamī"
+    },
+    "BHAUMASHTAMI": {
+      "name": "भौमाष्टमीव्रत",
+      "prose": "भौमाष्टमीव्रत",
+      "iast": "Bhaumāṣṭamī"
+    },
+    "BUDHASHTAMI": {
+      "name": "बुधाष्टमीव्रत",
+      "prose": "बुधाष्टमीव्रत",
+      "iast": "Budhāṣṭamī"
+    },
+    "SOMAVATI_AMAVASYA": {
+      "name": "सोमबारे औसी",
+      "prose": "सोमबारे औसी",
+      "iast": "Somavatī Amāvāsyā"
     }
   }
 }

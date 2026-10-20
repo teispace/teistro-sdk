@@ -3254,6 +3254,36 @@
       "name": "Baisakh Bathing Begins",
       "prose": "Baisakh Bathing Begins",
       "iast": "Vaiśākha Snāna Ārambha"
+    },
+    "PRADOSHA_VRATA": {
+      "name": "Pradosha Vrata",
+      "prose": "Pradosha Vrata",
+      "iast": "Pradoṣavrata"
+    },
+    "MANGALA_CHATURTHI": {
+      "name": "Mangala Chaturthi",
+      "prose": "Mangala Chaturthi",
+      "iast": "Maṅgalacaturthī"
+    },
+    "RAVI_SAPTAMI": {
+      "name": "Ravi Saptami",
+      "prose": "Ravi Saptami",
+      "iast": "Ravisaptamī"
+    },
+    "BHAUMASHTAMI": {
+      "name": "Bhaumashtami",
+      "prose": "Bhaumashtami",
+      "iast": "Bhaumāṣṭamī"
+    },
+    "BUDHASHTAMI": {
+      "name": "Budhashtami",
+      "prose": "Budhashtami",
+      "iast": "Budhāṣṭamī"
+    },
+    "SOMAVATI_AMAVASYA": {
+      "name": "Somavati Amavasya",
+      "prose": "Somavati Amavasya",
+      "iast": "Somavatī Amāvāsyā"
     }
   }
 }
