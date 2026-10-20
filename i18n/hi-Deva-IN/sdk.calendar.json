@@ -1,0 +1,3 @@
+{
+  "lunarMonth": ".input {$masa :entity kind=masa} .input {$kind :string} .match $kind ADHIKA {{अधिक {$masa}}} KSHAYA {{क्षय {$masa}}} * {{{$masa}}}"
+}

@@ -446,7 +446,7 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 2082 | 366 |
+| `hi-Deva-IN` | 2082 | 365 |
 | `ne-Deva-NP` | 2082 | 8 |
 | `sa-Deva` | 2082 | 714 |
 | `sa-Latn` | 2082 | 714 |

@@ -12,6 +12,12 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Purnimanta in Hindi.** A Hindi context set to purnimanta now says an
+adhika month "अधिक श्रावण" and a kshaya month "क्षय …". It used to fall
+back to the English "Adhika". A test holds North India's naming end to
+end at Delhi: a dark fortnight takes the next month's name, and an adhika
+month keeps its own.
+
 **The Indian national calendar** (`calendars/indian-national.md`).
 **Numbers:** `calendar.INDIAN_NATIONAL` is the Saka-era civil calendar
 that India adopted in 1957. 1 Chaitra falls on 22 March, or on 21 March

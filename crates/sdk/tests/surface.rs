@@ -384,6 +384,63 @@ fn an_adhika_month_is_said_the_nepali_way() {
     assert_eq!(said(teistro::MonthKind::Nija).text, "ज्येष्ठ");
 }
 
+/// North India names a lunar month purnimanta: a dark fortnight takes
+/// the next month's name, an adhika month is set whole between the nija
+/// month's halves and keeps its own, and Hindi says both
+/// (`03-design/calendar-indian-lunisolar.md` §4, §9).
+#[test]
+fn a_purnimanta_month_is_named_as_north_india_names_it_in_hindi() {
+    let sdk = Context::builder()
+        .locale("hi-Deva-IN")
+        .settings_json(r#"{"calendars": {"lunar_month": "PURNIMANTA"}}"#)
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("the default profile under purnimanta, in Hindi");
+    let delhi = teistro::quantity::Place::new(
+        teistro::quantity::Latitude::literal(28.6139),
+        teistro::quantity::Longitude::literal(77.209),
+        teistro::quantity::Altitude::literal(216.0),
+    );
+    let said = |year, month, day| {
+        let date = teistro::CalendarDate::defined(
+            teistro::catalogue::Calendar::Gregorian,
+            year,
+            month,
+            day,
+        );
+        let days = sdk
+            .almanac()
+            .of(&date, &date, &delhi, teistro::UtcOffset::literal(5, 30, 0))
+            .expect("a day at Delhi");
+        let month = days.value[0].month;
+        let text = sdk
+            .intl()
+            .render_typed(&teistro::messages::sdk::calendar::LunarMonth {
+                kind: month.kind.key().to_owned(),
+                masa: month.month,
+            });
+        assert!(text.warnings.is_empty(), "{:?}", text.warnings);
+        (month.amanta, text.text)
+    };
+    // 16 August 2025, Janmashtami, the dark 8th after Shravana's full
+    // moon: amanta Shravana, purnimanta Bhadrapada.
+    assert_eq!(
+        said(2025, 8, 16),
+        (teistro::catalogue::Masa::Shravana, "भाद्रपद".to_owned())
+    );
+    // 12 August 2023, Parama ekadashi, the adhika month's dark 11th: its
+    // own name under both conventions.
+    assert_eq!(
+        said(2023, 8, 12),
+        (teistro::catalogue::Masa::Shravana, "अधिक श्रावण".to_owned())
+    );
+    // A bright fortnight is named alike: 5 September 2025, Bhadrapada's 13th.
+    assert_eq!(
+        said(2025, 9, 5),
+        (teistro::catalogue::Masa::Bhadrapada, "भाद्रपद".to_owned())
+    );
+}
+
 /// A day's Nepal Sambat date is said the way the committee's page header
 /// prints it: "ने.सं. ११४६ (कछलाथ्व)" for Kachhala's first day, and an
 /// adhika month as Anala whichever month it repeats
