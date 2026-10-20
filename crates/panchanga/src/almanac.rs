@@ -401,7 +401,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// evaluate, a provider that cannot answer for the window, or a
     /// muhurta yoga or durmuhurta table the SDK does not ship.
     pub fn day(&self, date: &CalendarDate, place: &Place) -> Result<Envelope<Panchanga>, Error> {
-        let (value, frame) = self.value(date, place)?;
+        let (value, frame) = self.value(date, place, &mut Memo::default())?;
         let provenance = self.provenance(
             content_hash(&Input {
                 date: date.to_string(),
@@ -452,10 +452,13 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         // from the day that computed it rather than being computed
         // again.
         let mut frame = None;
+        // What one day found and the next can read rather than search
+        // again: the day before's sunrise and sunset, and the lunation.
+        let mut memo = Memo::default();
         for step in 0..count {
             let offset = i64::try_from(step).unwrap_or(0);
             let date = self.calendar.date_of(first.plus_days(offset))?;
-            let (value, asked) = self.value(&date, place)?;
+            let (value, asked) = self.value(&date, place, &mut memo)?;
             frame = frame.or(Some(asked));
             values.push(value);
         }
@@ -619,7 +622,12 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// and the instruction-count gate refused it at a 3% budget: a frame
     /// is an ayanamsha at an instant, so it is a precession evaluation
     /// and not a field read.
-    fn value(&self, date: &CalendarDate, place: &Place) -> Result<(Panchanga, Frame), Error> {
+    fn value(
+        &self,
+        date: &CalendarDate,
+        place: &Place,
+        memo: &mut Memo,
+    ) -> Result<(Panchanga, Frame), Error> {
         let settings = self.settings();
         // The date is taken through the calendar and back, so that a day
         // asked for by a date a caller wrote and the same day reached
@@ -650,10 +658,17 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let limbs = limb::limbs(&longitudes, window, zodiac)?;
 
         let horas = hora::horas(&day, settings.day.hora_reckoning.try_into()?)?;
-        let previous_night = self.previous_night(place, &date)?;
+        let fixed = self.calendar.fixed_of(&date)?;
+        let previous_night = match memo.day.take() {
+            Some((before, yesterday)) if before.plus_days(1) == fixed => {
+                Interval::new(yesterday.sunset, yesterday.next_sunrise).ok()
+            }
+            _ => self.previous_night(place, &date)?,
+        };
+        memo.day = Some((fixed, day.clone()));
         let muhurtas = period::muhurtas(daylight, night, previous_night, day.vara);
         let durmuhurtas = period::durmuhurtas(&muhurtas, day.vara, settings.panchanga.durmuhurta)?;
-        let month = self.month(&longitudes, window, &limbs, zodiac)?;
+        let month = self.month(&longitudes, window, &limbs, (zodiac, frame), memo)?;
         let moon = self.moon(&completion, place, &day, window, frame, zodiac)?;
         let sun_signs = Self::signs(&longitudes, Body::Sun, window, zodiac)?;
         let ritu = self.ritu(
@@ -809,16 +824,41 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         longitudes: &S,
         window: Interval,
         limbs: &Limbs,
-        zodiac: Zodiac,
+        (zodiac, frame): (Zodiac, Frame),
+        memo: &mut Memo,
     ) -> Result<LunarMonth, Error> {
         let at_sunrise = limbs
             .tithi
             .first()
             .map(|span| span.member)
             .ok_or_else(|| Error::internal("a day with no tithi"))?;
-        let span = limb::lunar_month_span(longitudes, window, zodiac)?;
-        let amanta = limb::masa_at(longitudes, span.from, zodiac)?;
-        let kind = teistro_calendar::lunisolar::kind_of(self.model, span.from, span.to)?;
+        let from = window.from.get();
+        let lunation = match memo.lunation {
+            // A later day of the same lunation: the last new moon before
+            // its window is the one already found, which the anchored
+            // scan refines to the same instant from any window holding
+            // it, and the next is found from it alone. So the span, its
+            // name and its kind are the ones a search would return.
+            Some(known)
+                if known.frame == frame
+                    && known.span.from.get() < from
+                    && from < known.span.to.get() =>
+            {
+                known
+            }
+            _ => {
+                let span = limb::lunar_month_span(longitudes, window, zodiac)?;
+                let found = Lunation {
+                    span,
+                    frame,
+                    amanta: limb::masa_at(longitudes, span.from, zodiac)?,
+                    kind: teistro_calendar::lunisolar::kind_of(self.model, span.from, span.to)?,
+                };
+                memo.lunation = Some(found);
+                found
+            }
+        };
+        let (amanta, kind) = (lunation.amanta, lunation.kind);
         Ok(month::of(
             amanta,
             at_sunrise,
@@ -958,6 +998,29 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance
     }
+}
+
+/// What one day of a range leaves for the next, so that the next reads it
+/// rather than searching for it again. Every field is a value the next
+/// day would compute from the same arguments, so a range's days are the
+/// days asked for one at a time, to the bit.
+#[derive(Default)]
+struct Memo {
+    /// The last day computed, by its fixed day: the next day's previous
+    /// night is its sunset to its next sunrise.
+    day: Option<(FixedDay, LocalDay)>,
+    /// The lunation the last day fell in.
+    lunation: Option<Lunation>,
+}
+
+/// A lunar month as the almanac names it: its span between two new
+/// moons, the frame they were found in, its amanta name and its kind.
+#[derive(Clone, Copy)]
+struct Lunation {
+    span: Interval,
+    frame: Frame,
+    amanta: teistro_core::catalogue::Masa,
+    kind: teistro_calendar::lunisolar::MonthKind,
 }
 
 /// The most lunar years before a range the samvatsara's naming may read:

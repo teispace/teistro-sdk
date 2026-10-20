@@ -407,6 +407,32 @@ fn a_range_is_its_days_and_is_bounded() {
 }
 
 #[test]
+fn a_long_range_is_its_days_to_the_bit_across_lunations() {
+    // Four lunations and the adhika Shravana of 2023, so a range reads
+    // its lunation and its previous nights from the day before across
+    // every change of month, an intercalary one among them.
+    with_almanac(&SettingsPatch::default(), |almanac| {
+        let range = almanac
+            .between(&date(2023, 6, 10), &date(2023, 9, 20), &place())
+            .unwrap_or_else(|e| panic!("{e}"))
+            .value;
+        assert_eq!(range.len(), 103);
+        let mut months = Vec::new();
+        for value in &range {
+            let alone = almanac
+                .day(&value.day.date, &place())
+                .unwrap_or_else(|e| panic!("{e}"))
+                .value;
+            assert_eq!(*value, alone, "{} in a range and alone", value.day.date);
+            if months.last() != Some(&value.month) {
+                months.push(value.month);
+            }
+        }
+        assert!(months.len() >= 4, "{months:?}");
+    });
+}
+
+#[test]
 fn a_day_answers_about_itself() {
     let day = day();
     let noon = JulianDay::<Utc>::literal(day.day.sunrise.get() + 0.25);
