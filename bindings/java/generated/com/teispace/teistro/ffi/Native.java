@@ -3915,6 +3915,7 @@ public final class Native {
         "ts_intl_render",
         "ts_positions",
         "ts_panchanga_days",
+        "ts_almanac_disagreements",
         "ts_naam_milan",
         "ts_numerology_profile",
         "ts_pakshi",
@@ -4254,6 +4255,41 @@ public final class Native {
     public final MethodHandle ts_panchanga_days;
 
     /**
+     * Compares this context's reckoning of a range with another's at one
+     * place (`03-design/setup-disagreements.md`) and answers with
+     * `{days, festivals}` as canonical JSON, each the `{value, provenance}`
+     * of one comparison asked, sealed by this context's provenance, and null
+     * when not asked.
+     *
+     * `days` is `{otherProfile, otherSettingsHash, compared, days}`: only the
+     * days on which some limb's member at sunrise differs, each `{date,
+     * tithi, nakshatra, yoga, karana}` with a limb null where both name one
+     * member, and otherwise `{official, other}`, each side `{member, span,
+     * sunrise, change}`: the member it names at its sunrise, that member's
+     * span under its sky, its sunrise, and `change`, `{at,
+     * minutesFromSunrise}`, the instant the two members meet under that sky,
+     * null when the two members are not neighbours. `festivals` is
+     * `{otherProfile, otherSettingsHash, compared, observances, ekadashis}`:
+     * each occurrence whose day or month differs, or which only one side
+     * gives, as `{rule, month, adhika, official, other}` (an Ekadashi with
+     * its `tithi` too), each side the observance or fast that side's
+     * festival answer gives, or null.
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "days",
+     * "festivals"}`: the days as `{"year", "month", "day"}`, `days` true
+     * when left out, `festivals` a festival request, and everything but
+     * `first`, the place and the offset optional. A key it does not read, a
+     * place or offset out of range, a festival request its reader refuses or
+     * a request comparing nothing is `INVALID_ARG`, named under
+     * `disagreements`; a null `other` is `INVALID_ARG` naming `other`. A
+     * range of more than a year and a day is `OUT_OF_RANGE`, and either
+     * context without an ephemeris `CAPABILITY`. A failure of either
+     * context's reckoning is recorded on this one.
+     */
+    public final MethodHandle ts_almanac_disagreements;
+
+    /**
      * Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -4476,6 +4512,7 @@ public final class Native {
         ts_intl_render = linker.downcallHandle(symbols.find("ts_intl_render").orElseThrow(() -> missing("ts_intl_render")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_positions = linker.downcallHandle(symbols.find("ts_positions").orElseThrow(() -> missing("ts_positions")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_panchanga_days = linker.downcallHandle(symbols.find("ts_panchanga_days").orElseThrow(() -> missing("ts_panchanga_days")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_disagreements = linker.downcallHandle(symbols.find("ts_almanac_disagreements").orElseThrow(() -> missing("ts_almanac_disagreements")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_numerology_profile = linker.downcallHandle(symbols.find("ts_numerology_profile").orElseThrow(() -> missing("ts_numerology_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_pakshi = linker.downcallHandle(symbols.find("ts_pakshi").orElseThrow(() -> missing("ts_pakshi")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

@@ -710,6 +710,84 @@ void _engineTests() {
     expect(stamp(official), contains('sunrise from teimeris'));
   });
 
+  /// Two reckonings of November 2025 at Kathmandu: the committee's over
+  /// the Surya Siddhanta and the modern one. Each tithi difference names
+  /// both members and the instant they meet under each sky, on opposite
+  /// sides of its sunrise; Haribodhini Ekadashi is fasted on the 1st by the
+  /// text and the 2nd by the modern sky (`03-design/setup-disagreements.md`).
+  test('two reckonings say where they disagree and why', () {
+    final official = teistro.nepalOfficial();
+    addTearDown(official.dispose);
+    final modern = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(modern.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final from = Calendar.gregorian.date(2025, 11, 1);
+    final to = Calendar.gregorian.date(2025, 11, 30);
+    final found = official.almanac.disagreements(
+      modern,
+      from: from,
+      to: to,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      festivals: FestivalRequest(rules: FestivalPack.nepal),
+    );
+    final days = found.days!;
+    expect(days.compared, 30);
+    expect(days.otherProfile, 'nepali-default');
+    expect(days.otherSettingsHash, modern.settingsHash);
+    expect(
+      [
+        for (final day in days.days)
+          if (day.tithi != null) day.date.day,
+      ],
+      [1, 2, 9, 10, 11],
+    );
+    final first = days.days.first.tithi!;
+    expect(first.official.member, Tithi.shuklaEkadashi);
+    expect(first.other.member, Tithi.shuklaDashami);
+    expect(first.official.change!.minutesFromSunrise, lessThan(0));
+    expect(first.other.change!.minutesFromSunrise, greaterThan(0));
+    final haribodhini = found.festivals!.ekadashis.firstWhere(
+      (fast) => fast.tithi == Tithi.shuklaEkadashi,
+    );
+    expect((haribodhini.official!.day.day, haribodhini.other!.day.day), (1, 2));
+
+    final lean = official.almanac.disagreements(
+      modern,
+      from: from,
+      to: to,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      days: false,
+      festivals: FestivalRequest(rules: FestivalPack.nepal),
+    );
+    expect(lean.days, isNull);
+    expect(lean.festivals!.ekadashis, found.festivals!.ekadashis);
+    expect(
+      () => official.almanac.disagreements(
+        modern,
+        from: from,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+        days: false,
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'disagreements.days',
+        ),
+      ),
+    );
+  });
+
   /// A chain is **ordered and explicit** (ADR-0029): tried in order, and
   /// a refusal names every entry that failed rather than only the last,
   /// which would hide the one the caller actually wanted. Needs no

@@ -962,10 +962,22 @@ fn marshal(api: &Api, f: &FunctionDef) -> Marshalled {
     // The pointer a `len` parameter counts, which the description puts
     // immediately before it.
     let mut counted = String::new();
-    for p in &f.params {
+    for (index, p) in f.params.iter().enumerate() {
         let field = identifier(&p.name);
         match p.role {
-            Role::Handle => m.args.push(String::from("_handle")),
+            // The receiver is the first parameter (`rules::methods`); a
+            // later handle, a second context a comparison reads, is the
+            // class that holds it.
+            Role::Handle if index == 0 => m.args.push(String::from("_handle")),
+            Role::Handle => {
+                let held = pointee_opaque(api, p).map(|o| o.name.clone());
+                let class = binding_type_name(held.as_deref().unwrap_or_default());
+                m.params.push(format!("Teistro{class} {field}"));
+                // Its handle crosses as this one's does, so a disposed one
+                // is refused as this one would be, never passed freed.
+                let _ = writeln!(m.body, "      {field}._alive();");
+                m.args.push(format!("{field}._handle"));
+            }
             Role::VtableIn | Role::UserData => m.args.push(String::from("ffi.nullptr")),
             Role::Value => {
                 if let Some((param, arg)) = value_param(p, &field) {

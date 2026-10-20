@@ -10976,3 +10976,91 @@ fn a_chart_request_carries_its_fixed_karakas() {
             .collect::<Vec<_>>()
     );
 }
+
+fn disagreements_json(ctx: &Ctx, other: *const TsContext, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a live or null other, a NUL-terminated
+    // request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_disagreements(
+            ctx.handle,
+            other,
+            request.as_ptr(),
+            &raw mut json,
+        )
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// Two contexts' reckonings of a month cross as the façade compares them,
+/// written in full; a null second context and a request that compares
+/// nothing are refused by name (`03-design/setup-disagreements.md` §5).
+#[test]
+fn two_reckonings_compare_as_the_facade_compares_them() {
+    let month = r#"{"first": {"year": 2025, "month": 11, "day": 1},
+        "last": {"year": 2025, "month": 11, "day": 30},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700, "festivals": {"rules": "NEPAL"}}"#;
+    let official = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::SuryaSiddhanta,
+        Some("nepali-committee"),
+        None,
+        None,
+    )
+    .unwrap();
+    let modern =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&disagreements_json(&official, modern.handle, month).unwrap())
+            .unwrap();
+
+    let facade = |profile: &str, ephemeris| {
+        teistro::Context::builder()
+            .profile(profile)
+            .ephemeris([ephemeris])
+            .build()
+            .unwrap()
+    };
+    let kernel = facade("nepali-committee", teistro::Ephemeris::SuryaSiddhanta)
+        .almanac()
+        .disagreements_request(
+            &facade("nepali-default", teistro::Ephemeris::Builtin),
+            &teistro::DisagreementRequest::from_json(month).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    assert_ne!(
+        crossed["days"]["value"]["days"],
+        serde_json::json!([]),
+        "the two reckonings disagree on some day"
+    );
+    assert_eq!(crossed["days"]["value"]["otherProfile"], "nepali-default");
+
+    assert_eq!(
+        disagreements_json(&official, ptr::null(), month).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(official.last_error().2.as_deref(), Some("other"));
+    let nothing = r#"{"first": {"year": 2025, "month": 11, "day": 1},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700, "days": false}"#;
+    assert_eq!(
+        disagreements_json(&official, modern.handle, nothing).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(
+        official.last_error().2.as_deref(),
+        Some("disagreements.days")
+    );
+}

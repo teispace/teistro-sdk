@@ -661,6 +661,15 @@ __all__ = [
     "FestivalPack",
     "FestivalRequest",
     "FestivalAnswer",
+    "DayDisagreement",
+    "DayDisagreements",
+    "Disagreements",
+    "EkadashiDisagreement",
+    "FestivalDisagreement",
+    "FestivalDisagreements",
+    "LimbChange",
+    "LimbDisagreement",
+    "ReckonedLimb",
     "FestivalObservance",
     "FestivalExtent",
     "FestivalDecided",
@@ -2515,6 +2524,60 @@ class AlmanacArea(_Area):
             value=tuple(_pakshi_day(one) for one in envelope["value"]),
             provenance=decode_provenance(envelope["provenance"]),
         )
+
+    def disagreements(
+        self,
+        other: "Context",
+        *,
+        from_date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        to_date: Optional[CalendarDate] = None,
+        days: bool = True,
+        festivals: Optional[FestivalRequest] = None,
+    ) -> "Disagreements":
+        """**Where this context's reckoning and `other`'s disagree**, and
+        why (`03-design/setup-disagreements.md`): the official day an app
+        shows beside the modern one. `days` holds only the days on which
+        some limb's member at sunrise differs, each limb with the member
+        each side names, its span, its sunrise and the instant the two
+        members meet under that sky; `festivals` each occurrence whose day
+        or month differs, or which one side alone gives, with each side's
+        observance or fast. Each is `None` when not asked; a request
+        comparing nothing is refused as `disagreements.days`.
+
+        >>> # official = Context(**nepal_official(teimeris()))
+        >>> # modern = Context(profile="nepali-default", ephemeris=teimeris())
+        >>> # found = official.almanac.disagreements(modern, from_date=..., place=kathmandu,
+        >>> #     utc_offset_seconds=20700, festivals={"rules": "NEPAL"})
+        """
+        if not isinstance(other, Context):
+            raise TeistroError(
+                Status.INVALID_ARG, "disagreements compares this context with another Context", field="other"
+            )
+
+        def parts(day: CalendarDate) -> Dict[str, int]:
+            return {"year": day.year, "month": day.month, "day": day.day}
+
+        asked: Dict[str, Any] = {
+            "calendar": from_date.calendar.key,
+            "first": parts(from_date),
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "days": days,
+        }
+        if to_date is not None:
+            asked["last"] = parts(to_date)
+        record = _festivals_json(festivals)
+        if record is not None:
+            asked["festivals"] = json.loads(record)
+        theirs = other.inner
+        answered = self._context._through_provider(
+            lambda: other._through_provider(lambda: self._context.inner.almanac_disagreements(theirs, json.dumps(asked)))
+        )
+        return _disagreements_answer(answered)
 
 
 class MatchingArea(_Area):
@@ -7188,6 +7251,146 @@ class FestivalAnswer:
     provenance: Provenance
     """What computed it: the widened days among the applied conventions as
     `festival.days`, and the hash of the value."""
+
+
+@dataclass(frozen=True)
+class LimbChange:
+    """The instant one reckoning's member gives way to the other's, under
+    one sky (`03-design/setup-disagreements.md` §1)."""
+
+    at: float
+    """The instant, a Julian day (UT)."""
+
+    minutes_from_sunrise: float
+    """Minutes from that sky's sunrise to it, negative before sunrise."""
+
+
+@dataclass(frozen=True)
+class ReckonedLimb:
+    """One limb of one day as one reckoning names it at its sunrise."""
+
+    member: Any
+    """The member standing at this reckoning's sunrise: a `Tithi`,
+    `Nakshatra`, `Yoga` or `Karana`, as the limb is."""
+
+    span: Interval
+    """That member's whole span under this reckoning's sky."""
+
+    sunrise: float
+    """This reckoning's sunrise, a Julian day (UT)."""
+
+    change: Optional[LimbChange]
+    """Where the two members meet under this sky, or `None` when they are
+    not neighbours."""
+
+
+@dataclass(frozen=True)
+class LimbDisagreement:
+    """One limb both reckonings name differently at sunrise."""
+
+    official: ReckonedLimb
+    """As this context reckons it: the day the app shows."""
+
+    other: ReckonedLimb
+    """As the context compared with reckons it."""
+
+
+@dataclass(frozen=True)
+class DayDisagreement:
+    """A day on which some limb's member at sunrise differs; a limb both
+    name alike is `None`."""
+
+    date: CalendarDate
+    tithi: Optional[LimbDisagreement]
+    nakshatra: Optional[LimbDisagreement]
+    yoga: Optional[LimbDisagreement]
+    karana: Optional[LimbDisagreement]
+
+
+@dataclass(frozen=True)
+class DayDisagreements:
+    """The days two reckonings disagree on, and what the other one was.
+
+    >>> # found = official.almanac.disagreements(modern, ...).days
+    >>> # first = found.days[0].tithi.official.change.minutes_from_sunrise
+    """
+
+    other_profile: str
+    """The profile the other context resolved."""
+
+    other_settings_hash: str
+    """The other context's settings hash, so a stored comparison is known
+    stale when either side's settings change."""
+
+    compared: int
+    """How many days were compared."""
+
+    days: Tuple[DayDisagreement, ...]
+    """The days that differ, in order."""
+
+    provenance: Provenance
+    """This context's, which sealed the record."""
+
+
+@dataclass(frozen=True)
+class FestivalDisagreement:
+    """One rule's occurrence the two reckonings give differently, or one
+    alone gives."""
+
+    rule: str
+    """The rule's key."""
+
+    month: Masa
+    """Its amanta month as this context names it, or as the other does
+    when only it gives one."""
+
+    adhika: bool
+    """Whether that month is adhika, the same way."""
+
+    official: Optional[FestivalObservance]
+    """This context's observance, with each day's extent of the rite's
+    window, which is the reason."""
+
+    other: Optional[FestivalObservance]
+    """The other's."""
+
+
+@dataclass(frozen=True)
+class EkadashiDisagreement:
+    """One Ekadashi the two reckonings fast on differently, or one alone
+    fasts."""
+
+    rule: str
+    tithi: Tithi
+    month: Masa
+    adhika: bool
+    official: Optional[EkadashiFast]
+    """This context's fast, with the vedha and excess that decided."""
+
+    other: Optional[EkadashiFast]
+
+
+@dataclass(frozen=True)
+class FestivalDisagreements:
+    """The festivals two reckonings disagree on."""
+
+    other_profile: str
+    other_settings_hash: str
+    compared: int
+    """How many observances and fasts this context gave."""
+
+    observances: Tuple[FestivalDisagreement, ...]
+    ekadashis: Tuple[EkadashiDisagreement, ...]
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class Disagreements:
+    """What `almanac.disagreements` answers: each comparison asked, `None`
+    when not."""
+
+    days: Optional[DayDisagreements]
+    festivals: Optional[FestivalDisagreements]
 
 
 @dataclass(frozen=True)
@@ -13720,61 +13923,136 @@ def _festivals_json(festivals: Optional[FestivalRequest]) -> Optional[str]:
     return _record_json(written, "festivals", example)
 
 
+def _festival_extent(raw: Mapping[str, Any]) -> FestivalExtent:
+    """One day's extent of a rite's window, as a festival answer writes it."""
+    return FestivalExtent(day=_serde_date(raw["day"]), window=_interval(raw["window"]), held=raw["held"])
+
+def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
+    """An observance as a festival answer writes it: the festivals section's
+    and each side of a festival disagreement's."""
+    earlier, later = raw["extents"]
+    decided = raw["decidedBy"]
+    return FestivalObservance(
+        rule=raw["rule"],
+        day=_serde_date(raw["day"]),
+        tithi=_interval(raw["tithi"]),
+        month=_member(Masa, raw["month"]),
+        adhika=raw["adhika"],
+        case=raw["case"],
+        extents=(_festival_extent(earlier), _festival_extent(later)),
+        decided_by=FestivalDecided(
+            by=decided["by"],
+            index=decided.get("index"),
+            rule=decided.get("rule"),
+            days=decided.get("days"),
+        ),
+        choice=raw["choice"],
+        margin_seconds=float(raw["marginSeconds"]),
+    )
+
+def _ekadashi_fast(raw: Mapping[str, Any]) -> EkadashiFast:
+    """An Ekadashi fast as a festival answer writes it."""
+    tenth, eleventh, twelfth = raw["tithis"]
+    first, second = raw["days"]
+    return EkadashiFast(
+        rule=raw["rule"],
+        tithi=_member(Tithi, raw["tithi"]),
+        month=_member(Masa, raw["month"]),
+        adhika=raw["adhika"],
+        tithis=(_interval(tenth), _interval(eleventh), _interval(twelfth)),
+        days=(_serde_date(first), _serde_date(second)),
+        pierced_at=raw["piercedAt"],
+        pierced=raw["pierced"],
+        excess=raw["excess"],
+        choice=raw["choice"],
+        day=_serde_date(raw["day"]),
+    )
+
+
 def _festivals_answer(text: str) -> FestivalAnswer:
     """The `festivals` section: the envelope's value, its dates in this
     binding's shape, with the provenance beside it."""
     envelope = json.loads(text)
     value = envelope["value"]
-
-    def extent(raw: Mapping[str, Any]) -> FestivalExtent:
-        return FestivalExtent(day=_serde_date(raw["day"]), window=_interval(raw["window"]), held=raw["held"])
-
-    def observance(raw: Mapping[str, Any]) -> FestivalObservance:
-        earlier, later = raw["extents"]
-        decided = raw["decidedBy"]
-        return FestivalObservance(
-            rule=raw["rule"],
-            day=_serde_date(raw["day"]),
-            tithi=_interval(raw["tithi"]),
-            month=_member(Masa, raw["month"]),
-            adhika=raw["adhika"],
-            case=raw["case"],
-            extents=(extent(earlier), extent(later)),
-            decided_by=FestivalDecided(
-                by=decided["by"],
-                index=decided.get("index"),
-                rule=decided.get("rule"),
-                days=decided.get("days"),
-            ),
-            choice=raw["choice"],
-            margin_seconds=float(raw["marginSeconds"]),
-        )
-
-    def fast(raw: Mapping[str, Any]) -> EkadashiFast:
-        tenth, eleventh, twelfth = raw["tithis"]
-        first, second = raw["days"]
-        return EkadashiFast(
-            rule=raw["rule"],
-            tithi=_member(Tithi, raw["tithi"]),
-            month=_member(Masa, raw["month"]),
-            adhika=raw["adhika"],
-            tithis=(_interval(tenth), _interval(eleventh), _interval(twelfth)),
-            days=(_serde_date(first), _serde_date(second)),
-            pierced_at=raw["piercedAt"],
-            pierced=raw["pierced"],
-            excess=raw["excess"],
-            choice=raw["choice"],
-            day=_serde_date(raw["day"]),
-        )
-
     return FestivalAnswer(
-        observances=tuple(observance(o) for o in value["observances"]),
-        ekadashis=tuple(fast(f) for f in value["ekadashis"]),
+        observances=tuple(_festival_observance(o) for o in value["observances"]),
+        ekadashis=tuple(_ekadashi_fast(f) for f in value["ekadashis"]),
         unjudged=tuple(
             FestivalUnjudged(rule=u["rule"], tithi=_interval(u["tithi"]), why=u["why"]) for u in value["unjudged"]
         ),
         provenance=decode_provenance(envelope["provenance"]),
     )
+
+
+def _disagreements_answer(text: str) -> "Disagreements":
+    """`ts_almanac_disagreements`'s answer: each comparison asked as
+    frozen records, members as this binding's enums and dates in its own
+    shape, with the provenance beside each."""
+    answer = json.loads(text)
+    limbs = (("tithi", Tithi), ("nakshatra", Nakshatra), ("yoga", Yoga), ("karana", Karana))
+
+    def side(raw: Mapping[str, Any], kind: Any) -> ReckonedLimb:
+        change = raw["change"]
+        return ReckonedLimb(
+            member=_member(kind, raw["member"]),
+            span=_interval(raw["span"]),
+            sunrise=raw["sunrise"],
+            change=None
+            if change is None
+            else LimbChange(at=change["at"], minutes_from_sunrise=float(change["minutesFromSunrise"])),
+        )
+
+    def limb(raw: Optional[Mapping[str, Any]], kind: Any) -> Optional[LimbDisagreement]:
+        return None if raw is None else LimbDisagreement(official=side(raw["official"], kind), other=side(raw["other"], kind))
+
+    def day(raw: Mapping[str, Any]) -> DayDisagreement:
+        found = {name: limb(raw[name], kind) for name, kind in limbs}
+        return DayDisagreement(date=_serde_date(raw["date"]), **found)
+
+    def maybe(raw: Optional[Mapping[str, Any]], read: Any) -> Any:
+        return None if raw is None else read(raw)
+
+    days: Optional[DayDisagreements] = None
+    if answer["days"] is not None:
+        value = answer["days"]["value"]
+        days = DayDisagreements(
+            other_profile=value["otherProfile"],
+            other_settings_hash=value["otherSettingsHash"],
+            compared=value["compared"],
+            days=tuple(day(one) for one in value["days"]),
+            provenance=decode_provenance(answer["days"]["provenance"]),
+        )
+    festivals: Optional[FestivalDisagreements] = None
+    if answer["festivals"] is not None:
+        value = answer["festivals"]["value"]
+        festivals = FestivalDisagreements(
+            other_profile=value["otherProfile"],
+            other_settings_hash=value["otherSettingsHash"],
+            compared=value["compared"],
+            observances=tuple(
+                FestivalDisagreement(
+                    rule=one["rule"],
+                    month=_member(Masa, one["month"]),
+                    adhika=one["adhika"],
+                    official=maybe(one["official"], _festival_observance),
+                    other=maybe(one["other"], _festival_observance),
+                )
+                for one in value["observances"]
+            ),
+            ekadashis=tuple(
+                EkadashiDisagreement(
+                    rule=one["rule"],
+                    tithi=_member(Tithi, one["tithi"]),
+                    month=_member(Masa, one["month"]),
+                    adhika=one["adhika"],
+                    official=maybe(one["official"], _ekadashi_fast),
+                    other=maybe(one["other"], _ekadashi_fast),
+                )
+                for one in value["ekadashis"]
+            ),
+            provenance=decode_provenance(answer["festivals"]["provenance"]),
+        )
+    return Disagreements(days=days, festivals=festivals)
 
 
 def _years_answer(text: str) -> LunarYears:

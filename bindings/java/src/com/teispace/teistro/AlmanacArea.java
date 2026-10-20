@@ -192,4 +192,56 @@ public final class AlmanacArea {
             PakshiNative whose, com.teispace.teistro.request.PakshiRules rules) {
         return PakshiReads.pakshi(context, from, to, place, utcOffsetSeconds, whose, rules);
     }
+
+    /**
+     * <b>Where this context's reckoning and {@code other}'s disagree</b>, and why
+     * ({@code 03-design/setup-disagreements.md}): the official day an app shows beside the modern one.
+     * {@link Disagreements#days()} holds only the days on which some limb's member at sunrise differs,
+     * each limb with the member each side names, its span, its sunrise and the instant the two members
+     * meet under that sky; {@link Disagreements#festivals()} each occurrence whose day or month differs,
+     * or which one side alone gives. Each is null when not asked; a request comparing nothing is
+     * refused as {@code disagreements.days}.
+     *
+     * <pre>{@code
+     * Disagreements found = official.almanac().disagreements(modern, first, last, kathmandu, 20_700,
+     *         true, new FestivalRequest("NEPAL"));
+     * }</pre>
+     *
+     * @param other the reckoning compared with this one
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where both are reckoned
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param days whether the days are compared
+     * @param festivals the festival rules compared, such as {@code new FestivalRequest("NEPAL")}, or null for
+     *     none
+     * @return each comparison asked, sealed by this context's provenance
+     */
+    public Disagreements disagreements(Context other, CalendarDate from, CalendarDate to, Observer place,
+            int utcOffsetSeconds, boolean days, com.teispace.teistro.request.FestivalRequest festivals) {
+        if (other == null) {
+            throw Reads.invalid("other is the Context compared with this one", "other");
+        }
+        if (from == null || to == null) {
+            throw Reads.invalid("from and to are CalendarDates", from == null ? "from" : "to");
+        }
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("calendar", from.calendar().key());
+        asked.put("first", Map.of("year", from.year(), "month", from.month(), "day", from.day()));
+        asked.put("last", Map.of("year", to.year(), "month", to.month(), "day", to.day()));
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.put("days", days);
+        if (festivals != null) {
+            asked.put("festivals", festivals);
+        }
+        String json = Json.write(asked);
+        return AlmanacReads.disagreements(context.lockedWith(other,
+                (lib, ours, theirs) -> Calls.almanacDisagreements(lib, ours, theirs, json)));
+    }
 }

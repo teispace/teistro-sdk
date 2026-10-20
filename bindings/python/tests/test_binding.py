@@ -12,7 +12,7 @@ import dataclasses
 import json
 import os
 import unittest
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from teistro import (
     Air,
@@ -701,6 +701,51 @@ class AnEngine(WithLibrary):
             self.skipTest("set TEISTRO_TEIMERIS_ADAPTER to the adapter's library")
         with self.teistro.context(**nepal_official(Plugin(plugin)), locale="en-Latn") as official:
             self.assertIn("sunrise from teimeris", stamp(official))
+
+    def test_two_reckonings_say_where_they_disagree_and_why(self) -> None:
+        """November 2025 at Kathmandu, the committee's reckoning over the
+        Surya Siddhanta against the modern one: each tithi difference names
+        both members and the instant they meet under each sky, on opposite
+        sides of its sunrise, and Haribodhini Ekadashi is fasted on the 1st
+        by the text and the 2nd by the modern sky
+        (`03-design/setup-disagreements.md`)."""
+        month: Dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2025, 11, 1),
+            "to_date": date(Calendar.GREGORIAN, 2025, 11, 30),
+            "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)),
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(**nepal_official()) as official, self.teistro.context(
+            profile="nepali-default", ephemeris=Ephemeris.BUILTIN
+        ) as modern:
+            found = official.almanac.disagreements(modern, **month, festivals={"rules": "NEPAL"})
+            days = found.days
+            assert days is not None
+            self.assertEqual((days.compared, days.other_profile), (30, "nepali-default"))
+            self.assertEqual(days.other_settings_hash, modern.settings_hash)
+            self.assertEqual([d.date.day for d in days.days if d.tithi is not None], [1, 2, 9, 10, 11])
+            first = days.days[0].tithi
+            assert first is not None
+            self.assertEqual((first.official.member, first.other.member), (Tithi.SHUKLA_EKADASHI, Tithi.SHUKLA_DASHAMI))
+            assert first.official.change is not None and first.other.change is not None
+            self.assertLess(first.official.change.minutes_from_sunrise, 0)
+            self.assertGreater(first.other.change.minutes_from_sunrise, 0)
+            festivals = found.festivals
+            assert festivals is not None
+            haribodhini = next(f for f in festivals.ekadashis if f.tithi == Tithi.SHUKLA_EKADASHI)
+            assert haribodhini.official is not None and haribodhini.other is not None
+            self.assertEqual((haribodhini.official.day.day, haribodhini.other.day.day), (1, 2))
+
+            lean = official.almanac.disagreements(modern, **month, days=False, festivals={"rules": "NEPAL"})
+            self.assertIsNone(lean.days)
+            self.assertEqual(lean.festivals, festivals)
+            with self.assertRaises(TeistroError) as nothing:
+                official.almanac.disagreements(modern, **month, days=False)
+            self.assertEqual(nothing.exception.field, "disagreements.days")
+        with self.assertRaises(TeistroError) as closed:
+            with self.teistro.context(**nepal_official()) as official:
+                official.almanac.disagreements(modern, **month)
+        self.assertIn("closed", str(closed.exception))
 
     def test_a_provider_and_a_named_ephemeris_together_are_refused(self) -> None:
         """Each answers one question, so both together is a refusal."""

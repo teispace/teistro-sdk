@@ -7993,6 +7993,129 @@ export declare class AlmanacArea {
    * });
    */
   pakshi(request: PakshiRequest): PakshiDays;
+  /**
+   * **Where this context's reckoning and another's disagree**, and why
+   * (`03-design/setup-disagreements.md`): the days on which some limb's
+   * member at sunrise differs, with the instant the two members meet
+   * under each sky, and the festivals each puts on another day. Each is
+   * `null` when not asked.
+   *
+   * @example
+   * const official = new Context(nepalOfficial(teimeris()));
+   * const modern = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const { days } = official.almanac.disagreements(modern, {
+   *   from: date('calendar.GREGORIAN', 2025, 11, 1),
+   *   to: date('calendar.GREGORIAN', 2025, 11, 30),
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   * });
+   */
+  disagreements(other: Context, request: DisagreementRequest): Disagreements;
+}
+
+/** Two reckonings of one range at one place, as `almanac.disagreements` compares them. */
+export interface DisagreementRequest {
+  /** The first day. */
+  readonly from: CalendarDate;
+  /** The last day, both ends included; `from` when left out. */
+  readonly to?: CalendarDate;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** Whether the days are compared; true when left out. */
+  readonly days?: boolean;
+  /** The festivals compared, when asked. */
+  readonly festivals?: FestivalRequest;
+}
+
+/** The instant one reckoning's member gives way to the other's, under one sky. */
+export interface LimbChange {
+  /** The instant, a Julian day (UT). */
+  readonly at: number;
+  /** Minutes from that sky's sunrise to it, negative before sunrise. */
+  readonly minutesFromSunrise: number;
+}
+
+/** One limb of one day as one reckoning names it at its sunrise. */
+export interface ReckonedLimb<T> {
+  /** The member standing at this reckoning's sunrise. */
+  readonly member: T;
+  /** That member's whole span under this reckoning's sky. */
+  readonly span: Interval;
+  /** This reckoning's sunrise, a Julian day (UT). */
+  readonly sunrise: number;
+  /** Where the two members meet under this sky, or `null` when they are not neighbours. */
+  readonly change: LimbChange | null;
+}
+
+/** One limb both reckonings name differently at sunrise. */
+export interface LimbDisagreement<T> {
+  /** As this context reckons it: the day the app shows. */
+  readonly official: ReckonedLimb<T>;
+  /** As the context compared with reckons it. */
+  readonly other: ReckonedLimb<T>;
+}
+
+/** A day on which some limb's member at sunrise differs; a limb both name alike is `null`. */
+export interface DayDisagreement {
+  readonly date: CalendarDate;
+  readonly tithi: LimbDisagreement<Tithi> | null;
+  readonly nakshatra: LimbDisagreement<Nakshatra> | null;
+  readonly yoga: LimbDisagreement<Yoga> | null;
+  readonly karana: LimbDisagreement<Karana> | null;
+}
+
+/** One rule's occurrence the two reckonings give differently, or one alone gives. */
+export interface FestivalDisagreement {
+  /** The rule's key. */
+  readonly rule: string;
+  /** Its amanta month as this context names it, or as the other does when only it gives one. */
+  readonly month: Masa;
+  /** Whether that month is adhika, the same way. */
+  readonly adhika: boolean;
+  /** This context's observance, with each day's extent of the rite's window, which is the reason. */
+  readonly official: FestivalObservance | null;
+  /** The other's. */
+  readonly other: FestivalObservance | null;
+}
+
+/** One Ekadashi the two reckonings fast on differently, or one alone fasts. */
+export interface EkadashiDisagreement {
+  readonly rule: string;
+  readonly tithi: Tithi;
+  readonly month: Masa;
+  readonly adhika: boolean;
+  /** This context's fast, with the vedha and excess that decided. */
+  readonly official: EkadashiFast | null;
+  readonly other: EkadashiFast | null;
+}
+
+/** What `almanac.disagreements` answers, frozen to its leaves. */
+export interface Disagreements {
+  /** The days, when compared. */
+  readonly days: {
+    /** The profile the other context resolved. */
+    readonly otherProfile: string;
+    /** The other context's settings hash, so a stored comparison is known stale when either side changes. */
+    readonly otherSettingsHash: string;
+    /** How many days were compared. */
+    readonly compared: number;
+    /** The days that differ, in order. */
+    readonly days: readonly DayDisagreement[];
+    /** This context's, which sealed the record. */
+    readonly provenance: Provenance;
+  } | null;
+  /** The festivals, when asked. */
+  readonly festivals: {
+    readonly otherProfile: string;
+    readonly otherSettingsHash: string;
+    /** How many observances and fasts this context gave. */
+    readonly compared: number;
+    readonly observances: readonly FestivalDisagreement[];
+    readonly ekadashis: readonly EkadashiDisagreement[];
+    readonly provenance: Provenance;
+  } | null;
 }
 
 /**

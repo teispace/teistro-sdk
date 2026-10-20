@@ -15655,6 +15655,70 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_disagreements",
+      "doc": "Compares this context's reckoning of a range with another's at one\nplace (`03-design/setup-disagreements.md`) and answers with\n`{days, festivals}` as canonical JSON, each the `{value, provenance}`\nof one comparison asked, sealed by this context's provenance, and null\nwhen not asked.\n\n`days` is `{otherProfile, otherSettingsHash, compared, days}`: only the\ndays on which some limb's member at sunrise differs, each `{date,\ntithi, nakshatra, yoga, karana}` with a limb null where both name one\nmember, and otherwise `{official, other}`, each side `{member, span,\nsunrise, change}`: the member it names at its sunrise, that member's\nspan under its sky, its sunrise, and `change`, `{at,\nminutesFromSunrise}`, the instant the two members meet under that sky,\nnull when the two members are not neighbours. `festivals` is\n`{otherProfile, otherSettingsHash, compared, observances, ekadashis}`:\neach occurrence whose day or month differs, or which only one side\ngives, as `{rule, month, adhika, official, other}` (an Ekadashi with\nits `tithi` too), each side the observance or fast that side's\nfestival answer gives, or null.\n\n`request_json` is `{\"calendar\", \"first\", \"last\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\", \"days\",\n\"festivals\"}`: the days as `{\"year\", \"month\", \"day\"}`, `days` true\nwhen left out, `festivals` a festival request, and everything but\n`first`, the place and the offset optional. A key it does not read, a\nplace or offset out of range, a festival request its reader refuses or\na request comparing nothing is `INVALID_ARG`, named under\n`disagreements`; a null `other` is `INVALID_ARG` naming `other`. A\nrange of more than a year and a day is `OUT_OF_RANGE`, and either\ncontext without an ephemeris `CAPABILITY`. A failure of either\ncontext's reckoning is recorded on this one.",
+      "safety": "`context` and `other` must be live handles; `request_json`\nNUL-terminated; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "other",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_naam_milan",
       "doc": "Matches two names star to star (naam milan) and answers with the\n`naam` blob: each name's first syllable in the śatapada cakra, the\nvarga koota, and the Ashta Koota and the ten considerations of the two\nname stars (`03-design/matching.md`, C291 to C296).\n\n`request_json` is `{\"bride\", \"groom\", \"rules\"}`: the two names, in\nDevanagari or, when `rules.name.latin` is `IAST`, in IAST, and the\n`NaamRules` with every field optional. A name the cakra does not read,\na Latin name while `latin` refuses, or an Abhijit syllable while\n`abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or\n`naam.groom`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_blob` valid for a write.",

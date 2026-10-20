@@ -9404,6 +9404,43 @@ ts_status ts_positions(const ts_context * context, const ts_position_request * r
 ts_status ts_panchanga_days(const ts_context * context, const ts_panchanga_request * request, ts_blob * out_blob);
 
 /**
+ * Compares this context's reckoning of a range with another's at one
+ * place (`03-design/setup-disagreements.md`) and answers with
+ * `{days, festivals}` as canonical JSON, each the `{value, provenance}`
+ * of one comparison asked, sealed by this context's provenance, and null
+ * when not asked.
+ *
+ * `days` is `{otherProfile, otherSettingsHash, compared, days}`: only the
+ * days on which some limb's member at sunrise differs, each `{date,
+ * tithi, nakshatra, yoga, karana}` with a limb null where both name one
+ * member, and otherwise `{official, other}`, each side `{member, span,
+ * sunrise, change}`: the member it names at its sunrise, that member's
+ * span under its sky, its sunrise, and `change`, `{at,
+ * minutesFromSunrise}`, the instant the two members meet under that sky,
+ * null when the two members are not neighbours. `festivals` is
+ * `{otherProfile, otherSettingsHash, compared, observances, ekadashis}`:
+ * each occurrence whose day or month differs, or which only one side
+ * gives, as `{rule, month, adhika, official, other}` (an Ekadashi with
+ * its `tithi` too), each side the observance or fast that side's
+ * festival answer gives, or null.
+ *
+ * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+ * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "days",
+ * "festivals"}`: the days as `{"year", "month", "day"}`, `days` true
+ * when left out, `festivals` a festival request, and everything but
+ * `first`, the place and the offset optional. A key it does not read, a
+ * place or offset out of range, a festival request its reader refuses or
+ * a request comparing nothing is `INVALID_ARG`, named under
+ * `disagreements`; a null `other` is `INVALID_ARG` naming `other`. A
+ * range of more than a year and a day is `OUT_OF_RANGE`, and either
+ * context without an ephemeris `CAPABILITY`. A failure of either
+ * context's reckoning is recorded on this one.
+ * Safety: `context` and `other` must be live handles; `request_json`
+ * NUL-terminated; `out_json` valid for a write.
+ */
+ts_status ts_almanac_disagreements(const ts_context * context, const ts_context * other, const char * request_json, ts_string * out_json);
+
+/**
  * Matches two names star to star (naam milan) and answers with the
  * `naam` blob: each name's first syllable in the śatapada cakra, the
  * varga koota, and the Ashta Koota and the ten considerations of the two

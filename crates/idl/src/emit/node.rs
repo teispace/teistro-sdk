@@ -1111,6 +1111,9 @@ struct Call {
     args: Vec<String>,
     finish: String,
     returns: String,
+    /// The parameters holding another handle of the receiver's class,
+    /// whose provider the call can reach as well as the receiver's.
+    beside: Vec<String>,
 }
 
 #[allow(
@@ -1122,28 +1125,33 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>, b: Backend) ->
     let mut setup = String::new();
     let mut args = Vec::new();
     let mut last_pointer = String::new();
+    let mut beside = Vec::new();
     // A struct a *way in* takes may be omitted for every default, which
     // is what the C signature says of it (`options` may be null). That is
     // true of a factory as much as of the constructor, and reading it off
     // the primary one alone made the factory demand what the constructor
     // does not.
     let optional_struct = builds_a_handle(api, f);
-    for p in &f.params {
+    for (index, p) in f.params.iter().enumerate() {
         let name = snake(&p.name);
         match p.role {
-            // The handle of the class being rendered is `self`; any
-            // other opaque's is a parameter, and the class that holds it
-            // is what the caller passes. A factory is the only shape
-            // where the second case arises, and it arose unplaced —
-            // `rules::factories` says why.
+            // The handle of the class being rendered is `self` when it is
+            // the first parameter, as `rules::methods` places a method;
+            // any other handle is a parameter, and the class that holds
+            // it is what the caller passes. A factory takes another
+            // opaque's (`rules::factories` says why), and a comparison of
+            // two contexts a second context's.
             Role::Handle => {
                 let held = pointee_opaque(api, p).map(|o| o.name.clone());
-                if held.as_deref() == receiver || receiver.is_none() {
+                if (index == 0 && held.as_deref() == receiver) || receiver.is_none() {
                     args.push(String::from("self.handle"));
                 } else {
                     let class = binding_type_name(held.as_deref().unwrap_or_default());
                     params.push(format!("{name}: &{class}"));
                     args.push(format!("{name}.handle"));
+                    if held.as_deref() == receiver {
+                        beside.push(name.clone());
+                    }
                 }
             }
             Role::HandleOut => {
@@ -1300,6 +1308,7 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>, b: Backend) ->
         args,
         finish,
         returns,
+        beside,
     }
 }
 
@@ -1617,6 +1626,25 @@ fn render_method(
         (true, true) => ("        self.enter(env);\n", "        self.leave()?;\n"),
         (true, false) => ("        self.enter();\n", "        self.leave()?;\n"),
         (false, _) => ("", ""),
+    };
+    // A second context the call reads (a comparison of two reckonings)
+    // can reach its own provider, so it is lent the environment too, and
+    // both are taken back before either's failure is reported.
+    let (lend, take) = if host && !call.beside.is_empty() {
+        let given = if b.env() { "env" } else { "" };
+        let mut lend = String::from(lend);
+        let mut take = String::from("        let left = self.leave();\n");
+        for other in &call.beside {
+            let _ = writeln!(lend, "        {other}.enter({given});");
+            let _ = writeln!(take, "        let {other}_left = {other}.leave();");
+        }
+        take.push_str("        left?;\n");
+        for other in &call.beside {
+            let _ = writeln!(take, "        {other}_left?;");
+        }
+        (lend, take)
+    } else {
+        (lend.to_owned(), take.to_owned())
     };
     // The environment is taken by a call that lends it to the provider, and
     // by one that can fail, whose error carries its own record.

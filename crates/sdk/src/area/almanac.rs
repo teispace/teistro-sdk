@@ -46,8 +46,8 @@ mod disagreement;
 mod muhurta;
 
 pub use disagreement::{
-    DayDisagreement, DayDisagreements, EkadashiDisagreement, FestivalDisagreement,
-    FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
+    DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
+    FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
 };
 
 impl<'a> AlmanacArea<'a> {

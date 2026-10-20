@@ -1530,6 +1530,52 @@ public final class BindingTest {
                     ContextOptions.builder().nepalOfficial().build().profile(), "the committee's profile");
         });
 
+        tests.put("two reckonings say where they disagree and why", () -> {
+            // November 2025 at Kathmandu, the committee's reckoning over the
+            // Surya Siddhanta against the modern one: each tithi difference
+            // names both members and the instant they meet under each sky,
+            // on opposite sides of its sunrise, and Haribodhini Ekadashi is
+            // fasted on the 1st by the text and the 2nd by the modern sky.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            CalendarDate first = Civil.date(Calendar.GREGORIAN, 2025, 11, 1);
+            CalendarDate last = Civil.date(Calendar.GREGORIAN, 2025, 11, 30);
+            var nepal = new com.teispace.teistro.request.FestivalRequest("NEPAL");
+            try (Context official = teistro.context(ContextOptions.builder().nepalOfficial().build());
+                    Context modern = teistro.context(ContextOptions.builder().profile("nepali-default")
+                            .ephemeris(Ephemeris.BUILTIN).build())) {
+                Disagreements found = official.almanac().disagreements(modern, first, last, kathmandu, 20_700,
+                        true, nepal);
+                Disagreements.Days days = found.days();
+                same(30, days.compared(), "every day compared");
+                same("nepali-default", days.otherProfile(), "the other's profile");
+                same(modern.settingsHash(), days.otherSettingsHash(), "the other's settings hash");
+                same(List.of(1, 2, 9, 10, 11),
+                        days.days().stream().filter(d -> d.tithi() != null).map(d -> d.date().day()).toList(),
+                        "the tithi disagreements");
+                Disagreements.Limb<Tithi> tithi = days.days().get(0).tithi();
+                same(Tithi.SHUKLA_EKADASHI, tithi.official().member(), "the text's 11th");
+                same(Tithi.SHUKLA_DASHAMI, tithi.other().member(), "the modern 10th");
+                check(tithi.official().change().minutesFromSunrise() < 0
+                        && tithi.other().change().minutesFromSunrise() > 0, "opposite sides of sunrise");
+                Disagreements.Ekadashi haribodhini = found.festivals().ekadashis().stream()
+                        .filter(f -> f.tithi() == Tithi.SHUKLA_EKADASHI).findFirst().orElseThrow();
+                same(List.of(1, 2), List.of(haribodhini.official().day().day(), haribodhini.other().day().day()),
+                        "Haribodhini Ekadashi moves a day");
+
+                Disagreements lean = official.almanac().disagreements(modern, first, last, kathmandu, 20_700,
+                        false, nepal);
+                check(lean.days() == null, "the days not asked");
+                same(found.festivals().ekadashis(), lean.festivals().ekadashis(), "the festivals alike");
+                same("disagreements.days", refusal(() -> official.almanac().disagreements(modern, first, last,
+                        kathmandu, 20_700, false, null)).field(), "a comparison of nothing is refused by name");
+                // The other way round, each holding the other's lock: the same
+                // days differ, which also proves the two locks are taken whatever
+                // the order the caller names them in.
+                same(found.days().days().size(), modern.almanac().disagreements(official, first, last, kathmandu,
+                        20_700, true, null).days().days().size(), "the other way round, the same days");
+            }
+        });
+
         tests.put("a provider written in Java stands behind the Surya Siddhanta", () -> {
             // A chain entry too, so the text takes its modern sunrise from
             // it under the committee's profile, and what it throws there

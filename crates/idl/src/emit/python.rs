@@ -1069,12 +1069,14 @@ fn parameter(
     {
         let name = identifier(&p.name);
         match p.role {
-            // The handle of the class being rendered is `self`; any other
-            // opaque's is a parameter, and the class that holds it is what
-            // the caller passes (`rules::factories`).
+            // The handle of the class being rendered is `self` when it is
+            // the first parameter (`rules::methods`); any other handle is
+            // a parameter, and the class that holds it is what the caller
+            // passes: another opaque's for a factory (`rules::factories`),
+            // a second context's for a comparison of two.
             Role::Handle => {
                 let held = crate::rules::pointee_opaque(api, p).map(|o| o.name.clone());
-                if held.as_deref() == receiver || receiver.is_none() {
+                if (index == 0 && held.as_deref() == receiver) || receiver.is_none() {
                     args.push(String::from("self._raw"));
                 } else {
                     let class = format!(

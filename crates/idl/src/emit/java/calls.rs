@@ -210,9 +210,15 @@ fn parameter(api: &Api, f: &FunctionDef, p: &ParamDef, index: usize, m: &mut Mar
         Role::StructOut | Role::BlobOut | Role::StringOut | Role::StrOut | Role::ScalarOut => {
             written(api, f, p, &local, m);
         }
-        Role::Handle => {
+        // The receiver is the first parameter (`rules::methods`); a later
+        // handle, a second context a comparison reads, keeps its own name.
+        Role::Handle if index == 0 => {
             m.signature.push(String::from("MemorySegment context"));
             m.args.push(String::from("context"));
+        }
+        Role::Handle => {
+            m.signature.push(format!("MemorySegment {local}"));
+            m.args.push(local);
         }
         Role::Value => {
             let ty = value_type(p);

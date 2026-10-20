@@ -1416,6 +1416,7 @@ public final class ParityRunner {
             surface("chart.rashifal_many", () -> ctx.chart().rashifalMany(List.of(), null));
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.festivals", () -> ctx.almanac().festivals(day, day, place, 0, null));
+            surface("almanac.disagreements", () -> ctx.almanac().disagreements(ctx, day, day, place, 0, true, null));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
             surface("research.counts", () -> ctx.research().counts(List.of(), null, new Design(List.of(), null), null));

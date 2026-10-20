@@ -1929,6 +1929,8 @@ typedef TsPositionsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer
 typedef TsPositionsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PositionRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsPanchangaDaysNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsPanchangaDaysDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
+typedef TsAlmanacDisagreementsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacDisagreementsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -1998,6 +2000,7 @@ final class TeistroLibrary {
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
+        ts_almanac_disagreements = library.lookupFunction<TsAlmanacDisagreementsNative, TsAlmanacDisagreementsDart>('ts_almanac_disagreements'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
@@ -2251,6 +2254,39 @@ final class TeistroLibrary {
   /// under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the
   /// policies that would synthesise one.
   final TsPanchangaDaysDart ts_panchanga_days;
+
+  /// Compares this context's reckoning of a range with another's at one
+  /// place (`03-design/setup-disagreements.md`) and answers with
+  /// `{days, festivals}` as canonical JSON, each the `{value, provenance}`
+  /// of one comparison asked, sealed by this context's provenance, and null
+  /// when not asked.
+  ///
+  /// `days` is `{otherProfile, otherSettingsHash, compared, days}`: only the
+  /// days on which some limb's member at sunrise differs, each `{date,
+  /// tithi, nakshatra, yoga, karana}` with a limb null where both name one
+  /// member, and otherwise `{official, other}`, each side `{member, span,
+  /// sunrise, change}`: the member it names at its sunrise, that member's
+  /// span under its sky, its sunrise, and `change`, `{at,
+  /// minutesFromSunrise}`, the instant the two members meet under that sky,
+  /// null when the two members are not neighbours. `festivals` is
+  /// `{otherProfile, otherSettingsHash, compared, observances, ekadashis}`:
+  /// each occurrence whose day or month differs, or which only one side
+  /// gives, as `{rule, month, adhika, official, other}` (an Ekadashi with
+  /// its `tithi` too), each side the observance or fast that side's
+  /// festival answer gives, or null.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "days",
+  /// "festivals"}`: the days as `{"year", "month", "day"}`, `days` true
+  /// when left out, `festivals` a festival request, and everything but
+  /// `first`, the place and the offset optional. A key it does not read, a
+  /// place or offset out of range, a festival request its reader refuses or
+  /// a request comparing nothing is `INVALID_ARG`, named under
+  /// `disagreements`; a null `other` is `INVALID_ARG` naming `other`. A
+  /// range of more than a year and a day is `OUT_OF_RANGE`, and either
+  /// context without an ephemeris `CAPABILITY`. A failure of either
+  /// context's reckoning is recorded on this one.
+  final TsAlmanacDisagreementsDart ts_almanac_disagreements;
 
   /// Matches two names star to star (naam milan) and answers with the
   /// `naam` blob: each name's first syllable in the śatapada cakra, the
@@ -5539,6 +5575,49 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_panchanga_days(_handle, rawrequest, outBlob);
         if (status != 0) _fail(status);
         return _takeBlob(_lib, outBlob);
+    });
+  }
+
+  /// Compares this context's reckoning of a range with another's at one
+  /// place (`03-design/setup-disagreements.md`) and answers with
+  /// `{days, festivals}` as canonical JSON, each the `{value, provenance}`
+  /// of one comparison asked, sealed by this context's provenance, and null
+  /// when not asked.
+  ///
+  /// `days` is `{otherProfile, otherSettingsHash, compared, days}`: only the
+  /// days on which some limb's member at sunrise differs, each `{date,
+  /// tithi, nakshatra, yoga, karana}` with a limb null where both name one
+  /// member, and otherwise `{official, other}`, each side `{member, span,
+  /// sunrise, change}`: the member it names at its sunrise, that member's
+  /// span under its sky, its sunrise, and `change`, `{at,
+  /// minutesFromSunrise}`, the instant the two members meet under that sky,
+  /// null when the two members are not neighbours. `festivals` is
+  /// `{otherProfile, otherSettingsHash, compared, observances, ekadashis}`:
+  /// each occurrence whose day or month differs, or which only one side
+  /// gives, as `{rule, month, adhika, official, other}` (an Ekadashi with
+  /// its `tithi` too), each side the observance or fast that side's
+  /// festival answer gives, or null.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "days",
+  /// "festivals"}`: the days as `{"year", "month", "day"}`, `days` true
+  /// when left out, `festivals` a festival request, and everything but
+  /// `first`, the place and the offset optional. A key it does not read, a
+  /// place or offset out of range, a festival request its reader refuses or
+  /// a request comparing nothing is `INVALID_ARG`, named under
+  /// `disagreements`; a null `other` is `INVALID_ARG` naming `other`. A
+  /// range of more than a year and a day is `OUT_OF_RANGE`, and either
+  /// context without an ephemeris `CAPABILITY`. A failure of either
+  /// context's reckoning is recorded on this one.
+  String almanacDisagreements(TeistroContext other, String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        other._alive();
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_disagreements(_handle, other._handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

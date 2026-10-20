@@ -15,7 +15,8 @@
 use teistro::catalogue::{Calendar, Masa, Tithi};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
-    CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, LimbDisagreement, UtcOffset,
+    CalendarDate, Context, DisagreementRequest, Ephemeris, FestivalPack, FestivalRequest,
+    LimbDisagreement, UtcOffset,
 };
 
 fn kathmandu() -> Place {
@@ -180,6 +181,88 @@ fn the_festival_twin_names_each_moved_occurrence_with_both_days() {
         haribodhini.other.as_ref().unwrap(),
     );
     assert_eq!((a.day.day, b.day.day), (1, 2));
+}
+
+/// The record a binding sends answers what the two Rust calls do, each
+/// side written in full and sealed as the boundary carries it.
+#[test]
+fn a_binding_s_request_answers_both_comparisons_in_full() {
+    let (official, modern) = contexts();
+    let asked = DisagreementRequest::from_json(
+        r#"{"first": {"year": 2025, "month": 11, "day": 1},
+            "last": {"year": 2025, "month": 11, "day": 30},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+            "utcOffsetSeconds": 20700, "festivals": {"rules": "NEPAL"}}"#,
+    )
+    .unwrap();
+    let answer = official
+        .almanac()
+        .disagreements_request(&modern, &asked)
+        .unwrap();
+    let days = answer
+        .days
+        .expect("the days are compared unless a request says not");
+    let direct = official
+        .almanac()
+        .disagreements(
+            &modern,
+            &november(1),
+            &november(30),
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+        )
+        .unwrap();
+    assert_eq!(days.value, direct.value.in_full().unwrap());
+    assert_eq!(
+        days.provenance.settings_hash,
+        direct.provenance.settings_hash
+    );
+    let first = &days.value["days"][0];
+    assert_eq!(first["date"]["calendar"], "calendar.GREGORIAN");
+    assert_eq!(
+        first["tithi"]["official"]["member"],
+        "tithi.SHUKLA_EKADASHI"
+    );
+    assert_eq!(first["tithi"]["other"]["member"], "tithi.SHUKLA_DASHAMI");
+
+    let festivals = answer.festivals.expect("a festival request was sent");
+    let fast = festivals.value["ekadashis"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|fast| fast["tithi"] == "tithi.SHUKLA_EKADASHI")
+        .expect("Haribodhini Ekadashi moves");
+    assert!(fast["month"].as_str().unwrap().starts_with("masa."));
+    assert_eq!(fast["official"]["day"]["day"], 1);
+    assert_eq!(fast["other"]["day"]["day"], 2);
+    assert_eq!(fast["official"]["tithi"], "tithi.SHUKLA_EKADASHI");
+    assert_eq!(fast["official"]["day"]["calendar"], "calendar.GREGORIAN");
+
+    let lean = DisagreementRequest::from_json(
+        r#"{"first": {"year": 2025, "month": 11, "day": 1},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+            "days": false, "festivals": {"rules": "NEPAL"}}"#,
+    )
+    .unwrap();
+    let answer = official
+        .almanac()
+        .disagreements_request(&modern, &lean)
+        .unwrap();
+    assert!(answer.days.is_none() && answer.festivals.is_some());
+
+    let refused = DisagreementRequest::from_json(
+        r#"{"first": {"year": 2025, "month": 11, "day": 1},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+            "festivals": {"rules": "NOT_A_PACK"}}"#,
+    )
+    .unwrap_err();
+    assert!(
+        refused
+            .field()
+            .is_some_and(|field| field.starts_with("disagreements.festivals")),
+        "{:?}",
+        refused.field()
+    );
 }
 
 /// In 2028 the text has an adhika Kartika the modern sky lacks, and every

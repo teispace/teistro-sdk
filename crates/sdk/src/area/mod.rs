@@ -86,8 +86,8 @@ pub(crate) fn drik_sun<'p>(
 pub use almanac::MuhurtaDays;
 pub use almanac::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, DayDisagreement, DayDisagreements,
-    EkadashiDisagreement, FestivalDays, FestivalDisagreement, FestivalDisagreements, LimbChange,
-    LimbDisagreement, ReckonedLimb,
+    DisagreementRequest, Disagreements, EkadashiDisagreement, FestivalDays, FestivalDisagreement,
+    FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
 };
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]

@@ -2841,6 +2841,7 @@ def main() -> None:
         ("chart.rashifal_many", ctx.chart.rashifal_many),
         ("almanac.of", ctx.almanac.of),
         ("almanac.festivals", ctx.almanac.festivals),
+        ("almanac.disagreements", ctx.almanac.disagreements),
         ("almanac.day", ctx.almanac.day),
         ("almanac.pakshi", ctx.almanac.pakshi),
         ("research.counts", ctx.research.counts),

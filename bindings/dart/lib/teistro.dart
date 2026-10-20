@@ -1297,6 +1297,60 @@ final class AlmanacArea extends _Area {
       ),
     );
   }
+
+  /// **Where this context's reckoning and [other]'s disagree**, and why
+  /// (`03-design/setup-disagreements.md`): the official day an app shows
+  /// beside the modern one. [Disagreements.days] holds only the days on
+  /// which some limb's member at sunrise differs, each limb with the member
+  /// each side names, its span, its sunrise and the instant the two members
+  /// meet under that sky; [Disagreements.festivals] each occurrence whose
+  /// day or month differs, or which one side alone gives. Each is null when
+  /// not asked; a request comparing nothing is refused as
+  /// `disagreements.days`.
+  ///
+  /// ```dart
+  /// final official = teistro.nepalOfficial(modern: [teimeris()]);
+  /// final modern = teistro.context(
+  ///   profile: 'nepali-default',
+  ///   ephemeris: [teimeris()],
+  /// );
+  /// final found = official.almanac.disagreements(
+  ///   modern,
+  ///   from: Calendar.gregorian.date(2025, 11, 1),
+  ///   to: Calendar.gregorian.date(2025, 11, 30),
+  ///   place: kathmandu, utcOffsetSeconds: 20700,
+  ///   festivals: FestivalRequest(rules: FestivalPack.nepal),
+  /// );
+  /// final moved = found.days?.days.first.tithi?.official.change;
+  /// ```
+  Disagreements disagreements(
+    Context other, {
+    required CalendarDate from,
+    CalendarDate? to,
+    required Observer place,
+    required int utcOffsetSeconds,
+    bool days = true,
+    FestivalRequest? festivals,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'calendar': from.calendar.key,
+      'first': _dayParts(from),
+      if (to != null) 'last': _dayParts(to),
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      'days': days,
+      if (festivals != null) 'festivals': jsonDecode(festivals._json),
+    });
+    return _disagreements(
+      _context._guarded(
+        () => other._guarded(
+          () => _context._inner.almanacDisagreements(other._inner, asked),
+        ),
+      ),
+    );
+  }
 }
 
 /// `sdk.matching` — what matches without a chart: two names, star to star
@@ -14316,89 +14370,402 @@ final class FestivalAnswer {
   final Provenance provenance;
 }
 
+/// The instant one reckoning's member gives way to the other's, under one
+/// sky (`03-design/setup-disagreements.md` §1).
+final class LimbChange extends _Value {
+  const LimbChange({required this.at, required this.minutesFromSunrise});
+
+  /// The instant, a Julian day (UT).
+  final double at;
+
+  /// Minutes from that sky's sunrise to it, negative before sunrise.
+  final double minutesFromSunrise;
+
+  @override
+  List<Object?> get _fields => [at, minutesFromSunrise];
+}
+
+/// One limb of one day as one reckoning names it at its sunrise.
+final class ReckonedLimb<T> extends _Value {
+  const ReckonedLimb({
+    required this.member,
+    required this.span,
+    required this.sunrise,
+    required this.change,
+  });
+
+  /// The member standing at this reckoning's sunrise.
+  final T member;
+
+  /// That member's whole span under this reckoning's sky.
+  final Interval span;
+
+  /// This reckoning's sunrise, a Julian day (UT).
+  final double sunrise;
+
+  /// Where the two members meet under this sky, or null when they are not
+  /// neighbours.
+  final LimbChange? change;
+
+  @override
+  List<Object?> get _fields => [member, span.from, span.to, sunrise, change];
+}
+
+/// One limb both reckonings name differently at sunrise.
+final class LimbDisagreement<T> extends _Value {
+  const LimbDisagreement({required this.official, required this.other});
+
+  /// As this context reckons it: the day the app shows.
+  final ReckonedLimb<T> official;
+
+  /// As the context compared with reckons it.
+  final ReckonedLimb<T> other;
+
+  @override
+  List<Object?> get _fields => [official, other];
+}
+
+/// A day on which some limb's member at sunrise differs; a limb both name
+/// alike is null.
+final class DayDisagreement extends _Value {
+  const DayDisagreement({
+    required this.date,
+    required this.tithi,
+    required this.nakshatra,
+    required this.yoga,
+    required this.karana,
+  });
+
+  final CalendarDate date;
+  final LimbDisagreement<Tithi>? tithi;
+  final LimbDisagreement<Nakshatra>? nakshatra;
+  final LimbDisagreement<Yoga>? yoga;
+  final LimbDisagreement<Karana>? karana;
+
+  @override
+  List<Object?> get _fields => [
+    ..._dateFields(date),
+    tithi,
+    nakshatra,
+    yoga,
+    karana,
+  ];
+}
+
+/// The days two reckonings disagree on, and what the other one was.
+final class DayDisagreements {
+  const DayDisagreements({
+    required this.otherProfile,
+    required this.otherSettingsHash,
+    required this.compared,
+    required this.days,
+    required this.provenance,
+  });
+
+  /// The profile the other context resolved.
+  final String otherProfile;
+
+  /// The other context's settings hash, so a stored comparison is known
+  /// stale when either side's settings change.
+  final String otherSettingsHash;
+
+  /// How many days were compared.
+  final int compared;
+
+  /// The days that differ, in order.
+  final List<DayDisagreement> days;
+
+  /// This context's, which sealed the record.
+  final Provenance provenance;
+}
+
+/// One rule's occurrence the two reckonings give differently, or one alone
+/// gives.
+final class FestivalDisagreement extends _Value {
+  const FestivalDisagreement({
+    required this.rule,
+    required this.month,
+    required this.adhika,
+    required this.official,
+    required this.other,
+  });
+
+  /// The rule's key.
+  final String rule;
+
+  /// Its amanta month as this context names it, or as the other does when
+  /// only it gives one, and whether that month is adhika.
+  final Masa month;
+  final bool adhika;
+
+  /// This context's observance, with each day's extent of the rite's
+  /// window, which is the reason; null when it gives none.
+  final FestivalObservance? official;
+
+  /// The other's.
+  final FestivalObservance? other;
+
+  @override
+  List<Object?> get _fields => [rule, month, adhika, official, other];
+}
+
+/// One Ekadashi the two reckonings fast on differently, or one alone fasts.
+final class EkadashiDisagreement extends _Value {
+  const EkadashiDisagreement({
+    required this.rule,
+    required this.tithi,
+    required this.month,
+    required this.adhika,
+    required this.official,
+    required this.other,
+  });
+
+  final String rule;
+  final Tithi tithi;
+  final Masa month;
+  final bool adhika;
+
+  /// This context's fast, with the vedha and excess that decided.
+  final EkadashiFast? official;
+  final EkadashiFast? other;
+
+  @override
+  List<Object?> get _fields => [rule, tithi, month, adhika, official, other];
+}
+
+/// The festivals two reckonings disagree on.
+final class FestivalDisagreements {
+  const FestivalDisagreements({
+    required this.otherProfile,
+    required this.otherSettingsHash,
+    required this.compared,
+    required this.observances,
+    required this.ekadashis,
+    required this.provenance,
+  });
+
+  final String otherProfile;
+  final String otherSettingsHash;
+
+  /// How many observances and fasts this context gave.
+  final int compared;
+  final List<FestivalDisagreement> observances;
+  final List<EkadashiDisagreement> ekadashis;
+  final Provenance provenance;
+}
+
+/// What [AlmanacArea.disagreements] answers: each comparison asked, null
+/// when not.
+final class Disagreements {
+  const Disagreements({required this.days, required this.festivals});
+
+  final DayDisagreements? days;
+  final FestivalDisagreements? festivals;
+}
+
+/// `ts_almanac_disagreements`'s answer as frozen records, members as this
+/// binding's enums and dates in its own shape.
+Disagreements _disagreements(String json) {
+  final answer = jsonDecode(json) as Map<String, Object?>;
+  ReckonedLimb<T> side<T>(
+    Map<String, Object?> raw,
+    T Function(Object?) member,
+  ) {
+    final change = raw['change'] as Map<String, Object?>?;
+    return ReckonedLimb(
+      member: member(raw['member']),
+      span: _festivalInterval(raw['span']),
+      sunrise: (raw['sunrise']! as num).toDouble(),
+      change:
+          change == null
+              ? null
+              : LimbChange(
+                at: (change['at']! as num).toDouble(),
+                minutesFromSunrise:
+                    (change['minutesFromSunrise']! as num).toDouble(),
+              ),
+    );
+  }
+
+  LimbDisagreement<T>? limb<T>(Object? raw, T Function(Object?) member) {
+    if (raw == null) return null;
+    final both = raw as Map<String, Object?>;
+    return LimbDisagreement(
+      official: side(_festivalAt(both['official']), member),
+      other: side(_festivalAt(both['other']), member),
+    );
+  }
+
+  T? maybe<T>(Object? raw, T Function(Map<String, Object?>) read) =>
+      raw == null ? null : read(raw as Map<String, Object?>);
+
+  final days = answer['days'] as Map<String, Object?>?;
+  final festivals = answer['festivals'] as Map<String, Object?>?;
+  final dayValue = days == null ? null : _festivalAt(days['value']);
+  final festivalValue =
+      festivals == null ? null : _festivalAt(festivals['value']);
+  return Disagreements(
+    days:
+        days == null || dayValue == null
+            ? null
+            : DayDisagreements(
+              otherProfile: dayValue['otherProfile']! as String,
+              otherSettingsHash: dayValue['otherSettingsHash']! as String,
+              compared: dayValue['compared']! as int,
+              days: List.unmodifiable([
+                for (final raw in _festivalEach(dayValue['days']))
+                  DayDisagreement(
+                    date: _serdeDate(_festivalAt(raw['date'])),
+                    tithi: limb(
+                      raw['tithi'],
+                      (key) => _key(key, Tithi.byKey, Tithi.unknown),
+                    ),
+                    nakshatra: limb(
+                      raw['nakshatra'],
+                      (key) => _key(key, Nakshatra.byKey, Nakshatra.unknown),
+                    ),
+                    yoga: limb(
+                      raw['yoga'],
+                      (key) => _key(key, Yoga.byKey, Yoga.unknown),
+                    ),
+                    karana: limb(
+                      raw['karana'],
+                      (key) => _key(key, Karana.byKey, Karana.unknown),
+                    ),
+                  ),
+              ]),
+              provenance: Provenance.fromJson(_festivalAt(days['provenance'])),
+            ),
+    festivals:
+        festivals == null || festivalValue == null
+            ? null
+            : FestivalDisagreements(
+              otherProfile: festivalValue['otherProfile']! as String,
+              otherSettingsHash: festivalValue['otherSettingsHash']! as String,
+              compared: festivalValue['compared']! as int,
+              observances: List.unmodifiable([
+                for (final raw in _festivalEach(festivalValue['observances']))
+                  FestivalDisagreement(
+                    rule: raw['rule']! as String,
+                    month: _key(raw['month'], Masa.byKey, Masa.unknown),
+                    adhika: raw['adhika']! as bool,
+                    official: maybe(raw['official'], _festivalObservance),
+                    other: maybe(raw['other'], _festivalObservance),
+                  ),
+              ]),
+              ekadashis: List.unmodifiable([
+                for (final raw in _festivalEach(festivalValue['ekadashis']))
+                  EkadashiDisagreement(
+                    rule: raw['rule']! as String,
+                    tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+                    month: _key(raw['month'], Masa.byKey, Masa.unknown),
+                    adhika: raw['adhika']! as bool,
+                    official: maybe(raw['official'], _ekadashiFast),
+                    other: maybe(raw['other'], _ekadashiFast),
+                  ),
+              ]),
+              provenance: Provenance.fromJson(
+                _festivalAt(festivals['provenance']),
+              ),
+            ),
+  );
+}
+
+Map<String, Object?> _festivalAt(Object? raw) => raw! as Map<String, Object?>;
+
+List<Map<String, Object?>> _festivalEach(Object? raw) => [
+  for (final item in raw! as List<Object?>) _festivalAt(item),
+];
+
+Interval _festivalInterval(Object? raw) => Interval(
+  from: (_festivalAt(raw)['from']! as num).toDouble(),
+  to: (_festivalAt(raw)['to']! as num).toDouble(),
+);
+
+FestivalExtent _festivalExtent(Map<String, Object?> raw) => FestivalExtent(
+  day: _serdeDate(_festivalAt(raw['day'])),
+  window: _festivalInterval(raw['window']),
+  held: (raw['held']! as num).toDouble(),
+);
+
+/// An observance as a festival answer writes it: the `festivals`
+/// section's, and each side of a [FestivalDisagreement].
+FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
+    FestivalObservance(
+      rule: raw['rule']! as String,
+      day: _serdeDate(_festivalAt(raw['day'])),
+      tithi: _festivalInterval(raw['tithi']),
+      month: _key(raw['month'], Masa.byKey, Masa.unknown),
+      adhika: raw['adhika']! as bool,
+      case_: raw['case']! as String,
+      extents: switch (_festivalEach(raw['extents'])) {
+        [final earlier, final later] => (
+          _festivalExtent(earlier),
+          _festivalExtent(later),
+        ),
+        final other =>
+          throw StateError(
+            'an observance has two extents, not ${other.length}',
+          ),
+      },
+      decidedBy: FestivalDecided(
+        by: _festivalAt(raw['decidedBy'])['by']! as String,
+        index: _festivalAt(raw['decidedBy'])['index'] as int?,
+        rule: _festivalAt(raw['decidedBy'])['rule'] as String?,
+        days: _festivalAt(raw['decidedBy'])['days'] as int?,
+      ),
+      choice: raw['choice']! as String,
+      marginSeconds: (raw['marginSeconds']! as num).toDouble(),
+    );
+
+/// An Ekadashi fast as a festival answer writes it.
+EkadashiFast _ekadashiFast(Map<String, Object?> raw) => EkadashiFast(
+  rule: raw['rule']! as String,
+  tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+  month: _key(raw['month'], Masa.byKey, Masa.unknown),
+  adhika: raw['adhika']! as bool,
+  tithis: switch (raw['tithis']! as List<Object?>) {
+    [final tenth, final eleventh, final twelfth] => (
+      _festivalInterval(tenth),
+      _festivalInterval(eleventh),
+      _festivalInterval(twelfth),
+    ),
+    final other =>
+      throw StateError('a fast has three tithis, not ${other.length}'),
+  },
+  days: switch (_festivalEach(raw['days'])) {
+    [final own, final after] => (_serdeDate(own), _serdeDate(after)),
+    final other => throw StateError('a fast has two days, not ${other.length}'),
+  },
+  piercedAt: raw['piercedAt'] as String?,
+  pierced: raw['pierced']! as bool,
+  excess: raw['excess']! as String,
+  choice: raw['choice']! as String,
+  day: _serdeDate(_festivalAt(raw['day'])),
+);
+
 /// The `festivals` section: the envelope's value, its dates in this
 /// binding's shape, with the provenance beside it.
 FestivalAnswer _festivalAnswer(String json) {
   final envelope = jsonDecode(json) as Map<String, Object?>;
   final value = envelope['value']! as Map<String, Object?>;
-  Map<String, Object?> at(Object? raw) => raw! as Map<String, Object?>;
-  List<Map<String, Object?>> each(Object? raw) => [
-    for (final item in raw! as List<Object?>) at(item),
-  ];
-  Interval interval(Object? raw) => Interval(
-    from: (at(raw)['from']! as num).toDouble(),
-    to: (at(raw)['to']! as num).toDouble(),
-  );
-  FestivalExtent extent(Map<String, Object?> raw) => FestivalExtent(
-    day: _serdeDate(at(raw['day'])),
-    window: interval(raw['window']),
-    held: (raw['held']! as num).toDouble(),
-  );
-
   return FestivalAnswer(
     observances: List.unmodifiable([
-      for (final raw in each(value['observances']))
-        FestivalObservance(
-          rule: raw['rule']! as String,
-          day: _serdeDate(at(raw['day'])),
-          tithi: interval(raw['tithi']),
-          month: _key(raw['month'], Masa.byKey, Masa.unknown),
-          adhika: raw['adhika']! as bool,
-          case_: raw['case']! as String,
-          extents: switch (each(raw['extents'])) {
-            [final earlier, final later] => (extent(earlier), extent(later)),
-            final other =>
-              throw StateError(
-                'an observance has two extents, not ${other.length}',
-              ),
-          },
-          decidedBy: FestivalDecided(
-            by: at(raw['decidedBy'])['by']! as String,
-            index: at(raw['decidedBy'])['index'] as int?,
-            rule: at(raw['decidedBy'])['rule'] as String?,
-            days: at(raw['decidedBy'])['days'] as int?,
-          ),
-          choice: raw['choice']! as String,
-          marginSeconds: (raw['marginSeconds']! as num).toDouble(),
-        ),
+      for (final raw in _festivalEach(value['observances']))
+        _festivalObservance(raw),
     ]),
     ekadashis: List.unmodifiable([
-      for (final raw in each(value['ekadashis']))
-        EkadashiFast(
-          rule: raw['rule']! as String,
-          tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
-          month: _key(raw['month'], Masa.byKey, Masa.unknown),
-          adhika: raw['adhika']! as bool,
-          tithis: switch (raw['tithis']! as List<Object?>) {
-            [final tenth, final eleventh, final twelfth] => (
-              interval(tenth),
-              interval(eleventh),
-              interval(twelfth),
-            ),
-            final other =>
-              throw StateError('a fast has three tithis, not ${other.length}'),
-          },
-          days: switch (each(raw['days'])) {
-            [final own, final after] => (_serdeDate(own), _serdeDate(after)),
-            final other =>
-              throw StateError('a fast has two days, not ${other.length}'),
-          },
-          piercedAt: raw['piercedAt'] as String?,
-          pierced: raw['pierced']! as bool,
-          excess: raw['excess']! as String,
-          choice: raw['choice']! as String,
-          day: _serdeDate(at(raw['day'])),
-        ),
+      for (final raw in _festivalEach(value['ekadashis'])) _ekadashiFast(raw),
     ]),
     unjudged: List.unmodifiable([
-      for (final raw in each(value['unjudged']))
+      for (final raw in _festivalEach(value['unjudged']))
         FestivalUnjudged(
           rule: raw['rule']! as String,
-          tithi: interval(raw['tithi']),
+          tithi: _festivalInterval(raw['tithi']),
           why: raw['why']! as String,
         ),
     ]),
-    provenance: Provenance.fromJson(at(envelope['provenance'])),
+    provenance: Provenance.fromJson(_festivalAt(envelope['provenance'])),
   );
 }
 

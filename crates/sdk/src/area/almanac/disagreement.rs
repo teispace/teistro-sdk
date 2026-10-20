@@ -2,9 +2,12 @@
 //! (`03-design/setup-disagreements.md`): the official day an app shows
 //! beside the modern one, with the instants that explain each difference.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use teistro_calendar::CalendarDate;
-use teistro_core::catalogue::{Karana, Masa, Nakshatra, Tithi, Yoga};
+use teistro_core::catalogue::{
+    Calendar, Karana, Kind, Masa, Nakshatra, Tithi, Yoga, write_in_full,
+};
 use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
@@ -15,6 +18,7 @@ use teistro_panchanga::festival::{EkadashiFast, Observance, Observances};
 use teistro_panchanga::span::Span;
 
 use super::AlmanacArea;
+use crate::asked::{DayAsked, offset_of, place_of};
 use crate::context::Context;
 use crate::festival_request::FestivalRequest;
 
@@ -375,6 +379,238 @@ impl AlmanacArea<'_> {
             },
             ours.provenance,
         ))
+    }
+}
+
+/// The record's name where a binding sends it, which a refusal is named
+/// under.
+const DISAGREEMENTS: &str = "disagreements";
+
+/// Where each catalogue member of a [`DayDisagreements`] sits, written in
+/// full at the boundary as every other section's are.
+const DAY_MEMBERS: [(&str, &str, Kind); 10] = [
+    ("days", "date.calendar", Kind::Calendar),
+    ("days", "date.era.era", Kind::Era),
+    ("days", "tithi.official.member", Kind::Tithi),
+    ("days", "tithi.other.member", Kind::Tithi),
+    ("days", "nakshatra.official.member", Kind::Nakshatra),
+    ("days", "nakshatra.other.member", Kind::Nakshatra),
+    ("days", "yoga.official.member", Kind::Yoga),
+    ("days", "yoga.other.member", Kind::Yoga),
+    ("days", "karana.official.member", Kind::Karana),
+    ("days", "karana.other.member", Kind::Karana),
+];
+
+impl DayDisagreements {
+    /// The record as JSON, every catalogue member written as its full key:
+    /// what the boundary carries and seals.
+    ///
+    /// # Errors
+    ///
+    /// `INTERNAL` if the record does not serialise, which one this crate
+    /// built cannot do.
+    pub fn in_full(&self) -> Result<Value, Error> {
+        let mut value = serde_json::to_value(self).map_err(|error| {
+            Error::internal(format!("the day disagreements did not serialise: {error}"))
+        })?;
+        for (list, path, kind) in DAY_MEMBERS {
+            if let Some(items) = value.get_mut(list) {
+                write_in_full(items, path, kind);
+            }
+        }
+        Ok(value)
+    }
+}
+
+impl FestivalDisagreements {
+    /// The record as JSON, every catalogue member written as its full key,
+    /// each side's observance or fast as the festival answer writes it:
+    /// what the boundary carries and seals.
+    ///
+    /// # Errors
+    ///
+    /// `INTERNAL` if the record does not serialise, which one this crate
+    /// built cannot do.
+    pub fn in_full(&self) -> Result<Value, Error> {
+        let mut value = serde_json::to_value(self).map_err(|error| {
+            Error::internal(format!(
+                "the festival disagreements did not serialise: {error}"
+            ))
+        })?;
+        for list in ["observances", "ekadashis"] {
+            let Some(items) = value.get_mut(list) else {
+                continue;
+            };
+            write_in_full(items, "month", Kind::Masa);
+            if list == "ekadashis" {
+                write_in_full(items, "tithi", Kind::Tithi);
+            }
+            for (within, path, kind) in Observances::MEMBERS {
+                if within == list {
+                    write_in_full(items, &format!("official.{path}"), kind);
+                    write_in_full(items, &format!("other.{path}"), kind);
+                }
+            }
+        }
+        Ok(value)
+    }
+}
+
+/// Both comparisons of two reckonings a binding asks at once
+/// (`03-design/setup-disagreements.md` §5): the days, the festivals, or
+/// both, over one range at one place on one clock.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DisagreementRequest {
+    /// The first day.
+    pub from: CalendarDate,
+    /// The last day, inclusive.
+    pub to: CalendarDate,
+    /// The place both reckonings are at.
+    pub place: Place,
+    /// The offset their civil days run at.
+    pub offset: UtcOffset,
+    /// Whether the days are compared.
+    pub days: bool,
+    /// The festivals compared, when asked.
+    pub festivals: Option<FestivalRequest>,
+}
+
+/// The request as a binding writes it.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "DisagreementRequest"))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct DisagreementAsked {
+    #[serde(default)]
+    calendar: Option<Calendar>,
+    first: DayAsked,
+    #[serde(default)]
+    last: Option<DayAsked>,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    #[serde(default)]
+    altitude_m: f64,
+    utc_offset_seconds: i32,
+    #[serde(default = "compared")]
+    days: bool,
+    #[serde(default)]
+    festivals: Option<Value>,
+}
+
+/// The days are compared unless a request says not.
+const fn compared() -> bool {
+    true
+}
+
+impl DisagreementRequest {
+    /// The record a binding sends, as JSON: `first` (and `last`, the first
+    /// when left out) as `{"year", "month", "day"}` in `calendar`
+    /// (Gregorian when left out), `latitudeDeg`, `longitudeDeg`,
+    /// `altitudeM` and `utcOffsetSeconds`; `days`, true when left out; and
+    /// `festivals`, a festival request, optional.
+    ///
+    /// ```
+    /// use teistro::DisagreementRequest;
+    ///
+    /// let asked = DisagreementRequest::from_json(
+    ///     r#"{"first": {"year": 2025, "month": 10, "day": 1},
+    ///         "last": {"year": 2025, "month": 10, "day": 31},
+    ///         "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+    ///         "days": false, "festivals": {"rules": "NEPAL"}}"#,
+    /// )?;
+    /// assert!(!asked.days && asked.festivals.is_some());
+    /// let nothing = DisagreementRequest::from_json(
+    ///     r#"{"first": {"year": 2025, "month": 10, "day": 1},
+    ///         "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+    ///         "days": false}"#,
+    /// )
+    /// .unwrap_err();
+    /// assert_eq!(nothing.field(), Some("disagreements.days"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, a place or offset out of range, a festival request its own
+    /// reader refuses, or a request that compares nothing, each named
+    /// under `disagreements`.
+    pub fn from_json(text: &str) -> Result<DisagreementRequest, Error> {
+        let asked: DisagreementAsked = teistro_core::strict::read(text, DISAGREEMENTS)?;
+        asked.request().map_err(|why| why.under(DISAGREEMENTS))
+    }
+}
+
+impl DisagreementAsked {
+    fn request(self) -> Result<DisagreementRequest, Error> {
+        let calendar = self.calendar.unwrap_or(Calendar::Gregorian);
+        let festivals = self
+            .festivals
+            .map(|asked| FestivalRequest::from_json(&asked.to_string()))
+            .transpose()?;
+        if !self.days && festivals.is_none() {
+            return Err(Error::invalid_arg(
+                "a comparison asks for the days, the festivals or both",
+            )
+            .with_field("days"));
+        }
+        Ok(DisagreementRequest {
+            from: self.first.in_calendar(calendar),
+            to: self.last.unwrap_or(self.first).in_calendar(calendar),
+            place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
+            offset: offset_of(self.utc_offset_seconds)?,
+            days: self.days,
+            festivals,
+        })
+    }
+}
+
+/// What a [`DisagreementRequest`] answers: each comparison it asked,
+/// sealed by the first context's provenance, as the boundary writes it.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct Disagreements {
+    /// The days, full-keyed, when asked.
+    pub days: Option<Envelope<Value>>,
+    /// The festivals, full-keyed, when asked.
+    pub festivals: Option<Envelope<Value>>,
+}
+
+impl AlmanacArea<'_> {
+    /// As [`AlmanacArea::disagreements`] and
+    /// [`AlmanacArea::festival_disagreements`], for a request a binding
+    /// sent: each record written in full and sealed as the boundary
+    /// carries it.
+    ///
+    /// # Errors
+    ///
+    /// As the two comparisons, for either context.
+    pub fn disagreements_request(
+        self,
+        other: &Context,
+        asked: &DisagreementRequest,
+    ) -> Result<Disagreements, Error> {
+        let days = if asked.days {
+            let Envelope { value, provenance } =
+                self.disagreements(other, &asked.from, &asked.to, &asked.place, asked.offset)?;
+            Some(Envelope::sealing(value.in_full()?, provenance))
+        } else {
+            None
+        };
+        let festivals = match &asked.festivals {
+            Some(request) => {
+                let Envelope { value, provenance } = self.festival_disagreements(
+                    other,
+                    &asked.from,
+                    &asked.to,
+                    &asked.place,
+                    asked.offset,
+                    request,
+                )?;
+                Some(Envelope::sealing(value.in_full()?, provenance))
+            }
+            None => None,
+        };
+        Ok(Disagreements { days, festivals })
     }
 }
 

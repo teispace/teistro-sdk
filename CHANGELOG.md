@@ -23,8 +23,25 @@ sunrise differs, and for each such limb:
 `festival_disagreements` does the same for one festival request. It
 pairs each occurrence by rule, month and overlapping tithi, and keeps the
 moved ones and the ones only one side gives, each with its whole
-`Observance` or `EkadashiFast`. Rust only for now; the bindings get it as
-a JSON section.
+`Observance` or `EkadashiFast`. Every binding asks it as
+`almanac.disagreements(other, request)`, over `ts_almanac_disagreements`:
+the days, the festivals or both, read into typed records.
+
+**A cheap, kept festival year.** **Numbers:** every festival answer's
+content hash moved, because each observance now carries
+`margin_seconds`; no day, case or extent changed.
+- `AlmanacArea::festivals` founds only what its rules read of each day
+  (`Almanac::festival_days`), and answers what the almanac's own days
+  give, to the bit: a year of the Nepal pack's festivals in 74.3 ms over
+  Teimeris on the desktop, from 158, and 23.1 ms under the committee's
+  setup, from 90.
+- Each observance's `margin_seconds` says how far the instants its day
+  was decided from may move, as another place moves them, before the day
+  can change.
+- `Provenance::answer_key` keys a stored answer by the engine and its
+  data as well as the request and settings, which `cache_key` does not.
+- Every binding asks for festivals without the days: `festivals(...)`,
+  or `days: false` on the almanac call (`TS_PANCHANGA_WITHOUT_DAYS`).
 
 **A Flutter app on Teimeris, and without the built-in.** **Numbers:**
 none moved.

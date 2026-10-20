@@ -2464,6 +2464,13 @@ const reaches = new WeakMap();
 /** Calls the boundary through the area's context. */
 const run = (area, work) => reaches.get(area)(work);
 
+/**
+ * Each context's native handle, for a call on another context that reads
+ * this one too (`almanac.disagreements`): kept beside the context, as an
+ * area's reach is, and refusing a disposed one by name.
+ */
+const natives = new WeakMap();
+
 class Area {
   constructor(reach) {
     reaches.set(this, reach);
@@ -7052,6 +7059,122 @@ export class AlmanacArea extends Area {
     );
     return deepFreeze({ value: value.map(pakshiDayFrom), provenance: decodeProvenance(provenance) });
   }
+
+  /**
+   * **Where this context's reckoning and another's disagree**, and why
+   * (`03-design/setup-disagreements.md`): the official day an app shows
+   * beside the modern one. `days` holds only the days on which some
+   * limb's member at sunrise differs, each limb `{ official, other }` with
+   * the member each side names, its span, its sunrise and the instant the
+   * two members meet under that sky (`change.minutesFromSunrise`, negative
+   * before sunrise); `festivals` each occurrence whose day or month
+   * differs, or which one side alone gives, with each side's observance or
+   * fast. Each is `null` when not asked, and sealed by this context's
+   * provenance, with the other's profile and settings hash in its value.
+   *
+   * @example
+   * const official = new Context(nepalOfficial(teimeris()));
+   * const modern = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const { days } = official.almanac.disagreements(modern, {
+   *   from: date(2025, 11, 1),
+   *   to: date(2025, 11, 30),
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   * });
+   * const moved = days.days[0].tithi.official.change.minutesFromSunrise;
+   *
+   * @param {Context} other the reckoning compared with this one
+   * @param {object} request
+   * @param {object} request.from the first day, as `date(...)` builds one
+   * @param {object} [request.to] the last day, both ends included; `from` when left out
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {boolean} [request.days] whether the days are compared; true when left out
+   * @param {object} [request.festivals] a festivals request record, e.g. `{ rules: 'NEPAL' }`
+   * @returns {{ days: object | null, festivals: object | null }}
+   */
+  disagreements(other, request) {
+    const theirs = natives.get(other);
+    if (theirs === undefined) {
+      throw new TypeError('disagreements: expected the Context to compare with, then the request');
+    }
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('disagreements: expected a request, e.g. { from, to, place, utcOffsetSeconds }');
+    }
+    const day = (given, what) => ({
+      year: finite(given?.year, `${what}.year`),
+      month: finite(given?.month, `${what}.month`),
+      day: finite(given?.day, `${what}.day`),
+    });
+    const { from: given, to, place: where, utcOffsetSeconds, festivals, ...rest } = request;
+    const place = where ?? {};
+    const from = given ?? {};
+    const asked = {
+      ...rest,
+      first: day(from, 'from'),
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    if (from.calendar !== undefined) asked.calendar = from.calendar;
+    if (to !== undefined && to !== null) asked.last = day(to, 'to');
+    const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
+    if (record !== undefined) asked.festivals = JSON.parse(record);
+    const answer = JSON.parse(
+      run(this, (inner) => inner.almanacDisagreements(theirs(), JSON.stringify(asked))),
+    );
+    return deepFreeze({
+      days: answer.days === null ? null : dayDisagreementsFrom(answer.days),
+      festivals: answer.festivals === null ? null : festivalDisagreementsFrom(answer.festivals),
+    });
+  }
+}
+
+/**
+ * The `days` of `ts_almanac_disagreements`'s answer as this layer hands
+ * it out: the record with its provenance beside it, and each day's date
+ * in the shape every other date here has.
+ *
+ * @param {{ value: object, provenance: object }} envelope
+ * @returns {object}
+ */
+function dayDisagreementsFrom({ value, provenance }) {
+  return {
+    ...value,
+    days: value.days.map((one) => ({ ...one, date: dateFrom(one.date) })),
+    provenance: decodeProvenance(provenance),
+  };
+}
+
+/**
+ * The `festivals` of `ts_almanac_disagreements`'s answer as this layer
+ * hands it out: each side's observance or fast with its dates as
+ * `Almanac.festivals` gives them, and the provenance beside the record.
+ *
+ * @param {{ value: object, provenance: object }} envelope
+ * @returns {object}
+ */
+function festivalDisagreementsFrom({ value, provenance }) {
+  const observance = (one) =>
+    one === null
+      ? null
+      : {
+          ...one,
+          day: dateFrom(one.day),
+          extents: one.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
+        };
+  const fast = (one) => (one === null ? null : { ...one, days: one.days.map(dateFrom), day: dateFrom(one.day) });
+  return {
+    ...value,
+    observances: value.observances.map((one) => ({
+      ...one,
+      official: observance(one.official),
+      other: observance(one.other),
+    })),
+    ekadashis: value.ekadashis.map((one) => ({ ...one, official: fast(one.official), other: fast(one.other) })),
+    provenance: decodeProvenance(provenance),
+  };
 }
 
 /**
@@ -7162,6 +7285,12 @@ export class Context {
     // and nothing else, so a consumer may destructure one and keep it
     // (ADR-0030, `03-design/surface-areas.md`).
     const reach = (run) => this.#call(() => run(this.#inner));
+    natives.set(this, () => {
+      if (this.#disposed) {
+        throw new Error('the context compared with was disposed; open another one');
+      }
+      return this.#inner;
+    });
     /** The calendars, and the fixed day they share. */
     this.calendar = new CalendarArea(reach);
     /** The scales, the zones and what separates them. */

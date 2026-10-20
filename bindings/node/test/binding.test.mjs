@@ -4625,6 +4625,59 @@ test('a chart carries its prashna', () => {
  * (`03-design/lalkitab.md`).
  */
 /**
+ * Two reckonings of November 2025 at Kathmandu: the committee's over the
+ * Surya Siddhanta and the modern one. Each tithi difference names both
+ * members and the instant they meet under each sky, on opposite sides of
+ * its sunrise; Haribodhini Ekadashi is fasted on the 1st by the text and
+ * the 2nd by the modern sky (`03-design/setup-disagreements.md`).
+ */
+test('two reckonings say where they disagree and why', () => {
+  const official = new Context(nepalOfficial());
+  const modern = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  try {
+    const month = {
+      from: date('calendar.GREGORIAN', 2025, 11, 1),
+      to: date('calendar.GREGORIAN', 2025, 11, 30),
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+      utcOffsetSeconds: 20700,
+      festivals: { rules: 'NEPAL' },
+    };
+    const { days, festivals } = official.almanac.disagreements(modern, month);
+    assert.equal(days.compared, 30);
+    assert.equal(days.otherProfile, 'nepali-default');
+    assert.equal(days.otherSettingsHash, modern.settingsHash);
+    assert.deepEqual(
+      days.days.filter((d) => d.tithi !== null).map((d) => d.date.day),
+      [1, 2, 9, 10, 11],
+    );
+    const [first] = days.days;
+    assert.equal(first.date.calendar, 'calendar.GREGORIAN');
+    assert.equal(first.tithi.official.member, 'tithi.SHUKLA_EKADASHI');
+    assert.equal(first.tithi.other.member, 'tithi.SHUKLA_DASHAMI');
+    assert.ok(first.tithi.official.change.minutesFromSunrise < 0, 'the text ran ahead');
+    assert.ok(first.tithi.other.change.minutesFromSunrise > 0, 'the modern sky follows');
+    assert.equal(typeof days.provenance.inputHash, 'string');
+    const haribodhini = festivals.ekadashis.find((fast) => fast.tithi === 'tithi.SHUKLA_EKADASHI');
+    assert.deepEqual([haribodhini.official.day.day, haribodhini.other.day.day], [1, 2]);
+    assert.ok(Object.isFrozen(haribodhini.official), 'frozen to its leaves');
+
+    const lean = official.almanac.disagreements(modern, { ...month, days: false });
+    assert.equal(lean.days, null);
+    assert.deepEqual(lean.festivals.ekadashis, festivals.ekadashis);
+    assert.throws(
+      () => official.almanac.disagreements(modern, { ...month, days: false, festivals: undefined }),
+      (error) => error.field === 'disagreements.days',
+    );
+    assert.throws(() => official.almanac.disagreements({}, month), TypeError);
+    const gone = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+    gone.dispose();
+    assert.throws(() => official.almanac.disagreements(gone, month), /compared with was disposed/u);
+  } finally {
+    official.dispose();
+  }
+});
+
+/**
  * Pancha Pakshi crosses as days, each its yamas over the almanac's own
  * sunrise, the weekday and paksha by full key and the birds bare; a day
  * the Sun does not both rise and set has none, and a native that is both

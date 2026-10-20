@@ -27,11 +27,14 @@ import com.teispace.teistro.ffi.Native;
  */
 public final class Context implements AutoCloseable {
     private static final Cleaner CLEANER = Cleaner.create();
+    private static final java.util.concurrent.atomic.AtomicLong ORDINALS = new java.util.concurrent.atomic.AtomicLong();
 
     private final Native lib;
     private final State state;
     private final Cleaner.Cleanable cleanable;
     private final ReentrantLock lock = new ReentrantLock();
+    /** This context's place in the one order two contexts' locks are taken in. */
+    private final long ordinal = ORDINALS.getAndIncrement();
     private final CalendarArea calendar = new CalendarArea(this);
     private final TimeArea time = new TimeArea(this);
     private final IntlArea intl = new IntlArea(this);
@@ -292,6 +295,26 @@ public final class Context implements AutoCloseable {
         } finally {
             lock.unlock();
         }
+    }
+
+    /** A call on this context's handle that reads another context's too. */
+    interface Pair<T> {
+        T run(Native lib, MemorySegment context, MemorySegment other);
+    }
+
+    /**
+     * Runs a call holding this context's lock and {@code other}'s, each provider's failure put back as
+     * {@link #locked} puts it back. The two locks are taken in one order whatever the caller's, so two
+     * threads comparing the same pair either way round cannot deadlock.
+     */
+    <T> T lockedWith(Context other, Pair<T> call) {
+        if (other == this) {
+            return locked((lib, raw) -> call.run(lib, raw, raw));
+        }
+        Context first = ordinal < other.ordinal ? this : other;
+        Context second = first == this ? other : this;
+        return first.locked((lib, a) -> second.locked((unused, b) ->
+                first == this ? call.run(lib, a, b) : call.run(lib, b, a)));
     }
 
     /**

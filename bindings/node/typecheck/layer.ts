@@ -168,6 +168,11 @@ import type {
   PakshiBird,
   PakshiDay,
   PakshiDays,
+  DisagreementRequest,
+  Disagreements,
+  DayDisagreement,
+  LimbChange,
+  EkadashiDisagreement,
   PakshiRelation,
   PakshiRequest,
   PakshiSpan,
@@ -214,6 +219,7 @@ import type {
   SahamWeak,
   Signification,
   Vara,
+  Tithi,
 } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { decodeProvenance, returnsRequest } from '../lib/index.js';
@@ -1272,6 +1278,29 @@ function thePakshi(ctx: Context): string {
   return `${hash} ${vara} ${paksha} ${bird} ${activity} ${relation} ${span?.to} ${read.yamas[0]?.quality} ${read.yamas[0]?.half}`;
 }
 void thePakshi;
+
+// Two reckonings compared all the way down: a day's tithi on both sides
+// and the instant it changes, and a moved fast on both sides.
+function theDisagreements(official: Context, modern: Context): string {
+  const asked: DisagreementRequest = {
+    from: someDate,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    days: true,
+    festivals: { rules: 'NEPAL' },
+  };
+  const found: Disagreements = official.almanac.disagreements(modern, asked);
+  const day: DayDisagreement | undefined = found.days?.days[0];
+  const tithi: Tithi | undefined = day?.tithi?.official.member;
+  const change: LimbChange | null | undefined = day?.tithi?.other.change;
+  const fast: EkadashiDisagreement | undefined = found.festivals?.ekadashis[0];
+  const moved = fast?.official?.day.day;
+  const hash: string | undefined = found.days?.provenance.inputHash ?? found.festivals?.otherSettingsHash;
+  // @ts-expect-error the context compared with is a Context, not its options
+  official.almanac.disagreements({ profile: 'nepali-default' }, asked);
+  return `${tithi} ${change?.minutesFromSunrise} ${moved} ${hash} ${day?.karana?.other.span.to}`;
+}
+void theDisagreements;
 
 function theResearch(ctx: Context): string {
   const births: readonly ResearchBirth[] = [

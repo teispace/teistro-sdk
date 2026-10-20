@@ -151,12 +151,40 @@ for the modern), and the built-in ephemeris at some 25 times that.
 
 ## 5. Open
 
-1. **Bindings.** The record crosses the boundary as JSON first (a
-   `disagreements` section beside the almanac's), and as a typed record
-   once its shape has held through one consumer release.
+1. ~~**Bindings.**~~ Built 2026-10-20 (§6).
 2. **A moved festival linked to its days' limb disagreements** (§3).
 3. A reckoning on **a different engine** (the built-in against Teimeris)
    moves the sunrise as well as the limb; the record already carries each
    side's boundary, and the sentence names whichever moved.
+
+## 6. At the boundary
+
+`ts_almanac_disagreements(context, other, request_json, out_json)` is the
+first entry taking two contexts, and every binding's
+`almanac.disagreements(other, request)` crosses it. The request is the
+record `DisagreementRequest::from_json` reads: the range, the place, the
+offset, `days` (true when left out) and `festivals`, a festival request;
+one that compares nothing is refused as `disagreements.days`. The answer
+is `{days, festivals}`, each null when not asked and otherwise the
+record above with every catalogue member written in full, as every
+other section writes them, sealed by the first context's provenance
+(`AlmanacArea::disagreements_request`).
+
+The answer is JSON rather than a blob because it is sparse: a tenth of
+the days, a handful of festivals, nested two sides deep. Each binding
+reads it into typed records (Node's frozen objects and declarations,
+Python's dataclasses, Dart's values, Java's `Disagreements` records),
+each side of a festival through the decoder the festival section uses.
+
+A second handle needed three things the generators had never met. The
+receiver is the **first** handle (`rules::methods`), so a later one of
+the same class is a parameter of the class that holds it, not `self`
+again. Its own provider can be reached by the call, so the Node and
+wasm wrappers lend it the environment beside the receiver and take both
+back before either's failure is reported, Python and Dart bracket the
+call with both contexts' provider guards, and Dart checks it is alive
+as it checks the receiver. Java holds both contexts' locks, taken in
+one order by a creation ordinal, so two threads comparing a pair either
+way round cannot deadlock.
 
 [`ContextBuilder::nepal_official`]: ../../crates/sdk/src/context.rs

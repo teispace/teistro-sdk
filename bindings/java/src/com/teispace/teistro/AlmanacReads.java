@@ -83,6 +83,76 @@ final class AlmanacReads {
                 provenance(envelope));
     }
 
+    /** {@code ts_almanac_disagreements}'s answer: each comparison asked, its members resolved, or null. */
+    static Disagreements disagreements(String text) {
+        Map<?, ?> answer = Reads.object(Json.read(text));
+        Object days = Reads.field(answer, "days");
+        Object festivals = Reads.field(answer, "festivals");
+        return new Disagreements(days == null ? null : dayDisagreements(Reads.object(days)),
+                festivals == null ? null : festivalDisagreements(Reads.object(festivals)));
+    }
+
+    private static Disagreements.Days dayDisagreements(Map<?, ?> envelope) {
+        Map<?, ?> value = Reads.object(envelope, "value");
+        return new Disagreements.Days(Reads.string(value, "otherProfile"), Reads.string(value, "otherSettingsHash"),
+                Reads.integer(value, "compared"),
+                Reads.each(value, "days", raw -> {
+                    Map<?, ?> d = Reads.object(raw);
+                    return new Disagreements.Day(Reads.serdeDate(Reads.field(d, "date")),
+                            limb(d, "tithi", "Tithi", Tithi::byKey),
+                            limb(d, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                            limb(d, "yoga", "Yoga", Yoga::byKey),
+                            limb(d, "karana", "Karana", Karana::byKey));
+                }),
+                provenance(envelope));
+    }
+
+    private static <E extends Member> Disagreements.Limb<E> limb(Map<?, ?> day, String key, String kind,
+            java.util.function.Function<String, java.util.Optional<E>> byKey) {
+        Object raw = Reads.field(day, key);
+        if (raw == null) {
+            return null;
+        }
+        Map<?, ?> both = Reads.object(raw);
+        return new Disagreements.Limb<>(side(Reads.object(both, "official"), kind, byKey),
+                side(Reads.object(both, "other"), kind, byKey));
+    }
+
+    private static <E extends Member> Disagreements.Side<E> side(Map<?, ?> raw, String kind,
+            java.util.function.Function<String, java.util.Optional<E>> byKey) {
+        Object change = Reads.field(raw, "change");
+        Disagreements.Change at = null;
+        if (change != null) {
+            Map<?, ?> c = Reads.object(change);
+            at = new Disagreements.Change(Reads.number(c, "at"), Reads.number(c, "minutesFromSunrise"));
+        }
+        return new Disagreements.Side<>(member(raw, "member", kind, byKey), Reads.interval(Reads.field(raw, "span")),
+                Reads.number(raw, "sunrise"), at);
+    }
+
+    private static Disagreements.Festivals festivalDisagreements(Map<?, ?> envelope) {
+        Map<?, ?> value = Reads.object(envelope, "value");
+        return new Disagreements.Festivals(Reads.string(value, "otherProfile"),
+                Reads.string(value, "otherSettingsHash"), Reads.integer(value, "compared"),
+                Reads.each(value, "observances", raw -> {
+                    Map<?, ?> o = Reads.object(raw);
+                    Object official = Reads.field(o, "official");
+                    Object other = Reads.field(o, "other");
+                    return new Disagreements.Festival(Reads.string(o, "rule"), member(o, "month", "Masa", Masa::byKey),
+                            Reads.flag(o, "adhika"), official == null ? null : observance(official),
+                            other == null ? null : observance(other));
+                }),
+                Reads.each(value, "ekadashis", raw -> {
+                    Map<?, ?> f = Reads.object(raw);
+                    Object official = Reads.field(f, "official");
+                    Object other = Reads.field(f, "other");
+                    return new Disagreements.Ekadashi(Reads.string(f, "rule"), member(f, "tithi", "Tithi", Tithi::byKey),
+                            member(f, "month", "Masa", Masa::byKey), Reads.flag(f, "adhika"),
+                            official == null ? null : fast(official), other == null ? null : fast(other));
+                }),
+                provenance(envelope));
+    }
+
     private static FestivalExtent extent(Object raw) {
         Map<?, ?> e = Reads.object(raw);
         return new FestivalExtent(Reads.serdeDate(Reads.field(e, "day")), Reads.interval(Reads.field(e, "window")),

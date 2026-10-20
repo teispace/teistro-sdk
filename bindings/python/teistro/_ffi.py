@@ -4085,6 +4085,14 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_panchanga_days.restype = ctypes.c_int32
+        self.ts_almanac_disagreements: Any = library.ts_almanac_disagreements
+        self.ts_almanac_disagreements.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_disagreements.restype = ctypes.c_int32
         self.ts_naam_milan: Any = library.ts_naam_milan
         self.ts_naam_milan.argtypes = [
             ctypes.POINTER(_Context),
@@ -4798,6 +4806,55 @@ class TeistroContext:
         owned.clear()
         blob = _take_blob(self._lib, _out_blob)
         return blob
+
+    def almanac_disagreements(self, other: TeistroContext, request_json: str) -> str:
+        """Compares this context's reckoning of a range with another's at one
+        place (`03-design/setup-disagreements.md`) and answers with
+        `{days, festivals}` as canonical JSON, each the `{value, provenance}`
+        of one comparison asked, sealed by this context's provenance, and null
+        when not asked.
+
+        `days` is `{otherProfile, otherSettingsHash, compared, days}`: only the
+        days on which some limb's member at sunrise differs, each `{date,
+        tithi, nakshatra, yoga, karana}` with a limb null where both name one
+        member, and otherwise `{official, other}`, each side `{member, span,
+        sunrise, change}`: the member it names at its sunrise, that member's
+        span under its sky, its sunrise, and `change`, `{at,
+        minutesFromSunrise}`, the instant the two members meet under that sky,
+        null when the two members are not neighbours. `festivals` is
+        `{otherProfile, otherSettingsHash, compared, observances, ekadashis}`:
+        each occurrence whose day or month differs, or which only one side
+        gives, as `{rule, month, adhika, official, other}` (an Ekadashi with
+        its `tithi` too), each side the observance or fast that side's
+        festival answer gives, or null.
+
+        `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+        "longitudeDeg", "altitudeM", "utcOffsetSeconds", "days",
+        "festivals"}`: the days as `{"year", "month", "day"}`, `days` true
+        when left out, `festivals` a festival request, and everything but
+        `first`, the place and the offset optional. A key it does not read, a
+        place or offset out of range, a festival request its reader refuses or
+        a request comparing nothing is `INVALID_ARG`, named under
+        `disagreements`; a null `other` is `INVALID_ARG` naming `other`. A
+        range of more than a year and a day is `OUT_OF_RANGE`, and either
+        context without an ephemeris `CAPABILITY`. A failure of either
+        context's reckoning is recorded on this one.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_almanac_disagreements(
+            self._raw,
+            other._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
 
     def naam_milan(self, request_json: str) -> bytes:
         """Matches two names star to star (naam milan) and answers with the
