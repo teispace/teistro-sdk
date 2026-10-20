@@ -26,6 +26,7 @@ import json
 import math
 import os
 import sys
+import time
 from datetime import date as _date
 from dataclasses import dataclass, field, replace
 from dataclasses import fields as dataclass_fields
@@ -2578,6 +2579,60 @@ class AlmanacArea(_Area):
             lambda: other._through_provider(lambda: self._context.inner.almanac_disagreements(theirs, json.dumps(asked)))
         )
         return _disagreements_answer(answered)
+
+    def festival_calendar(
+        self,
+        *,
+        from_date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        festivals: FestivalRequest,
+        to_date: Optional[CalendarDate] = None,
+        stamp_unix_seconds: Optional[int] = None,
+        name: Optional[str] = None,
+        product: Optional[str] = None,
+        refresh_minutes: Optional[int] = 1440,
+    ) -> str:
+        """**A range's observances as an iCalendar feed** (RFC 5545,
+        `03-design/icalendar.md`) a calendar app subscribes to: one
+        whole-day event for each observance and Ekadashi fast, its summary
+        the festival's name in this context's locale, its description the
+        rule's source and the answer's provenance, its `UID` stable for the
+        rule, the day and the place. The same request writes the same
+        bytes; `stamp_unix_seconds` is now when left out, and
+        `refresh_minutes=None` writes no refresh interval.
+
+        >>> # ics = sdk.almanac.festival_calendar(from_date=..., to_date=..., place=kathmandu,
+        >>> #     utc_offset_seconds=20700, festivals={"rules": "NEPAL_PANCHANGA"}, name="Nepal 2026")
+        >>> # Path("nepal-2026.ics").write_bytes(ics.encode())
+        """
+
+        def parts(day: CalendarDate) -> Dict[str, int]:
+            return {"year": day.year, "month": day.month, "day": day.day}
+
+        asked: Dict[str, Any] = {
+            "calendar": from_date.calendar.key,
+            "first": parts(from_date),
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "stampUnixSeconds": int(time.time()) if stamp_unix_seconds is None else stamp_unix_seconds,
+            "refreshMinutes": refresh_minutes,
+        }
+        if to_date is not None:
+            asked["last"] = parts(to_date)
+        record = _festivals_json(festivals)
+        if record is not None:
+            asked["festivals"] = json.loads(record)
+        if name is not None:
+            asked["name"] = name
+        if product is not None:
+            asked["product"] = product
+        feed: str = self._context._through_provider(
+            lambda: self._context.inner.almanac_festival_calendar(json.dumps(asked))
+        )
+        return feed
 
 
 class MatchingArea(_Area):

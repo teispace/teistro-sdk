@@ -610,6 +610,38 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_festival_calendar`: A range's observances and Ekadashi fasts at one place as an iCalendar
+     * feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
+     * ordered by day and then rule, its `SUMMARY` the festival's name in the
+     * context's locale, its `DESCRIPTION` the rule's source and the answer's
+     * provenance, and its `UID` stable for the rule, the day and the place.
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+     * "stampUnixSeconds", "name", "product", "refreshMinutes"}`: the days as
+     * `{"year", "month", "day"}`, `festivals` a festival request,
+     * `stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,
+     * `altitudeM`, `name`, `product` and `refreshMinutes` optional
+     * (`refreshMinutes` a day when left out, none when null). A key it does
+     * not read or one it needs left out, a place or offset out of range, or a
+     * festival request its reader refuses is `INVALID_ARG`, named under
+     * `festivalCalendar`. A range of more than a year and a day, or a day
+     * outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
+     * an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
+     */
+    static String almanacFestivalCalendar(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outText = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_festival_calendar.invokeExact(context, requestJsonRaw, outText));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outText);
+        }
+    }
+
+    /**
      * `ts_naam_milan`: Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two

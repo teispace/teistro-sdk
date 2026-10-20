@@ -4679,6 +4679,42 @@ test('two reckonings say where they disagree and why', () => {
 });
 
 /**
+ * Dashain 2025 at Kathmandu as an iCalendar feed: one event for each
+ * observance and fast the festival answer gives, Vijaya Dashami on 2
+ * October, every line CRLF and at most 75 octets, and the same request
+ * the same bytes (`03-design/icalendar.md`).
+ */
+test('an almanac writes its festivals as an iCalendar feed', () => {
+  const ctx = new Context(nepalOfficial());
+  try {
+    const season = {
+      from: date('calendar.GREGORIAN', 2025, 9, 20),
+      to: date('calendar.GREGORIAN', 2025, 11, 10),
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+      utcOffsetSeconds: 20700,
+      festivals: { rules: 'NEPAL_PANCHANGA' },
+    };
+    const ics = ctx.almanac.festivalCalendar({ ...season, stampUnixSeconds: 1767225600, name: 'Dashain' });
+    assert.ok(ics.startsWith('BEGIN:VCALENDAR\r\nVERSION:2.0\r\n'));
+    assert.ok(ics.endsWith('END:VCALENDAR\r\n'));
+    assert.ok(ics.includes('X-WR-CALNAME:Dashain\r\n'));
+    const answer = ctx.almanac.festivals(season);
+    assert.equal(ics.split('BEGIN:VEVENT').length - 1, answer.observances.length + answer.ekadashis.length);
+    const unfolded = ics.replaceAll('\r\n ', '');
+    assert.ok(unfolded.includes('DTSTART;VALUE=DATE:20251002\r\nDTEND;VALUE=DATE:20251003\r\nSUMMARY:Vijaya Dashami\r\n'));
+    for (const line of ics.split('\r\n')) assert.ok(Buffer.byteLength(line) <= 75, line);
+    assert.equal(ctx.almanac.festivalCalendar({ ...season, stampUnixSeconds: 1767225600, name: 'Dashain' }), ics);
+    assert.ok(ctx.almanac.festivalCalendar(season).includes('DTSTAMP:'), 'stamped now when left out');
+    assert.throws(
+      () => ctx.almanac.festivalCalendar({ ...season, place: { latitude: 91, longitude: 85.324 } }),
+      (error) => error.field === 'festivalCalendar.latitudeDeg',
+    );
+  } finally {
+    ctx.dispose();
+  }
+});
+
+/**
  * Pancha Pakshi crosses as days, each its yamas over the almanac's own
  * sunrise, the weekday and paksha by full key and the birds bare; a day
  * the Sun does not both rise and set has none, and a native that is both

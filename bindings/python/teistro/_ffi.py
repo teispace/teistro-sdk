@@ -4093,6 +4093,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_disagreements.restype = ctypes.c_int32
+        self.ts_almanac_festival_calendar: Any = library.ts_almanac_festival_calendar
+        self.ts_almanac_festival_calendar.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_festival_calendar.restype = ctypes.c_int32
         self.ts_naam_milan: Any = library.ts_naam_milan
         self.ts_naam_milan.argtypes = [
             ctypes.POINTER(_Context),
@@ -4855,6 +4862,41 @@ class TeistroContext:
         owned.clear()
         json = _take_string(self._lib, _out_json)
         return json
+
+    def almanac_festival_calendar(self, request_json: str) -> str:
+        """A range's observances and Ekadashi fasts at one place as an iCalendar
+        feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
+        ordered by day and then rule, its `SUMMARY` the festival's name in the
+        context's locale, its `DESCRIPTION` the rule's source and the answer's
+        provenance, and its `UID` stable for the rule, the day and the place.
+
+        `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+        "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+        "stampUnixSeconds", "name", "product", "refreshMinutes"}`: the days as
+        `{"year", "month", "day"}`, `festivals` a festival request,
+        `stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,
+        `altitudeM`, `name`, `product` and `refreshMinutes` optional
+        (`refreshMinutes` a day when left out, none when null). A key it does
+        not read or one it needs left out, a place or offset out of range, or a
+        festival request its reader refuses is `INVALID_ARG`, named under
+        `festivalCalendar`. A range of more than a year and a day, or a day
+        outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
+        an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_text = _StringStruct()
+        status = Status(self._lib.ts_almanac_festival_calendar(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_text),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        text = _take_string(self._lib, _out_text)
+        return text
 
     def naam_milan(self, request_json: str) -> bytes:
         """Matches two names star to star (naam milan) and answers with the

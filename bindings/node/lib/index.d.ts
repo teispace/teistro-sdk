@@ -8026,6 +8026,44 @@ export declare class AlmanacArea {
    * });
    */
   disagreements(other: Context, request: DisagreementRequest): Disagreements;
+
+  /**
+   * A range's observances and Ekadashi fasts as an iCalendar feed (RFC
+   * 5545): one whole-day event each, named in this context's locale, its
+   * `UID` stable for the rule, the day and the place. CRLF lines.
+   *
+   * @example
+   * const ics = sdk.almanac.festivalCalendar({
+   *   from: date(2026, 1, 1),
+   *   to: date(2026, 12, 31),
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   *   festivals: { rules: 'NEPAL_PANCHANGA' },
+   * });
+   */
+  festivalCalendar(request: FestivalCalendarRequest): string;
+}
+
+/** A feed of a range's observances, as `almanac.festivalCalendar` writes it. */
+export interface FestivalCalendarRequest {
+  /** The first day. */
+  readonly from: CalendarDate;
+  /** The last day, both ends included; `from` when left out. */
+  readonly to?: CalendarDate;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The festivals. */
+  readonly festivals: FestivalRequest;
+  /** Every event's `DTSTAMP`, in seconds since 1970; now when left out. */
+  readonly stampUnixSeconds?: number;
+  /** The calendar's name; "Festivals" when left out. */
+  readonly name?: string;
+  /** The `PRODID`; the SDK's own when left out. */
+  readonly product?: string;
+  /** How often a subscriber fetches it again; a day when left out, none when null. */
+  readonly refreshMinutes?: number | null;
 }
 
 /** Two reckonings of one range at one place, as `almanac.disagreements` compares them. */

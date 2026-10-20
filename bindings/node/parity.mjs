@@ -2138,6 +2138,7 @@ for (const [path, member] of [
   ['almanac.of', shape.almanac.of],
   ['almanac.festivals', shape.almanac.festivals],
   ['almanac.disagreements', shape.almanac.disagreements],
+  ['almanac.festival_calendar', shape.almanac.festivalCalendar],
   ['almanac.day', shape.almanac.day],
   ['almanac.pakshi', shape.almanac.pakshi],
   ['research.counts', shape.research.counts],

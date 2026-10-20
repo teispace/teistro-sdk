@@ -42,6 +42,7 @@ pub struct AlmanacArea<'a> {
 }
 
 mod disagreement;
+mod feed;
 #[cfg(feature = "muhurta")]
 mod muhurta;
 
@@ -49,6 +50,7 @@ pub use disagreement::{
     DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
     FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
 };
+pub use feed::{FeedOptions, FestivalCalendarRequest};
 
 impl<'a> AlmanacArea<'a> {
     pub(crate) fn of_context(context: &'a Context) -> AlmanacArea<'a> {

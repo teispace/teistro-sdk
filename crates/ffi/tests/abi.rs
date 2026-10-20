@@ -11064,3 +11064,68 @@ fn two_reckonings_compare_as_the_facade_compares_them() {
         Some("disagreements.days")
     );
 }
+
+fn festival_calendar_text(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut text = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_festival_calendar(
+            ctx.handle,
+            request.as_ptr(),
+            &raw mut text,
+        )
+    };
+    if status == Status::Ok {
+        Ok(owned(text))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut text) };
+        Err(status)
+    }
+}
+
+/// A feed crosses as the façade writes it, byte for byte; a request
+/// without its stamp, or a range beyond a year and a day, is refused by
+/// name (`03-design/icalendar.md` §4).
+#[test]
+fn a_festival_feed_crosses_as_the_facade_writes_it() {
+    let season = r#"{"first": {"year": 2025, "month": 9, "day": 20},
+        "last": {"year": 2025, "month": 11, "day": 10},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700, "festivals": {"rules": "NEPAL_PANCHANGA"}, "stampUnixSeconds": 1767225600}"#;
+    let official = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::SuryaSiddhanta,
+        Some("nepali-committee"),
+        None,
+        None,
+    )
+    .unwrap();
+    let crossed = festival_calendar_text(&official, season).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-committee")
+        .ephemeris([teistro::Ephemeris::SuryaSiddhanta])
+        .build()
+        .unwrap()
+        .almanac()
+        .festival_calendar_request(&teistro::FestivalCalendarRequest::from_json(season).unwrap())
+        .unwrap();
+    assert_eq!(crossed, kernel.value);
+    assert!(crossed.contains("SUMMARY:Vijaya Dashami\r\n"));
+
+    let stampless = season.replace(r#", "stampUnixSeconds": 1767225600"#, "");
+    assert_eq!(
+        festival_calendar_text(&official, &stampless).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(official.last_error().2.as_deref(), Some("festivalCalendar"));
+    let years = season.replace(
+        r#""year": 2025, "month": 11"#,
+        r#""year": 2027, "month": 11"#,
+    );
+    assert_eq!(
+        festival_calendar_text(&official, &years).unwrap_err(),
+        Status::OutOfRange
+    );
+}

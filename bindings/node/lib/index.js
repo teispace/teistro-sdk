@@ -7129,6 +7129,69 @@ export class AlmanacArea extends Area {
       festivals: answer.festivals === null ? null : festivalDisagreementsFrom(answer.festivals),
     });
   }
+
+  /**
+   * **A range's observances as an iCalendar feed** (RFC 5545,
+   * `03-design/icalendar.md`) a calendar app subscribes to: one whole-day
+   * event for each observance and Ekadashi fast, its summary the
+   * festival's name in this context's locale, its description the rule's
+   * source and the answer's provenance, its `UID` stable for the rule,
+   * the day and the place. The same request writes the same bytes.
+   *
+   * @example
+   * const sdk = new Context(nepalOfficial(teimeris()));
+   * const ics = sdk.almanac.festivalCalendar({
+   *   from: date(2026, 1, 1),
+   *   to: date(2026, 12, 31),
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   *   festivals: { rules: 'NEPAL_PANCHANGA' },
+   *   name: 'Nepal 2026',
+   * });
+   * fs.writeFileSync('nepal-2026.ics', ics);
+   *
+   * @param {object} request
+   * @param {object} request.from the first day, as `date(...)` builds one
+   * @param {object} [request.to] the last day, both ends included; `from` when left out
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {object} request.festivals a festivals request record, e.g. `{ rules: 'NEPAL' }`
+   * @param {number} [request.stampUnixSeconds] every event's `DTSTAMP`; now when left out
+   * @param {string} [request.name] the calendar's name; "Festivals" when left out
+   * @param {string} [request.product] the `PRODID`; the SDK's own when left out
+   * @param {number | null} [request.refreshMinutes] how often a subscriber fetches it again; a day when left out, none when null
+   * @returns {string} the feed, CRLF lines
+   */
+  festivalCalendar(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError(
+        "festivalCalendar: expected a request, e.g. { from, to, place, utcOffsetSeconds, festivals: { rules: 'NEPAL' } }",
+      );
+    }
+    const day = (given, what) => ({
+      year: finite(given?.year, `${what}.year`),
+      month: finite(given?.month, `${what}.month`),
+      day: finite(given?.day, `${what}.day`),
+    });
+    const { from: given, to, place: where, utcOffsetSeconds, festivals, stampUnixSeconds, ...rest } = request;
+    const place = where ?? {};
+    const from = given ?? {};
+    const asked = {
+      ...rest,
+      first: day(from, 'from'),
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      stampUnixSeconds:
+        stampUnixSeconds === undefined ? Math.floor(Date.now() / 1000) : finite(stampUnixSeconds, 'stampUnixSeconds'),
+    };
+    if (from.calendar !== undefined) asked.calendar = from.calendar;
+    if (to !== undefined && to !== null) asked.last = day(to, 'to');
+    const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
+    if (record !== undefined) asked.festivals = JSON.parse(record);
+    return run(this, (inner) => inner.almanacFestivalCalendar(JSON.stringify(asked)));
+  }
 }
 
 /**

@@ -169,6 +169,7 @@ import type {
   PakshiDay,
   PakshiDays,
   DisagreementRequest,
+  FestivalCalendarRequest,
   Disagreements,
   DayDisagreement,
   LimbChange,
@@ -1301,6 +1302,22 @@ function theDisagreements(official: Context, modern: Context): string {
   return `${tithi} ${change?.minutesFromSunrise} ${moved} ${hash} ${day?.karana?.other.span.to}`;
 }
 void theDisagreements;
+
+// A feed is text, and its request names its festivals.
+function theFeed(ctx: Context): string {
+  const asked: FestivalCalendarRequest = {
+    from: someDate,
+    place: { latitude: 27.7172, longitude: 85.324 },
+    utcOffsetSeconds: 20700,
+    festivals: { rules: 'NEPAL' },
+    refreshMinutes: null,
+  };
+  const ics: string = ctx.almanac.festivalCalendar(asked);
+  // @ts-expect-error a feed names its festivals
+  ctx.almanac.festivalCalendar({ from: someDate, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 });
+  return ics;
+}
+void theFeed;
 
 function theResearch(ctx: Context): string {
   const births: readonly ResearchBirth[] = [

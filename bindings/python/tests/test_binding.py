@@ -747,6 +747,36 @@ class AnEngine(WithLibrary):
                 official.almanac.disagreements(modern, **month)
         self.assertIn("closed", str(closed.exception))
 
+    def test_an_almanac_writes_its_festivals_as_an_icalendar_feed(self) -> None:
+        """Dashain 2025 at Kathmandu: one event for each observance and fast
+        the festival answer gives, Vijaya Dashami on 2 October, every line
+        CRLF and at most 75 octets, and the same request the same bytes
+        (`03-design/icalendar.md`)."""
+        season: Dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2025, 9, 20),
+            "to_date": date(Calendar.GREGORIAN, 2025, 11, 10),
+            "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)),
+            "utc_offset_seconds": 20700,
+            "festivals": {"rules": "NEPAL_PANCHANGA"},
+        }
+        with self.teistro.context(**nepal_official()) as sky:
+            ics = sky.almanac.festival_calendar(**season, stamp_unix_seconds=1767225600, name="Dashain")
+            self.assertTrue(ics.startswith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"))
+            self.assertIn("X-WR-CALNAME:Dashain\r\n", ics)
+            answer = sky.almanac.festivals(**season)
+            self.assertEqual(ics.count("BEGIN:VEVENT"), len(answer.observances) + len(answer.ekadashis))
+            self.assertIn(
+                "DTSTART;VALUE=DATE:20251002\r\nDTEND;VALUE=DATE:20251003\r\nSUMMARY:Vijaya Dashami\r\n",
+                ics.replace("\r\n ", ""),
+            )
+            for line in ics.split("\r\n"):
+                self.assertLessEqual(len(line.encode()), 75, line)
+            self.assertEqual(sky.almanac.festival_calendar(**season, stamp_unix_seconds=1767225600, name="Dashain"), ics)
+            self.assertNotIn("REFRESH-INTERVAL", sky.almanac.festival_calendar(**season, refresh_minutes=None))
+            with self.assertRaises(TeistroError) as refused:
+                sky.almanac.festival_calendar(**{**season, "utc_offset_seconds": 10**6})
+            self.assertEqual(refused.exception.field, "festivalCalendar.utcOffsetSeconds")
+
     def test_a_provider_and_a_named_ephemeris_together_are_refused(self) -> None:
         """Each answers one question, so both together is a refusal."""
         # The refusal happens before anything touches the provider, so

@@ -12,6 +12,22 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A festival year as an iCalendar feed** (`icalendar.md`, P2-2).
+**Numbers:** none moved. `AlmanacArea::festival_calendar` writes a
+range's observances and Ekadashi fasts as RFC 5545 text a calendar app
+subscribes to: one whole-day event each, named in the context's locale,
+its description the rule's source and the answer's provenance, its `UID`
+stable for the rule, the day and the place. The caller gives the stamp,
+so the same request writes the same bytes. Every binding asks it as
+`almanac.festivalCalendar`, over `ts_almanac_festival_calendar`. The
+writer is `teistro_calendar::ical`. A year at Kathmandu, in English and in
+Nepali, parses in Python's `icalendar` with every event read back.
+- Three `NEPAL_PANCHANGA` rules' sources no longer say their day parts
+  from the print "until GREATER" or "until DAY_MUHURTA"; both forms are
+  built and those days agree. No day moved.
+- Six fitted fasts gain names in every strict locale, and `check-intl`
+  refuses a shipped festival key a strict locale does not name.
+
 **Day muhurtas, the day holding more, and weekdays**
 (`festival-rule-language.md` §3.2 to §3.5). **Numbers:** the `NEPAL_PANCHANGA` pack moved, as the
 maintainer's rule (C601, C603) and purvahna as six muhurtas (C602)

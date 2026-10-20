@@ -18,6 +18,7 @@ pub mod bikram_sambat;
 pub mod date;
 pub mod fixed;
 pub mod gregorian;
+pub mod ical;
 pub mod iso_week;
 pub mod julian;
 pub mod lunisolar;

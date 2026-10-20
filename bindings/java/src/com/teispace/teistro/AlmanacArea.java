@@ -244,4 +244,80 @@ public final class AlmanacArea {
         return AlmanacReads.disagreements(context.lockedWith(other,
                 (lib, ours, theirs) -> Calls.almanacDisagreements(lib, ours, theirs, json)));
     }
+
+    /**
+     * <b>A range's observances as an iCalendar feed</b> (RFC 5545, {@code 03-design/icalendar.md}) a
+     * calendar app subscribes to: one whole-day event for each observance and Ekadashi fast, its summary
+     * the festival's name in this context's locale, its description the rule's source and the answer's
+     * provenance, its {@code UID} stable for the rule, the day and the place. The same request writes the
+     * same bytes.
+     *
+     * <pre>{@code
+     * String ics = sdk.almanac().festivalCalendar(first, last, kathmandu, 20_700,
+     *         new FestivalRequest("NEPAL_PANCHANGA"), FeedOptions.defaults().withName("Nepal 2026"));
+     * Files.writeString(Path.of("nepal-2026.ics"), ics);
+     * }</pre>
+     *
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where the days are reckoned
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param festivals the festival rules, such as {@code new FestivalRequest("NEPAL")}
+     * @param feed what the feed says of itself
+     * @return the feed, CRLF lines
+     */
+    public String festivalCalendar(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.FestivalRequest festivals, FeedOptions feed) {
+        if (from == null || to == null) {
+            throw Reads.invalid("from and to are CalendarDates", from == null ? "from" : "to");
+        }
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        if (festivals == null) {
+            throw Reads.invalid("festivals is a FestivalRequest", "festivals");
+        }
+        FeedOptions options = feed == null ? FeedOptions.defaults() : feed;
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("calendar", from.calendar().key());
+        asked.put("first", Map.of("year", from.year(), "month", from.month(), "day", from.day()));
+        asked.put("last", Map.of("year", to.year(), "month", to.month(), "day", to.day()));
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.put("festivals", festivals);
+        asked.put("stampUnixSeconds", options.stampUnixSeconds() == null
+                ? System.currentTimeMillis() / 1000 : options.stampUnixSeconds());
+        if (options.name() != null) {
+            asked.put("name", options.name());
+        }
+        if (options.product() != null) {
+            asked.put("product", options.product());
+        }
+        if (options.noRefresh()) {
+            asked.put("refreshMinutes", null);
+        } else if (options.refreshMinutes() != null) {
+            asked.put("refreshMinutes", options.refreshMinutes());
+        }
+        String json = Json.write(asked);
+        return context.locked((lib, raw) -> Calls.almanacFestivalCalendar(lib, raw, json));
+    }
+
+    /**
+     * As {@link #festivalCalendar(CalendarDate, CalendarDate, Observer, int,
+     * com.teispace.teistro.request.FestivalRequest, FeedOptions)}, the feed saying of itself what the SDK
+     * says: "Festivals", refreshed daily, stamped now.
+     *
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where the days are reckoned
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param festivals the festival rules
+     * @return the feed, CRLF lines
+     */
+    public String festivalCalendar(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.FestivalRequest festivals) {
+        return festivalCalendar(from, to, place, utcOffsetSeconds, festivals, FeedOptions.defaults());
+    }
 }

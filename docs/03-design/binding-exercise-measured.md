@@ -20,18 +20,18 @@ is therefore one nothing touches.
 
 | surface | declares | exercised | untouched |
 |---|---:|---:|---:|
-| Node | 44 | 43 | 1 |
-| Dart | 36 | 34 | 2 |
-| Rust | 148 | 146 | 2 |
+| Node | 45 | 44 | 1 |
+| Dart | 37 | 35 | 2 |
+| Rust | 153 | 150 | 3 |
 | Python | 182 | 180 | 2 |
 
-**7 members nothing names**, of 410 members the four surfaces declare.
+**8 members nothing names**, of 417 members the four surfaces declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 
 - **Node**: `expected`
 - **Dart**: `callJson`, `expected`
-- **Rust**: `days_omitted`, `without_days`
+- **Rust**: `days_omitted`, `with_product`, `without_days`
 - **Python**: `call_json`, `manifest_json`
 
 | proposed rule | verdict | measured |

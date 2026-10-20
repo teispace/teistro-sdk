@@ -165,7 +165,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         Masa::Vaishakha,
         Tithi::ShuklaNavami,
         Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: सीताजयन्ती; VS 2082 is a day early until GREATER (C601)",
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: सीताजयन्ती",
     ),
     (
         "KURMA_JAYANTI",
@@ -382,7 +382,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         Masa::Ashwina,
         Tithi::ShuklaPanchami,
         Fit::Share(PURVAHNA),
-        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: उपाङ्गललिताव्रत; VS 2082 is a day late until DAY_MUHURTA (C602)",
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: उपाङ्गललिताव्रत",
     ),
     (
         "KUCHHI_BHOYE",
@@ -410,7 +410,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         Masa::Kartika,
         Tithi::ShuklaPratipada,
         Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: म्हपूजा; VS 2083 is a day early until GREATER (C601)",
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: म्हपूजा",
     ),
     (
         "HARIBODHINI_EKADASHI",

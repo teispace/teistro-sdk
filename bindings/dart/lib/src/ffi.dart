@@ -1931,6 +1931,8 @@ typedef TsPanchangaDaysNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsPanchangaDaysDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsAlmanacDisagreementsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacDisagreementsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacFestivalCalendarNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacFestivalCalendarDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2001,6 +2003,7 @@ final class TeistroLibrary {
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_almanac_disagreements = library.lookupFunction<TsAlmanacDisagreementsNative, TsAlmanacDisagreementsDart>('ts_almanac_disagreements'),
+        ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
@@ -2287,6 +2290,26 @@ final class TeistroLibrary {
   /// context without an ephemeris `CAPABILITY`. A failure of either
   /// context's reckoning is recorded on this one.
   final TsAlmanacDisagreementsDart ts_almanac_disagreements;
+
+  /// A range's observances and Ekadashi fasts at one place as an iCalendar
+  /// feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
+  /// ordered by day and then rule, its `SUMMARY` the festival's name in the
+  /// context's locale, its `DESCRIPTION` the rule's source and the answer's
+  /// provenance, and its `UID` stable for the rule, the day and the place.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+  /// "stampUnixSeconds", "name", "product", "refreshMinutes"}`: the days as
+  /// `{"year", "month", "day"}`, `festivals` a festival request,
+  /// `stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,
+  /// `altitudeM`, `name`, `product` and `refreshMinutes` optional
+  /// (`refreshMinutes` a day when left out, none when null). A key it does
+  /// not read or one it needs left out, a place or offset out of range, or a
+  /// festival request its reader refuses is `INVALID_ARG`, named under
+  /// `festivalCalendar`. A range of more than a year and a day, or a day
+  /// outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
+  /// an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
+  final TsAlmanacFestivalCalendarDart ts_almanac_festival_calendar;
 
   /// Matches two names star to star (naam milan) and answers with the
   /// `naam` blob: each name's first syllable in the śatapada cakra, the
@@ -5618,6 +5641,35 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_almanac_disagreements(_handle, other._handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A range's observances and Ekadashi fasts at one place as an iCalendar
+  /// feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
+  /// ordered by day and then rule, its `SUMMARY` the festival's name in the
+  /// context's locale, its `DESCRIPTION` the rule's source and the answer's
+  /// provenance, and its `UID` stable for the rule, the day and the place.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+  /// "stampUnixSeconds", "name", "product", "refreshMinutes"}`: the days as
+  /// `{"year", "month", "day"}`, `festivals` a festival request,
+  /// `stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,
+  /// `altitudeM`, `name`, `product` and `refreshMinutes` optional
+  /// (`refreshMinutes` a day when left out, none when null). A key it does
+  /// not read or one it needs left out, a place or offset out of range, or a
+  /// festival request its reader refuses is `INVALID_ARG`, named under
+  /// `festivalCalendar`. A range of more than a year and a day, or a day
+  /// outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
+  /// an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
+  String almanacFestivalCalendar(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outText = arena<StringStruct>();
+        final status = _lib.ts_almanac_festival_calendar(_handle, rawrequestJson, outText);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outText);
     });
   }
 

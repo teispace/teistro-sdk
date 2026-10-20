@@ -778,6 +778,7 @@ fn the_surface(report: &mut Report) {
         ("(root).settings_json", "present"),
         ("almanac.day", "present"),
         ("almanac.disagreements", "present"),
+        ("almanac.festival_calendar", "present"),
         ("almanac.festivals", "present"),
         ("almanac.of", "present"),
         ("almanac.pakshi", "present"),

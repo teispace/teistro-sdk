@@ -5,6 +5,7 @@
 // `cargo xtask check-dart` builds the shared library and runs this file;
 // `TEISTRO_LIBRARY` names it.
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -715,6 +716,59 @@ void _engineTests() {
   /// both members and the instant they meet under each sky, on opposite
   /// sides of its sunrise; Haribodhini Ekadashi is fasted on the 1st by the
   /// text and the 2nd by the modern sky (`03-design/setup-disagreements.md`).
+  // Dashain 2025 at Kathmandu as an iCalendar feed: one event for each
+  // observance and fast the festival answer gives, Vijaya Dashami on 2
+  // October, every line CRLF and at most 75 octets, and the same request
+  // the same bytes (`03-design/icalendar.md`).
+  test('an almanac writes its festivals as an iCalendar feed', () {
+    final sky = teistro.nepalOfficial();
+    addTearDown(sky.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final from = Calendar.gregorian.date(2025, 9, 20);
+    final to = Calendar.gregorian.date(2025, 11, 10);
+    const panchanga = FestivalRequest(rules: FestivalPack.nepalPanchanga);
+    String feed({int? refreshMinutes = 1440}) => sky.almanac.festivalCalendar(
+      from: from,
+      to: to,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      festivals: panchanga,
+      stampUnixSeconds: 1767225600,
+      name: 'Dashain',
+      refreshMinutes: refreshMinutes,
+    );
+    final ics = feed();
+    expect(ics, startsWith('BEGIN:VCALENDAR\r\nVERSION:2.0\r\n'));
+    expect(ics, contains('X-WR-CALNAME:Dashain\r\n'));
+    final answer = sky.almanac.festivals(
+      from: from,
+      to: to,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      festivals: panchanga,
+    );
+    expect(
+      'BEGIN:VEVENT'.allMatches(ics).length,
+      answer.observances.length + answer.ekadashis.length,
+    );
+    expect(
+      ics.replaceAll('\r\n ', ''),
+      contains(
+        'DTSTART;VALUE=DATE:20251002\r\nDTEND;VALUE=DATE:20251003\r\n'
+        'SUMMARY:Vijaya Dashami\r\n',
+      ),
+    );
+    for (final line in ics.split('\r\n')) {
+      expect(utf8.encode(line).length, lessThanOrEqualTo(75), reason: line);
+    }
+    expect(feed(), ics);
+    expect(feed(refreshMinutes: null), isNot(contains('REFRESH-INTERVAL')));
+  });
+
   test('two reckonings say where they disagree and why', () {
     final official = teistro.nepalOfficial();
     addTearDown(official.dispose);

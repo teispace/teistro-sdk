@@ -3916,6 +3916,7 @@ public final class Native {
         "ts_positions",
         "ts_panchanga_days",
         "ts_almanac_disagreements",
+        "ts_almanac_festival_calendar",
         "ts_naam_milan",
         "ts_numerology_profile",
         "ts_pakshi",
@@ -4290,6 +4291,28 @@ public final class Native {
     public final MethodHandle ts_almanac_disagreements;
 
     /**
+     * A range's observances and Ekadashi fasts at one place as an iCalendar
+     * feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
+     * ordered by day and then rule, its `SUMMARY` the festival's name in the
+     * context's locale, its `DESCRIPTION` the rule's source and the answer's
+     * provenance, and its `UID` stable for the rule, the day and the place.
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+     * "stampUnixSeconds", "name", "product", "refreshMinutes"}`: the days as
+     * `{"year", "month", "day"}`, `festivals` a festival request,
+     * `stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,
+     * `altitudeM`, `name`, `product` and `refreshMinutes` optional
+     * (`refreshMinutes` a day when left out, none when null). A key it does
+     * not read or one it needs left out, a place or offset out of range, or a
+     * festival request its reader refuses is `INVALID_ARG`, named under
+     * `festivalCalendar`. A range of more than a year and a day, or a day
+     * outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
+     * an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
+     */
+    public final MethodHandle ts_almanac_festival_calendar;
+
+    /**
      * Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -4513,6 +4536,7 @@ public final class Native {
         ts_positions = linker.downcallHandle(symbols.find("ts_positions").orElseThrow(() -> missing("ts_positions")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_panchanga_days = linker.downcallHandle(symbols.find("ts_panchanga_days").orElseThrow(() -> missing("ts_panchanga_days")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_disagreements = linker.downcallHandle(symbols.find("ts_almanac_disagreements").orElseThrow(() -> missing("ts_almanac_disagreements")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_festival_calendar = linker.downcallHandle(symbols.find("ts_almanac_festival_calendar").orElseThrow(() -> missing("ts_almanac_festival_calendar")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_numerology_profile = linker.downcallHandle(symbols.find("ts_numerology_profile").orElseThrow(() -> missing("ts_numerology_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_pakshi = linker.downcallHandle(symbols.find("ts_pakshi").orElseThrow(() -> missing("ts_pakshi")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

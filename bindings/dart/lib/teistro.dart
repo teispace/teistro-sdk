@@ -1351,6 +1351,56 @@ final class AlmanacArea extends _Area {
       ),
     );
   }
+
+  /// **A range's observances as an iCalendar feed** (RFC 5545,
+  /// `03-design/icalendar.md`) a calendar app subscribes to: one whole-day
+  /// event for each observance and Ekadashi fast, its summary the
+  /// festival's name in this context's locale, its description the rule's
+  /// source and the answer's provenance, its `UID` stable for the rule,
+  /// the day and the place. The same request writes the same bytes;
+  /// [stampUnixSeconds] is now when left out, and a null [refreshMinutes]
+  /// writes no refresh interval.
+  ///
+  /// ```dart
+  /// final ics = sdk.almanac.festivalCalendar(
+  ///   from: Calendar.gregorian.date(2026, 1, 1),
+  ///   to: Calendar.gregorian.date(2026, 12, 31),
+  ///   place: kathmandu, utcOffsetSeconds: 20700,
+  ///   festivals: FestivalRequest(rules: FestivalPack.nepalPanchanga),
+  ///   name: 'Nepal 2026',
+  /// );
+  /// File('nepal-2026.ics').writeAsStringSync(ics);
+  /// ```
+  String festivalCalendar({
+    required CalendarDate from,
+    CalendarDate? to,
+    required Observer place,
+    required int utcOffsetSeconds,
+    required FestivalRequest festivals,
+    int? stampUnixSeconds,
+    String? name,
+    String? product,
+    int? refreshMinutes = 1440,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'calendar': from.calendar.key,
+      'first': _dayParts(from),
+      if (to != null) 'last': _dayParts(to),
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      'festivals': jsonDecode(festivals._json),
+      'stampUnixSeconds':
+          stampUnixSeconds ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      if (name != null) 'name': name,
+      if (product != null) 'product': product,
+      'refreshMinutes': refreshMinutes,
+    });
+    return _context._guarded(
+      () => _context._inner.almanacFestivalCalendar(asked),
+    );
+  }
 }
 
 /// `sdk.matching` — what matches without a chart: two names, star to star

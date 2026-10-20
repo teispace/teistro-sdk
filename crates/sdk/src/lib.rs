@@ -65,8 +65,9 @@ pub use area::ResearchArea;
 pub use area::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, CalendarArea, DayDisagreement,
     DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement, EngineArea,
-    FestivalDays, FestivalDisagreement, FestivalDisagreements, FrameArea, IntlArea, KeysArea,
-    LimbChange, LimbDisagreement, ReckonedLimb, TimeArea,
+    FeedOptions, FestivalCalendarRequest, FestivalDays, FestivalDisagreement,
+    FestivalDisagreements, FrameArea, IntlArea, KeysArea, LimbChange, LimbDisagreement,
+    ReckonedLimb, TimeArea,
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};

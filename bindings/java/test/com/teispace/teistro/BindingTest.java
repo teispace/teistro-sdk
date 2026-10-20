@@ -1576,6 +1576,37 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac writes its festivals as an iCalendar feed", () -> {
+            // Dashain 2025 at Kathmandu: one event for each observance and fast
+            // the festival answer gives, Vijaya Dashami on 2 October, every
+            // line CRLF and at most 75 octets, the same request the same bytes.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            CalendarDate first = Civil.date(Calendar.GREGORIAN, 2025, 9, 20);
+            CalendarDate last = Civil.date(Calendar.GREGORIAN, 2025, 11, 10);
+            var panchanga = new com.teispace.teistro.request.FestivalRequest("NEPAL_PANCHANGA");
+            try (Context sky = teistro.context(ContextOptions.builder().nepalOfficial().build())) {
+                FeedOptions options = FeedOptions.defaults().withName("Dashain").withStampUnixSeconds(1_767_225_600L);
+                String ics = sky.almanac().festivalCalendar(first, last, kathmandu, 20_700, panchanga, options);
+                check(ics.startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"), "a calendar");
+                check(ics.contains("X-WR-CALNAME:Dashain\r\n"), "its name");
+                FestivalAnswer answer = sky.almanac().festivals(first, last, kathmandu, 20_700, panchanga);
+                same(answer.observances().size() + answer.ekadashis().size(), ics.split("BEGIN:VEVENT", -1).length - 1,
+                        "one event an occurrence");
+                check(ics.replace("\r\n ", "").contains(
+                        "DTSTART;VALUE=DATE:20251002\r\nDTEND;VALUE=DATE:20251003\r\nSUMMARY:Vijaya Dashami\r\n"),
+                        "Vijaya Dashami on 2 October");
+                for (String line : ics.split("\r\n")) {
+                    check(line.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 75, "folded: " + line);
+                }
+                same(ics, sky.almanac().festivalCalendar(first, last, kathmandu, 20_700, panchanga, options),
+                        "the same bytes");
+                check(!sky.almanac().festivalCalendar(first, last, kathmandu, 20_700, panchanga,
+                        options.withoutRefresh()).contains("REFRESH-INTERVAL"), "no refresh when asked for none");
+                check(sky.almanac().festivalCalendar(first, last, kathmandu, 20_700, panchanga).contains("DTSTAMP:"),
+                        "stamped now when left out");
+            }
+        });
+
         tests.put("a provider written in Java stands behind the Surya Siddhanta", () -> {
             // A chain entry too, so the text takes its modern sunrise from
             // it under the committee's profile, and what it throws there
