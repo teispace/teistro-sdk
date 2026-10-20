@@ -299,14 +299,14 @@
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 11150000,
-      "gzip": 2570000
+      "raw": 11430000,
+      "gzip": 2660000
     },
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 3650000,
-      "gzip": 1160000
+      "raw": 3810000,
+      "gzip": 1210000
     }
   ],
   "history": [
@@ -390,6 +390,24 @@
       "raw": 3576669,
       "gzip": 1134514,
       "why": "the range pipeline (lockstep horizon searches, a range's light and crossings found together) and the national panchanga's fitted festival days; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-20",
+      "subject": "full",
+      "artefact": "module",
+      "raw": 11200426,
+      "gzip": 2600467,
+      "why": "the festival work of 2026-10-20 (the moonrise search and the chaturthis kept at it, the first crescent, days kept on a civil date, the four-valued inAdhika, the iCalendar feed as an agent tool) and its names in three locales; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-20",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 3732063,
+      "gzip": 1182031,
+      "why": "the festival work of 2026-10-20 (the moonrise search and the chaturthis kept at it, the first crescent, days kept on a civil date, the four-valued inAdhika, the iCalendar feed as an agent tool) and its names in three locales; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
     }
   ]
 }
