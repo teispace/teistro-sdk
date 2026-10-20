@@ -58,7 +58,7 @@
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro_astro::rise_set::{Disc, Method, Solver, centre_altitude_deg};
+use teistro_astro::rise_set::{Disc, HorizonEvent, Method, Solver, centre_altitude_deg};
 use teistro_astro::sky::ApparentPositions;
 use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
@@ -111,6 +111,67 @@ struct Reading {
     proved_absent: bool,
 }
 
+/// What the remainder proof decided over the searches an almanac's event
+/// loop ends with: the rest of a day after an event it found.
+#[derive(Default)]
+struct Remainders {
+    /// Remainder searches made.
+    searches: usize,
+    /// Of them, the walk found no event.
+    absent: usize,
+    /// Of the absences, the proof proved.
+    proved: usize,
+    /// Searches where the proof's answer and the walk's differ.
+    differ: usize,
+    /// Cells the walk alone spent on them.
+    walk_cells: u64,
+    /// Cells the solver spent with the proof on.
+    proof_cells: u64,
+}
+
+impl Remainders {
+    /// Ask what the event loop asks after `event`, the rest of the day
+    /// up to `day_end`, once with the walk alone and once with the proof.
+    fn measure(
+        &mut self,
+        provider: &CountingProvider<TestProvider>,
+        [walker, prover]: [&Solver<'_>; 2],
+        kind: HorizonEventKind,
+        event: HorizonEvent,
+        day_end: f64,
+    ) {
+        // From a minute past the event found, as the loop searches on.
+        let next = event.instant.get() + 1.0 / 1440.0;
+        let left = day_end - next;
+        if left <= 0.0 {
+            return;
+        }
+        let start = JulianDay::<Ut1>::literal(next);
+        let instant = |found: &Result<Option<HorizonEvent>, _>| {
+            found
+                .as_ref()
+                .ok()
+                .map(|found| found.map(|e| e.instant.get().to_bits()))
+        };
+        provider.reset();
+        let by_walk = walker.event(kind, start, left);
+        self.walk_cells += provider.calls().cells;
+        provider.reset();
+        let by_proof = prover.event(kind, start, left);
+        self.proof_cells += provider.calls().cells;
+        self.searches += 1;
+        if instant(&by_walk) != instant(&by_proof) {
+            self.differ += 1;
+        }
+        if matches!(by_walk, Ok(None)) {
+            self.absent += 1;
+            if prover.proves_no_event(kind, start, left).unwrap_or(false) {
+                self.proved += 1;
+            }
+        }
+    }
+}
+
 /// The declination and the event's target altitude at an instant.
 fn sky_at(
     sky: &dyn ApparentPositions,
@@ -161,7 +222,7 @@ fn proves_absent(latitude_deg: f64, ends: [(f64, f64); 2], margin_deg: f64) -> b
 }
 
 /// Sweeps every place, day and body, reading both ways.
-fn sweep() -> (Vec<Reading>, [f64; 2]) {
+fn sweep() -> (Vec<Reading>, [f64; 2], Remainders) {
     let provider = CountingProvider::new(TestProvider::new());
     let completion = Completion::new(
         &provider,
@@ -171,6 +232,7 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
     let horizon = Horizon::CENTRE_NO_REFRACTION;
     let mut readings = Vec::new();
     let mut widest_rate = [0.0f64; 2];
+    let mut rest = Remainders::default();
 
     for (index, body) in BODIES.into_iter().enumerate() {
         for latitude in LATITUDES {
@@ -186,14 +248,19 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
             // row that says the bound never claims an absence where an
             // event exists, and that row is only worth reading if the
             // search it is compared against does not use the bound.
-            let solver = Solver::new(
-                &completion,
-                body,
-                place,
-                horizon,
-                DeltaTModel::TableThenModel,
-            )
-            .with_absence_check(false);
+            let walker = || {
+                Solver::new(
+                    &completion,
+                    body,
+                    place,
+                    horizon,
+                    DeltaTModel::TableThenModel,
+                )
+                .with_absence_check(false)
+                .with_none_proof(false)
+            };
+            let solver = walker();
+            let prover = walker().with_none_proof(true);
             for day in 0..DAYS {
                 let from = 2_451_545.0 + f64::from(day) * DAY_STEP;
                 let Some(start) = sky_at(&completion, body, &horizon, &place, from) else {
@@ -230,6 +297,9 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
                         continue;
                     };
                     let cells = provider.calls().cells;
+                    if let Some(event) = outcome {
+                        rest.measure(&provider, [&solver, &prover], kind, event, from + 1.0);
+                    }
                     // The window is a day, so the declination can move
                     // by a whole day's worth between the two readings
                     // that bound it.
@@ -245,7 +315,7 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
             }
         }
     }
-    (readings, widest_rate)
+    (readings, widest_rate, rest)
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {
@@ -261,7 +331,7 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
     reason = "one generated page, written in the order it reads"
 )]
 fn page() -> String {
-    let (readings, widest_rate) = sweep();
+    let (readings, widest_rate, rest) = sweep();
     let searches = readings.len();
     let absent = readings.iter().filter(|r| !r.found).count();
     let proved = readings
@@ -471,6 +541,55 @@ fn page() -> String {
          page's own sweep does so that the rule is measured against a\n\
          search that does not use it.\n",
         share_of(saved, absent_cells)
+    );
+    let _ = writeln!(
+        out,
+        "## 7. The remainder of a day, proved\n\n\
+         The bound above can never fire where an almanac needs it most,\n\
+         the rest of a day after the event the loop found. A second proof\n\
+         does, from the readings themselves (`Solver::proves_no_event`). The\n\
+         gap between the altitude and the event's target moves no faster\n\
+         than the Earth's turn plus the body's own motion, so a reading\n\
+         `|g|` degrees from it proves the gap keeps its sign for `|g|` over\n\
+         that rate. Close to the horizon the slope decides instead: there\n\
+         the gap is monotone for as long as the slope outruns its own\n\
+         change, so it crosses at most once, in the slope's direction. A\n\
+         crossing of the other kind is let through; a moonset in what is\n\
+         left of the day does not stop a proof that no second moonrise is\n\
+         in it. Anything the proof cannot settle is walked as before.\n\n\
+         Over the same sweep, every event found was followed by the search\n\
+         the loop makes next, once with the walk alone and once with the\n\
+         proof:\n\n\
+         | | count |\n\
+         |---|---:|\n\
+         | remainder searches | {} |\n\
+         | of them absent, by the walk | {} |\n\
+         | absences the proof proves | {} |\n\
+         | searches where the two answers differ | **{}** |\n\
+         | cells the walk spends | {} |\n\
+         | cells with the proof | {} |\n\n\
+         {}\n",
+        spelled(rest.searches),
+        spelled(rest.absent),
+        spelled(rest.proved),
+        rest.differ,
+        rest.walk_cells,
+        rest.proof_cells,
+        if rest.differ == 0 {
+            format!(
+                "**No answer differs**, which is the row that must hold: the proof\n\
+                 only ever replaces a walk that would have found nothing. It\n\
+                 proves {} of the absences and the remainders cost {} of the\n\
+                 cells the walk spent.",
+                share_of(rest.proved as u64, rest.absent as u64),
+                share_of(rest.proof_cells, rest.walk_cells)
+            )
+        } else {
+            String::from(
+                "**An answer differs**, so a bound under the proof is wrong and\n\
+                 the proof must not run until this row reads nought.",
+            )
+        }
     );
     fill(&out)
 }

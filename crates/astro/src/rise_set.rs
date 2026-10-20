@@ -91,6 +91,46 @@ fn scan_caps(span_days: f64) -> Caps {
 }
 /// Passes of the iteration before the scan takes over.
 const MAX_ITERATIONS: u32 = 12;
+
+/// The fastest the altitude of a body less the altitude its rise or set is
+/// at can change, degrees a day. The Earth's turn moves an altitude at
+/// `ω cos φ sin A`, no more than `ω`, 360.99° a day; a body's own motion
+/// moves it no more than its angle across the sky, under 17° a day for
+/// the Moon at perigee and less for every other body; and the event
+/// altitude moves with the Moon's distance by hundredths of a degree a
+/// day. Four hundred and twenty holds all three with room.
+const ALTITUDE_RATE_CEILING_DEG_PER_DAY: f64 = 420.0;
+
+/// The most anything but the Earth's turn moves the gap between a body's
+/// altitude and its event altitude, degrees a day: the body's own motion
+/// across the sky, under 17° a day for the Moon, and the event altitude's
+/// drift with its distance.
+const OWN_RATE_CEILING_DEG_PER_DAY: f64 = 20.0;
+
+/// How far from the horizon a body counts as low, degrees: within it the
+/// slope bound below holds.
+const LOW_ALTITUDE_DEG: f64 = 12.0;
+
+/// The most the gap's slope changes within [`LOW_ALTITUDE_DEG`] of the
+/// horizon, degrees a day squared. The turn bends the altitude by
+/// `(d²sin h + sin h · h′²) / cos h`, under `1.24 ω²` (2 810° a day²)
+/// there, and the body's own motion adds a few hundred.
+const SLOPE_CHANGE_CEILING_DEG_PER_DAY2: f64 = 5000.0;
+
+/// The longest stretch one slope reading proves, days: so short that a
+/// body starting within half of [`LOW_ALTITUDE_DEG`] cannot climb out of
+/// it at [`ALTITUDE_RATE_CEILING_DEG_PER_DAY`].
+const LOW_STRETCH_DAYS: f64 = LOW_ALTITUDE_DEG / 2.0 / ALTITUDE_RATE_CEILING_DEG_PER_DAY;
+
+/// How near the event altitude a reading may come before
+/// [`Solver::proves_none`] stops proving and the walk decides, degrees.
+const ONE_SIDE_FLOOR_DEG: f64 = 0.25;
+
+/// The most readings [`Solver::proves_none`] takes before handing the
+/// window to the walk. A body far from the horizon needs a handful; one
+/// that skims it for hours, as the Moon can near the polar circles, is
+/// the walk's.
+const ONE_SIDE_READINGS: u32 = 48;
 /// Below this value of the altitude's rate factor (cos δ cos φ sin H) the
 /// iteration's correction is not trusted and the scan answers.
 const MIN_RATE_FACTOR: f64 = 1e-3;
@@ -376,6 +416,9 @@ pub struct Solver<'a> {
     delta_t: DeltaTModel,
     chunk: usize,
     absence_check: bool,
+    /// Whether to try proving no event of the kind asked for in a window
+    /// before walking it ([`Solver::proves_none`]).
+    none_proof: bool,
 }
 
 impl fmt::Debug for Solver<'_> {
@@ -403,6 +446,7 @@ impl<'a> Solver<'a> {
             delta_t,
             chunk: SCAN_CHUNK,
             absence_check: true,
+            none_proof: true,
         }
     }
 
@@ -423,6 +467,21 @@ impl<'a> Solver<'a> {
     #[must_use]
     pub const fn with_absence_check(mut self, on: bool) -> Solver<'a> {
         self.absence_check = on;
+        self
+    }
+
+    /// Whether to try proving that a window holds no event of the kind
+    /// asked for before walking it ([`Solver::proves_no_event`]).
+    ///
+    /// On by default, and an almanac's event loop is what it is for: the
+    /// search that ends the loop has no event to find in what is left of
+    /// the day, and proving that from a dozen readings replaces a walk of
+    /// hundreds (`03-design/horizon-absence-measured.md` §7). The answer
+    /// is the walk's either way. Turning it off is what that page's sweep
+    /// does to measure the proof against the walk.
+    #[must_use]
+    pub const fn with_none_proof(mut self, on: bool) -> Solver<'a> {
+        self.none_proof = on;
         self
     }
 
@@ -547,6 +606,32 @@ impl<'a> Solver<'a> {
         }
     }
 
+    /// Whether the readings alone prove that the window starting `from`
+    /// and lasting `window_days` holds no event of `kind`, without
+    /// walking it: the proof [`Solver::event`] tries before a walk
+    /// (see [`Solver::with_none_proof`]). `false` says only that the
+    /// proof could not settle the window, never that an event is in it.
+    ///
+    /// # Errors
+    ///
+    /// A window that is not a positive number of days, the source's
+    /// refusal, or a Delta T model that cannot answer.
+    pub fn proves_no_event(
+        &self,
+        kind: HorizonEventKind,
+        from: JulianDay<Ut1>,
+        window_days: f64,
+    ) -> Result<bool, Error> {
+        if !(window_days.is_finite() && window_days > 0.0) {
+            return Err(Error::invalid_arg(format!(
+                "a search window is a positive number of days, not {window_days}"
+            ))
+            .with_field("window_days"));
+        }
+        let start = from.get();
+        self.proves_none(kind, start, start + window_days, &mut 0)
+    }
+
     /// The next event of a kind at or after `from`, inside a window of so
     /// many days, or `None` when there is none inside it (a polar day or
     /// night, a circumpolar body).
@@ -618,6 +703,83 @@ impl<'a> Solver<'a> {
     /// event where these allow one; this therefore proves fewer absences
     /// than exist and never one that does not — 60% of them over the
     /// measured sweep, and none of 1768 searches wrongly.
+    /// Whether the window certainly holds no crossing of the kind asked
+    /// for, proved from a few readings rather than walked: no rise for a
+    /// rise, no set for a set. The other kind may happen; a moonset in
+    /// what is left of the day does not stop a proof that no second
+    /// moonrise is in it.
+    ///
+    /// The gap `g` (the altitude less the event altitude) moves no faster
+    /// than [`ALTITUDE_RATE_CEILING_DEG_PER_DAY`], so a reading `|g|`
+    /// degrees from the event altitude proves the gap keeps its sign for
+    /// `|g|` over that rate, and the next reading is taken there. Far from
+    /// the horizon a reading covers hours.
+    ///
+    /// Close to it the reading's slope decides. The Earth's turn moves
+    /// the altitude at `−ω cos φ cos δ sin H / cos h`, nothing else moves
+    /// the gap by more than [`OWN_RATE_CEILING_DEG_PER_DAY`], and within
+    /// [`LOW_ALTITUDE_DEG`] of the horizon the slope changes by no more
+    /// than [`SLOPE_CHANGE_CEILING_DEG_PER_DAY2`]. So at a slope `s` the
+    /// gap is monotone for `s` over that ceiling, and crosses at most
+    /// once, in the slope's direction. A crossing in the direction not
+    /// asked for is allowed through; one in the direction asked for, or
+    /// a slope too shallow to tell, leaves the window to the walk.
+    ///
+    /// When the proof passes the window's end the walk would find no
+    /// crossing of its kind, so the answer is the walk's: no event.
+    fn proves_none(
+        &self,
+        kind: HorizonEventKind,
+        start: f64,
+        end: f64,
+        evaluations: &mut u32,
+    ) -> Result<bool, Error> {
+        let upward = match kind {
+            HorizonEventKind::Rise => true,
+            HorizonEventKind::Set => false,
+            _ => return Ok(false),
+        };
+        let (_, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
+        let mut t = start;
+        for _ in 0..ONE_SIDE_READINGS {
+            let reading = self.sample(t, evaluations)?;
+            let gap = reading.altitude_deg - reading.target_deg;
+            let reach = if gap.abs() >= 2.0 * ONE_SIDE_FLOOR_DEG {
+                // Short of the full reach by the floor, so the next
+                // reading is inside the stretch this one proved, and a
+                // gap closing on zero hands over to the slope below
+                // rather than closing on the floor in ever smaller steps.
+                (gap.abs() - ONE_SIDE_FLOOR_DEG) / ALTITUDE_RATE_CEILING_DEG_PER_DAY
+            } else {
+                if reading.altitude_deg.abs() > LOW_ALTITUDE_DEG / 2.0 {
+                    return Ok(false);
+                }
+                let turn = -HOUR_ANGLE_RATE_DEG_PER_DAY
+                    * cos_phi
+                    * math::cos(reading.dec_deg * DEG2RAD)
+                    * math::sin(reading.hour_angle_deg * DEG2RAD)
+                    / math::cos(reading.altitude_deg * DEG2RAD);
+                let steep = turn.abs() - OWN_RATE_CEILING_DEG_PER_DAY;
+                if steep <= 0.0 {
+                    return Ok(false);
+                }
+                let rising = turn > 0.0;
+                // A crossing of the asked-for kind is possible only when
+                // the gap moves that way from the far side of zero.
+                let towards = rising == upward;
+                if towards && !(if upward { gap > 0.0 } else { gap < 0.0 }) {
+                    return Ok(false);
+                }
+                (steep / SLOPE_CHANGE_CEILING_DEG_PER_DAY2).min(LOW_STRETCH_DAYS)
+            };
+            if t + reach >= end {
+                return Ok(true);
+            }
+            t += reach;
+        }
+        Ok(false)
+    }
+
     fn cannot_cross(
         &self,
         kind: HorizonEventKind,
@@ -755,6 +917,9 @@ impl<'a> Solver<'a> {
         // a search that is about to walk pays them.
         let mut counted = evaluations;
         if self.absence_check && self.cannot_cross(kind, start, end, &mut counted)? {
+            return Ok(None);
+        }
+        if self.none_proof && self.proves_none(kind, start, end, &mut counted)? {
             return Ok(None);
         }
         let evaluations = counted;
@@ -1019,6 +1184,62 @@ mod tests {
                 self.altitude_deg, self.target_deg, self.hour_angle_deg
             )
         }
+    }
+
+    #[test]
+    fn a_proved_absence_is_what_the_walk_finds() {
+        // Partial windows, as an almanac's event loop leaves them, from
+        // the equator to past the polar circle, for the Sun and the Moon:
+        // with the proof and without it the solver answers the same, to
+        // the bit, rise and set alike.
+        let provider = TestProvider::new();
+        let sky = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let mut proved = 0_u32;
+        for latitude in [-45.0, 0.0, 27.7, 50.0, 60.0, 64.0, 66.0, 70.0, 78.0] {
+            for body in [Body::Moon, Body::Sun] {
+                let at = place(latitude, 85.3);
+                let solver = || {
+                    Solver::new(
+                        &sky,
+                        body,
+                        at,
+                        Horizon::UPPER_LIMB_REFRACTION,
+                        DeltaTModel::TableThenModel,
+                    )
+                };
+                let walker = solver().with_none_proof(false);
+                let solver = solver();
+                for day in 0..20 {
+                    for (offset, length) in [(0.13, 0.62), (0.47, 0.91), (0.71, 0.33)] {
+                        let from =
+                            JulianDay::<Ut1>::literal(2_460_310.5 + f64::from(day) * 1.37 + offset);
+                        for kind in [HorizonEventKind::Rise, HorizonEventKind::Set] {
+                            let fast = solver.event(kind, from, length).unwrap();
+                            let slow = walker.event(kind, from, length).unwrap();
+                            assert_eq!(
+                                fast.map(|e| e.instant.get().to_bits()),
+                                slow.map(|e| e.instant.get().to_bits()),
+                                "{body:?} {kind:?} at {latitude} from {from} for {length}"
+                            );
+                            let mut count = 0;
+                            if fast.is_none()
+                                && solver
+                                    .proves_none(kind, from.get(), from.get() + length, &mut count)
+                                    .unwrap()
+                            {
+                                proved += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Most windows without an event are proved rather than walked.
+        assert!(proved > 300, "{proved}");
     }
 
     #[test]

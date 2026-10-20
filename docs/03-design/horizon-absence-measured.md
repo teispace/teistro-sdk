@@ -112,3 +112,33 @@ the guard an almanac pays 0.08% and a polar one keeps the 78.2% above.
 sweep does so that the rule is measured against a search that does not
 use it.
 
+## 7. The remainder of a day, proved
+
+The bound above can never fire where an almanac needs it most, the rest
+of a day after the event the loop found. A second proof does, from the
+readings themselves (`Solver::proves_no_event`). The gap between the
+altitude and the event's target moves no faster than the Earth's turn
+plus the body's own motion, so a reading `|g|` degrees from it proves
+the gap keeps its sign for `|g|` over that rate. Close to the horizon
+the slope decides instead: there the gap is monotone for as long as the
+slope outruns its own change, so it crosses at most once, in the slope's
+direction. A crossing of the other kind is let through; a moonset in
+what is left of the day does not stop a proof that no second moonrise is
+in it. Anything the proof cannot settle is walked as before.
+
+Over the same sweep, every event found was followed by the search the
+loop makes next, once with the walk alone and once with the proof:
+
+| | count |
+|---|---:|
+| remainder searches | 1494 |
+| of them absent, by the walk | 1491 |
+| absences the proof proves | 1377 |
+| searches where the two answers differ | **0** |
+| cells the walk spends | 117529 |
+| cells with the proof | 47373 |
+
+**No answer differs**, which is the row that must hold: the proof only
+ever replaces a walk that would have found nothing. It proves 92.4% of
+the absences and the remainders cost 40.3% of the cells the walk spent.
+
