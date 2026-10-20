@@ -260,6 +260,8 @@ jobs:
         run: cargo xtask check-sizes
       - name: Mobile sizes page (each mobile slice as built and as an app strips it, without the built-in and with the Teimeris adapter, every row recorded)
         run: cargo xtask check-mobile-sizes
+      - name: Teimeris ranges page (each data block's files, sizes and digests, from the manifest the adapter checks a downloaded range against)
+        run: cargo xtask check-teimeris-ranges
       - name: Coverage page (each crate's floor, rendered from the record, none lowered against main)
         run: cargo xtask check-coverage
       - name: Mutants page (each kernel crate's floor and named survivors, rendered from the record, no floor lowered against main)

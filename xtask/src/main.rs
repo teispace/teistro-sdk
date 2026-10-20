@@ -371,6 +371,7 @@ mod state_readings;
 mod stations;
 mod surface;
 mod synastry;
+mod teimeris_ranges;
 mod terms;
 mod time;
 mod time_lords;
@@ -479,6 +480,11 @@ const PASSES: &[Pass] = &[
         "mobile-sizes",
         mobile_sizes::generate,
         mobile_sizes::check_generated,
+    ),
+    (
+        "teimeris-ranges",
+        teimeris_ranges::generate,
+        teimeris_ranges::check_generated,
     ),
     ("pluto", pluto::generate, pluto::check_generated),
     ("engine", engine::generate, engine::check_generated),
