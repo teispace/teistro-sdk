@@ -8,6 +8,7 @@
 
 use core::sync::atomic::{AtomicBool, Ordering};
 
+use teistro_astro::lockstep::Lockstep;
 use teistro_astro::rise_set::Solver;
 use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::catalogue::Ayanamsha;
@@ -99,6 +100,17 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
         Ok(self.completion.defines(Overrides::RISE_SET, "rise_set")?)
     }
 
+    /// The solver a day's sunrise and sunset are searched by.
+    fn solver(&self, place: &Place) -> Solver<'_> {
+        Solver::new(
+            &self.completion,
+            Body::Sun,
+            *place,
+            self.horizon,
+            self.delta_t,
+        )
+    }
+
     /// The day's arc from the provider's own sunrise and sunset, where it
     /// defines them and answers this convention; `None` where the SDK's
     /// solver answers instead.
@@ -148,6 +160,18 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
     }
 }
 
+/// The light a day's sunrise and sunset searches found.
+fn light_of(events: &teistro_astro::rise_set::DayEvents) -> DayLight {
+    match events.arc() {
+        Some((sunrise, sunset)) => DayLight::Arc(DayArc {
+            sunrise: sunrise.relabel(),
+            sunset: sunset.relabel(),
+        }),
+        None if events.above_at_midday => DayLight::AlwaysUp,
+        None => DayLight::NeverUp,
+    }
+}
+
 impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
     fn sidereal_sun_deg(&self, jd_ut: f64) -> Result<f64, Error> {
         let jds = [jd_ut];
@@ -184,22 +208,25 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
         if let Some(light) = self.defined_day(local_midnight, place)? {
             return Ok(light);
         }
-        let solver = Solver::new(
-            &self.completion,
-            Body::Sun,
-            *place,
-            self.horizon,
-            self.delta_t,
-        );
-        let events = solver.day(local_midnight)?;
-        Ok(match events.arc() {
-            Some((sunrise, sunset)) => DayLight::Arc(DayArc {
-                sunrise: sunrise.relabel(),
-                sunset: sunset.relabel(),
-            }),
-            None if events.above_at_midday => DayLight::AlwaysUp,
-            None => DayLight::NeverUp,
-        })
+        Ok(light_of(&self.solver(place).day(local_midnight)?))
+    }
+
+    fn day_lights(&self, days: &[FixedDay], place: &Place) -> Vec<Result<DayLight, Error>> {
+        // A provider that defines the sunrise answers each day itself, so
+        // there is no search to share.
+        if !matches!(self.provider_defines_sunrise(), Ok(false)) {
+            return days.iter().map(|day| self.day_light(*day, place)).collect();
+        }
+        let solver = self.solver(place);
+        let round = Lockstep::new();
+        round.run(days.iter().map(|day| {
+            let solver = &solver;
+            let round = &round;
+            async move {
+                let midnight = local_mean_midnight(*day, place)?;
+                Ok(light_of(&solver.day_in(round, midnight).await?))
+            }
+        }))
     }
 
     fn describe(&self) -> String {

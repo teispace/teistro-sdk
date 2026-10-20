@@ -84,6 +84,15 @@ pub trait SolarModel: Send + Sync {
     /// As [`SolarModel::sidereal_sun_deg`].
     fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error>;
 
+    /// [`SolarModel::day_light`] for many days at one place, each day's
+    /// answer its own: what [`SolarModel::day_light`] answers for it, to
+    /// the bit. A model that can share the work between days (the drik
+    /// model searches them in lockstep, one request a round) does; the
+    /// default asks day by day.
+    fn day_lights(&self, days: &[FixedDay], place: &Place) -> Vec<Result<DayLight, Error>> {
+        days.iter().map(|day| self.day_light(*day, place)).collect()
+    }
+
     /// The model's name for provenance stamps.
     fn describe(&self) -> String;
 
@@ -164,6 +173,23 @@ pub fn civil_day_light(
     model.day_light(mean_time_day(clock, place, civil), place)
 }
 
+/// [`civil_day_light`] for many civil dates, through
+/// [`SolarModel::day_lights`] so that a model sharing work between days
+/// shares it; each date's answer is [`civil_day_light`]'s.
+#[must_use]
+pub fn civil_day_lights(
+    model: &dyn SolarModel,
+    clock: &dyn LocalClock,
+    place: &Place,
+    civil: &[FixedDay],
+) -> Vec<Result<DayLight, Error>> {
+    let days: Vec<FixedDay> = civil
+        .iter()
+        .map(|day| mean_time_day(clock, place, *day))
+        .collect();
+    model.day_lights(&days, place)
+}
+
 impl<M: SolarModel + ?Sized> SolarModel for &M {
     fn sidereal_sun_deg(&self, jd_ut: f64) -> Result<f64, Error> {
         (**self).sidereal_sun_deg(jd_ut)
@@ -171,6 +197,10 @@ impl<M: SolarModel + ?Sized> SolarModel for &M {
 
     fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error> {
         (**self).day_light(day, place)
+    }
+
+    fn day_lights(&self, days: &[FixedDay], place: &Place) -> Vec<Result<DayLight, Error>> {
+        (**self).day_lights(days, place)
     }
 
     fn describe(&self) -> String {

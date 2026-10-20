@@ -279,6 +279,26 @@ pub fn local_day_carrying(
     };
     let tomorrow = civil_day_light(model, clock, place, day.plus_days(1))?;
     carried.0 = Some((day.plus_days(1), *place, tomorrow));
+    local_day_lit(model, clock, place, (date, day), policy, (today, tomorrow))
+}
+
+/// The local day of a civil date from its light and the next civil
+/// day's, already found ([`civil_day_light`], or many at once through
+/// [`teistro_calendar::solar::civil_day_lights`]). The answer is
+/// [`local_day`]'s for the same lights, to the bit; a polar day still
+/// asks the model for the days its policy reaches for.
+///
+/// # Errors
+///
+/// As [`local_day`].
+pub fn local_day_lit(
+    model: &dyn SolarModel,
+    clock: &dyn LocalClock,
+    place: &Place,
+    (date, day): (&CalendarDate, FixedDay),
+    policy: PolarDayPolicy,
+    (today, tomorrow): (DayLight, DayLight),
+) -> Result<LocalDay, Error> {
     let (sunrise, sunset, next_sunrise, state) = match (today, tomorrow) {
         (DayLight::Arc(arc), DayLight::Arc(next)) => {
             (arc.sunrise, arc.sunset, next.sunrise, DayState::Normal)
