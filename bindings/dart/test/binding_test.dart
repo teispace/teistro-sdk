@@ -235,6 +235,15 @@ void main() {
       [saka.era, saka.year, saka.month, saka.day],
       [Era.shaka, 1869, 5, 24],
     );
+    // And 1 Ramadan 1446 in the tabular Hijri calendar.
+    final ramadan = ctx.calendar.convert(
+      gregorian(2025, 3, 1),
+      Calendar.hijriTabular,
+    );
+    expect(
+      [ramadan.era, ramadan.year, ramadan.month, ramadan.day],
+      [Era.hijri, 1446, 9, 1],
+    );
     expect(bs.year, 2072);
     expect(bs.month, 1);
     expect(bs.day, 1);

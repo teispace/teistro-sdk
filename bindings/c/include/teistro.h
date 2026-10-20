@@ -2941,6 +2941,10 @@ typedef enum ts_calendar {
      * Indian National: the Saka-era civil calendar of 1957
      */
     TS_CALENDAR_INDIAN_NATIONAL = 6,
+    /**
+     * Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
+     */
+    TS_CALENDAR_HIJRI_TABULAR = 7,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CALENDAR_UNKNOWN = -1,
 } ts_calendar;
@@ -2985,6 +2989,10 @@ typedef enum ts_era {
      * Before the common era; year 1 BCE is astronomical year 0
      */
     TS_ERA_BEFORE_COMMON_ERA = 8,
+    /**
+     * Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0
+     */
+    TS_ERA_HIJRI = 9,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_ERA_UNKNOWN = -1,
 } ts_era;

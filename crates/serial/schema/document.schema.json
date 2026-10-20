@@ -1279,7 +1279,8 @@
             "ISO_WEEK",
             "BIKRAM_SAMBAT",
             "INDIAN_LUNISOLAR",
-            "INDIAN_NATIONAL"
+            "INDIAN_NATIONAL",
+            "HIJRI_TABULAR"
           ],
           "type": "string"
         },
@@ -1292,7 +1293,8 @@
             "calendar.ISO_WEEK",
             "calendar.BIKRAM_SAMBAT",
             "calendar.INDIAN_LUNISOLAR",
-            "calendar.INDIAN_NATIONAL"
+            "calendar.INDIAN_NATIONAL",
+            "calendar.HIJRI_TABULAR"
           ],
           "type": "string",
           "writeOnly": true
@@ -2815,7 +2817,8 @@
             "KOLLAM",
             "BENGALI",
             "COMMON_ERA",
-            "BEFORE_COMMON_ERA"
+            "BEFORE_COMMON_ERA",
+            "HIJRI"
           ],
           "type": "string"
         },
@@ -2830,7 +2833,8 @@
             "era.KOLLAM",
             "era.BENGALI",
             "era.COMMON_ERA",
-            "era.BEFORE_COMMON_ERA"
+            "era.BEFORE_COMMON_ERA",
+            "era.HIJRI"
           ],
           "type": "string",
           "writeOnly": true

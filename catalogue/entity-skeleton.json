@@ -697,7 +697,8 @@
     "ISO_WEEK": {},
     "BIKRAM_SAMBAT": {},
     "INDIAN_LUNISOLAR": {},
-    "INDIAN_NATIONAL": {}
+    "INDIAN_NATIONAL": {},
+    "HIJRI_TABULAR": {}
   },
   "era": {
     "VIKRAMA": {},
@@ -708,7 +709,8 @@
     "KOLLAM": {},
     "BENGALI": {},
     "COMMON_ERA": {},
-    "BEFORE_COMMON_ERA": {}
+    "BEFORE_COMMON_ERA": {},
+    "HIJRI": {}
   },
   "body_class": {
     "LUMINARY": {},

@@ -225,6 +225,12 @@ class TheCalendars(WithLibrary):
         assert saka.era is not None
         self.assertEqual(saka.era.key, "SHAKA")
 
+    def test_the_first_of_ramadan_1446_is_1_march_2025_in_the_tabular_hijri_calendar(self) -> None:
+        ramadan = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2025, 3, 1), Calendar.HIJRI_TABULAR)
+        self.assertEqual((ramadan.year, ramadan.month, ramadan.day), (1446, 9, 1))
+        assert ramadan.era is not None
+        self.assertEqual(ramadan.era.key, "HIJRI")
+
     def test_the_new_year_of_2072_bs_is_14_april_2015(self) -> None:
         bs = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
         self.assertEqual((bs.year, bs.month, bs.day), (2072, 1, 1))

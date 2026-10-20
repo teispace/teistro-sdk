@@ -1821,6 +1821,7 @@ export const Calendar = /* @__PURE__ */ Object.freeze({
   BikramSambat: 'calendar.BIKRAM_SAMBAT',
   IndianLunisolar: 'calendar.INDIAN_LUNISOLAR',
   IndianNational: 'calendar.INDIAN_NATIONAL',
+  HijriTabular: 'calendar.HIJRI_TABULAR',
 });
 
 /**
@@ -1835,6 +1836,7 @@ export const CalendarById = /* @__PURE__ */ new Map([
   [4, 'calendar.BIKRAM_SAMBAT'],
   [5, 'calendar.INDIAN_LUNISOLAR'],
   [6, 'calendar.INDIAN_NATIONAL'],
+  [7, 'calendar.HIJRI_TABULAR'],
 ]);
 
 /** Every Era by name. */
@@ -1848,6 +1850,7 @@ export const Era = /* @__PURE__ */ Object.freeze({
   Bengali: 'era.BENGALI',
   CommonEra: 'era.COMMON_ERA',
   BeforeCommonEra: 'era.BEFORE_COMMON_ERA',
+  Hijri: 'era.HIJRI',
 });
 
 /**
@@ -1864,6 +1867,7 @@ export const EraById = /* @__PURE__ */ new Map([
   [6, 'era.BENGALI'],
   [7, 'era.COMMON_ERA'],
   [8, 'era.BEFORE_COMMON_ERA'],
+  [9, 'era.HIJRI'],
 ]);
 
 /** Every BodyClass by name. */

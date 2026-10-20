@@ -4261,6 +4261,12 @@
           "value": 6,
           "doc": "Indian National: the Saka-era civil calendar of 1957",
           "key": "INDIAN_NATIONAL"
+        },
+        {
+          "name": "HijriTabular",
+          "value": 7,
+          "doc": "Hijri Tabular: the arithmetic Islamic calendar of the civil epoch",
+          "key": "HIJRI_TABULAR"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -4324,6 +4330,12 @@
           "value": 8,
           "doc": "Before the common era; year 1 BCE is astronomical year 0",
           "key": "BEFORE_COMMON_ERA"
+        },
+        {
+          "name": "Hijri",
+          "value": 9,
+          "doc": "Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0",
+          "key": "HIJRI"
         }
       ],
       "source": "catalogue/catalogue.json"

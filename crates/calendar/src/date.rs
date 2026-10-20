@@ -220,6 +220,7 @@ pub fn shipped(id: Calendar) -> Option<&'static dyn CalendarSystem> {
         Calendar::IsoWeek => Some(&crate::iso_week::IsoWeek),
         Calendar::BikramSambat => Some(crate::bikram_sambat::BikramSambat::shipped()),
         Calendar::IndianNational => Some(&crate::indian_national::IndianNational),
+        Calendar::HijriTabular => Some(&crate::hijri::HijriTabular),
         _ => None,
     }
 }

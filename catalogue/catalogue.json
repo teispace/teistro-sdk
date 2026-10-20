@@ -12910,6 +12910,23 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "HIJRI_TABULAR",
+          "id": 7,
+          "doc": "Hijri Tabular: the arithmetic Islamic calendar of the civil epoch",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Reingold and Dershowitz, Calendrical Calculations, ch. 7",
+              "ref": "docs/calendars/hijri.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     },
@@ -13069,6 +13086,23 @@
             {
               "text": "calendar-gregorian-julian",
               "ref": "docs/03-design/calendar-gregorian-julian.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HIJRI",
+          "id": 9,
+          "doc": "Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Reingold and Dershowitz, Calendrical Calculations, ch. 7",
+              "ref": "docs/calendars/hijri.md"
             }
           ],
           "mark": "V",

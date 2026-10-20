@@ -3793,6 +3793,7 @@ export type Calendar =
   | 'calendar.BIKRAM_SAMBAT'
   | 'calendar.INDIAN_LUNISOLAR'
   | 'calendar.INDIAN_NATIONAL'
+  | 'calendar.HIJRI_TABULAR'
   | 'unknown';
 
 /** Every Calendar by name; the values are the strings the union accepts. */
@@ -3825,6 +3826,10 @@ export declare const Calendar: {
    * Indian National: the Saka-era civil calendar of 1957
    */
   readonly IndianNational: 'calendar.INDIAN_NATIONAL';
+  /**
+   * Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
+   */
+  readonly HijriTabular: 'calendar.HIJRI_TABULAR';
 };
 
 /**
@@ -3846,6 +3851,7 @@ export type Era =
   | 'era.BENGALI'
   | 'era.COMMON_ERA'
   | 'era.BEFORE_COMMON_ERA'
+  | 'era.HIJRI'
   | 'unknown';
 
 /** Every Era by name; the values are the strings the union accepts. */
@@ -3886,6 +3892,10 @@ export declare const Era: {
    * Before the common era; year 1 BCE is astronomical year 0
    */
   readonly BeforeCommonEra: 'era.BEFORE_COMMON_ERA';
+  /**
+   * Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0
+   */
+  readonly Hijri: 'era.HIJRI';
 };
 
 /**

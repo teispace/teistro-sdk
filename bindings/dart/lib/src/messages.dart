@@ -1150,6 +1150,31 @@ final class MessagesSdkCalendarGregorian {
       _r.render('sdk.calendar.GREGORIAN.monthShort', {'month': month});
 }
 
+final class MessagesSdkCalendarHijriTabularDate {
+  const MessagesSdkCalendarHijriTabularDate(this._r);
+
+  final Renderer _r;
+
+  String full({required int day, required String monthName, required String weekdayName, required int year}) =>
+      _r.render('sdk.calendar.HIJRI_TABULAR.date.full', {'day': day, 'monthName': monthName, 'weekdayName': weekdayName, 'year': year});
+  String long({required int day, required String monthName, required int year}) =>
+      _r.render('sdk.calendar.HIJRI_TABULAR.date.long', {'day': day, 'monthName': monthName, 'year': year});
+  String numeric({required int day, required int month, required int year}) =>
+      _r.render('sdk.calendar.HIJRI_TABULAR.date.numeric', {'day': day, 'month': month, 'year': year});
+}
+
+final class MessagesSdkCalendarHijriTabular {
+  const MessagesSdkCalendarHijriTabular(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkCalendarHijriTabularDate get date => MessagesSdkCalendarHijriTabularDate(_r);
+  String monthName({required int month}) =>
+      _r.render('sdk.calendar.HIJRI_TABULAR.monthName', {'month': month});
+  String monthShort({required int month}) =>
+      _r.render('sdk.calendar.HIJRI_TABULAR.monthShort', {'month': month});
+}
+
 final class MessagesSdkCalendarIndianNationalDate {
   const MessagesSdkCalendarIndianNationalDate(this._r);
 
@@ -1307,6 +1332,7 @@ final class MessagesSdkCalendar {
 
   MessagesSdkCalendarBikramSambat get bikramSambat => MessagesSdkCalendarBikramSambat(_r);
   MessagesSdkCalendarGregorian get gregorian => MessagesSdkCalendarGregorian(_r);
+  MessagesSdkCalendarHijriTabular get hijriTabular => MessagesSdkCalendarHijriTabular(_r);
   MessagesSdkCalendarIndianNational get indianNational => MessagesSdkCalendarIndianNational(_r);
   MessagesSdkCalendarIsoWeek get isoWeek => MessagesSdkCalendarIsoWeek(_r);
   MessagesSdkCalendarJulian get julian => MessagesSdkCalendarJulian(_r);

@@ -2377,6 +2377,101 @@ public final class Messages {
 
 
             /**
+             * The messages under `HIJRI_TABULAR`.
+             *
+             * @return the group
+             */
+            public SdkCalendarHijriTabular hijriTabular() {
+                return new SdkCalendarHijriTabular(r);
+            }
+
+            /** The messages under `SdkCalendarHijriTabular`, each rendered by its own key. */
+            public static final class SdkCalendarHijriTabular {
+                private final Renderer r;
+
+                SdkCalendarHijriTabular(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `date`.
+                 *
+                 * @return the group
+                 */
+                public SdkCalendarHijriTabularDate date() {
+                    return new SdkCalendarHijriTabularDate(r);
+                }
+
+                /** The messages under `SdkCalendarHijriTabularDate`, each rendered by its own key. */
+                public static final class SdkCalendarHijriTabularDate {
+                    private final Renderer r;
+
+                    SdkCalendarHijriTabularDate(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.calendar.HIJRI_TABULAR.date.full`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param weekdayName `weekdayName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String full(long day, String monthName, String weekdayName, long year) {
+                        return r.render("sdk.calendar.HIJRI_TABULAR.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("weekdayName", weekdayName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.HIJRI_TABULAR.date.long`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String long_(long day, String monthName, long year) {
+                        return r.render("sdk.calendar.HIJRI_TABULAR.date.long", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.HIJRI_TABULAR.date.numeric`
+                     *
+                     * @param day `day`
+                     * @param month `month`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String numeric(long day, long month, long year) {
+                        return r.render("sdk.calendar.HIJRI_TABULAR.date.numeric", Map.ofEntries(Map.entry("day", day), Map.entry("month", month), Map.entry("year", year)));
+                    }
+                }
+
+
+                /**
+                 * `sdk.calendar.HIJRI_TABULAR.monthName`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthName(long month) {
+                    return r.render("sdk.calendar.HIJRI_TABULAR.monthName", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.HIJRI_TABULAR.monthShort`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthShort(long month) {
+                    return r.render("sdk.calendar.HIJRI_TABULAR.monthShort", Map.ofEntries(Map.entry("month", month)));
+                }
+            }
+
+
+            /**
              * The messages under `INDIAN_NATIONAL`.
              *
              * @return the group

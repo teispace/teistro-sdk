@@ -330,6 +330,7 @@ pub fn calendar_from_str(value: &str) -> Result<u16> {
         "calendar.BIKRAM_SAMBAT" => Ok(4),
         "calendar.INDIAN_LUNISOLAR" => Ok(5),
         "calendar.INDIAN_NATIONAL" => Ok(6),
+        "calendar.HIJRI_TABULAR" => Ok(7),
         other => Err(Error::from_reason(format!("`{other}` is not a Calendar"))),
     }
 }
@@ -345,6 +346,7 @@ pub fn calendar_to_str(value: u16) -> String {
         4 => "calendar.BIKRAM_SAMBAT",
         5 => "calendar.INDIAN_LUNISOLAR",
         6 => "calendar.INDIAN_NATIONAL",
+        7 => "calendar.HIJRI_TABULAR",
         _ => "unknown",
     }
     .to_string()
@@ -362,6 +364,7 @@ pub fn era_from_str(value: &str) -> Result<u16> {
         "era.BENGALI" => Ok(6),
         "era.COMMON_ERA" => Ok(7),
         "era.BEFORE_COMMON_ERA" => Ok(8),
+        "era.HIJRI" => Ok(9),
         other => Err(Error::from_reason(format!("`{other}` is not a Era"))),
     }
 }
@@ -379,6 +382,7 @@ pub fn era_to_str(value: u16) -> String {
         6 => "era.BENGALI",
         7 => "era.COMMON_ERA",
         8 => "era.BEFORE_COMMON_ERA",
+        9 => "era.HIJRI",
         _ => "unknown",
     }
     .to_string()

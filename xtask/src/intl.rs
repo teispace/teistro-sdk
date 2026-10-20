@@ -306,7 +306,14 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
             "BIKRAM_SAMBAT",
             "INDIAN_LUNISOLAR",
             "INDIAN_NATIONAL",
+            "HIJRI_TABULAR",
         ],
+    ),
+    (
+        "era",
+        "no vetted name for the Hijri era in Nepali or Hindi; the English \
+         date forms write AH themselves, as CLDR's do",
+        &["HIJRI"],
     ),
     (
         "chart_kind",

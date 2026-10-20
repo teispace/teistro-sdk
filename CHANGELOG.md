@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The tabular Hijri calendar** (`calendars/hijri.md`).
+**Numbers:** `calendar.HIJRI_TABULAR` is the arithmetic Islamic calendar
+of the civil epoch (Friday, 16 July 622, Julian), and its dates carry the
+new `era.HIJRI`. Its months alternate 30 and 29 days, and eleven years in
+every thirty are leap years. It gives the same date as ICU's
+`islamic-civil` on all 160,249 days checked, every day from 1900 to 2100
+and every tenth from 622 to 3000. It is a rule, not a sighting. Countries
+that declare a month on the crescent can part from it by a day or two,
+and that answer is to come as published data.
+
 **Purnimanta in Hindi.** A Hindi context set to purnimanta now says an
 adhika month "अधिक श्रावण" and a kshaya month "क्षय …". It used to fall
 back to the English "Adhika". A test holds North India's naming end to

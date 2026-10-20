@@ -54,6 +54,11 @@ public enum Era implements Catalogued {
      */
     BEFORE_COMMON_ERA(8, "BEFORE_COMMON_ERA"),
 
+    /**
+     * Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0
+     */
+    HIJRI(9, "HIJRI"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

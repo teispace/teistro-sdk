@@ -52,3 +52,10 @@ members:
       - text: "Report of the Calendar Reform Committee, 1955, part C"
         ref: "docs/calendars/indian-national.md"
     mark: V
+  - key: HIJRI_TABULAR
+    id: 7
+    doc: "Hijri Tabular: the arithmetic Islamic calendar of the civil epoch"
+    sources:
+      - text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7"
+        ref: "docs/calendars/hijri.md"
+    mark: V

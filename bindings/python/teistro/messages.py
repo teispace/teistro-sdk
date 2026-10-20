@@ -5562,6 +5562,11 @@ class MessagesSdkCalendar:
         return MessagesSdkCalendarGregorian(self._r)
 
     @property
+    def hijri_tabular(self) -> MessagesSdkCalendarHijriTabular:
+        """The messages under `HIJRI_TABULAR`."""
+        return MessagesSdkCalendarHijriTabular(self._r)
+
+    @property
     def indian_national(self) -> MessagesSdkCalendarIndianNational:
         """The messages under `INDIAN_NATIONAL`."""
         return MessagesSdkCalendarIndianNational(self._r)
@@ -5970,6 +5975,62 @@ class MessagesSdkCalendarIndianNationalDate:
         """`sdk.calendar.INDIAN_NATIONAL.date.numeric`"""
         return self._r.render(
             "sdk.calendar.INDIAN_NATIONAL.date.numeric",
+            {"day": day, "month": month, "year": year},
+        )
+
+
+class MessagesSdkCalendarHijriTabular:
+    """The messages under `MessagesSdkCalendarHijriTabular`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def date(self) -> MessagesSdkCalendarHijriTabularDate:
+        """The messages under `date`."""
+        return MessagesSdkCalendarHijriTabularDate(self._r)
+
+    def month_name(self, *, month: int) -> str:
+        """`sdk.calendar.HIJRI_TABULAR.monthName`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_TABULAR.monthName",
+            {"month": month},
+        )
+
+    def month_short(self, *, month: int) -> str:
+        """`sdk.calendar.HIJRI_TABULAR.monthShort`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_TABULAR.monthShort",
+            {"month": month},
+        )
+
+
+class MessagesSdkCalendarHijriTabularDate:
+    """The messages under `MessagesSdkCalendarHijriTabularDate`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def full(self, *, day: int, month_name: str, weekday_name: str, year: int) -> str:
+        """`sdk.calendar.HIJRI_TABULAR.date.full`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_TABULAR.date.full",
+            {"day": day, "monthName": month_name, "weekdayName": weekday_name, "year": year},
+        )
+
+    def long(self, *, day: int, month_name: str, year: int) -> str:
+        """`sdk.calendar.HIJRI_TABULAR.date.long`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_TABULAR.date.long",
+            {"day": day, "monthName": month_name, "year": year},
+        )
+
+    def numeric(self, *, day: int, month: int, year: int) -> str:
+        """`sdk.calendar.HIJRI_TABULAR.date.numeric`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_TABULAR.date.numeric",
             {"day": day, "month": month, "year": year},
         )
 

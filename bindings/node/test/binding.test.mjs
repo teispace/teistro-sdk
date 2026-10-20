@@ -730,8 +730,9 @@ test('every catalogue enum has a complete id table', () => {
   // the chart request's `TsLilith`, three; 1375 since the fixed karakas'
   // `TsSignification`, thirteen, and `TsChosenBy`, five; 1377 since the
   // dispositors' `TsChainEnd`, two; 1378 since `TsCalendar` gained the
-  // Indian national calendar.
-  assert.equal(entries, 1378, 'every member of every enum is in a table');
+  // Indian national calendar; 1380 since the tabular Hijri calendar and
+  // its era.
+  assert.equal(entries, 1380, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4387,6 +4388,9 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   const independence = { ...gregorian, year: 1947, eraYear: 1947, month: 8, day: 15 };
   const saka = ctx.calendar.convert(independence, Calendar.IndianNational);
   assert.deepEqual([saka.era, saka.year, saka.month, saka.day], ['era.SHAKA', 1869, 5, 24]);
+  // And the tabular Hijri calendar's: 1 Ramadan 1446 is 1 March 2025.
+  const ramadan = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 3, day: 1 }, Calendar.HijriTabular);
+  assert.deepEqual([ramadan.era, ramadan.year, ramadan.month, ramadan.day], ['era.HIJRI', 1446, 9, 1]);
   assert.equal(day.vara, 'vara.SHANIVARA');
   assert.ok(day.sunrise < day.sunset && day.sunset < 2451545 && 2451545 < day.nextSunrise);
   assert.equal(day.polar, null);

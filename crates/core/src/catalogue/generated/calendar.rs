@@ -26,11 +26,14 @@ pub enum Calendar {
     IndianLunisolar = 5,
     /// Indian National: the Saka-era civil calendar of 1957
     IndianNational = 6,
+    /// Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
+    HijriTabular = 7,
 }
 
-const BY_KEY: [(&str, Calendar); 7] = [
+const BY_KEY: [(&str, Calendar); 8] = [
     ("BIKRAM_SAMBAT", Calendar::BikramSambat),
     ("GREGORIAN", Calendar::Gregorian),
+    ("HIJRI_TABULAR", Calendar::HijriTabular),
     ("INDIAN_LUNISOLAR", Calendar::IndianLunisolar),
     ("INDIAN_NATIONAL", Calendar::IndianNational),
     ("ISO_WEEK", Calendar::IsoWeek),
@@ -46,7 +49,7 @@ impl Calendar {
     pub const KIND: Kind = Kind::Calendar;
 
     /// Every member, in id order.
-    pub const ALL: [Calendar; 7] = [
+    pub const ALL: [Calendar; 8] = [
         Calendar::Gregorian,
         Calendar::Julian,
         Calendar::Mixed,
@@ -54,6 +57,7 @@ impl Calendar {
         Calendar::BikramSambat,
         Calendar::IndianLunisolar,
         Calendar::IndianNational,
+        Calendar::HijriTabular,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -67,6 +71,7 @@ impl Calendar {
             Calendar::BikramSambat => "BIKRAM_SAMBAT",
             Calendar::IndianLunisolar => "INDIAN_LUNISOLAR",
             Calendar::IndianNational => "INDIAN_NATIONAL",
+            Calendar::HijriTabular => "HIJRI_TABULAR",
         }
     }
 
@@ -81,6 +86,7 @@ impl Calendar {
             Calendar::BikramSambat => "calendar.BIKRAM_SAMBAT",
             Calendar::IndianLunisolar => "calendar.INDIAN_LUNISOLAR",
             Calendar::IndianNational => "calendar.INDIAN_NATIONAL",
+            Calendar::HijriTabular => "calendar.HIJRI_TABULAR",
         }
     }
 
@@ -95,6 +101,7 @@ impl Calendar {
             Calendar::BikramSambat => "Bikram Sambat",
             Calendar::IndianLunisolar => "Indian Lunisolar",
             Calendar::IndianNational => "Indian National: the Saka-era civil calendar of 1957",
+            Calendar::HijriTabular => "Hijri Tabular: the arithmetic Islamic calendar of the civil epoch",
         }
     }
 
@@ -109,6 +116,7 @@ impl Calendar {
             Calendar::BikramSambat => None,
             Calendar::IndianLunisolar => None,
             Calendar::IndianNational => None,
+            Calendar::HijriTabular => None,
         }
     }
 
@@ -123,6 +131,7 @@ impl Calendar {
             Calendar::BikramSambat => Mark::Verified,
             Calendar::IndianLunisolar => Mark::Verified,
             Calendar::IndianNational => Mark::Verified,
+            Calendar::HijriTabular => Mark::Verified,
         }
     }
 
@@ -137,6 +146,7 @@ impl Calendar {
             Calendar::BikramSambat => false,
             Calendar::IndianLunisolar => false,
             Calendar::IndianNational => false,
+            Calendar::HijriTabular => false,
         }
     }
 
@@ -151,6 +161,7 @@ impl Calendar {
             Calendar::BikramSambat => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
             Calendar::IndianLunisolar => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
             Calendar::IndianNational => &[Source { text: "Report of the Calendar Reform Committee, 1955, part C", reference: "docs/calendars/indian-national.md" }],
+            Calendar::HijriTabular => &[Source { text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7", reference: "docs/calendars/hijri.md" }],
         }
     }
 
@@ -165,6 +176,7 @@ impl Calendar {
             Calendar::BikramSambat => &[],
             Calendar::IndianLunisolar => &[],
             Calendar::IndianNational => &[],
+            Calendar::HijriTabular => &[],
         }
     }
 
@@ -197,6 +209,7 @@ impl Calendar {
             4 => Some(Calendar::BikramSambat),
             5 => Some(Calendar::IndianLunisolar),
             6 => Some(Calendar::IndianNational),
+            7 => Some(Calendar::HijriTabular),
             _ => None,
         }
     }

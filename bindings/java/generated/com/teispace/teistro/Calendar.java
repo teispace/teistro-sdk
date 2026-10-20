@@ -44,6 +44,11 @@ public enum Calendar implements Catalogued {
      */
     INDIAN_NATIONAL(6, "INDIAN_NATIONAL"),
 
+    /**
+     * Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
+     */
+    HIJRI_TABULAR(7, "HIJRI_TABULAR"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

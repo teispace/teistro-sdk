@@ -212,6 +212,12 @@ public final class BindingTest {
                 same(1869, saka.year(), "Shravana 24, 1869 (Saka)");
                 same(5, saka.month(), "Shravana");
                 same(24, saka.day(), "the 24th");
+                CalendarDate march = new CalendarDate(Calendar.GREGORIAN, null, 2025, 0, 3, 1,
+                        Resolution.DEFINED, 0, 0);
+                CalendarDate ramadan = calendar.convert(march, Calendar.HIJRI_TABULAR);
+                same(1446, ramadan.year(), "1 Ramadan 1446 AH");
+                same(9, ramadan.month(), "Ramadan");
+                same(1, ramadan.day(), "its first day");
                 check(calendar.isLeap(Calendar.GREGORIAN, 2024), "2024 is a leap year");
                 check(!calendar.isLeap(Calendar.GREGORIAN, 2100), "2100 is not");
                 same(28, calendar.monthLength(Calendar.GREGORIAN, 2026, 2), "February 2026");

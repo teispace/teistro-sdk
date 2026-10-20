@@ -297,6 +297,115 @@ pub mod sdk {
 
         }
 
+        /// The `HIJRI_TABULAR` group.
+        pub mod hijri_tabular {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.HIJRI_TABULAR.date.full`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `weekdayName` parameter.
+                    pub weekday_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.HIJRI_TABULAR.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("weekdayName", crate::Value::Str(self.weekday_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.HIJRI_TABULAR.date.long`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.HIJRI_TABULAR.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.HIJRI_TABULAR.date.numeric`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.HIJRI_TABULAR.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The message `sdk.calendar.HIJRI_TABULAR.monthName`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthName {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthName {
+                const KEY: &'static str = "sdk.calendar.HIJRI_TABULAR.monthName";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.HIJRI_TABULAR.monthShort`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthShort {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthShort {
+                const KEY: &'static str = "sdk.calendar.HIJRI_TABULAR.monthShort";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+        }
+
         /// The `INDIAN_NATIONAL` group.
         pub mod indian_national {
             /// The `date` group.

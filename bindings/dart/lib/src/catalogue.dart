@@ -2776,6 +2776,8 @@ enum Calendar implements KeyOf<Calendar> {
   indianLunisolar(5, 'INDIAN_LUNISOLAR'),
   /// Indian National: the Saka-era civil calendar of 1957
   indianNational(6, 'INDIAN_NATIONAL'),
+  /// Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
+  hijriTabular(7, 'HIJRI_TABULAR'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.
@@ -2831,6 +2833,8 @@ enum Era implements KeyOf<Era> {
   commonEra(7, 'COMMON_ERA'),
   /// Before the common era; year 1 BCE is astronomical year 0
   beforeCommonEra(8, 'BEFORE_COMMON_ERA'),
+  /// Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0
+  hijri(9, 'HIJRI'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

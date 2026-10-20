@@ -57,6 +57,15 @@
    "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} Saka"
   }
  },
+ "HIJRI_TABULAR": {
+  "monthName": ".input {$month :integer} .match $month 1 {{Muharram}} 2 {{Safar}} 3 {{Rabiʻ I}} 4 {{Rabiʻ II}} 5 {{Jumada I}} 6 {{Jumada II}} 7 {{Rajab}} 8 {{Shaʻban}} 9 {{Ramadan}} 10 {{Shawwal}} 11 {{Dhuʻl-Qiʻdah}} 12 {{Dhuʻl-Hijjah}} * {{{$month}}}",
+  "monthShort": ".input {$month :integer} .match $month 1 {{Muh.}} 2 {{Saf.}} 3 {{Rab. I}} 4 {{Rab. II}} 5 {{Jum. I}} 6 {{Jum. II}} 7 {{Raj.}} 8 {{Sha.}} 9 {{Ram.}} 10 {{Shaw.}} 11 {{Dhuʻl-Q.}} 12 {{Dhuʻl-H.}} * {{{$month}}}",
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} AH",
+   "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} AH",
+   "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} AH"
+  }
+ },
  "time": {
   "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
   "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",

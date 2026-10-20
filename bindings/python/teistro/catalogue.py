@@ -2275,6 +2275,9 @@ class Calendar(Catalogued):
     INDIAN_NATIONAL = 6
     """Indian National: the Saka-era civil calendar of 1957"""
 
+    HIJRI_TABULAR = 7
+    """Hijri Tabular: the arithmetic Islamic calendar of the civil epoch"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -2310,6 +2313,9 @@ class Era(Catalogued):
 
     BEFORE_COMMON_ERA = 8
     """Before the common era; year 1 BCE is astronomical year 0"""
+
+    HIJRI = 9
+    """Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -6234,6 +6240,7 @@ _KEYS: dict[str, dict[int, str]] = {
         4: "BIKRAM_SAMBAT",
         5: "INDIAN_LUNISOLAR",
         6: "INDIAN_NATIONAL",
+        7: "HIJRI_TABULAR",
         -1: "UNKNOWN",
     },
     "Era": {
@@ -6246,6 +6253,7 @@ _KEYS: dict[str, dict[int, str]] = {
         6: "BENGALI",
         7: "COMMON_ERA",
         8: "BEFORE_COMMON_ERA",
+        9: "HIJRI",
         -1: "UNKNOWN",
     },
     "BodyClass": {

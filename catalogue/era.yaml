@@ -66,3 +66,10 @@ members:
       - text: "calendar-gregorian-julian"
         ref: "docs/03-design/calendar-gregorian-julian.md"
     mark: V
+  - key: HIJRI
+    id: 9
+    doc: "Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0"
+    sources:
+      - text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7"
+        ref: "docs/calendars/hijri.md"
+    mark: V

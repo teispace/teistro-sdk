@@ -18,6 +18,7 @@ pub mod bikram_sambat;
 pub mod date;
 pub mod fixed;
 pub mod gregorian;
+pub mod hijri;
 pub mod ical;
 pub mod indian_national;
 pub mod iso_week;
