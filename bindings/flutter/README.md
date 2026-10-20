@@ -67,6 +67,28 @@ Sun's place at J2000. The emulator and simulator also compute the SDK's
 whole scenario, which must match Linux x86-64's value for value, as every
 other platform's does.
 
+## Without the built-in ephemeris
+
+An app that plugs a real engine in, such as Teimeris through
+`teistro_ephemeris_teimeris_flutter`, never opens the built-in ephemeris.
+It can bundle the library built without it:
+
+```yaml
+hooks:
+  user_defines:
+    teistro_flutter:
+      builtin: false
+```
+
+The release ships that slice beside each default one, under the platform's
+name with `-no-builtin` after it, with its own digest. The hook checks it
+the same way and caches it apart. Everything else in the library is the
+same, so a context asking for `Ephemeris.builtin` is refused, and one over
+a plugged-in engine answers as before. What it saves on each platform is
+measured in `docs/05-testing/mobile-sizes-measured.md`. Leave it out, or
+write `true`, for the default. A library named with `library` (below) is
+bundled as it is, whatever this says.
+
 ## Offline builds and your own library
 
 Set these under `hooks: user_defines: teistro_flutter:` in the app's (or

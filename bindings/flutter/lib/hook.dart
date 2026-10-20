@@ -7,14 +7,17 @@ export 'src/bundle.dart'
     show
         Release,
         androidFloor,
+        builtinDefine,
         bundlePrebuilt,
         iosFloor,
         libraryDefine,
         mobilePlatforms,
         namedLibrary,
+        omitsBuiltin,
         platformFor,
         prebuiltDirDefine,
         processorOf,
         refuseFloor,
         refuseNamed,
-        slice;
+        slice,
+        withoutBuiltinSuffix;

@@ -77,6 +77,19 @@ fn auditable_version(near: &Path) -> String {
 /// Writes the bill of materials for `package` built for `triple` to
 /// `path`.
 pub(crate) fn write(root: &Path, triple: &str, package: &str, path: &Path) -> Result<(), String> {
+    write_with(root, triple, package, &[], path)
+}
+
+/// As [`write`], for the package built with `features` (Cargo's own
+/// arguments, `--no-default-features` and `--features`), so a slice built
+/// without a feature lists none of the crates only that feature brings.
+pub(crate) fn write_with(
+    root: &Path,
+    triple: &str,
+    package: &str,
+    features: &[&str],
+    path: &Path,
+) -> Result<(), String> {
     let output = Command::new(cargo())
         .args([
             "tree",
@@ -93,6 +106,7 @@ pub(crate) fn write(root: &Path, triple: &str, package: &str, path: &Path) -> Re
             "--format",
             "{p}|{l}",
         ])
+        .args(features)
         .current_dir(root)
         .output()
         .map_err(|err| format!("cargo tree did not run: {err}"))?;

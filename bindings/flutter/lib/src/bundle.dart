@@ -39,6 +39,21 @@ const String prebuiltDirDefine = 'prebuilt_dir';
 /// own path. See [namedLibrary].
 const String libraryDefine = 'library';
 
+/// The user define choosing the SDK's library **without the built-in
+/// ephemeris**: `builtin: false`, for an app that plugs a real engine in
+/// (`teistro_ephemeris_teimeris_flutter`) and so never opens the built-in.
+/// The release ships that slice beside each default one, and
+/// `docs/05-testing/mobile-sizes-measured.md` says what it saves per
+/// platform. Absent or `true`, the default slice is bundled. A library the
+/// app names with [libraryDefine] is bundled as it is either way.
+const String builtinDefine = 'builtin';
+
+/// What follows a platform's name in the release's name for the slice
+/// without the built-in (`android-arm64-no-builtin`), in its archive and
+/// in the digest table. `xtask/src/mobile.rs`'s `LEAN` is the same word,
+/// held together by the test that holds the floors.
+const String withoutBuiltinSuffix = 'no-builtin';
+
 /// Every release platform [platformFor] can name, the keys a per-platform
 /// [libraryDefine] map may hold.
 const List<String> mobilePlatforms = [
@@ -63,6 +78,7 @@ final class Release {
     required this.base,
     required this.digests,
     this.fetch,
+    this.withoutBuiltin = false,
   });
 
   /// The SDK's library, from the release this package was cut from.
@@ -71,6 +87,7 @@ final class Release {
     version: prebuiltVersion,
     base: prebuiltBase,
     digests: prebuiltDigests,
+    withoutBuiltin: true,
   );
 
   /// The library's name without its prefix and suffix.
@@ -88,6 +105,11 @@ final class Release {
   /// How an archive is fetched; the release over HTTP when null, through
   /// the environment's proxy.
   final Future<List<int>> Function(Uri uri)? fetch;
+
+  /// Whether the release ships a slice without the built-in beside each
+  /// default one, which [builtinDefine] chooses. The SDK's does; an engine
+  /// adapter's library has no built-in to leave out.
+  final bool withoutBuiltin;
 
   /// The file a platform's library is, the same for every ABI and SDK of
   /// one operating system, as Flutter requires.
@@ -187,26 +209,28 @@ Future<void> bundlePrebuilt(
   );
   if (platform == null) return;
   refuseFloor(code);
+  final lean = omitsBuiltin(input.userDefines, release);
   final named = namedLibrary(input.userDefines, platform);
   final Uri file;
   if (named != null) {
     refuseNamed(named, platform);
     stderr.writeln(
-      'teistro_flutter: bundling ${named.toFilePath()} for $platform '
+      '${input.packageName}: bundling ${named.toFilePath()} for $platform '
       'unverified, as `$libraryDefine` asks',
     );
     output.dependencies.add(named);
     file = named;
   } else {
     final directory = input.userDefines.path(prebuiltDirDefine);
+    final name = lean ? '$platform-$withoutBuiltinSuffix' : platform;
     file = await slice(
       release,
-      platform,
+      name,
       cache: input.outputDirectoryShared,
       from: directory,
     );
     if (directory != null) {
-      output.dependencies.add(_archiveIn(directory, release, platform));
+      output.dependencies.add(_archiveIn(directory, release, name));
     }
   }
   output.assets.code.add(
@@ -217,6 +241,36 @@ Future<void> bundlePrebuilt(
       file: file,
     ),
   );
+}
+
+/// Whether the app asks for [release]'s slice without the built-in, by
+/// [builtinDefine]: `false` asks, absent or `true` does not.
+///
+/// Anything but a boolean is refused, and so is the define on a release
+/// that ships no such slice (an adapter's own hook), since an app that
+/// wrote it there meant the SDK's and would otherwise bundle the default
+/// without a word.
+bool omitsBuiltin(HookInputUserDefines defines, Release release) {
+  final value = defines[builtinDefine];
+  if (value == null) return false;
+  if (value is! bool) {
+    throw BuildError(
+      message:
+          'the `$builtinDefine` user define is ${value.runtimeType} '
+          '`$value`; it takes `true` or `false` '
+          '(`$builtinDefine: false` bundles the library without the '
+          'built-in ephemeris).',
+    );
+  }
+  if (!release.withoutBuiltin) {
+    throw BuildError(
+      message:
+          'the `$builtinDefine` user define chooses the SDK\'s library, and '
+          '${release.stem} has no built-in to leave out. Write it under '
+          '`hooks: user_defines: teistro_flutter:`.',
+    );
+  }
+  return !value;
 }
 
 /// The library the app names for [platform] under [libraryDefine], or

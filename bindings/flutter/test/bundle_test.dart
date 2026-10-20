@@ -18,12 +18,14 @@ final List<int> _library = List<int>.generate(4096, (i) => (i * 31) & 0xff);
 Release _release({
   Map<String, String>? digests,
   Future<List<int>> Function(Uri uri)? fetch,
+  bool withoutBuiltin = false,
 }) => Release(
   stem: 'teistro_ffi',
   version: '9.9.9',
   base: 'https://example.invalid/releases/download',
   digests: digests ?? {'android-arm64': sha256Hex(_library)},
   fetch: fetch,
+  withoutBuiltin: withoutBuiltin,
 );
 
 Matcher _refused(String words) => throwsA(
@@ -254,6 +256,90 @@ void main() {
       );
       expect(() => refuseFloor(code), returnsNormally, reason: '$os');
     }
+  });
+
+  group('the slice without the built-in', () {
+    late Uri pubspec;
+    setUp(() => pubspec = scratch.uri.resolve('app/pubspec.yaml'));
+
+    /// The user defines an Android arm64 build reads, with [defines]
+    /// declared in the pubspec at [pubspec].
+    Future<HookInputUserDefines> read(Map<String, Object?> defines) async {
+      late HookInputUserDefines read;
+      await testCodeBuildHook(
+        targetOS: OS.android,
+        targetArchitecture: Architecture.arm64,
+        userDefines: PackageUserDefines(
+          workspacePubspec: PackageUserDefinesSource(
+            defines: defines,
+            basePath: pubspec,
+          ),
+        ),
+        mainMethod: (arguments) => build(arguments, (input, _) async {
+          read = input.userDefines;
+        }),
+        check: (_, _) {},
+      );
+      return read;
+    }
+
+    test('is asked for by `false` alone', () async {
+      final sdk = _release(withoutBuiltin: true);
+      expect(omitsBuiltin(await read({}), sdk), isFalse);
+      expect(omitsBuiltin(await read({builtinDefine: true}), sdk), isFalse);
+      expect(omitsBuiltin(await read({builtinDefine: false}), sdk), isTrue);
+    });
+
+    test('is refused as anything but a boolean', () async {
+      final defines = await read({builtinDefine: 'false'});
+      expect(
+        () => omitsBuiltin(defines, _release(withoutBuiltin: true)),
+        _refused('it takes `true` or `false`'),
+      );
+    });
+
+    test('is refused on a release with no built-in to leave out', () async {
+      final defines = await read({builtinDefine: false});
+      expect(
+        () => omitsBuiltin(defines, _release()),
+        _refused('Write it under `hooks: user_defines: teistro_flutter:`'),
+      );
+      expect(Release.teistro.withoutBuiltin, isTrue);
+    });
+
+    test("is the release's slice by its own name, digest and cache", () async {
+      final archives = Directory('${scratch.path}/archives')..createSync();
+      File(
+        '${archives.path}/libteistro_ffi-9.9.9-android-arm64-$withoutBuiltinSuffix.so.gz',
+      ).writeAsBytesSync(gzip.encode(_library));
+      final release = _release(
+        digests: {'android-arm64-$withoutBuiltinSuffix': sha256Hex(_library)},
+        withoutBuiltin: true,
+      );
+      await testCodeBuildHook(
+        targetOS: OS.android,
+        targetArchitecture: Architecture.arm64,
+        userDefines: PackageUserDefines(
+          workspacePubspec: PackageUserDefinesSource(
+            defines: {builtinDefine: false, prebuiltDirDefine: '../archives'},
+            basePath: pubspec,
+          ),
+        ),
+        mainMethod: (arguments) => build(
+          arguments,
+          (input, output) => bundlePrebuilt(input, output, release: release),
+        ),
+        check: (_, output) {
+          final file = output.assets.code.single.file!;
+          expect(file.pathSegments.last, 'libteistro_ffi.so');
+          expect(
+            file.path,
+            contains('/9.9.9/android-arm64-$withoutBuiltinSuffix/'),
+          );
+          expect(File.fromUri(file).readAsBytesSync(), _library);
+        },
+      );
+    });
   });
 
   group('a library the app names', () {

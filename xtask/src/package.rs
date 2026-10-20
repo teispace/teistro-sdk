@@ -790,7 +790,17 @@ fn checksum_list(merged: &Value) -> String {
         .iter()
         .filter_map(|key| merged[key].as_object())
     {
-        for platform in platforms.values() {
+        // A mobile slice's variants (the one without the built-in) are
+        // release assets like the slice itself.
+        let slices = platforms.values().flat_map(|platform| {
+            std::iter::once(platform).chain(
+                platform["variants"]
+                    .as_object()
+                    .into_iter()
+                    .flat_map(serde_json::Map::values),
+            )
+        });
+        for platform in slices {
             let files = ["archives", "sboms"]
                 .into_iter()
                 .flat_map(|list| platform[list].as_array().into_iter().flatten());
@@ -1136,6 +1146,14 @@ fn digest_rows(merged: &Value, keys: &[&str], quote: char) -> Vec<String> {
                 "  {quote}{name}{quote}: {quote}{}{quote},",
                 platform["library"]["sha256"].as_str().unwrap_or_default()
             ));
+            // A variant by the row's name and its own, as the bundler
+            // looks it up (`android-arm64-no-builtin`).
+            for (variant, slice) in platform["variants"].as_object().into_iter().flatten() {
+                rows.push(format!(
+                    "  {quote}{name}-{variant}{quote}: {quote}{}{quote},",
+                    slice["library"]["sha256"].as_str().unwrap_or_default()
+                ));
+            }
         }
     }
     rows.sort();
@@ -1307,13 +1325,23 @@ mod tests {
                 "android-arm64": {
                     "library": { "sha256": "22" },
                     "archives": [ { "file": "m.gz", "sha256": "bb" } ],
+                    "variants": {
+                        "no-builtin": {
+                            "library": { "sha256": "33" },
+                            "archives": [ { "file": "n.gz", "sha256": "cc" } ],
+                        },
+                    },
                 },
             },
         });
-        assert_eq!(checksum_list(&merged), "aa  l.gz\nbb  m.gz\n");
+        assert_eq!(checksum_list(&merged), "aa  l.gz\nbb  m.gz\ncc  n.gz\n");
         assert_eq!(
             digest_rows(&merged, &["platforms", "mobile"], '\''),
-            ["  'android-arm64': '22',", "  'linux-x64': '11',"]
+            [
+                "  'android-arm64': '22',",
+                "  'android-arm64-no-builtin': '33',",
+                "  'linux-x64': '11',"
+            ]
         );
         // A wheel is built for every entry Python's table names, and no
         // wheel carries an Android library.

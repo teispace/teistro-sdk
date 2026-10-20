@@ -74,6 +74,17 @@ pub(crate) struct Mobile {
 /// default `minSdkVersion`, and above Rust's own minimum for each target.
 pub(crate) const ANDROID_API: u32 = 24;
 
+/// The name of the slice built **without the built-in ephemeris**, beside
+/// each row's default: what an app that plugs a real engine in bundles
+/// (`hooks: user_defines: teistro_flutter: builtin: false`). It is the
+/// row's name with this after it, in its archive's name and in the digest
+/// table (`android-arm64-no-builtin`).
+pub(crate) const LEAN: &str = "no-builtin";
+
+/// Cargo's arguments for the [`LEAN`] slice: every module family, and no
+/// ephemeris of the library's own.
+pub(crate) const LEAN_FEATURES: [&str; 3] = ["--no-default-features", "--features", "full"];
+
 /// The iOS deployment target every iOS slice is built for: below the
 /// version Flutter states for an app (15), so every Flutter app accepts
 /// it.
@@ -205,13 +216,22 @@ const ANDROID_NEEDED: [&str; 4] = ["libc.so", "libm.so", "libdl.so", "liblog.so"
 pub(crate) fn build(root: &Path, row: Mobile) -> i32 {
     let version = release::version(root);
     let dist = root.join(DIST);
-    let Ok(built) = compile(root, row) else {
+    let Ok(built) = compile(root, row, &[]) else {
         return 1;
     };
-    match stage(root, &dist, row, &version, &built) {
+    if let Err(err) = stage(root, &dist, row, &version, &built) {
+        println!("FAIL  {} could not be packaged: {err}", row.name);
+        return 1;
+    }
+    // Built second, over the first in Cargo's target directory: the
+    // default slice is already staged, its digest taken from the file.
+    let Ok(built) = compile(root, row, &LEAN_FEATURES) else {
+        return 1;
+    };
+    match stage_lean(root, &dist, row, &version, &built) {
         Ok(()) => {
             println!(
-                "ok    {} {version} for {}: the library, its bill and its manifest in {}",
+                "ok    {} {version} for {}: the library, the one without the built-in, their bills and the manifest in {}",
                 LIBRARY_STEM,
                 row.name,
                 crate::rel(root, &dist)
@@ -228,7 +248,28 @@ pub(crate) fn build(root: &Path, row: Mobile) -> i32 {
 /// Builds the library for the row through `cargo auditable`, with the
 /// linker and the link arguments its operating system needs, and answers
 /// where Cargo wrote it.
-fn compile(root: &Path, row: Mobile) -> Result<PathBuf, ()> {
+fn compile(root: &Path, row: Mobile, features: &[&str]) -> Result<PathBuf, ()> {
+    let mut args = vec!["-p", "teistro-ffi"];
+    args.extend_from_slice(features);
+    let mut command = cross(root, row, root, &args)?;
+    step(
+        &mut command,
+        "",
+        &format!(
+            "the library did not build for {} (`rustup target add {}`; every row builds \
+             through cargo-auditable)",
+            row.triple, row.triple
+        ),
+    )?;
+    Ok(root.join("target").join(row.triple).join("release"))
+}
+
+/// The `cargo auditable build --release` of a crate under `dir` for the
+/// row, with `args` after the target: the linker and link arguments its
+/// operating system needs, and on Android the NDK's clang and archiver as
+/// the C compiler too, for a crate that compiles C of its own (the
+/// Teimeris adapter, `crate::mobile_sizes`).
+pub(crate) fn cross(root: &Path, row: Mobile, dir: &Path, args: &[&str]) -> Result<Command, ()> {
     let mut command = Command::new(cargo());
     command
         .args([
@@ -238,10 +279,9 @@ fn compile(root: &Path, row: Mobile) -> Result<PathBuf, ()> {
             "--quiet",
             "--target",
             row.triple,
-            "-p",
-            "teistro-ffi",
         ])
-        .current_dir(root);
+        .args(args)
+        .current_dir(dir);
     let flags_var = format!(
         "CARGO_TARGET_{}_RUSTFLAGS",
         row.triple.to_ascii_uppercase().replace('-', "_")
@@ -249,6 +289,11 @@ fn compile(root: &Path, row: Mobile) -> Result<PathBuf, ()> {
     match row.os {
         Os::Android => {
             let linker = ndk_linker(root, row).map_err(|why| println!("FAIL  {why}"))?;
+            let cc_suffix = row.triple.replace('-', "_");
+            if let Some(bin) = linker.parent() {
+                command.env(format!("AR_{cc_suffix}"), bin.join("llvm-ar"));
+            }
+            command.env(format!("CC_{cc_suffix}"), &linker);
             command.env(
                 format!(
                     "CARGO_TARGET_{}_LINKER",
@@ -272,16 +317,7 @@ fn compile(root: &Path, row: Mobile) -> Result<PathBuf, ()> {
             command.env(flags_var, "-C link-arg=-Wl,-headerpad_max_install_names");
         }
     }
-    step(
-        &mut command,
-        "",
-        &format!(
-            "the library did not build for {} (`rustup target add {}`; every row builds \
-             through cargo-auditable)",
-            row.triple, row.triple
-        ),
-    )?;
-    Ok(root.join("target").join(row.triple).join("release"))
+    Ok(command)
 }
 
 /// The NDK's clang for the row at [`ANDROID_API`], from the pinned NDK: in
@@ -323,7 +359,7 @@ fn pinned_ndk(candidates: impl Iterator<Item = PathBuf>, pinned: &str) -> Result
     ))
 }
 
-fn ndk_linker(root: &Path, row: Mobile) -> Result<PathBuf, String> {
+pub(crate) fn ndk_linker(root: &Path, row: Mobile) -> Result<PathBuf, String> {
     let pinned = fs::read_to_string(root.join(NDK_VERSION))
         .map_err(|err| format!("{NDK_VERSION}: {err}"))?
         .trim()
@@ -399,6 +435,49 @@ fn stage(root: &Path, dist: &Path, row: Mobile, version: &str, built: &Path) -> 
         dist.join(manifest_name(version, row.name)),
         format!("{}\n", to_json(&manifest)),
     )
+}
+
+/// Checks the [`LEAN`] library and adds it to the row's manifest under
+/// `variants`, with its gzipped slice and its own bill, read with the
+/// features it was built with.
+fn stage_lean(
+    root: &Path,
+    dist: &Path,
+    row: Mobile,
+    version: &str,
+    built: &Path,
+) -> io::Result<()> {
+    let library = built.join(row.library());
+    let bytes = fs::read(&library)
+        .map_err(|err| io::Error::other(format!("{}: {err}", library.display())))?;
+    check(row, &bytes).map_err(|why| io::Error::other(format!("{}: {why}", library.display())))?;
+    sbom::embedded(&[&library]).map_err(io::Error::other)?;
+    let name = format!("{}-{LEAN}", row.name);
+    let bill = dist.join(format!("teistro-{version}-{name}-library.cdx.json"));
+    sbom::write_with(root, row.triple, "teistro-ffi", &LEAN_FEATURES, &bill)
+        .map_err(io::Error::other)?;
+
+    let file = row.library();
+    let (stem, extension) = file.rsplit_once('.').unwrap_or((file.as_str(), "so"));
+    let archive = format!("{stem}-{version}-{name}.{extension}.gz");
+    let gzipped = dist.join(&archive);
+    let mut encoder = GzEncoder::new(File::create(&gzipped)?, Compression::best());
+    io::copy(&mut bytes.as_slice(), &mut encoder)?;
+    encoder.finish()?;
+
+    let path = dist.join(manifest_name(version, row.name));
+    let mut manifest: Value = serde_json::from_str(&fs::read_to_string(&path)?)
+        .map_err(|err| io::Error::other(format!("{}: {err}", path.display())))?;
+    let variant = json!({
+        "library": entry(&library, &file)?,
+        "archives": [entry(&gzipped, &archive)?],
+        "sboms": [entry(&bill, &bill.file_name().map_or_else(String::new, |n| n.to_string_lossy().into_owned()))?],
+    });
+    manifest
+        .as_object_mut()
+        .ok_or_else(|| io::Error::other(format!("{} is not an object", path.display())))?
+        .insert(String::from("variants"), json!({ LEAN: variant }));
+    fs::write(&path, format!("{}\n", to_json(&manifest)))
 }
 
 /// What the floor check holds the row to, as a sentence.
@@ -766,6 +845,7 @@ mod tests {
         for line in [
             format!("const int androidFloor = {ANDROID_API};"),
             format!("const int iosFloor = {};", IOS_FLOOR.0),
+            format!("const String withoutBuiltinSuffix = '{LEAN}';"),
         ] {
             assert!(hook.contains(&line), "bundle.dart must say `{line}`");
         }
