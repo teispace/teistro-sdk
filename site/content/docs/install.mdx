@@ -250,7 +250,8 @@ adapter's own package, or a **provider you write yourself** — a
 JavaScript, Dart, Python or Java object the SDK calls into.
 
 ```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
-import { Context } from '@teistro/sdk';
+import { Context, nepalOfficial } from '@teistro/sdk';
+import { teimerisWeb, type TeimerisWasm } from '@teistro/ephemeris-teimeris/web';
 import teimeris, { engine, binary, platformPackage, type TmDatetime, type TmPosition, type TmStar } from '@teistro/ephemeris-teimeris';
 
 // The descriptor is what an `ephemeris` chain takes.

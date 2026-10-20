@@ -1777,13 +1777,17 @@ for (const [name, rules] of [
   ['amended', ['DHARMASINDHU', ownRule]],
   ['nepal', ['NEPAL', ownFollowing]],
 ]) {
-  const { festivals } = geo.almanac.of({
+  // The shipped pack is asked of the lean call, the others of the
+  // almanac's: the two answer alike, so the report cannot tell.
+  const asked = {
     from: gregorian(2024, 10, 10),
     to: gregorian(2024, 11, 3),
     place,
     utcOffsetSeconds: 20700,
     festivals: { rules },
-  });
+  };
+  const festivals =
+    name === 'shipped' ? geo.almanac.festivals(asked) : geo.almanac.of(asked).festivals;
   const key = (what) => `festivals-${name}${what}`;
   put(key('-counts'), `${festivals.observances.length} ${festivals.unjudged.length}`);
   put(key('-hash'), festivals.provenance.contentHash);
@@ -2132,6 +2136,7 @@ for (const [path, member] of [
   ['chart.rashifal', shape.chart.rashifal],
   ['chart.rashifal_many', shape.chart.rashifalMany],
   ['almanac.of', shape.almanac.of],
+  ['almanac.festivals', shape.almanac.festivals],
   ['almanac.day', shape.almanac.day],
   ['almanac.pakshi', shape.almanac.pakshi],
   ['research.counts', shape.research.counts],

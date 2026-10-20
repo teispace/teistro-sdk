@@ -284,7 +284,7 @@ fn is_elision(line: &str) -> bool {
 /// specifier they write, and the one a guide shows.
 ///
 /// Listed, so that the one rewrite the gate allows is in plain sight.
-const IMPORTS: [(&str, &str, &str); 3] = [
+const IMPORTS: [(&str, &str, &str); 4] = [
     ("bindings/node/", "'../lib/index.js'", "'@teistro/sdk'"),
     (
         "bindings/node/",
@@ -295,6 +295,11 @@ const IMPORTS: [(&str, &str, &str); 3] = [
         "adapters/ephemeris-teimeris/node/",
         "'../index.js'",
         "'@teistro/ephemeris-teimeris'",
+    ),
+    (
+        "adapters/ephemeris-teimeris/node/",
+        "'../web.js'",
+        "'@teistro/ephemeris-teimeris/web'",
     ),
 ];
 

@@ -2801,16 +2801,26 @@ void main() {
     ('amended', [FestivalPack.dharmasindhu, ownRule]),
     ('nepal', [FestivalPack.nepal, ownFollowing]),
   ]) {
+    // The shipped pack is asked of the lean call, the others of the
+    // almanac's: the two answer alike, so the report cannot tell.
     final festivals =
-        geo.almanac
-            .of(
+        name == 'shipped'
+            ? geo.almanac.festivals(
               from: Calendar.gregorian.date(2024, 10, 10),
               to: Calendar.gregorian.date(2024, 11, 3),
               place: place,
               utcOffsetSeconds: 20700,
               festivals: FestivalRequest(rules: rules),
             )
-            .festivals!;
+            : geo.almanac
+                .of(
+                  from: Calendar.gregorian.date(2024, 10, 10),
+                  to: Calendar.gregorian.date(2024, 11, 3),
+                  place: place,
+                  utcOffsetSeconds: 20700,
+                  festivals: FestivalRequest(rules: rules),
+                )
+                .festivals!;
     putFestivals('festivals-$name', festivals);
   }
 
@@ -3306,6 +3316,7 @@ void main() {
     ('chart.rashifal', ctx.chart.rashifal),
     ('chart.rashifal_many', ctx.chart.rashifalMany),
     ('almanac.of', ctx.almanac.of),
+    ('almanac.festivals', ctx.almanac.festivals),
     ('almanac.day', ctx.almanac.day),
     ('almanac.pakshi', ctx.almanac.pakshi),
     ('research.counts', ctx.research.counts),

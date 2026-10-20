@@ -1415,6 +1415,7 @@ public final class ParityRunner {
             surface("chart.rashifal", () -> ctx.chart().rashifal(null));
             surface("chart.rashifal_many", () -> ctx.chart().rashifalMany(List.of(), null));
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
+            surface("almanac.festivals", () -> ctx.almanac().festivals(day, day, place, 0, null));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
             surface("research.counts", () -> ctx.research().counts(List.of(), null, new Design(List.of(), null), null));
@@ -2708,9 +2709,14 @@ public final class ParityRunner {
         packs.put("shipped", map("rules", "DHARMASINDHU"));
         packs.put("amended", map("rules", List.<Object>of("DHARMASINDHU", ownRule)));
         packs.put("nepal", map("rules", List.<Object>of("NEPAL", ownFollowing)));
+        // The shipped pack is asked of the lean call, the others of the
+        // almanac's: the two answer alike, so the report cannot tell.
         for (Map.Entry<String, Map<String, Object>> pack : packs.entrySet()) {
-            FestivalAnswer festivals = geo.almanac().of(date(2024, 10, 10), date(2024, 11, 3), place, 20700,
-                    null, FestivalRequest.of(pack.getValue()), false, false, false).festivals().orElseThrow();
+            FestivalAnswer festivals = pack.getKey().equals("shipped")
+                    ? geo.almanac().festivals(date(2024, 10, 10), date(2024, 11, 3), place, 20700,
+                            FestivalRequest.of(pack.getValue()))
+                    : geo.almanac().of(date(2024, 10, 10), date(2024, 11, 3), place, 20700,
+                            null, FestivalRequest.of(pack.getValue()), false, false, false).festivals().orElseThrow();
             putFestivals("festivals-" + pack.getKey(), festivals);
         }
 

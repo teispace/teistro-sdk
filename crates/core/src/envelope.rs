@@ -634,39 +634,29 @@ impl Provenance {
     /// follow from the settings and the provider.
     #[must_use]
     pub fn answer_key(&self) -> Hash {
-        #[derive(serde::Serialize)]
-        struct Engine<'a> {
-            name: &'a str,
-            version: &'a str,
-            data_version: &'a str,
-            data_hashes: &'a [(String, Hash)],
-            tier: Option<&'a str>,
-        }
-        #[derive(serde::Serialize)]
-        struct Key<'a> {
-            sdk_version: &'a Version,
-            calculation_version: u32,
-            catalogue_version: u32,
-            settings_hash: Hash,
-            input_hash: Hash,
-            provider: Engine<'a>,
-            packs: &'a [PackStamp],
-        }
-        content_hash(&Key {
-            sdk_version: &self.sdk_version,
-            calculation_version: self.calculation_version,
-            catalogue_version: self.catalogue_version,
-            settings_hash: self.settings_hash,
-            input_hash: self.input_hash,
-            provider: Engine {
-                name: &self.provider.name,
-                version: &self.provider.version,
-                data_version: &self.provider.data_version,
-                data_hashes: &self.provider.data_hashes,
-                tier: self.provider.tier.as_deref(),
+        let ProviderStamp {
+            name,
+            version,
+            data_version,
+            data_hashes,
+            tier,
+            ..
+        } = &self.provider;
+        content_hash(&serde_json::json!({
+            "sdk_version": self.sdk_version,
+            "calculation_version": self.calculation_version,
+            "catalogue_version": self.catalogue_version,
+            "settings_hash": self.settings_hash,
+            "input_hash": self.input_hash,
+            "provider": {
+                "name": name,
+                "version": version,
+                "data_version": data_version,
+                "data_hashes": data_hashes,
+                "tier": tier,
             },
-            packs: &self.packs,
-        })
+            "packs": self.packs,
+        }))
     }
 
     /// Records a convention.

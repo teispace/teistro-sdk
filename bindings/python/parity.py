@@ -2637,15 +2637,27 @@ def main() -> None:
             ("amended", {"rules": ["DHARMASINDHU", own_rule]}),
             ("nepal", {"rules": ["NEPAL", own_following]}),
         )
+        # The shipped pack is asked of the lean call, the others of the
+        # almanac's: the two answer alike, so the report cannot tell.
         for name, pack in packs:
-            festivals = geo.almanac.of(
-                from_date=date(Calendar.GREGORIAN, 2024, 10, 10),
-                to_date=date(Calendar.GREGORIAN, 2024, 11, 3),
-                place=place,
-                utc_offset_seconds=20700,
-                festivals=pack,
-            ).festivals
-            assert festivals is not None
+            if name == "shipped":
+                festivals = geo.almanac.festivals(
+                    from_date=date(Calendar.GREGORIAN, 2024, 10, 10),
+                    to_date=date(Calendar.GREGORIAN, 2024, 11, 3),
+                    place=place,
+                    utc_offset_seconds=20700,
+                    festivals=pack,
+                )
+            else:
+                asked = geo.almanac.of(
+                    from_date=date(Calendar.GREGORIAN, 2024, 10, 10),
+                    to_date=date(Calendar.GREGORIAN, 2024, 11, 3),
+                    place=place,
+                    utc_offset_seconds=20700,
+                    festivals=pack,
+                ).festivals
+                assert asked is not None
+                festivals = asked
             put_festivals(f"festivals-{name}", festivals)
 
         # The lunar years over 2024-03-20..04-20, which holds a Chaitra
@@ -2828,6 +2840,7 @@ def main() -> None:
         ("chart.rashifal", ctx.chart.rashifal),
         ("chart.rashifal_many", ctx.chart.rashifal_many),
         ("almanac.of", ctx.almanac.of),
+        ("almanac.festivals", ctx.almanac.festivals),
         ("almanac.day", ctx.almanac.day),
         ("almanac.pakshi", ctx.almanac.pakshi),
         ("research.counts", ctx.research.counts),
