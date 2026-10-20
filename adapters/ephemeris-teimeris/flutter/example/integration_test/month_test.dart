@@ -22,7 +22,11 @@ void main() {
     debugPrint('built-in ${hasBuiltin(teistro) ? 'bundled' : 'absent'}');
     final found = monthHashes(teistro);
     found.forEach(debugPrint);
-    expect(expected, isNotEmpty, reason: 'TEISTRO_EXPECTED names the desktop lines');
+    expect(
+      expected,
+      isNotEmpty,
+      reason: 'TEISTRO_EXPECTED names the desktop lines',
+    );
     expect(found, expected.split('|'));
   });
 }
