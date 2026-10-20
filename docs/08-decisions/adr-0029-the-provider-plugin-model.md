@@ -174,6 +174,59 @@ with more, every refusal is kept and reported together, because a chain
 that said only why its last entry failed would hide the one the caller
 actually wanted.
 
+### On a phone (2026-10-20)
+
+A Flutter app reaches Teimeris through the same loader, by two packages:
+`teistro_flutter` bundles the SDK's library and
+`teistro_ephemeris_teimeris_flutter` bundles the adapter. The adapter is
+built with Teimeris's modern data compiled in (`TM_EMBED_TIER=MODERN`) and
+opened with `{"data": "embedded"}`, so it needs no file on disk. Each
+embedded file's SHA-256 was taken when the engine was built, so nothing is
+hashed at start-up. An app on Teimeris bundles the SDK built **without**
+the built-in beside the adapter. What each of the three libraries weighs
+per platform, and the sum, is on `05-testing/mobile-sizes-measured.md`.
+
+**Loading on iOS.** The adapter ships as a dynamic library that Flutter's
+native-assets build wraps in a framework inside the app's `Frameworks`
+directory. It is signed with the app and opened from there by absolute
+path. Nothing is downloaded and no code arrives after review. The App
+Store's rule (App Review Guideline 2.5.2) is about code the app downloads
+or interprets later, not about a framework that ships in the signed
+bundle. Every Flutter plugin that ships native code through native assets
+works the same way, and so does the SDK's own library. What this repository
+can check, it checks: the slice's platform and deployment target, read
+back from the file (`xtask/src/mobile.rs`). It has not been through App
+Review. Saying it has would be a claim nothing here can hold, so the
+first release that ships it is where that is learnt.
+
+**A combined build, considered and not built.** The SDK's FFI library
+could link the adapter statically, giving an app one file to bundle and
+no plugin load on iOS. The maintainer declined it (2026-10-20), for these
+reasons:
+
+- **It makes the artefact non-Apache.** A library with Teimeris linked in
+  is an AGPL work, or one covered by the Teimeris Professional Licence. So
+  it could never be the public default, and it would be a second SDK
+  library on every platform: a second set of digests, a second release
+  matrix and a second size page. The one decision this section exists to
+  keep (AGPL never enters the SDK's own graph) would gain an exception
+  with its own build.
+- **What it would save is bounded, and has not been measured.** On
+  Android arm64 the stripped adapter is 3.9 MB, of which 2.05 MB is the
+  embedded data, which one file needs as much as two. One link could fold
+  away only what both libraries carry twice: Rust's standard library and
+  the few SDK crates the adapter links (`core`, `time`, `astro`,
+  `calendar`, `siddhanta` and the port). The sizes page has the measured
+  figure for each file.
+- **What it would spare is already done.** Opening the plugin costs one
+  `dlopen` and one ABI check (`app-speed-measured.md`'s `open` row).
+
+It can still be built for a licensee who asks, because nothing here
+prevents it: the adapter is an `rlib` too, and a crate depending on both
+`teistro-ffi` and the adapter, exporting the SDK's entry points with the
+adapter registered, is the whole of it. It belongs in a licensee's own
+build, not this repository's release.
+
 ## Alternatives considered
 
 **Link the engine into the SDK and select it by name**, the way ADR-0028

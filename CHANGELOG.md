@@ -26,6 +26,23 @@ moved ones and the ones only one side gives, each with its whole
 `Observance` or `EkadashiFast`. Rust only for now; the bindings get it as
 a JSON section.
 
+**A Flutter app on Teimeris, and without the built-in.** **Numbers:**
+none moved.
+- The release builds a second slice for each mobile platform, without
+  the built-in ephemeris (`android-arm64-no-builtin`), with its own
+  digest and bill of materials.
+- `hooks: user_defines: teistro_flutter: builtin: false` bundles that
+  slice.
+- `teistro_ephemeris_teimeris_flutter` bundles the Teimeris adapter with
+  its data built in. Its example app checks a month's content hash
+  against `teistro-ephemeris-teimeris-day-hash` on a desktop.
+- `docs/05-testing/mobile-sizes-measured.md`, written from the record
+  `cargo xtask measure-mobile` takes, gives each platform's three
+  libraries as built and as an app strips them, and the sum an app on
+  Teimeris bundles.
+- ADR-0029 records why the combined SDK and Teimeris build is not built,
+  and how the adapter loads on iOS.
+
 **Nepal's official days as a preset.** **Numbers:** none moved.
 `ContextBuilder::nepal_official(modern)` opens `nepali-committee` over
 `[SuryaSiddhanta, modern...]`. Every binding has the same preset:

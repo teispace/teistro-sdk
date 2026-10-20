@@ -3376,6 +3376,23 @@ binding (ADR-0023).
 
 ## Now
 
+### An almanac app's brief (from 2026-10-20)
+
+A consumer building a Nepali almanac app on Android and iOS asked for
+the items below, by its own IDs. Where the answer is a measured page,
+the page holds the figure and this table names it.
+
+| ID | Item | State |
+|---|---|---|
+| P0-1 | Teimeris first in every binding's docs and examples | partly: the guides and the adapter READMEs lead with it; the no-argument default stays the built-in (maintainer) |
+| P0-2 | Teimeris in a Flutter app | adapter embedded mode, `teistro_ephemeris_teimeris_flutter` and its example app, whose hashes equal the desktop's `teistro-ephemeris-teimeris-day-hash` on an Android 15 emulator (debug and release) and an iPhone simulator, not yet on a phone; sizes on `05-testing/mobile-sizes-measured.md`; iOS loading noted and the combined build declined in ADR-0029; no digests until a release |
+| P0-3 | App-level benchmark and a device runner | `05-testing/app-speed-measured.md`, gated; `cargo xtask app-speed-device ROW` runs it on an Android device or emulator, or the iOS simulator. **Finding, 2026-10-20:** the 90-day muhurta search over Teimeris's modern sky took 430 ms on the iPhone simulator, past twice its 200 ms budget, and 349 ms on the desktop. Each of its days repeats its own crossing searches. That record waits for P1-1's shared range, which comes first |
+| P0-4 | Without the built-in, and the size saved | the release's `-no-builtin` slice, `builtin: false` in Flutter, and the saving per platform on the sizes page; the default keeps the built-in (maintainer) |
+| P0-5 | Teimeris's mobile matrix | in Teimeris, its `docs/COMPATIBILITY.md`: Android arm64 and the iOS simulator run every test; four rows built only |
+| P1-3, P1-4 | Shared engine contexts; a cheap open | in Teimeris and the adapter: embedded data, nothing hashed at open; a context opens in 0.018 ms on the Android emulator (`05-testing/app-speed-measured.md`) |
+| P1-10 | Both reckonings and why they differ | `AlmanacArea::disagreements` and `festival_disagreements`, measured over 2020–2030 (`03-design/setup-disagreements.md`); Rust only so far |
+| P1-1, P1-2, P1-5 to P1-9, P2-1 to P2-6 | the rest | not started, or designed only (`03-design/festival-rule-language.md` for P1-6) |
+
 Phases 1 and 2 have both met their exit criteria. **Phases 5, 6 and 7 are
 open and running beside one another** — strength and dashas since
 2026-09-15, rules and interpretation since 2026-09-15, and techniques
