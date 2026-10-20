@@ -81,8 +81,42 @@ At run time, Android's loader opens it by name from the app's native
 library directory, and on iOS it is opened from the framework Flutter
 wraps it in, inside the app's `Frameworks` directory.
 
-Nothing is released yet, so the package carries no digests and an app
-names the libraries it built with `library`. Build one with
-`cargo build --release` in `adapters/ephemeris-teimeris/rust` for the
-target (`--target aarch64-linux-android` with the NDK, `aarch64-apple-ios`
-with Xcode).
+Nothing is released yet, so the package carries no digests, and an app
+names the libraries it built with `library`. Build the adapter with its
+data inside it, for each target, in `adapters/ephemeris-teimeris/rust`:
+
+```sh
+TM_EMBED_TIER=MODERN cargo build --release --lib --target aarch64-linux-android
+```
+
+Android also needs the NDK's clang as the linker and the C compiler. On
+iOS, set `IPHONEOS_DEPLOYMENT_TARGET=13.0`. `cargo xtask measure-mobile`
+in the SDK builds every target this way and records what each weighs
+(`docs/05-testing/mobile-sizes-measured.md`).
+
+An app on Teimeris never opens the SDK's built-in ephemeris, so it can
+bundle the SDK library built without it:
+`hooks: user_defines: teistro_flutter: builtin: false`.
+
+## Proved on an emulator and a simulator
+
+`example/` is the smallest app on both packages. It computes November
+2025's almanac at Kathmandu under the modern and the committee setups and
+prints each one's settings and content hashes. Its integration test holds
+them to the desktop's, from `teistro-ephemeris-teimeris-day-hash`:
+
+```sh
+cd example && flutter create --platforms android,ios . && rm -r test
+flutter test integration_test \
+  --dart-define=TEISTRO_EXPECTED="$(teistro-ephemeris-teimeris-day-hash | paste -sd'|' -)"
+```
+
+On 2026-10-20 all of the following gave the desktop's hashes exactly,
+with the SDK library built without the built-in and no file copied:
+- the integration test on an Android 15 emulator (arm64);
+- a release APK on the same emulator;
+- the integration test on an iPhone 18 Pro simulator (iOS 27).
+
+These are an emulator and a simulator, not phones. A release iOS build
+for a device (`flutter build ios --release`) builds and bundles both
+frameworks, but has not been run on an iPhone.

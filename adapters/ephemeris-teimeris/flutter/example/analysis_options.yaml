@@ -1,0 +1,8 @@
+# Held to the same strictness as the packages, with nothing to resolve:
+# `dart format` reads this file from plain Dart, where no Flutter lint
+# package is installed.
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true

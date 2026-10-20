@@ -1,0 +1,11 @@
+# The platform projects `flutter create .` writes, and what a build leaves.
+/android/
+/ios/
+/build/
+/.dart_tool/
+/pubspec.lock
+/test/
+.flutter-plugins-dependencies
+/.metadata
+/*.iml
+/.idea/

@@ -1,0 +1,35 @@
+name: teistro_teimeris_example
+description: A Flutter app on the Teistro SDK over the Teimeris engine, its data built in.
+publish_to: none
+version: 0.0.0
+
+environment:
+  sdk: ^3.10.0
+  flutter: '>=3.38.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  teistro_flutter:
+    path: ../../../../bindings/flutter
+  teistro_ephemeris_teimeris_flutter:
+    path: ..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+# Nothing is released yet, so both libraries are the ones you built (see
+# README.md); a release replaces these with its digests.
+hooks:
+  user_defines:
+    teistro_flutter:
+      library:
+        android-arm64: ../../../../target/aarch64-linux-android/release/libteistro_ffi.so
+        ios-sim-arm64: ../../../../target/aarch64-apple-ios-sim/release/libteistro_ffi.dylib
+    teistro_ephemeris_teimeris_flutter:
+      library:
+        android-arm64: ../../rust/target/aarch64-linux-android/release/libteistro_ephemeris_teimeris.so
+        ios-sim-arm64: ../../rust/target/aarch64-apple-ios-sim/release/libteistro_ephemeris_teimeris.dylib
