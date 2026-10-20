@@ -619,6 +619,56 @@ impl Provenance {
         )
     }
 
+    /// **The key a stored answer is reused under**, by any client in any
+    /// language (`03-design/serial-and-the-envelope.md` §3, *The answer key*): the
+    /// SHA-256 of the canonical JSON of
+    /// `{sdk_version, calculation_version, catalogue_version,
+    /// settings_hash, input_hash, provider: {name, version, data_version,
+    /// data_hashes, tier}, packs}`, each as this provenance writes it.
+    ///
+    /// [`Provenance::cache_key`] names the request and the settings; this
+    /// names everything else an answer is a function of, the engine and
+    /// its data above all, so that an app keeping a year of festivals
+    /// recomputes it when the engine, its data, a pack or the SDK changes
+    /// and at no other time. The frame and the flags are left out: they
+    /// follow from the settings and the provider.
+    #[must_use]
+    pub fn answer_key(&self) -> Hash {
+        #[derive(serde::Serialize)]
+        struct Engine<'a> {
+            name: &'a str,
+            version: &'a str,
+            data_version: &'a str,
+            data_hashes: &'a [(String, Hash)],
+            tier: Option<&'a str>,
+        }
+        #[derive(serde::Serialize)]
+        struct Key<'a> {
+            sdk_version: &'a Version,
+            calculation_version: u32,
+            catalogue_version: u32,
+            settings_hash: Hash,
+            input_hash: Hash,
+            provider: Engine<'a>,
+            packs: &'a [PackStamp],
+        }
+        content_hash(&Key {
+            sdk_version: &self.sdk_version,
+            calculation_version: self.calculation_version,
+            catalogue_version: self.catalogue_version,
+            settings_hash: self.settings_hash,
+            input_hash: self.input_hash,
+            provider: Engine {
+                name: &self.provider.name,
+                version: &self.provider.version,
+                data_version: &self.provider.data_version,
+                data_hashes: &self.provider.data_hashes,
+                tier: self.provider.tier.as_deref(),
+            },
+            packs: &self.packs,
+        })
+    }
+
     /// Records a convention.
     pub fn convention(&mut self, knob: &str, value: &str, reason: &str) {
         self.applied_conventions.push(Convention {
@@ -758,6 +808,65 @@ mod tests {
                 assert_eq!(*hash, content_hash(item));
             }
         }
+    }
+
+    /// A client reproduces the answer key from the provenance as written,
+    /// and the key moves with the engine and its data, and not with what
+    /// an answer carries beside its inputs.
+    #[test]
+    fn the_answer_key_is_the_written_provenance_s_and_names_the_engine() {
+        let mut provenance = Provenance::new(
+            Version::new(0, 1, 0),
+            3,
+            2,
+            "nepali-committee",
+            Hash::of(b"s"),
+            Hash::of(b"i"),
+        );
+        provenance.provider = ProviderStamp {
+            name: "teimeris".to_owned(),
+            version: "0.1.0".to_owned(),
+            data_version: "sepl_18,semo_18".to_owned(),
+            data_hashes: vec![("sepl_18.se1".to_owned(), Hash::of(b"d"))],
+            tier: None,
+            frame: "geocentric".to_owned(),
+            flags_used: vec!["SPEED".to_owned()],
+        };
+        let written = serde_json::to_value(&provenance).unwrap();
+        let pick = serde_json::json!({
+            "sdk_version": written["sdk_version"],
+            "calculation_version": written["calculation_version"],
+            "catalogue_version": written["catalogue_version"],
+            "settings_hash": written["settings_hash"],
+            "input_hash": written["input_hash"],
+            "provider": {
+                "name": written["provider"]["name"],
+                "version": written["provider"]["version"],
+                "data_version": written["provider"]["data_version"],
+                "data_hashes": written["provider"]["data_hashes"],
+                "tier": written["provider"]["tier"],
+            },
+            "packs": written["packs"],
+        });
+        let key = provenance.answer_key();
+        assert_eq!(key, content_hash(&pick));
+
+        let mut beside = provenance.clone();
+        beside.provider.frame = "topocentric".to_owned();
+        beside.warnings.push(Warning {
+            code: "DEPRECATED_KEY".to_owned(),
+            key: None,
+            slots: Vec::new(),
+        });
+        beside.content_hash = Hash::of(b"another answer");
+        assert_eq!(beside.answer_key(), key);
+
+        let mut engine = provenance.clone();
+        engine.provider.version = "0.2.0".to_owned();
+        assert_ne!(engine.answer_key(), key);
+        let mut data = provenance;
+        data.provider.data_hashes[0].1 = Hash::of(b"another file");
+        assert_ne!(data.answer_key(), key);
     }
 
     #[test]

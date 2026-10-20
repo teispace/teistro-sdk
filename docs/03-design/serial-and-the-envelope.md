@@ -96,6 +96,38 @@ stamp, which a module builds as it goes. `Sealed<T>` is what a value
 becomes when it leaves: `Sealed::from_envelope` takes one and seals it.
 So a producer does not change, and nothing can be *published* unsealed.
 
+### The answer key
+
+`cache_key` names what was asked, and under which settings. It does not
+name the engine that answered or its data, and an answer is a function
+of those as much as of the request: two contexts on two engines, or on
+one engine with a range added, give one `cache_key` and two answers. So
+a stored answer is reused under **`Provenance::answer_key()`**, one
+hash, which every client computes the same way from the provenance it
+was handed:
+
+> the SHA-256, as lowercase hex, of the canonical JSON of
+> `{sdk_version, calculation_version, catalogue_version, settings_hash,
+> input_hash, provider: {name, version, data_version, data_hashes, tier},
+> packs}`, each value exactly as the provenance writes it.
+
+Rust has the method. A binding's client takes those fields from the
+envelope's `provenance` and hashes them with its canonical JSON, which
+for these fields (strings, whole numbers, lists and `null`) is the
+sorted-key, no-whitespace form. The frame, the flags, the conventions,
+the warnings and the content hash are left out: the first two follow
+from the settings and the provider, and the rest are what the answer
+says rather than what it depends on.
+
+The SDK version is in the key on purpose. A new SDK can decide a
+festival differently (a rule fixed, a pack revised), and an app that
+kept last version's year would otherwise show it until the year ends.
+Recomputing a year after an upgrade costs one call.
+
+What an app keeps per year is the sealed festival answer and this key
+(`festival-rules.md` §7.5). Whether a stored year serves another place
+is the observance's own `margin_seconds`.
+
 ### A batch, and a member handed out alone
 
 A batch's provenance hashes the **list**. A binding hands a batch out one
