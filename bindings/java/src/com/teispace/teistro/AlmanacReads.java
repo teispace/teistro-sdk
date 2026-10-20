@@ -106,7 +106,8 @@ final class AlmanacReads {
                 extents,
                 new FestivalDecided(Reads.string(decided, "by"), Reads.optionalInteger(decided, "index"),
                         Reads.optionalString(decided, "rule"), Reads.optionalInteger(decided, "days")),
-                Reads.string(o, "choice"));
+                Reads.string(o, "choice"),
+                Reads.number(o, "marginSeconds"));
     }
 
     private static EkadashiFast fast(Object raw) {

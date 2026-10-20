@@ -42,6 +42,7 @@ import {
   CONTEXT_TEST_PROVIDER,
   PANCHANGA_ECLIPSES,
   PANCHANGA_NEPAL_SAMBAT,
+  PANCHANGA_WITHOUT_DAYS,
   PANCHANGA_YEARS,
   CalendarById,
   DayStateById,
@@ -6927,6 +6928,10 @@ export class AlmanacArea extends Area {
    *   the days fall in, as `Almanac.years`
    * @param {boolean} [request.nepalSambat] whether to answer each day's
    *   Nepal Sambat date, as `Almanac.nepalSambat`
+   * @param {boolean} [request.days] `false` to leave the days out and
+   *   answer only what is asked beside them; festivals alone are then
+   *   founded as only what their rules read, which is what `festivals`
+   *   asks
    * @returns {Almanac}
    */
   of(request) {
@@ -6951,10 +6956,30 @@ export class AlmanacArea extends Area {
         sections:
           (request.years === true ? PANCHANGA_YEARS : 0) |
           (request.eclipses === true ? PANCHANGA_ECLIPSES : 0) |
-          (request.nepalSambat === true ? PANCHANGA_NEPAL_SAMBAT : 0),
+          (request.nepalSambat === true ? PANCHANGA_NEPAL_SAMBAT : 0) |
+          (request.days === false ? PANCHANGA_WITHOUT_DAYS : 0),
       }),
     );
     return new Almanac(bytes);
+  }
+
+  /**
+   * The days a set of festival rules falls on in a range, at one place
+   * (`03-design/festival-rules.md` §7.5), **without the days**: each day
+   * founded as only what the rules read, so a year costs a fraction of
+   * the year's almanac and answers exactly what `of({ festivals })` does.
+   * Each observance's `marginSeconds` says how far the place can move
+   * before its day can change; keep the answer under its provenance's
+   * answer key.
+   *
+   * @param {object} request as `of` takes it, with `festivals` required
+   * @returns {object} the observances, as `Almanac.festivals`
+   */
+  festivals(request) {
+    if (request?.festivals == null) {
+      throw new TypeError("festivals: expected a festivals request record, e.g. { rules: 'NEPAL' }");
+    }
+    return this.of({ ...request, muhurta: undefined, nepalSambat: false, days: false }).festivals;
   }
 
   /**

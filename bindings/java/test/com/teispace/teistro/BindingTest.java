@@ -1282,6 +1282,19 @@ public final class BindingTest {
                 Almanac week = sky.almanac().of(first,
                         sky.calendar().dateOf(first.calendar(), sky.calendar().fixedOf(first) + 6), kathmandu, 20_700);
                 same(7, week.size(), "a day per date");
+                // A festival list without the days: founded as only what the
+                // rules read, and the almanac's own answer to the bit, stamp
+                // and all.
+                CalendarDate autumn = Civil.date(Calendar.GREGORIAN, 2026, 10, 15);
+                CalendarDate winter = Civil.date(Calendar.GREGORIAN, 2026, 11, 10);
+                var pack = new com.teispace.teistro.request.FestivalRequest("DHARMASINDHU");
+                FestivalAnswer withDays = sky.almanac().of(autumn, winter, kathmandu, 20_700, null, pack,
+                        false, false, false).festivals().orElseThrow();
+                FestivalAnswer lean = sky.almanac().festivals(autumn, winter, kathmandu, 20_700, pack);
+                same(withDays, lean, "the festivals without the days are the ones with them");
+                check(!lean.observances().isEmpty()
+                        && lean.observances().stream().allMatch(o -> o.marginSeconds() >= 0),
+                        "each observance says how far the place can move");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
                 int varjyam = 0;
                 for (AlmanacDay day : week) {

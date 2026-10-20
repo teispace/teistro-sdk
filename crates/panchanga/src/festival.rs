@@ -24,7 +24,7 @@ use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::settings::LunarMonth as Convention;
-use teistro_time::local_day::DayState;
+use teistro_time::local_day::{DayState, LocalDay};
 
 use crate::Panchanga;
 use crate::month::{self, LunarMonth};
@@ -530,20 +530,35 @@ pub struct FestivalDay {
 
 impl From<&Panchanga> for FestivalDay {
     fn from(day: &Panchanga) -> FestivalDay {
-        FestivalDay {
-            date: day.day.date.clone(),
-            sunrise: day.day.sunrise,
-            sunset: day.day.sunset,
-            next_sunrise: day.day.next_sunrise,
-            normal: matches!(day.day.state, DayState::Normal),
-            month: day.month,
-            tithi: day.limbs.tithi.clone(),
-            nakshatra: day.limbs.nakshatra.clone(),
-        }
+        FestivalDay::of(
+            &day.day,
+            day.month,
+            day.limbs.tithi.clone(),
+            day.limbs.nakshatra.clone(),
+        )
     }
 }
 
 impl FestivalDay {
+    /// A day's view, from its local day and the limbs the rules read.
+    pub(crate) fn of(
+        day: &LocalDay,
+        month: LunarMonth,
+        tithi: Vec<Span<Tithi>>,
+        nakshatra: Vec<Span<Nakshatra>>,
+    ) -> FestivalDay {
+        FestivalDay {
+            date: day.date.clone(),
+            sunrise: day.sunrise,
+            sunset: day.sunset,
+            next_sunrise: day.next_sunrise,
+            normal: matches!(day.state, DayState::Normal),
+            month,
+            tithi,
+            nakshatra,
+        }
+    }
+
     fn daylight(&self) -> Interval {
         Interval::literal(self.sunrise.get(), self.sunset.get())
     }
@@ -640,6 +655,16 @@ pub struct Observance {
     pub decided_by: Decided,
     /// What that decided.
     pub choice: Choice,
+    /// **How far the place can move**, in seconds of time: the least time
+    /// between an edge of what the rule read (the occurrence, and the
+    /// nakshatras its guards name) and an instant the day was decided
+    /// from (the two days' sunrises, the next sunrise, and every window
+    /// the rule and its guards draw on them). Those edges do not move
+    /// with the place and those instants do, and every comparison the
+    /// rule makes is between the two, so the day stands at any place
+    /// whose instants are each within this of these days'. 0 for a
+    /// decision on two equal parts (C170), which any shift breaks.
+    pub margin_seconds: f64,
 }
 
 /// An occurrence a rule could not judge, and why.
@@ -933,6 +958,11 @@ fn judge(
         Which::Earlier => earlier.date.clone(),
         Which::Later => later.date.clone(),
     };
+    let margin_seconds = if case == Case::EqualParts {
+        0.0
+    } else {
+        margin(rule, tithi, earlier, later)? * SECONDS_PER_DAY
+    };
     Ok(Ok(Observance {
         rule: rule.key.clone(),
         day,
@@ -943,7 +973,75 @@ fn judge(
         extents,
         decided_by,
         choice,
+        margin_seconds,
     }))
+}
+
+const SECONDS_PER_DAY: f64 = 86_400.0;
+
+/// The least time, in days, between an edge the rule read and an instant
+/// the two days were decided from ([`Observance::margin_seconds`]).
+fn margin(
+    rule: &FestivalRule,
+    tithi: Interval,
+    earlier: &FestivalDay,
+    later: &FestivalDay,
+) -> Result<f64, Error> {
+    let mut instants = vec![
+        earlier.sunrise.get(),
+        later.sunrise.get(),
+        later.next_sunrise.get(),
+    ];
+    let mut edges = vec![tithi.from.get(), tithi.to.get()];
+    let mut window = |span: Interval| instants.extend([span.from.get(), span.to.get()]);
+    for day in [earlier, later] {
+        window(day.window(rule.at)?);
+    }
+    let mut named = Vec::new();
+    for predicate in rule.decide.iter().flat_map(|guard| &guard.when) {
+        let day = match *predicate {
+            Predicate::Joined { day, .. }
+            | Predicate::Stands { day, .. }
+            | Predicate::Lasts { day, .. } => match day {
+                Which::Earlier => earlier,
+                Which::Later => later,
+            },
+            _ => continue,
+        };
+        match *predicate {
+            Predicate::Joined { nakshatra, at, .. } => {
+                window(at.map_or_else(|| Ok(day.sunrise_day()), |at| day.window(at))?);
+                named.push((day, nakshatra));
+            }
+            Predicate::Stands { nakshatra, at, .. } => {
+                window(day.window(at)?);
+                named.push((day, nakshatra));
+            }
+            Predicate::Lasts { from, ghatis, .. } => {
+                let (edge, span) = match from {
+                    Edge::Sunrise => (day.sunrise, day.daylight()),
+                    Edge::Sunset => (day.sunset, day.night()),
+                };
+                window(Interval::literal(
+                    edge.get(),
+                    span.at_fraction(f64::from(ghatis) / 30.0)?.get(),
+                ));
+            }
+            _ => {}
+        }
+    }
+    for (day, nakshatra) in named {
+        edges.extend(
+            day.nakshatra
+                .iter()
+                .filter(|held| held.member == nakshatra)
+                .flat_map(|held| [held.whole.from.get(), held.whole.to.get()]),
+        );
+    }
+    Ok(instants
+        .iter()
+        .flat_map(|instant| edges.iter().map(move |edge| (instant - edge).abs()))
+        .fold(f64::INFINITY, f64::min))
 }
 
 struct Facts<'a> {

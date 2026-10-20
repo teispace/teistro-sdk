@@ -145,6 +145,17 @@ extern "C" {
 #define TS_PANCHANGA_NEPAL_SAMBAT ((uint32_t)4)
 
 /**
+ * `TS_PANCHANGA_WITHOUT_DAYS`, the bit a caller sets in a panchanga
+ * request's `sections` for what it asks beside the days and not the days
+ * themselves: the blob then holds no day. A request for festivals alone
+ * is then founded as only what their rules read of each day
+ * (`03-design/festival-rules.md` §7.5), which is what a festival list
+ * costs; a muhurta search or the Nepal Sambat dates still read whole
+ * days, founded and not written.
+ */
+#define TS_PANCHANGA_WITHOUT_DAYS ((uint32_t)8)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -8947,7 +8958,9 @@ struct ts_panchanga_request {
      * `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the
      * days with the place's view of each, in the `eclipses` section;
      * `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
-     * the `nepal_sambat` section.
+     * the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
+     * day, only what else is asked, festivals alone then founded as
+     * only what their rules read.
      * Zero for the days alone, which is what every
      * caller compiled against an earlier header passes, since this was a
      * reserved field it wrote zero to.

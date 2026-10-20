@@ -99,6 +99,15 @@ const int panchangaEclipses = 2;
 /// (`03-design/calendar-indian-lunisolar.md` §11).
 const int panchangaNepalSambat = 4;
 
+/// `TS_PANCHANGA_WITHOUT_DAYS`, the bit a caller sets in a panchanga
+/// request's `sections` for what it asks beside the days and not the days
+/// themselves: the blob then holds no day. A request for festivals alone
+/// is then founded as only what their rules read of each day
+/// (`03-design/festival-rules.md` §7.5), which is what a festival list
+/// costs; a muhurta search or the Nepal Sambat dates still read whole
+/// days, founded and not written.
+const int panchangaWithoutDays = 8;
+
 /// A key of one kind: a member this build catalogues, or one a context
 /// registered at run time.
 abstract interface class KeyOf<K> {

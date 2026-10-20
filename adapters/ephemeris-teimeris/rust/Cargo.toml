@@ -58,6 +58,11 @@ path = "src/bin/day_hash.rs"
 required-features = ["app-speed"]
 
 [[bin]]
+name = "teistro-ephemeris-teimeris-festival-agreement"
+path = "src/bin/festival_agreement.rs"
+required-features = ["app-speed"]
+
+[[bin]]
 name = "teistro-ephemeris-teimeris-bs-fit"
 path = "src/bin/bs_fit.rs"
 

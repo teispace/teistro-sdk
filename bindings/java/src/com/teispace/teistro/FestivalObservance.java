@@ -20,10 +20,15 @@ import java.util.List;
  * @param decidedBy what decided
  * @param choice the choice that decided, {@code EARLIER}, {@code LATER} or
  *     {@code BY_YUGMA}, which {@code day} resolves
+ * @param marginSeconds how far the place can move: the seconds of time
+ *     every instant the day was decided from (its sunrises and the windows
+ *     the rule draws) may move, as another place moves them, before the
+ *     day can change; 0 for two equal parts
  */
 public record FestivalObservance(
         String rule, CalendarDate day, Interval tithi, Masa month, boolean adhika, String caseHeld,
-        List<FestivalExtent> extents, FestivalDecided decidedBy, String choice) {
+        List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
+        double marginSeconds) {
     /** Keeps the pair unmodifiable. */
     public FestivalObservance {
         extents = List.copyOf(extents);

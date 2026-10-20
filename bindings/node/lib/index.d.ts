@@ -6503,6 +6503,8 @@ export interface AlmanacRequest {
   readonly eclipses?: boolean;
   /** Whether to answer each day's Nepal Sambat date, as `Almanac.nepalSambat`; `false` by default, which costs nothing. */
   readonly nepalSambat?: boolean;
+  /** `false` to leave the days out and answer only what is asked beside them; festivals alone are then founded as only what their rules read, which is what `AlmanacArea.festivals` asks. `true` by default. */
+  readonly days?: boolean;
 }
 
 /**
@@ -6710,6 +6712,8 @@ export interface FestivalObservance {
     | { readonly by: 'AFTER'; readonly rule: string; readonly days: number };
   /** The choice that decided, which `day` resolves; a following rule's is its leader's. */
   readonly choice: FestivalChoice;
+  /** How far the place can move: the seconds of time every instant the day was decided from (its sunrises and the windows the rule draws) may move, as another place moves them, before the day can change; 0 for two equal parts. */
+  readonly marginSeconds: number;
 }
 
 /**
@@ -7961,6 +7965,19 @@ export declare class AlmanacArea {
   of(request: AlmanacRequest): Almanac;
   /** The almanac of one day, which is the range of one unwrapped. */
   day(request: AlmanacDayRequest): AlmanacDay;
+  /**
+   * The days a set of festival rules falls on in a range, at one place
+   * (`03-design/festival-rules.md` §7.5), **without the days**: each day
+   * founded as only what the rules read, so a year costs a fraction of the
+   * year's almanac and answers exactly what `of({ festivals })` does. Each
+   * observance's `marginSeconds` says how far the place can move before
+   * its day can change.
+   */
+  festivals(
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'days'> & {
+      readonly festivals: FestivalRequest;
+    },
+  ): FestivalAnswer;
   /**
    * A native's bird read over every day of a range under Pancha Pakshi
    * (`03-design/pakshi.md`). A day the Sun does not both rise and set has

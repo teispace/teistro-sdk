@@ -74,6 +74,7 @@ from ._ffi import (
     CONTEXT_TEST_PROVIDER,
     PANCHANGA_ECLIPSES,
     PANCHANGA_NEPAL_SAMBAT,
+    PANCHANGA_WITHOUT_DAYS,
     PANCHANGA_YEARS,
     GENERATED_ABI_VERSION,
     GENERATED_SDK_VERSION,
@@ -2375,6 +2376,7 @@ class AlmanacArea(_Area):
         years: bool = False,
         eclipses: bool = False,
         nepal_sambat: bool = False,
+        days: bool = True,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
 
@@ -2389,7 +2391,10 @@ class AlmanacArea(_Area):
         `Almanac.years`, and `eclipses=True` the eclipses whose greatest
         moment falls in them with how the place sees each, as
         `Almanac.eclipses`, and `nepal_sambat=True` each day's Nepal Sambat
-        date, as `Almanac.nepal_sambat`.
+        date, as `Almanac.nepal_sambat`. `days=False` leaves the days out
+        and answers only what is asked beside them; festivals alone are
+        then founded as only what their rules read, which is what
+        `AlmanacArea.festivals` asks.
         """
         request = PanchangaRequest(
             calendar=from_date.calendar,
@@ -2407,13 +2412,42 @@ class AlmanacArea(_Area):
             festivals_json=_festivals_json(festivals),
             sections=(PANCHANGA_YEARS if years else 0)
             | (PANCHANGA_ECLIPSES if eclipses else 0)
-            | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0),
+            | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
+            | (0 if days else PANCHANGA_WITHOUT_DAYS),
         )
         return Almanac(
             decode_panchanga(
                 self._context._through_provider(lambda: self._context.inner.panchanga_days(request))
             )
         )
+
+    def festivals(
+        self,
+        *,
+        from_date: CalendarDate,
+        to_date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        festivals: FestivalRequest,
+    ) -> FestivalAnswer:
+        """The days a set of festival rules falls on in a range, at one place
+        (`03-design/festival-rules.md` §7.5), **without the days**: each day
+        founded as only what the rules read, so a year costs a fraction of
+        the year's almanac and answers exactly what `of(..., festivals=)`
+        does. Each observance's `margin_seconds` says how far the place can
+        move before its day can change; keep the answer under its
+        provenance's answer key."""
+        answer = self.of(
+            from_date=from_date,
+            to_date=to_date,
+            place=place,
+            utc_offset_seconds=utc_offset_seconds,
+            festivals=festivals,
+            days=False,
+        ).festivals
+        if answer is None:
+            raise TeistroError(Status.INTERNAL, "a request with festivals answered none")
+        return answer
 
     def day(
         self,
@@ -7081,6 +7115,12 @@ class FestivalObservance:
     choice: str
     """The choice that decided, `EARLIER`, `LATER` or `BY_YUGMA`, which
     `day` resolves."""
+
+    margin_seconds: float
+    """How far the place can move: the seconds of time every instant the
+    day was decided from (its sunrises and the windows the rule draws) may
+    move, as another place moves them, before the day can change; 0 for
+    two equal parts."""
 
 
 @dataclass(frozen=True)
@@ -13707,6 +13747,7 @@ def _festivals_answer(text: str) -> FestivalAnswer:
                 days=decided.get("days"),
             ),
             choice=raw["choice"],
+            margin_seconds=float(raw["marginSeconds"]),
         )
 
     def fast(raw: Mapping[str, Any]) -> EkadashiFast:

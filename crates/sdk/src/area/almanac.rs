@@ -176,8 +176,10 @@ impl<'a> AlmanacArea<'a> {
         request: &FestivalRequest,
     ) -> Result<Envelope<Observances>, Error> {
         request.check()?;
-        let days = self.unsealed(from, to, place, offset)?;
-        self.reckoning(from, to, place, offset, request, &days)
+        let days = self.with_almanac(from, offset, |almanac| {
+            almanac.festival_days(from, to, place)
+        })?;
+        self.reckoning(from, to, place, offset, request, days)
     }
 
     /// As [`AlmanacArea::festivals`], with the range's days beside the
@@ -215,7 +217,9 @@ impl<'a> AlmanacArea<'a> {
     /// The observances over the range's own `days`, stamped with their
     /// provenance. The widening is founded as runs of its own on each
     /// side, so the range's run is exactly the one [`AlmanacArea::of_each`]
-    /// founds and seals, and nothing is founded twice.
+    /// founds and seals, and nothing is founded twice; and it is founded
+    /// as festival days ([`Almanac::festival_days`]), the parts of a day
+    /// the rules read and nothing else.
     fn reckoning(
         self,
         from: &CalendarDate,
@@ -223,7 +227,7 @@ impl<'a> AlmanacArea<'a> {
         place: &Place,
         offset: UtcOffset,
         request: &FestivalRequest,
-        days: &Envelope<Vec<Panchanga>>,
+        days: Envelope<Vec<FestivalDay>>,
     ) -> Result<Envelope<Observances>, Error> {
         let calendar = system_of(from.calendar)?;
         let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
@@ -243,17 +247,20 @@ impl<'a> AlmanacArea<'a> {
         let (earlier, later) = self.with_almanac(from, offset, |almanac| {
             Ok((
                 almanac
-                    .between(&before, &calendar.date_of(first.plus_days(-1))?, place)?
+                    .festival_days(&before, &calendar.date_of(first.plus_days(-1))?, place)?
                     .value,
-                almanac.between(&after.0, &after.1, place)?.value,
+                almanac.festival_days(&after.0, &after.1, place)?.value,
             ))
         })?;
-        let viewed: Vec<FestivalDay> = earlier
-            .iter()
-            .chain(&days.value)
-            .chain(&later)
-            .map(FestivalDay::from)
-            .collect();
+        let (start, end) = (
+            days.value.first().map(|day| day.sunrise.get()),
+            days.value.last().map(|day| day.next_sunrise.get()),
+        );
+        let Envelope {
+            value: range,
+            mut provenance,
+        } = days;
+        let viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
         let karmakala = observances(request.rules(), &viewed)?;
         let counted = following(request.following(), &karmakala.observances, &viewed)?;
         let mut found = karmakala
@@ -268,15 +275,10 @@ impl<'a> AlmanacArea<'a> {
             .observances
             .retain(|observance| inside(&observance.day));
         found.ekadashis.retain(|fast| inside(&fast.day));
-        let (start, end) = (
-            days.value.first().map(|day| day.day.sunrise.get()),
-            days.value.last().map(|day| day.day.next_sunrise.get()),
-        );
         found.unjudged.retain(|unjudged| {
             start.is_some_and(|start| unjudged.tithi.to.get() > start)
                 && end.is_some_and(|end| unjudged.tithi.from.get() < end)
         });
-        let mut provenance = days.provenance.clone();
         provenance.input_hash = content_hash(&FestivalInput {
             from: from.to_string(),
             to: to.to_string(),
@@ -315,6 +317,13 @@ impl<'a> AlmanacArea<'a> {
             festivals.check()?;
         }
         #[cfg(feature = "muhurta")]
+        let searched = request.muhurta.is_some();
+        #[cfg(not(feature = "muhurta"))]
+        let searched = false;
+        if request.days == Days::Omitted && !searched && !request.nepal_sambat {
+            return self.beside_no_days(from, to, place, offset, request);
+        }
+        #[cfg(feature = "muhurta")]
         let (muhurta, days) = match &request.muhurta {
             Some(asked) => {
                 let (answer, days) = self.searching(from, to, place, offset, asked, |almanac| {
@@ -329,7 +338,18 @@ impl<'a> AlmanacArea<'a> {
         let festivals = request
             .festivals
             .as_ref()
-            .map(|asked| self.reckoning(from, to, place, offset, asked, &days))
+            .map(|asked| {
+                let viewed = days.value.iter().map(FestivalDay::from).collect();
+                let provenance = days.provenance.clone();
+                self.reckoning(
+                    from,
+                    to,
+                    place,
+                    offset,
+                    asked,
+                    Envelope::new(viewed, provenance),
+                )
+            })
             .transpose()?;
         let years = request
             .years
@@ -345,7 +365,11 @@ impl<'a> AlmanacArea<'a> {
                 days.provenance.clone(),
             )
         });
-        let (days, day_hashes) = Envelope::sealing_each(days.value, days.provenance);
+        let (days, day_hashes) = if request.days == Days::Omitted {
+            (Envelope::sealing(Vec::new(), days.provenance), Vec::new())
+        } else {
+            Envelope::sealing_each(days.value, days.provenance)
+        };
         Ok(AlmanacAnswer {
             days,
             day_hashes,
@@ -355,6 +379,46 @@ impl<'a> AlmanacArea<'a> {
             years,
             eclipses,
             nepal_sambat,
+        })
+    }
+
+    /// [`AlmanacArea::asked`] without the days, when nothing asked reads
+    /// whole days: festivals over festival days, the years and the
+    /// eclipses as they are, and no days, stamped as the range's.
+    fn beside_no_days(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+        request: &AlmanacRequest,
+    ) -> Result<AlmanacAnswer, Error> {
+        let days = self.with_almanac(from, offset, |almanac| {
+            almanac.festival_days(from, to, place)
+        })?;
+        let provenance = days.provenance.clone();
+        let festivals = request
+            .festivals
+            .as_ref()
+            .map(|asked| self.reckoning(from, to, place, offset, asked, days))
+            .transpose()?;
+        let years = request
+            .years
+            .then(|| self.years(from, to, place, offset))
+            .transpose()?;
+        let eclipses = request
+            .eclipses
+            .then(|| self.eclipses(from, to, place, offset))
+            .transpose()?;
+        Ok(AlmanacAnswer {
+            days: Envelope::sealing(Vec::new(), provenance),
+            day_hashes: Vec::new(),
+            #[cfg(feature = "muhurta")]
+            muhurta: None,
+            festivals,
+            years,
+            eclipses,
+            nepal_sambat: None,
         })
     }
 
@@ -513,6 +577,15 @@ pub struct AlmanacRequest {
     years: bool,
     eclipses: bool,
     nepal_sambat: bool,
+    days: Days,
+}
+
+/// Whether an answer hands out the days ([`AlmanacRequest::without_days`]).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+enum Days {
+    #[default]
+    Handed,
+    Omitted,
 }
 
 impl AlmanacRequest {
@@ -559,6 +632,24 @@ impl AlmanacRequest {
     pub fn with_nepal_sambat(mut self) -> AlmanacRequest {
         self.nepal_sambat = true;
         self
+    }
+
+    /// **Without the days**: what is asked beside them, and the days
+    /// themselves left out of the answer, which holds none. Festivals
+    /// alone are then founded as only what their rules read
+    /// ([`AlmanacArea::festivals`]), which is what a festival list costs
+    /// across the boundary; a muhurta search or the Nepal Sambat dates
+    /// still read whole days, founded and not handed out.
+    #[must_use]
+    pub fn without_days(mut self) -> AlmanacRequest {
+        self.days = Days::Omitted;
+        self
+    }
+
+    /// Whether the days are left out of the answer.
+    #[must_use]
+    pub fn days_omitted(&self) -> bool {
+        self.days == Days::Omitted
     }
 
     /// The muhurta search asked, if any.

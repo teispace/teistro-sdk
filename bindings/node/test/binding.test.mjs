@@ -4156,6 +4156,13 @@ test('an almanac carries the festivals it was asked for', () => {
 
   const almanac = ctx.almanac.of({ ...days, festivals: { rules: 'DHARMASINDHU' } });
   const answer = almanac.festivals;
+  // Without the days: founded as only what the rules read, and the same
+  // answer to the bit, stamp and all; the blob holds no day.
+  assert.deepEqual(ctx.almanac.festivals({ ...days, festivals: { rules: 'DHARMASINDHU' } }), answer);
+  const bare = ctx.almanac.of({ ...days, festivals: { rules: 'DHARMASINDHU' }, days: false });
+  assert.equal(bare.length, 0);
+  assert.ok(answer.observances.every((o) => o.marginSeconds >= 0));
+  assert.throws(() => ctx.almanac.festivals(days), /festivals: expected a festivals request/);
   assert.deepEqual(
     answer.observances.map((o) => o.rule),
     ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],

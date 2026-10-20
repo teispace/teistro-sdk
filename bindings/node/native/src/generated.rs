@@ -3436,7 +3436,9 @@ pub struct PanchangaRequest {
     /// `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the
     /// days with the place's view of each, in the `eclipses` section;
     /// `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
-    /// the `nepal_sambat` section.
+    /// the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
+    /// day, only what else is asked, festivals alone then founded as
+    /// only what their rules read.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.

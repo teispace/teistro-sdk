@@ -157,6 +157,17 @@ export declare const PANCHANGA_ECLIPSES: 2;
 export declare const PANCHANGA_NEPAL_SAMBAT: 4;
 
 /**
+ * `TS_PANCHANGA_WITHOUT_DAYS`, the bit a caller sets in a panchanga
+ * request's `sections` for what it asks beside the days and not the days
+ * themselves: the blob then holds no day. A request for festivals alone
+ * is then founded as only what their rules read of each day
+ * (`03-design/festival-rules.md` §7.5), which is what a festival list
+ * costs; a muhurta search or the Nepal Sambat dates still read whole
+ * days, founded and not written.
+ */
+export declare const PANCHANGA_WITHOUT_DAYS: 8;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =

@@ -1165,7 +1165,10 @@ final class AlmanacArea extends _Area {
   /// [years] answers the lunar years the days fall in, as [Almanac.years],
   /// [eclipses] the eclipses whose greatest moment falls in them with how
   /// the place sees each, as [Almanac.eclipses], and [nepalSambat] each
-  /// day's Nepal Sambat date, as [Almanac.nepalSambat].
+  /// day's Nepal Sambat date, as [Almanac.nepalSambat]. [days] `false`
+  /// leaves the days out and answers only what is asked beside them;
+  /// festivals alone are then founded as only what their rules read, which
+  /// is what [festivals] asks.
   Almanac of({
     required CalendarDate from,
     required CalendarDate to,
@@ -1176,6 +1179,7 @@ final class AlmanacArea extends _Area {
     bool years = false,
     bool eclipses = false,
     bool nepalSambat = false,
+    bool days = true,
   }) => Almanac(
     decodePanchanga(
       _context._guarded(
@@ -1197,12 +1201,37 @@ final class AlmanacArea extends _Area {
             sections:
                 (years ? panchangaYears : 0) |
                 (eclipses ? panchangaEclipses : 0) |
-                (nepalSambat ? panchangaNepalSambat : 0),
+                (nepalSambat ? panchangaNepalSambat : 0) |
+                (days ? 0 : panchangaWithoutDays),
           ),
         ),
       ),
     ),
   );
+
+  /// The days a set of festival rules falls on in a range, at one place
+  /// (`03-design/festival-rules.md` §7.5), **without the days**: each day
+  /// founded as only what the rules read, so a year costs a fraction of the
+  /// year's almanac and answers exactly what [of] with `festivals` does.
+  /// Each observance's [FestivalObservance.marginSeconds] says how far the
+  /// place can move before its day can change; keep the answer under its
+  /// provenance's answer key.
+  FestivalAnswer festivals({
+    required CalendarDate from,
+    required CalendarDate to,
+    required Observer place,
+    required int utcOffsetSeconds,
+    required FestivalRequest festivals,
+  }) =>
+      of(
+        from: from,
+        to: to,
+        place: place,
+        utcOffsetSeconds: utcOffsetSeconds,
+        festivals: festivals,
+        days: false,
+      ).festivals ??
+      (throw StateError('a request with festivals answered none'));
 
   /// The almanac of one day, which is the range of one unwrapped.
   AlmanacDay day({
@@ -14133,6 +14162,7 @@ final class FestivalObservance extends _Value {
     required this.extents,
     required this.decidedBy,
     required this.choice,
+    required this.marginSeconds,
   });
 
   /// The rule's key.
@@ -14161,6 +14191,12 @@ final class FestivalObservance extends _Value {
   /// resolves.
   final String choice;
 
+  /// How far the place can move: the seconds of time every instant the day
+  /// was decided from (its sunrises and the windows the rule draws) may
+  /// move, as another place moves them, before the day can change; 0 for
+  /// two equal parts.
+  final double marginSeconds;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -14174,6 +14210,7 @@ final class FestivalObservance extends _Value {
     extents.$2,
     decidedBy,
     choice,
+    marginSeconds,
   ];
 }
 
@@ -14322,6 +14359,7 @@ FestivalAnswer _festivalAnswer(String json) {
             days: at(raw['decidedBy'])['days'] as int?,
           ),
           choice: raw['choice']! as String,
+          marginSeconds: (raw['marginSeconds']! as num).toDouble(),
         ),
     ]),
     ekadashis: List.unmodifiable([

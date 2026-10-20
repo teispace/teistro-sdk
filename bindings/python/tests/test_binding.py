@@ -4058,6 +4058,13 @@ class AnEngine(WithLibrary):
                 self.assertEqual(almanac.at(k).provenance.content_hash, plain.at(k).provenance.content_hash)
             self.assertIn("festival.days", {c.knob for c in answer.provenance.applied_conventions})
 
+            # Without the days: founded as only what the rules read, and the
+            # same answer to the bit, stamp and all; the blob holds no day.
+            self.assertEqual(ctx.almanac.festivals(**days, festivals={"rules": "DHARMASINDHU"}), answer)
+            bare = ctx.almanac.of(**days, festivals={"rules": "DHARMASINDHU"}, days=False)
+            self.assertEqual((len(bare), bare.festivals), (0, answer))
+            self.assertTrue(all(o.margin_seconds >= 0 for o in answer.observances))
+
             sunrise = {
                 "key": "LAKSHMI_PUJA",
                 "source": "the tithi at sunrise",

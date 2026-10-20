@@ -209,6 +209,7 @@ pub struct Observance {
     pub extents: [Extent; 2],   // each day's window, and the fraction of it the tithi held
     pub decided_by: Decided,    // Guard { index } or Otherwise
     pub choice: Choice,
+    pub margin_seconds: f64,    // how far the day's instants may move before it changes (§7.5)
 }
 ```
 
@@ -359,6 +360,45 @@ is. The provenance carries `festival.days`, the widened range.
 | Malformed `festivals_json`, an unknown pack or field | `INVALID_ARG` naming the key under `festivals` |
 | A rule `check` refuses, or a key given twice | `INVALID_ARG` on `festivals.rules[i].<field>` |
 | The range | the almanac's own refusal, which comes first |
+
+### 7.5 A year, cheap and kept (P1-2)
+
+**Only what the rules read.** `festivals` founds its days as
+`FestivalDay`s (`Almanac::festival_days`): the sunrise, the sunset and
+the next sunrise, the lunar month and the tithi and nakshatra spans.
+The kaalas, choghadiya, horas, muhurtas, omens, the Sun's signs, the
+ritu and the Moon's rises and sets are not computed; the last are most
+of a day's engine requests. Each part is taken by the same steps over
+the same carried memo as `Almanac::between` takes it, so each is that
+day's panchanga value to the bit. `festivals_with_days`, which hands the
+days out too, still founds them in full and views them.
+
+The claim is gated rather than argued:
+`teistro-ephemeris-teimeris-festival-agreement` asks both paths for
+every year from 2000 to 2100 at Kathmandu, Delhi and Sydney, under both
+setups over Teimeris, with every shipped pack's rules at once, and
+fails on the first year whose answers differ, value or stamp
+(`docs/05-testing/app-speed-measured.md` has the time).
+
+**Kept.** The answer is sealed, and an app keeps a year under the
+provenance's answer key (`serial-and-the-envelope.md` §3, *The answer
+key*): the request (the range, the place, the offset and the rules),
+the settings, the SDK, the engine and its data. It is reused until that
+key changes and recomputed when it does.
+
+**Another place.** Every comparison a rule makes is between an edge of
+what it read, a tithi's or a nakshatra's, which is where the sky put it
+and does not move with the place, and an instant drawn from the day,
+which does: a sunrise, a fifth of the daylight, pradosha, nishitha, a
+ghati count from an edge. So each observance carries
+**`margin_seconds`**, the least time between any such edge and any such
+instant on its two days (the sunrises and the next sunrise too, which
+choose the pair). The day stands at any place whose instants each lie
+within that of these. An app grouping places compares it with how far
+its other place's sunrise and sunset move, which it has already: a
+degree of longitude in one time zone is four minutes. A decision between
+two equal parts (C170) has no room at all and reports 0. An Ekadashi
+fast is decided by its own clauses (§8) and does not carry one yet.
 
 ## 8. Ekadashi
 

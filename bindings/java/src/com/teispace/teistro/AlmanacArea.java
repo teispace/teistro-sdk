@@ -83,9 +83,41 @@ public final class AlmanacArea {
             com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals,
             boolean years, boolean eclipses, boolean nepalSambat) {
-        long sections = (years ? Native.TS_PANCHANGA_YEARS : 0)
-                | (eclipses ? Native.TS_PANCHANGA_ECLIPSES : 0)
-                | (nepalSambat ? Native.TS_PANCHANGA_NEPAL_SAMBAT : 0);
+        return asked(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals,
+                (years ? Native.TS_PANCHANGA_YEARS : 0)
+                        | (eclipses ? Native.TS_PANCHANGA_ECLIPSES : 0)
+                        | (nepalSambat ? Native.TS_PANCHANGA_NEPAL_SAMBAT : 0));
+    }
+
+    /**
+     * The days a set of festival rules falls on in a range, at one place
+     * ({@code 03-design/festival-rules.md} §7.5), <b>without the days</b>:
+     * each day founded as only what the rules read, so a year costs a
+     * fraction of the year's almanac and answers exactly what {@code of}
+     * with {@code festivals} does. Each observance's
+     * {@link FestivalObservance#marginSeconds()} says how far the place can
+     * move before its day can change; keep the answer under its provenance's
+     * answer key.
+     *
+     * @param fromDate the first day; its calendar is the range's
+     * @param toDate the last day
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param festivals the festival rules to reckon, such as
+     *     {@code new FestivalRequest("NEPAL")}
+     * @return the observances
+     */
+    public FestivalAnswer festivals(CalendarDate fromDate, CalendarDate toDate, Observer place,
+            int utcOffsetSeconds, com.teispace.teistro.request.FestivalRequest festivals) {
+        return asked(fromDate, toDate, place, utcOffsetSeconds, null,
+                java.util.Objects.requireNonNull(festivals, "festivals"), Native.TS_PANCHANGA_WITHOUT_DAYS)
+                .festivals()
+                .orElseThrow(() -> Reads.internal("a request with festivals answered none"));
+    }
+
+    private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.MuhurtaRequest muhurta,
+            com.teispace.teistro.request.FestivalRequest festivals, long sections) {
         PanchangaRequest request = new PanchangaRequest(
                 fromDate.calendar(),
                 fromDate.year(),

@@ -170,6 +170,7 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
             "TS_PANCHANGA_YEARS",
             "TS_PANCHANGA_ECLIPSES",
             "TS_PANCHANGA_NEPAL_SAMBAT",
+            "TS_PANCHANGA_WITHOUT_DAYS",
         ]
     );
 }

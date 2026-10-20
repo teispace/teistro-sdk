@@ -67,6 +67,40 @@ fn janmashtami_takes_the_book_s_day_in_each_of_its_four_examples() {
     assert_eq!(one_janmashtami(47.0, 42.0, &none), (2, Case::Neither));
 }
 
+/// The margin is the least time between an edge of what the rule read
+/// and an instant the days were decided from (`festival-rules.md` §7.5):
+/// the 8th runs from day 1's ghati 40 to day 2's ghati 42, so day 2's
+/// nishitha at ghati 45 is three ghatis from its end, nearer than day
+/// 1's at five from its start; and a Rohini the guards name moves it to
+/// her own edge when that is nearer still.
+#[test]
+fn an_observance_says_how_far_its_instants_may_move() {
+    let tithis = [
+        (Tithi::KrishnaShashthi, ghati(0, 30.0)),
+        (Tithi::KrishnaSaptami, ghati(1, 40.0)),
+        (Tithi::KrishnaAshtami, ghati(2, 42.0)),
+        (Tithi::KrishnaNavami, ghati(3, 50.0)),
+        (Tithi::KrishnaDashami, ghati(5, 0.0)),
+    ];
+    let seconds = |ghatis: f64| ghatis * 86_400.0 / 60.0;
+    let margin = |nakshatras: &[(Nakshatra, f64)]| {
+        let days = days_of(&tithis, nakshatras, Masa::Shravana, MonthKind::Nija);
+        let answer = observances(&[janmashtami()], &days).unwrap();
+        answer.observances[0].margin_seconds
+    };
+    assert!((margin(&[]) - seconds(3.0)).abs() < 1e-3, "{}", margin(&[]));
+    // Rohini ends a ghati after day 1's nishitha: one ghati of room.
+    let rohini = [
+        (Nakshatra::Krittika, ghati(1, 10.0)),
+        (Nakshatra::Rohini, ghati(1, 46.0)),
+    ];
+    assert!(
+        (margin(&rohini) - seconds(1.0)).abs() < 1e-3,
+        "{}",
+        margin(&rohini)
+    );
+}
+
 #[test]
 fn rohini_joined_at_nishitha_outranks_the_tithi_alone() {
     // The 8th holds day 1's niśītha alone, which alone would take day 1;

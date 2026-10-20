@@ -2408,6 +2408,21 @@ void _engineTests() {
       festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
     );
     final answer = almanac.festivals!;
+
+    // Without the days: founded as only what the rules read, and the same
+    // answer to the bit, stamp and all.
+    final lean = ctx.almanac.festivals(
+      from: gregorian(2026, 10, 15),
+      to: gregorian(2026, 11, 10),
+      place: place,
+      utcOffsetSeconds: 20700,
+      festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
+    );
+    expect(lean.observances, answer.observances);
+    expect(lean.ekadashis, answer.ekadashis);
+    expect(lean.provenance.contentHash, answer.provenance.contentHash);
+    expect(lean.provenance.inputHash, answer.provenance.inputHash);
+    expect(answer.observances.every((o) => o.marginSeconds >= 0), isTrue);
     expect(
       [for (final observance in answer.observances) observance.rule],
       ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],

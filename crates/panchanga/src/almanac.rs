@@ -36,6 +36,7 @@ use teistro_time::local_day::{
     Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
 };
 
+use crate::festival::FestivalDay;
 use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
@@ -447,6 +448,40 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         to: &CalendarDate,
         place: &Place,
     ) -> Result<Envelope<Vec<Panchanga>>, Error> {
+        self.run(from, to, place, Moon::Searched, Self::value)
+    }
+
+    /// What festival rules read of every day in a range, inclusive of
+    /// both ends ([`FestivalDay`]): its sunrise, sunset and next sunrise,
+    /// its lunar month and its tithis and nakshatras, **each the value
+    /// [`Almanac::between`] gives that day**, to the bit, and stamped as
+    /// it stamps the range. The day's other parts are not computed, the
+    /// Moon's rises and sets least of all, which are most of a day's
+    /// requests: a year of festivals is a year of these.
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::between`], less the refusals of the parts it does not
+    /// compute.
+    pub fn festival_days(
+        &self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+    ) -> Result<Envelope<Vec<FestivalDay>>, Error> {
+        self.run(from, to, place, Moon::Unread, Self::festival_value)
+    }
+
+    /// Every day of a range as `value` computes it, the range found
+    /// ahead and the days carried one to the next, under one stamp.
+    fn run<T>(
+        &self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        moon: Moon,
+        value: impl Fn(&Self, &CalendarDate, &Place, &mut Memo) -> Result<(T, Frame), Error>,
+    ) -> Result<Envelope<Vec<T>>, Error> {
         let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
         let count = days_in(first, last, from, to)?;
         let mut values = Vec::with_capacity(count);
@@ -461,11 +496,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             last: Some(last),
             ..Memo::default()
         };
-        self.ahead(first, count, place, &mut memo);
+        self.ahead(first, count, place, moon, &mut memo);
         for step in 0..count {
             let offset = i64::try_from(step).unwrap_or(0);
             let date = self.calendar.date_of(first.plus_days(offset))?;
-            let (value, asked) = self.value(&date, place, &mut memo)?;
+            let (value, asked) = value(self, &date, place, &mut memo)?;
             frame = frame.or(Some(asked));
             values.push(value);
         }
@@ -629,6 +664,42 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// and the instruction-count gate refused it at a 3% budget: a frame
     /// is an ayanamsha at an instant, so it is a precession evaluation
     /// and not a field read.
+    /// What festival rules read of one day, unstamped, and its frame: the
+    /// first steps of [`Almanac::value`], taken the same way over the same
+    /// memo, so each part is the value that day's panchanga holds.
+    fn festival_value(
+        &self,
+        date: &CalendarDate,
+        place: &Place,
+        memo: &mut Memo,
+    ) -> Result<(FestivalDay, Frame), Error> {
+        let date = self.calendar.date_of(self.calendar.fixed_of(date)?)?;
+        let fixed = self.calendar.fixed_of(&date)?;
+        let (day, _) = self.local_day_of(&date, fixed, place, memo)?;
+        let window = self.window(&day)?;
+        // The daylight and the night a panchanga divides, refused alike.
+        Interval::new(day.sunrise, day.sunset)?;
+        Interval::new(day.sunset, day.next_sunrise)?;
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let (frame, zodiac) = self.at_instant(&completion, window.from)?;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(*place);
+        }
+        let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
+        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?;
+        let month = self.month(&longitudes, window, &limbs, (zodiac, frame), memo)?;
+        memo.known = known.map(|known| (frame, known));
+        Ok((
+            FestivalDay::of(&day, month, limbs.tithi, limbs.nakshatra),
+            frame,
+        ))
+    }
+
     fn value(
         &self,
         date: &CalendarDate,
@@ -982,7 +1053,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// takes for its day alone, so each day is what it is alone, to the
     /// bit; a day's failure is kept for that day to report, as it would
     /// have when the range reached it.
-    fn ahead(&self, first: FixedDay, count: usize, place: &Place, memo: &mut Memo) {
+    fn ahead(&self, first: FixedDay, count: usize, place: &Place, moon: Moon, memo: &mut Memo) {
         let settings = self.settings();
         // Every day's light and the one after the last, found together:
         // a day reads its own and the next one's.
@@ -1012,7 +1083,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let searches: Vec<Option<Interval>> = days
             .iter()
             .map(|(_, day)| {
-                let day = day.as_ref().ok()?;
+                let day = day.as_ref().ok().filter(|_| moon == Moon::Searched)?;
                 self.window(day)
                     .and_then(|window| self.moon_search(day, window))
                     .ok()
@@ -1133,6 +1204,14 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance
     }
+}
+
+/// Whether a range's days read the Moon's rises and sets, and so whether
+/// [`Almanac::ahead`] searches them.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Moon {
+    Searched,
+    Unread,
 }
 
 /// What one day of a range leaves for the next, so that the next reads it
