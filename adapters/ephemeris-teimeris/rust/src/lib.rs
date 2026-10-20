@@ -38,10 +38,11 @@ use teistro_port_ephemeris::{
     SpeedModel, TimeScale, Zodiac, sefile, validate,
 };
 
-/// The environment variable naming the data directory.
+/// The environment variable naming the engine's accuracy profile.
 pub const PROFILE_ENV: &str = "TEIMERIS_PROFILE";
 
-const DATA_DIR_ENV: &str = "TEIMERIS_DATA_DIR";
+/// The environment variable naming the data directory.
+pub const DATA_DIR_ENV: &str = "TEIMERIS_DATA_DIR";
 
 /// The offset added to the engine's status codes so they stay clear of the
 /// port's reserved range (-1 to -6): the engine's -2 arrives as -102.

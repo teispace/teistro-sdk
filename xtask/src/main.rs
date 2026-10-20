@@ -258,6 +258,7 @@ mod agreement;
 mod almanac;
 mod antiscia;
 mod app_speed;
+mod app_speed_device;
 mod areas;
 mod arudhas;
 mod ashtakavarga;
@@ -321,6 +322,7 @@ mod maven_publish;
 mod measure;
 mod midpoints;
 mod mobile;
+mod mobile_sizes;
 mod moon;
 mod muhurta;
 mod muntha;
@@ -473,6 +475,11 @@ const PASSES: &[Pass] = &[
     ("surface", surface::generate, surface::check_generated),
     ("agreement", agreement::generate, agreement::check_generated),
     ("app-speed", app_speed::generate, app_speed::check_generated),
+    (
+        "mobile-sizes",
+        mobile_sizes::generate,
+        mobile_sizes::check_generated,
+    ),
     ("pluto", pluto::generate, pluto::check_generated),
     ("engine", engine::generate, engine::check_generated),
     ("areas", areas::generate, areas::check_generated),
@@ -637,6 +644,22 @@ fn pass_with_arguments(command: &str, args: &[String]) -> Option<i32> {
     }
 }
 
+/// The commands that build for a phone and measure there: `None` for any
+/// other command.
+fn mobile_command(command: &str, args: &[String]) -> Option<i32> {
+    match command {
+        "measure-mobile" => Some(mobile_sizes::measure(
+            &repo_root(),
+            args.get(1..).unwrap_or_default(),
+        )),
+        "app-speed-device" => Some(app_speed_device::run(
+            &repo_root(),
+            args.get(1).map(String::as_str),
+        )),
+        _ => None,
+    }
+}
+
 /// The gates that hold a binding, a package or the site to what the
 /// build produced: `None` for any other command.
 fn binding_gate(command: &str, args: &[String]) -> Option<i32> {
@@ -670,6 +693,9 @@ fn main() {
     }
     if let Some(code) = generated_page(command) {
         std::process::exit(skip::verdict(code));
+    }
+    if let Some(code) = mobile_command(command, &args) {
+        process::exit(code);
     }
     if let Some(code) = binding_gate(command, &args) {
         process::exit(skip::verdict(code));
@@ -782,7 +808,7 @@ fn usage() -> i32 {
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
-         check-versions | \
+         check-versions | measure-mobile [ROW...] | app-speed-device ROW | \
          conformance --from DIR | check-conformance --from DIR | \
          check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | check-coverage [--from FILE] | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \

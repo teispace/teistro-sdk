@@ -110,8 +110,16 @@ struct Record {
     arch: String,
     commit: String,
     teimeris: String,
+    /// `embedded` or `files`: where the engine read its data. Records
+    /// taken before the field was added read their data from files.
+    #[serde(default = "files")]
+    data: String,
     memo: String,
     timings: Vec<Timing>,
+}
+
+fn files() -> String {
+    String::from("files")
 }
 
 impl Record {
@@ -208,8 +216,18 @@ fn section(name: &str, record: &Record) -> String {
     let _ = writeln!(out, "## `{name}`\n");
     let _ = writeln!(
         out,
-        "{} ({}, {}), commit `{}`, Teimeris {}. Memo: {}.\n",
-        record.machine, record.os, record.arch, record.commit, record.teimeris, record.memo
+        "{} ({}, {}), commit `{}`, Teimeris {}, its data {}. Memo: {}.\n",
+        record.machine,
+        record.os,
+        record.arch,
+        record.commit,
+        record.teimeris,
+        if record.data == "embedded" {
+            "built in"
+        } else {
+            "read from files"
+        },
+        record.memo
     );
     let _ = write!(out, "| request | budget | target |");
     for (_, label) in SETUPS {
@@ -342,6 +360,7 @@ mod tests {
             arch: String::from("a"),
             commit: String::from("c"),
             teimeris: String::from("t"),
+            data: files(),
             memo: String::from("cold"),
             timings: vec![Timing {
                 setup: setup.into(),

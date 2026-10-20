@@ -50,7 +50,7 @@ use teistro::{
     CalendarDate, ChartRequest, Context, Ephemeris, FestivalPack, FestivalRequest, KootaRules,
     MuhurtaRequest, UtcOffset,
 };
-use teistro_ephemeris_teimeris::{TeimerisProvider, data_dir_from_env};
+use teistro_ephemeris_teimeris::{DATA_DIR_ENV, TeimerisProvider, data_dir_from_env};
 
 /// One setup a consumer ships: a profile and the chain it opens.
 #[derive(Clone, Copy)]
@@ -60,10 +60,23 @@ struct Setup {
     chain: fn() -> Vec<Ephemeris>,
 }
 
+/// Where the engine's data is read from: the directory `DATA_DIR_ENV`
+/// names, or else the data built into the engine (`TM_EMBED_TIER`), which
+/// is how a phone has it, or else the repository's own directory.
+fn data() -> &'static str {
+    if std::env::var_os(DATA_DIR_ENV).is_none() && TeimerisProvider::embedded().is_ok() {
+        "embedded"
+    } else {
+        "files"
+    }
+}
+
 fn teimeris() -> Ephemeris {
-    Ephemeris::Provider(Box::new(
-        TeimerisProvider::open(&data_dir_from_env()).expect("the Teimeris data directory"),
-    ))
+    Ephemeris::Provider(Box::new(if data() == "embedded" {
+        TeimerisProvider::embedded().expect("the embedded data")
+    } else {
+        TeimerisProvider::open(&data_dir_from_env()).expect("the Teimeris data directory")
+    }))
 }
 
 const SETUPS: [Setup; 3] = [
@@ -227,6 +240,7 @@ struct Record {
     arch: &'static str,
     commit: String,
     teimeris: String,
+    data: &'static str,
     memo: &'static str,
     timings: Vec<Timing>,
 }
@@ -262,8 +276,29 @@ fn output(program: &str, args: &[&str]) -> Option<String> {
     (!text.is_empty()).then(|| text.to_owned())
 }
 
+/// An environment variable's value, when it is set and not empty.
+fn var(name: &str) -> Option<String> {
+    std::env::var(name).ok().filter(|value| !value.is_empty())
+}
+
+/// What ran it. A phone, an emulator or a simulator names itself, since
+/// its processor is the host's or one no table would know: Android by its
+/// model property (`sdk_gphone64_arm64` is the emulator), the simulator by
+/// the device `simctl` booted.
 fn machine() -> String {
-    output("sysctl", &["-n", "machdep.cpu.brand_string"])
+    output("getprop", &["ro.product.model"])
+        .map(|model| {
+            // The emulator says so in its boot properties; a phone does not.
+            let emulated = output("getprop", &["ro.boot.qemu"]).as_deref() == Some("1")
+                || output("getprop", &["ro.kernel.qemu"]).as_deref() == Some("1");
+            if emulated {
+                format!("Android emulator, `{model}`")
+            } else {
+                format!("Android phone, `{model}`")
+            }
+        })
+        .or_else(|| var("SIMULATOR_DEVICE_NAME").map(|name| format!("iOS simulator, {name}")))
+        .or_else(|| output("sysctl", &["-n", "machdep.cpu.brand_string"]))
         .or_else(|| {
             std::fs::read_to_string("/proc/cpuinfo")
                 .ok()
@@ -275,6 +310,20 @@ fn machine() -> String {
                 })
         })
         .unwrap_or_else(|| String::from("unknown"))
+}
+
+fn os() -> String {
+    let android = (
+        output("getprop", &["ro.build.version.release"]),
+        output("getprop", &["ro.build.version.sdk"]),
+    );
+    if let (Some(release), Some(api)) = android {
+        return format!("Android {release}, API {api}");
+    }
+    if let Some(version) = var("SIMULATOR_RUNTIME_VERSION") {
+        return format!("iOS {version}");
+    }
+    output("uname", &["-sr"]).unwrap_or_else(|| std::env::consts::OS.to_owned())
 }
 
 fn main() {
@@ -291,11 +340,14 @@ fn main() {
     }
     let record = Record {
         machine: machine(),
-        os: output("uname", &["-sr"]).unwrap_or_else(|| std::env::consts::OS.to_owned()),
+        os: os(),
         arch: std::env::consts::ARCH,
-        commit: output("git", &["rev-parse", "--short=8", "HEAD"])
+        // A device has no checkout: its runner passes the commit in.
+        commit: var("TEISTRO_COMMIT")
+            .or_else(|| output("git", &["rev-parse", "--short=8", "HEAD"]))
             .unwrap_or_else(|| String::from("unknown")),
         teimeris: teimeris::version().to_string(),
+        data: data(),
         memo: "cold: a fresh context every run",
         timings,
     };

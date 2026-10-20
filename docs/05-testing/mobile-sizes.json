@@ -1,0 +1,161 @@
+{
+  "schema": "teistro-mobile-sizes/1",
+  "rows": [
+    {
+      "platform": "android-arm64",
+      "date": "2026-10-20",
+      "commit": "9fc38bc11234+changes",
+      "teimeris": "d272e68e9366",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "toolchain": "Android NDK 28.2.13676358",
+      "sdk": {
+        "raw": 25269120,
+        "gzip": 6455827,
+        "stripped": 16876688,
+        "stripped_gzip": 5391235
+      },
+      "sdk-no-builtin": {
+        "raw": 24662656,
+        "gzip": 6084613,
+        "stripped": 16277832,
+        "stripped_gzip": 5021091
+      },
+      "adapter": {
+        "raw": 4453568,
+        "gzip": 2822060,
+        "stripped": 3897256,
+        "stripped_gzip": 2721083
+      }
+    },
+    {
+      "platform": "android-arm",
+      "date": "2026-10-20",
+      "commit": "9fc38bc11234+changes",
+      "teimeris": "d272e68e9366",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "toolchain": "Android NDK 28.2.13676358",
+      "sdk": {
+        "raw": 19128820,
+        "gzip": 5866128,
+        "stripped": 12336660,
+        "stripped_gzip": 4959723
+      },
+      "sdk-no-builtin": {
+        "raw": 18522160,
+        "gzip": 5494008,
+        "stripped": 11737380,
+        "stripped_gzip": 4590980
+      },
+      "adapter": {
+        "raw": 3909956,
+        "gzip": 2780105,
+        "stripped": 3573664,
+        "stripped_gzip": 2705713
+      }
+    },
+    {
+      "platform": "android-x64",
+      "date": "2026-10-20",
+      "commit": "9fc38bc11234+changes",
+      "teimeris": "d272e68e9366",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "toolchain": "Android NDK 28.2.13676358",
+      "sdk": {
+        "raw": 25149136,
+        "gzip": 6516041,
+        "stripped": 18416600,
+        "stripped_gzip": 5752640
+      },
+      "sdk-no-builtin": {
+        "raw": 24524272,
+        "gzip": 6147718,
+        "stripped": 17808448,
+        "stripped_gzip": 5385464
+      },
+      "adapter": {
+        "raw": 4616392,
+        "gzip": 2882473,
+        "stripped": 4243712,
+        "stripped_gzip": 2813464
+      }
+    },
+    {
+      "platform": "ios-arm64",
+      "date": "2026-10-20",
+      "commit": "9fc38bc11234+changes",
+      "teimeris": "d272e68e9366",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "toolchain": "Xcode 27.1",
+      "sdk": {
+        "raw": 21720480,
+        "gzip": 5791562,
+        "stripped": 16298520,
+        "stripped_gzip": 5148162
+      },
+      "sdk-no-builtin": {
+        "raw": 21105960,
+        "gzip": 5423338,
+        "stripped": 15692232,
+        "stripped_gzip": 4781835
+      },
+      "adapter": {
+        "raw": 3985376,
+        "gzip": 2677782,
+        "stripped": 3761336,
+        "stripped_gzip": 2634519
+      }
+    },
+    {
+      "platform": "ios-sim-arm64",
+      "date": "2026-10-20",
+      "commit": "9fc38bc11234+changes",
+      "teimeris": "d272e68e9366",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "toolchain": "Xcode 27.1",
+      "sdk": {
+        "raw": 21854384,
+        "gzip": 5959908,
+        "stripped": 16392904,
+        "stripped_gzip": 5270932
+      },
+      "sdk-no-builtin": {
+        "raw": 21251392,
+        "gzip": 5584654,
+        "stripped": 15798392,
+        "stripped_gzip": 4901960
+      },
+      "adapter": {
+        "raw": 4033520,
+        "gzip": 2717972,
+        "stripped": 3807368,
+        "stripped_gzip": 2671541
+      }
+    },
+    {
+      "platform": "ios-sim-x64",
+      "date": "2026-10-20",
+      "commit": "9fc38bc11234+changes",
+      "teimeris": "d272e68e9366",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "toolchain": "Xcode 27.1",
+      "sdk": {
+        "raw": 22433648,
+        "gzip": 6139864,
+        "stripped": 17021448,
+        "stripped_gzip": 5502699
+      },
+      "sdk-no-builtin": {
+        "raw": 21818888,
+        "gzip": 5776451,
+        "stripped": 16415160,
+        "stripped_gzip": 5138044
+      },
+      "adapter": {
+        "raw": 4211672,
+        "gzip": 2780925,
+        "stripped": 3987288,
+        "stripped_gzip": 2737150
+      }
+    }
+  ]
+}
