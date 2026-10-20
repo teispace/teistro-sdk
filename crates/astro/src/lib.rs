@@ -55,6 +55,7 @@ pub mod eclipse;
 pub mod events;
 pub mod houses;
 pub mod iau;
+pub mod lockstep;
 pub mod phenomena;
 pub mod precession;
 pub mod rise_set;

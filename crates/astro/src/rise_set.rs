@@ -32,9 +32,10 @@ use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, Refract
 
 use crate::delta_t::DeltaTModel;
 use crate::iau::{DEG2RAD, RAD2DEG};
+use crate::lockstep::{Lockstep, finished};
 use crate::scale::tt_of;
 use crate::sky::{Apparent, ApparentPositions, sidereal_time_deg};
-use crate::solve::{Caps, SCAN_CHUNK, Scan, first_zero_gridded};
+use crate::solve::{Caps, SCAN_CHUNK, Scan, first_zero_gridded_async};
 
 /// The standard refraction at the horizon, arcminutes: the value the
 /// almanacs reckon rising and setting by (*Astronomical Almanac*,
@@ -554,6 +555,47 @@ impl<'a> Solver<'a> {
         self.reading(ut1, &apparent)
     }
 
+    /// [`Solver::sample`] on the spot, or in `round`'s request.
+    async fn sample_in(
+        &self,
+        round: Option<&Lockstep<'a>>,
+        t: f64,
+        evaluations: &mut u32,
+    ) -> Result<Sample, Error> {
+        let Some(round) = round else {
+            return self.sample(t, evaluations);
+        };
+        let ut1 = JulianDay::<Ut1>::try_new(t)?;
+        *evaluations += 1;
+        let apparent = round.apparent(self.sky, self.body, &[ut1]).await?;
+        let apparent = apparent
+            .first()
+            .ok_or_else(|| Error::internal("a lockstep round answered no position"))?;
+        self.reading(ut1, apparent)
+    }
+
+    /// [`Solver::samples`] on the spot, or in `round`'s request.
+    async fn samples_in(
+        &self,
+        round: Option<&Lockstep<'a>>,
+        instants: &[f64],
+        evaluations: &mut u32,
+    ) -> Result<Vec<Sample>, Error> {
+        let Some(round) = round else {
+            return self.samples(instants, evaluations);
+        };
+        let ut1: Vec<JulianDay<Ut1>> = instants
+            .iter()
+            .map(|t| JulianDay::<Ut1>::literal(*t))
+            .collect();
+        let apparent = round.apparent(self.sky, self.body, &ut1).await?;
+        *evaluations += u32::try_from(ut1.len()).unwrap_or(u32::MAX);
+        ut1.iter()
+            .zip(&apparent)
+            .map(|(at, apparent)| self.reading(*at, apparent))
+            .collect()
+    }
+
     /// One apparent position read as the solver reads it: the altitude
     /// above the horizon, the altitude the event is at, the hour angle
     /// and the declination. Shared by the walk and the grid so that
@@ -629,7 +671,7 @@ impl<'a> Solver<'a> {
             .with_field("window_days"));
         }
         let start = from.get();
-        self.proves_none(kind, start, start + window_days, &mut 0)
+        spot(self.proves_none(None, kind, start, start + window_days, &mut 0))
     }
 
     /// The next event of a kind at or after `from`, inside a window of so
@@ -646,6 +688,35 @@ impl<'a> Solver<'a> {
         from: JulianDay<Ut1>,
         window_days: f64,
     ) -> Result<Option<HorizonEvent>, Error> {
+        spot(self.event_with(None, kind, from, window_days))
+    }
+
+    /// [`Solver::event`] run beside other searches in lockstep, its
+    /// readings asked for in `round`'s requests ([`Lockstep::run`]). It
+    /// takes [`Solver::event`]'s steps on [`Solver::event`]'s readings,
+    /// so it answers [`Solver::event`]'s answer to the bit.
+    ///
+    /// # Errors
+    ///
+    /// As [`Solver::event`].
+    pub async fn event_in(
+        &self,
+        round: &Lockstep<'a>,
+        kind: HorizonEventKind,
+        from: JulianDay<Ut1>,
+        window_days: f64,
+    ) -> Result<Option<HorizonEvent>, Error> {
+        self.event_with(Some(round), kind, from, window_days).await
+    }
+
+    /// The event search, reading on the spot or in a round.
+    async fn event_with(
+        &self,
+        round: Option<&Lockstep<'a>>,
+        kind: HorizonEventKind,
+        from: JulianDay<Ut1>,
+        window_days: f64,
+    ) -> Result<Option<HorizonEvent>, Error> {
         if !(window_days.is_finite() && window_days > 0.0) {
             return Err(Error::invalid_arg(format!(
                 "a search window is a positive number of days, not {window_days}"
@@ -655,13 +726,16 @@ impl<'a> Solver<'a> {
         let start = from.get();
         let end = start + window_days;
         let mut evaluations = 0u32;
-        match self.iterate(kind, start, end, &mut evaluations)? {
+        match self
+            .iterate(round, kind, start, end, &mut evaluations)
+            .await?
+        {
             Some(instant) => Ok(Some(HorizonEvent {
                 instant: JulianDay::try_new(instant)?,
                 method: Method::Iterated,
                 evaluations,
             })),
-            None => self.scan(kind, start, end, evaluations),
+            None => self.scan(round, kind, start, end, evaluations).await,
         }
     }
 
@@ -727,8 +801,9 @@ impl<'a> Solver<'a> {
     ///
     /// When the proof passes the window's end the walk would find no
     /// crossing of its kind, so the answer is the walk's: no event.
-    fn proves_none(
+    async fn proves_none(
         &self,
+        round: Option<&Lockstep<'a>>,
         kind: HorizonEventKind,
         start: f64,
         end: f64,
@@ -742,7 +817,7 @@ impl<'a> Solver<'a> {
         let (_, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
         let mut t = start;
         for _ in 0..ONE_SIDE_READINGS {
-            let reading = self.sample(t, evaluations)?;
+            let reading = self.sample_in(round, t, evaluations).await?;
             let gap = reading.altitude_deg - reading.target_deg;
             let reach = if gap.abs() >= 2.0 * ONE_SIDE_FLOOR_DEG {
                 // Short of the full reach by the floor, so the next
@@ -780,8 +855,9 @@ impl<'a> Solver<'a> {
         Ok(false)
     }
 
-    fn cannot_cross(
+    async fn cannot_cross(
         &self,
+        round: Option<&Lockstep<'a>>,
         kind: HorizonEventKind,
         start: f64,
         end: f64,
@@ -808,8 +884,8 @@ impl<'a> Solver<'a> {
         let Some(margin) = declination_chord_margin(self.body) else {
             return Ok(false);
         };
-        let first = self.sample(start, evaluations)?;
-        let last = self.sample(end, evaluations)?;
+        let first = self.sample_in(round, start, evaluations).await?;
+        let last = self.sample_in(round, end, evaluations).await?;
 
         let (dec_lo, dec_hi) = (
             first.dec_deg.min(last.dec_deg) - margin,
@@ -837,15 +913,16 @@ impl<'a> Solver<'a> {
     /// when it converged inside the window, `Ok(None)` when it did not
     /// settle or its rate factor vanished, which hands the search to the
     /// scan.
-    fn iterate(
+    async fn iterate(
         &self,
+        round: Option<&Lockstep<'a>>,
         kind: HorizonEventKind,
         start: f64,
         end: f64,
         evaluations: &mut u32,
     ) -> Result<Option<f64>, Error> {
         let sidereal_day = 360.0 / HOUR_ANGLE_RATE_DEG_PER_DAY;
-        let first = self.sample(start, evaluations)?;
+        let first = self.sample_in(round, start, evaluations).await?;
         let Some(target_hour_angle) = self.event_hour_angle_deg(kind, &first) else {
             return Ok(None);
         };
@@ -858,7 +935,7 @@ impl<'a> Solver<'a> {
         }
         let mut retried = false;
         for _ in 0..MAX_ITERATIONS {
-            let sample = self.sample(t, evaluations)?;
+            let sample = self.sample_in(round, t, evaluations).await?;
             let correction = match kind {
                 HorizonEventKind::Transit | HorizonEventKind::Antitransit => {
                     difference_deg(target_hour_angle, sample.hour_angle_deg)
@@ -896,8 +973,9 @@ impl<'a> Solver<'a> {
     /// The scan: the altitude less the target (a rise upward, a set
     /// downward), or the hour angle less the target (a transit), over the
     /// window, bisected where it changes sign.
-    fn scan(
+    async fn scan(
         &self,
+        round: Option<&Lockstep<'a>>,
         kind: HorizonEventKind,
         start: f64,
         end: f64,
@@ -916,10 +994,18 @@ impl<'a> Solver<'a> {
         // search that is about to walk can be worth two readings, so only
         // a search that is about to walk pays them.
         let mut counted = evaluations;
-        if self.absence_check && self.cannot_cross(kind, start, end, &mut counted)? {
+        if self.absence_check
+            && self
+                .cannot_cross(round, kind, start, end, &mut counted)
+                .await?
+        {
             return Ok(None);
         }
-        if self.none_proof && self.proves_none(kind, start, end, &mut counted)? {
+        if self.none_proof
+            && self
+                .proves_none(round, kind, start, end, &mut counted)
+                .await?
+        {
             return Ok(None);
         }
         let evaluations = counted;
@@ -940,17 +1026,17 @@ impl<'a> Solver<'a> {
         // scanning the whole of it, twice a day
         // (`07-roadmap/02-plan-performance-and-passthrough.md`, A1d).
         let counted = core::cell::Cell::new(evaluations);
-        let grid = |instants: &[f64], out: &mut Vec<f64>| -> Result<(), Error> {
+        let grid = async |instants: &[f64], out: &mut Vec<f64>| -> Result<(), Error> {
             let mut used = counted.get();
-            let samples = self.samples(instants, &mut used)?;
+            let samples = self.samples_in(round, instants, &mut used).await?;
             counted.set(used);
             out.clear();
             out.extend(samples.iter().map(&quantity));
             Ok(())
         };
-        let one = |t: f64| -> Result<f64, Error> {
+        let one = async |t: f64| -> Result<f64, Error> {
             let mut used = counted.get();
-            let sample = self.sample(t, &mut used)?;
+            let sample = self.sample_in(round, t, &mut used).await?;
             counted.set(used);
             Ok(quantity(&sample))
         };
@@ -958,16 +1044,18 @@ impl<'a> Solver<'a> {
         let scan = Scan::new(start, end, SCAN_STEP_DAYS, upward, TOLERANCE_DAYS)
             .with_caps(scan_caps(end - start))
             .with_chunk(self.chunk);
-        let crossing = first_zero_gridded(grid, one, &scan).map_err(|error| {
-            error.into_error(|| {
-                format!(
-                    "the {} of {} at {} from JD {start}",
-                    kind.key().to_ascii_lowercase(),
-                    self.body.key(),
-                    self.place
-                )
-            })
-        })?;
+        let crossing = first_zero_gridded_async(grid, one, &scan)
+            .await
+            .map_err(|error| {
+                error.into_error(|| {
+                    format!(
+                        "the {} of {} at {} from JD {start}",
+                        kind.key().to_ascii_lowercase(),
+                        self.body.key(),
+                        self.place
+                    )
+                })
+            })?;
         let count = counted.get();
         Ok(match crossing {
             Some(found) => Some(HorizonEvent {
@@ -990,19 +1078,63 @@ impl<'a> Solver<'a> {
     ///
     /// As [`Solver::event`].
     pub fn day(&self, midnight: JulianDay<Ut1>) -> Result<DayEvents, Error> {
-        let rise = self.event(HorizonEventKind::Rise, midnight, 1.0)?;
+        spot(self.day_with(None, midnight))
+    }
+
+    /// [`Solver::day`] run beside other searches in lockstep
+    /// ([`Solver::event_in`]), answering [`Solver::day`]'s answer to the
+    /// bit.
+    ///
+    /// # Errors
+    ///
+    /// As [`Solver::day`].
+    pub async fn day_in(
+        &self,
+        round: &Lockstep<'a>,
+        midnight: JulianDay<Ut1>,
+    ) -> Result<DayEvents, Error> {
+        self.day_with(Some(round), midnight).await
+    }
+
+    async fn day_with(
+        &self,
+        round: Option<&Lockstep<'a>>,
+        midnight: JulianDay<Ut1>,
+    ) -> Result<DayEvents, Error> {
+        let rise = self
+            .event_with(round, HorizonEventKind::Rise, midnight, 1.0)
+            .await?;
         let set = match rise {
-            Some(rise) => self.event(HorizonEventKind::Set, rise.instant, 1.0)?,
-            None => self.event(HorizonEventKind::Set, midnight, 1.0)?,
+            Some(rise) => {
+                self.event_with(round, HorizonEventKind::Set, rise.instant, 1.0)
+                    .await?
+            }
+            None => {
+                self.event_with(round, HorizonEventKind::Set, midnight, 1.0)
+                    .await?
+            }
         };
         let mut count = 0u32;
-        let midday = self.sample(midnight.get() + 0.5, &mut count)?;
+        let midday = self
+            .sample_in(round, midnight.get() + 0.5, &mut count)
+            .await?;
         Ok(DayEvents {
             rise,
             set,
             above_at_midday: midday.altitude_deg > midday.target_deg,
         })
     }
+}
+
+/// A search read on the spot: one poll finishes it, since nothing it
+/// awaits waits; a search that did wait is a defect, reported rather than
+/// spun on.
+fn spot<T>(search: impl core::future::Future<Output = Result<T, Error>>) -> Result<T, Error> {
+    finished(search).unwrap_or_else(|| {
+        Err(Error::internal(
+            "a horizon search read on the spot waited for a round",
+        ))
+    })
 }
 
 #[cfg(test)]
@@ -1020,6 +1152,30 @@ mod tests {
 
     use super::*;
     use crate::completion::Completion;
+
+    impl Solver<'_> {
+        /// The scan alone, read on the spot.
+        fn scan_now(
+            &self,
+            kind: HorizonEventKind,
+            start: f64,
+            end: f64,
+            evaluations: u32,
+        ) -> Result<Option<HorizonEvent>, Error> {
+            spot(self.scan(None, kind, start, end, evaluations))
+        }
+
+        /// The absence proof alone, read on the spot.
+        fn proves_none_now(
+            &self,
+            kind: HorizonEventKind,
+            start: f64,
+            end: f64,
+            evaluations: &mut u32,
+        ) -> Result<bool, Error> {
+            spot(self.proves_none(None, kind, start, end, evaluations))
+        }
+    }
 
     fn place(lat: f64, lon: f64) -> Place {
         Place::new(
@@ -1153,7 +1309,7 @@ mod tests {
                 "{sample:?}"
             );
             let scanned = solver
-                .scan(kind, from.get(), from.get() + 1.0, 0)
+                .scan_now(kind, from.get(), from.get() + 1.0, 0)
                 .unwrap()
                 .unwrap();
             assert_eq!(scanned.method, Method::Scanned);
@@ -1166,7 +1322,7 @@ mod tests {
             assert!(scanned.evaluations > iterated.evaluations);
         }
         let transit = solver
-            .scan(HorizonEventKind::Transit, from.get(), from.get() + 1.0, 0)
+            .scan_now(HorizonEventKind::Transit, from.get(), from.get() + 1.0, 0)
             .unwrap()
             .unwrap();
         let iterated = solver
@@ -1228,7 +1384,12 @@ mod tests {
                             let mut count = 0;
                             if fast.is_none()
                                 && solver
-                                    .proves_none(kind, from.get(), from.get() + length, &mut count)
+                                    .proves_none_now(
+                                        kind,
+                                        from.get(),
+                                        from.get() + length,
+                                        &mut count,
+                                    )
                                     .unwrap()
                             {
                                 proved += 1;
@@ -1406,7 +1567,7 @@ mod tests {
                 DeltaTModel::TableThenModel,
             )
             .with_chunk(1)
-            .scan(kind, from.get(), from.get() + 1.0, 0)
+            .scan_now(kind, from.get(), from.get() + 1.0, 0)
             .unwrap()
             .unwrap();
             for chunk in [2usize, 7, 32, 144, 10_000] {
@@ -1418,7 +1579,7 @@ mod tests {
                     DeltaTModel::TableThenModel,
                 )
                 .with_chunk(chunk)
-                .scan(kind, from.get(), from.get() + 1.0, 0)
+                .scan_now(kind, from.get(), from.get() + 1.0, 0)
                 .unwrap()
                 .unwrap();
                 assert_eq!(
@@ -1467,7 +1628,7 @@ mod tests {
         };
         for chunk in [1usize, 32, 10_000] {
             let absent = solver(chunk)
-                .scan(HorizonEventKind::Rise, from.get(), from.get() + 1.0, 0)
+                .scan_now(HorizonEventKind::Rise, from.get(), from.get() + 1.0, 0)
                 .unwrap();
             assert!(absent.is_none(), "chunk {chunk}: it never rises");
         }

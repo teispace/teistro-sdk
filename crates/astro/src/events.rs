@@ -371,6 +371,42 @@ pub fn value_of<S: Longitudes + ?Sized>(
     Ok(evaluate(quantity, source, ut1)?.0)
 }
 
+/// [`value_of`] at many instants, asked for as one grid: each value is
+/// the one [`value_of`] reads at its instant, in the order asked.
+///
+/// ```
+/// use teistro_astro::completion::Completion;
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_astro::events::{value_of, values_of};
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_core::settings::OverridePolicy;
+/// use teistro_port_ephemeris::{Frame, Quantity, TestProvider};
+///
+/// let provider = TestProvider::new();
+/// let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// let longitudes = completion.longitudes(Frame::CANONICAL);
+/// let instants: Vec<JulianDay<Ut1>> = (0..5).map(|d| JulianDay::literal(2_460_000.5 + f64::from(d))).collect();
+/// let many = values_of(Quantity::ELONGATION, &longitudes, &instants)?;
+/// for (at, value) in instants.iter().zip(&many) {
+///     assert_eq!(value.to_bits(), value_of(Quantity::ELONGATION, &longitudes, *at)?.to_bits());
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`value_of`], and `PROVIDER` for a source that answers a different
+/// number of instants from the number asked.
+pub fn values_of<S: Longitudes + ?Sized>(
+    quantity: Quantity,
+    source: &S,
+    ut1: &[JulianDay<Ut1>],
+) -> Result<Vec<f64>, Error> {
+    let (mut out, mut singles, mut pairs) = (Vec::new(), Vec::new(), Vec::new());
+    evaluate_many(quantity, source, ut1, &mut out, &mut singles, &mut pairs)?;
+    Ok(out.into_iter().map(|(value, _)| value).collect())
+}
+
 /// The index of the last anchored sample at or before an instant.
 ///
 /// `floor` rather than `round`, so the window's first bracket always

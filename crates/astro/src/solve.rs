@@ -203,43 +203,74 @@ fn narrow<E>(
     tolerance: f64,
     caps: Caps,
 ) -> Result<(f64, f64), SolveError<E>> {
-    let Bracket {
-        mut lo,
-        mut f_lo,
-        mut hi,
-        mut f_hi,
-    } = bracket;
-    let first_width = hi - lo;
-    // The steps a bisection would still have: the interval it would have
-    // reached by now is the tolerance grown back by this many halvings.
-    let mut budget = halvings(first_width, tolerance) + SLACK;
-    let mut steps = 0u32;
-    while hi - lo > tolerance {
-        if steps >= caps.refinements {
+    let mut narrowing = Narrowing::new(bracket, tolerance, caps);
+    while let Some(at) = narrowing.next()? {
+        narrowing.feed(at, f(at)?);
+    }
+    Ok(narrowing.ends())
+}
+
+/// [`narrow`] as a machine its caller drives, so that a search waiting
+/// on its readings ([`first_zero_gridded_async`]) narrows by the same
+/// steps as one that reads them on the spot.
+struct Narrowing {
+    bracket: Bracket,
+    tolerance: f64,
+    caps: Caps,
+    first_width: f64,
+    /// The steps a bisection would still have: the interval it would have
+    /// reached by now is the tolerance grown back by this many halvings.
+    budget: i32,
+    steps: u32,
+}
+
+impl Narrowing {
+    fn new(bracket: Bracket, tolerance: f64, caps: Caps) -> Narrowing {
+        let first_width = bracket.hi - bracket.lo;
+        Narrowing {
+            bracket,
+            tolerance,
+            caps,
+            first_width,
+            budget: halvings(first_width, tolerance) + SLACK,
+            steps: 0,
+        }
+    }
+
+    /// The instant to read next, or `None` once the bracket is narrow.
+    fn next<E>(&mut self) -> Result<Option<f64>, SolveError<E>> {
+        let Bracket {
+            lo, f_lo, hi, f_hi, ..
+        } = self.bracket;
+        let tolerance = self.tolerance;
+        if hi - lo <= tolerance {
+            return Ok(None);
+        }
+        if self.steps >= self.caps.refinements {
             return Err(SolveError::NotConverged {
-                steps,
+                steps: self.steps,
                 width: hi - lo,
             });
         }
-        steps += 1;
+        self.steps += 1;
         let width = hi - lo;
         let mid = lo + width * 0.5;
         if mid <= lo || mid >= hi {
-            break; // `f64` cannot split the bracket further.
+            return Ok(None); // `f64` cannot split the bracket further.
         }
         // Interpolate: the secant's root, inside the bracket because the
         // values differ in sign.
         let secant = (f_hi * lo - f_lo * hi) / (f_hi - f_lo);
         // Truncate: toward the midpoint, never past it.
         let toward = if secant <= mid { 1.0 } else { -1.0 };
-        let pull = PULL * width * (width / first_width);
+        let pull = PULL * width * (width / self.first_width);
         let truncated = if pull <= (mid - secant).abs() {
             secant + toward * pull
         } else {
             mid
         };
         // Project: into the interval a bisection would have reached.
-        let radius = (tolerance * 0.5 * math::powi(2f64, budget) - width * 0.5).max(0.0);
+        let radius = (tolerance * 0.5 * math::powi(2f64, self.budget) - width * 0.5).max(0.0);
         let projected = if (truncated - mid).abs() <= radius {
             truncated
         } else {
@@ -250,18 +281,25 @@ fn narrow<E>(
         // quarter of the tolerance inside (toward the middle, so the
         // projection's guarantee stands).
         let least = tolerance * 0.25;
-        let estimate = projected.max(lo + least).min(hi - least);
-        budget = budget.saturating_sub(1);
-        let value = f(estimate)?;
+        self.budget = self.budget.saturating_sub(1);
+        Ok(Some(projected.max(lo + least).min(hi - least)))
+    }
+
+    /// The value read at `at`, the instant [`Narrowing::next`] last named.
+    fn feed(&mut self, at: f64, value: f64) {
         if value < 0.0 {
-            lo = estimate;
-            f_lo = value;
+            self.bracket.lo = at;
+            self.bracket.f_lo = value;
         } else {
-            hi = estimate;
-            f_hi = value;
+            self.bracket.hi = at;
+            self.bracket.f_hi = value;
         }
     }
-    Ok((lo, hi))
+
+    /// The bracket's ends as narrowed so far.
+    const fn ends(&self) -> (f64, f64) {
+        (self.bracket.lo, self.bracket.hi)
+    }
 }
 
 /// The first zero of `f` inside `[from, to]`, found by stepping from
@@ -413,6 +451,34 @@ pub fn first_zero_gridded<E>(
     mut refine_at: impl FnMut(f64) -> Result<f64, E>,
     scan: &Scan,
 ) -> Result<Option<Crossing>, SolveError<E>> {
+    // The search's one kernel is the asynchronous one; read on the spot,
+    // nothing it awaits ever waits, so a single poll finishes it.
+    match crate::lockstep::finished(first_zero_gridded_async(
+        async |instants: &[f64], values: &mut Vec<f64>| sample(instants, values),
+        async |t: f64| refine_at(t),
+        scan,
+    )) {
+        Some(found) => found,
+        None => Err(SolveError::NotConverged {
+            steps: 0,
+            width: scan.to - scan.from,
+        }),
+    }
+}
+
+/// [`first_zero_gridded`] over readings that may have to wait, as a
+/// search run beside others in lockstep waits for the round's one
+/// request ([`crate::lockstep`]). The steps and the arithmetic are
+/// [`first_zero_gridded`]'s own, which is this function read on the spot.
+///
+/// # Errors
+///
+/// As [`first_zero_gridded`].
+pub async fn first_zero_gridded_async<E>(
+    mut sample: impl AsyncFnMut(&[f64], &mut Vec<f64>) -> Result<(), E>,
+    mut refine_at: impl AsyncFnMut(f64) -> Result<f64, E>,
+    scan: &Scan,
+) -> Result<Option<Crossing>, SolveError<E>> {
     let Scan {
         from,
         to,
@@ -455,7 +521,9 @@ pub fn first_zero_gridded<E>(
         if instants.is_empty() {
             break;
         }
-        sample(&instants, &mut values).map_err(SolveError::Evaluation)?;
+        sample(&instants, &mut values)
+            .await
+            .map_err(SolveError::Evaluation)?;
         if values.len() != instants.len() {
             return Err(SolveError::Argument {
                 name: "grid",
@@ -476,12 +544,13 @@ pub fn first_zero_gridded<E>(
                     hi: at,
                     f_hi: g_hi,
                 };
-                let mut narrowing = |t: f64| -> Result<f64, SolveError<E>> {
+                let mut narrowing = Narrowing::new(bracket, tolerance, caps);
+                while let Some(t) = narrowing.next()? {
                     evaluations += 1;
-                    refine_at(t).map(sign).map_err(SolveError::Evaluation)
-                };
-                let narrowed = narrow(&mut narrowing, bracket, tolerance, caps)?;
-                return Ok(Some(crossing(narrowed, evaluations)));
+                    let value = refine_at(t).await.map_err(SolveError::Evaluation)?;
+                    narrowing.feed(t, sign(value));
+                }
+                return Ok(Some(crossing(narrowing.ends(), evaluations)));
             }
             previous = Some((at, g_hi));
         }
