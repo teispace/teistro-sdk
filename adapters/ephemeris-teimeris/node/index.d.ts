@@ -24,10 +24,26 @@ export declare function binary(named?: string): string;
 /** What `teimeris(...)` takes. */
 export interface TeimerisOptions {
   /**
-   * Where the engine's data files are. It looks beside its own build
-   * when this is omitted.
+   * A directory of the engine's data files, read after the data built
+   * into the engine. With nothing named, the provider reads the built-in
+   * data, 1800 to 2399, and the directory `TEIMERIS_DATA_DIR` names when
+   * that is set.
    */
   readonly dataDir?: string;
+  /**
+   * Ranges an app downloaded, each a block file by path: a 600-year block
+   * is its `sepl_*.se1` and `semo_*.se1` files (and `seas_*.se1` for
+   * Chiron, Ceres, Pallas, Juno and Vesta), so
+   * `['cache/sepl_12.se1', 'cache/semo_12.se1']` adds 1200 to 1799. Each
+   * is checked against the published size and SHA-256 and refused by name
+   * when it differs (a download cut short); a span with a hole in it is
+   * refused with the files that fill it.
+   */
+  readonly files?: readonly string[];
+  /** `false` leaves the data built into the engine out. */
+  readonly embedded?: boolean;
+  /** `false` skips the check of each block file against the manifest. */
+  readonly verify?: boolean;
   /** The engine's own accuracy profile. */
   readonly profile?: string;
   /**

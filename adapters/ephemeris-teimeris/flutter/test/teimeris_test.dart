@@ -11,6 +11,19 @@ void main() {
     expect(teimeris(path: '/x').config, {'data': 'embedded'});
   });
 
+  test('teimeris() adds the ranges an app downloaded, by path', () {
+    final descriptor = teimeris(
+      path: '/x',
+      files: ['/support/sepl_12.se1', '/support/semo_12.se1'],
+      verify: false,
+    );
+    expect(descriptor.config, {
+      'data': 'embedded',
+      'files': ['/support/sepl_12.se1', '/support/semo_12.se1'],
+      'verify': false,
+    });
+  });
+
   test('Android opens the adapter by its bare name', () {
     expect(
       bundledAdapter(operatingSystem: 'android'),

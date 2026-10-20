@@ -125,20 +125,67 @@ public final class Teimeris {
      */
     public static final class Builder {
         private String dataDir;
+        private final List<String> files = new ArrayList<>();
+        private Boolean embedded;
+        private Boolean verify;
         private String profile;
         private Path path;
 
         private Builder() {}
 
         /**
-         * Where the engine's data files are; it looks beside its own build
-         * when this is not set.
+         * A directory of the engine's data files, read after the data built
+         * into the engine. With nothing named, the provider reads the
+         * built-in data, 1800 to 2399, and the directory
+         * {@code TEIMERIS_DATA_DIR} names when that is set.
          *
          * @param dataDir the directory
          * @return this builder
          */
         public Builder dataDir(String dataDir) {
             this.dataDir = dataDir;
+            return this;
+        }
+
+        /**
+         * Adds a range an app downloaded, one block file at a time: a
+         * 600-year block is its {@code sepl_*.se1} and {@code semo_*.se1}
+         * files (and {@code seas_*.se1} for Chiron, Ceres, Pallas, Juno and
+         * Vesta), so {@code sepl_12.se1} and {@code semo_12.se1} add 1200 to
+         * 1799. Each is checked against the published size and SHA-256 and
+         * refused by name when it differs, which is what a download cut
+         * short looks like; a span with a hole in it is refused with the
+         * files that fill it.
+         *
+         * @param file the block file's path
+         * @return this builder
+         */
+        public Builder file(String file) {
+            this.files.add(file);
+            return this;
+        }
+
+        /**
+         * Whether the data built into the engine is read; it is unless this
+         * says no.
+         *
+         * @param embedded false to leave it out
+         * @return this builder
+         */
+        public Builder embedded(boolean embedded) {
+            this.embedded = embedded;
+            return this;
+        }
+
+        /**
+         * Whether each block file named is checked against the published
+         * manifest; it is unless this says no.
+         *
+         * @param verify false to skip the check
+         * @return this builder
+         */
+        public Builder verify(boolean verify) {
+            this.verify = verify;
             return this;
         }
 
@@ -178,6 +225,15 @@ public final class Teimeris {
             Map<String, Object> config = new LinkedHashMap<>();
             if (dataDir != null) {
                 config.put("dataDir", dataDir);
+            }
+            if (!files.isEmpty()) {
+                config.put("files", List.copyOf(files));
+            }
+            if (embedded != null) {
+                config.put("embedded", embedded);
+            }
+            if (verify != null) {
+                config.put("verify", verify);
             }
             if (profile != null) {
                 config.put("profile", profile);

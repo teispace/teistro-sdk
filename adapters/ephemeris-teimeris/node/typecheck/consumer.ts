@@ -16,6 +16,13 @@ const sdk = new Context({
   ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
 });
 
+// Ranges beyond the built-in years, by path, with the switches beside them.
+const ranged = teimeris({
+  files: ['cache/sepl_12.se1', 'cache/semo_12.se1'],
+  embedded: true,
+  verify: true,
+});
+
 const typed = engine(sdk.engine);
 
 // One value comes back as itself, typed.
@@ -73,4 +80,4 @@ const packaged: string = platformPackage();
 
 sdk.dispose();
 
-export { name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, moon, stars, cusps, ascendant, nothing, where, packaged };
+export { ranged, name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, moon, stars, cusps, ascendant, nothing, where, packaged };

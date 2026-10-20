@@ -93,15 +93,27 @@ export function binary(named) {
  * That is the whole reason a descriptor is a value rather than a string
  * the SDK looks up.
  *
+ * With nothing named it reads the data built into the engine, 1800 to
+ * 2399, and the directory `TEIMERIS_DATA_DIR` names when that is set.
+ *
+ * ```js
+ * // The built-in years, and 1200 to 1799 the app downloaded.
+ * teimeris({ files: ['cache/sepl_12.se1', 'cache/semo_12.se1'] });
+ * ```
+ *
  * @param {object} [options]
- * @param {string} [options.dataDir] where the engine's data files are;
- *   it looks beside its own build when this is omitted
+ * @param {string} [options.dataDir] a directory of data files, read after
+ *   the built-in data
+ * @param {readonly string[]} [options.files] block files by path, each
+ *   checked against the published size and SHA-256
+ * @param {boolean} [options.embedded] `false` leaves the built-in data out
+ * @param {boolean} [options.verify] `false` skips the check
  * @param {string} [options.profile] the engine's own accuracy profile
  * @param {string} [options.binary] the platform binary, when a caller
  *   would rather name it than let this package find it
  */
 export default function teimeris(options = {}) {
-  const { dataDir, profile, binary: named } = options;
+  const { dataDir, files, embedded, verify, profile, binary: named } = options;
   // The keys are the **adapter's**, and its own `Config` spells them in
   // camelCase with `deny_unknown_fields` — so a misspelling is refused
   // rather than silently defaulted. `cargo xtask check-package` caught
@@ -109,6 +121,9 @@ export default function teimeris(options = {}) {
   // object through as JSON and reads none of it.
   const config = {};
   if (dataDir !== undefined) config.dataDir = dataDir;
+  if (files !== undefined && files.length > 0) config.files = Object.freeze([...files]);
+  if (embedded !== undefined) config.embedded = embedded;
+  if (verify !== undefined) config.verify = verify;
   if (profile !== undefined) config.profile = profile;
   return Object.freeze({ plugin: binary(named), config: Object.freeze(config) });
 }

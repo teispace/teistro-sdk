@@ -25,7 +25,7 @@ import os
 import platform
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Sequence
 
 from teistro import Plugin
 
@@ -104,6 +104,9 @@ def binary(named: Optional[str] = None) -> str:
 def teimeris(
     *,
     data_dir: Optional[str] = None,
+    files: Sequence[str] = (),
+    embedded: Optional[bool] = None,
+    verify: Optional[bool] = None,
     profile: Optional[str] = None,
     path: Optional[str] = None,
 ) -> Plugin:
@@ -114,10 +117,26 @@ def teimeris(
     is cast. That is the whole reason a descriptor is a value rather than
     a string the SDK looks up.
 
-    `data_dir` is where the engine's data files are; it looks beside its
-    own build when omitted. `profile` is the engine's own accuracy
-    profile. `path` names the platform binary, for a caller who would
-    rather say than let this package look.
+    With nothing named it reads the data built into the engine, 1800 to
+    2399, and the directory `TEIMERIS_DATA_DIR` names when that is set.
+
+    - `data_dir` is a directory of the engine's data files, read after the
+      built-in data.
+    - `files` adds ranges an app downloaded, each a block file by path: a
+      600-year block is its `sepl_*.se1` and `semo_*.se1` files (and
+      `seas_*.se1` for Chiron, Ceres, Pallas, Juno and Vesta), so
+      `["cache/sepl_12.se1", "cache/semo_12.se1"]` adds 1200 to 1799. Each
+      is checked against the published size and SHA-256 and refused by
+      name when it differs (a download cut short); a span with a hole in
+      it is refused with the files that fill it.
+    - `embedded=False` leaves the built-in data out; `verify=False` skips
+      the check.
+    - `profile` is the engine's own accuracy profile; `path` names the
+      platform binary, for a caller who would rather say than let this
+      package look.
+
+    The files of every block, with their sizes and digests, are listed in
+    `docs/05-testing/teimeris-ranges-measured.md`.
     """
     # The keys are the **adapter's**, and its own `Config` spells them in
     # camelCase with `deny_unknown_fields` -- so a misspelling is refused
@@ -126,6 +145,12 @@ def teimeris(
     config: dict[str, object] = {}
     if data_dir is not None:
         config["dataDir"] = data_dir
+    if files:
+        config["files"] = [str(file) for file in files]
+    if embedded is not None:
+        config["embedded"] = embedded
+    if verify is not None:
+        config["verify"] = verify
     if profile is not None:
         config["profile"] = profile
     return Plugin(plugin=binary(path), config=config)

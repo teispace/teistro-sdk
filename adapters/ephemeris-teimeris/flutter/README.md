@@ -2,7 +2,7 @@
 
 The Teimeris ephemeris in a Flutter app on Android and iOS, with **no data
 files**: the adapter library this package bundles is built with the engine's
-data inside it (`TM_EMBED_TIER=MODERN`, 1800 to 2400), so `teimeris()` opens
+data inside it (`TM_EMBED_TIER=MODERN`, 1800 to 2399), so `teimeris()` opens
 it with no path, no assets copied out at first start, and nothing hashed at
 start-up. Each embedded file's SHA-256 was computed when the engine was
 built, and the provenance a result carries is the same as a directory of
@@ -44,6 +44,31 @@ the one Nepal's official calendar follows.
 
 `teimeris(profile: 'max')` asks for the engine's corrected profile, and
 `teimeris(path: ...)` opens a library you bundled another way.
+
+## Other years
+
+The engine carries **1800 to 2399** in its own binary, and that is what it
+reads when nothing else is named. Any other years are a **range** the app
+adds: a 600-year block is two files, the planets' (`sepl_*.se1`) and the
+Moon's (`semo_*.se1`), and a third (`seas_*.se1`) for Chiron, Ceres,
+Pallas, Juno and Vesta. Download a block's files into the app's own
+storage, then name them:
+
+```dart
+final support = (await getApplicationSupportDirectory()).path;
+final ctx = sdk.context(ephemeris: [
+  teimeris(files: ['$support/sepl_12.se1', '$support/semo_12.se1']), // adds 1200 to 1799
+]);
+```
+
+Each file is checked against its published size and SHA-256 before it is
+read, and one that differs is refused by name: that is what a download cut
+short looks like. A set with a hole in it, a block missing between two
+others or a planet file without its Moon, is refused with the files that
+fill it. Every block's files, sizes and digests are in
+[the ranges page](../../../docs/05-testing/teimeris-ranges-measured.md),
+read from the same manifest the check uses.
+
 
 ## Which ephemeris
 

@@ -26,6 +26,31 @@ A chain is ordered and explicit: the entries are tried in order, and a
 context asked for an engine and given the built-in without being told is
 the silence this refuses. One entry is one entry.
 
+## Other years
+
+The engine carries **1800 to 2399** in its own binary, and that is what it
+reads when nothing else is named. Any other years are a **range** the app
+adds: a 600-year block is two files, the planets' (`sepl_*.se1`) and the
+Moon's (`semo_*.se1`), and a third (`seas_*.se1`) for Chiron, Ceres,
+Pallas, Juno and Vesta. Download a block's files into the app's own
+storage, then name them:
+
+```python
+with sdk.context(ephemeris=[teimeris(files=["cache/sepl_12.se1", "cache/semo_12.se1"])]) as ctx:
+    ...  # adds 1200 to 1799
+```
+
+`data_dir` names a directory of data files read after the built-in ones; `embedded=False` leaves the built-in data out.
+
+Each file is checked against its published size and SHA-256 before it is
+read, and one that differs is refused by name: that is what a download cut
+short looks like. A set with a hole in it, a block missing between two
+others or a planet file without its Moon, is refused with the files that
+fill it. Every block's files, sizes and digests are in
+[the ranges page](../../../docs/05-testing/teimeris-ranges-measured.md),
+read from the same manifest the check uses.
+
+
 ## The typed façade
 
 The engine describes 161 functions of its own. What this adapter can

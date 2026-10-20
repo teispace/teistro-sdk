@@ -110,18 +110,49 @@ String binary([String? named]) {
 /// is cast. That is the whole reason a descriptor is a value rather than
 /// a string the SDK looks up.
 ///
-/// `dataDir` is where the engine's data files are; it looks beside its
-/// own build when omitted. `profile` is the engine's own accuracy
-/// profile. `path` names the platform binary, for a caller who would
-/// rather say than let this package look.
-PluginEphemeris teimeris({String? dataDir, String? profile, String? path}) =>
-    PluginEphemeris(
-      plugin: binary(path),
-      // The keys are the **adapter's**, and its own `Config` spells them
-      // in camelCase with `deny_unknown_fields` — so a misspelling is
-      // refused rather than silently defaulted.
-      config: <String, Object?>{
-        if (dataDir != null) 'dataDir': dataDir,
-        if (profile != null) 'profile': profile,
-      },
-    );
+/// With nothing named it reads the data built into the engine, 1800 to
+/// 2399, and the directory `TEIMERIS_DATA_DIR` names when that is set.
+///
+/// - `dataDir` is a directory of the engine's data files, read after the
+///   built-in data.
+/// - `files` adds ranges an app downloaded, each a block file by path: a
+///   600-year block is its `sepl_*.se1` and `semo_*.se1` files (and
+///   `seas_*.se1` for Chiron, Ceres, Pallas, Juno and Vesta), so
+///   `['/cache/sepl_12.se1', '/cache/semo_12.se1']` adds 1200 to 1799.
+///   Each is checked against the published size and SHA-256 and refused
+///   by name when it differs (a download cut short); a span with a hole
+///   in it is refused with the files that fill it.
+/// - `embedded: false` leaves the built-in data out; `verify: false` skips
+///   the check.
+/// - `profile` is the engine's own accuracy profile; `path` names the
+///   platform binary, for a caller who would rather say than let this
+///   package look.
+///
+/// ```dart
+/// final ctx = sdk.context(ephemeris: [
+///   teimeris(files: ['$cache/sepl_12.se1', '$cache/semo_12.se1']),
+/// ]);
+/// ```
+///
+/// The files of every block, with their sizes and digests, are listed in
+/// the adapter's `docs/05-testing/teimeris-ranges-measured.md`.
+PluginEphemeris teimeris({
+  String? dataDir,
+  List<String> files = const [],
+  bool? embedded,
+  bool? verify,
+  String? profile,
+  String? path,
+}) => PluginEphemeris(
+  plugin: binary(path),
+  // The keys are the **adapter's**, and its own `Config` spells them
+  // in camelCase with `deny_unknown_fields` — so a misspelling is
+  // refused rather than silently defaulted.
+  config: <String, Object?>{
+    if (dataDir != null) 'dataDir': dataDir,
+    if (files.isNotEmpty) 'files': files,
+    if (embedded != null) 'embedded': embedded,
+    if (verify != null) 'verify': verify,
+    if (profile != null) 'profile': profile,
+  },
+);

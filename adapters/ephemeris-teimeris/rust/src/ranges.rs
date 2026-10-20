@@ -16,7 +16,7 @@
 //! `teistro-ephemeris-teimeris-ranges` from the engine's whole published
 //! set (13200 BC to AD 17191) and compiled into the adapter, so a check
 //! reads no file. Its sizes are published in
-//! `docs/03-design/teimeris-ranges-measured.md`.
+//! `docs/05-testing/teimeris-ranges-measured.md`.
 
 use std::sync::OnceLock;
 
@@ -122,7 +122,7 @@ pub fn verify(hash: &DataHash) -> Result<(), ProviderError> {
         return Err(ProviderError::invalid(format!(
             "`{}` is not a data file the engine publishes; its blocks are named \
              `sepl_18.se1`, `semo_18.se1`, `seas_18.se1` and so on \
-             (docs/03-design/teimeris-ranges-measured.md lists them)",
+             (docs/05-testing/teimeris-ranges-measured.md lists them)",
             hash.file
         )));
     };

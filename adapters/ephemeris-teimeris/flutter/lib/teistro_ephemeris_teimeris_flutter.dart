@@ -35,14 +35,32 @@ import 'src/release.dart' show adapterStem;
 /// The engine's own operations, typed, as the desktop package offers them.
 export 'package:teistro_ephemeris_teimeris/engine.dart';
 
-/// The Teimeris engine over the data built into the adapter.
+/// The Teimeris engine over the data built into the adapter, 1800 to 2399,
+/// and any ranges the app adds.
 ///
-/// `profile` is the engine's own accuracy profile (`compatible`, `max`).
-/// `path` names the adapter's library outright, for a caller who bundles it
-/// another way; otherwise the one this package's hook bundled is opened.
-PluginEphemeris teimeris({String? profile, String? path}) => PluginEphemeris(
+/// `files` adds ranges the app downloaded into its own storage, each a
+/// block file by path: a 600-year block is its `sepl_*.se1` and
+/// `semo_*.se1` files (and `seas_*.se1` for the five asteroids), so
+/// `['$support/sepl_12.se1', '$support/semo_12.se1']` adds 1200 to 1799.
+/// Each is checked against the published size and SHA-256 and refused by
+/// name when it differs, which is what a download cut short looks like;
+/// `verify: false` skips the check. `profile` is the engine's own accuracy
+/// profile (`compatible`, `max`). `path` names the adapter's library
+/// outright, for a caller who bundles it another way; otherwise the one
+/// this package's hook bundled is opened.
+PluginEphemeris teimeris({
+  List<String> files = const [],
+  bool? verify,
+  String? profile,
+  String? path,
+}) => PluginEphemeris(
   plugin: path ?? bundledAdapter(),
-  config: <String, Object?>{'data': 'embedded', 'profile': ?profile},
+  config: <String, Object?>{
+    'data': 'embedded',
+    if (files.isNotEmpty) 'files': files,
+    'verify': ?verify,
+    'profile': ?profile,
+  },
 );
 
 /// The adapter's library as the platform's loader opens it from inside the
