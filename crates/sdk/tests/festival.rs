@@ -10,7 +10,7 @@
 )]
 
 use teistro::catalogue::Calendar;
-use teistro::festival::{Edge, FestivalRule, FollowingRule, Guard, Predicate, Which};
+use teistro::festival::{Edge, FestivalRule, FollowingRule, Guard, Predicate, Which, Window};
 use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
@@ -59,7 +59,15 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
         found.value.unjudged
     );
     // Each in the Gregorian months its lunar month reaches.
-    let (shipped, counted) = (FestivalRule::dharmasindhu(), FollowingRule::nepal());
+    // The text's rules less the chaturthis at moonrise, which Nepal's
+    // pack leaves out as its panchanga does.
+    let (shipped, counted) = (
+        FestivalRule::dharmasindhu()
+            .into_iter()
+            .filter(|rule| rule.at != Window::Moonrise)
+            .collect::<Vec<_>>(),
+        FollowingRule::nepal(),
+    );
     let seasons = [
         ("RAMA_NAVAMI", 3..=4),
         ("JANMASHTAMI", 8..=9),
@@ -186,7 +194,16 @@ fn the_answer_alone_and_beside_its_days_agree_and_the_days_are_the_almanacs() {
         .iter()
         .map(|o| o.rule.as_str())
         .collect();
-    assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA", "BALI_PRATIPADA"]);
+    assert_eq!(
+        rules,
+        [
+            "VIJAYA_DASHAMI",
+            "SANKASHTA_CHATURTHI",
+            "KARAKA_CHATURTHI",
+            "LAKSHMI_PUJA",
+            "BALI_PRATIPADA"
+        ]
+    );
     let (days, each) = sdk.almanac().of_each(&from, &to, &delhi(), clock).unwrap();
     assert_eq!(beside.days, days);
     assert_eq!(beside.day_hashes, each);
@@ -287,4 +304,72 @@ fn a_kshaya_eleventh_pierced_at_sunrise_splits_the_three_observers() {
     let fast = &found.ekadashis[0];
     assert_eq!(fast.pierced_at, Some(teistro::festival::Vedha::Sunrise));
     assert_eq!(fast.days.each_ref().map(|day| day.day), [25, 26]);
+}
+
+/// *Dharmasindhu* p. 9's Sankashta chaturthi, the dark 4th at moonrise,
+/// over 2025 at Delhi: the twelve days a published almanac lists for New
+/// Delhi (rank 3), and p. 76's Karaka chaturthi on Ashvina's, Karva Chauth
+/// on 10 October. Each moonrise read is the day's panchanga's first, to the
+/// bit.
+#[test]
+fn the_dark_fourth_at_moonrise_is_the_almanacs_sankashta_every_month() {
+    let sdk = context();
+    let (from, to) = year(2025);
+    let clock = UtcOffset::literal(5, 30, 0);
+    let found = sdk
+        .almanac()
+        .festivals(
+            &from,
+            &to,
+            &delhi(),
+            clock,
+            &FestivalRequest::from(FestivalPack::Dharmasindhu),
+        )
+        .unwrap()
+        .value;
+    let on = |rule: &str| -> Vec<(u8, u8)> {
+        found
+            .observances
+            .iter()
+            .filter(|observance| observance.rule == rule)
+            .map(|observance| (observance.day.month, observance.day.day))
+            .collect()
+    };
+    assert!(found.unjudged.is_empty(), "{:?}", found.unjudged);
+    assert_eq!(
+        on("SANKASHTA_CHATURTHI"),
+        [
+            (1, 17),
+            (2, 16),
+            (3, 17),
+            (4, 16),
+            (5, 16),
+            (6, 14),
+            (7, 14),
+            (8, 12),
+            (9, 10),
+            (10, 10),
+            (11, 8),
+            (12, 7)
+        ]
+    );
+    assert_eq!(on("KARAKA_CHATURTHI"), [(10, 10)]);
+
+    // The moonrise each day was judged by is its panchanga's first.
+    let day = CalendarDate::defined(Calendar::Gregorian, 2025, 3, 17);
+    let panchanga = sdk
+        .almanac()
+        .of(&day, &day, &delhi(), clock)
+        .unwrap()
+        .value
+        .remove(0);
+    let bhalachandra = found
+        .observances
+        .iter()
+        .find(|observance| {
+            observance.rule == "SANKASHTA_CHATURTHI"
+                && (observance.day.month, observance.day.day) == (3, 17)
+        })
+        .unwrap();
+    assert_eq!(bhalachandra.extents[0].window.from, panchanga.moon.rises[0]);
 }

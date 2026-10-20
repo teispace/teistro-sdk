@@ -109,6 +109,11 @@ pub enum Window {
         /// The last, at least `from`.
         to: u8,
     },
+    /// The instant of the first moonrise after the day's sunrise and
+    /// before the next: *Dharmasindhu* p. 9 keeps the Sankashta chaturthi
+    /// on the tithi at moonrise (चन्द्रोदयव्यापिनी). A day the Moon does
+    /// not rise on leaves the occurrence unjudged.
+    Moonrise,
 }
 
 impl Window {
@@ -121,13 +126,15 @@ impl Window {
             | Window::Part { .. }
             | Window::Pradosha
             | Window::Nishitha
-            | Window::DayMuhurta { .. } => None,
+            | Window::DayMuhurta { .. }
+            | Window::Moonrise => None,
         }
     }
 
     /// Whether the window lies in the daylight, sunrise to sunset; the
     /// instant of sunset, which begins the evening, the pradosha after it
-    /// and the night's windows do not.
+    /// and the night's windows do not, nor does the moonrise, which the
+    /// rites kept at it see after dark.
     ///
     /// ```
     /// use teistro_panchanga::festival::Window;
@@ -140,9 +147,11 @@ impl Window {
     pub const fn in_daylight(self) -> bool {
         match self {
             Window::Sunrise | Window::Part { .. } | Window::DayMuhurta { .. } => true,
-            Window::Sunset | Window::Pradosha | Window::Nishitha | Window::NightMuhurta { .. } => {
-                false
-            }
+            Window::Sunset
+            | Window::Pradosha
+            | Window::Nishitha
+            | Window::NightMuhurta { .. }
+            | Window::Moonrise => false,
         }
     }
 }
@@ -521,6 +530,37 @@ pub fn yugma(tithi: Tithi) -> Option<Which> {
 }
 
 impl FestivalRule {
+    /// Whether the rule reads a moonrise, at its rite or in a guard: the
+    /// days it is judged over must have theirs searched.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::FestivalRule;
+    ///
+    /// let rules = FestivalRule::dharmasindhu();
+    /// let reads = |key: &str| rules.iter().any(|rule| rule.key == key && rule.reads_moonrise());
+    /// assert!(reads("SANKASHTA_CHATURTHI") && !reads("JANMASHTAMI"));
+    /// ```
+    #[must_use]
+    pub fn reads_moonrise(&self) -> bool {
+        self.at == Window::Moonrise
+            || self
+                .decide
+                .iter()
+                .flat_map(|guard| &guard.when)
+                .any(|predicate| {
+                    matches!(
+                        predicate,
+                        Predicate::Joined {
+                            at: Some(Window::Moonrise),
+                            ..
+                        } | Predicate::Stands {
+                            at: Window::Moonrise,
+                            ..
+                        }
+                    )
+                })
+    }
+
     /// Refuses a rule that could not be judged: an empty key, a ghati
     /// count outside a daylight's or a night's thirty, a night muhurta
     /// outside its fifteen, the yugma verse asked of a tithi it pairs
@@ -632,6 +672,21 @@ pub struct FestivalDay {
     pub tithi: Vec<Span<Tithi>>,
     /// Its nakshatras.
     pub nakshatra: Vec<Span<Nakshatra>>,
+    /// Its first moonrise, found only for a rule that reads
+    /// [`Window::Moonrise`].
+    pub moonrise: Moonrise,
+}
+
+/// A day's first moonrise, from its sunrise to the next.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Moonrise {
+    /// Not searched: no rule read it. A rule reading it over such a day is
+    /// refused rather than read as a day the Moon did not rise.
+    Unsearched,
+    /// The Moon rose at this instant.
+    Rose(JulianDay<Utc>),
+    /// The Moon did not rise between the two sunrises.
+    NoRise,
 }
 
 impl From<&Panchanga> for FestivalDay {
@@ -663,6 +718,7 @@ impl FestivalDay {
             month,
             tithi,
             nakshatra,
+            moonrise: Moonrise::Unsearched,
         }
     }
 
@@ -674,7 +730,10 @@ impl FestivalDay {
         Interval::literal(self.sunset.get(), self.next_sunrise.get())
     }
 
-    fn sunrise_day(&self) -> Interval {
+    /// The day a rite is kept on, sunrise to the next: the window a
+    /// moonrise is searched in.
+    #[must_use]
+    pub fn sunrise_day(&self) -> Interval {
         Interval::literal(self.sunrise.get(), self.next_sunrise.get())
     }
 
@@ -706,6 +765,17 @@ impl FestivalDay {
                 let last = self.daylight().part(u16::from(to).saturating_sub(1), 15)?;
                 Ok(Interval::literal(first.from.get(), last.to.get()))
             }
+            Window::Moonrise => match self.moonrise {
+                Moonrise::Rose(at) => Ok(Interval::literal(at.get(), at.get())),
+                Moonrise::NoRise => Err(Error::internal(format!(
+                    "{} has no moonrise, which judging leaves unjudged",
+                    self.date
+                ))),
+                Moonrise::Unsearched => Err(Error::invalid_arg(format!(
+                    "a rule reads the moonrise of {}, which no search found; fill the days' moonrises first (`Almanac::moonrises`)",
+                    self.date
+                ))),
+            },
         }
     }
 }
@@ -1039,6 +1109,16 @@ fn judge(
             earlier.date, later.date
         )));
     }
+    if rule.reads_moonrise()
+        && let Some(day) = [earlier, later]
+            .into_iter()
+            .find(|day| day.moonrise == Moonrise::NoRise)
+    {
+        return Ok(Err(format!(
+            "the Moon does not rise on {} between its two sunrises",
+            day.date
+        )));
+    }
     let extents = [
         extent(earlier, rule.at, tithi)?,
         extent(later, rule.at, tithi)?,
@@ -1292,14 +1372,58 @@ impl FestivalRule {
     /// The rules *Dharmasindhu* states with a table this evaluator reads,
     /// each citing its page in the 1888 Nirnaya-sagara edition: the four
     /// of `festival-rules.md` §1, then the seven Nepal's panchanga prints
-    /// (§9), then three schools' upakarma (§9.5, §9.7).
+    /// (§9), then three schools' upakarma (§9.5, §9.7), then the two
+    /// chaturthis kept at moonrise (`festival-rule-language.md` §3.1).
     #[must_use]
     pub fn dharmasindhu() -> Vec<FestivalRule> {
+        let mut rules = FestivalRule::printed_in_nepal();
+        rules.extend(FestivalRule::at_moonrise());
+        rules
+    }
+
+    /// The text's rules Nepal's national panchanga keeps: all but the two
+    /// chaturthis at moonrise, which it does not print.
+    fn printed_in_nepal() -> Vec<FestivalRule> {
         let mut rules = FestivalRule::first_four();
         rules.extend(FestivalRule::nepal_four());
         rules.extend(FestivalRule::nepal_three());
         rules.extend(FestivalRule::upakarma());
         rules
+    }
+
+    /// The Sankashta chaturthi, every month's dark 4th, and the Karaka
+    /// chaturthi, Ashvina's (*Dharmasindhu* pp. 9, 76): the tithi at
+    /// moonrise; the day whose moonrise alone holds it, the earlier,
+    /// joined to the 3rd, when both do, and the later when neither does.
+    fn at_moonrise() -> Vec<FestivalRule> {
+        let rule = |key: &str, source: &str, month, in_adhika| FestivalRule {
+            key: key.to_owned(),
+            source: source.to_owned(),
+            month,
+            convention: Convention::Amanta,
+            occurs: Tithi::KrishnaChaturthi.into(),
+            in_adhika,
+            at: Window::Moonrise,
+            decide: vec![
+                Guard::new([case(Case::EarlierOnly)], Choice::Earlier),
+                Guard::new([case(Case::Both)], Choice::Earlier),
+            ],
+            otherwise: Choice::Later,
+        };
+        vec![
+            rule(
+                "SANKASHTA_CHATURTHI",
+                "Dharmasindhu p. 9: the dark 4th at moonrise (चन्द्रोदयव्यापिनी); the day whose moonrise alone holds it, the earlier, joined to the 3rd, when both do, the later when neither does; every month, the adhika too",
+                None,
+                true,
+            ),
+            rule(
+                "KARAKA_CHATURTHI",
+                "Dharmasindhu p. 76: Ashvina's dark 4th, at moonrise, decided as the Sankashta chaturthi (p. 9)",
+                Some(Masa::Ashwina),
+                false,
+            ),
+        ]
     }
 
     /// *Dharmasindhu*'s rules as Nepal's national panchanga keeps them
@@ -1322,7 +1446,7 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn nepal() -> Vec<FestivalRule> {
-        let mut rules: Vec<FestivalRule> = FestivalRule::dharmasindhu()
+        let mut rules: Vec<FestivalRule> = FestivalRule::printed_in_nepal()
             .into_iter()
             .map(|rule| {
                 if rule.at.in_daylight() {

@@ -36,7 +36,7 @@ use teistro_time::local_day::{
     Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
 };
 
-use crate::festival::FestivalDay;
+use crate::festival::{FestivalDay, Moonrise};
 use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
@@ -470,6 +470,54 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
     ) -> Result<Envelope<Vec<FestivalDay>>, Error> {
         self.run(from, to, place, Moon::Unread, Self::festival_value)
+    }
+
+    /// Fills each day's first moonrise between its sunrise and the next
+    /// ([`FestivalDay::moonrise`]), for the rules that read one
+    /// ([`crate::festival::Window::Moonrise`]): every day's search in
+    /// lockstep, so a round of them is one request. The search is the one
+    /// [`Almanac::between`] makes over a sunrise day, so a day's moonrise
+    /// is its panchanga's first, to the bit. A polar day is left
+    /// unsearched, since it has no windows.
+    ///
+    /// # Errors
+    ///
+    /// A search the provider refuses.
+    pub fn moonrises(&self, days: &mut [FestivalDay], place: &Place) -> Result<(), Error> {
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let solver = self.moon_solver(&completion, place);
+        let round = Lockstep::new();
+        let searched: Vec<Interval> = days
+            .iter()
+            .filter(|day| day.normal)
+            .map(FestivalDay::sunrise_day)
+            .collect();
+        let mut found = round
+            .run(searched.iter().map(|window| {
+                solver.event_in(
+                    &round,
+                    HorizonEventKind::Rise,
+                    JulianDay::<Ut1>::literal(window.from.get()),
+                    window.days(),
+                )
+            }))
+            .into_iter();
+        for day in days.iter_mut().filter(|day| day.normal) {
+            let event = found
+                .next()
+                .ok_or_else(|| Error::internal("a moonrise search came apart"))??;
+            day.moonrise = match event {
+                Some(event) if event.instant.get() < day.next_sunrise.get() => {
+                    Moonrise::Rose(JulianDay::literal(event.instant.get()))
+                }
+                _ => Moonrise::NoRise,
+            };
+        }
+        Ok(())
     }
 
     /// Every day of a range as `value` computes it, the range found

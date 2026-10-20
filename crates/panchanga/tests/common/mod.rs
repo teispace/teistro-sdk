@@ -14,7 +14,7 @@ use teistro_core::catalogue::{Calendar, Masa, Nakshatra, Tithi, Vara};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
-use teistro_panchanga::festival::FestivalDay;
+use teistro_panchanga::festival::{FestivalDay, Moonrise};
 use teistro_panchanga::month;
 use teistro_panchanga::span::Span;
 
@@ -78,6 +78,7 @@ pub(crate) fn days_over(
                 month: month::of(amanta, at_sunrise, Convention::Amanta, kind),
                 tithi,
                 nakshatra: spans(nakshatras, window),
+                moonrise: Moonrise::Unsearched,
             }
         })
         .collect()

@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The chaturthis at moonrise** (`festival-rule-language.md` §3.1).
+**Numbers:** `DHARMASINDHU` gains `SANKASHTA_CHATURTHI`, every month's
+dark 4th at moonrise (p. 9), and `KARAKA_CHATURTHI`, Ashvina's (p. 76):
+over 2025 at Delhi, the twelve days a published almanac lists and Karva
+Chauth on 10 October. No other rule's day moved, and `NEPAL` and
+`NEPAL_PANCHANGA` are unchanged, since the committee prints neither. The
+rule language gains the `MOONRISE` window. A day's moonrise is searched
+only for a rule that reads one; a day the Moon does not rise on leaves
+the occurrence unjudged. The draft rule sent a 4th held only at the
+earlier moonrise to the later day; the text gives it the earlier.
+
 **The first crescent** (C684). **Numbers:** `NEPAL_PANCHANGA` gains
 `CHANDRODAYA`, the committee's monthly चन्द्रोदय, on all 25 of its rows in
 VS 2082 and 2083 over both skies; no other rule's day moved. It is the

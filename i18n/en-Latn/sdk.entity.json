@@ -3289,6 +3289,16 @@
       "name": "Chandrodaya",
       "prose": "Chandrodaya, the first crescent",
       "iast": "Candrodaya"
+    },
+    "SANKASHTA_CHATURTHI": {
+      "name": "Sankashta Chaturthi",
+      "prose": "Sankashta chaturthi, the dark fourth at moonrise",
+      "iast": "Saṅkaṣṭacaturthī"
+    },
+    "KARAKA_CHATURTHI": {
+      "name": "Karaka Chaturthi",
+      "prose": "Karaka chaturthi, Karva Chauth",
+      "iast": "Karakacaturthī"
     }
   }
 }

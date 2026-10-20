@@ -137,7 +137,7 @@ const VAISHNAVA: &str = "the Vaishnava day, the later one, whose sunrise the 8th
 /// with the crate test that reaches it on synthetic days. The pass fails
 /// on an unreached guard with no entry, on an entry for a guard a year
 /// reached, and on a test the crate does not have.
-const UNREACHED: [(&str, usize, &str, &str); 7] = [
+const UNREACHED: [(&str, usize, &str, &str); 8] = [
     (
         "VIJAYA_DASHAMI",
         1,
@@ -179,6 +179,12 @@ const UNREACHED: [(&str, usize, &str, &str); 7] = [
         0,
         "upakarma_parts_the_yajurvedis_on_how_long_the_later_day_holds_the_full_moon",
         "Shravana's full moon holding two sunrises, a vriddhi no year of the decade had",
+    ),
+    (
+        "KARAKA_CHATURTHI",
+        1,
+        "a_rite_at_moonrise_reads_each_days_first_moonrise",
+        "the 4th holding both moonrises, which needs it to outlast the 24 h 50 m between them, and no Ashvina of the decade had",
     ),
 ];
 

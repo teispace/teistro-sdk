@@ -422,7 +422,9 @@ enum FestivalKey {
   bhaumashtami('festival.BHAUMASHTAMI'),
   budhashtami('festival.BUDHASHTAMI'),
   somavatiAmavasya('festival.SOMAVATI_AMAVASYA'),
-  chandrodaya('festival.CHANDRODAYA');
+  chandrodaya('festival.CHANDRODAYA'),
+  sankashtaChaturthi('festival.SANKASHTA_CHATURTHI'),
+  karakaChaturthi('festival.KARAKA_CHATURTHI');
 
   const FestivalKey(this.key);
 
@@ -1674,6 +1676,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get holiTerai => _r.entity('festival.HOLI_TERAI');
   EntityForms get janmashtami => _r.entity('festival.JANMASHTAMI');
   EntityForms get kaliYugadi => _r.entity('festival.KALI_YUGADI');
+  EntityForms get karakaChaturthi => _r.entity('festival.KARAKA_CHATURTHI');
   EntityForms get kuchhiBhoye => _r.entity('festival.KUCHHI_BHOYE');
   EntityForms get kumaraJatra => _r.entity('festival.KUMARA_JATRA');
   EntityForms get kurmaJayanti => _r.entity('festival.KURMA_JAYANTI');
@@ -1702,6 +1705,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get ramaNavami => _r.entity('festival.RAMA_NAVAMI');
   EntityForms get raviSaptami => _r.entity('festival.RAVI_SAPTAMI');
   EntityForms get rishiPanchami => _r.entity('festival.RISHI_PANCHAMI');
+  EntityForms get sankashtaChaturthi => _r.entity('festival.SANKASHTA_CHATURTHI');
   EntityForms get saptamiShraddha => _r.entity('festival.SAPTAMI_SHRADDHA');
   EntityForms get setoMachhindranathJatra => _r.entity('festival.SETO_MACHHINDRANATH_JATRA');
   EntityForms get shankaracharyaJayanti => _r.entity('festival.SHANKARACHARYA_JAYANTI');

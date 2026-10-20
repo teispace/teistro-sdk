@@ -13,7 +13,9 @@ use teistro_core::time::UtcOffset;
 #[cfg(feature = "muhurta")]
 use teistro_muhurta::Answer;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
-use teistro_panchanga::festival::{FestivalDay, Observances, ekadashis, following, observances};
+use teistro_panchanga::festival::{
+    FestivalDay, FestivalRule, Observances, ekadashis, following, observances,
+};
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::year::LunarYear;
 
@@ -263,7 +265,14 @@ impl<'a> AlmanacArea<'a> {
             value: range,
             mut provenance,
         } = days;
-        let viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
+        let mut viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
+        // A moonrise is most of a day's requests, so it is searched only
+        // for a rule that reads one.
+        if request.rules().iter().any(FestivalRule::reads_moonrise) {
+            self.with_almanac(from, offset, |almanac| {
+                almanac.moonrises(&mut viewed, place)
+            })?;
+        }
         let karmakala = observances(request.rules(), &viewed)?;
         let counted = following(request.following(), &karmakala.observances, &viewed)?;
         let mut found = karmakala

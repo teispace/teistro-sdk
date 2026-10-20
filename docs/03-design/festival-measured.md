@@ -74,6 +74,8 @@ one a year did reach.
 | UPAKARMA_MADHYANDINA | LaterOnly 10 | otherwise: 4, guard 1: 6 |
 | UPAKARMA_TAITTIRIYA | LaterOnly 10 | otherwise: 3, guard 1: 7 |
 | UPAKARMA_SAMAVEDI | EarlierOnly 5, LaterOnly 4, UnequalParts 1 | otherwise: 5, guard 0: 5 |
+| SANKASHTA_CHATURTHI | Both 2, EarlierOnly 57, LaterOnly 22, Neither 10 | otherwise: 32, guard 0: 57, guard 1: 2 |
+| KARAKA_CHATURTHI | EarlierOnly 2, LaterOnly 7, Neither 1 | otherwise: 8, guard 0: 2 |
 
 The guards no year reached, and why:
 
@@ -84,6 +86,7 @@ The guards no year reached, and why:
 - HOLIKA guard 1: the full moon beginning after the earlier day's pradosha and ending before the later's, a tithi shorter than the day between them, which no Phalguna of the decade had; the crate test `holika_takes_the_later_day_whenever_its_pradosha_holds_the_full_moon` reaches it.
 - UPAKARMA_MADHYANDINA guard 0: Shravana's full moon holding two sunrises, a vriddhi no year of the decade had; the crate test `upakarma_parts_the_yajurvedis_on_how_long_the_later_day_holds_the_full_moon` reaches it.
 - UPAKARMA_TAITTIRIYA guard 0: Shravana's full moon holding two sunrises, a vriddhi no year of the decade had; the crate test `upakarma_parts_the_yajurvedis_on_how_long_the_later_day_holds_the_full_moon` reaches it.
+- KARAKA_CHATURTHI guard 1: the 4th holding both moonrises, which needs it to outlast the 24 h 50 m between them, and no Ashvina of the decade had; the crate test `a_rite_at_moonrise_reads_each_days_first_moonrise` reaches it.
 
 ## 3. Ekadashi against a published almanac
 

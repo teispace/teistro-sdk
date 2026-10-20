@@ -5619,6 +5619,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.KARAKA_CHATURTHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms karakaChaturthi() {
+                    return r.entity("festival.KARAKA_CHATURTHI");
+                }
+
+                /**
                  * The forms of `festival.KUCHHI_BHOYE` in the current locale.
                  *
                  * @return the forms
@@ -5868,6 +5877,15 @@ public final class Messages {
                  */
                 public EntityForms rishiPanchami() {
                     return r.entity("festival.RISHI_PANCHAMI");
+                }
+
+                /**
+                 * The forms of `festival.SANKASHTA_CHATURTHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sankashtaChaturthi() {
+                    return r.entity("festival.SANKASHTA_CHATURTHI");
                 }
 
                 /**

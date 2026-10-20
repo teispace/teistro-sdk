@@ -1,8 +1,8 @@
 # The festival rule language: what it lacks
 
-Status: `design`, 2026-10-20. Built: `DAY_MUHURTA` (§3.2), `GREATER`
-with the maintainer's rule (§3.3), `dayOfPaksha` (§3.4), and `ON_VARA`
-with `NONE` (§3.5); the rest is not. Cruxes C601
+Status: `design`, 2026-10-20. Built: `MOONRISE` (§3.1), `DAY_MUHURTA`
+(§3.2), `GREATER` with the maintainer's rule (§3.3), `dayOfPaksha`
+(§3.4), and `ON_VARA` with `NONE` (§3.5); the rest is not. Cruxes C601
 to C604, C606, C608, C614, C616 to C619
 (`01-research/feature-universe/19-verification-cruxes.md`).
 
@@ -18,7 +18,7 @@ rows (§4): which form would express each row, or why none does.
 
 | part | members |
 |---|---|
-| window | `SUNRISE`, `SUNSET`, a fifth of the daylight (`PART`: pratah, sangava, madhyahna, aparahna, sayahna), `PRADOSHA`, `NISHITHA`, a night muhurta (`NIGHT_MUHURTA`, 1–15); since this page, a range of day muhurtas (`DAY_MUHURTA`, §3.2) |
+| window | `SUNRISE`, `SUNSET`, a fifth of the daylight (`PART`: pratah, sangava, madhyahna, aparahna, sayahna), `PRADOSHA`, `NISHITHA`, a night muhurta (`NIGHT_MUHURTA`, 1–15); since this page, the moonrise (`MOONRISE`, §3.1) and a range of day muhurtas (`DAY_MUHURTA`, §3.2) |
 | what is kept | a tithi in a month, or every month; a nakshatra in a paksha |
 | cases | `EARLIER_ONLY`, `LATER_ONLY`, `BOTH` (both wholly), `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS` |
 | predicates | `CASE`, `JOINED` (the tithi with a nakshatra), `STANDS` (a nakshatra in a window), `LASTS` (ghatis past an edge), `WHOLLY`; since this page, `GREATER` (§3.3) |
@@ -44,23 +44,42 @@ only".
 ```
 
 An instant: the first moonrise after the day's sunrise and before the
-next. A day on which the Moon does not rise holds nothing. The cases read
-it as they read `SUNRISE`.
+next. The cases read it as they read `SUNRISE`. A day the Moon does not
+rise on, which happens only far from the equator, leaves the occurrence
+unjudged and says so: the text does not say what such a day holds, and
+reading it as holding nothing would decide by default.
 
-**Sources.** *Dharmasindhu* p. 9 gives the Sankashta chaturthi to the
-tithi at moonrise (चन्द्रोदय): the later day when only its moonrise holds
-it, the one joined to the 3rd when both do, and the later when neither
-does. The Gauri and Vinayaka chaturthi on the same page are madhyahna
-rites. p. 76 keeps Karaka chaturthi as Sankashta, and p. 44 the
-Ashunya-shayana vrata at moonrise.
+**Sources.** *Dharmasindhu* p. 9 (OCR ll. 2160–2162): संकष्टचतुर्थी तु
+चन्द्रोदयव्यापिनी ग्राह्या · परदिने चन्द्रोदयव्याप्तौ परैव · उभयदिने
+चन्द्रोदयव्याप्तौ तृतीयायुतैव ग्राह्या · दिनद्वये चन्द्रोदयव्याप्त्यभावे
+परैव. The tithi at moonrise; the later day when the later's moonrise
+holds it; the one joined to the 3rd, the earlier, when both do; the later
+when neither does. The Gauri and Vinayaka chaturthi on the same page are
+madhyahna rites. p. 76 (l. 5070) keeps Ashvina's dark 4th, the Karaka
+chaturthi, at moonrise and decides it "as the Sankashta chaturthi", and
+p. 44 the Ashunya-shayana vrata at moonrise.
 
 ```json
-{"key": "SANKASHTA_CHATURTHI", "tithi": "KRISHNA_CHATURTHI",
+{"key": "SANKASHTA_CHATURTHI", "tithi": "KRISHNA_CHATURTHI", "inAdhika": true,
  "at": {"window": "MOONRISE"},
- "decide": [{"when": [{"is": "CASE", "case": "LATER_ONLY"}], "choose": "LATER"},
+ "decide": [{"when": [{"is": "CASE", "case": "EARLIER_ONLY"}], "choose": "EARLIER"},
             {"when": [{"is": "CASE", "case": "BOTH"}], "choose": "EARLIER"}],
  "otherwise": "LATER"}
 ```
+
+The draft of this page guarded `LATER_ONLY` and fell through to the later
+day, which sent a 4th held only at the earlier day's moonrise to the
+later; the first clause, the tithi at moonrise, gives it the earlier.
+
+**Built.** `DHARMASINDHU` ships `SANKASHTA_CHATURTHI` (every month, the
+adhika too) and `KARAKA_CHATURTHI` (Ashvina). `NEPAL` and
+`NEPAL_PANCHANGA` leave both out, since the committee prints neither.
+A day's moonrise is searched only when a rule reads one, in lockstep
+over the range, the search the panchanga makes over a sunrise day, so a
+day's moonrise is its panchanga's first to the bit. Over 2025 at Delhi
+the rule gives the twelve Sankashti days a published almanac lists for
+New Delhi (rank 3), and the Karaka chaturthi on Karva Chauth, 10 October
+(`crates/sdk/tests/festival.rs`).
 
 **Settles:** Kashi bada Ganesh (Magha's dark 4th, 12 of 14), and
 Ramanujacharya's jayanti as a candidate.

@@ -2832,6 +2832,16 @@
       "name": "चन्द्र दर्शन",
       "prose": "चन्द्र दर्शन",
       "iast": "Candrodaya"
+    },
+    "SANKASHTA_CHATURTHI": {
+      "name": "संकष्टी चतुर्थी",
+      "prose": "संकष्टी चतुर्थी",
+      "iast": "Saṅkaṣṭacaturthī"
+    },
+    "KARAKA_CHATURTHI": {
+      "name": "करवा चौथ",
+      "prose": "करवा चौथ",
+      "iast": "Karakacaturthī"
     }
   }
 }

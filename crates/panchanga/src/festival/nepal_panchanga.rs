@@ -129,6 +129,7 @@ impl Fit {
                 DayPart::Sayahna => "sayahna",
             },
             Window::Pradosha => "pradosha",
+            Window::Moonrise => "moonrise",
             Window::Sunrise
             | Window::Sunset
             | Window::Nishitha

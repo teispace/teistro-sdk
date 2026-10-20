@@ -3281,6 +3281,16 @@
       "name": "चन्द्रोदय",
       "prose": "चन्द्रोदय",
       "iast": "Candrodaya"
+    },
+    "SANKASHTA_CHATURTHI": {
+      "name": "संकष्टी चतुर्थी",
+      "prose": "संकष्टी चतुर्थी",
+      "iast": "Saṅkaṣṭacaturthī"
+    },
+    "KARAKA_CHATURTHI": {
+      "name": "करक चतुर्थी",
+      "prose": "करक चतुर्थी",
+      "iast": "Karakacaturthī"
     }
   }
 }

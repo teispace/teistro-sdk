@@ -19,10 +19,11 @@ use teistro_calendar::EraNumber;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Era, Masa, Nakshatra, Paksha, Tithi, Vara};
 use teistro_core::interval::Interval;
+use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     Case, Choice, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule,
-    Guard, Observances, Occurs, Predicate, Unjudged, Which, Window, ekadashis, following,
+    Guard, Moonrise, Observances, Occurs, Predicate, Unjudged, Which, Window, ekadashis, following,
     observances, yugma,
 };
 use teistro_panchanga::month;
@@ -516,8 +517,17 @@ fn one_of(
 /// nine ghatis, is where the two part.
 #[test]
 fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
-    let (text, nepal) = (FestivalRule::dharmasindhu(), FestivalRule::nepal());
-    // The text's rules, then the monthly full-moon fast no text states.
+    let (mut text, nepal) = (FestivalRule::dharmasindhu(), FestivalRule::nepal());
+    // The text's rules less the two chaturthis at moonrise, which the
+    // committee does not print, then the monthly full-moon fast no text
+    // states.
+    let at_moonrise: Vec<String> = text
+        .iter()
+        .filter(|rule| rule.at == Window::Moonrise)
+        .map(|rule| rule.key.clone())
+        .collect();
+    assert_eq!(at_moonrise, ["SANKASHTA_CHATURTHI", "KARAKA_CHATURTHI"]);
+    text.retain(|rule| rule.at != Window::Moonrise);
     assert_eq!(text.len() + 1, nepal.len());
     assert_eq!(
         nepal.last().map(|rule| rule.key.as_str()),
@@ -1463,6 +1473,72 @@ fn the_shipped_rules_round_trip_through_their_json_record() {
         "{text}"
     );
     assert!(text.contains(r#""is":"WHOLLY","day":"EARLIER""#), "{text}");
+}
+
+/// A rite at moonrise (§3.1): the 4th at each day's moonrise, the earlier
+/// day when both moonrises hold it (*Dharmasindhu* p. 9), and a day the
+/// Moon does not rise on leaves the occurrence unjudged rather than read
+/// as holding nothing.
+#[test]
+fn a_rite_at_moonrise_reads_each_days_first_moonrise() {
+    for (key, month) in [
+        ("SANKASHTA_CHATURTHI", Masa::Magha),
+        ("KARAKA_CHATURTHI", Masa::Ashwina),
+    ] {
+        at_moonrise(key, month);
+    }
+}
+
+/// [`a_rite_at_moonrise_reads_each_days_first_moonrise`] for one rule.
+fn at_moonrise(key: &str, month: Masa) {
+    let sankashta = FestivalRule::dharmasindhu()
+        .into_iter()
+        .find(|rule| rule.key == key)
+        .unwrap();
+    assert!(sankashta.reads_moonrise());
+    // The 4th from day 1's eighth ghati to day 2's fortieth, judged
+    // between days 1 and 2.
+    let tithis = [
+        (Tithi::KrishnaTritiya, ghati(1, 8.0)),
+        (Tithi::KrishnaChaturthi, ghati(2, 40.0)),
+        (Tithi::KrishnaPanchami, ghati(5, 0.0)),
+    ];
+    let mut days = days_of(&tithis, &[], month, MonthKind::Nija);
+    // Unsearched, the rule is refused, naming the remedy.
+    let why = observances(std::slice::from_ref(&sankashta), &days).unwrap_err();
+    assert!(why.to_string().contains("Almanac::moonrises"), "{why}");
+    let rise = |day: usize, at: f64| Moonrise::Rose(JulianDay::literal(ghati(day, at)));
+    let kept = |days: &[FestivalDay]| {
+        let answer = observances(std::slice::from_ref(&sankashta), days).unwrap();
+        assert!(answer.unjudged.is_empty(), "{:?}", answer.unjudged);
+        answer
+            .observances
+            .first()
+            .map(|kept| (kept.day.day - 1, kept.case))
+    };
+    // Both moonrises in the 4th: the earlier, joined to the 3rd.
+    days[1].moonrise = rise(1, 50.0);
+    days[2].moonrise = rise(2, 30.0);
+    assert_eq!(kept(&days), Some((1, Case::Both)));
+    // Only the later's: the later.
+    days[1].moonrise = rise(1, 5.0);
+    assert_eq!(kept(&days), Some((2, Case::LaterOnly)));
+    // Only the earlier's: the earlier.
+    days[1].moonrise = rise(1, 50.0);
+    days[2].moonrise = rise(2, 45.0);
+    assert_eq!(kept(&days), Some((1, Case::EarlierOnly)));
+    // Neither: the later.
+    days[1].moonrise = rise(1, 5.0);
+    assert_eq!(kept(&days), Some((2, Case::Neither)));
+    // No moonrise on one of the two days: unjudged, with the reason.
+    days[2].moonrise = Moonrise::NoRise;
+    let answer = observances(std::slice::from_ref(&sankashta), &days).unwrap();
+    assert_eq!(answer.observances, []);
+    assert!(
+        answer.unjudged[0].why.contains("does not rise"),
+        "{:?}",
+        answer.unjudged
+    );
 }
 
 /// Every string an answer's JSON holds, by its path with list indices
