@@ -1149,6 +1149,189 @@ fn a_night_muhurta_outside_the_night_s_fifteen_is_refused() {
     }
 }
 
+/// The maintainer's rule over a window (C601, C603): the later day only
+/// when it alone holds the window or holds more of it, in time; the
+/// earlier on a tie, both wholly being one, and when neither holds it.
+fn greater_coverage(at: Window) -> FestivalRule {
+    FestivalRule {
+        at,
+        ..a_rule(
+            Tithi::KrishnaEkadashi,
+            vec![
+                Guard::new(
+                    [Predicate::Case {
+                        case: Case::LaterOnly,
+                    }],
+                    Choice::Later,
+                ),
+                Guard::new([Predicate::Case { case: Case::Both }], Choice::Earlier),
+                Guard::new([Predicate::Greater { day: Which::Later }], Choice::Later),
+            ],
+            Choice::Earlier,
+        )
+    }
+}
+
+/// Purvahna as six day muhurtas, ghatis 0 to 12 of the synthetic day (a
+/// day muhurta is two of its ghatis): each clause of the rule in turn,
+/// and the deciding guard.
+#[test]
+fn greater_coverage_of_six_day_muhurtas_takes_the_day_holding_more_time() {
+    let rule = greater_coverage(Window::DayMuhurta { from: 1, to: 6 });
+    rule.check().unwrap();
+    let eleventh = |from, to| one_of(&rule, Tithi::KrishnaEkadashi, from, to, Masa::Shravana);
+    // Four ghatis of the earlier window, six of the later.
+    assert_eq!(
+        eleventh(ghati(1, 8.0), ghati(2, 6.0)),
+        (Case::UnequalParts, 2, Decided::Guard { index: 2 })
+    );
+    // Eight against six.
+    assert_eq!(
+        eleventh(ghati(1, 4.0), ghati(2, 6.0)),
+        (Case::UnequalParts, 1, Decided::Otherwise)
+    );
+    // A quarter day and a quarter day of the whole daylight, instants
+    // a binary fraction can hold exactly: a tie, the earlier.
+    let whole = greater_coverage(Window::DayMuhurta { from: 1, to: 15 });
+    assert_eq!(
+        one_of(&whole, Tithi::KrishnaEkadashi, 1.25, 2.25, Masa::Shravana),
+        (Case::EqualParts, 1, Decided::Otherwise)
+    );
+    // Begun after the earlier window and ended before the later: neither.
+    assert_eq!(
+        eleventh(ghati(1, 14.0), ghati(1, 50.0)),
+        (Case::Neither, 1, Decided::Otherwise)
+    );
+    // Ended past the seventh muhurta's start: the later holds the window
+    // wholly and the earlier in part.
+    assert_eq!(
+        eleventh(ghati(1, 2.0), ghati(2, 13.0)),
+        (Case::UnequalParts, 2, Decided::Guard { index: 2 })
+    );
+}
+
+/// `GREATER` weighs time, not the share of each window: a longer later
+/// daylight holding less of its own window can hold more of the tithi.
+/// And it does not see two whole windows as a tie, which is why the rule
+/// puts `BOTH` before it.
+#[test]
+fn greater_weighs_time_and_the_rule_ties_two_whole_windows() {
+    let whole = Window::DayMuhurta { from: 1, to: 15 };
+    let rule = greater_coverage(whole);
+    let tithis = |from: f64, to: f64| {
+        let mut days = days_of(
+            &[
+                (Tithi::KrishnaNavami, ghati(0, 20.0)),
+                (Tithi::KrishnaDashami, from),
+                (Tithi::KrishnaEkadashi, to),
+                (Tithi::KrishnaNavami, ghati(5, 0.0)),
+            ],
+            &[],
+            Masa::Shravana,
+            MonthKind::Nija,
+        );
+        // The later day's daylight is 36 ghatis, the earlier's 30.
+        days[2].sunset = teistro_core::quantity::JulianDay::literal(ghati(2, 36.0));
+        days
+    };
+    // 12 of the earlier's 30 ghatis (0.40), 13 of the later's 36 (0.36).
+    let days = tithis(ghati(1, 18.0), ghati(2, 13.0));
+    let observance = &observances(std::slice::from_ref(&rule), &days)
+        .unwrap()
+        .observances[0];
+    assert!(observance.extents[0].held > observance.extents[1].held);
+    assert_eq!(
+        (observance.day.day - 1, observance.decided_by.clone()),
+        (2, Decided::Guard { index: 2 })
+    );
+    // Both daylights wholly: the rule's tie, though `GREATER` alone would
+    // give the later, longer one.
+    let days = tithis(ghati(0, 40.0), ghati(2, 40.0));
+    assert_eq!(
+        decided(&rule, &days),
+        (Case::Both, 1, Decided::Guard { index: 1 })
+    );
+    let greater_alone = FestivalRule {
+        decide: vec![Guard::new(
+            [Predicate::Greater { day: Which::Later }],
+            Choice::Later,
+        )],
+        ..rule
+    };
+    assert_eq!(
+        decided(&greater_alone, &days),
+        (Case::Both, 2, Decided::Guard { index: 0 })
+    );
+}
+
+/// A rule weighing two times stands while the place moves by half their
+/// difference: four ghatis against six stand a ghati, closer than any
+/// edge of the tithi to an instant of the windows (four ghatis).
+#[test]
+fn a_rule_weighing_two_times_stands_by_half_their_difference() {
+    let rule = greater_coverage(Window::DayMuhurta { from: 1, to: 6 });
+    let days = days_of(
+        &[
+            (Tithi::KrishnaNavami, ghati(0, 20.0)),
+            (Tithi::KrishnaDashami, ghati(1, 8.0)),
+            (Tithi::KrishnaEkadashi, ghati(2, 6.0)),
+            (Tithi::KrishnaNavami, ghati(5, 0.0)),
+        ],
+        &[],
+        Masa::Shravana,
+        MonthKind::Nija,
+    );
+    let observance = &observances(std::slice::from_ref(&rule), &days)
+        .unwrap()
+        .observances[0];
+    let ghati_seconds = 86_400.0 / 60.0;
+    assert!(
+        (observance.margin_seconds - ghati_seconds).abs() < 1e-3,
+        "{}",
+        observance.margin_seconds
+    );
+}
+
+#[test]
+fn day_muhurtas_outside_the_daylight_s_fifteen_or_backwards_are_refused() {
+    for (from, to, field) in [(0, 6, "from"), (1, 16, "to"), (7, 6, "to")] {
+        let rule = greater_coverage(Window::DayMuhurta { from, to });
+        assert_eq!(
+            rule.check().unwrap_err().field(),
+            Some(format!("at.{field}").as_str())
+        );
+        let mut rule = greater_coverage(Window::Sunrise);
+        rule.decide.push(Guard::new(
+            [Predicate::Stands {
+                day: Which::Later,
+                nakshatra: Nakshatra::Shravana,
+                at: Window::DayMuhurta { from, to },
+            }],
+            Choice::Later,
+        ));
+        assert_eq!(
+            rule.check().unwrap_err().field(),
+            Some(format!("decide.when.at.{field}").as_str())
+        );
+    }
+}
+
+#[test]
+fn day_muhurtas_and_greater_read_and_write_as_the_language_spells_them() {
+    let rule = greater_coverage(Window::DayMuhurta { from: 1, to: 6 });
+    let text = serde_json::to_string(&rule).unwrap();
+    assert!(
+        text.contains(r#""at":{"window":"DAY_MUHURTA","from":1,"to":6}"#),
+        "{text}"
+    );
+    assert!(text.contains(r#"{"is":"GREATER","day":"LATER"}"#), "{text}");
+    let back: FestivalRule = serde_json::from_str(&text).unwrap();
+    assert_eq!(back, rule);
+    for rule in FestivalRule::nepal_panchanga() {
+        rule.check().unwrap();
+    }
+}
+
 #[test]
 fn the_shipped_rules_round_trip_through_their_json_record() {
     let rules = FestivalRule::dharmasindhu();

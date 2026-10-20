@@ -4258,6 +4258,7 @@ test('an almanac carries the festivals it was asked for', () => {
     [{ rules: [{ ...sunrise, at: { window: 'DUSK' } }] }, 'festivals.rules[0].at.window'],
     [{ rules: [{ ...sunrise, nakshatra: 'nakshatra.HASTA', paksha: 'paksha.SHUKLA' }] }, 'festivals.rules[0]'],
     [{ rules: [{ ...sunrise, at: { window: 'NIGHT_MUHURTA', muhurta: 16 } }] }, 'festivals.rules[0].at.muhurta'],
+    [{ rules: [{ ...sunrise, at: { window: 'DAY_MUHURTA', from: 7, to: 6 } }] }, 'festivals.rules[0].at.to'],
     [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', vedha: 'DUSK', table: {} }] }, 'festivals.rules[1].vedha'],
     [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', after: 'HOLIKA', days: 16 }] }, 'festivals.rules[1].days'],
     [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', after: 'NOBODY', days: 1 }] }, 'festivals.following[0].after'],

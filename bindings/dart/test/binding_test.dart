@@ -2669,6 +2669,17 @@ void _engineTests() {
         'festivals.rules[0].at.muhurta',
       ),
       (
+        FestivalRequest(
+          rules: [
+            {
+              ...sunrise,
+              'at': {'window': 'DAY_MUHURTA', 'from': 7, 'to': 6},
+            },
+          ],
+        ),
+        'festivals.rules[0].at.to',
+      ),
+      (
         const FestivalRequest(
           rules: [
             FestivalPack.dharmasindhu,

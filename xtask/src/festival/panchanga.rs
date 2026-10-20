@@ -546,30 +546,12 @@ const PRINTED: [(i32, &str, Day, &str); 132] = [
 /// rule): the day it gives within a fortnight of the printed one, or none,
 /// and the cause. The pass fails on a parting with no entry, on an entry
 /// whose row agrees, and on an entry whose day is not the one found.
-const PARTS: [(i32, &str, Option<Day>, &str); 18] = [
+const PARTS: [(i32, &str, Option<Day>, &str); 12] = [
     (
         2082,
         "HILE_JATRA",
         Some((2025, 9, 1)),
         "the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)",
-    ),
-    (
-        2082,
-        "PISHACHAMOCHANA_SHRADDHA",
-        Some((2025, 12, 4)),
-        "the 14th begins in the earlier day's second fifth, inside purvahna and after its first fifth, which the rule reads until DAY_MUHURTA (C602)",
-    ),
-    (
-        2082,
-        "SITA_NAVAMI",
-        Some((2025, 5, 5)),
-        "the 9th begins inside the earlier day's madhyahna and ends inside the later's, and the later holds more; the cases cannot weigh two parts, so the earlier stands until GREATER (C601)",
-    ),
-    (
-        2082,
-        "UPANGA_LALITA_VRATA",
-        Some((2025, 9, 27)),
-        "purvahna is the daylight's first two fifths; read as its first fifth, the later day holds it wholly, where the earlier holds more of the two fifths (C602)",
     ),
     (
         2083,
@@ -633,27 +615,9 @@ const PARTS: [(i32, &str, Option<Day>, &str); 18] = [
     ),
     (
         2083,
-        "MHA_PUJA",
-        Some((2026, 11, 9)),
-        "the 1st begins inside the earlier day's madhyahna and ends inside the later's, and the later holds more; the earlier stands until GREATER (C601)",
-    ),
-    (
-        2083,
-        "NEPAL_SAMBAT_NEW_YEAR",
-        Some((2026, 11, 9)),
-        "counted from MHA_PUJA, which is a day early (C601)",
-    ),
-    (
-        2083,
         "NUWAKOT_DUPCHESHWAR_MELA",
         Some((2026, 12, 23)),
         "the committee prints the mela on the full moon, a day after Dattatreya's 14th (C611)",
-    ),
-    (
-        2083,
-        "PISHACHAMOCHANA_SHRADDHA",
-        Some((2026, 12, 23)),
-        "the 14th begins in the earlier day's second fifth, inside purvahna and after its first fifth, which the rule reads until DAY_MUHURTA (C602)",
     ),
 ];
 

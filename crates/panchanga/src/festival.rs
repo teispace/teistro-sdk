@@ -99,6 +99,16 @@ pub enum Window {
         /// Which muhurta, 1 for the first after sunset.
         muhurta: u8,
     },
+    /// Muhurtas of the daylight, a fifteenth of it counted from sunrise,
+    /// `from` to `to` inclusive, 1 to 15: *Dharmasindhu* p. 265 names the
+    /// 8th kutapa and the 9th rauhina, and purvahna is the first six, the
+    /// daylight's first two fifths (C602). A fifth is three of them.
+    DayMuhurta {
+        /// The first, 1 for the muhurta after sunrise.
+        from: u8,
+        /// The last, at least `from`.
+        to: u8,
+    },
 }
 
 impl Window {
@@ -110,7 +120,8 @@ impl Window {
             | Window::Sunset
             | Window::Part { .. }
             | Window::Pradosha
-            | Window::Nishitha => None,
+            | Window::Nishitha
+            | Window::DayMuhurta { .. } => None,
         }
     }
 
@@ -128,7 +139,7 @@ impl Window {
     #[must_use]
     pub const fn in_daylight(self) -> bool {
         match self {
-            Window::Sunrise | Window::Part { .. } => true,
+            Window::Sunrise | Window::Part { .. } | Window::DayMuhurta { .. } => true,
             Window::Sunset | Window::Pradosha | Window::Nishitha | Window::NightMuhurta { .. } => {
                 false
             }
@@ -216,6 +227,16 @@ pub enum Predicate {
     /// gives Shivaratri to the day holding niśītha wholly when the other
     /// holds it in part.
     Wholly {
+        /// Which day.
+        day: Which,
+    },
+    /// This day's window holds more of the tithi, in time, than the other
+    /// day's does; at an instant, this day's holds it and the other's
+    /// does not. Equal times are a tie and hold for neither day. Time and
+    /// not the share of each window: the two differ only when both days
+    /// hold part of a window whose length moves a minute or two from one
+    /// day to the next (C601, C604).
+    Greater {
         /// Which day.
         day: Which,
     },
@@ -466,7 +487,7 @@ impl FestivalRule {
             ))
             .with_field("decide"));
         }
-        self.check_window(self.at, "at.muhurta")?;
+        self.check_window(self.at, "at")?;
         for guard in &self.decide {
             for predicate in &guard.when {
                 match *predicate {
@@ -485,7 +506,7 @@ impl FestivalRule {
                         .with_field("decide.when.is"));
                     }
                     Predicate::Joined { at: Some(at), .. } | Predicate::Stands { at, .. } => {
-                        self.check_window(at, "decide.when.at.muhurta")?;
+                        self.check_window(at, "decide.when.at")?;
                     }
                     _ => {}
                 }
@@ -494,16 +515,38 @@ impl FestivalRule {
         Ok(())
     }
 
-    /// Refuses a night muhurta outside the night's fifteen.
-    fn check_window(&self, window: Window, field: &str) -> Result<(), Error> {
-        match window.muhurta() {
-            Some(muhurta) if !(1..=15).contains(&muhurta) => Err(Error::invalid_arg(format!(
+    /// Refuses a night muhurta outside the night's fifteen, and a range
+    /// of day muhurtas outside the daylight's fifteen or running
+    /// backwards; `at` is the window's own field.
+    fn check_window(&self, window: Window, at: &str) -> Result<(), Error> {
+        if let Some(muhurta) = window.muhurta()
+            && !(1..=15).contains(&muhurta)
+        {
+            return Err(Error::invalid_arg(format!(
                 "{}: a night has fifteen muhurtas, counted from 1 after sunset, not {muhurta}",
                 self.key
             ))
-            .with_field(field)),
-            _ => Ok(()),
+            .with_field(format!("{at}.muhurta")));
         }
+        if let Window::DayMuhurta { from, to } = window {
+            for (name, muhurta) in [("from", from), ("to", to)] {
+                if !(1..=15).contains(&muhurta) {
+                    return Err(Error::invalid_arg(format!(
+                        "{}: a daylight has fifteen muhurtas, counted from 1 after sunrise, not {muhurta}",
+                        self.key
+                    ))
+                    .with_field(format!("{at}.{name}")));
+                }
+            }
+            if from > to {
+                return Err(Error::invalid_arg(format!(
+                    "{}: day muhurtas {from} to {to} run backwards; give the first as `from`",
+                    self.key
+                ))
+                .with_field(format!("{at}.to")));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -591,6 +634,13 @@ impl FestivalDay {
             }
             Window::NightMuhurta { muhurta } => {
                 self.night().part(u16::from(muhurta).saturating_sub(1), 15)
+            }
+            Window::DayMuhurta { from, to } => {
+                let first = self
+                    .daylight()
+                    .part(u16::from(from).saturating_sub(1), 15)?;
+                let last = self.daylight().part(u16::from(to).saturating_sub(1), 15)?;
+                Ok(Interval::literal(first.from.get(), last.to.get()))
             }
         }
     }
@@ -931,6 +981,7 @@ fn judge(
         tithi,
         case,
         held: [extents[0].held, extents[1].held],
+        time: [held_time(&extents[0], tithi), held_time(&extents[1], tithi)],
         earlier,
         later,
     };
@@ -961,7 +1012,7 @@ fn judge(
     let margin_seconds = if case == Case::EqualParts {
         0.0
     } else {
-        margin(rule, tithi, earlier, later)? * SECONDS_PER_DAY
+        margin(rule, tithi, earlier, later, facts.time)? * SECONDS_PER_DAY
     };
     Ok(Ok(Observance {
         rule: rule.key.clone(),
@@ -979,13 +1030,28 @@ fn judge(
 
 const SECONDS_PER_DAY: f64 = 86_400.0;
 
+/// How long the tithi held a day's window, in days; at an instant, 1
+/// when it held it and 0 when not, so that [`Predicate::Greater`] reads
+/// an instant as the cases do.
+fn held_time(extent: &Extent, tithi: Interval) -> f64 {
+    if extent.window.days() <= 0.0 {
+        extent.held
+    } else {
+        tithi.clipped_to(extent.window).map_or(0.0, Interval::days)
+    }
+}
+
 /// The least time, in days, between an edge the rule read and an instant
-/// the two days were decided from ([`Observance::margin_seconds`]).
+/// the two days were decided from ([`Observance::margin_seconds`]); and,
+/// for a rule weighing the two days' times ([`Predicate::Greater`]), half
+/// their difference, since a shift of the place moves each by as much as
+/// it moves the windows.
 fn margin(
     rule: &FestivalRule,
     tithi: Interval,
     earlier: &FestivalDay,
     later: &FestivalDay,
+    time: [f64; 2],
 ) -> Result<f64, Error> {
     let mut instants = vec![
         earlier.sunrise.get(),
@@ -1030,6 +1096,12 @@ fn margin(
             _ => {}
         }
     }
+    let weighed = rule
+        .decide
+        .iter()
+        .flat_map(|guard| &guard.when)
+        .any(|predicate| matches!(predicate, Predicate::Greater { .. }))
+        && earlier.window(rule.at)?.days() > 0.0;
     for (day, nakshatra) in named {
         edges.extend(
             day.nakshatra
@@ -1038,10 +1110,15 @@ fn margin(
                 .flat_map(|held| [held.whole.from.get(), held.whole.to.get()]),
         );
     }
-    Ok(instants
+    let edges = instants
         .iter()
         .flat_map(|instant| edges.iter().map(move |edge| (instant - edge).abs()))
-        .fold(f64::INFINITY, f64::min))
+        .fold(f64::INFINITY, f64::min);
+    Ok(if weighed {
+        edges.min((time[0] - time[1]).abs() / 2.0)
+    } else {
+        edges
+    })
 }
 
 struct Facts<'a> {
@@ -1049,6 +1126,8 @@ struct Facts<'a> {
     case: Case,
     /// The fraction of each day's window the tithi held, earlier first.
     held: [f64; 2],
+    /// How long it held each, as [`held_time`] reads it.
+    time: [f64; 2],
     earlier: &'a FestivalDay,
     later: &'a FestivalDay,
 }
@@ -1098,6 +1177,13 @@ impl Facts<'_> {
                     Which::Later => self.held[1],
                 };
                 held >= 1.0
+            }
+            Predicate::Greater { day } => {
+                let [earlier, later] = self.time;
+                match day {
+                    Which::Earlier => earlier > later,
+                    Which::Later => later > earlier,
+                }
             }
         })
     }

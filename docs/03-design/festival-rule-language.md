@@ -1,6 +1,7 @@
 # The festival rule language: what it lacks
 
-Status: `design`, 2026-10-20; nothing on this page is built. Cruxes C601
+Status: `design`, 2026-10-20. Built: `DAY_MUHURTA` (§3.2) and `GREATER`
+with the maintainer's rule (§3.3); the rest is not. Cruxes C601
 to C604, C606, C608, C614, C616 to C619
 (`01-research/feature-universe/19-verification-cruxes.md`).
 
@@ -16,10 +17,10 @@ rows (§4): which form would express each row, or why none does.
 
 | part | members |
 |---|---|
-| window | `SUNRISE`, `SUNSET`, a fifth of the daylight (`PART`: pratah, sangava, madhyahna, aparahna, sayahna), `PRADOSHA`, `NISHITHA`, a night muhurta (`NIGHT_MUHURTA`, 1–15) |
+| window | `SUNRISE`, `SUNSET`, a fifth of the daylight (`PART`: pratah, sangava, madhyahna, aparahna, sayahna), `PRADOSHA`, `NISHITHA`, a night muhurta (`NIGHT_MUHURTA`, 1–15); since this page, a range of day muhurtas (`DAY_MUHURTA`, §3.2) |
 | what is kept | a tithi in a month, or every month; a nakshatra in a paksha |
 | cases | `EARLIER_ONLY`, `LATER_ONLY`, `BOTH` (both wholly), `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS` |
-| predicates | `CASE`, `JOINED` (the tithi with a nakshatra), `STANDS` (a nakshatra in a window), `LASTS` (ghatis past an edge), `WHOLLY` |
+| predicates | `CASE`, `JOINED` (the tithi with a nakshatra), `STANDS` (a nakshatra in a window), `LASTS` (ghatis past an edge), `WHOLLY`; since this page, `GREATER` (§3.3) |
 | choice | `EARLIER`, `LATER`, `BY_YUGMA` |
 | the adhika month | `inAdhika`: the nija month only, or both |
 | counted days | a following rule: 0 to 15 civil days after another rule's day |
@@ -94,6 +95,21 @@ need two different windows:
 Arjundhara mela, Deopatan Deshoddhar puja, Fagu purnima and Gaura parva
 are candidates.
 
+**Built, and measured over the committee's sky** (`festival-measured.md`
+§6), where the consumer's three rows were measured over its own:
+
+- Upanga lalita in VS 2082 moves onto the printed day.
+- Pishachamochana moves in neither year. Its 14th begins mid-morning in
+  VS 2082 and after midday in VS 2083, so six muhurtas give the later day
+  in both, and *Dharmasindhu*'s seven fail VS 2083. It is a shraddha, and
+  p. 265 keeps shraddha in aparahna. Aparahna gives the printed day in
+  both years, so the rule is now kept there.
+- Bala chaturdashi, which the first fifth gave in both years, falls a day
+  early in VS 2082 under six muhurtas. Its 14th begins 40 minutes after
+  that sunrise and ends mid-morning the next day. Its rite is the
+  morning's, and the sunrise tithi gives both printed days, so the rule is
+  now udaya.
+
 ### 3.3 Which day holds more: `GREATER`, and the maintainer's rule
 
 ```json
@@ -132,14 +148,24 @@ Case by case:
 
 Over the consumer's verified years that last case occurred 37 times: 18
 were kept on the earlier day and 19 on the later. No fixed choice comes
-near, and `GREATER` gives the consumer's answer every time. With
-`GREATER`, the maintainer's rule is three guards:
+near, and `GREATER` gives the consumer's answer every time.
+
+`GREATER` alone does not give the "both wholly" clause. By time, two
+whole windows differ by the minute or two a day's length moves, so it
+would give the longer of them. The maintainer's rule calls that a tie, so
+a `BOTH` guard stands before the comparison:
 
 ```json
 "decide": [{"when": [{"is": "CASE", "case": "LATER_ONLY"}], "choose": "LATER"},
+           {"when": [{"is": "CASE", "case": "BOTH"}], "choose": "EARLIER"},
            {"when": [{"is": "GREATER", "day": "LATER"}], "choose": "LATER"}],
 "otherwise": "EARLIER"
 ```
+
+At an instant, `GREATER` reads what the cases read: the day that holds it
+and not the other. A rule weighing two times stands while the place moves
+by half their difference, and its observance's `marginSeconds` says the
+lesser of that and the usual margin.
 
 The neither clause did not decide a single verified year: no windowed
 row's verified years had the case. It differs from the consumer, which
@@ -156,6 +182,10 @@ two a day's length changes (C604).
 **Settles:** C601. Sita navami in VS 2082 and Mha puja in VS 2083 (with
 the Nepal Sambat new year counted from it) move onto the printed day, and
 Govatsa dwadashi is a candidate.
+
+**Built.** Every share fit of the `NEPAL_PANCHANGA` pack is these three
+guards. Over the committee's sky the pack now parts from the print on 12
+of 132 rows, down from 18, and over the modern sky on 29, down from 31.
 
 ### 3.4 Either paksha: `dayOfPaksha`
 

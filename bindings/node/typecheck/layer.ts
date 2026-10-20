@@ -2178,13 +2178,29 @@ function theFestivals(almanac: Almanac): string {
     decide: [{ when: [{ is: 'CASE', case: 'EARLIER_ONLY' }, { is: 'WHOLLY', day: 'EARLIER' }], choose: 'EARLIER' }],
     otherwise: 'LATER',
   };
+  // Purvahna as six day muhurtas, the day holding more of it winning.
+  const purvahna: FestivalRule = {
+    key: 'BHIMA_EKADASHI',
+    source: 'the committee',
+    month: 'masa.MAGHA',
+    tithi: 'tithi.SHUKLA_EKADASHI',
+    at: { window: 'DAY_MUHURTA', from: 1, to: 6 },
+    decide: [
+      { when: [{ is: 'CASE', case: 'LATER_ONLY' }], choose: 'LATER' },
+      { when: [{ is: 'CASE', case: 'BOTH' }], choose: 'EARLIER' },
+      { when: [{ is: 'GREATER', day: 'LATER' }], choose: 'LATER' },
+    ],
+    otherwise: 'EARLIER',
+  };
+  // @ts-expect-error a range of day muhurtas names where it ends
+  const endless: FestivalRule = { ...purvahna, at: { window: 'DAY_MUHURTA', from: 1 } };
   // @ts-expect-error a rule is kept on a tithi or a nakshatra, not both
   const both: FestivalRule = { ...samavedi, tithi: 'tithi.PURNIMA' };
   // @ts-expect-error a nakshatra names its paksha
   const halfless: FestivalRule = { key: 'X', source: 'x', nakshatra: 'nakshatra.HASTA', at: { window: 'SUNRISE' }, decide: [], otherwise: 'LATER' };
   // The Terai's Holi, a day after the Holika fire.
   const terai: FollowingRule = { key: 'HOLI_TERAI', source: 'the committee', after: 'HOLIKA', days: 1 };
-  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, terai] };
+  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, terai] };
   const pack: FestivalPack = 'NEPAL';
   // @ts-expect-error a following rule counts days, a number
   const spelt: FollowingRule = { ...terai, days: 'one' };
@@ -2194,7 +2210,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

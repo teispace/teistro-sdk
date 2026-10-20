@@ -15,13 +15,11 @@
 //!   daylight (C197);
 //! - **udaya, the later**: the later of two sunrises, and the earlier day
 //!   only when no sunrise holds the tithi (C610);
-//! - **the share of a window**: the day holding the window alone, the
-//!   later when neither does, the earlier when both hold it wholly, the
-//!   later when it holds the later's wholly and the earlier's in part, and
-//!   the earlier otherwise. Two partial holdings are not weighed until a
-//!   predicate compares them (C601); purvahna, the daylight's first two
-//!   fifths, is read as its first until a window names day muhurtas
-//!   (C602).
+//! - **the share of a window**, the maintainer's rule (C601): the day
+//!   holding more of the window, in time; the earlier on a tie, both
+//!   holding it wholly counted as one; and the earlier when neither holds
+//!   it (C603). Purvahna is the daylight's first six muhurtas, its first
+//!   two fifths (C602).
 
 use teistro_core::catalogue::{Masa, Tithi};
 use teistro_core::settings::LunarMonth as Convention;
@@ -31,10 +29,9 @@ use super::{
     Which, Window, case,
 };
 
-/// The first fifth of the daylight, which stands for purvahna (C602).
-const PRATAH: Window = Window::Part {
-    part: DayPart::Pratah,
-};
+/// Purvahna: the daylight's first six muhurtas, its first two fifths
+/// (C602).
+const PURVAHNA: Window = Window::DayMuhurta { from: 1, to: 6 };
 
 /// The last fifth of the daylight.
 const SAYAHNA: Window = Window::Part {
@@ -48,7 +45,7 @@ enum Fit {
     Udaya,
     /// The later of two sunrises, the earlier day when none holds it.
     UdayaLater,
-    /// The day holding more of a window, as far as the cases tell.
+    /// The day holding more of a window, in time.
     Share(Window),
 }
 
@@ -74,13 +71,12 @@ impl Fit {
                 window,
                 vec![
                     Guard::new([case(Case::LaterOnly)], Later),
-                    Guard::new([case(Case::Neither)], Later),
                     Guard::new([case(Case::Both)], Earlier),
-                    Guard::new([Predicate::Wholly { day: Which::Later }], Later),
+                    Guard::new([Predicate::Greater { day: Which::Later }], Later),
                 ],
                 Earlier,
                 format!(
-                    "{}: the day holding it alone, the later when neither does, the earlier when both hold it wholly, the later when the later holds it wholly, else the earlier, until a predicate weighs two parts (C601)",
+                    "{}: the day holding more of it, in time; the earlier on a tie, both holding it wholly being one, and when neither holds it (C601, C603)",
                     Fit::name(window)
                 ),
             ),
@@ -90,17 +86,22 @@ impl Fit {
     /// The window's name in a source.
     fn name(window: Window) -> &'static str {
         match window {
+            Window::DayMuhurta { from: 1, to: 6 } => {
+                "purvahna, the daylight's first six muhurtas (C602)"
+            }
             Window::Part { part } => match part {
-                DayPart::Pratah => "purvahna, read as the daylight's first fifth (C602)",
+                DayPart::Pratah => "pratah",
                 DayPart::Sangava => "sangava",
                 DayPart::Madhyahna => "madhyahna",
                 DayPart::Aparahna => "aparahna",
                 DayPart::Sayahna => "sayahna",
             },
             Window::Pradosha => "pradosha",
-            Window::Sunrise | Window::Sunset | Window::Nishitha | Window::NightMuhurta { .. } => {
-                "the window"
-            }
+            Window::Sunrise
+            | Window::Sunset
+            | Window::Nishitha
+            | Window::NightMuhurta { .. }
+            | Window::DayMuhurta { .. } => "the window",
         }
     }
 }
@@ -161,7 +162,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "KUMARA_JATRA",
         Masa::Jyeshtha,
         Tithi::ShuklaSaptami,
-        Fit::Share(PRATAH),
+        Fit::Share(PURVAHNA),
         "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: कुमारयात्रा",
     ),
     (
@@ -245,7 +246,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "VAMANA_DWADASHI",
         Masa::Bhadrapada,
         Tithi::ShuklaDwadashi,
-        Fit::Share(PRATAH),
+        Fit::Share(PURVAHNA),
         "Nepal's national panchanga, VS 2082 p. 11: वामनद्वादशी; VS 2083 p. 13: वामनजयन्ती",
     ),
     (
@@ -357,7 +358,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "UPANGA_LALITA_VRATA",
         Masa::Ashwina,
         Tithi::ShuklaPanchami,
-        Fit::Share(PRATAH),
+        Fit::Share(PURVAHNA),
         "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: उपाङ्गललिताव्रत; VS 2082 is a day late until DAY_MUHURTA (C602)",
     ),
     (
@@ -378,7 +379,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "DHANVANTARI_JAYANTI",
         Masa::Ashwina,
         Tithi::KrishnaTrayodashi,
-        Fit::Share(PRATAH),
+        Fit::Share(PURVAHNA),
         "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: धन्वन्तरी जयन्ती",
     ),
     (
@@ -406,8 +407,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "BALA_CHATURDASHI",
         Masa::Kartika,
         Tithi::KrishnaChaturdashi,
-        Fit::Share(PRATAH),
-        "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: बालाचतुर्दशी",
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: बालाचतुर्दशी; a rite of the morning, kept on the sunrise tithi, where purvahna read as six muhurtas gives VS 2082 a day early (C602)",
     ),
     (
         "DATTATREYA_JAYANTI",
@@ -420,8 +421,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "PISHACHAMOCHANA_SHRADDHA",
         Masa::Margashirsha,
         Tithi::ShuklaChaturdashi,
-        Fit::Share(PRATAH),
-        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: काशीमा पिशाचमोचन तीर्थश्राद्ध; both years a day late until DAY_MUHURTA (C602)",
+        Fit::Share(APARAHNA),
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: काशीमा पिशाचमोचन तीर्थश्राद्ध; a shraddha, kept in aparahna as Dharmasindhu p. 265 keeps shraddha, where purvahna gave both years a day late (C602)",
     ),
     (
         "GAIDU_PUJA",
@@ -462,7 +463,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "BHIMA_EKADASHI",
         Masa::Magha,
         Tithi::ShuklaEkadashi,
-        Fit::Share(PRATAH),
+        Fit::Share(PURVAHNA),
         "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: भीमा एकादशीव्रत",
     ),
     (
@@ -490,7 +491,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "GHODE_JATRA",
         Masa::Phalguna,
         Tithi::Amavasya,
-        Fit::Share(PRATAH),
+        Fit::Share(PURVAHNA),
         "Nepal's national panchanga, VS 2082 p. 24 and VS 2083 p. 26: घोडेजात्रा",
     ),
     (
@@ -690,10 +691,17 @@ mod tests {
     }
 
     #[test]
-    fn a_share_fit_decides_by_the_cases_it_names() {
+    fn a_share_fit_is_the_maintainer_s_rule() {
         let (at, decide, otherwise, reading) = Fit::Share(APARAHNA).decide();
         assert_eq!((at, otherwise), (APARAHNA, Choice::Earlier));
-        assert_eq!(decide.len(), 4);
+        assert_eq!(
+            decide,
+            [
+                Guard::new([case(Case::LaterOnly)], Choice::Later),
+                Guard::new([case(Case::Both)], Choice::Earlier),
+                Guard::new([Predicate::Greater { day: Which::Later }], Choice::Later),
+            ]
+        );
         assert!(reading.starts_with("aparahna"));
         let (at, decide, otherwise, _) = Fit::UdayaLater.decide();
         assert_eq!(
@@ -704,6 +712,6 @@ mod tests {
             (Fit::name(MADHYAHNA), Fit::name(SAYAHNA)),
             ("madhyahna", "sayahna")
         );
-        assert!(Fit::name(PRATAH).contains("C602"));
+        assert!(Fit::name(PURVAHNA).contains("C602"));
     }
 }

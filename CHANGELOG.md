@@ -12,6 +12,26 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Day muhurtas and the day holding more** (`festival-rule-language.md`
+§3.2, §3.3). **Numbers:** the `NEPAL_PANCHANGA` pack moved, as the
+maintainer's rule (C601, C603) and purvahna as six muhurtas (C602)
+decide. Over the committee's sky it now parts from the print on 12 of
+132 rows, down from 18: Sita navami and Upanga lalita in VS 2082, Mha puja
+and the Nepal Sambat new year in VS 2083, and Pishachamochana in both
+years now fall on the printed day. No other pack's day, case or extent
+changed.
+- A rule's window may be `{"window": "DAY_MUHURTA", "from": 1, "to": 6}`,
+  fifteenths of the daylight counted from sunrise. A range outside 1 to
+  15, or one that runs backwards, is refused by its field.
+- A guard may ask `{"is": "GREATER", "day": "LATER"}`: that day's window
+  holds more of the tithi, in time. An observance decided by it carries a
+  margin of at most half the two times' difference.
+- Every share fit of `NEPAL_PANCHANGA` is the maintainer's rule: the day
+  holding more of the window, the earlier on a tie (both wholly being
+  one) and when neither holds it. Pishachamochana is kept in aparahna, as
+  *Dharmasindhu* p. 265 keeps shraddha, and Bala chaturdashi on the
+  sunrise tithi.
+
 **Where two reckonings disagree** (`setup-disagreements.md`).
 **Numbers:** none moved. `AlmanacArea::disagreements` reckons a range
 under two contexts. It answers the days on which some limb's member at

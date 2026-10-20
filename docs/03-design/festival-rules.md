@@ -949,6 +949,14 @@ two parts, so the share table takes the earlier day (C601).
 Purvahna, the first two fifths of the daylight, is read as its first
 fifth, pratah, until a window can name day muhurtas (C602).
 
+**Since built** (`festival-rule-language.md` §3.2, §3.3): the share fit
+is now the maintainer's rule, `LATER_ONLY → later`, `BOTH → earlier`,
+`GREATER(later) → later` and otherwise the earlier day, so neither day
+holding the window gives the earlier (C603). Purvahna is
+`DAY_MUHURTA` 1–6. Pishachamochana moved to aparahna and Bala
+chaturdashi to udaya, where six muhurtas did not give the print. The
+tables below are the fits as they were measured before that.
+
 Fitted by an emulation of the committee's sky, the forms give the
 following share of the consumer's verified days over VS 2070–2083:
 
