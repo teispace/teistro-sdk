@@ -60,47 +60,47 @@ Medians in milliseconds. The spread of every row:
 
 ## `desktop-Darwin-arm64`
 
-Apple M2 Pro (Darwin 27.0.0, aarch64), commit `0d579058`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
+Apple M2 Pro (Darwin 27.0.0, aarch64), commit `a4421832`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
 
 | request | budget | target | drik, Teimeris | committee, Surya Siddhanta + Teimeris | drik, built-in | built-in ÷ Teimeris |
 |---|---:|---:|---:|---:|---:|---:|
-| open (a context opened, the engine with it) | — | 3.00 ms | 0.021 | 0.018 | 0.013 | 0.6× |
-| day (one almanac day) | 2.00 ms | 0.500 ms | 1.72 | 0.651 | 32.7 | 19.0× |
-| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 21.5 | 13.6 | 463 | 21.5× |
-| year (a year of almanac days) | — | — | 193 | 129 | 3806 | 19.7× |
-| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 158 | 90.2 | 3902 | 24.6× |
-| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 189 | 88.2 | 3056 | 16.2× |
-| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.22 | 1.18 | 2.60 | 2.1× |
-| matching (Ashta Koota between two cast charts) | — | — | 0.012 | 0.012 | 0.013 | 1.1× |
+| open (a context opened, the engine with it) | — | 3.00 ms | 0.023 | 0.020 | 0.012 | 0.5× |
+| day (one almanac day) | 2.00 ms | 0.500 ms | 1.57 | 0.620 | 32.3 | 20.5× |
+| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 22.2 | 13.6 | 462 | 20.8× |
+| year (a year of almanac days) | — | — | 195 | 126 | 3805 | 19.6× |
+| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 74.3 | 23.1 | 1645 | 22.1× |
+| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 187 | 87.4 | 3045 | 16.3× |
+| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.23 | 1.21 | 2.61 | 2.1× |
+| matching (Ashta Koota between two cast charts) | — | — | 0.012 | 0.013 | 0.012 | 1.0× |
 
 Medians in milliseconds. The spread of every row:
 
 | setup | request | runs | fastest | slowest |
 |---|---|---:|---:|---:|
-| drik-teimeris | open | 21 | 0.017 | 0.209 |
-| drik-teimeris | day | 21 | 1.60 | 1.98 |
-| drik-teimeris | month | 21 | 20.7 | 22.5 |
-| drik-teimeris | year | 21 | 190 | 198 |
-| drik-teimeris | festivals | 21 | 154 | 164 |
-| drik-teimeris | muhurta | 21 | 185 | 213 |
-| drik-teimeris | chart | 21 | 1.19 | 1.36 |
-| drik-teimeris | matching | 21 | 0.012 | 0.019 |
-| committee-teimeris | open | 21 | 0.018 | 0.021 |
-| committee-teimeris | day | 21 | 0.606 | 0.795 |
-| committee-teimeris | month | 21 | 13.2 | 14.5 |
-| committee-teimeris | year | 21 | 125 | 136 |
-| committee-teimeris | festivals | 21 | 87.9 | 117 |
-| committee-teimeris | muhurta | 21 | 86.0 | 110 |
-| committee-teimeris | chart | 21 | 1.15 | 1.36 |
-| committee-teimeris | matching | 21 | 0.012 | 0.025 |
-| drik-builtin | open | 21 | 0.013 | 0.016 |
-| drik-builtin | day | 21 | 31.9 | 33.9 |
-| drik-builtin | month | 9 | 455 | 477 |
-| drik-builtin | year | 3 | 3804 | 3809 |
-| drik-builtin | festivals | 3 | 3889 | 3923 |
-| drik-builtin | muhurta | 3 | 3055 | 3068 |
-| drik-builtin | chart | 21 | 2.56 | 2.66 |
-| drik-builtin | matching | 21 | 0.012 | 0.038 |
+| drik-teimeris | open | 21 | 0.019 | 0.051 |
+| drik-teimeris | day | 21 | 1.47 | 1.96 |
+| drik-teimeris | month | 21 | 21.4 | 24.4 |
+| drik-teimeris | year | 21 | 191 | 217 |
+| drik-teimeris | festivals | 21 | 73.0 | 76.4 |
+| drik-teimeris | muhurta | 21 | 182 | 206 |
+| drik-teimeris | chart | 21 | 1.18 | 1.45 |
+| drik-teimeris | matching | 21 | 0.011 | 0.016 |
+| committee-teimeris | open | 21 | 0.020 | 0.030 |
+| committee-teimeris | day | 21 | 0.604 | 0.684 |
+| committee-teimeris | month | 21 | 13.3 | 14.4 |
+| committee-teimeris | year | 21 | 124 | 132 |
+| committee-teimeris | festivals | 21 | 22.2 | 23.7 |
+| committee-teimeris | muhurta | 21 | 84.9 | 90.4 |
+| committee-teimeris | chart | 21 | 1.19 | 1.35 |
+| committee-teimeris | matching | 21 | 0.012 | 0.021 |
+| drik-builtin | open | 21 | 0.012 | 0.015 |
+| drik-builtin | day | 21 | 31.8 | 54.3 |
+| drik-builtin | month | 9 | 456 | 497 |
+| drik-builtin | year | 3 | 3781 | 3815 |
+| drik-builtin | festivals | 3 | 1641 | 1664 |
+| drik-builtin | muhurta | 3 | 3036 | 3051 |
+| drik-builtin | chart | 21 | 2.48 | 2.76 |
+| drik-builtin | matching | 21 | 0.012 | 0.024 |
 
 ## `ios-sim-arm64-ios-simulator-iphone-18-pro`
 
