@@ -1,7 +1,8 @@
 # The festival rule language: what it lacks
 
-Status: `design`, 2026-10-20. Built: `DAY_MUHURTA` (§3.2) and `GREATER`
-with the maintainer's rule (§3.3); the rest is not. Cruxes C601
+Status: `design`, 2026-10-20. Built: `DAY_MUHURTA` (§3.2), `GREATER`
+with the maintainer's rule (§3.3), `dayOfPaksha` (§3.4), and `ON_VARA`
+with `NONE` (§3.5); the rest is not. Cruxes C601
 to C604, C606, C608, C614, C616 to C619
 (`01-research/feature-universe/19-verification-cruxes.md`).
 
@@ -205,6 +206,21 @@ Today each needs two rules, one per paksha.
 
 **Settles:** the pradosha and ashtami fasts (§5 of the classification).
 
+**Built, and measured over the committee's sky.** Every pradosha row of
+both editions was read from the print: 24 in VS 2082 and 25 in VS 2083.
+`PRADOSHA_VRATA` keeps the 13th of each paksha, the adhika months
+included, with the maintainer's rule over pradosha (§3.3), and gives all
+49. Sunset, sayahna and day muhurtas 13–15 give 49 too. Pradosha is the
+rite's own time, so it is the window the rule names.
+
+The plain अष्टमीव्रत is not shipped. No window gives more than 30 of its
+37 printed days, and the misses fall a day early in some years and a day
+late in others. Where the 8th's sunrise falls on a Tuesday or a Wednesday,
+the print names that day भौमाष्टमी or बुधाष्टमी, and it can print the
+plain fast on the day before (13 and 14 October 2025, 7 and 8 July
+2026). So the two are decided apart, and the plain fast's rule is not in
+hand.
+
 ### 3.5 The weekday: `ON_VARA`
 
 ```json
@@ -225,6 +241,22 @@ The committee prints शनिप्रदोष and सोमप्रदोष
 **Settles:** Somavati amavasya, Mangala chaturthi, Bhanu saptami,
 Budhashtami, Bhaumashtami and the weekday pradoshas (C618). Every one of
 them also needs `NONE`.
+
+**Built, and measured over the committee's sky.** One reading gives every
+weekday row of both editions: the day whose sunrise holds the tithi, the
+earlier when both do, kept only when that day is the vara.
+
+| rule | printed rows given |
+|---|---|
+| `BHAUMASHTAMI` | 9 of 9 |
+| `BUDHASHTAMI` | 5 of 5 |
+| `RAVI_SAPTAMI` | 8 of 8 |
+| `MANGALA_CHATURTHI` | 6 of 6 |
+| `SOMAVATI_AMAVASYA` | 2 of 2 |
+
+`SOMAVATI_AMAVASYA` also gives Monday 8 March 2027. The print names that
+day दर्शश्राद्ध and does not call it Somavati. The weekday pradoshas are
+not separate rules: the print names the pradosha fast by its weekday.
 
 ### 3.6 Solar and civil dates: `SOLAR_DAY`, `CIVIL_DATE`, `CIVIL_WEEKDAY`
 

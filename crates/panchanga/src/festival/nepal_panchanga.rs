@@ -8,7 +8,7 @@
 //! from, so a reader who keeps the day by another authority sees where it
 //! came from and can replace it by key.
 //!
-//! Three fits cover them all:
+//! Four fits cover them all:
 //!
 //! - **udaya**: the day whose sunrise holds the tithi, the earlier when
 //!   both sunrises do, as [`FestivalRule::udaya`] reads a rite of the
@@ -19,14 +19,19 @@
 //!   holding more of the window, in time; the earlier on a tie, both
 //!   holding it wholly counted as one; and the earlier when neither holds
 //!   it (C603). Purvahna is the daylight's first six muhurtas, its first
-//!   two fifths (C602).
+//!   two fifths (C602);
+//! - **on a vara**: the udaya day, kept only when it is the vara the rule
+//!   names, and not at all otherwise (C618).
+//!
+//! The pradosha fast and the weekday fasts are kept in every month, the
+//! adhika included, on a day of either paksha (§3.4) or the new moon.
 
-use teistro_core::catalogue::{Masa, Tithi};
+use teistro_core::catalogue::{Masa, Tithi, Vara};
 use teistro_core::settings::LunarMonth as Convention;
 
 use super::{
-    APARAHNA, Case, Choice, DayPart, FestivalRule, FollowingRule, Guard, MADHYAHNA, Predicate,
-    Which, Window, case,
+    APARAHNA, Case, Choice, DayPart, FestivalRule, FollowingRule, Guard, MADHYAHNA, Occurs,
+    Predicate, Which, Window, case,
 };
 
 /// Purvahna: the daylight's first six muhurtas, its first two fifths
@@ -47,6 +52,8 @@ enum Fit {
     UdayaLater,
     /// The day holding more of a window, in time.
     Share(Window),
+    /// The udaya day, kept only when it is this vara (C618).
+    OnVara(Vara),
 }
 
 impl Fit {
@@ -80,6 +87,22 @@ impl Fit {
                     Fit::name(window)
                 ),
             ),
+            Fit::OnVara(vara) => {
+                let on = |day| Predicate::OnVara { day, vara };
+                (
+                    Window::Sunrise,
+                    vec![
+                        Guard::new([case(Case::LaterOnly), on(Which::Later)], Later),
+                        Guard::new([case(Case::LaterOnly)], Choice::None),
+                        Guard::new([on(Which::Earlier)], Earlier),
+                    ],
+                    Choice::None,
+                    format!(
+                        "the day whose sunrise holds the tithi, the earlier when both do, kept only when that day is {} (C618)",
+                        vara.key()
+                    ),
+                )
+            }
         }
     }
 
@@ -517,6 +540,50 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
     ),
 ];
 
+/// The fitted rules kept in every month, the adhika included, as the
+/// committee prints them in both editions: key, what is kept, fit, and
+/// where the days are printed (§3.4, §3.5).
+const EVERY_MONTH: [(&str, Occurs, Fit, &str); 6] = [
+    (
+        "PRADOSHA_VRATA",
+        Occurs::DayOfPaksha { day_of_paksha: 13 },
+        Fit::Share(Window::Pradosha),
+        "Nepal's national panchanga, every paksha of VS 2082 (pp. 2–25) and VS 2083 (pp. 2–26): प्रदोषव्रत, named शनिप्रदोषव्रत on a Saturday and सोमप्रदोषव्रत on a Monday",
+    ),
+    (
+        "MANGALA_CHATURTHI",
+        Occurs::DayOfPaksha { day_of_paksha: 4 },
+        Fit::OnVara(Vara::Mangalavara),
+        "Nepal's national panchanga, VS 2083 pp. 3, 4, 12, 13, 21 and 22: मंगलचौथीव्रत; Dharmasindhu p. 20 names the 4th on a Tuesday",
+    ),
+    (
+        "RAVI_SAPTAMI",
+        Occurs::DayOfPaksha { day_of_paksha: 7 },
+        Fit::OnVara(Vara::Ravivara),
+        "Nepal's national panchanga, VS 2082 pp. 2, 3, 12, 21 and 22, VS 2083 pp. 6, 7 and 16: रविसप्तमीव्रत; Dharmasindhu p. 20 names the 7th on a Sunday",
+    ),
+    (
+        "BHAUMASHTAMI",
+        Occurs::DayOfPaksha { day_of_paksha: 8 },
+        Fit::OnVara(Vara::Mangalavara),
+        "Nepal's national panchanga, VS 2082 pp. 4, 5, 13, 14 and 23, VS 2083 pp. 17, 18, 25 and 26: भौमाष्टमीव्रत",
+    ),
+    (
+        "BUDHASHTAMI",
+        Occurs::DayOfPaksha { day_of_paksha: 8 },
+        Fit::OnVara(Vara::Budhavara),
+        "Nepal's national panchanga, VS 2082 pp. 15, 16 and 24, VS 2083 pp. 8 and 9: बुधाष्टमीव्रत",
+    ),
+    (
+        "SOMAVATI_AMAVASYA",
+        Occurs::Tithi {
+            tithi: Tithi::Amavasya,
+        },
+        Fit::OnVara(Vara::Somavara),
+        "Nepal's national panchanga, VS 2083 pp. 6 and 16: सोमबारे औसी; Dharmasindhu p. 20 names the new moon on a Monday; VS 2083 p. 24 does not name Monday 8 March 2027's new moon, a day it prints as दर्शश्राद्ध",
+    ),
+];
+
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
 const SAME_DAY: [(&str, &str, &str); 13] = [
@@ -605,17 +672,23 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn nepal_panchanga() -> Vec<FestivalRule> {
-        RULES
+        let yearly = RULES.iter().map(|&(key, month, tithi, fit, printed)| {
+            (key, Some(month), tithi.into(), fit, printed)
+        });
+        let monthly = EVERY_MONTH
             .iter()
-            .map(|&(key, month, tithi, fit, printed)| {
+            .map(|&(key, occurs, fit, printed)| (key, None, occurs, fit, printed));
+        yearly
+            .chain(monthly)
+            .map(|(key, month, occurs, fit, printed)| {
                 let (at, decide, otherwise, reading) = fit.decide();
                 FestivalRule {
                     key: key.to_owned(),
                     source: format!("{printed}; fitted: {reading}"),
-                    month: Some(month),
+                    month,
                     convention: Convention::Amanta,
-                    occurs: tithi.into(),
-                    in_adhika: false,
+                    occurs,
+                    in_adhika: month.is_none(),
                     at,
                     decide,
                     otherwise,

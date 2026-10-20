@@ -10,7 +10,7 @@
 
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Calendar, Masa, Nakshatra, Tithi};
+use teistro_core::catalogue::{Calendar, Masa, Nakshatra, Tithi, Vara};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
@@ -69,6 +69,8 @@ pub(crate) fn days_over(
                     1,
                     u8::try_from(k + 1).unwrap(),
                 ),
+                // 1 January 2024 was a Monday.
+                vara: Vara::ALL[(k + 1) % 7],
                 sunrise: JulianDay::literal(rise),
                 sunset: JulianDay::literal(rise + 0.5),
                 next_sunrise: JulianDay::literal(rise + 1.0),

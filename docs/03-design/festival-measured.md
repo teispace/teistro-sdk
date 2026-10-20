@@ -290,6 +290,43 @@ measures the fit and not a text (C600).
 | 2082 | CHAITE_DASHAIN | 26 Mar | p. 25: चैतेदशैं | 26 Mar | 26 Mar |
 | 2082 | SETO_MACHHINDRANATH_JATRA | 26 Mar | p. 25: श्रीश्वेतमत्स्येन्द्रनाथ रथयात्रा | 26 Mar | 26 Mar |
 | 2082 | VAISHAKHA_SNANA_ARAMBHA | 2 Apr | p. 25: वैशाखस्नान सुरु | 2 Apr | 2 Apr |
+| 2082 | RAVI_SAPTAMI | 20 Apr | p. 2: रविसप्तमीव्रत | 20 Apr | 20 Apr |
+| 2082 | PRADOSHA_VRATA | 25 Apr | p. 2: प्रदोषव्रत | 25 Apr | 25 Apr |
+| 2082 | RAVI_SAPTAMI | 4 May | p. 3: रविसप्तमीव्रत | 4 May | 4 May |
+| 2082 | PRADOSHA_VRATA | 9 May | p. 3: प्रदोषव्रत | 9 May | 9 May |
+| 2082 | BHAUMASHTAMI | 20 May | p. 4: भौमाष्टमीव्रत | 20 May | 20 May |
+| 2082 | PRADOSHA_VRATA | 24 May | p. 4: शनिप्रदोषव्रत | 24 May | 24 May |
+| 2082 | BHAUMASHTAMI | 3 Jun | p. 5: भौमाष्टमीव्रत | 3 Jun | 3 Jun |
+| 2082 | PRADOSHA_VRATA | 8 Jun | p. 5: प्रदोषव्रत | 8 Jun | 8 Jun |
+| 2082 | PRADOSHA_VRATA | 23 Jun | p. 6: सोमप्रदोषव्रत | 23 Jun | 23 Jun |
+| 2082 | PRADOSHA_VRATA | 8 Jul | p. 7: प्रदोषव्रत | 8 Jul | 8 Jul |
+| 2082 | PRADOSHA_VRATA | 22 Jul | p. 8: प्रदोषव्रत | 22 Jul | 22 Jul |
+| 2082 | PRADOSHA_VRATA | 6 Aug | p. 9: प्रदोषव्रत | 6 Aug | 6 Aug |
+| 2082 | PRADOSHA_VRATA | 20 Aug | p. 10: प्रदोषव्रत | 20 Aug | 20 Aug |
+| 2082 | PRADOSHA_VRATA | 5 Sep | p. 11: प्रदोषव्रत | 5 Sep | 5 Sep |
+| 2082 | RAVI_SAPTAMI | 14 Sep | p. 12: रविसप्तमीव्रत | 14 Sep | none ✗ |
+| 2082 | PRADOSHA_VRATA | 19 Sep | p. 12: प्रदोषव्रत | 19 Sep | 19 Sep |
+| 2082 | BHAUMASHTAMI | 30 Sep | p. 13: भौमाष्टमीव्रत | 30 Sep | 30 Sep |
+| 2082 | PRADOSHA_VRATA | 4 Oct | p. 13: शनिप्रदोषव्रत | 4 Oct | 4 Oct |
+| 2082 | BHAUMASHTAMI | 14 Oct | p. 14: भौमाष्टमीव्रत | 14 Oct | 14 Oct |
+| 2082 | PRADOSHA_VRATA | 18 Oct | p. 14: शनिप्रदोषव्रत | 18 Oct | 18 Oct |
+| 2082 | BUDHASHTAMI | 29 Oct | p. 15: बुधाष्टमीव्रत | 29 Oct | 12 Nov ✗ |
+| 2082 | PRADOSHA_VRATA | 3 Nov | p. 15: सोमप्रदोषव्रत | 3 Nov | 3 Nov |
+| 2082 | BUDHASHTAMI | 12 Nov | p. 16: बुधाष्टमीव्रत | 12 Nov | 12 Nov |
+| 2082 | PRADOSHA_VRATA | 17 Nov | p. 16: सोमप्रदोषव्रत | 17 Nov | 17 Nov |
+| 2082 | PRADOSHA_VRATA | 2 Dec | p. 17: प्रदोषव्रत | 2 Dec | 2 Dec |
+| 2082 | PRADOSHA_VRATA | 17 Dec | p. 18: प्रदोषव्रत | 17 Dec | 17 Dec |
+| 2082 | PRADOSHA_VRATA | 1 Jan | p. 19: प्रदोषव्रत | 1 Jan | 1 Jan |
+| 2082 | PRADOSHA_VRATA | 16 Jan | p. 20: प्रदोषव्रत | 16 Jan | 16 Jan |
+| 2082 | RAVI_SAPTAMI | 25 Jan | p. 21: रविसप्तमीव्रत | 25 Jan | 25 Jan |
+| 2082 | PRADOSHA_VRATA | 30 Jan | p. 21: प्रदोषव्रत | 30 Jan | 30 Jan |
+| 2082 | RAVI_SAPTAMI | 8 Feb | p. 22: रविसप्तमीव्रत | 8 Feb | 8 Feb |
+| 2082 | PRADOSHA_VRATA | 14 Feb | p. 22: शनिप्रदोषव्रत | 14 Feb | 14 Feb |
+| 2082 | BHAUMASHTAMI | 24 Feb | p. 23: भौमाष्टमीव्रत | 24 Feb | 24 Feb |
+| 2082 | PRADOSHA_VRATA | 1 Mar | p. 23: प्रदोषव्रत | 1 Mar | 1 Mar |
+| 2082 | BUDHASHTAMI | 11 Mar | p. 24: बुधाष्टमीव्रत | 11 Mar | 11 Mar |
+| 2082 | PRADOSHA_VRATA | 16 Mar | p. 24: सोमप्रदोषव्रत | 16 Mar | 16 Mar |
+| 2082 | PRADOSHA_VRATA | 30 Mar | p. 25: सोमप्रदोषव्रत | 30 Mar | 30 Mar |
 | 2083 | PARASHURAMA_JAYANTI | 19 Apr | p. 3: परशुरामजयन्ती | 19 Apr | 19 Apr |
 | 2083 | SHANKARACHARYA_JAYANTI | 21 Apr | p. 3: आद्यजगत्गुरु शङ्कराचार्यजयन्ती | 21 Apr | 21 Apr |
 | 2083 | GANGA_SAPTAMI | 23 Apr | p. 3: गंगासप्तमी | 23 Apr | 23 Apr |
@@ -355,11 +392,53 @@ measures the fit and not a text (C600).
 | 2083 | GHODE_JATRA | 6 Apr | p. 26: घोडेजात्रा | 6 Apr | 6 Apr |
 | 2083 | MATSYANARAYANA_MELA | 9 Apr | p. 27: मत्स्यनारायणमेला | 9 Apr | 9 Apr |
 | 2083 | MATSYA_JAYANTI | 9 Apr | p. 27: मत्स्यजयन्ती | 9 Apr | 9 Apr |
+| 2083 | PRADOSHA_VRATA | 15 Apr | p. 2: प्रदोषव्रत | 15 Apr | 15 Apr |
+| 2083 | MANGALA_CHATURTHI | 21 Apr | p. 3: मंगलचौथीव्रत | 21 Apr | none ✗ |
+| 2083 | PRADOSHA_VRATA | 29 Apr | p. 3: प्रदोषव्रत | 29 Apr | 28 Apr ✗ |
+| 2083 | MANGALA_CHATURTHI | 5 May | p. 4: मंगलचौथीव्रत | 5 May | none ✗ |
+| 2083 | PRADOSHA_VRATA | 14 May | p. 4: प्रदोषव्रत | 14 May | 14 May |
+| 2083 | PRADOSHA_VRATA | 28 May | p. 5: प्रदोषव्रत | 28 May | 28 May |
+| 2083 | RAVI_SAPTAMI | 7 Jun | p. 6: रविसप्तमीव्रत | 7 Jun | 7 Jun |
+| 2083 | PRADOSHA_VRATA | 12 Jun | p. 6: प्रदोषव्रत | 12 Jun | 12 Jun |
+| 2083 | SOMAVATI_AMAVASYA | 15 Jun | p. 6: सोमबारे औसी | 15 Jun | 15 Jun |
+| 2083 | RAVI_SAPTAMI | 21 Jun | p. 7: रविसप्तमीव्रत | 21 Jun | 21 Jun |
+| 2083 | PRADOSHA_VRATA | 27 Jun | p. 7: शनिप्रदोषव्रत | 27 Jun | 27 Jun |
+| 2083 | BUDHASHTAMI | 8 Jul | p. 8: बुधाष्टमीव्रत | 8 Jul | 8 Jul |
+| 2083 | PRADOSHA_VRATA | 12 Jul | p. 8: प्रदोषव्रत | 12 Jul | 12 Jul |
+| 2083 | BUDHASHTAMI | 22 Jul | p. 9: बुधाष्टमीव्रत | 22 Jul | 8 Jul ✗ |
+| 2083 | PRADOSHA_VRATA | 26 Jul | p. 9: प्रदोषव्रत | 26 Jul | 26 Jul |
+| 2083 | PRADOSHA_VRATA | 10 Aug | p. 10: सोमप्रदोषव्रत | 10 Aug | 10 Aug |
+| 2083 | PRADOSHA_VRATA | 25 Aug | p. 11: प्रदोषव्रत | 25 Aug | 25 Aug |
+| 2083 | MANGALA_CHATURTHI | 1 Sep | p. 12: मंगलचौथीव्रत | 1 Sep | 1 Sep |
+| 2083 | PRADOSHA_VRATA | 8 Sep | p. 12: प्रदोषव्रत | 8 Sep | 8 Sep |
+| 2083 | MANGALA_CHATURTHI | 15 Sep | p. 13: मंगलचौथीव्रत | 15 Sep | 15 Sep |
+| 2083 | PRADOSHA_VRATA | 24 Sep | p. 13: प्रदोषव्रत | 24 Sep | 24 Sep |
+| 2083 | PRADOSHA_VRATA | 8 Oct | p. 14: प्रदोषव्रत | 8 Oct | 8 Oct |
+| 2083 | PRADOSHA_VRATA | 23 Oct | p. 15: प्रदोषव्रत | 23 Oct | 23 Oct |
+| 2083 | RAVI_SAPTAMI | 1 Nov | p. 16: रविसप्तमीव्रत | 1 Nov | 1 Nov |
+| 2083 | PRADOSHA_VRATA | 6 Nov | p. 16: प्रदोषव्रत | 6 Nov | 6 Nov |
+| 2083 | SOMAVATI_AMAVASYA | 9 Nov | p. 16: सोमबारे औसी | 9 Nov | 9 Nov |
+| 2083 | BHAUMASHTAMI | 17 Nov | p. 17: भौमाष्टमीव्रत | 17 Nov | 17 Nov |
+| 2083 | PRADOSHA_VRATA | 22 Nov | p. 17: प्रदोषव्रत | 22 Nov | 22 Nov |
+| 2083 | BHAUMASHTAMI | 1 Dec | p. 18: भौमाष्टमीव्रत | 1 Dec | 1 Dec |
+| 2083 | PRADOSHA_VRATA | 6 Dec | p. 18: प्रदोषव्रत | 6 Dec | 6 Dec |
+| 2083 | PRADOSHA_VRATA | 21 Dec | p. 19: सोमप्रदोषव्रत | 21 Dec | 21 Dec |
+| 2083 | PRADOSHA_VRATA | 5 Jan | p. 20: प्रदोषव्रत | 5 Jan | 5 Jan |
+| 2083 | MANGALA_CHATURTHI | 12 Jan | p. 21: मंगलचौथीव्रत | 12 Jan | 12 Jan |
+| 2083 | PRADOSHA_VRATA | 20 Jan | p. 21: प्रदोषव्रत | 20 Jan | 20 Jan |
+| 2083 | MANGALA_CHATURTHI | 26 Jan | p. 22: मंगलचौथीव्रत | 26 Jan | 12 Jan ✗ |
+| 2083 | PRADOSHA_VRATA | 3 Feb | p. 22: प्रदोषव्रत | 3 Feb | 3 Feb |
+| 2083 | PRADOSHA_VRATA | 18 Feb | p. 23: प्रदोषव्रत | 18 Feb | 18 Feb |
+| 2083 | PRADOSHA_VRATA | 5 Mar | p. 24: प्रदोषव्रत | 5 Mar | 5 Mar |
+| 2083 | BHAUMASHTAMI | 16 Mar | p. 25: भौमाष्टमीव्रत | 16 Mar | 16 Mar |
+| 2083 | PRADOSHA_VRATA | 20 Mar | p. 25: शनिप्रदोषव्रत | 20 Mar | 20 Mar |
+| 2083 | BHAUMASHTAMI | 30 Mar | p. 26: भौमाष्टमीव्रत | 30 Mar | 30 Mar |
+| 2083 | PRADOSHA_VRATA | 4 Apr | p. 26: प्रदोषव्रत | 4 Apr | 4 Apr |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 12 of 132 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 29 of 132 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 12 of 211 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 36 of 211 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 

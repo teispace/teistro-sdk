@@ -12,11 +12,12 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
-**Day muhurtas and the day holding more** (`festival-rule-language.md`
-§3.2, §3.3). **Numbers:** the `NEPAL_PANCHANGA` pack moved, as the
+**Day muhurtas, the day holding more, and weekdays**
+(`festival-rule-language.md` §3.2 to §3.5). **Numbers:** the `NEPAL_PANCHANGA` pack moved, as the
 maintainer's rule (C601, C603) and purvahna as six muhurtas (C602)
-decide. Over the committee's sky it now parts from the print on 12 of
-132 rows, down from 18: Sita navami and Upanga lalita in VS 2082, Mha puja
+decide, and it gains six rules kept every month. Over the committee's
+sky it parts from the print on 12 of 211 rows, down from 18 of 132:
+Sita navami and Upanga lalita in VS 2082, Mha puja
 and the Nepal Sambat new year in VS 2083, and Pishachamochana in both
 years now fall on the printed day. No other pack's day, case or extent
 changed.
@@ -26,6 +27,14 @@ changed.
 - A guard may ask `{"is": "GREATER", "day": "LATER"}`: that day's window
   holds more of the tithi, in time. An observance decided by it carries a
   margin of at most half the two times' difference.
+- A rule may be kept on `{"dayOfPaksha": 13}`, the same day of both
+  pakshas, 1 to 14. A guard may ask `{"is": "ON_VARA", "day": "LATER",
+  "vara": "SOMAVARA"}`, and a choice may be `NONE`: the rule is not kept
+  that time, and nothing is left unjudged.
+- `NEPAL_PANCHANGA` gains the pradosha fast (`PRADOSHA_VRATA`) and five
+  weekday fasts (`MANGALA_CHATURTHI`, `RAVI_SAPTAMI`, `BHAUMASHTAMI`,
+  `BUDHASHTAMI`, `SOMAVATI_AMAVASYA`), kept every month with the adhika
+  ones. They give all 79 of their rows printed in VS 2082 and 2083.
 - Every share fit of `NEPAL_PANCHANGA` is the maintainer's rule: the day
   holding more of the window, the earlier on a tie (both wholly being
   one) and when neither holds it. Pishachamochana is kept in aparahna, as

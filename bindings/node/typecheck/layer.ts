@@ -2192,6 +2192,27 @@ function theFestivals(almanac: Almanac): string {
     ],
     otherwise: 'EARLIER',
   };
+  // The pradosha fast on both 13ths, and Mangala chaturthi kept only on
+  // a Tuesday.
+  const pradosha: FestivalRule = {
+    key: 'PRADOSHA_VRATA',
+    source: 'the committee',
+    dayOfPaksha: 13,
+    inAdhika: true,
+    at: { window: 'PRADOSHA' },
+    decide: [{ when: [{ is: 'CASE', case: 'LATER_ONLY' }], choose: 'LATER' }],
+    otherwise: 'EARLIER',
+  };
+  const mangala: FestivalRule = {
+    ...pradosha,
+    key: 'MANGALA_CHATURTHI',
+    dayOfPaksha: 4,
+    at: { window: 'SUNRISE' },
+    decide: [{ when: [{ is: 'ON_VARA', day: 'EARLIER', vara: 'vara.MANGALAVARA' }], choose: 'EARLIER' }],
+    otherwise: 'NONE',
+  };
+  // @ts-expect-error a day of either paksha names no tithi
+  const twice: FestivalRule = { ...pradosha, tithi: 'tithi.PURNIMA' };
   // @ts-expect-error a range of day muhurtas names where it ends
   const endless: FestivalRule = { ...purvahna, at: { window: 'DAY_MUHURTA', from: 1 } };
   // @ts-expect-error a rule is kept on a tithi or a nakshatra, not both
@@ -2200,7 +2221,7 @@ function theFestivals(almanac: Almanac): string {
   const halfless: FestivalRule = { key: 'X', source: 'x', nakshatra: 'nakshatra.HASTA', at: { window: 'SUNRISE' }, decide: [], otherwise: 'LATER' };
   // The Terai's Holi, a day after the Holika fire.
   const terai: FollowingRule = { key: 'HOLI_TERAI', source: 'the committee', after: 'HOLIKA', days: 1 };
-  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, terai] };
+  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, pradosha, mangala, terai] };
   const pack: FestivalPack = 'NEPAL';
   // @ts-expect-error a following rule counts days, a number
   const spelt: FollowingRule = { ...terai, days: 'one' };
@@ -2210,7 +2231,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

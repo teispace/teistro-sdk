@@ -17,7 +17,7 @@
 
 use teistro_calendar::EraNumber;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Era, Masa, Nakshatra, Paksha, Tithi};
+use teistro_core::catalogue::{Era, Masa, Nakshatra, Paksha, Tithi, Vara};
 use teistro_core::interval::Interval;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
@@ -1329,6 +1329,124 @@ fn day_muhurtas_and_greater_read_and_write_as_the_language_spells_them() {
     assert_eq!(back, rule);
     for rule in FestivalRule::nepal_panchanga() {
         rule.check().unwrap();
+    }
+}
+
+/// A rule on the udaya day, kept only when that day is `vara`, and not
+/// at all otherwise: the fit the committee's weekday fasts take (C618).
+fn on_vara(occurs: Occurs, vara: Vara) -> FestivalRule {
+    let on = |day| Predicate::OnVara { day, vara };
+    FestivalRule {
+        month: None,
+        occurs,
+        in_adhika: true,
+        at: Window::Sunrise,
+        decide: vec![
+            Guard::new(
+                [
+                    Predicate::Case {
+                        case: Case::LaterOnly,
+                    },
+                    on(Which::Later),
+                ],
+                Choice::Later,
+            ),
+            Guard::new(
+                [Predicate::Case {
+                    case: Case::LaterOnly,
+                }],
+                Choice::None,
+            ),
+            Guard::new([on(Which::Earlier)], Choice::Earlier),
+        ],
+        otherwise: Choice::None,
+        ..a_rule(Tithi::KrishnaEkadashi, vec![], Choice::Earlier)
+    }
+}
+
+/// The 11th holds only the sunrise of day 2, 3 January 2024, a
+/// Wednesday: kept there on a Wednesday rule, and on a Monday rule
+/// neither kept nor left unjudged.
+#[test]
+fn on_vara_keeps_the_udaya_day_only_on_its_vara() {
+    let eleventh: Occurs = Tithi::KrishnaEkadashi.into();
+    let days = days_of(
+        &[
+            (Tithi::KrishnaNavami, ghati(0, 20.0)),
+            (Tithi::KrishnaDashami, ghati(1, 40.0)),
+            (Tithi::KrishnaEkadashi, ghati(2, 30.0)),
+            (Tithi::KrishnaNavami, ghati(5, 0.0)),
+        ],
+        &[],
+        Masa::Shravana,
+        MonthKind::Nija,
+    );
+    assert_eq!(days[2].vara, Vara::Budhavara);
+    assert_eq!(
+        decided(&on_vara(eleventh, Vara::Budhavara), &days),
+        (Case::LaterOnly, 2, Decided::Guard { index: 0 })
+    );
+    let monday = observances(&[on_vara(eleventh, Vara::Somavara)], &days).unwrap();
+    assert!(monday.observances.is_empty(), "{:?}", monday.observances);
+    assert!(monday.unjudged.is_empty(), "{:?}", monday.unjudged);
+}
+
+/// Thirty tithis of a day each, every one holding one sunrise: the 13th
+/// of both pakshas is kept, and nothing else.
+#[test]
+fn a_day_of_either_paksha_is_kept_in_both() {
+    let tithis: Vec<(Tithi, f64)> = Tithi::ALL
+        .iter()
+        .enumerate()
+        .map(|(k, &tithi)| (tithi, ghati(k + 1, 20.0)))
+        .collect();
+    let days = days_over(33, &tithis, &[], Masa::Shravana, MonthKind::Nija);
+    let rule = FestivalRule {
+        month: None,
+        occurs: Occurs::DayOfPaksha { day_of_paksha: 13 },
+        at: Window::Sunrise,
+        ..a_rule(
+            Tithi::KrishnaEkadashi,
+            vec![Guard::new(
+                [Predicate::Case {
+                    case: Case::LaterOnly,
+                }],
+                Choice::Later,
+            )],
+            Choice::Earlier,
+        )
+    };
+    rule.check().unwrap();
+    let kept = observances(std::slice::from_ref(&rule), &days).unwrap();
+    assert!(kept.unjudged.is_empty(), "{:?}", kept.unjudged);
+    // The bright 13th runs from day 13's ghati 20 to day 14's and holds
+    // day 14's sunrise; the dark 13th day 29's.
+    let given: Vec<u8> = kept.observances.iter().map(|o| o.day.day - 1).collect();
+    assert_eq!(given, [13, 28]);
+}
+
+#[test]
+fn a_day_of_either_paksha_and_a_weekday_read_and_write_as_the_language_spells_them() {
+    let rule = on_vara(Occurs::DayOfPaksha { day_of_paksha: 13 }, Vara::Shanivara);
+    let text = serde_json::to_string(&rule).unwrap();
+    assert!(text.contains(r#""dayOfPaksha":13"#), "{text}");
+    assert!(
+        text.contains(r#"{"is":"ON_VARA","day":"LATER","vara":"SHANIVARA"}"#),
+        "{text}"
+    );
+    assert!(text.contains(r#""otherwise":"NONE""#), "{text}");
+    let back: FestivalRule = serde_json::from_str(&text).unwrap();
+    assert_eq!(back, rule);
+    for (wrong, says) in [
+        (r#""dayOfPaksha":15"#, "PURNIMA"),
+        (r#""dayOfPaksha":0"#, "1 to 14"),
+        (r#""dayOfPaksha":13,"tithi":"PURNIMA""#, "both pakshas"),
+    ] {
+        let text = text.replace(r#""dayOfPaksha":13"#, wrong);
+        let why = serde_json::from_str::<FestivalRule>(&text)
+            .unwrap_err()
+            .to_string();
+        assert!(why.contains(says), "{wrong}: {why}");
     }
 }
 

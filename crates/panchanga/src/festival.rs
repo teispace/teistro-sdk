@@ -19,7 +19,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Kind, Masa, Nakshatra, Paksha, Tithi, write_in_full};
+use teistro_core::catalogue::{Kind, Masa, Nakshatra, Paksha, Tithi, Vara, write_in_full};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
@@ -240,6 +240,16 @@ pub enum Predicate {
         /// Which day.
         day: Which,
     },
+    /// The day is this vara, sunrise to sunrise: *Dharmasindhu* p. 20
+    /// names the new moon on a Monday (Somavati), the 4th on a Tuesday and
+    /// the 7th on a Sunday, and the committee prints the 13th's fast on a
+    /// Saturday or a Monday by those names (C618).
+    OnVara {
+        /// Which day.
+        day: Which,
+        /// The vara.
+        vara: Vara,
+    },
 }
 
 /// The edge of a day a [`Predicate::Lasts`] counts from.
@@ -265,6 +275,9 @@ pub enum Choice {
     /// By the yugma verse (p. 6): the first of a pair on the day it runs
     /// into its partner, the second on the day its partner runs into it.
     ByYugma,
+    /// Neither day: the rule is not kept this time. A rite kept only on a
+    /// weekday answers this when its tithi's day is another (C618).
+    None,
 }
 
 /// A choice when every predicate holds.
@@ -368,6 +381,14 @@ pub enum Occurs {
         /// The half of the month it must fall in.
         paksha: Paksha,
     },
+    /// The same day of both pakshas, 1 to 14: the committee prints the
+    /// pradosha fast on the 13th of each (§3.4). The 15th is the full moon
+    /// in one and the new moon in the other, each kept as a `tithi`.
+    DayOfPaksha {
+        /// The day, 1 to 14.
+        #[serde(rename = "dayOfPaksha")]
+        day_of_paksha: u8,
+    },
 }
 
 impl From<Tithi> for Occurs {
@@ -382,7 +403,24 @@ impl Occurs {
     pub const fn tithi(self) -> Option<Tithi> {
         match self {
             Occurs::Tithi { tithi } => Some(tithi),
-            Occurs::Nakshatra { .. } => None,
+            Occurs::Nakshatra { .. } | Occurs::DayOfPaksha { .. } => None,
+        }
+    }
+
+    /// Whether the rule is kept on a tithi, one or a day of either
+    /// paksha, rather than on a nakshatra.
+    #[must_use]
+    pub const fn on_a_tithi(self) -> bool {
+        matches!(self, Occurs::Tithi { .. } | Occurs::DayOfPaksha { .. })
+    }
+
+    /// Whether a tithi is one the rule is kept on, when it is kept on a
+    /// tithi.
+    fn keeps(self, held: Tithi) -> bool {
+        match self {
+            Occurs::Tithi { tithi } => tithi == held,
+            Occurs::DayOfPaksha { day_of_paksha } => held.attributes().number == day_of_paksha,
+            Occurs::Nakshatra { .. } => false,
         }
     }
 }
@@ -406,6 +444,13 @@ enum OccursSchema {
         /// The half of the month it must fall in.
         paksha: Paksha,
     },
+    /// The same day of both pakshas, 1 to 14.
+    DayOfPaksha {
+        /// The day, 1 to 14.
+        #[serde(rename = "dayOfPaksha")]
+        #[schemars(range(min = 1, max = 14))]
+        day_of_paksha: u8,
+    },
 }
 
 /// The fields [`Occurs`] is read from, so that a rule naming both a tithi
@@ -419,12 +464,28 @@ struct OccursFields {
     nakshatra: Option<Nakshatra>,
     #[serde(default)]
     paksha: Option<Paksha>,
+    #[serde(default, rename = "dayOfPaksha")]
+    day_of_paksha: Option<u8>,
 }
 
 impl TryFrom<OccursFields> for Occurs {
     type Error = String;
 
     fn try_from(fields: OccursFields) -> Result<Occurs, String> {
+        if let Some(day_of_paksha) = fields.day_of_paksha {
+            if fields.tithi.is_some() || fields.nakshatra.is_some() || fields.paksha.is_some() {
+                return Err(
+                    "a rule kept on a `dayOfPaksha` names no `tithi`, `nakshatra` or `paksha`; it is kept in both pakshas"
+                        .to_owned(),
+                );
+            }
+            if !(1..=14).contains(&day_of_paksha) {
+                return Err(format!(
+                    "a `dayOfPaksha` is 1 to 14, not {day_of_paksha}; the 15th is `PURNIMA` in the bright half and `AMAVASYA` in the dark, each kept as a `tithi`"
+                ));
+            }
+            return Ok(Occurs::DayOfPaksha { day_of_paksha });
+        }
         match (fields.tithi, fields.nakshatra, fields.paksha) {
             (Some(tithi), None, None) => Ok(Occurs::Tithi { tithi }),
             (None, Some(nakshatra), Some(paksha)) => Ok(Occurs::Nakshatra { nakshatra, paksha }),
@@ -482,7 +543,7 @@ impl FestivalRule {
             && self.occurs.tithi().and_then(yugma).is_none()
         {
             return Err(Error::invalid_arg(format!(
-                "{}: the yugma verse pairs {:?} with nothing (it pairs 2-3, 4-5, 6-7, 8-9, 11-12, the bright 14th with the full moon, and the new moon with the bright 1st, and no nakshatra); choose EARLIER or LATER",
+                "{}: the yugma verse pairs {:?} with nothing (it pairs 2-3, 4-5, 6-7, 8-9, 11-12, the bright 14th with the full moon, and the new moon with the bright 1st, and no nakshatra or day of either paksha); choose EARLIER or LATER",
                 self.key, self.occurs
             ))
             .with_field("decide"));
@@ -498,7 +559,7 @@ impl FestivalRule {
                         ))
                         .with_field("decide.when.ghatis"));
                     }
-                    Predicate::Joined { .. } if self.occurs.tithi().is_none() => {
+                    Predicate::Joined { .. } if !self.occurs.on_a_tithi() => {
                         return Err(Error::invalid_arg(format!(
                             "{}: JOINED asks a tithi and a nakshatra to stand together, and this rule is kept on a nakshatra; ask STANDS of another nakshatra",
                             self.key
@@ -555,6 +616,8 @@ impl FestivalRule {
 pub struct FestivalDay {
     /// The civil date.
     pub date: CalendarDate,
+    /// Its vara, from this sunrise to the next.
+    pub vara: Vara,
     /// Its sunrise.
     pub sunrise: JulianDay<Utc>,
     /// Its sunset.
@@ -592,6 +655,7 @@ impl FestivalDay {
     ) -> FestivalDay {
         FestivalDay {
             date: day.date.clone(),
+            vara: day.vara,
             sunrise: day.sunrise,
             sunset: day.sunset,
             next_sunrise: day.next_sunrise,
@@ -815,8 +879,8 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
     let mut kept: Vec<(&FestivalRule, Interval, LunarMonth)> = Vec::new();
     for rule in rules {
         match rule.occurs {
-            Occurs::Tithi { tithi } => {
-                for occurrence in tithis.iter().filter(|held| held.member == tithi) {
+            Occurs::Tithi { .. } | Occurs::DayOfPaksha { .. } => {
+                for occurrence in tithis.iter().filter(|held| rule.occurs.keeps(held.member)) {
                     if let Some(month) = month_of(rule, occurrence, days) {
                         kept.push((rule, occurrence.whole, month));
                     }
@@ -841,7 +905,8 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
     let mut answer = Observances::default();
     for (rule, whole, month) in kept {
         match judge(rule, whole, month, days)? {
-            Ok(observance) => answer.observances.push(observance),
+            Ok(Some(observance)) => answer.observances.push(observance),
+            Ok(None) => {}
             Err(why) => answer.unjudged.push(Unjudged {
                 rule: rule.key.clone(),
                 tithi: whole,
@@ -953,7 +1018,9 @@ fn case_of(earlier: f64, later: f64) -> Case {
     }
 }
 
-type Judged = Result<Observance, String>;
+/// The observance, none when the rule chose [`Choice::None`], or why the
+/// occurrence could not be judged.
+type Judged = Result<Option<Observance>, String>;
 
 fn judge(
     rule: &FestivalRule,
@@ -1004,6 +1071,7 @@ fn judge(
             .tithi()
             .and_then(yugma)
             .unwrap_or(Which::Earlier),
+        Choice::None => return Ok(Ok(None)),
     };
     let day = match which {
         Which::Earlier => earlier.date.clone(),
@@ -1014,7 +1082,7 @@ fn judge(
     } else {
         margin(rule, tithi, earlier, later, facts.time)? * SECONDS_PER_DAY
     };
-    Ok(Ok(Observance {
+    Ok(Ok(Some(Observance {
         rule: rule.key.clone(),
         day,
         tithi,
@@ -1025,7 +1093,7 @@ fn judge(
         decided_by,
         choice,
         margin_seconds,
-    }))
+    })))
 }
 
 const SECONDS_PER_DAY: f64 = 86_400.0;
@@ -1178,6 +1246,7 @@ impl Facts<'_> {
                 };
                 held >= 1.0
             }
+            Predicate::OnVara { day, vara } => self.day(day).vara == vara,
             Predicate::Greater { day } => {
                 let [earlier, later] = self.time;
                 match day {

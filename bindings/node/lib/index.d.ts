@@ -6587,10 +6587,12 @@ export type FestivalPredicate =
   /** The tithi holds the whole of that day's window, or its instant. */
   | { readonly is: 'WHOLLY'; readonly day: FestivalWhich }
   /** That day's window holds more of the tithi, in time, than the other's; equal times hold for neither (C601). */
-  | { readonly is: 'GREATER'; readonly day: FestivalWhich };
+  | { readonly is: 'GREATER'; readonly day: FestivalWhich }
+  /** That day is this vara, sunrise to sunrise (C618). */
+  | { readonly is: 'ON_VARA'; readonly day: FestivalWhich; readonly vara: Vara };
 
 /** What a guard, or a rule's `otherwise`, decides. */
-export type FestivalChoice = 'EARLIER' | 'LATER' | 'BY_YUGMA';
+export type FestivalChoice = 'EARLIER' | 'LATER' | 'BY_YUGMA' | 'NONE';
 
 /** What a rule is kept on: a tithi, or a nakshatra in a paksha of the month (the Samavedis' upakarma is Hasta in Bhadrapada's bright half). */
 export type FestivalOccurs =
@@ -6599,6 +6601,14 @@ export type FestivalOccurs =
       readonly tithi: Tithi;
       readonly nakshatra?: never;
       readonly paksha?: never;
+      readonly dayOfPaksha?: never;
+    }
+  | {
+      readonly tithi?: never;
+      readonly nakshatra?: never;
+      readonly paksha?: never;
+      /** The same day of both pakshas, 1 to 14: the pradosha fast is the 13th of each. */
+      readonly dayOfPaksha: number;
     }
   | {
       readonly tithi?: never;
@@ -6606,6 +6616,7 @@ export type FestivalOccurs =
       readonly nakshatra: Nakshatra;
       /** The half of the month it must fall in. */
       readonly paksha: Paksha;
+      readonly dayOfPaksha?: never;
     };
 
 /** A rule: when an observance falls, and how its day is decided (`03-design/festival-rules.md` §4.1). */
