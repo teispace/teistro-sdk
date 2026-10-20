@@ -626,6 +626,7 @@ or with the baseline engine's value as the documented default.
 | C680 | The day's lagna table's lagna | the context's ascendant; the Surya Siddhanta's rising times | a printed week to hold it to | 2 | the context's, the Siddhanta's under its profile; [`amrit-kalam-and-lagnas.md`](../../03-design/amrit-kalam-and-lagnas.md) |
 | C681 | The first and last lagna spans | — | a printed table's convention | 3 | clipped, `whole: false`; [`amrit-kalam-and-lagnas.md`](../../03-design/amrit-kalam-and-lagnas.md) |
 | C682 | Catalogue members with no name and no `UNNAMED` entry | 242 of 314 en-missing are unlisted | a reviewer per language | — | name the day page's kinds once vetted; [`amrit-kalam-and-lagnas.md`](../../03-design/amrit-kalam-and-lagnas.md) |
+| C683 | Kuchhi Bhoye in a vriddhi Ashtami | The committee's Ashwina Shukla Ashtami of VS 2083 holds the sunrises of 18 and 19 October 2026; the print gives the 18th. VS 2082's held one sunrise, so it cannot tell the earlier from the later | VS 2082 p. 13, VS 2083 p. 15 | rank 2 | **decided**: the earlier (`Fit::Udaya`). The pack first had C610's later and was never measured; `cargo xtask festival` parted on it |
 
 ## How to use this page
 

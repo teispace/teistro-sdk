@@ -548,7 +548,10 @@ mod tests {
         assert_eq!(asked, FestivalRequest::from(FestivalPack::NepalPanchanga));
         let nepal = FestivalRule::nepal();
         assert_eq!(&asked.rules()[..nepal.len()], nepal.as_slice());
-        assert_eq!(asked.rules().len(), nepal.len() + FestivalRule::nepal_panchanga().len());
+        assert_eq!(
+            asked.rules().len(),
+            nepal.len() + FestivalRule::nepal_panchanga().len()
+        );
         let counted = FollowingRule::nepal().len() + FollowingRule::nepal_panchanga().len();
         assert_eq!(asked.following().len(), counted);
         assert_eq!(asked.reach(), 1);

@@ -1,6 +1,6 @@
 # Festival classification
 
-**Status:** research, 2026-10-20. Cruxes C600, C613, C619 and C622 to C623
+Status: `research`, 2026-10-20. Cruxes C600, C613, C619 and C622 to C623
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.

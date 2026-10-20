@@ -1,6 +1,6 @@
 # The festival rule language: what it lacks
 
-**Status:** design, 2026-10-20; nothing on this page is built. Cruxes C601
+Status: `design`, 2026-10-20; nothing on this page is built. Cruxes C601
 to C604, C606, C608, C614, C616 to C619
 (`01-research/feature-universe/19-verification-cruxes.md`).
 

@@ -210,3 +210,174 @@ readings. The case is the shipped rule's, at the two sunsets.
 | the pradosha the full moon touches, the later when both do, is the printed day | falsified | 1 of 24 disagree |
 | the earlier day when the 14th lasts under eighteen nadis past its sunrise (p. 20's allowance for family rites) is the printed day | falsified | 3 of 24 disagree |
 | the moonrise the full moon holds, the later when both do, is the printed day | falsified | 2 of 24 disagree |
+
+## 6. The fitted rules against the print
+
+The days the committee printed for VS 2082 and 2083 that the
+`NEPAL_PANCHANGA` pack adds to `NEPAL` (`festival-rules.md` §10), at
+Kathmandu on Nepal's clock, beside the day the pack gives over the
+committee's own sky (`nepali-committee`), each parting named with its
+cause, and over the modern sky (`nepali-default`). Each rule is fitted:
+its window and table were chosen to give these days, so the agreement
+measures the fit and not a text (C600).
+
+| VS | rule | printed | where | committee sky | modern sky |
+|---:|---|---|---|---|---|
+| 2082 | PARASHURAMA_JAYANTI | 29 Apr | p. 3: परशुरामजयन्ती | 29 Apr | 29 Apr |
+| 2082 | SHANKARACHARYA_JAYANTI | 2 May | p. 3: आद्यजगत्गुरु शङ्कराचार्यजयन्ती | 2 May | 1 May ✗ |
+| 2082 | GANGA_SAPTAMI | 4 May | p. 3: गंगासप्तमी | 4 May | 3 May ✗ |
+| 2082 | SITA_NAVAMI | 6 May | p. 3: सीताजयन्ती | 5 May ✗ | 5 May ✗ |
+| 2082 | KURMA_JAYANTI | 12 May | p. 3: कूर्मजयन्ती | 12 May | 12 May |
+| 2082 | DASHAHARA_SNANA_ARAMBHA | 28 May | p. 5: दशहरास्नानारम्भ | 28 May | 28 May |
+| 2082 | GOSAIKUNDA_SNANA_ARAMBHA | 28 May | p. 5: गोसाइकुण्डस्नानारम्भ | 28 May | 28 May |
+| 2082 | KUMARA_JATRA | 2 Jun | p. 5: कुमारयात्रा | 2 Jun | 2 Jun |
+| 2082 | GANGA_DASHAHARA | 5 Jun | p. 5: गङ्गादशहरा | 5 Jun | 5 Jun |
+| 2082 | GOSAIKUNDA_SNANA_SAMAPTI | 5 Jun | p. 5: गोसाइँकुण्ड स्नानसमाप्ति | 5 Jun | 5 Jun |
+| 2082 | HATYAMOCHANA_SNANA | 5 Jun | p. 5: हत्यामोचन तीर्थस्नान | 5 Jun | 5 Jun |
+| 2082 | NIRJALA_EKADASHI | 7 Jun | p. 5: निर्जला एकादशीव्रत | 7 Jun | 6 Jun ✗ |
+| 2082 | DILA_CHARHE | 24 Jun | p. 6: (दिल्ला चःह्रे पूजा) | 24 Jun | 24 Jun |
+| 2082 | HILE_JATRA | 17 Aug | p. 10: रामेछाप चिसापानी हिलेजात्रा | 1 Sep ✗ | 1 Sep ✗ |
+| 2082 | AJA_EKADASHI | 19 Aug | p. 10: अजाएकादशीव्रत | 19 Aug | 19 Aug |
+| 2082 | CHATHA | 26 Aug | p. 11: चन्द्रदोषदर्शन (चथा) | 26 Aug | 27 Aug ✗ |
+| 2082 | GANESHA_CHATURTHI | 27 Aug | p. 11: गणेशचतुर्थीव्रत | 27 Aug | 27 Aug |
+| 2082 | RISHI_PANCHAMI | 28 Aug | p. 11: ऋषिपञ्चमीव्रत | 28 Aug | 28 Aug |
+| 2082 | GAURA_SAPTAMI | 30 Aug | p. 11: गौरासप्तमी | 30 Aug | 30 Aug |
+| 2082 | AMUKTABHARANA_SAPTAMI | 30 Aug | p. 11: अमुक्ताभरणसप्तमी | 30 Aug | 30 Aug |
+| 2082 | DURVA_ASHTAMI | 31 Aug | p. 11: दूर्वाष्टमीव्रत | 31 Aug | 31 Aug |
+| 2082 | VAMANA_DWADASHI | 4 Sep | p. 11: वामनद्वादशी | 4 Sep | 4 Sep |
+| 2082 | PRATIPADA_SHRADDHA | 8 Sep | p. 12: प्रतिपदाश्राद्ध | 8 Sep | 8 Sep |
+| 2082 | SORHA_SHRADDHA_ARAMBHA | 8 Sep | p. 12: सोह्रश्राद्ध सुरु | 8 Sep | 8 Sep |
+| 2082 | DWITIYA_SHRADDHA | 9 Sep | p. 12: द्वितीयाश्राद्ध | 9 Sep | 9 Sep |
+| 2082 | TRITIYA_SHRADDHA | 10 Sep | p. 12: तृतीयाश्राद्ध (गातिला) | 10 Sep | 10 Sep |
+| 2082 | CHATURTHI_SHRADDHA | 11 Sep | p. 12: चतुर्थीश्राद्ध | 11 Sep | 11 Sep |
+| 2082 | PANCHAMI_SHRADDHA | 12 Sep | p. 12: पञ्चमीश्राद्ध | 12 Sep | 11 Sep ✗ |
+| 2082 | SHASHTHI_SHRADDHA | 12 Sep | p. 12: षष्ठीश्राद्ध | 12 Sep | 12 Sep |
+| 2082 | SAPTAMI_SHRADDHA | 13 Sep | p. 12: सप्तमीश्राद्ध | 13 Sep | 13 Sep |
+| 2082 | ASHTAMI_SHRADDHA | 14 Sep | p. 12: अष्टमीश्राद्ध | 14 Sep | 14 Sep |
+| 2082 | NAVAMI_SHRADDHA | 15 Sep | p. 12: नवमीश्राद्ध, मातृनवमीश्राद्ध | 15 Sep | 15 Sep |
+| 2082 | DASHAMI_SHRADDHA | 16 Sep | p. 12: दशमीश्राद्ध | 16 Sep | 16 Sep |
+| 2082 | EKADASHI_SHRADDHA | 17 Sep | p. 12: एकादशीश्राद्ध | 17 Sep | 17 Sep |
+| 2082 | DWADASHI_SHRADDHA | 18 Sep | p. 12: द्वादशीश्राद्ध | 18 Sep | 18 Sep |
+| 2082 | TRAYODASHI_SHRADDHA | 19 Sep | p. 12: त्रयोदशीश्राद्ध | 19 Sep | 19 Sep |
+| 2082 | KALI_YUGADI | 19 Sep | p. 12: कलियुगादि | 19 Sep | 19 Sep |
+| 2082 | CHATURDASHI_SHRADDHA | 20 Sep | p. 12: शस्त्रादिबाट निधन भएकाहरूको विश्वेदेवासहित एकोदिष्ट विधिले चतुर्दशीश्राद्ध | 20 Sep | 20 Sep |
+| 2082 | AMAVASYA_SHRADDHA | 21 Sep | p. 12: औंसीश्राद्ध, पितृविसर्जन | 21 Sep | 21 Sep |
+| 2082 | UPANGA_LALITA_VRATA | 26 Sep | p. 13: उपाङ्गललिताव्रत | 27 Sep ✗ | 27 Sep ✗ |
+| 2082 | KUCHHI_BHOYE | 30 Sep | p. 13: (कूछि भ्वय्) | 30 Sep | 30 Sep |
+| 2082 | DHANVANTARI_JAYANTI | 19 Oct | p. 14: धन्वन्तरी जयन्ती | 19 Oct | 19 Oct |
+| 2082 | MHA_PUJA | 22 Oct | p. 15: म्हपूजा | 22 Oct | 22 Oct |
+| 2082 | NEPAL_SAMBAT_NEW_YEAR | 22 Oct | p. 15: ने.सं.११४६ प्रारम्भ | 22 Oct | 22 Oct |
+| 2082 | HARIBODHINI_EKADASHI | 1 Nov | p. 15: हरिबोधिनीएकादशीव्रत | 1 Nov | 2 Nov ✗ |
+| 2082 | BHISHMA_PANCHAKA_ARAMBHA | 1 Nov | p. 15: भीष्मपञ्चकारम्भ | 1 Nov | 2 Nov ✗ |
+| 2082 | TULASI_VIVAHA | 1 Nov | p. 15: तुलसीविवाह | 1 Nov | 2 Nov ✗ |
+| 2082 | PASHUPATI_HALESI_MELA | 18 Nov | p. 16: हलेसीमहादेवमेला | 18 Nov | 18 Nov |
+| 2082 | BALA_CHATURDASHI | 19 Nov | p. 16: बालाचतुर्दशी | 19 Nov | 19 Nov |
+| 2082 | PISHACHAMOCHANA_SHRADDHA | 3 Dec | p. 17: काशीमा पिशाचमोचन तीर्थश्राद्ध | 4 Dec ✗ | 4 Dec ✗ |
+| 2082 | DATTATREYA_JAYANTI | 4 Dec | p. 17: दत्तात्रेयजयन्ती | 4 Dec | 4 Dec |
+| 2082 | NUWAKOT_DUPCHESHWAR_MELA | 4 Dec | p. 17: नुवाकोट दुप्चेश्वरमेला | 4 Dec | 4 Dec |
+| 2082 | GAIDU_PUJA | 4 Dec | p. 17: गैडुपूजा | 4 Dec | 4 Dec |
+| 2082 | PAUSHA_PUTRADA_EKADASHI | 30 Dec | p. 19: पुत्रदाएकादशीव्रत | 30 Dec | 30 Dec |
+| 2082 | LAI_CHARHE | 17 Jan | p. 20: (लैचःह्रेपूजा) | 17 Jan | 17 Jan |
+| 2082 | TILAKUNDA_CHATURTHI | 22 Jan | p. 21: तिलकुन्द चौथी | 22 Jan | 22 Jan |
+| 2082 | BHIMA_EKADASHI | 29 Jan | p. 21: भीमा एकादशीव्रत | 29 Jan | 29 Jan |
+| 2082 | VIJAYA_EKADASHI | 13 Feb | p. 22: विजया एकादशीव्रत | 13 Feb | 13 Feb |
+| 2082 | SHILA_CHARHE | 15 Feb | p. 22: (शिलाचःह्रेपूजा) | 15 Feb | 15 Feb |
+| 2082 | DVAPARA_YUGADI | 17 Feb | p. 22: द्वापरयुगादि | 17 Feb | 17 Feb |
+| 2082 | PAHAN_CHARHE | 17 Mar | p. 24: (पाशाचःह्रेपूजा) | 17 Mar | 17 Mar |
+| 2082 | GHODE_JATRA | 18 Mar | p. 24: घोडेजात्रा | 18 Mar | 19 Mar ✗ |
+| 2082 | MATSYANARAYANA_MELA | 21 Mar | p. 25: मत्स्यनारायणमेला | 21 Mar | 21 Mar |
+| 2082 | MATSYA_JAYANTI | 21 Mar | p. 25: मत्स्यजयन्ती | 21 Mar | 21 Mar |
+| 2082 | CHAITE_DASHAIN | 26 Mar | p. 25: चैतेदशैं | 26 Mar | 26 Mar |
+| 2082 | SETO_MACHHINDRANATH_JATRA | 26 Mar | p. 25: श्रीश्वेतमत्स्येन्द्रनाथ रथयात्रा | 26 Mar | 26 Mar |
+| 2082 | VAISHAKHA_SNANA_ARAMBHA | 2 Apr | p. 25: वैशाखस्नान सुरु | 2 Apr | 2 Apr |
+| 2083 | PARASHURAMA_JAYANTI | 19 Apr | p. 3: परशुरामजयन्ती | 19 Apr | 19 Apr |
+| 2083 | SHANKARACHARYA_JAYANTI | 21 Apr | p. 3: आद्यजगत्गुरु शङ्कराचार्यजयन्ती | 21 Apr | 21 Apr |
+| 2083 | GANGA_SAPTAMI | 23 Apr | p. 3: गंगासप्तमी | 23 Apr | 23 Apr |
+| 2083 | SITA_NAVAMI | 25 Apr | p. 3: सीताजयन्ती | 25 Apr | 25 Apr |
+| 2083 | KURMA_JAYANTI | 1 May | p. 3: कूर्मजयन्ती | 1 May | 1 May |
+| 2083 | DASHAHARA_SNANA_ARAMBHA | 17 May | p. 5: दशहरास्नानारम्भ | none ✗ | none ✗ |
+| 2083 | GOSAIKUNDA_SNANA_ARAMBHA | 17 May | p. 5: गोसाइकुण्डस्नानारम्भ | none ✗ | none ✗ |
+| 2083 | GANGA_DASHAHARA | 26 May | p. 5: गङ्गादशहरा | none ✗ | none ✗ |
+| 2083 | GOSAIKUNDA_SNANA_SAMAPTI | 26 May | p. 5: गोसाइँकुण्ड स्नानसमाप्ति | none ✗ | none ✗ |
+| 2083 | HATYAMOCHANA_SNANA | 26 May | p. 5: हत्यामोचन तीर्थस्नान | none ✗ | none ✗ |
+| 2083 | ANALA_PUNHI | 31 May | p. 5: अनलापुन्हि | none ✗ | none ✗ |
+| 2083 | KUMARA_JATRA | 21 Jun | p. 7: कुमारयात्रा | 21 Jun | 21 Jun |
+| 2083 | NIRJALA_EKADASHI | 25 Jun | p. 7: निर्जला एकादशीव्रत | 25 Jun | 25 Jun |
+| 2083 | DILA_CHARHE | 13 Jul | p. 8: (दिल्ला चःह्रे पूजा) | 13 Jul | 13 Jul |
+| 2083 | GAURA_SAPTAMI | 3 Sep | p. 12: गौरासप्तमी | 18 Sep ✗ | 18 Sep ✗ |
+| 2083 | AMUKTABHARANA_SAPTAMI | 3 Sep | p. 12: अमुक्ताभरणसप्तमी | 18 Sep ✗ | 18 Sep ✗ |
+| 2083 | DURVA_ASHTAMI | 4 Sep | p. 12: दूर्वाष्टमीव्रत | 19 Sep ✗ | 19 Sep ✗ |
+| 2083 | HILE_JATRA | 5 Sep | p. 12: रामेछाप चिसापानी हिलेजात्रा | 20 Sep ✗ | 20 Sep ✗ |
+| 2083 | AJA_EKADASHI | 7 Sep | p. 12: अजाएकादशीव्रत | 7 Sep | 7 Sep |
+| 2083 | CHATHA | 14 Sep | p. 13: चन्द्रदर्शनदोष (चथा) | 14 Sep | 14 Sep |
+| 2083 | GANESHA_CHATURTHI | 14 Sep | p. 13: गणेशचतुर्थीव्रत | 14 Sep | 14 Sep |
+| 2083 | RISHI_PANCHAMI | 15 Sep | p. 13: ऋषिपञ्चमीव्रत | 15 Sep | 15 Sep |
+| 2083 | VAMANA_DWADASHI | 23 Sep | p. 13: वामनजयन्ती | 23 Sep | 23 Sep |
+| 2083 | PRATIPADA_SHRADDHA | 27 Sep | p. 14: प्रतिपदाश्राद्ध | 27 Sep | 27 Sep |
+| 2083 | SORHA_SHRADDHA_ARAMBHA | 27 Sep | p. 14: सोह्रश्राद्ध सुरु | 27 Sep | 27 Sep |
+| 2083 | DWITIYA_SHRADDHA | 28 Sep | p. 14: द्वितीयाश्राद्ध | 28 Sep | 28 Sep |
+| 2083 | TRITIYA_SHRADDHA | 29 Sep | p. 14: तृतीयाश्राद्ध | 29 Sep | 29 Sep |
+| 2083 | CHATURTHI_SHRADDHA | 30 Sep | p. 14: चतुर्थीश्राद्ध | 30 Sep | 30 Sep |
+| 2083 | PANCHAMI_SHRADDHA | 1 Oct | p. 14: पञ्चमीश्राद्ध | 1 Oct | 30 Sep ✗ |
+| 2083 | SHASHTHI_SHRADDHA | 1 Oct | p. 14: षष्ठीश्राद्ध | 1 Oct | 1 Oct |
+| 2083 | SAPTAMI_SHRADDHA | 2 Oct | p. 14: सप्तमीश्राद्ध | 2 Oct | 2 Oct |
+| 2083 | ASHTAMI_SHRADDHA | 3 Oct | p. 14: अष्टमीश्राद्ध | 3 Oct | 3 Oct |
+| 2083 | NAVAMI_SHRADDHA | 4 Oct | p. 14: नवमीश्राद्ध, मातृनवमीश्राद्ध | 4 Oct | 4 Oct |
+| 2083 | DASHAMI_SHRADDHA | 5 Oct | p. 14: दशमीश्राद्ध | 5 Oct | 5 Oct |
+| 2083 | EKADASHI_SHRADDHA | 6 Oct | p. 14: एकादशीश्राद्ध | 6 Oct | 6 Oct |
+| 2083 | DWADASHI_SHRADDHA | 7 Oct | p. 14: द्वादशीश्राद्ध | 7 Oct | 7 Oct |
+| 2083 | TRAYODASHI_SHRADDHA | 8 Oct | p. 14: त्रयोदशीश्राद्ध | 8 Oct | 8 Oct |
+| 2083 | KALI_YUGADI | 8 Oct | p. 14: कलियुगादि | 8 Oct | 8 Oct |
+| 2083 | CHATURDASHI_SHRADDHA | 9 Oct | p. 14: शस्त्रादिबाट निधन भएकाहरूको विश्वेदेवासहित एकोदिष्ट विधिले चतुर्दशीश्राद्ध | 9 Oct | 9 Oct |
+| 2083 | AMAVASYA_SHRADDHA | 10 Oct | p. 14: औंसीश्राद्ध, पितृविसर्जन | 10 Oct | 10 Oct |
+| 2083 | UPANGA_LALITA_VRATA | 15 Oct | p. 15: उपाङ्गललिताव्रत | 15 Oct | 15 Oct |
+| 2083 | KUCHHI_BHOYE | 18 Oct | p. 15: (कूछि भ्वय्) | 18 Oct | 19 Oct ✗ |
+| 2083 | DHANVANTARI_JAYANTI | 7 Nov | p. 16: धन्वन्तरी जयन्ती | 7 Nov | 7 Nov |
+| 2083 | MHA_PUJA | 10 Nov | p. 17: म्हपूजा | 9 Nov ✗ | 10 Nov |
+| 2083 | NEPAL_SAMBAT_NEW_YEAR | 10 Nov | p. 17: ने.सं.११४७ प्रारम्भ | 9 Nov ✗ | 10 Nov |
+| 2083 | HARIBODHINI_EKADASHI | 20 Nov | p. 17: हरिबोधिनीएकादशीव्रत | 20 Nov | 21 Nov ✗ |
+| 2083 | BHISHMA_PANCHAKA_ARAMBHA | 20 Nov | p. 17: भीष्मपञ्चकारम्भ | 20 Nov | 21 Nov ✗ |
+| 2083 | TULASI_VIVAHA | 20 Nov | p. 17: तुलसीविवाह | 20 Nov | 21 Nov ✗ |
+| 2083 | PASHUPATI_HALESI_MELA | 6 Dec | p. 18: हलेसीमहादेव मेला | 6 Dec | 6 Dec |
+| 2083 | BALA_CHATURDASHI | 7 Dec | p. 18: बालाचतुर्दशी | 7 Dec | 7 Dec |
+| 2083 | PISHACHAMOCHANA_SHRADDHA | 22 Dec | p. 19: काशीमा पिशाचमोचन तीर्थश्राद्ध | 23 Dec ✗ | 23 Dec ✗ |
+| 2083 | DATTATREYA_JAYANTI | 23 Dec | p. 19: दत्तात्रेयजयन्ती | 23 Dec | 23 Dec |
+| 2083 | NUWAKOT_DUPCHESHWAR_MELA | 24 Dec | p. 19: नुवाकोट दुप्चेश्वरमेला | 23 Dec ✗ | 23 Dec ✗ |
+| 2083 | GAIDU_PUJA | 24 Dec | p. 19: गैडुपूजा | 24 Dec | 24 Dec |
+| 2083 | PAUSHA_PUTRADA_EKADASHI | 18 Jan | p. 21: स्मार्तहरुको पुत्रदाएकादशीव्रत | 18 Jan | 19 Jan ✗ |
+| 2083 | LAI_CHARHE | 5 Feb | p. 22: (लैचःह्रेपूजा) | 5 Feb | 5 Feb |
+| 2083 | TILAKUNDA_CHATURTHI | 10 Feb | p. 23: तिलकुन्द चौथी | 10 Feb | 10 Feb |
+| 2083 | BHIMA_EKADASHI | 17 Feb | p. 23: भीमा एकादशीव्रत | 17 Feb | 17 Feb |
+| 2083 | VIJAYA_EKADASHI | 4 Mar | p. 24: विजया एकादशीव्रत | 4 Mar | 4 Mar |
+| 2083 | SHILA_CHARHE | 6 Mar | p. 24: (शिलाचःह्रेपूजा) | 6 Mar | 6 Mar |
+| 2083 | DVAPARA_YUGADI | 8 Mar | p. 24: द्वापरयुगादि | 8 Mar | 8 Mar |
+| 2083 | PAHAN_CHARHE | 5 Apr | p. 26: (पाशाचःह्रेपूजा) | 5 Apr | 5 Apr |
+| 2083 | GHODE_JATRA | 6 Apr | p. 26: घोडेजात्रा | 6 Apr | 6 Apr |
+| 2083 | MATSYANARAYANA_MELA | 9 Apr | p. 27: मत्स्यनारायणमेला | 9 Apr | 9 Apr |
+| 2083 | MATSYA_JAYANTI | 9 Apr | p. 27: मत्स्यजयन्ती | 9 Apr | 9 Apr |
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 18 of 132 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 31 of 132 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+
+Where the pack over the committee's sky parts from the print, and why:
+
+- VS 2082 HILE_JATRA (1 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
+- VS 2082 PISHACHAMOCHANA_SHRADDHA (4 Dec): the 14th begins in the earlier day's second fifth, inside purvahna and after its first fifth, which the rule reads until DAY_MUHURTA (C602)
+- VS 2082 SITA_NAVAMI (5 May): the 9th begins inside the earlier day's madhyahna and ends inside the later's, and the later holds more; the cases cannot weigh two parts, so the earlier stands until GREATER (C601)
+- VS 2082 UPANGA_LALITA_VRATA (27 Sep): purvahna is the daylight's first two fifths; read as its first fifth, the later day holds it wholly, where the earlier holds more of the two fifths (C602)
+- VS 2083 AMUKTABHARANA_SAPTAMI (18 Sep): counted from GAURA_SAPTAMI (C608)
+- VS 2083 ANALA_PUNHI (none within a fortnight): the print's अनलापुन्हि is the adhika month's full moon, and the rule keeps the nija Jyeshtha's (C607)
+- VS 2083 DASHAHARA_SNANA_ARAMBHA (none within a fortnight): the committee prints it in the adhika Jyeshtha, and the rule keeps the nija month (C606)
+- VS 2083 DURVA_ASHTAMI (19 Sep): the committee prints Shravana's dark 8th, inside the solar Bhadra, where Bhadrapada's bright 8th falls in the solar Ashwin (C608)
+- VS 2083 GANGA_DASHAHARA (none within a fortnight): the committee prints it in the adhika Jyeshtha, and the rule keeps the nija month (C606)
+- VS 2083 GAURA_SAPTAMI (18 Sep): the committee prints Shravana's dark 7th, inside the solar Bhadra, where Bhadrapada's bright 7th falls in the solar Ashwin (C608)
+- VS 2083 GOSAIKUNDA_SNANA_ARAMBHA (none within a fortnight): counted from DASHAHARA_SNANA_ARAMBHA, in the adhika Jyeshtha by the print (C606)
+- VS 2083 GOSAIKUNDA_SNANA_SAMAPTI (none within a fortnight): counted from GANGA_DASHAHARA, in the adhika Jyeshtha by the print (C606)
+- VS 2083 HATYAMOCHANA_SNANA (none within a fortnight): counted from GANGA_DASHAHARA, in the adhika Jyeshtha by the print (C606)
+- VS 2083 HILE_JATRA (20 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
+- VS 2083 MHA_PUJA (9 Nov): the 1st begins inside the earlier day's madhyahna and ends inside the later's, and the later holds more; the earlier stands until GREATER (C601)
+- VS 2083 NEPAL_SAMBAT_NEW_YEAR (9 Nov): counted from MHA_PUJA, which is a day early (C601)
+- VS 2083 NUWAKOT_DUPCHESHWAR_MELA (23 Dec): the committee prints the mela on the full moon, a day after Dattatreya's 14th (C611)
+- VS 2083 PISHACHAMOCHANA_SHRADDHA (23 Dec): the 14th begins in the earlier day's second fifth, inside purvahna and after its first fifth, which the rule reads until DAY_MUHURTA (C602)

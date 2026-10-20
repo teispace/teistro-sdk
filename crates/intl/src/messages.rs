@@ -1195,6 +1195,10 @@ pub mod sdk {
         pub mod era {
         }
 
+        /// The `festival` group.
+        pub mod festival {
+        }
+
         /// The `gana` group.
         pub mod gana {
         }

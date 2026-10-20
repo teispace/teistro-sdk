@@ -98,10 +98,9 @@ impl Fit {
                 DayPart::Sayahna => "sayahna",
             },
             Window::Pradosha => "pradosha",
-            Window::Sunrise
-            | Window::Sunset
-            | Window::Nishitha
-            | Window::NightMuhurta { .. } => "the window",
+            Window::Sunrise | Window::Sunset | Window::Nishitha | Window::NightMuhurta { .. } => {
+                "the window"
+            }
         }
     }
 }
@@ -365,8 +364,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 58] = [
         "KUCHHI_BHOYE",
         Masa::Ashwina,
         Tithi::ShuklaAshtami,
-        Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: (कूछि भ्वय्)",
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: (कूछि भ्वय्); the earlier of VS 2083's two sunrises (C683)",
     ),
     (
         "YAMAPANCHAKA_ARAMBHA",
@@ -668,7 +667,11 @@ mod tests {
             .chain(FestivalRule::nepal_panchanga());
         for rule in shipped {
             rule.check().unwrap();
-            assert!(rule.source.contains("p. ") || rule.source.contains("C613"), "{}", rule.key);
+            assert!(
+                rule.source.contains("p. ") || rule.source.contains("C613"),
+                "{}",
+                rule.key
+            );
             assert!(keys.insert(rule.key.clone()), "{} twice", rule.key);
         }
         let following = FollowingRule::nepal()
@@ -676,7 +679,12 @@ mod tests {
             .chain(FollowingRule::nepal_panchanga());
         for rule in following {
             rule.check().unwrap();
-            assert!(keys.contains(&rule.after), "{} follows {}", rule.key, rule.after);
+            assert!(
+                keys.contains(&rule.after),
+                "{} follows {}",
+                rule.key,
+                rule.after
+            );
             assert!(keys.insert(rule.key.clone()), "{} twice", rule.key);
         }
     }
@@ -688,8 +696,14 @@ mod tests {
         assert_eq!(decide.len(), 4);
         assert!(reading.starts_with("aparahna"));
         let (at, decide, otherwise, _) = Fit::UdayaLater.decide();
-        assert_eq!((at, decide.len(), otherwise), (Window::Sunrise, 1, Choice::Later));
-        assert_eq!((Fit::name(MADHYAHNA), Fit::name(SAYAHNA)), ("madhyahna", "sayahna"));
+        assert_eq!(
+            (at, decide.len(), otherwise),
+            (Window::Sunrise, 1, Choice::Later)
+        );
+        assert_eq!(
+            (Fit::name(MADHYAHNA), Fit::name(SAYAHNA)),
+            ("madhyahna", "sayahna")
+        );
         assert!(Fit::name(PRATAH).contains("C602"));
     }
 }

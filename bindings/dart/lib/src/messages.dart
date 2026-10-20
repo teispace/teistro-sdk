@@ -324,6 +324,104 @@ enum EraKey {
   final String key;
 }
 
+enum FestivalKey {
+  ramaNavami('festival.RAMA_NAVAMI'),
+  janmashtami('festival.JANMASHTAMI'),
+  vijayaDashami('festival.VIJAYA_DASHAMI'),
+  lakshmiPuja('festival.LAKSHMI_PUJA'),
+  haritalika('festival.HARITALIKA'),
+  navaratraArambha('festival.NAVARATRA_ARAMBHA'),
+  yamaDwitiya('festival.YAMA_DWITIYA'),
+  shivaratri('festival.SHIVARATRI'),
+  rakshabandhan('festival.RAKSHABANDHAN'),
+  baliPratipada('festival.BALI_PRATIPADA'),
+  holika('festival.HOLIKA'),
+  upakarmaMadhyandina('festival.UPAKARMA_MADHYANDINA'),
+  upakarmaTaittiriya('festival.UPAKARMA_TAITTIRIYA'),
+  upakarmaSamavedi('festival.UPAKARMA_SAMAVEDI'),
+  purnimaVrata('festival.PURNIMA_VRATA'),
+  holiHills('festival.HOLI_HILLS'),
+  holiTerai('festival.HOLI_TERAI'),
+  ekadashiSmarta('festival.EKADASHI_SMARTA'),
+  ekadashiSmartaRenunciant('festival.EKADASHI_SMARTA_RENUNCIANT'),
+  ekadashiVaishnava('festival.EKADASHI_VAISHNAVA'),
+  chaiteDashain('festival.CHAITE_DASHAIN'),
+  setoMachhindranathJatra('festival.SETO_MACHHINDRANATH_JATRA'),
+  parashuramaJayanti('festival.PARASHURAMA_JAYANTI'),
+  shankaracharyaJayanti('festival.SHANKARACHARYA_JAYANTI'),
+  gangaSaptami('festival.GANGA_SAPTAMI'),
+  sitaNavami('festival.SITA_NAVAMI'),
+  kurmaJayanti('festival.KURMA_JAYANTI'),
+  dashaharaSnanaArambha('festival.DASHAHARA_SNANA_ARAMBHA'),
+  gosaikundaSnanaArambha('festival.GOSAIKUNDA_SNANA_ARAMBHA'),
+  kumaraJatra('festival.KUMARA_JATRA'),
+  gangaDashahara('festival.GANGA_DASHAHARA'),
+  gosaikundaSnanaSamapti('festival.GOSAIKUNDA_SNANA_SAMAPTI'),
+  hatyamochanaSnana('festival.HATYAMOCHANA_SNANA'),
+  nirjalaEkadashi('festival.NIRJALA_EKADASHI'),
+  analaPunhi('festival.ANALA_PUNHI'),
+  dilaCharhe('festival.DILA_CHARHE'),
+  durvaAshtami('festival.DURVA_ASHTAMI'),
+  ajaEkadashi('festival.AJA_EKADASHI'),
+  chatha('festival.CHATHA'),
+  ganeshaChaturthi('festival.GANESHA_CHATURTHI'),
+  rishiPanchami('festival.RISHI_PANCHAMI'),
+  gauraSaptami('festival.GAURA_SAPTAMI'),
+  amuktabharanaSaptami('festival.AMUKTABHARANA_SAPTAMI'),
+  hileJatra('festival.HILE_JATRA'),
+  vamanaDwadashi('festival.VAMANA_DWADASHI'),
+  pratipadaShraddha('festival.PRATIPADA_SHRADDHA'),
+  dwitiyaShraddha('festival.DWITIYA_SHRADDHA'),
+  tritiyaShraddha('festival.TRITIYA_SHRADDHA'),
+  chaturthiShraddha('festival.CHATURTHI_SHRADDHA'),
+  panchamiShraddha('festival.PANCHAMI_SHRADDHA'),
+  shashthiShraddha('festival.SHASHTHI_SHRADDHA'),
+  saptamiShraddha('festival.SAPTAMI_SHRADDHA'),
+  ashtamiShraddha('festival.ASHTAMI_SHRADDHA'),
+  navamiShraddha('festival.NAVAMI_SHRADDHA'),
+  dashamiShraddha('festival.DASHAMI_SHRADDHA'),
+  ekadashiShraddha('festival.EKADASHI_SHRADDHA'),
+  dwadashiShraddha('festival.DWADASHI_SHRADDHA'),
+  trayodashiShraddha('festival.TRAYODASHI_SHRADDHA'),
+  chaturdashiShraddha('festival.CHATURDASHI_SHRADDHA'),
+  amavasyaShraddha('festival.AMAVASYA_SHRADDHA'),
+  sorhaShraddhaArambha('festival.SORHA_SHRADDHA_ARAMBHA'),
+  kaliYugadi('festival.KALI_YUGADI'),
+  upangaLalitaVrata('festival.UPANGA_LALITA_VRATA'),
+  kuchhiBhoye('festival.KUCHHI_BHOYE'),
+  yamapanchakaArambha('festival.YAMAPANCHAKA_ARAMBHA'),
+  dhanvantariJayanti('festival.DHANVANTARI_JAYANTI'),
+  laxmiPrasadDevkotaJayanti('festival.LAXMI_PRASAD_DEVKOTA_JAYANTI'),
+  mhaPuja('festival.MHA_PUJA'),
+  nepalSambatNewYear('festival.NEPAL_SAMBAT_NEW_YEAR'),
+  haribodhiniEkadashi('festival.HARIBODHINI_EKADASHI'),
+  bhishmaPanchakaArambha('festival.BHISHMA_PANCHAKA_ARAMBHA'),
+  tulasiVivaha('festival.TULASI_VIVAHA'),
+  pashupatiHalesiMela('festival.PASHUPATI_HALESI_MELA'),
+  balaChaturdashi('festival.BALA_CHATURDASHI'),
+  dattatreyaJayanti('festival.DATTATREYA_JAYANTI'),
+  nuwakotDupcheshwarMela('festival.NUWAKOT_DUPCHESHWAR_MELA'),
+  pishachamochanaShraddha('festival.PISHACHAMOCHANA_SHRADDHA'),
+  gaiduPuja('festival.GAIDU_PUJA'),
+  paushaPutradaEkadashi('festival.PAUSHA_PUTRADA_EKADASHI'),
+  laiCharhe('festival.LAI_CHARHE'),
+  tilakundaChaturthi('festival.TILAKUNDA_CHATURTHI'),
+  champaShashthi('festival.CHAMPA_SHASHTHI'),
+  bhimaEkadashi('festival.BHIMA_EKADASHI'),
+  vijayaEkadashi('festival.VIJAYA_EKADASHI'),
+  shilaCharhe('festival.SHILA_CHARHE'),
+  dvaparaYugadi('festival.DVAPARA_YUGADI'),
+  pahanCharhe('festival.PAHAN_CHARHE'),
+  ghodeJatra('festival.GHODE_JATRA'),
+  matsyanarayanaMela('festival.MATSYANARAYANA_MELA'),
+  matsyaJayanti('festival.MATSYA_JAYANTI'),
+  vaishakhaSnanaArambha('festival.VAISHAKHA_SNANA_ARAMBHA');
+
+  const FestivalKey(this.key);
+
+  final String key;
+}
+
 enum GanaKey {
   deva('gana.DEVA'),
   manushya('gana.MANUSHYA'),
@@ -1517,6 +1615,104 @@ final class MessagesSdkEntityEra {
   EntityForms get vikrama => _r.entity('era.VIKRAMA');
 }
 
+final class MessagesSdkEntityFestival {
+  const MessagesSdkEntityFestival(this._r);
+
+  final Renderer _r;
+
+  EntityForms get ajaEkadashi => _r.entity('festival.AJA_EKADASHI');
+  EntityForms get amavasyaShraddha => _r.entity('festival.AMAVASYA_SHRADDHA');
+  EntityForms get amuktabharanaSaptami => _r.entity('festival.AMUKTABHARANA_SAPTAMI');
+  EntityForms get analaPunhi => _r.entity('festival.ANALA_PUNHI');
+  EntityForms get ashtamiShraddha => _r.entity('festival.ASHTAMI_SHRADDHA');
+  EntityForms get balaChaturdashi => _r.entity('festival.BALA_CHATURDASHI');
+  EntityForms get baliPratipada => _r.entity('festival.BALI_PRATIPADA');
+  EntityForms get bhimaEkadashi => _r.entity('festival.BHIMA_EKADASHI');
+  EntityForms get bhishmaPanchakaArambha => _r.entity('festival.BHISHMA_PANCHAKA_ARAMBHA');
+  EntityForms get chaiteDashain => _r.entity('festival.CHAITE_DASHAIN');
+  EntityForms get champaShashthi => _r.entity('festival.CHAMPA_SHASHTHI');
+  EntityForms get chatha => _r.entity('festival.CHATHA');
+  EntityForms get chaturdashiShraddha => _r.entity('festival.CHATURDASHI_SHRADDHA');
+  EntityForms get chaturthiShraddha => _r.entity('festival.CHATURTHI_SHRADDHA');
+  EntityForms get dashaharaSnanaArambha => _r.entity('festival.DASHAHARA_SNANA_ARAMBHA');
+  EntityForms get dashamiShraddha => _r.entity('festival.DASHAMI_SHRADDHA');
+  EntityForms get dattatreyaJayanti => _r.entity('festival.DATTATREYA_JAYANTI');
+  EntityForms get dhanvantariJayanti => _r.entity('festival.DHANVANTARI_JAYANTI');
+  EntityForms get dilaCharhe => _r.entity('festival.DILA_CHARHE');
+  EntityForms get durvaAshtami => _r.entity('festival.DURVA_ASHTAMI');
+  EntityForms get dvaparaYugadi => _r.entity('festival.DVAPARA_YUGADI');
+  EntityForms get dwadashiShraddha => _r.entity('festival.DWADASHI_SHRADDHA');
+  EntityForms get dwitiyaShraddha => _r.entity('festival.DWITIYA_SHRADDHA');
+  EntityForms get ekadashiShraddha => _r.entity('festival.EKADASHI_SHRADDHA');
+  EntityForms get ekadashiSmarta => _r.entity('festival.EKADASHI_SMARTA');
+  EntityForms get ekadashiSmartaRenunciant => _r.entity('festival.EKADASHI_SMARTA_RENUNCIANT');
+  EntityForms get ekadashiVaishnava => _r.entity('festival.EKADASHI_VAISHNAVA');
+  EntityForms get gaiduPuja => _r.entity('festival.GAIDU_PUJA');
+  EntityForms get ganeshaChaturthi => _r.entity('festival.GANESHA_CHATURTHI');
+  EntityForms get gangaDashahara => _r.entity('festival.GANGA_DASHAHARA');
+  EntityForms get gangaSaptami => _r.entity('festival.GANGA_SAPTAMI');
+  EntityForms get gauraSaptami => _r.entity('festival.GAURA_SAPTAMI');
+  EntityForms get ghodeJatra => _r.entity('festival.GHODE_JATRA');
+  EntityForms get gosaikundaSnanaArambha => _r.entity('festival.GOSAIKUNDA_SNANA_ARAMBHA');
+  EntityForms get gosaikundaSnanaSamapti => _r.entity('festival.GOSAIKUNDA_SNANA_SAMAPTI');
+  EntityForms get haribodhiniEkadashi => _r.entity('festival.HARIBODHINI_EKADASHI');
+  EntityForms get haritalika => _r.entity('festival.HARITALIKA');
+  EntityForms get hatyamochanaSnana => _r.entity('festival.HATYAMOCHANA_SNANA');
+  EntityForms get hileJatra => _r.entity('festival.HILE_JATRA');
+  EntityForms get holika => _r.entity('festival.HOLIKA');
+  EntityForms get holiHills => _r.entity('festival.HOLI_HILLS');
+  EntityForms get holiTerai => _r.entity('festival.HOLI_TERAI');
+  EntityForms get janmashtami => _r.entity('festival.JANMASHTAMI');
+  EntityForms get kaliYugadi => _r.entity('festival.KALI_YUGADI');
+  EntityForms get kuchhiBhoye => _r.entity('festival.KUCHHI_BHOYE');
+  EntityForms get kumaraJatra => _r.entity('festival.KUMARA_JATRA');
+  EntityForms get kurmaJayanti => _r.entity('festival.KURMA_JAYANTI');
+  EntityForms get laiCharhe => _r.entity('festival.LAI_CHARHE');
+  EntityForms get lakshmiPuja => _r.entity('festival.LAKSHMI_PUJA');
+  EntityForms get laxmiPrasadDevkotaJayanti => _r.entity('festival.LAXMI_PRASAD_DEVKOTA_JAYANTI');
+  EntityForms get matsyanarayanaMela => _r.entity('festival.MATSYANARAYANA_MELA');
+  EntityForms get matsyaJayanti => _r.entity('festival.MATSYA_JAYANTI');
+  EntityForms get mhaPuja => _r.entity('festival.MHA_PUJA');
+  EntityForms get navamiShraddha => _r.entity('festival.NAVAMI_SHRADDHA');
+  EntityForms get navaratraArambha => _r.entity('festival.NAVARATRA_ARAMBHA');
+  EntityForms get nepalSambatNewYear => _r.entity('festival.NEPAL_SAMBAT_NEW_YEAR');
+  EntityForms get nirjalaEkadashi => _r.entity('festival.NIRJALA_EKADASHI');
+  EntityForms get nuwakotDupcheshwarMela => _r.entity('festival.NUWAKOT_DUPCHESHWAR_MELA');
+  EntityForms get pahanCharhe => _r.entity('festival.PAHAN_CHARHE');
+  EntityForms get panchamiShraddha => _r.entity('festival.PANCHAMI_SHRADDHA');
+  EntityForms get parashuramaJayanti => _r.entity('festival.PARASHURAMA_JAYANTI');
+  EntityForms get pashupatiHalesiMela => _r.entity('festival.PASHUPATI_HALESI_MELA');
+  EntityForms get paushaPutradaEkadashi => _r.entity('festival.PAUSHA_PUTRADA_EKADASHI');
+  EntityForms get pishachamochanaShraddha => _r.entity('festival.PISHACHAMOCHANA_SHRADDHA');
+  EntityForms get pratipadaShraddha => _r.entity('festival.PRATIPADA_SHRADDHA');
+  EntityForms get purnimaVrata => _r.entity('festival.PURNIMA_VRATA');
+  EntityForms get rakshabandhan => _r.entity('festival.RAKSHABANDHAN');
+  EntityForms get ramaNavami => _r.entity('festival.RAMA_NAVAMI');
+  EntityForms get rishiPanchami => _r.entity('festival.RISHI_PANCHAMI');
+  EntityForms get saptamiShraddha => _r.entity('festival.SAPTAMI_SHRADDHA');
+  EntityForms get setoMachhindranathJatra => _r.entity('festival.SETO_MACHHINDRANATH_JATRA');
+  EntityForms get shankaracharyaJayanti => _r.entity('festival.SHANKARACHARYA_JAYANTI');
+  EntityForms get shashthiShraddha => _r.entity('festival.SHASHTHI_SHRADDHA');
+  EntityForms get shilaCharhe => _r.entity('festival.SHILA_CHARHE');
+  EntityForms get shivaratri => _r.entity('festival.SHIVARATRI');
+  EntityForms get sitaNavami => _r.entity('festival.SITA_NAVAMI');
+  EntityForms get sorhaShraddhaArambha => _r.entity('festival.SORHA_SHRADDHA_ARAMBHA');
+  EntityForms get tilakundaChaturthi => _r.entity('festival.TILAKUNDA_CHATURTHI');
+  EntityForms get trayodashiShraddha => _r.entity('festival.TRAYODASHI_SHRADDHA');
+  EntityForms get tritiyaShraddha => _r.entity('festival.TRITIYA_SHRADDHA');
+  EntityForms get tulasiVivaha => _r.entity('festival.TULASI_VIVAHA');
+  EntityForms get upakarmaMadhyandina => _r.entity('festival.UPAKARMA_MADHYANDINA');
+  EntityForms get upakarmaSamavedi => _r.entity('festival.UPAKARMA_SAMAVEDI');
+  EntityForms get upakarmaTaittiriya => _r.entity('festival.UPAKARMA_TAITTIRIYA');
+  EntityForms get upangaLalitaVrata => _r.entity('festival.UPANGA_LALITA_VRATA');
+  EntityForms get vaishakhaSnanaArambha => _r.entity('festival.VAISHAKHA_SNANA_ARAMBHA');
+  EntityForms get vamanaDwadashi => _r.entity('festival.VAMANA_DWADASHI');
+  EntityForms get vijayaDashami => _r.entity('festival.VIJAYA_DASHAMI');
+  EntityForms get vijayaEkadashi => _r.entity('festival.VIJAYA_EKADASHI');
+  EntityForms get yamapanchakaArambha => _r.entity('festival.YAMAPANCHAKA_ARAMBHA');
+  EntityForms get yamaDwitiya => _r.entity('festival.YAMA_DWITIYA');
+}
+
 final class MessagesSdkEntityGana {
   const MessagesSdkEntityGana(this._r);
 
@@ -2067,6 +2263,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityDignity get dignity => MessagesSdkEntityDignity(_r);
   MessagesSdkEntityDirection get direction => MessagesSdkEntityDirection(_r);
   MessagesSdkEntityEra get era => MessagesSdkEntityEra(_r);
+  MessagesSdkEntityFestival get festival => MessagesSdkEntityFestival(_r);
   MessagesSdkEntityGana get gana => MessagesSdkEntityGana(_r);
   MessagesSdkEntityGraha get graha => MessagesSdkEntityGraha(_r);
   MessagesSdkEntityHouseSystem get houseSystem => MessagesSdkEntityHouseSystem(_r);
