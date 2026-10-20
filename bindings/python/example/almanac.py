@@ -56,10 +56,9 @@ def main() -> None:
         def name(key: str) -> str:
             """The entity's name, or the key when the pack has none.
 
-            A locale pack names most of the catalogue and not all of it:
-            `masa` and `direction` have no entries in any of the five the
-            SDK ships, so an almanac falls back rather than refusing to
-            print.
+            A locale pack need not name the whole catalogue (a pack of
+            one's own, or one written before a kind it lacks was added),
+            so an almanac falls back rather than refusing to print.
             """
             try:
                 return ctx.intl.entity(key).name

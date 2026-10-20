@@ -44,11 +44,11 @@ const clock = (jd) => {
   const minutes = Math.round(local * 1440) % 1440;
   return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 };
-// A locale pack names most of the catalogue and not all of it: `masa`
-// and `direction` have no entries in any of the five the SDK ships, so
-// an almanac falls back to the key rather than refusing to print. A
-// program that must have the name in the reader's language should check
-// `ctx.intl.has(...)` and say so, rather than showing a bare key.
+// A locale pack need not name the whole catalogue (a pack of one's own,
+// or one written before a kind it lacks was added), so an almanac falls
+// back to the key rather than refusing to print. A program that must
+// have the name in the reader's language should check `ctx.intl.has(...)`
+// and say so, rather than showing a bare key.
 const name = (key) => {
   try {
     return ctx.intl.entity(key).name;

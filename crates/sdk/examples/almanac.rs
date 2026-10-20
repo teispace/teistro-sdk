@@ -47,11 +47,11 @@ fn clock(at: JulianDay<Utc>) -> String {
 
 /// An entity's name in the reader's language, or the key made readable.
 ///
-/// A locale pack names most of the catalogue and not all of it: `masa`
-/// and `direction` have no entries in any of the five the SDK ships, so
-/// an almanac falls back to the key rather than refusing to print. A
-/// program that must have the name in the reader's language should ask
-/// `has` first and say so, rather than showing a bare key.
+/// A locale pack need not name the whole catalogue (a pack of one's own,
+/// or one written before a kind it lacks was added), so an almanac falls
+/// back to the key rather than refusing to print. A program that must
+/// have the name in the reader's language should ask `has` first and say
+/// so, rather than showing a bare key.
 fn name(sdk: &Context, key: &str) -> String {
     sdk.intl().entity(key).map_or_else(
         |_| {

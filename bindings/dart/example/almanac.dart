@@ -40,9 +40,9 @@ void main() {
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
-  // A locale pack names most of the catalogue and not all of it: `masa`
-  // and `direction` have no entries in any of the five the SDK ships, so
-  // an almanac falls back to the key rather than refusing to print.
+  // A locale pack need not name the whole catalogue (a pack of one's own,
+  // or one written before a kind it lacks was added), so an almanac falls
+  // back to the key rather than refusing to print.
   String name(String key) {
     try {
       return ctx.intl.entity(key).name;
