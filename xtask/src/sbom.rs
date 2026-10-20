@@ -80,7 +80,7 @@ pub(crate) fn write(root: &Path, triple: &str, package: &str, path: &Path) -> Re
     write_with(root, triple, package, &[], path)
 }
 
-/// As [`write`], for the package built with `features` (Cargo's own
+/// As [`write()`], for the package built with `features` (Cargo's own
 /// arguments, `--no-default-features` and `--features`), so a slice built
 /// without a feature lists none of the crates only that feature brings.
 pub(crate) fn write_with(
