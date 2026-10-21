@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A festival rule on the Sun's entry into a nakshatra**
+(`festival-rule-language.md` §3.6, C696). **Numbers:** a
+`NEPAL_PANCHANGA` answer gains Bhumiraj and the Bhumi puja in its
+`dated` list; no day already given moves. A dated rule may now be a
+`sunEnters`, the civil day the sidereal Sun enters a `nakshatra` in
+the almanac's own sky, or `days` after it (at most 15). The Sun is read
+at each midnight only when such a rule is asked. Bhumiraj falls on the
+day both of the committee's editions print, at the printed minute of
+the entry. Node's `DatedRule` type now also spells a Tibetan date's
+`skipped`, which it had left out.
+
 **Sixteen festivals of a solar date in `NEPAL_PANCHANGA`**
 (`festival-classification.md`, C619). **Numbers:** a `NEPAL_PANCHANGA`
 festival answer gains these days in its `dated` list, and its iCalendar

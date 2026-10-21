@@ -4172,6 +4172,14 @@
     "BISKET_JATRA_BEGINS": {
       "name": "Bisket Jatra Begins",
       "prose": "the beginning of Bisket Jatra, Chaitra's fourth-last day"
+    },
+    "BHUMIRAJ": {
+      "name": "Bhumiraj",
+      "prose": "Bhumiraj, the day the Sun enters Ardra"
+    },
+    "BHUMI_PUJA": {
+      "name": "Bhumi Puja",
+      "prose": "Bhumi Puja, three days after Bhumiraj"
     }
   }
 }

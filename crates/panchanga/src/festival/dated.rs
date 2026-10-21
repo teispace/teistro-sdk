@@ -13,10 +13,10 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::tibetan::{self, SkippedDay, TIBETAN_RANGE};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, shipped};
-use teistro_core::catalogue::{Calendar, Vara};
+use teistro_core::catalogue::{Calendar, Nakshatra, Vara};
 use teistro_core::error::Error;
 
-use super::{FestivalDay, Observances};
+use super::{FestivalDay, Observances, SunEntry};
 
 /// The festivals Nepal's national panchanga prints on a day of a Bikram
 /// Sambat month, each read off both editions with its continuation
@@ -178,25 +178,44 @@ pub enum Dated {
         /// Which of them; never 0, at most 5 either way.
         nth: i8,
     },
+    /// The civil day, local midnight to the next, in which the sidereal
+    /// Sun enters `nakshatra` in the almanac's own sky, or the day `days`
+    /// civil days after it: भूमिरज on the Sun's entry into Ardra, and the
+    /// भूमि पूजा three days on (C696).
+    SunEnters {
+        /// The nakshatra entered.
+        nakshatra: Nakshatra,
+        /// How many civil days after the entry's, 0 for that day, at most
+        /// [`Dated::MOST_DAYS`].
+        #[serde(default)]
+        days: u8,
+    },
 }
 
 impl Dated {
-    fn calendar(self) -> Calendar {
-        match self {
-            Dated::CivilDate { calendar, .. } | Dated::CivilWeekday { calendar, .. } => calendar,
-        }
-    }
+    /// The most days a rule counts from the Sun's entry: a fortnight,
+    /// which is about the Sun's stay in a nakshatra, past which the next
+    /// entry names the day better than a count.
+    pub const MOST_DAYS: u8 = 15;
 
-    fn month(self) -> u8 {
+    /// The calendar and month a civil form names; none for the Sun's
+    /// entry, which no calendar dates.
+    fn civil(self) -> Option<(Calendar, u8)> {
         match self {
-            Dated::CivilDate { month, .. } | Dated::CivilWeekday { month, .. } => month,
+            Dated::CivilDate {
+                calendar, month, ..
+            }
+            | Dated::CivilWeekday {
+                calendar, month, ..
+            } => Some((calendar, month)),
+            Dated::SunEnters { .. } => None,
         }
     }
 
     /// Whether `date`, of a month `length` days long, falling on `vara`,
     /// is the date this names.
     fn holds(self, date: &CalendarDate, length: u8, vara: Vara) -> bool {
-        if date.month != self.month() {
+        if self.civil().map(|(_, month)| month) != Some(date.month) {
             return false;
         }
         let (day, length) = (i16::from(date.day), i16::from(length));
@@ -221,14 +240,33 @@ impl Dated {
                 };
                 vara == weekday && nth == i16::from(wanted)
             }
+            Dated::SunEnters { .. } => false,
         }
     }
 }
 
 impl DatedRule {
+    /// Whether the rule is kept on the Sun's entry into a nakshatra, which
+    /// the days are read for only when a rule asks.
+    #[must_use]
+    pub fn reads_sun_entry(&self) -> bool {
+        matches!(self.on, Dated::SunEnters { .. })
+    }
+
+    /// How many civil days the rule counts from the day it is kept by,
+    /// which the days before a range are founded to reach.
+    #[must_use]
+    pub fn reach(&self) -> u8 {
+        match self.on {
+            Dated::SunEnters { days, .. } => days,
+            Dated::CivilDate { .. } | Dated::CivilWeekday { .. } => 0,
+        }
+    }
+
     /// Refuses a rule that could not be kept: an empty key, a calendar
     /// the SDK does not ship, month 0, a day of 0 or past 32 either way,
-    /// or an nth of 0 or past 5 either way.
+    /// an nth of 0 or past 5 either way, or a count from the Sun's entry
+    /// past [`Dated::MOST_DAYS`].
     ///
     /// # Errors
     ///
@@ -237,9 +275,22 @@ impl DatedRule {
         if self.key.trim().is_empty() {
             return Err(Error::invalid_arg("a festival rule needs a key").with_field("key"));
         }
-        let (form, calendar) = match self.on {
-            Dated::CivilDate { calendar, .. } => ("civilDate", calendar),
-            Dated::CivilWeekday { calendar, .. } => ("civilWeekday", calendar),
+        let (form, calendar, month) = match self.on {
+            Dated::CivilDate {
+                calendar, month, ..
+            } => ("civilDate", calendar, month),
+            Dated::CivilWeekday {
+                calendar, month, ..
+            } => ("civilWeekday", calendar, month),
+            Dated::SunEnters { days, .. } if days > Dated::MOST_DAYS => {
+                return Err(Error::invalid_arg(format!(
+                    "{}: a rule counts at most {} days from the Sun's entry, not {days}; past a fortnight, name the next entry",
+                    self.key,
+                    Dated::MOST_DAYS
+                ))
+                .with_field("sunEnters.days"));
+            }
+            Dated::SunEnters { .. } => return Ok(()),
         };
         if shipped(calendar).is_none() {
             return Err(Error::invalid_arg(format!(
@@ -272,7 +323,7 @@ impl DatedRule {
             ))
             .with_field("civilDate.skipped"));
         }
-        if self.on.month() == 0 {
+        if month == 0 {
             return Err(
                 Error::invalid_arg(format!("{}: months are counted from 1", self.key))
                     .with_field(format!("{form}.month")),
@@ -308,7 +359,9 @@ impl DatedRule {
 
     /// The days Nepal's national panchanga prints on a Bikram Sambat date:
     /// the twelve sankrantis on the first of each month, the national days
-    /// it names, and the festivals it keeps on a date ([`SOLAR_DAYS`]).
+    /// it names, and the festivals it keeps on a date ([`SOLAR_DAYS`]);
+    /// and the two it keeps on the Sun's entry into Ardra, भूमिरज and the
+    /// भूमि पूजा three days on.
     #[must_use]
     pub fn nepal_panchanga() -> Vec<DatedRule> {
         let bs = |key: &str, month: u8, day: i8, source: &str| DatedRule {
@@ -401,7 +454,32 @@ impl DatedRule {
                 &format!("Nepal's national panchanga, {printed}"),
             )
         }));
+        rules.extend(Self::on_the_suns_entry());
         rules
+    }
+
+    /// The days Nepal's national panchanga keeps on the Sun's entry into
+    /// Ardra: भूमिरज on the entry's civil day and the भूमि पूजा three days
+    /// on (C696).
+    fn on_the_suns_entry() -> Vec<DatedRule> {
+        let ardra = |key: &str, days: u8, printed: &str| DatedRule {
+            key: key.to_owned(),
+            source: format!(
+                "Nepal's national panchanga, VS 2082 p. 6 and VS 2083 p. 7: {printed}; the side column prints \"आर्द्रा १ मा सूर्य\" on Asar 8 at 14:58 and 21:11, the Sun's entry into Ardra to the minute (C696)"
+            ),
+            on: Dated::SunEnters {
+                nakshatra: Nakshatra::Ardra,
+                days,
+            },
+        };
+        vec![
+            ardra("BHUMIRAJ", 0, "\"भूमिरज\" on Asar 8"),
+            ardra(
+                "BHUMI_PUJA",
+                3,
+                "\"भूमिपूजा\" on Asar 11, three days after भूमिरज",
+            ),
+        ]
     }
 }
 
@@ -413,7 +491,8 @@ pub struct DatedObservance {
     pub rule: String,
     /// The day, in the range's calendar.
     pub day: CalendarDate,
-    /// The same day in the rule's calendar.
+    /// The same day in the rule's calendar; for a rule kept on the Sun's
+    /// entry, the day the Sun entered, in the range's calendar.
     pub on: CalendarDate,
 }
 
@@ -429,24 +508,32 @@ pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, E
         rule.check()?;
     }
     let mut answer = Observances::default();
-    for day in days {
+    for (at, day) in days.iter().enumerate() {
         let fixed = system(day.date.calendar)?.fixed_of(&day.date)?;
         for rule in rules {
-            let calendar = system(rule.on.calendar())?;
-            let on = calendar.date_of(fixed)?;
-            let held = if let Dated::CivilDate {
-                calendar: Calendar::TibetanPhugpa,
-                month,
-                day: wanted,
-                skipped,
-            } = rule.on
-            {
-                keeps_tibetan(fixed, on.year, month, wanted, skipped.unwrap_or_default())
-            } else {
-                let length = calendar.month_length(on.year, on.month)?;
-                rule.on.holds(&on, length, day.vara)
+            let on = match rule.on {
+                Dated::SunEnters {
+                    nakshatra,
+                    days: count,
+                } => entered(days, at, nakshatra, count)?.map(|from| from.date.clone()),
+                Dated::CivilDate {
+                    calendar: Calendar::TibetanPhugpa,
+                    month,
+                    day: wanted,
+                    skipped,
+                } => {
+                    let on = system(Calendar::TibetanPhugpa)?.date_of(fixed)?;
+                    keeps_tibetan(fixed, on.year, month, wanted, skipped.unwrap_or_default())
+                        .then_some(on)
+                }
+                Dated::CivilDate { calendar, .. } | Dated::CivilWeekday { calendar, .. } => {
+                    let calendar = system(calendar)?;
+                    let on = calendar.date_of(fixed)?;
+                    let length = calendar.month_length(on.year, on.month)?;
+                    rule.on.holds(&on, length, day.vara).then_some(on)
+                }
             };
-            if held {
+            if let Some(on) = on {
                 answer.dated.push(DatedObservance {
                     rule: rule.key.clone(),
                     day: day.date.clone(),
@@ -456,6 +543,36 @@ pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, E
         }
     }
     Ok(answer)
+}
+
+/// The day `count` days before `days[at]`, when the Sun entered
+/// `nakshatra` in it. A day the count reaches back past is none: the
+/// caller founds the days a rule counts from before its range.
+///
+/// # Errors
+///
+/// `INVALID_ARG` for a day whose entry was not read
+/// (`Almanac::sun_entries`).
+fn entered(
+    days: &[FestivalDay],
+    at: usize,
+    nakshatra: Nakshatra,
+    count: u8,
+) -> Result<Option<&FestivalDay>, Error> {
+    let Some(from) = at
+        .checked_sub(usize::from(count))
+        .and_then(|from| days.get(from))
+    else {
+        return Ok(None);
+    };
+    match from.sun_entry {
+        SunEntry::Entered(into) => Ok((into == nakshatra).then_some(from)),
+        SunEntry::Stayed => Ok(None),
+        SunEntry::Unsearched => Err(Error::invalid_arg(format!(
+            "a rule reads the Sun's entry on {}, which nothing read; fill the days' entries first (`Almanac::sun_entries`)",
+            from.date
+        ))),
+    }
 }
 
 /// Whether `fixed`, a day of Tibetan year `year`, is the day a date's

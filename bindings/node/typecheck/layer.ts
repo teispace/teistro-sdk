@@ -2306,8 +2306,18 @@ function theFestivals(almanac: Almanac): string {
   };
   // @ts-expect-error a dated rule is kept on one date, not two
   const twoDates: DatedRule = { ...maghe, civilWeekday: safer.civilWeekday };
+  // Bhumi puja, three days after the Sun enters Ardra, and Chotrul Duchen
+  // kept the day after when its 15th is skipped.
+  const bhumi: DatedRule = { key: 'BHUMI_PUJA', source: 'the committee', sunEnters: { nakshatra: 'nakshatra.ARDRA', days: 3 } };
+  const chotrul: DatedRule = {
+    key: 'CHOTRUL_DUCHEN',
+    source: 'Tushita',
+    civilDate: { calendar: 'calendar.TIBETAN_PHUGPA', month: 1, day: 15, skipped: 'AFTER' },
+  };
+  // @ts-expect-error the Sun's entry is no date
+  const entryAndDate: DatedRule = { ...bhumi, civilDate: { calendar: 'calendar.BIKRAM_SAMBAT', month: 3, day: 8 } };
   const kept = answer.dated.map((one: DatedObservance) => `${one.rule} ${one.day.day} ${one.on.month}/${one.on.day}`);
-  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, pradosha, mangala, terai, sankashta, maghe, safer] };
+  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, pradosha, mangala, terai, sankashta, maghe, safer, bhumi, chotrul] };
   const pack: FestivalPack = 'NEPAL';
   // @ts-expect-error a following rule counts days, a number
   const spelt: FollowingRule = { ...terai, days: 'one' };
@@ -2317,7 +2327,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

@@ -6524,7 +6524,7 @@ export interface FestivalRequest {
    * A pack the SDK ships, by name; or a list whose items each name a pack
    * or spell a rule out, in order: an Ekadashi rule when it has a `vedha`,
    * a following rule when it has an `after`, a dated rule when it has a
-   * `civilDate` or a `civilWeekday`, else a festival rule. A later rule
+   * `civilDate`, a `civilWeekday` or a `sunEnters`, else a festival rule. A later rule
    * replaces an earlier one with its key.
    */
   readonly rules:
@@ -6561,8 +6561,9 @@ export interface FollowingRule {
 /**
  * An observance kept on a date of a calendar
  * (`03-design/festival-rule-language.md` §3.6): a sankranti on the first
- * of a Bikram Sambat month, a national day. Exactly one of `civilDate`
- * and `civilWeekday`.
+ * of a Bikram Sambat month, a national day; or on the civil day the Sun
+ * enters a nakshatra, Bhumiraj on its entry into Ardra. Exactly one of
+ * `civilDate`, `civilWeekday` and `sunEnters`.
  */
 export type DatedRule = {
   /** Its key in its pack, `'MAKARA_SANKRANTI'`; an observance is named by it. */
@@ -6572,8 +6573,15 @@ export type DatedRule = {
 } & (
   | {
       /** A day of a month, 1 for the first; a negative day counts back from its end, -1 for the last. */
-      readonly civilDate: { readonly calendar: Calendar; readonly month: number; readonly day: number };
+      readonly civilDate: {
+        readonly calendar: Calendar;
+        readonly month: number;
+        readonly day: number;
+        /** Which neighbour keeps a skipped Tibetan date; the day before when left out. Tibetan only. */
+        readonly skipped?: 'BEFORE' | 'AFTER';
+      };
       readonly civilWeekday?: never;
+      readonly sunEnters?: never;
     }
   | {
       /** The `nth` weekday of a month; a negative `nth` counts back from its end, -1 for the last. */
@@ -6584,6 +6592,17 @@ export type DatedRule = {
         readonly nth: number;
       };
       readonly civilDate?: never;
+      readonly sunEnters?: never;
+    }
+  | {
+      /**
+       * The civil day, local midnight to the next, in which the sidereal Sun
+       * enters `nakshatra` in the almanac's own sky, or `days` civil days
+       * after it (0 when left out, at most 15).
+       */
+      readonly sunEnters: { readonly nakshatra: Nakshatra; readonly days?: number };
+      readonly civilDate?: never;
+      readonly civilWeekday?: never;
     }
 );
 

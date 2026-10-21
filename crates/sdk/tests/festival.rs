@@ -498,9 +498,10 @@ fn printed(rows: &[(&str, Day)]) -> Vec<(String, Day)> {
 /// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
 /// at Kathmandu: exactly the rows read off the committee's print, each
 /// sankranti on its month's first day (pp. 2-24), the six national days,
-/// Tamu Lhosar, Walke parva and the sixteen festivals of a solar date
+/// Tamu Lhosar, Walke parva, the sixteen festivals of a solar date
 /// (Bisket and the Baisakh jatras, Shrawan's, Bhadra's, Asoj's and Magh's
-/// firsts).
+/// firsts), and Bhumiraj and the Bhumi puja on and three days after the
+/// Sun's entry into Ardra (p. 6).
 #[test]
 fn the_dated_days_are_the_committees_printed_rows() {
     let kept = kept_dated;
@@ -519,6 +520,8 @@ fn the_dated_days_are_the_committees_printed_rows() {
             ("LOKTANTRA_DIWAS", (2025, 4, 24)),
             ("VRISHABHA_SANKRANTI", (2025, 5, 15)),
             ("MITHUNA_SANKRANTI", (2025, 6, 15)),
+            ("BHUMIRAJ", (2025, 6, 22)),
+            ("BHUMI_PUJA", (2025, 6, 25)),
             ("KARKATA_SANKRANTI", (2025, 7, 17)),
             ("KANDAKARAK_PUJA", (2025, 7, 17)),
             ("KHEER_KHANE_DIN", (2025, 7, 31)),
@@ -566,6 +569,17 @@ fn the_dated_days_are_the_second_editions_printed_rows() {
             ("BHAKTAPUR_CHHUMA_GANESH_JATRA", (2026, 4, 17)),
             ("BISKET_JATRA_ENDS", (2026, 4, 18)),
         ])
+    );
+    // VS 2083 p. 7: भूमिरज on Asar 8, the day the Sun enters Ardra at
+    // 21:11, and भूमिपूजा on Asar 11; a range opening after the entry
+    // still finds the puja counted from it.
+    assert_eq!(
+        kept((2026, 6, 20), (2026, 6, 26)),
+        printed(&[("BHUMIRAJ", (2026, 6, 22)), ("BHUMI_PUJA", (2026, 6, 25))])
+    );
+    assert_eq!(
+        kept((2026, 6, 25), (2026, 6, 25)),
+        printed(&[("BHUMI_PUJA", (2026, 6, 25))])
     );
     // VS 2083 pp. 9-13: Shrawan 1 and 15, Bhadra 1 (वल्केपर्व on
     // भाद्रसङ्क्रान्ति) and Asoj 1.
@@ -669,4 +683,36 @@ fn a_rule_on_a_tibetan_date_keeps_the_printed_day() {
         refused.field(),
         Some("festivals.rules[0].civilDate.skipped")
     );
+}
+
+/// A rule on the Sun's entry into a nakshatra, written as a binding writes
+/// it: Nautapa begins the day the Sun enters Rohini, which the panchangas
+/// printed in India give as 25 May 2025 (about 03:27 IST).
+#[test]
+fn a_rule_on_the_suns_entry_reads_as_a_binding_writes_it() {
+    let request = FestivalRequest::from_json(
+        r#"{"rules": [{"key": "NAUTAPA", "source": "a test", "sunEnters": {"nakshatra": "nakshatra.ROHINI"}}]}"#,
+    )
+    .unwrap();
+    let kept: Vec<(String, u8)> = context()
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 5, 20),
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 5, 30),
+            &delhi(),
+            UtcOffset::literal(5, 30, 0),
+            &request,
+        )
+        .unwrap()
+        .value
+        .dated
+        .into_iter()
+        .map(|kept| (kept.rule, kept.day.day))
+        .collect();
+    assert_eq!(kept, [("NAUTAPA".to_owned(), 25)]);
+    let refused = FestivalRequest::from_json(
+        r#"{"rules": [{"key": "X", "source": "a test", "sunEnters": {"nakshatra": "ROHINI", "days": 16}}]}"#,
+    )
+    .unwrap_err();
+    assert_eq!(refused.field(), Some("festivals.rules[0].sunEnters.days"));
 }

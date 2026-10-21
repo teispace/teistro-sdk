@@ -637,7 +637,9 @@ enum FestivalKey {
   maghiTharu('festival.MAGHI_THARU'),
   makarSnan('festival.MAKAR_SNAN'),
   devghatMakarSnan('festival.DEVGHAT_MAKAR_SNAN'),
-  bisketJatraBegins('festival.BISKET_JATRA_BEGINS');
+  bisketJatraBegins('festival.BISKET_JATRA_BEGINS'),
+  bhumiraj('festival.BHUMIRAJ'),
+  bhumiPuja('festival.BHUMI_PUJA');
 
   const FestivalKey(this.key);
 
@@ -1956,6 +1958,8 @@ final class MessagesSdkEntityFestival {
   EntityForms get bhishmashtami => _r.entity('festival.BHISHMASHTAMI');
   EntityForms get bhishmaDwadashi => _r.entity('festival.BHISHMA_DWADASHI');
   EntityForms get bhishmaPanchakaArambha => _r.entity('festival.BHISHMA_PANCHAKA_ARAMBHA');
+  EntityForms get bhumiraj => _r.entity('festival.BHUMIRAJ');
+  EntityForms get bhumiPuja => _r.entity('festival.BHUMI_PUJA');
   EntityForms get bilvaNimantran => _r.entity('festival.BILVA_NIMANTRAN');
   EntityForms get bishalnagarVaishnaviDeviJatra => _r.entity('festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA');
   EntityForms get bisketJatraBegins => _r.entity('festival.BISKET_JATRA_BEGINS');

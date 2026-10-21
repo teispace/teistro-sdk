@@ -7226,7 +7226,8 @@ class FestivalRequest(TypedDict):
     a mapping in its record's spelling (an Ekadashi rule when it has a
     `vedha`, a following rule when it has an `after`, which counts `days`
     civil days from that festival rule's day, a dated rule when it has a
-    `civilDate` or a `civilWeekday`, kept on a date of a calendar; a
+    `civilDate` or a `civilWeekday`, kept on a date of a calendar, or a
+    `sunEnters`, kept on the civil day the Sun enters a `nakshatra`; a
     festival rule is kept on a `tithi`, or on a `nakshatra` in a `paksha`),
     a later rule replacing an
     earlier one with its key. A catalogue member may be a member, a full key

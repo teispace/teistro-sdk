@@ -9131,13 +9131,16 @@ struct ts_panchanga_request {
      * replacing an earlier one with its key; an item with a `vedha` is
      * an Ekadashi rule, one with an `after` a rule counting `days` civil
      * days from that festival rule's day (§9.4), one with a `civilDate`
-     * or a `civilWeekday` a rule kept on a date of a calendar
-     * (`festival-rule-language.md` §3.6), the rest festival rules,
+     * or a `civilWeekday` a rule kept on a date of a calendar, one with
+     * a `sunEnters` a rule kept on the civil day the Sun enters a
+     * `nakshatra`, or `days` after it (`festival-rule-language.md`
+     * §3.6), the rest festival rules,
      * each kept on a `tithi` or on a `nakshatra` in a `paksha` (§9.7). A
      * catalogue member may be written bare or in full. The answer comes
      * back in the `festivals` section, over this blob's own days founded
      * once, with the two days before and the two after, and as many more
-     * as a following rule counts, founded beside them
+     * as a rule counts from another's day or the Sun's entry, founded
+     * beside them
      * (`03-design/festival-rules.md` §7). Null for none, which costs
      * nothing. Refusals are named from the record every binding calls
      * `festivals`, down to a rule's own field under `festivals.rules`.

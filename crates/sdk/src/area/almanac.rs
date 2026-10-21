@@ -16,7 +16,8 @@ use teistro_core::time::UtcOffset;
 use teistro_muhurta::Answer;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::festival::{
-    FestivalDay, FestivalRule, InAdhika, Observances, dated, ekadashis, following, observances,
+    DatedRule, FestivalDay, FestivalRule, InAdhika, Observances, dated, ekadashis, following,
+    observances,
 };
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
@@ -301,6 +302,13 @@ impl<'a> AlmanacArea<'a> {
         if request.rules().iter().any(FestivalRule::reads_moonrise) {
             self.with_almanac(from.calendar, offset, |almanac| {
                 almanac.moonrises(&mut viewed, place)
+            })?;
+        }
+        // So is the Sun's nakshatra at each midnight, for a rule kept on
+        // its entry into one.
+        if request.dated().iter().any(DatedRule::reads_sun_entry) {
+            self.with_almanac(from.calendar, offset, |almanac| {
+                almanac.sun_entries(&mut viewed, place)
             })?;
         }
         let karmakala = observances(request.rules(), &viewed)?;

@@ -159,6 +159,29 @@ pub fn nakshatra_at<S: Longitudes + ?Sized>(
         })
 }
 
+/// The nakshatra the Sun stands in at an instant, on the integer path the
+/// limbs read (ADR-0016): what a festival kept on the Sun's entry into a
+/// nakshatra compares at the two midnights of a civil day.
+///
+/// # Errors
+///
+/// The source's own refusal.
+pub fn sun_nakshatra_at<S: Longitudes + ?Sized>(
+    tropical: &S,
+    at: JulianDay<Utc>,
+    zodiac: Zodiac,
+) -> Result<Nakshatra, Error> {
+    let source = Sidereal::over(tropical, zodiac);
+    let degrees = teistro_astro::events::value_of(
+        Quantity::Longitude(Body::Sun),
+        &source,
+        JulianDay::<Ut1>::literal(at.get()),
+    )?;
+    Ok(Nakshatra::of(
+        Nas::try_from_degrees(degrees)?.division_index(Limb::Nakshatra.divisions()),
+    ))
+}
+
 /// The Moon's stay between two sidereal longitudes around an instant: from
 /// its last crossing of `from_deg` at or before `at` to its first crossing
 /// of `to_deg` after it.

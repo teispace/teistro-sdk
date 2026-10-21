@@ -393,6 +393,8 @@ export function messages(r) {
           bhishmashtami: () => r.entity('festival.BHISHMASHTAMI'),
           bhishmaDwadashi: () => r.entity('festival.BHISHMA_DWADASHI'),
           bhishmaPanchakaArambha: () => r.entity('festival.BHISHMA_PANCHAKA_ARAMBHA'),
+          bhumiraj: () => r.entity('festival.BHUMIRAJ'),
+          bhumiPuja: () => r.entity('festival.BHUMI_PUJA'),
           bilvaNimantran: () => r.entity('festival.BILVA_NIMANTRAN'),
           bishalnagarVaishnaviDeviJatra: () => r.entity('festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA'),
           bisketJatraBegins: () => r.entity('festival.BISKET_JATRA_BEGINS'),

@@ -1,6 +1,6 @@
 # Festival classification
 
-Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623 and C685 to C694
+Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623 and C685 to C694, C696
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.
@@ -390,15 +390,15 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 
 ### Solar (26)
 
-A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 19 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it; the note says why each other is not.
+A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 19 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it. Bhumiraj and the Bhumi puja are not a date at all but the Sun's entry into Ardra, and ship in the same pack on that form (`sunEnters`, C696), so 21 of the 26 ship; the note says why each other is not.
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
 | `BHAKTAPUR_BRAHMAYANI_JATRA` | Bhaktapur Brahmayani Jatra | भक्तपुर ब्रह्मायणी जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 3 |
 | `BHAKTAPUR_CHHUMA_GANESH_JATRA` | Bhaktapur Chhuma Ganesh Jatra | भक्तपुर छुमा गणेश जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 4 |
 | `BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA` | Bhaktapur Mahakali Mahalaxmi Jatra | भक्तपुर महाकाली महालक्ष्मी जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 2 |
-| `BHUMIRAJ` | Bhumiraj | भूमिरज |  | the Sun's entry into Ardra, not Asar 8: 22 June each year, Asar 7 in 2023 (`SUN_IN`, C608) |
-| `BHUMI_PUJA` | Bhumi Puja | भूमि पूजा |  | counted from Bhumiraj, which waits on `SUN_IN` (C608) |
+| `BHUMIRAJ` | Bhumiraj | भूमिरज |  | shipped: `sunEnters` Ardra in NEPAL_PANCHANGA, the civil day of the Sun's entry, which both editions print in the side column beside the row (C696) |
+| `BHUMI_PUJA` | Bhumi Puja | भूमि पूजा |  | shipped: `sunEnters` Ardra with `days` 3 in NEPAL_PANCHANGA, both editions' printed day (C696) |
 | `BISKET_JATRA_BEGINS` | Bisket Jatra Begins | बिस्केट जात्रा आरम्भ | Newar | shipped: a dated day in NEPAL_PANCHANGA, Chaitra's fourth-last day |
 | `BISKET_JATRA_ENDS` | Bisket Jatra Ends | बिस्केट जात्रा समाप्ति | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 5 |
 | `BODE_JIBRO_CHHEDNE_JATRA` | Bode Jibro Chhedne Jatra | बोडे जिब्रो छेड्ने जात्रा | Newar | not printed in either edition |

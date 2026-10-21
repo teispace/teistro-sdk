@@ -22,9 +22,9 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
-    Case, Choice, DatedObservance, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule,
-    FollowingRule, Guard, InAdhika, Moonrise, Observances, Occurs, Predicate, Unjudged, Which,
-    Window, ekadashis, following, observances, yugma,
+    Case, Choice, Dated, DatedObservance, DatedRule, DayPart, Decided, Edge, EkadashiRule,
+    FestivalDay, FestivalRule, FollowingRule, Guard, InAdhika, Moonrise, Observances, Occurs,
+    Predicate, SunEntry, Unjudged, Which, Window, dated, ekadashis, following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -1182,6 +1182,63 @@ fn a_following_rule_counts_days_from_the_observance_it_follows() {
     let counted = following(&[far], &found.observances, &days).unwrap();
     assert!(counted.observances.is_empty(), "{:?}", counted.observances);
     assert_eq!(counted.unjudged[0].rule, "HOLI_TERAI");
+}
+
+/// Bhumiraj on the civil day the Sun enters Ardra and the Bhumi puja
+/// three days on; `on` names the entry's day. A day whose entry was not
+/// read is refused, never taken for a day the Sun entered none.
+#[test]
+fn a_rule_on_the_suns_entry_keeps_that_day_or_counts_from_it() {
+    let mut days = days_of(
+        &[(Tithi::Purnima, 9.0)],
+        &[],
+        Masa::Jyeshtha,
+        MonthKind::Nija,
+    );
+    for (k, day) in days.iter_mut().enumerate() {
+        day.sun_entry = match k {
+            1 => SunEntry::Entered(Nakshatra::Ardra),
+            _ => SunEntry::Stayed,
+        };
+    }
+    let shipped: Vec<DatedRule> = DatedRule::nepal_panchanga()
+        .into_iter()
+        .filter(DatedRule::reads_sun_entry)
+        .collect();
+    let kept: Vec<(&str, u8, u8)> = Vec::new();
+    let found = dated(&shipped, &days).unwrap();
+    let kept = found.dated.iter().fold(kept, |mut kept, one| {
+        kept.push((one.rule.as_str(), one.day.day - 1, one.on.day - 1));
+        kept
+    });
+    assert_eq!(kept, [("BHUMIRAJ", 1, 1), ("BHUMI_PUJA", 4, 1)]);
+    // Another nakshatra's entry keeps nothing.
+    days[1].sun_entry = SunEntry::Entered(Nakshatra::Punarvasu);
+    assert_eq!(dated(&shipped, &days).unwrap().dated, []);
+    days[1].sun_entry = SunEntry::Unsearched;
+    let refused = dated(&shipped, &days).unwrap_err();
+    assert!(refused.message.contains("sun_entries"), "{refused:?}");
+    // A count is checked before any day is read.
+    let far = DatedRule {
+        key: "FAR".to_owned(),
+        source: "a test".to_owned(),
+        on: Dated::SunEnters {
+            nakshatra: Nakshatra::Ardra,
+            days: Dated::MOST_DAYS + 1,
+        },
+    };
+    assert_eq!(far.check().unwrap_err().field(), Some("sunEnters.days"));
+    assert_eq!((shipped[0].reach(), shipped[1].reach()), (0, 3));
+    let spelt: DatedRule = serde_json::from_str(
+        r#"{"key": "BHUMIRAJ", "source": "mine", "sunEnters": {"nakshatra": "ARDRA"}}"#,
+    )
+    .unwrap();
+    assert_eq!(spelt.on, shipped[0].on);
+    let text = serde_json::to_string(&shipped[1]).unwrap();
+    assert!(
+        text.contains(r#""sunEnters":{"nakshatra":"ARDRA","days":3}"#),
+        "{text}"
+    );
 }
 
 #[test]

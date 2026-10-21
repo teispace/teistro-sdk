@@ -795,6 +795,24 @@ pub struct FestivalDay {
     /// Its first moonrise, found only for a rule that reads
     /// [`Window::Moonrise`].
     pub moonrise: Moonrise,
+    /// The nakshatra the Sun entered in its civil day, midnight to
+    /// midnight, read only for a rule kept on that entry
+    /// ([`Dated::SunEnters`]).
+    pub sun_entry: SunEntry,
+}
+
+/// Whether the sidereal Sun entered a nakshatra in a civil day, local
+/// midnight to the next. The Sun is never retrograde and stays more than
+/// thirteen days in a nakshatra, so a day holds one entry at most.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SunEntry {
+    /// Not read: no rule asked. A rule asking over such a day is refused
+    /// rather than read as a day the Sun entered none.
+    Unsearched,
+    /// The Sun stood in one nakshatra the whole civil day.
+    Stayed,
+    /// The Sun entered this nakshatra in the civil day.
+    Entered(Nakshatra),
 }
 
 /// A day's first moonrise, from its sunrise to the next.
@@ -839,6 +857,7 @@ impl FestivalDay {
             tithi,
             nakshatra,
             moonrise: Moonrise::Unsearched,
+            sun_entry: SunEntry::Unsearched,
         }
     }
 

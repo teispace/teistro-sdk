@@ -5810,6 +5810,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.BHUMIRAJ` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhumiraj() {
+                    return r.entity("festival.BHUMIRAJ");
+                }
+
+                /**
+                 * The forms of `festival.BHUMI_PUJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhumiPuja() {
+                    return r.entity("festival.BHUMI_PUJA");
+                }
+
+                /**
                  * The forms of `festival.BILVA_NIMANTRAN` in the current locale.
                  *
                  * @return the forms

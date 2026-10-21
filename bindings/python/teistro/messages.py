@@ -610,6 +610,8 @@ class FestivalKey(enum.StrEnum):
     MAKAR_SNAN = "festival.MAKAR_SNAN"
     DEVGHAT_MAKAR_SNAN = "festival.DEVGHAT_MAKAR_SNAN"
     BISKET_JATRA_BEGINS = "festival.BISKET_JATRA_BEGINS"
+    BHUMIRAJ = "festival.BHUMIRAJ"
+    BHUMI_PUJA = "festival.BHUMI_PUJA"
 
 
 class GanaKey(enum.StrEnum):
@@ -4151,6 +4153,16 @@ class MessagesSdkEntityFestival:
     def bhishma_panchaka_arambha(self) -> EntityForms:
         """The forms of `festival.BHISHMA_PANCHAKA_ARAMBHA` in the current locale."""
         return self._r.entity("festival.BHISHMA_PANCHAKA_ARAMBHA")
+
+    @property
+    def bhumiraj(self) -> EntityForms:
+        """The forms of `festival.BHUMIRAJ` in the current locale."""
+        return self._r.entity("festival.BHUMIRAJ")
+
+    @property
+    def bhumi_puja(self) -> EntityForms:
+        """The forms of `festival.BHUMI_PUJA` in the current locale."""
+        return self._r.entity("festival.BHUMI_PUJA")
 
     @property
     def bilva_nimantran(self) -> EntityForms:

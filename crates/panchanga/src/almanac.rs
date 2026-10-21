@@ -20,7 +20,7 @@ use teistro_astro::rise_set::Solver;
 use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
-use teistro_core::catalogue::{Direction, Rashi, Ritu, Vara};
+use teistro_core::catalogue::{Direction, Nakshatra, Rashi, Ritu, Vara};
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
@@ -36,7 +36,7 @@ use teistro_time::local_day::{
     Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
 };
 
-use crate::festival::{FestivalDay, Moonrise};
+use crate::festival::{FestivalDay, Moonrise, SunEntry};
 use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
@@ -532,6 +532,53 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                     Moonrise::Rose(JulianDay::literal(event.instant.get()))
                 }
                 _ => Moonrise::NoRise,
+            };
+        }
+        Ok(())
+    }
+
+    /// Fills each day's entry of the sidereal Sun into a nakshatra
+    /// ([`FestivalDay::sun_entry`]), for the rules kept on one
+    /// ([`crate::festival::Dated::SunEnters`]): the Sun's nakshatra at each
+    /// local midnight on the clock, in the same sky and zodiac a day's
+    /// sankranti is found in, so two midnights' readings say whether the
+    /// civil day between them held an entry. Neighbouring days share a
+    /// midnight, so a range of `n` days reads the Sun `n + 1` times at
+    /// most.
+    ///
+    /// # Errors
+    ///
+    /// A day its calendar cannot convert, or a reading the provider
+    /// refuses.
+    pub fn sun_entries(&self, days: &mut [FestivalDay], place: &Place) -> Result<(), Error> {
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let at_midnight = |fixed: FixedDay| -> Result<Nakshatra, Error> {
+            let midnight = local_midnight(self.clock, fixed)?;
+            let (frame, zodiac) = self.at_instant(&completion, midnight)?;
+            let mut longitudes = completion.longitudes(frame);
+            if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+                longitudes = longitudes.with_observer(*place);
+            }
+            limb::sun_nakshatra_at(&longitudes, midnight, zodiac)
+        };
+        let mut read: Option<(FixedDay, Nakshatra)> = None;
+        for day in days.iter_mut() {
+            let fixed = self.calendar.fixed_of(&day.date)?;
+            let opening = match read {
+                Some((at, nakshatra)) if at == fixed => nakshatra,
+                _ => at_midnight(fixed)?,
+            };
+            let next = fixed.plus_days(1);
+            let closing = at_midnight(next)?;
+            read = Some((next, closing));
+            day.sun_entry = if closing == opening {
+                SunEntry::Stayed
+            } else {
+                SunEntry::Entered(closing)
             };
         }
         Ok(())

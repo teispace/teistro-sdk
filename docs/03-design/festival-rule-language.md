@@ -1,10 +1,10 @@
 # The festival rule language: what it lacks
 
-Status: `design`, 2026-10-20. Built: `MOONRISE` (§3.1), `DAY_MUHURTA`
+Status: `design`, 2026-10-21. Built: `MOONRISE` (§3.1), `DAY_MUHURTA`
 (§3.2), `GREATER` with the maintainer's rule (§3.3), `dayOfPaksha`
-(§3.4), `ON_VARA` with `NONE` (§3.5), the civil dates (§3.6) and the
-four-valued `inAdhika` (§3.7); the rest is not. Cruxes C601
-to C604, C606, C608, C614, C616 to C619
+(§3.4), `ON_VARA` with `NONE` (§3.5), the civil dates and the Sun's
+entry into a nakshatra (§3.6) and the four-valued `inAdhika` (§3.7); the
+rest is not. Cruxes C601 to C604, C606, C608, C614, C616 to C619, C696
 (`01-research/feature-universe/19-verification-cruxes.md`).
 
 `festival-rules.md` §4 defines the language a festival rule is written in:
@@ -347,8 +347,35 @@ on every other calendar, which skips no number.
 {"key": "CHOTRUL_DUCHEN", "source": "...", "civilDate": {"calendar": "TIBETAN_PHUGPA", "month": 1, "day": 15, "skipped": "AFTER"}}
 ```
 
+**The Sun's entry into a nakshatra.** A third form keeps the civil day,
+local midnight to the next, in which the sidereal Sun enters a nakshatra
+in the almanac's own sky, or the day `days` after it (0 by default, at
+most 15, about the Sun's stay in one):
+
+```json
+{"key": "BHUMIRAJ", "source": "...", "sunEnters": {"nakshatra": "ARDRA"}}
+{"key": "BHUMI_PUJA", "source": "...", "sunEnters": {"nakshatra": "ARDRA", "days": 3}}
+```
+
+The day is the civil one, not the sunrise day, because that is what the
+print keeps. The committee prints the entry itself in each page's side
+column ("८ आर्द्रा १ मा सूर्य १४:५८" in VS 2082 p. 6, "२१:११" in VS 2083
+p. 7), and भूमिरज on the day of that line in both editions. The SDK's
+entry under `nepal_official` is the printed minute in both (14:58:04 and
+21:10:40). Over 2013 to 2043 the civil day gives 29 of the 31 days a
+patro printed in Nepal lists, the sunrise day 26. The two misses, 02:32
+in 2023 and 00:32 in 2042, have neighbours on either side of the hour
+that keep the civil day (00:51 in 2015, 01:42 in 2019, 03:23 in 2027),
+so no cut-off reproduces them (C696). The Sun is never retrograde and
+stays over thirteen days in a nakshatra, so the form reads its
+nakshatra at each midnight of the range, `n + 1` readings for `n` days,
+and only when a rule asks. `on` in the answer names the entry's day.
+Nautapa (the Sun's entry into Rohini) and the Tamil Agni nakshatram are
+the same form.
+
 **Settles:** the 24 solar festivals and the 165 fixed civil ones of the
-classification, Guriya parva (C621), and Safer internet day's weekday rule.
+classification, Guriya parva (C621), Safer internet day's weekday rule,
+and Bhumiraj and the Bhumi puja (C696).
 
 ### 3.7 The adhika month: `inAdhika`
 

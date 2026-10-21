@@ -302,12 +302,13 @@ impl FestivalRequest {
     }
 
     /// How many days the request reaches past an observance's own:
-    /// the most any rule counts from another's.
+    /// the most any rule counts from another's, or from the Sun's entry.
     #[must_use]
     pub fn reach(&self) -> u8 {
         self.following
             .iter()
             .map(|rule| rule.days)
+            .chain(self.dated.iter().map(DatedRule::reach))
             .max()
             .unwrap_or(0)
     }
@@ -362,8 +363,8 @@ impl FestivalRequest {
     /// `rules` names a [`FestivalPack`] (`"DHARMASINDHU"`), or is a list
     /// whose items each name a pack or spell a rule out, in order: an
     /// [`EkadashiRule`] when it has a `vedha`, a [`FollowingRule`] when it
-    /// has an `after`, a [`DatedRule`] when it has a `civilDate` or a
-    /// `civilWeekday`, else a [`FestivalRule`]. A
+    /// has an `after`, a [`DatedRule`] when it has a `civilDate`, a
+    /// `civilWeekday` or a `sunEnters`, else a [`FestivalRule`]. A
     /// later rule replaces an earlier one with its key. A
     /// catalogue member anywhere in it may be written bare or in full
     /// (`masa.ASHWINA`), as every binding reads one back.
@@ -403,7 +404,8 @@ impl FestivalRequest {
                 Value::Object(spelt)
                     if listed
                         && (spelt.contains_key("civilDate")
-                            || spelt.contains_key("civilWeekday")) =>
+                            || spelt.contains_key("civilWeekday")
+                            || spelt.contains_key("sunEnters")) =>
                 {
                     let rule: DatedRule = teistro_core::strict::read_value(item, &field)?;
                     rule.check().map_err(|why| why.under(&field))?;
@@ -607,7 +609,8 @@ mod tests {
         );
         let counted = FollowingRule::nepal().len() + FollowingRule::nepal_panchanga().len();
         assert_eq!(asked.following().len(), counted);
-        assert_eq!(asked.reach(), 1);
+        // The Bhumi puja, three days after the Sun enters Ardra.
+        assert_eq!(asked.reach(), 3);
         asked.check().unwrap();
     }
 
