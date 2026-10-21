@@ -1239,7 +1239,9 @@ final class AlmanacArea extends _Area {
   /// [years] answers the lunar years the days fall in, as [Almanac.years],
   /// [eclipses] the eclipses whose greatest moment falls in them with how
   /// the place sees each, as [Almanac.eclipses], and [nepalSambat] each
-  /// day's Nepal Sambat date, as [Almanac.nepalSambat]. [days] `false`
+  /// day's Nepal Sambat date, as [Almanac.nepalSambat]. [lagnas] gives each
+  /// day its lagna table, as [AlmanacDay.lagnas]: some four hundred
+  /// ascendants a day, so only on asking. [days] `false`
   /// leaves the days out and answers only what is asked beside them;
   /// festivals alone are then founded as only what their rules read, which
   /// is what [festivals] asks.
@@ -1253,6 +1255,7 @@ final class AlmanacArea extends _Area {
     bool years = false,
     bool eclipses = false,
     bool nepalSambat = false,
+    bool lagnas = false,
     bool days = true,
   }) => Almanac(
     decodePanchanga(
@@ -1276,6 +1279,7 @@ final class AlmanacArea extends _Area {
                 (years ? panchangaYears : 0) |
                 (eclipses ? panchangaEclipses : 0) |
                 (nepalSambat ? panchangaNepalSambat : 0) |
+                (lagnas ? panchangaLagnas : 0) |
                 (days ? 0 : panchangaWithoutDays),
           ),
         ),
@@ -1312,11 +1316,13 @@ final class AlmanacArea extends _Area {
     required CalendarDate date,
     required Observer place,
     required int utcOffsetSeconds,
+    bool lagnas = false,
   }) => of(
     from: date,
     to: date,
     place: place,
     utcOffsetSeconds: utcOffsetSeconds,
+    lagnas: lagnas,
   ).at(0);
 
   /// A native's bird read over every day from [from] to [to] (the first
@@ -28245,6 +28251,7 @@ final class Almanac {
       'chandraVasa': counts.chandraVasa,
       'chandrashtama': counts.chandrashtama,
       'amritKalam': counts.amritKalam,
+      'lagnas': counts.lagnas,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -28440,6 +28447,26 @@ final class AlmanacDay {
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Nakshatra.byId,
+    );
+  }
+
+  /// The lagna table, when the request asked with `lagnas: true`: each
+  /// sign rising from sunrise to the next sunrise, from the ascendant
+  /// `panchanga.lagna_table` names (crux C680).
+  ///
+  /// A span's `whole` is the sign's rising and `inside` the part of it in
+  /// the day (C681); empty when not asked for.
+  List<Span<Rashi>> get lagnas {
+    final c = batch.decoded.lagnas;
+    return _spans(
+      'lagnas',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Rashi.byId,
     );
   }
 

@@ -73,10 +73,11 @@ impl DaysRequest {
         }
         let asked: Asked = strict::read_value(&Value::Object(fields), "")?;
         let calendar = asked.calendar.unwrap_or(Calendar::Gregorian);
-        let flags: [(bool, Asking); 3] = [
+        let flags: [(bool, Asking); 4] = [
             (asked.years, AlmanacRequest::with_years),
             (asked.eclipses, AlmanacRequest::with_eclipses),
             (asked.nepal_sambat, AlmanacRequest::with_nepal_sambat),
+            (asked.lagnas, AlmanacRequest::with_lagnas),
         ];
         for (asked, add) in flags {
             if asked {
@@ -146,6 +147,10 @@ pub(crate) fn schema(generator: &mut schemars::SchemaGenerator) -> schemars::Sch
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "the record a binding writes, each bool a section it names by key"
+)]
 pub(crate) struct Asked {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     calendar: Option<Calendar>,
@@ -163,4 +168,6 @@ pub(crate) struct Asked {
     eclipses: bool,
     #[serde(default)]
     nepal_sambat: bool,
+    #[serde(default)]
+    lagnas: bool,
 }

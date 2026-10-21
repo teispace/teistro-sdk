@@ -6463,6 +6463,11 @@ export declare class AlmanacDay {
    */
   readonly amritKalam: readonly Span<Nakshatra>[];
   /**
+   * The lagna table, when the request asked with `lagnas: true`: each sign rising from sunrise to the next sunrise, from the ascendant
+   * `panchanga.lagna_table` names (crux C680). A span's `whole` is the sign's rising and `inside` the part of it in the day (C681); empty when not asked for.
+   */
+  readonly lagnas: readonly Span<Rashi>[];
+  /**
    * The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction
    * (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402); empty on a day the Moon crosses none of them. The
    * vara's own direction is `dishaShool`.
@@ -6515,6 +6520,8 @@ export interface AlmanacRequest {
   readonly eclipses?: boolean;
   /** Whether to answer each day's Nepal Sambat date, as `Almanac.nepalSambat`; `false` by default, which costs nothing. */
   readonly nepalSambat?: boolean;
+  /** Whether to give each day its lagna table, as `AlmanacDay.lagnas`; `false` by default, which costs nothing. */
+  readonly lagnas?: boolean;
   /** `false` to leave the days out and answer only what is asked beside them; festivals alone are then founded as only what their rules read, which is what `AlmanacArea.festivals` asks. `true` by default. */
   readonly days?: boolean;
 }
@@ -8095,7 +8102,7 @@ export declare class AlmanacArea {
    * its day can change.
    */
   festivals(
-    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'days'> & {
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'days'> & {
       readonly festivals: FestivalRequest;
     },
   ): FestivalAnswer;

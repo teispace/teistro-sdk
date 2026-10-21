@@ -1341,6 +1341,19 @@ public final class BindingTest {
                     }
                 }
                 check(amrita >= 5 && amrita <= 9, "about an amrita kalam a day: " + amrita);
+                // The lagna table, asked for: the signs rising from sunrise to
+                // the next, each starting where the one before it set (C680,
+                // C681); a day not asked carries none.
+                AlmanacDay asked = sky.almanac().day(first, kathmandu, 20_700, true);
+                List<Span<Rashi>> table = asked.lagnas();
+                check(table.size() >= 13 && table.size() <= 14, "a sign rising at each end: " + table.size());
+                same(asked.day().sunrise(), table.get(0).inside().fromJd(), "the table opens at sunrise");
+                same(asked.day().nextSunrise(), table.get(table.size() - 1).inside().toJd(),
+                        "and closes at the next");
+                for (int j = 1; j < table.size(); j += 1) {
+                    same(table.get(j - 1).whole().toJd(), table.get(j).whole().fromJd(), "no gap");
+                }
+                check(week.get(0).lagnas().isEmpty(), "a day not asked carries none");
                 // Every vara censures one muhurta or two (crux C398); the Moon's
                 // signs carry where she dwells and whose chandrashtama it is, the
                 // eighth sign from the natal one (C403, C404); and a shool is a

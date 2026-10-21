@@ -1,7 +1,9 @@
 # Amrita kalam, the day's lagna table, and the day page's names
 
 Status: `design`, 2026-10-21. §1, the amrita kalam, is **built** with its
-default decided on a published panchanga (§1.5); §2 and §3 are not yet.
+default decided on a published panchanga (§1.5); §2, the lagna table, is
+**built** with the committee's own table as its fixture (§2.2); §3 is
+not yet.
 
 Three things a printed panchanga's day page carries that the almanac does
 not yet answer: the *amṛta ghaṭikā* (amrita kalam) beside the varjyam it
@@ -131,40 +133,85 @@ table, and that is the default: `panchanga.amrit_kalam` is `RAMAN`
 ## 2. The day's lagna table
 
 A day page lists each sign rising from sunrise to the next sunrise with
-its start and end.
+its start and end. **Built**, 2026-10-21.
 
 ### 2.1 Definition
 
-The table for a day at a place is the list of `LagnaSpan { sign, from,
-to, whole }` covering [sunrise, next sunrise): the cuts of the sidereal
-ascendant through each sign boundary, found by `muhurta::window::lagna_cuts`
-(minute sampling, bisection to about 1e-8 days) over `lagna_at` in the
-context's chart zodiac (`muhurta::sources`, `chart::foundation::ascendant_at`).
-The first and last spans are clipped to the day, and `whole: false` says
-so (C681): the sign rising at sunrise began before it.
+The table for a day at a place is the list of the signs rising over
+[sunrise, next sunrise), each a `Span<Rashi>`: `whole` the sign's own
+rising, `inside` the part of it in the day (C681, as a limb's span is).
+The first sign began before sunrise and the last outlasts the next, so
+their `whole` reaches past the arc; a table holds thirteen spans most
+days, fourteen when a sign rises twice in the arc (Mithuna on Asar 1 2082
+at Kathmandu, at 05:11 and again at 29:07).
 
-- Under a Surya Siddhanta profile (the Nepal committee's), the lagna is
-  the Siddhanta's own: the Sun's sayana longitude and `siddhanta::lagna`'s
-  `RisingTimes::at(model, latitude)` (the rising times in asu, corrected
-  by the place's ascensional difference), as a patro printed in Nepal
-  computes it (C680). Elsewhere, the context's own ascendant.
-- `sdk.almanac().day(...)` gains `lagnas: Vec<LagnaSpan>` behind the
-  section `lagnas`, asked for only when wanted (a day's cuts cost about
-  1,440 ascendant evaluations plus bisection; measure first, `price a
-  pass`).
-- Polar latitudes: a sign may not rise in a day, or rise twice; the list
-  is whatever the cuts give, never assumed to hold twelve (the premise
-  `an-equivalence-has-a-premise` names).
+- **The search** is `chart::moment::risings`: the sign rising at sunrise
+  by `chart::moment::rising`, then each next sign from the instant the one
+  before it set, every edge walked in five minutes and bisected to a
+  second, and an edge found once (a sign's `rose` is the `sets` of the
+  one before it). About four hundred ascendants a day. A sign that stays
+  up past a day (inside a polar circle) ends the list, and the arc bounds
+  its span; the list is whatever the sky gives, never assumed to hold
+  twelve (`an-equivalence-has-a-premise`).
+- **The ascendant** is the one `panchanga.lagna_table` names
+  (`Founder::lagna_table`): `CHART`, the root's, is the context's chart
+  ascendant in the chart's zodiac; `SPHERE { ayanamsha }` is the sphere's
+  ascendant in that ayanamsha whatever the provider defines
+  (`Founder::spheres_ascendant_at`). The zodiac is the one at the arc's
+  middle, which moves a fifth of an arcsecond over a day.
+- **Asked for, not computed**: `AlmanacRequest::with_lagnas`, the C bit
+  `TS_PANCHANGA_LAGNAS` (16), `lagnas` in a days request, and the
+  `lagnas` option in every binding. The day carries `Panchanga::lagnas`,
+  left out of its document when empty, so a day not asked for it hashes
+  as it did before the table existed. It crosses the boundary as the
+  `lagnas` span section (`AlmanacDay.lagnas` in every binding).
 
-### 2.2 Acceptance
+### 2.2 Measured: the committee prints the sphere's lagna in Lahiri
 
-No published lagna table has been read into a fixture yet. The test is a
-week of a printed panchanga's lagna table at its own place and on its own
-sky (`a-printed-day-follows-the-printers-sky`): one printed in Nepal under
-the Surya Siddhanta profile, an Indian one under Lahiri, each span's ends
-to the printed minute. Until then the test is internal: the spans tile
-the day without gaps, and each span's `sign` equals `chart::moment::rising`
-at its midpoint.
+The national panchanga prints a daily table of lagna starts ("दैनिक
+लग्न आरम्भ समयतालिका", Rashtriya Panchangam 2082 p. 6), each sign's
+start to the minute at Kathmandu in Nepal time. Read for Jestha 29–31
+and Asar 1–11 (12–25 June 2025) and set against four lagnas:
+
+| lagna | each printed start → the cut, seconds |
+|---|---|
+| the sphere's ascendant in Lahiri (pyswisseph, and the SDK's own, which agrees to a second) | +9 to +101 |
+| the SDK under `nepali-committee` before this table: the chart's lagna, the text's rising times in its own zodiac | −53 to +268 |
+| the Siddhanta's rising times by III.42–48, from the sayana Sun, under Lahiri | −377 to −136 |
+| the sphere in the Surya Siddhanta ayanamsha | −1012 to −449 |
+
+Of every ayanamsha Swiss Ephemeris holds, the Lahiri family fits best,
+and every printed minute stands before the sphere's cut, never after it.
+The lead is not constant: each sign's grows some four seconds a day
+through Asar (the print steps a start by 3 min 53 s a day where the sky
+steps 3 min 56 s) and falls back a minute each time the printed minute
+steps, and the Jestha block's starts stand a further half minute early.
+That reads as a table stepped through each month from its first day; the
+SDK prints the sky's cut and holds the print to [0, 2 min) before it
+(`crates/sdk/tests/printed_day.rs`, all 132 Asar cells).
+
+So the committee's lagna table is **not** the Siddhanta's: it is the
+modern ascendant in Lahiri's zodiac, beside the text's Sun and Moon on
+the same page, as its five star planets are (C38). C680 is decided on
+this: `nepali-committee` sets `panchanga.lagna_table` to `SPHERE` in
+Lahiri; every other profile keeps `CHART`.
+
+The chart's own lagna, and the muhurta search's, stay the provider's
+reckoning under that profile: changing them changes existing answers,
+and whether the committee's muhurta windows read this table is its own
+question (C697).
+
+### 2.3 Acceptance
+
+- Drik Panchang's sky: the default context's cuts at Delhi on 15 June
+  2025 are pyswisseph's sidereal Lahiri cuts within two seconds, all
+  thirteen.
+- The committee's print: §2.2, under `nepal_official`.
+- The tiling: the spans run on without a gap, open at sunrise and close
+  at the next, and each sign is the chart's rising sign at its span's
+  middle; a day not asked carries none and its document has no `lagnas`.
+- Every binding asks for it and reads it, and the parity runners compare
+  15 June 2025 at Kathmandu across all six.
 
 ## 3. The day page's names
 
@@ -229,8 +276,8 @@ other chart-scope kinds stay for `entity-names.md`'s own pass.
 | C677 | the amrita's start | **decided**: (c) Raman's printed table, the published almanac's to the minute (§1.5) | (a) visha + 4, the PM commentary, verified on the page and shipped as `PRASNA_MARGA`; (b) 30 + n, the *matāntara* verse and MV, not shipped |
 | C678 | which visha table (a) rides on | the setting `panchanga.varjyam` already chosen | MC fixed |
 | C679 | scaling to the star's span | as the varjyam: sixtieths of the span | fixed ghatis of 24 minutes |
-| C680 | the lagna table's lagna | the context's sidereal ascendant; the Surya Siddhanta's own rising times under that profile | the context's ascendant always |
-| C681 | the first and last spans | clipped to [sunrise, next sunrise), with `whole: false` | the whole span of each sign touching the day |
+| C680 | the lagna table's lagna | **decided** (§2.2): `panchanga.lagna_table`, `CHART` by default and the sphere in Lahiri under `nepali-committee`, measured on the committee's own table | the Surya Siddhanta's rising times under that profile, which miss the print by up to 4½ minutes |
+| C681 | the first and last spans | **decided**: both, as a limb's span carries them: `whole` the sign's rising, `inside` the part in the day | a `whole: false` flag |
 | C682 | the unlisted unnamed members | name the day page's kinds (§3.2) once vetted; list the rest in `UNNAMED` with a reason, so the gate's count reaches zero | leave the count as it stands |
 
 ## 5. Order of work

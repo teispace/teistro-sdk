@@ -11177,6 +11177,7 @@ final class PanchangaCounts {
     required this.chandraVasa,
     required this.chandrashtama,
     required this.amritKalam,
+    required this.lagnas,
     required this.length,
   });
 
@@ -11233,6 +11234,9 @@ final class PanchangaCounts {
 
   /// How many rows of `amrit_kalam` belong to this day.
   final Uint32List amritKalam;
+
+  /// How many rows of `lagnas` belong to this day.
+  final Uint32List lagnas;
 
   /// The number of rows every column holds.
   final int length;
@@ -12004,6 +12008,55 @@ final class PanchangaAmritKalam {
   final int length;
 }
 
+/// The `lagnas` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The lagna table, when `sections` asked for `TS_PANCHANGA_LAGNAS`: each sign rising from sunrise to the next sunrise, from the ascendant `panchanga.lagna_table` names (crux C680). `whole` is the sign's rising, which for the first and the last can begin before sunrise or end after the next, and `inside` the part of it in the day (C681). Empty when not asked for.
+final class PanchangaLagnas {
+  const PanchangaLagnas({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The sign rising.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -12044,6 +12097,7 @@ final class Panchanga {
     required this.chandraVasa,
     required this.chandrashtama,
     required this.amritKalam,
+    required this.lagnas,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -12151,6 +12205,9 @@ final class Panchanga {
   /// The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.
   final PanchangaAmritKalam amritKalam;
 
+  /// The lagna table, when `sections` asked for `TS_PANCHANGA_LAGNAS`: each sign rising from sunrise to the next sunrise, from the ascendant `panchanga.lagna_table` names (crux C680). `whole` is the sign's rising, which for the first and the last can begin before sunrise or end after the next, and `inside` the part of it in the day (C681). Empty when not asked for.
+  final PanchangaLagnas lagnas;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -12188,6 +12245,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atChandraVasa = blob.section(28, 'chandra_vasa');
   final atChandrashtama = blob.section(29, 'chandrashtama');
   final atAmritKalam = blob.section(30, 'amrit_kalam');
+  final atLagnas = blob.section(31, 'lagnas');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -12393,6 +12451,11 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atCounts, 17),
         blob.columnOffset(atCounts, 17) + atCounts.count * 4,
+      ),
+      lagnas: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 18),
+        blob.columnOffset(atCounts, 18) + atCounts.count * 4,
       ),
       length: atCounts.count,
     ),
@@ -13225,6 +13288,54 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atAmritKalam, 8) + atAmritKalam.count * 1,
       ),
       length: atAmritKalam.count,
+    ),
+    lagnas: PanchangaLagnas(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 0),
+        blob.columnOffset(atLagnas, 0) + atLagnas.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 1),
+        blob.columnOffset(atLagnas, 1) + atLagnas.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 2),
+        blob.columnOffset(atLagnas, 2) + atLagnas.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 3),
+        blob.columnOffset(atLagnas, 3) + atLagnas.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 4),
+        blob.columnOffset(atLagnas, 4) + atLagnas.count * 8,
+      ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 5),
+        blob.columnOffset(atLagnas, 5) + atLagnas.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 6),
+        blob.columnOffset(atLagnas, 6) + atLagnas.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 7),
+        blob.columnOffset(atLagnas, 7) + atLagnas.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLagnas, 8),
+        blob.columnOffset(atLagnas, 8) + atLagnas.count * 1,
+      ),
+      length: atLagnas.count,
     ),
   );
 }

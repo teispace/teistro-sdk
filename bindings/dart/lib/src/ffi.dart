@@ -1802,7 +1802,8 @@ final class PanchangaRequestStruct extends ffi.Struct {
   /// `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
   /// the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
   /// day, only what else is asked, festivals alone then founded as
-  /// only what their rules read.
+  /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
+  /// lagna table, in the `lagnas` span section.
   /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.
@@ -5055,7 +5056,8 @@ final class PanchangaRequest {
   /// `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
   /// the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
   /// day, only what else is asked, festivals alone then founded as
-  /// only what their rules read.
+  /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
+  /// lagna table, in the `lagnas` span section.
   /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.

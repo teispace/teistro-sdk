@@ -36,8 +36,8 @@ use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, V
 use teistro::eclipse::{LocalMoment, LunarHere, SolarHere, Visible};
 use teistro::settings::SunriseConvention;
 use teistro::{
-    Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, Script,
-    TimeScale, Timeline,
+    AlmanacRequest, Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest,
+    Scale, Script, TimeScale, Timeline,
 };
 use teistro::{DayState, LocalDay};
 use teistro_core::envelope::Envelope;
@@ -6663,6 +6663,48 @@ fn the_lilith(report: &mut Report, place: &Place, offset: UtcOffset) {
     }
 }
 
+/// A day's lagna table, asked beside the day: 15 June 2025 at Kathmandu
+/// over the built-in sky, each sign's span (`03-design/amrit-kalam-and-lagnas.md` §2).
+fn lagnas(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let sky = Context::builder()
+        .profile("nepali-default")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let date = CalendarDate::defined(Calendar::Gregorian, 2025, 6, 15);
+    let answer = sky
+        .almanac()
+        .asked(
+            &date,
+            &date,
+            place,
+            offset,
+            &AlmanacRequest::new().with_lagnas(),
+        )
+        .expect("the built-in sky's lagnas");
+    let table = &answer
+        .days
+        .value
+        .first()
+        .expect("a range of one day answers one")
+        .lagnas;
+    put(report, "lagnas-count", table.len().to_string());
+    for (j, span) in table.iter().enumerate() {
+        put(
+            report,
+            &format!("lagnas-{j}"),
+            format!(
+                "{} {} {} {} {}",
+                span.member.full_key(),
+                number(span.whole.from.get()),
+                number(span.whole.to.get()),
+                number(span.inside.from.get()),
+                number(span.inside.to.get()),
+            ),
+        );
+    }
+}
+
 /// The eclipses a panchanga request carries, as the report prints them.
 ///
 /// September 2025 at Kathmandu over the built-in sky, which the test
@@ -7356,6 +7398,7 @@ fn main() {
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);
     eclipses(&mut report, &place, offset);
+    lagnas(&mut report, &place, offset);
     the_lilith(&mut report, &place, offset);
 
     for (key, value) in &report {

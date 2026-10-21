@@ -192,6 +192,13 @@
       "ty": "u32",
       "value": 8,
       "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TS_PANCHANGA_LAGNAS",
+      "doc": "`TS_PANCHANGA_LAGNAS`, the bit a caller sets in a panchanga request's\n`sections` for each day's lagna table, in the `lagnas` span section:\nevery sign rising from sunrise to the next sunrise, from the\nascendant `panchanga.lagna_table` names\n(`03-design/amrit-kalam-and-lagnas.md` §2). About four hundred\nascendants a day, so a request that does not set it pays nothing.",
+      "ty": "u32",
+      "value": 16,
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "enums": [
@@ -13915,7 +13922,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
+          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -22943,6 +22950,11 @@
               "name": "amrit_kalam",
               "scalar": "u32",
               "doc": "How many rows of `amrit_kalam` belong to this day."
+            },
+            {
+              "name": "lagnas",
+              "scalar": "u32",
+              "doc": "How many rows of `lagnas` belong to this day."
             }
           ]
         },
@@ -23918,6 +23930,61 @@
               "scalar": "u16",
               "doc": "Whose amrita kalam it is.",
               "enum": "Nakshatra"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 31,
+          "name": "lagnas",
+          "doc": "The lagna table, when `sections` asked for `TS_PANCHANGA_LAGNAS`: each sign rising from sunrise to the next sunrise, from the ascendant `panchanga.lagna_table` names (crux C680). `whole` is the sign's rising, which for the first and the last can begin before sunrise or end after the next, and `inside` the part of it in the day (C681). Empty when not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The sign rising.",
+              "enum": "Rashi"
             },
             {
               "name": "whole_from",

@@ -3959,6 +3959,27 @@ test('a day carries each star\'s varjyam and amrita kalam, four sixtieths of it,
   assert.deepEqual(of({ panchanga: { amrit_kalam: 'NONE' } }).map((day) => day.amritKalam.length), [0, 0, 0, 0, 0, 0, 0]);
 });
 
+test('a day asked for its lagnas carries the signs rising from sunrise to the next, and one not asked none', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const request = {
+    date: date(Calendar.Gregorian, 2024, 6, 15),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const day = ctx.almanac.day({ ...request, lagnas: true });
+  const plain = ctx.almanac.day(request);
+  ctx.dispose();
+  const table = day.lagnas;
+  assert.ok(table.length >= 13 && table.length <= 14, `${table.length}`);
+  assert.equal(table[0].inside.from, day.day.sunrise);
+  assert.equal(table[table.length - 1].inside.to, day.day.nextSunrise);
+  for (let j = 1; j < table.length; j += 1) {
+    assert.equal(table[j - 1].whole.to, table[j].whole.from);
+    assert.match(table[j].member, /^rashi\./);
+  }
+  assert.equal(plain.lagnas.length, 0);
+});
+
 test('a day marks its durmuhurtas and carries the shool, the chandra vasa and the chandrashtama', () => {
   // 15 to 21 June 2024 at Kathmandu, Saturday first. Muhurta Chintamani's
   // table (Vivaha Prakarana v. 52, crux C398) censures muhurtas by their

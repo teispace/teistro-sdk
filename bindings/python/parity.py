@@ -2762,6 +2762,31 @@ def main() -> None:
         ).eclipses
     assert eclipses is not None
 
+    # ── The lagna table ───────────────────────────────────────────────
+    # 15 June 2025 at Kathmandu over the built-in sky, each sign's span
+    # (`03-design/amrit-kalam-and-lagnas.md` §2).
+    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as builtin:
+        table = builtin.almanac.day(
+            date=date(Calendar.GREGORIAN, 2025, 6, 15),
+            place=place,
+            utc_offset_seconds=20700,
+            lagnas=True,
+        ).lagnas
+    put("lagnas-count", len(table))
+    for j, lagna in enumerate(table):
+        put(
+            f"lagnas-{j}",
+            " ".join(
+                (
+                    lagna.member.full_key,
+                    number(lagna.whole.from_jd),
+                    number(lagna.whole.to_jd),
+                    number(lagna.inside.from_jd),
+                    number(lagna.inside.to_jd),
+                )
+            ),
+        )
+
     def eclipse_moment(m: Optional[EclipseMoment]) -> str:
         return "-" if m is None else f"{number(m.at)}@{number(m.altitude_deg)}"
 

@@ -233,6 +233,19 @@ public final class AlmanacDay {
     }
 
     /**
+     * The lagna table, when the request asked for it: each sign rising from sunrise to the next sunrise, from the
+     * ascendant {@code panchanga.lagna_table} names (crux C680). A span's whole is the sign's rising and its inside the
+     * part of it in the day (C681); empty when not asked for.
+     *
+     * @return the spans
+     */
+    public List<Span<Rashi>> lagnas() {
+        Panchanga.Lagnas c = batch.decoded().lagnas();
+        return spans("lagnas", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Rashi::of);
+    }
+
+    /**
      * The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction
      * (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402); empty on a day the Moon crosses none of them. The vara's
      * own direction is {@link #dishaShool()}.

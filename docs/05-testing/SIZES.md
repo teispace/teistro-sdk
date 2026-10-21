@@ -26,7 +26,7 @@ A native library is loaded, not downloaded, so only the wasm modules are held to
 | module | module | gzipped | budget, gzipped | left | glue | glue, gzipped |
 |---|--:|--:|--:|--:|--:|--:|
 | `full` | 10 922 869 | 2 510 433 | 2 660 000 | 5.6% | 57 609 | 12 407 |
-| `panchanga` | 3 450 277 | 1 088 208 | 1 230 000 | 11.5% | 57 609 | 12 407 |
+| `panchanga` | 3 450 277 | 1 088 208 | 1 260 000 | 13.6% | 57 609 | 12 407 |
 
 ## Bundled
 
@@ -56,3 +56,4 @@ A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fa
 | 2026-10-20 | `by hand` | `full` | 11 200 426 | 2 600 467 | the festival work of 2026-10-20 (the moonrise search and the chaturthis kept at it, the first crescent, days kept on a civil date, the four-valued inAdhika, the iCalendar feed as an agent tool) and its names in three locales; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused |
 | 2026-10-20 | `by hand` | `panchanga` | 3 732 063 | 1 182 031 | the festival work of 2026-10-20 (the moonrise search and the chaturthis kept at it, the first crescent, days kept on a civil date, the four-valued inAdhika, the iCalendar feed as an agent tool) and its names in three locales; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused |
 | 2026-10-21 | `by hand` | `panchanga` | 3 816 219 | 1 204 337 | twelve more of NEPAL_PANCHANGA's festivals with the text each cites, and the ayanamsha's kept epoch; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused |
+| 2026-10-21 | `by hand` | `panchanga` | 3 918 508 | 1 234 473 | the day's lagna table (a sign-edge walk over each day's arc, read on the modern sphere in a chosen ayanamsha) and the amrit kalam; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused |

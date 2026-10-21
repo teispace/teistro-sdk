@@ -7,7 +7,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 21 exported constants, 166 enums of 1403 members
+The description carries 22 exported constants, 166 enums of 1403 members
 in all, 2 opaque handle types, 10 callback types, 27 structs, 57 entry
 points and 5 result-blob schemas, extracted from 26 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
@@ -179,16 +179,16 @@ the class of mistake a generated binding exists to make impossible.
 
 | scalar | `ctypes` | format | at the boundary | in a column |
 |---|---|---|---|---|
-| `u8` | `c_uint8` | `B` | 68 | 459 |
-| `u16` | `c_uint16` | `H` | 20 | 276 |
-| `u32` | `c_uint32` | `I` | 50 | 67 |
+| `u8` | `c_uint8` | `B` | 68 | 463 |
+| `u16` | `c_uint16` | `H` | 20 | 277 |
+| `u32` | `c_uint32` | `I` | 50 | 68 |
 | `u64` | `c_uint64` | `Q` | 1 | 0 |
 | `i8` | `c_int8` | `b` | 0 | 36 |
 | `i16` | `c_int16` | `h` | 0 | 13 |
 | `i32` | `c_int32` | `i` | 17 | 10 |
 | `i64` | `c_int64` | `q` | 4 | 0 |
 | `f32` | `c_float` | `f` | 0 | 0 |
-| `f64` | `c_double` | `d` | 51 | 327 |
+| `f64` | `c_double` | `d` | 51 | 331 |
 | `usize` | `c_size_t` | `n` | 16 | 0 |
 | `isize` | `c_ssize_t` | `N` | 0 | 0 |
 | `bool` | `c_bool` | `?` | 0 | 0 |
@@ -197,7 +197,7 @@ the class of mistake a generated binding exists to make impossible.
 |---|---|---|
 | every scalar has a fixed-width `ctypes` type and a format code | **holds** | 0 of 13 disagree |
 | every scalar the boundary uses is one of the thirteen | **holds** | 8 of 13 appear |
-| every blob column's scalar has a format code | **holds** | 0 of 1188 disagree |
+| every blob column's scalar has a format code | **holds** | 0 of 1198 disagree |
 
 ## 5. What a binding can say about a value
 

@@ -1,6 +1,6 @@
 # The regional solar calendars: what is measured, and what waits
 
-Status: `research`, 2026-10-20. P2-1 step 2. Nothing is shipped yet.
+Status: `research`, 2026-10-20, the Siddhanta's Sun measured 2026-10-21. P2-1 step 2. Nothing is shipped yet.
 
 The Tamil, Bengali, Odia, Malayalam, Assamese and Punjabi solar calendars
 begin each month at a sankranti, the Sun's entry into a sidereal sign.
@@ -46,6 +46,26 @@ near any cutoff. Some sankrantis at 07:22 begin the next day, while some at
 18:36 begin the same day. So the list's sankranti instants are not the
 modern Sun's: it is most likely a vakya reckoning, whose instants differ by
 hours. It cannot test a rule for a drik calendar, and it is not a corpus.
+
+**The same list over the Surya Siddhanta's Sun.** A source says the Bengal
+calendars in India are reckoned by the Surya Siddhanta, so the 125 month
+beginnings of the Chennai list that a sankranti falls near (2020–2030) were
+set against the SDK's Siddhanta Sun (`nepali-committee`'s sky) as well as
+Lahiri's, each under every rule:
+
+| rule | Siddhanta | Lahiri |
+|---|---:|---:|
+| the sankranti's civil day | 110 | 66 |
+| before sunset | 102 | 107 |
+| before three fifths of the daylight | 80 | 107 |
+| sunrise to sunrise, then the next day | 33 | 84 |
+| the day after | 10 | 59 |
+
+The Siddhanta's civil day comes closest, and its fifteen misses settle it:
+sankrantis at 21:08 to 23:39 begin the next day, while ones at 00:13 to 05:52
+the morning after are printed on the day before. No cutoff orders those, so
+the list's instants are not the Siddhanta's either. It stays what the first
+measurement said, a third reckoning (most likely vakya), and still no corpus.
 
 **A drik list, not reachable.** Drik Panchang publishes the Thiru Ganita
 (drik) Tamil months, and shows each day's solar date beside its Gregorian

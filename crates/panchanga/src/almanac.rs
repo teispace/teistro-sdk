@@ -87,6 +87,15 @@ pub struct Panchanga {
     /// How the day's ghatis are counted, `day.ghati_reckoning` as
     /// applied: what [`Panchanga::ghati_pala`] reads.
     pub ghati_reckoning: GhatiReckoning,
+    /// The day's lagna table: each sign rising from sunrise to the next
+    /// sunrise, its `whole` span and the part `inside` that arc, under
+    /// `panchanga.lagna_table` (crux C680, C681). **Empty unless asked
+    /// for** (the façade's `AlmanacRequest::with_lagnas`), since a day's
+    /// cuts cost some four hundred ascendants; and left out of the
+    /// day's document when empty, so a day not asked for it hashes as it
+    /// did before the table existed.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lagnas: Vec<Span<Rashi>>,
 }
 
 impl Panchanga {
@@ -1034,6 +1043,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 window,
                 day,
                 ghati_reckoning: settings.day.ghati_reckoning,
+                lagnas: Vec::new(),
             },
             frame,
         ))

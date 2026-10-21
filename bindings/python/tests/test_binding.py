@@ -5345,7 +5345,9 @@ class AJuneWeek(WithLibrary):
     """15 to 21 June 2024 at Kathmandu, Saturday first, under the settings
     a test names: the week the day's span lists are held over."""
 
-    def days(self, settings: Optional[dict[str, object]] = None) -> list[Any]:
+    def days(
+        self, settings: Optional[dict[str, object]] = None, lagnas: bool = False
+    ) -> list[Any]:
         with self.teistro.context(
             profile=PROFILE, ephemeris=Ephemeris.BUILTIN, settings=settings
         ) as ctx:
@@ -5359,6 +5361,7 @@ class AJuneWeek(WithLibrary):
                         altitude_m=Altitude(1400),
                     ),
                     utc_offset_seconds=20_700,
+                    lagnas=lagnas,
                 )
             )
 
@@ -5420,6 +5423,47 @@ class ADaysAmritKalam(AJuneWeek):
     def test_none_leaves_the_day_without_one(self) -> None:
         days = self.days({"panchanga": {"amrit_kalam": "NONE"}})
         self.assertEqual([len(day.amrit_kalam) for day in days], [0] * len(days))
+
+
+class ADaysLagnas(AJuneWeek):
+    """Each sign rising from sunrise to the next sunrise, asked for by
+    `lagnas=True`, from the ascendant `panchanga.lagna_table` names
+    (C680, C681)."""
+
+    def test_a_table_tiles_its_day(self) -> None:
+        for day in self.days(lagnas=True):
+            table = day.lagnas
+            self.assertIn(len(table), range(13, 15))
+            self.assertEqual(table[0].inside.from_jd, day.day.sunrise)
+            self.assertEqual(table[-1].inside.to_jd, day.day.next_sunrise)
+            self.assertLess(table[0].whole.from_jd, day.day.sunrise)
+            for before, after in zip(table, table[1:]):
+                self.assertEqual(before.whole.to_jd, after.whole.from_jd)
+                self.assertEqual(after.member.id, (before.member.id + 1) % 12)
+
+    def test_a_day_not_asked_carries_none(self) -> None:
+        self.assertEqual([len(day.lagnas) for day in self.days()], [0] * 7)
+
+    def test_the_sphere_reads_the_ayanamsha_it_names(self) -> None:
+        lahiri = self.days(lagnas=True)[0].lagnas
+        raman = self.days(
+            {
+                "panchanga": {
+                    "lagna_table": {
+                        "kind": "SPHERE",
+                        "ayanamsha": {"kind": "CATALOGUED", "id": "RAMAN"},
+                    }
+                }
+            },
+            lagnas=True,
+        )[0].lagnas
+        # Raman's ayanamsha is some 1.4° short of Lahiri's, so the
+        # sidereal lagna stands further on and each sign enters some five
+        # minutes sooner.
+        for one, other in zip(lahiri[1:], raman[1:]):
+            self.assertIs(one.member, other.member)
+            sooner = (one.whole.from_jd - other.whole.from_jd) * 1440
+            self.assertTrue(3 < sooner < 9, sooner)
 
 
 class ADaysOmens(AJuneWeek):

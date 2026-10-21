@@ -156,6 +156,16 @@ extern "C" {
 #define TS_PANCHANGA_WITHOUT_DAYS ((uint32_t)8)
 
 /**
+ * `TS_PANCHANGA_LAGNAS`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's lagna table, in the `lagnas` span section:
+ * every sign rising from sunrise to the next sunrise, from the
+ * ascendant `panchanga.lagna_table` names
+ * (`03-design/amrit-kalam-and-lagnas.md` §2). About four hundred
+ * ascendants a day, so a request that does not set it pays nothing.
+ */
+#define TS_PANCHANGA_LAGNAS ((uint32_t)16)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -9095,7 +9105,8 @@ struct ts_panchanga_request {
      * `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
      * the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
      * day, only what else is asked, festivals alone then founded as
-     * only what their rules read.
+     * only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
+     * lagna table, in the `lagnas` span section.
      * Zero for the days alone, which is what every
      * caller compiled against an earlier header passes, since this was a
      * reserved field it wrote zero to.

@@ -3210,6 +3210,31 @@ void main() {
     profile: 'nepali-default',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
+  // ── The lagna table ──────────────────────────────────────────────────
+  // 15 June 2025 at Kathmandu over the same sky, each sign's span
+  // (`03-design/amrit-kalam-and-lagnas.md` §2).
+  final lagnaTable =
+      builtin.almanac
+          .day(
+            date: Calendar.gregorian.date(2025, 6, 15),
+            place: place,
+            utcOffsetSeconds: 20700,
+            lagnas: true,
+          )
+          .lagnas;
+  put('lagnas-count', lagnaTable.length);
+  for (final (j, span) in lagnaTable.indexed) {
+    put(
+      'lagnas-$j',
+      [
+        span.member.fullKey,
+        number(span.whole.from),
+        number(span.whole.to),
+        number(span.inside.from),
+        number(span.inside.to),
+      ].join(' '),
+    );
+  }
   final eclipses =
       builtin.almanac
           .of(

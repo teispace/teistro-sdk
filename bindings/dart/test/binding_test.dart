@@ -2393,6 +2393,39 @@ void _engineTests() {
     ], List.filled(7, 0));
   });
 
+  test('a day asked for its lagnas carries the signs rising from sunrise '
+      'to the next, and one not asked none', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final day = ctx.almanac.day(
+      date: gregorian(2024, 6, 15),
+      place: place,
+      utcOffsetSeconds: 20700,
+      lagnas: true,
+    );
+    final plain = ctx.almanac.day(
+      date: gregorian(2024, 6, 15),
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    ctx.dispose();
+    final table = day.lagnas;
+    expect(table.length, inInclusiveRange(13, 14));
+    expect(table.first.inside.from, day.day.sunrise);
+    expect(table.last.inside.to, day.day.nextSunrise);
+    for (var j = 1; j < table.length; j += 1) {
+      expect(table[j - 1].whole.to, table[j].whole.from);
+      expect(table[j].member.id, (table[j - 1].member.id + 1) % 12);
+    }
+    expect(plain.lagnas, isEmpty);
+  });
+
   test('a day marks its durmuhurtas and carries the shool, the chandra vasa '
       'and the chandrashtama', () {
     // 15 to 21 June 2024 at Kathmandu, Saturday first (crux C398): Muhurta

@@ -73,6 +73,36 @@ pub enum AyanamshaChoice {
     },
 }
 
+/// Which ascendant a day's lagna table reads (crux C680,
+/// `03-design/amrit-kalam-and-lagnas.md` §2).
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::settings::LagnaTable;
+///
+/// let lahiri = LagnaTable::Sphere { ayanamsha: Ayanamsha::Lahiri.into() };
+/// assert_eq!(
+///     serde_json::to_value(lahiri).unwrap(),
+///     serde_json::json!({"kind": "SPHERE", "ayanamsha": {"kind": "CATALOGUED", "id": "LAHIRI"}})
+/// );
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum LagnaTable {
+    /// The context's own chart ascendant, in the chart's zodiac: the
+    /// provider's own reckoning where it defines the angles (the Surya
+    /// Siddhanta's rising times), the sphere's otherwise.
+    Chart,
+    /// The sphere's ascendant, from the sidereal time, in this
+    /// ayanamsha, whatever the provider defines: what a patro printed in
+    /// Nepal tabulates beside the text's Sun and Moon.
+    Sphere {
+        /// The zodiac the lagna is read in, on `frame.ayanamsha_basis`.
+        ayanamsha: AyanamshaChoice,
+    },
+}
+
 impl From<Ayanamsha> for AyanamshaChoice {
     fn from(id: Ayanamsha) -> AyanamshaChoice {
         AyanamshaChoice::Catalogued { id }
@@ -523,6 +553,9 @@ group!(
         varjyam: Varjyam,
         /// Which reading places each nakshatra's amrita kalam (crux C677).
         amrit_kalam: AmritKalam,
+        /// Which ascendant the day's lagna table reads, when asked for
+        /// (crux C680).
+        lagna_table: LagnaTable,
         /// Which muhurtas of each weekday are censured, the durmuhurtas
         /// (crux C398).
         durmuhurta: DurmuhurtaTable,

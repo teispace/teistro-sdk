@@ -11,6 +11,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::Error;
 use teistro_core::catalogue::Rashi;
+use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
 
 /// How far the sign's edges are looked for either side of the instant,
@@ -101,6 +102,48 @@ where
     })
 }
 
+/// Every sign rising over a window, in order, each with when it rose and
+/// sets: the sign rising at `within.from` (from [`rising`]), then each
+/// next sign from the instant the one before it set, until one sets at or
+/// after `within.to`. A day's lagna table is this over [sunrise, next
+/// sunrise) (`03-design/amrit-kalam-and-lagnas.md` §2).
+///
+/// Each edge is found as [`rising`] finds it, to a second, and an edge
+/// already found is not looked for again: a sign's `rose` is the instant
+/// the sign before it `sets`. The walk steps five minutes, under which no
+/// sign rises outside the polar circles; inside them a sign rising in
+/// less is passed over, and a sign that stays up past `REACH_DAYS` ends
+/// the list with its `sets` unknown. The list is whatever the sky gives:
+/// a sign can rise twice in a window longer than a sidereal day, and
+/// none is assumed to rise at all.
+///
+/// # Errors
+///
+/// Whatever `lagna_at` returns.
+pub fn risings<F>(within: Interval, mut lagna_at: F) -> Result<Vec<RisingSign>, Error>
+where
+    F: FnMut(JulianDay<Utc>) -> Result<f64, Error>,
+{
+    let first = rising(within.from, &mut lagna_at)?;
+    let mut sign_at = |t: f64| lagna_at(JulianDay::literal(t)).map(Rashi::of_longitude);
+    let mut out = vec![first];
+    let mut last = first;
+    while let Some(set) = last.sets {
+        if set.get() >= within.to.get() {
+            break;
+        }
+        let sign = sign_at(set.get())?;
+        let sets = edge(set.get(), 1.0, sign, &mut sign_at)?.map(JulianDay::literal);
+        last = RisingSign {
+            sign,
+            rose: Some(set),
+            sets,
+        };
+        out.push(last);
+    }
+    Ok(out)
+}
+
 /// The edge of `sign` from `from` in the direction `toward` (−1 back, +1
 /// on): the first instant in the sign walking back, the first instant out
 /// of it walking on.
@@ -139,7 +182,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::indexing_slicing,
+        reason = "tests fail by panicking and index fixed lists"
+    )]
 
     use super::*;
 
@@ -177,6 +224,34 @@ mod tests {
             (found.sign, found.rose, found.sets),
             (Rashi::Cancer, None, None)
         );
+    }
+
+    #[test]
+    fn a_window_lists_each_sign_once_with_shared_edges() {
+        // From 45° (Taurus) for six hours: Taurus, Gemini, Cancer, Leo.
+        let from = 10.0 + 45.0 / 360.0;
+        let within = Interval::literal(from, from + 0.25);
+        let found = risings(within, |t| Ok(even(t))).unwrap();
+        let signs: Vec<Rashi> = found.iter().map(|r| r.sign).collect();
+        assert_eq!(
+            signs,
+            [Rashi::Taurus, Rashi::Gemini, Rashi::Cancer, Rashi::Leo]
+        );
+        for pair in found.windows(2) {
+            assert_eq!(pair[0].sets, pair[1].rose, "an edge is found once");
+        }
+        let second = 1.0 / 86_400.0;
+        let leo = found[3];
+        assert!((leo.rose.unwrap().get() - (10.0 + 120.0 / 360.0)).abs() <= second);
+        assert!(leo.sets.unwrap().get() >= within.to.get());
+    }
+
+    #[test]
+    fn a_sign_that_stays_up_ends_the_list() {
+        let still = |_: JulianDay<Utc>| Ok(100.0);
+        let found = risings(Interval::literal(10.0, 11.0), still).unwrap();
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].sets, None);
     }
 
     #[test]

@@ -6,9 +6,11 @@ use teistro_astro::Completion;
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
+use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
 use teistro_core::error::Error;
+use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::LunarMonth;
 use teistro_core::time::UtcOffset;
@@ -21,6 +23,7 @@ use teistro_panchanga::festival::{
 };
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
+use teistro_panchanga::span::Span;
 use teistro_panchanga::year::LunarYear;
 
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
@@ -387,6 +390,10 @@ impl<'a> AlmanacArea<'a> {
         };
         #[cfg(not(feature = "muhurta"))]
         let days = self.unsealed(from, to, place, offset)?;
+        let mut days = days;
+        if request.lagnas && request.days == Days::Handed {
+            self.with_lagnas(&mut days.value, place, offset)?;
+        }
         let festivals = request
             .festivals
             .as_ref()
@@ -432,6 +439,46 @@ impl<'a> AlmanacArea<'a> {
             eclipses,
             nepal_sambat,
         })
+    }
+
+    /// Each day's lagna table, laid into the day: the signs rising over
+    /// its sunrise-to-sunrise arc, each the `whole` span its edges give
+    /// and the part `inside` the arc, as a limb's span is (C681). A sign
+    /// whose edge the search did not reach in a day (inside a polar
+    /// circle) is bounded by the arc there.
+    fn with_lagnas(
+        self,
+        days: &mut [Panchanga],
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<(), Error> {
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        let resolved = self.context.resolved();
+        let calendar = system_of(resolved.settings.calendars.civil_calendar)?;
+        let model = drik_sun(self.context, provider);
+        let founder = Founder::new(
+            provider,
+            resolved,
+            &model,
+            calendar,
+            &offset,
+            PrecessionModel::default(),
+            self.context.delta_t(),
+        );
+        for day in days.iter_mut() {
+            let arc = Interval::new(day.day.sunrise, day.day.next_sunrise)?;
+            day.lagnas = founder
+                .lagna_table(arc, place)?
+                .into_iter()
+                .filter_map(|risen| {
+                    let whole =
+                        Interval::new(risen.rose.unwrap_or(arc.from), risen.sets.unwrap_or(arc.to))
+                            .ok()?;
+                    Span::new(risen.sign, whole, arc)
+                })
+                .collect();
+        }
+        Ok(())
     }
 
     /// [`AlmanacArea::asked`] without the days, when nothing asked reads
@@ -666,6 +713,10 @@ impl<'a> AlmanacArea<'a> {
 /// assert!(asked.muhurta().is_some() && asked.festivals().is_some());
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "each bool is a section asked beside the days, independent of the others and named by its own `with_` method"
+)]
 pub struct AlmanacRequest {
     #[cfg(feature = "muhurta")]
     muhurta: Option<MuhurtaRequest>,
@@ -673,6 +724,7 @@ pub struct AlmanacRequest {
     years: bool,
     eclipses: bool,
     nepal_sambat: bool,
+    lagnas: bool,
     days: Days,
 }
 
@@ -730,6 +782,24 @@ impl AlmanacRequest {
         self
     }
 
+    /// With each day's lagna table ([`Panchanga::lagnas`]): every sign
+    /// rising from sunrise to the next sunrise, from the ascendant
+    /// `panchanga.lagna_table` names (`03-design/amrit-kalam-and-lagnas.md`
+    /// §2). A table costs some four hundred ascendants a day, so only a
+    /// request that asks pays for it; a day without days handed out has
+    /// no table to carry.
+    ///
+    /// ```
+    /// use teistro::AlmanacRequest;
+    ///
+    /// assert!(AlmanacRequest::new().with_lagnas().lagnas());
+    /// ```
+    #[must_use]
+    pub fn with_lagnas(mut self) -> AlmanacRequest {
+        self.lagnas = true;
+        self
+    }
+
     /// **Without the days**: what is asked beside them, and the days
     /// themselves left out of the answer, which holds none. Festivals
     /// alone are then founded as only what their rules read
@@ -777,6 +847,12 @@ impl AlmanacRequest {
     #[must_use]
     pub fn nepal_sambat(&self) -> bool {
         self.nepal_sambat
+    }
+
+    /// Whether the days' lagna tables were asked.
+    #[must_use]
+    pub fn lagnas(&self) -> bool {
+        self.lagnas
     }
 }
 

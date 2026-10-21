@@ -419,6 +419,7 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("chandra_vasa", "chandra_vasa"),
             count("chandrashtama", "chandrashtama"),
             count("amrit_kalam", "amrit_kalam"),
+            count("lagnas", "lagnas"),
         ],
     )
 }
@@ -696,6 +697,7 @@ pub fn panchanga() -> BlobSchema {
             span_section(28, "chandra_vasa", "The chandra vasa: the direction the Moon dwells in, by the sign it stands in (the commentary's sign directions on Yatra Prakarana v. 34, crux C403), one span for each sign the Moon stood in over the day.", "The direction the Moon dwells in.", "Direction"),
             span_section(29, "chandrashtama", "Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.", "The natal Moon sign the span is chandrashtama for.", "Rashi"),
             span_section(30, "amrit_kalam", "The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.", "Whose amrita kalam it is.", "Nakshatra"),
+            span_section(31, "lagnas", "The lagna table, when `sections` asked for `TS_PANCHANGA_LAGNAS`: each sign rising from sunrise to the next sunrise, from the ascendant `panchanga.lagna_table` names (crux C680). `whole` is the sign's rising, which for the first and the last can begin before sunrise or end after the next, and `inside` the part of it in the day (C681). Empty when not asked for.", "The sign rising.", "Rashi"),
         ],
     }
 }

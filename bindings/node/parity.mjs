@@ -2067,6 +2067,22 @@ geo.dispose();
   sky.dispose();
 }
 
+// ── The lagna table ────────────────────────────────────────────────────
+// 15 June 2025 at Kathmandu over the built-in sky, each sign's span
+// (`03-design/amrit-kalam-and-lagnas.md` §2).
+{
+  const sky = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const table = sky.almanac.day({ date: gregorian(2025, 6, 15), place, utcOffsetSeconds: 20700, lagnas: true }).lagnas;
+  sky.dispose();
+  put('lagnas-count', table.length);
+  table.forEach((span, j) => {
+    put(
+      `lagnas-${j}`,
+      [span.member, number(span.whole.from), number(span.whole.to), number(span.inside.from), number(span.inside.to)].join(' '),
+    );
+  });
+}
+
 // ── The eclipses ───────────────────────────────────────────────────────
 // September 2025 at Kathmandu over the built-in sky, which the test
 // provider cannot complete: a total lunar eclipse seen whole and a

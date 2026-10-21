@@ -221,7 +221,8 @@ pub struct TsPanchangaRequest {
     /// `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
     /// the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
     /// day, only what else is asked, festivals alone then founded as
-    /// only what their rules read.
+    /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
+    /// lagna table, in the `lagnas` span section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -318,6 +319,16 @@ pub const TS_PANCHANGA_NEPAL_SAMBAT: u32 = 4;
 /// `api: constant`
 pub const TS_PANCHANGA_WITHOUT_DAYS: u32 = 8;
 
+/// `TS_PANCHANGA_LAGNAS`, the bit a caller sets in a panchanga request's
+/// `sections` for each day's lagna table, in the `lagnas` span section:
+/// every sign rising from sunrise to the next sunrise, from the
+/// ascendant `panchanga.lagna_table` names
+/// (`03-design/amrit-kalam-and-lagnas.md` §2). About four hundred
+/// ascendants a day, so a request that does not set it pays nothing.
+///
+/// `api: constant`
+pub const TS_PANCHANGA_LAGNAS: u32 = 16;
+
 /// A day's own values, in the order `days` declares them.
 #[must_use]
 fn day_row(day: &Panchanga) -> Vec<FixedValue> {
@@ -371,6 +382,7 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.chandra_vasa().len(),
         day.chandrashtama().len(),
         day.omens.amrit_kalam.len(),
+        day.lagnas.len(),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -628,6 +640,7 @@ struct RaggedRows {
     chandra_vasa: Vec<Vec<FixedValue>>,
     chandrashtama: Vec<Vec<FixedValue>>,
     amrit_kalam: Vec<Vec<FixedValue>>,
+    lagnas: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -653,6 +666,7 @@ impl RaggedRows {
             chandra_vasa: owned_span_rows(days, Panchanga::chandra_vasa, |m| m.id())?,
             chandrashtama: owned_span_rows(days, Panchanga::chandrashtama, |m| m.id())?,
             amrit_kalam: span_rows(days, |day| &day.omens.amrit_kalam, |m| m.id())?,
+            lagnas: span_rows(days, |day| &day.lagnas, |m| m.id())?,
         })
     }
 }
@@ -755,6 +769,7 @@ pub fn encode(
         writer.rows("chandra_vasa", &ragged.chandra_vasa)?;
         writer.rows("chandrashtama", &ragged.chandrashtama)?;
         writer.rows("amrit_kalam", &ragged.amrit_kalam)?;
+        writer.rows("lagnas", &ragged.lagnas)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -847,6 +862,9 @@ pub unsafe extern "C" fn ts_panchanga_days(
         }
         if asked.sections & TS_PANCHANGA_NEPAL_SAMBAT == TS_PANCHANGA_NEPAL_SAMBAT {
             beside = beside.with_nepal_sambat();
+        }
+        if asked.sections & TS_PANCHANGA_LAGNAS == TS_PANCHANGA_LAGNAS {
+            beside = beside.with_lagnas();
         }
         if asked.sections & TS_PANCHANGA_WITHOUT_DAYS == TS_PANCHANGA_WITHOUT_DAYS {
             beside = beside.without_days();

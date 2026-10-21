@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The day's lagna table** (`amrit-kalam-and-lagnas.md` §2, C680,
+C681). **Numbers:** none move; a day not asked for its table carries
+none and hashes as before. Asked for (`AlmanacRequest::with_lagnas`,
+`TS_PANCHANGA_LAGNAS`, `lagnas` in every binding), each day carries
+`lagnas`: every sign rising from sunrise to the next sunrise, its whole
+rising and the part in the day, found to a second. A new
+`panchanga.lagna_table` setting names the ascendant: `CHART`, the
+context's own, by default; `SPHERE` with an ayanamsha, the modern
+ascendant whatever the provider defines. `nepali-committee` sets the
+sphere in Lahiri, measured on the committee's own printed table, whose
+every start of eleven days falls within two minutes before the SDK's
+cut; the text's own rising times miss it by up to four and a half
+minutes. `chart::moment::risings`, `Founder::lagna_table` and
+`Founder::spheres_ascendant_at` are new.
+
 **The amrita kalam** (`amrit-kalam-and-lagnas.md`, C677). **Numbers:**
 none move; every almanac day gains `omens.amrit_kalam` (`amrit_kalam`,
 `amritKalam` in the bindings), each nakshatra's four auspicious ghatis

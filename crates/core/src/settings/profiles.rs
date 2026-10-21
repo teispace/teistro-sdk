@@ -25,8 +25,8 @@ use super::knobs::{
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
-    Output, Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch, Siddhanta,
-    State, Strength, SuryaBija, Time, Vargas,
+    LagnaTable, Output, Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch,
+    Siddhanta, State, Strength, SuryaBija, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -148,6 +148,8 @@ fn root_panchanga() -> Panchanga {
         // Panchang's every window over a week at Delhi to the minute
         // (crux C677).
         amrit_kalam: AmritKalam::Raman,
+        // The ascendant a chart of the same context has (crux C680).
+        lagna_table: LagnaTable::Chart,
         // Muhurta Chintamani's, the Sanskrit Raman's list departs from
         // (crux C398).
         durmuhurta: DurmuhurtaTable::MuhurtaChintamani,
@@ -398,7 +400,9 @@ fn nepali_default() -> Profile {
 /// and with this one every printed vriddhi and kshaya agrees (C39). The
 /// modern sunrise comes from the chain's next modern entry, or the
 /// built-in ephemeris. The committee's five star planets are modern
-/// positions under Lahiri (C38), which this profile does not reproduce.
+/// positions under Lahiri (C38), which this profile does not reproduce;
+/// its daily lagna table is the sphere's ascendant under Lahiri too
+/// (C680), which `panchanga.lagna_table` reproduces.
 fn nepali_committee() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.centre = Some(Centre::Geocentric);
@@ -408,6 +412,9 @@ fn nepali_committee() -> Profile {
     });
     patch.day.sunrise = Some(Sunrise::CentreRefraction.into());
     patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
+    patch.panchanga.lagna_table = Some(LagnaTable::Sphere {
+        ayanamsha: Ayanamsha::Lahiri.into(),
+    });
     let committee = |what: &'static str| Source::new("Nepal Panchanga Nirnayak Vikas Samiti", what);
     Profile {
         id: ProfileId::new("nepali-committee"),
@@ -438,6 +445,12 @@ fn nepali_committee() -> Profile {
                 "day.sunrise",
                 committee(
                     "measured: Nepal's daily sunrise is a modern sunrise of the disc's centre with standard refraction, within 1.5 minutes on 320 of 333 days and 1.7 on every one; docs/03-design/nepal-day-measured.md, C39",
+                ),
+            ),
+            Citation::new(
+                "panchanga.lagna_table",
+                committee(
+                    "measured: the Rashtriya Panchangam 2082's daily lagna starts at Kathmandu are the sphere's ascendant in Lahiri's zodiac, each printed minute 15 to 92 seconds before the cut; the text's own rising times miss by up to four and a half minutes; docs/03-design/amrit-kalam-and-lagnas.md §2.2, C680",
                 ),
             ),
         ],

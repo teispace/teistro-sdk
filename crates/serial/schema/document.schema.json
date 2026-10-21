@@ -5391,6 +5391,13 @@
           },
           "type": "array"
         },
+        "lagnas": {
+          "description": "The day's lagna table: each sign rising from sunrise to the next sunrise, its `whole` span and the part `inside` that arc, under `panchanga.lagna_table` (crux C680, C681). **Empty unless asked for** (the façade's `AlmanacRequest::with_lagnas`), since a day's cuts cost some four hundred ascendants; and left out of the day's document when empty, so a day not asked for it hashes as it did before the table existed.",
+          "items": {
+            "$ref": "#/$defs/RashiSpan"
+          },
+          "type": "array"
+        },
         "limbs": {
           "$ref": "#/$defs/Limbs",
           "description": "The four moving limbs."

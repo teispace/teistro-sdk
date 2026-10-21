@@ -74,6 +74,7 @@ from ._ffi import (
     CHART_VIMSHOPAKA,
     CONTEXT_TEST_PROVIDER,
     PANCHANGA_ECLIPSES,
+    PANCHANGA_LAGNAS,
     PANCHANGA_NEPAL_SAMBAT,
     PANCHANGA_WITHOUT_DAYS,
     PANCHANGA_YEARS,
@@ -2415,6 +2416,7 @@ class AlmanacArea(_Area):
         years: bool = False,
         eclipses: bool = False,
         nepal_sambat: bool = False,
+        lagnas: bool = False,
         days: bool = True,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
@@ -2430,7 +2432,11 @@ class AlmanacArea(_Area):
         `Almanac.years`, and `eclipses=True` the eclipses whose greatest
         moment falls in them with how the place sees each, as
         `Almanac.eclipses`, and `nepal_sambat=True` each day's Nepal Sambat
-        date, as `Almanac.nepal_sambat`. `days=False` leaves the days out
+        date, as `Almanac.nepal_sambat`. `lagnas=True` gives each day its
+        lagna table, as `AlmanacDay.lagnas`: every sign rising from sunrise
+        to the next sunrise, from the ascendant `panchanga.lagna_table`
+        names, some four hundred ascendants a day, so only on asking.
+        `days=False` leaves the days out
         and answers only what is asked beside them; festivals alone are
         then founded as only what their rules read, which is what
         `AlmanacArea.festivals` asks.
@@ -2452,6 +2458,7 @@ class AlmanacArea(_Area):
             sections=(PANCHANGA_YEARS if years else 0)
             | (PANCHANGA_ECLIPSES if eclipses else 0)
             | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
+            | (PANCHANGA_LAGNAS if lagnas else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
         )
         return Almanac(
@@ -2494,13 +2501,16 @@ class AlmanacArea(_Area):
         date: CalendarDate,
         place: Observer,
         utc_offset_seconds: int,
+        lagnas: bool = False,
     ) -> AlmanacDay:
-        """The almanac of one day, which is the range of one unwrapped."""
+        """The almanac of one day, which is the range of one unwrapped;
+        `lagnas=True` with its lagna table, as `Almanac.of` says."""
         return self.of(
             from_date=date,
             to_date=date,
             place=place,
             utc_offset_seconds=utc_offset_seconds,
+            lagnas=lagnas,
         ).at(0)
 
     def pakshi(
@@ -17977,6 +17987,17 @@ class AlmanacDay:
         return self._spans("amrit_kalam", self.batch.decoded.amrit_kalam, Nakshatra)
 
     @property
+    def lagnas(self) -> list[Span[Rashi]]:
+        """The lagna table, when `lagnas=True` asked for it: each sign rising from sunrise to the next sunrise, from the ascendant `panchanga.lagna_table` names (crux C680).
+
+        A span's ``whole`` is the sign's rising, which for the first and
+        the last can begin before sunrise or end after the next, and
+        ``inside`` the part of it in the day (C681); empty when not asked
+        for.
+        """
+        return self._spans("lagnas", self.batch.decoded.lagnas, Rashi)
+
+    @property
     def nakshatra_shool(self) -> list[Span[Direction]]:
         """The nakshatra shool: while the Moon is in one of the four
         nakshatras that block a direction, that direction (Muhurta
@@ -18149,6 +18170,7 @@ class Almanac:
             "chandra_vasa",
             "chandrashtama",
             "amrit_kalam",
+            "lagnas",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

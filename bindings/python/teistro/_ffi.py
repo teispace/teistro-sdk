@@ -275,6 +275,14 @@ PANCHANGA_NEPAL_SAMBAT: Final = 4
 # days, founded and not written.
 PANCHANGA_WITHOUT_DAYS: Final = 8
 
+# `TS_PANCHANGA_LAGNAS`, the bit a caller sets in a panchanga request's
+# `sections` for each day's lagna table, in the `lagnas` span section:
+# every sign rising from sunrise to the next sunrise, from the
+# ascendant `panchanga.lagna_table` names
+# (`03-design/amrit-kalam-and-lagnas.md` §2). About four hundred
+# ascendants a day, so a request that does not set it pays nothing.
+PANCHANGA_LAGNAS: Final = 16
+
 # The ABI and the SDK version these declarations were generated from. A
 # library that answers otherwise is refused when it is opened.
 GENERATED_ABI_VERSION: Final = 1
@@ -3684,7 +3692,8 @@ class PanchangaRequest:
     `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
     the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
     day, only what else is asked, festivals alone then founded as
-    only what their rules read.
+    only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
+    lagna table, in the `lagnas` span section.
     Zero for the days alone, which is what every
     caller compiled against an earlier header passes, since this was a
     reserved field it wrote zero to.

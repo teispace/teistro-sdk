@@ -41,6 +41,7 @@ import {
   CHART_VIMSHOPAKA,
   CONTEXT_TEST_PROVIDER,
   PANCHANGA_ECLIPSES,
+  PANCHANGA_LAGNAS,
   PANCHANGA_NEPAL_SAMBAT,
   PANCHANGA_WITHOUT_DAYS,
   PANCHANGA_YEARS,
@@ -2107,6 +2108,17 @@ export class AlmanacDay {
   /** The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). */
   get amritKalam() {
     return this.#spans('amritKalam', NakshatraById);
+  }
+
+  /**
+   * The lagna table, when the request asked with `lagnas: true`: each sign
+   * rising from sunrise to the next sunrise, from the ascendant
+   * `panchanga.lagna_table` names (crux C680). A span's `whole` is the
+   * sign's rising and `inside` the part of it in the day (C681); empty
+   * when not asked for.
+   */
+  get lagnas() {
+    return this.#spans('lagnas', RashiById);
   }
 
   /** The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (crux C402). */
@@ -6959,6 +6971,9 @@ export class AlmanacArea extends Area {
    *   the days fall in, as `Almanac.years`
    * @param {boolean} [request.nepalSambat] whether to answer each day's
    *   Nepal Sambat date, as `Almanac.nepalSambat`
+   * @param {boolean} [request.lagnas] whether to give each day its lagna
+   *   table, as `AlmanacDay.lagnas`: some four hundred ascendants a day,
+   *   so only on asking
    * @param {boolean} [request.days] `false` to leave the days out and
    *   answer only what is asked beside them; festivals alone are then
    *   founded as only what their rules read, which is what `festivals`
@@ -6988,6 +7003,7 @@ export class AlmanacArea extends Area {
           (request.years === true ? PANCHANGA_YEARS : 0) |
           (request.eclipses === true ? PANCHANGA_ECLIPSES : 0) |
           (request.nepalSambat === true ? PANCHANGA_NEPAL_SAMBAT : 0) |
+          (request.lagnas === true ? PANCHANGA_LAGNAS : 0) |
           (request.days === false ? PANCHANGA_WITHOUT_DAYS : 0),
       }),
     );
@@ -7010,7 +7026,7 @@ export class AlmanacArea extends Area {
     if (request?.festivals == null) {
       throw new TypeError("festivals: expected a festivals request record, e.g. { rules: 'NEPAL' }");
     }
-    return this.of({ ...request, muhurta: undefined, nepalSambat: false, days: false }).festivals;
+    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, days: false }).festivals;
   }
 
   /**

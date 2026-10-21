@@ -168,6 +168,16 @@ export declare const PANCHANGA_NEPAL_SAMBAT: 4;
 export declare const PANCHANGA_WITHOUT_DAYS: 8;
 
 /**
+ * `TS_PANCHANGA_LAGNAS`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's lagna table, in the `lagnas` span section:
+ * every sign rising from sunrise to the next sunrise, from the
+ * ascendant `panchanga.lagna_table` names
+ * (`03-design/amrit-kalam-and-lagnas.md` §2). About four hundred
+ * ascendants a day, so a request that does not set it pays nothing.
+ */
+export declare const PANCHANGA_LAGNAS: 16;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =

@@ -31,9 +31,11 @@ use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
 use teistro_core::envelope::Version;
 use teistro_core::envelope::{Deviation, Envelope, Hash, Provenance, content_hash};
 use teistro_core::error::Error;
+use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Tt, Ut1, Utc};
 use teistro_core::settings::{
-    GhatiReckoning, HoraReckoning, Node, OverridePolicy, PolarPolicy, Resolved, Settings,
+    GhatiReckoning, HoraReckoning, LagnaTable, Node, OverridePolicy, PolarPolicy, Resolved,
+    Settings, Zodiac,
 };
 use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::columns::{Cell, CellStatus};
@@ -69,6 +71,7 @@ pub struct BirthTiming {
 
 use crate::bhava::{Bhavas, Chalit, Placement};
 use crate::day::{ChartDay, chart_day};
+use crate::moment::{RisingSign, risings};
 use crate::zodiac::{ChartZodiac, request_of};
 
 /// A chart's angles at an instant, in its own zodiac, with the obliquity of
@@ -1551,6 +1554,56 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let ut1 = JulianDay::<Ut1>::literal(at.get());
         let (tt, _) = tt_of(ut1, self.delta_t)?;
         self.lagna(ut1, tt, place, zodiac)
+    }
+
+    /// The sphere's ascendant at an instant in a zodiac, **whatever the
+    /// provider defines**: [`Founder::ascendant_at`] without the
+    /// provider's own angles, for a table that reads the modern
+    /// ascendant beside a classical sky (a patro printed in Nepal, whose
+    /// lagna table is the sphere's under Lahiri, C680).
+    ///
+    /// # Errors
+    ///
+    /// As [`Founder::ascendant_at`].
+    pub fn spheres_ascendant_at(
+        &self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        zodiac: &ChartZodiac,
+    ) -> Result<f64, Error> {
+        let ut1 = JulianDay::<Ut1>::literal(at.get());
+        let (tt, _) = tt_of(ut1, self.delta_t)?;
+        Ok(angles_in(ut1, tt, place, zodiac, self.settings().houses.polar_policy)?.ascendant_deg)
+    }
+
+    /// A day's lagna table: every sign rising over `within` (sunrise to
+    /// the next sunrise) with when it rose and sets, from the ascendant
+    /// `panchanga.lagna_table` names (crux C680): this founder's own
+    /// chart ascendant under `CHART`, the sphere's in the named
+    /// ayanamsha under `SPHERE`. The zodiac is the one at the window's
+    /// middle, as a chart is measured in one ayanamsha throughout; over a
+    /// day it moves by a fifth of an arcsecond.
+    ///
+    /// # Errors
+    ///
+    /// As [`Founder::ascendant_at`], and an instant outside the Delta T
+    /// model's range.
+    pub fn lagna_table(&self, within: Interval, place: &Place) -> Result<Vec<RisingSign>, Error> {
+        let middle = JulianDay::<Ut1>::literal(f64::midpoint(within.from.get(), within.to.get()));
+        let (tt, _) = tt_of(middle, self.delta_t)?;
+        match self.settings().panchanga.lagna_table {
+            LagnaTable::Chart => {
+                let (zodiac, _, _) = self.zodiac(&self.completion(), tt)?;
+                risings(within, |at| self.ascendant_at(at, place, &zodiac))
+            }
+            LagnaTable::Sphere { ayanamsha } => {
+                let mut settings = self.settings().clone();
+                settings.frame.zodiac = Zodiac::Sidereal;
+                settings.frame.ayanamsha = ayanamsha;
+                let zodiac = ChartZodiac::of(&settings, tt, self.precession, self.delta_t)?;
+                risings(within, |at| self.spheres_ascendant_at(at, place, &zodiac))
+            }
+        }
     }
 
     /// The ascendant, the midheaven and the true obliquity at an instant,

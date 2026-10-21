@@ -1344,6 +1344,21 @@ public final class ParityRunner {
                 }
             }
 
+            // ── The lagna table ───────────────────────────────────────────
+            // 15 June 2025 at Kathmandu over the built-in sky, each sign's span
+            // (03-design/amrit-kalam-and-lagnas.md §2).
+            try (Context builtin = teistro.context(ContextOptions.builder()
+                    .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                var table = builtin.almanac().day(date(2025, 6, 15), place, 20700, true).lagnas();
+                put("lagnas-count", table.size());
+                for (int j = 0; j < table.size(); j += 1) {
+                    var span = table.get(j);
+                    put("lagnas-" + j, String.join(" ", span.member().fullKey(),
+                            number(span.whole().fromJd()), number(span.whole().toJd()),
+                            number(span.inside().fromJd()), number(span.inside().toJd())));
+                }
+            }
+
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar
             // eclipse seen whole and a partial solar one the place does not see.

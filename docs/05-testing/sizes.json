@@ -305,8 +305,8 @@
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 3900000,
-      "gzip": 1230000
+      "raw": 4000000,
+      "gzip": 1260000
     }
   ],
   "history": [
@@ -417,6 +417,15 @@
       "raw": 3816219,
       "gzip": 1204337,
       "why": "twelve more of NEPAL_PANCHANGA's festivals with the text each cites, and the ayanamsha's kept epoch; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-21",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 3918508,
+      "gzip": 1234473,
+      "why": "the day's lagna table (a sign-edge walk over each day's arc, read on the modern sphere in a chosen ayanamsha) and the amrit kalam; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
     }
   ]
 }
