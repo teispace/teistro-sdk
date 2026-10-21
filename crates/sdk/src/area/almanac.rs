@@ -6,9 +6,10 @@ use teistro_astro::Completion;
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
+use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
 use teistro_core::error::Error;
-use teistro_core::quantity::Place;
+use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::LunarMonth;
 use teistro_core::time::UtcOffset;
 #[cfg(feature = "muhurta")]
@@ -18,6 +19,7 @@ use teistro_panchanga::festival::{
     FestivalDay, FestivalRule, InAdhika, Observances, dated, ekadashis, following, observances,
 };
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
+use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
 use teistro_panchanga::year::LunarYear;
 
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
@@ -114,19 +116,21 @@ impl<'a> AlmanacArea<'a> {
         place: &Place,
         offset: UtcOffset,
     ) -> Result<Envelope<Vec<Panchanga>>, Error> {
-        self.with_almanac(from, offset, |almanac| almanac.between(from, to, place))
+        self.with_almanac(from.calendar, offset, |almanac| {
+            almanac.between(from, to, place)
+        })
     }
 
     /// Runs `work` over this context's almanac for a range written in
     /// `from`'s calendar, on `offset`'s clock.
     fn with_almanac<T>(
         self,
-        from: &CalendarDate,
+        calendar: Calendar,
         offset: UtcOffset,
         work: impl for<'f> FnOnce(&Almanac<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
     ) -> Result<T, Error> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
-        let calendar = system_of(from.calendar)?;
+        let calendar = system_of(calendar)?;
         let model = drik_sun(self.context, provider);
         work(&Almanac::new(
             provider,
@@ -183,7 +187,7 @@ impl<'a> AlmanacArea<'a> {
         request: &FestivalRequest,
     ) -> Result<Envelope<Observances>, Error> {
         request.check()?;
-        let days = self.with_almanac(from, offset, |almanac| {
+        let days = self.with_almanac(from.calendar, offset, |almanac| {
             almanac.festival_days(from, to, place)
         })?;
         self.reckoning(from, to, place, offset, request, days)
@@ -275,7 +279,7 @@ impl<'a> AlmanacArea<'a> {
                 calendar.date_of(last.plus_days(ahead))?,
             ),
         );
-        let (earlier, later) = self.with_almanac(from, offset, |almanac| {
+        let (earlier, later) = self.with_almanac(from.calendar, offset, |almanac| {
             Ok((
                 almanac
                     .festival_days(&before, &calendar.date_of(first.plus_days(-1))?, place)?
@@ -295,7 +299,7 @@ impl<'a> AlmanacArea<'a> {
         // A moonrise is most of a day's requests, so it is searched only
         // for a rule that reads one.
         if request.rules().iter().any(FestivalRule::reads_moonrise) {
-            self.with_almanac(from, offset, |almanac| {
+            self.with_almanac(from.calendar, offset, |almanac| {
                 almanac.moonrises(&mut viewed, place)
             })?;
         }
@@ -433,7 +437,7 @@ impl<'a> AlmanacArea<'a> {
         offset: UtcOffset,
         request: &AlmanacRequest,
     ) -> Result<AlmanacAnswer, Error> {
-        let days = self.with_almanac(from, offset, |almanac| {
+        let days = self.with_almanac(from.calendar, offset, |almanac| {
             almanac.festival_days(from, to, place)
         })?;
         let provenance = days.provenance.clone();
@@ -494,7 +498,9 @@ impl<'a> AlmanacArea<'a> {
         place: &Place,
         offset: UtcOffset,
     ) -> Result<Envelope<Vec<LunarYear>>, Error> {
-        let years = self.with_almanac(from, offset, |almanac| almanac.years(from, to, place))?;
+        let years = self.with_almanac(from.calendar, offset, |almanac| {
+            almanac.years(from, to, place)
+        })?;
         Ok(Envelope::sealing(years.value, years.provenance))
     }
 
@@ -570,6 +576,48 @@ impl<'a> AlmanacArea<'a> {
             ),
         });
         Ok(Envelope::sealing(found, provenance))
+    }
+
+    /// The time a sankalpa recites at an instant and a place
+    /// (`03-design/sankalpa.md`): the year, ayana, ritu and lunar month
+    /// as the sunrise of the day holding the instant has them, and the
+    /// paksha, tithi, nakshatra, yoga, karana and the Sun's, Moon's and
+    /// Jupiter's signs as they stand at the instant itself.
+    ///
+    /// The day is the one whose sunrise the instant follows, so a rite
+    /// before dawn recites the day before's year, month and season. The
+    /// ayana is reckoned as `ayana` says, since almanacs differ on it;
+    /// the month and the season follow the profile.
+    ///
+    /// ```no_run
+    /// use teistro::{AyanaReckoning, Context, UtcOffset};
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    ///
+    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
+    /// // 2026-01-15 08:00 Nepal time, 02:15 UTC.
+    /// let at = JulianDay::try_new(2_461_055.593_75)?;
+    /// let sankalpa = sdk.almanac().sankalpa(at, &kathmandu, UtcOffset::literal(5, 45, 0), AyanaReckoning::Sidereal)?;
+    /// println!("{:?} {:?} {:?}", sankalpa.value.year.samvatsara, sankalpa.value.month, sankalpa.value.tithi);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::of`], and an instant outside the window of its
+    /// civil day and of the day before (a polar place whose sunrise the
+    /// policy leaves undefined).
+    pub fn sankalpa(
+        self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        offset: UtcOffset,
+        ayana: AyanaReckoning,
+    ) -> Result<Envelope<Sankalpa>, Error> {
+        let found = self.with_almanac(Calendar::Gregorian, offset, |almanac| {
+            almanac.sankalpa(at, place, ayana)
+        })?;
+        Ok(Envelope::sealing(found.value, found.provenance))
     }
 
     /// One day: the run of one, unwrapped.

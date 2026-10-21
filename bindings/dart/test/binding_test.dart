@@ -811,6 +811,69 @@ void _engineTests() {
     expect(feed(refreshMinutes: null), isNot(contains('REFRESH-INTERVAL')));
   });
 
+  // 08:00 on 15 January 2026 in Kathmandu, the morning after Makara
+  // sankranti: Siddharthi's year, Magha (purnimanta) and Shishira at
+  // sunrise, Krishna Dwadashi in Jyeshtha at the rite, the Sun in Capricorn
+  // and Jupiter in Gemini; at 04:00 it is still the 14th's, and the
+  // tropical ayana turned at the solstice (`03-design/sankalpa.md`).
+  test('an almanac says the time a sankalpa recites', () {
+    final sky = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    SankalpaAnswer ask(
+      double at, [
+      AyanaReckoning ayana = AyanaReckoning.sidereal,
+      int offset = 20700,
+    ]) => sky.almanac.sankalpa(
+      at: at,
+      place: kathmandu,
+      utcOffsetSeconds: offset,
+      ayana: ayana,
+    );
+    final found = ask(2461055.59375);
+    final value = found.value;
+    expect(found.provenance.inputHash, isNotEmpty);
+    expect([value.date.year, value.date.month, value.date.day], [2026, 1, 15]);
+    expect(value.vara, Vara.guruvara);
+    expect(value.year.samvatsara, Samvatsara.siddharthi);
+    expect(value.year.vikrama, 2082);
+    expect(value.month.month, Masa.magha);
+    expect(value.month.amanta, Masa.pausha);
+    expect(value.month.kind, MonthKind.nija);
+    expect(value.ritu, Ritu.shishira);
+    expect(value.ayana, Ayana.uttarayana);
+    expect(value.ayanaReckoning, AyanaReckoning.sidereal);
+    expect(value.tithi, Tithi.krishnaDwadashi);
+    expect(value.nakshatra, Nakshatra.jyeshtha);
+    expect(
+      [value.sun, value.moon, value.jupiter],
+      [Rashi.capricorn, Rashi.scorpio, Rashi.gemini],
+    );
+    expect(value.sunrise < value.at && value.at < value.nextSunrise, isTrue);
+
+    expect(ask(2461055.59375 - 4 / 24).value.date.day, 14);
+    const between = 2461045.6;
+    expect(ask(between).value.ayana, Ayana.dakshinayana);
+    expect(ask(between, AyanaReckoning.tropical).value.ayana, Ayana.uttarayana);
+    expect(
+      () => ask(between, AyanaReckoning.sidereal, 999999),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'sankalpa.utcOffsetSeconds',
+        ),
+      ),
+    );
+  });
+
   test('two reckonings say where they disagree and why', () {
     final official = teistro.nepalOfficial();
     addTearDown(official.dispose);

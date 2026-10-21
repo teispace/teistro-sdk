@@ -50,6 +50,7 @@ from teistro import (
     Observer,
     Plugin,
     Rashi,
+    Samvatsara,
     Direction,
     Scale,
     Shodhana,
@@ -81,6 +82,7 @@ from teistro import (
 )
 from teistro._ffi import Longitude
 from teistro.catalogue import (
+    Ayana,
     Ayanamsha,
     BrahmaOutcome,
     BrahmaRule,
@@ -89,6 +91,7 @@ from teistro.catalogue import (
     Era,
     Graha,
     LunarEclipseKind,
+    Masa,
     MonthKind,
     PolarDayPolicy,
     PolarKind,
@@ -768,6 +771,39 @@ class AnEngine(WithLibrary):
             with self.teistro.context(**nepal_official()) as official:
                 official.almanac.disagreements(modern, **month)
         self.assertIn("closed", str(closed.exception))
+
+    def test_an_almanac_says_the_time_a_sankalpa_recites(self) -> None:
+        """08:00 on 15 January 2026 in Kathmandu, the morning after Makara
+        sankranti: Siddharthi's year, Magha (purnimanta) and Shishira at
+        sunrise, Krishna Dwadashi in Jyeshtha at the rite, the Sun in
+        Capricorn and Jupiter in Gemini; at 04:00 it is still the 14th's,
+        and the tropical ayana turned at the solstice
+        (`03-design/sankalpa.md`)."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.sankalpa(at=2461055.59375, place=kathmandu, utc_offset_seconds=20700)
+            value = found.value
+            self.assertTrue(found.provenance.input_hash)
+            self.assertEqual((value.date.year, value.date.month, value.date.day), (2026, 1, 15))
+            self.assertEqual(value.vara, Vara.GURUVARA)
+            self.assertEqual((value.year.samvatsara, value.year.vikrama), (Samvatsara.SIDDHARTHI, 2082))
+            self.assertEqual((value.month.month, value.month.amanta), (Masa.MAGHA, Masa.PAUSHA))
+            self.assertEqual(value.month.kind, MonthKind.NIJA)
+            self.assertEqual((value.ritu, value.ayana, value.ayana_reckoning), (Ritu.SHISHIRA, Ayana.UTTARAYANA, "SIDEREAL"))
+            self.assertEqual((value.tithi, value.nakshatra), (Tithi.KRISHNA_DWADASHI, Nakshatra.JYESHTHA))
+            self.assertEqual((value.sun, value.moon, value.jupiter), (Rashi.CAPRICORN, Rashi.SCORPIO, Rashi.GEMINI))
+            self.assertLess(value.sunrise, value.at)
+            self.assertLess(value.at, value.next_sunrise)
+
+            dawn = ctx.almanac.sankalpa(at=2461055.59375 - 4 / 24, place=kathmandu, utc_offset_seconds=20700)
+            self.assertEqual(dawn.value.date.day, 14)
+            between = 2461045.6
+            sidereal = ctx.almanac.sankalpa(at=between, place=kathmandu, utc_offset_seconds=20700)
+            tropical = ctx.almanac.sankalpa(at=between, place=kathmandu, utc_offset_seconds=20700, ayana="TROPICAL")
+            self.assertEqual((sidereal.value.ayana, tropical.value.ayana), (Ayana.DAKSHINAYANA, Ayana.UTTARAYANA))
+            with self.assertRaises(TeistroError) as clock:
+                ctx.almanac.sankalpa(at=between, place=kathmandu, utc_offset_seconds=999_999)
+            self.assertEqual(clock.exception.field, "sankalpa.utcOffsetSeconds")
 
     def test_an_almanac_writes_its_festivals_as_an_icalendar_feed(self) -> None:
         """Dashain 2025 at Kathmandu: one event for each observance and fast

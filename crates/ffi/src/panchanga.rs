@@ -940,6 +940,50 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
     })
 }
 
+/// The time a sankalpa recites at an instant and a place
+/// (`03-design/sankalpa.md`), answered with `{value, provenance}` as
+/// canonical JSON, every catalogue member a full key.
+///
+/// `value` is `{at, day, year, ayana, ayanaReckoning, ritu,
+/// rituReckoning, month, paksha, tithi, nakshatra, yoga, karana, sun,
+/// moon, jupiter}`: `day` the civil day whose sunrise the instant follows,
+/// so a rite before dawn is the day before's; `year`, `ayana`, `ritu`
+/// and `month` as that day's sunrise has them, the lunar year with its
+/// samvatsara, Vikrama and Shaka numbers and the month under both
+/// conventions; the limbs and the Sun's, Moon's and Jupiter's sidereal
+/// signs as they stand at the instant.
+///
+/// `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
+/// "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+/// and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
+/// left out, or `TROPICAL` (at the solstices). A key it does not read or
+/// an instant, place or offset out of range is `INVALID_ARG`, named under
+/// `sankalpa`; a context without an ephemeris is `CAPABILITY`, and an
+/// instant in no day's window (a polar day the policy leaves undefined)
+/// `OUT_OF_RANGE`.
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_almanac_sankalpa(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::SankalpaRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().sankalpa_request(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// A range's observances and Ekadashi fasts at one place as an iCalendar
 /// feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
 /// ordered by day and then rule, its `SUMMARY` the festival's name in the

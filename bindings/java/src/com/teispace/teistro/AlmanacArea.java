@@ -194,6 +194,42 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>The time a sankalpa recites</b> at an instant and a place ({@code 03-design/sankalpa.md}): the
+     * samvatsara, ayana, ritu, lunar month and vara as the sunrise of the day holding the instant has
+     * them, and the paksha, tithi, nakshatra, yoga, karana and the Sun's, Moon's and Jupiter's signs as
+     * they stand at the instant. A rite before dawn recites the day before's.
+     *
+     * <pre>{@code
+     * SankalpaAnswer found = sdk.almanac().sankalpa(2_461_055.593_75, kathmandu, 20_700, AyanaReckoning.SIDEREAL);
+     * Samvatsara year = found.value().year().samvatsara();
+     * }</pre>
+     *
+     * @param at the instant of the rite, a UTC Julian day
+     * @param place where it is performed
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param ayana how the ayana turns: {@code SIDEREAL}, at Makara and Karka sankranti, or
+     *     {@code TROPICAL}, at the solstices; null for {@code SIDEREAL}
+     * @return the time recited, sealed
+     */
+    public SankalpaAnswer sankalpa(double at, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.AyanaReckoning ayana) {
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("at", at);
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (ayana != null) {
+            asked.put("ayana", ayana.key());
+        }
+        String json = Json.write(asked);
+        return AlmanacReads.sankalpaAnswer(context.locked((lib, raw) -> Calls.almanacSankalpa(lib, raw, json)));
+    }
+
+    /**
      * <b>Where this context's reckoning and {@code other}'s disagree</b>, and why
      * ({@code 03-design/setup-disagreements.md}): the official day an app shows beside the modern one.
      * {@link Disagreements#days()} holds only the days on which some limb's member at sunrise differs,

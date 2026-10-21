@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The time a sankalpa recites** (`03-design/sankalpa.md`, P2-3).
+**Numbers:** none move. A new call, `sankalpa` in the façade, the C
+boundary (`ts_almanac_sankalpa`), the agent server and every binding,
+answers the parts a sankalpa recites for an instant and a place: the
+year, ayana, ritu, month and vara as the day's sunrise holds them, and
+the limbs and three signs at the instant, each convention named. The
+words are not written yet.
+
 **What each locale says** (`03-design/locale-coverage-measured.md`, P2-5).
 **Numbers:** none move. A generated page counts, for every locale, the
 catalogue members a document carries that it names and the base messages

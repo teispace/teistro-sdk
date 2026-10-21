@@ -172,6 +172,9 @@ import type {
   PakshiDays,
   DisagreementRequest,
   FestivalCalendarRequest,
+  Sankalpa,
+  SankalpaAnswer,
+  SankalpaRequest,
   Disagreements,
   DayDisagreement,
   LimbChange,
@@ -1304,6 +1307,28 @@ function theDisagreements(official: Context, modern: Context): string {
   return `${tithi} ${change?.minutesFromSunrise} ${moved} ${hash} ${day?.karana?.other.span.to}`;
 }
 void theDisagreements;
+
+// A sankalpa's parts by their catalogue types, and its ayana by the two
+// reckonings alone.
+function theSankalpa(ctx: Context): string {
+  const asked: SankalpaRequest = {
+    at: 2461055.59375,
+    place: { latitude: 27.7172, longitude: 85.324 },
+    utcOffsetSeconds: 20700,
+    ayana: 'TROPICAL',
+  };
+  const answer: SankalpaAnswer = ctx.almanac.sankalpa(asked);
+  const value: Sankalpa = answer.value;
+  const tithi: Tithi = value.tithi;
+  const masa: Masa | 'unknown' = value.month.month;
+  const sun: Rashi = value.sun;
+  const vara: Vara = value.vara;
+  const date: CalendarDate = value.date;
+  // @ts-expect-error an ayana is reckoned sidereally or tropically, nothing else
+  ctx.almanac.sankalpa({ ...asked, ayana: 'LUNAR' });
+  return `${tithi} ${masa} ${sun} ${vara} ${date.year} ${value.year.samvatsara} ${answer.provenance.inputHash}`;
+}
+void theSankalpa;
 
 // A feed is text, and its request names its festivals.
 function theFeed(ctx: Context): string {

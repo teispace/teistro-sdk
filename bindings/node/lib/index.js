@@ -7063,6 +7063,59 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **The time a sankalpa recites** at an instant and a place
+   * (`03-design/sankalpa.md`): the samvatsara, ayana, ritu, lunar month
+   * and vara as the sunrise of the day holding the instant has them, and
+   * the paksha, tithi, nakshatra, yoga, karana and the Sun's, Moon's and
+   * Jupiter's signs as they stand at the instant. The day is the one
+   * whose sunrise the instant follows, so a rite before dawn recites the
+   * day before's. Every member is a full key, and the answer is the
+   * envelope.
+   *
+   * @example
+   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const { value } = sdk.almanac.sankalpa({
+   *   at: 2461055.59375, // 2026-01-15 08:00 in Kathmandu
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   * });
+   * value.year.samvatsara; // 'samvatsara.SIDDHARTHI'
+   * value.tithi; // 'tithi.KRISHNA_DWADASHI'
+   *
+   * @param {object} request
+   * @param {number} request.at the instant of the rite, a UTC Julian day
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {'SIDEREAL' | 'TROPICAL'} [request.ayana] how the ayana turns: at
+   *   Makara and Karka sankranti, or at the solstices; `'SIDEREAL'` when left out
+   * @returns {{ value: object, provenance: object }}
+   */
+  sankalpa(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('sankalpa: expected a request, e.g. { at, place, utcOffsetSeconds }');
+    }
+    // Everything else crosses as written, so a key the SDK does not read is
+    // refused by name there rather than dropped here.
+    const { at, place: where, utcOffsetSeconds, ...rest } = request;
+    const place = where ?? {};
+    const asked = {
+      ...rest,
+      at: finite(at, 'at'),
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacSankalpa(JSON.stringify(asked))),
+    );
+    return deepFreeze({
+      value: { ...value, date: dateFrom(value.date) },
+      provenance: decodeProvenance(provenance),
+    });
+  }
+
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the official day an app shows
    * beside the modern one. `days` holds only the days on which some

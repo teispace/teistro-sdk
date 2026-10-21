@@ -9,6 +9,7 @@ use teistro_serial::Document;
 use teistro_western::{AngleMethod, ArcMeasure, ParallelRequest, Progression, Rate, YearMeasure};
 
 use crate::area::ChartArea;
+use crate::asked::instant;
 use crate::hit_request::PointAsked;
 use crate::progressed::{
     ContactRequest, Directed, DirectionArc, MutualContact, Progressed, ProgressedContact,
@@ -291,11 +292,6 @@ impl ContactsAsked {
         asked.hits_between(from, to).check()?;
         Ok(ContactWindow { from, to, asked })
     }
-}
-
-/// A UTC Julian day a request names, refused by its field.
-fn instant(jd: f64, field: &str) -> Result<JulianDay<Utc>, Error> {
-    JulianDay::<Utc>::try_new(jd).map_err(|why| Error::from(why).with_field(field))
 }
 
 #[cfg(test)]

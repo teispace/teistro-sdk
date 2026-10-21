@@ -1,4 +1,4 @@
 {
   "title": "Panchanga",
-  "pages": ["ts_panchanga_days", "ts_almanac_disagreements", "ts_almanac_festival_calendar"]
+  "pages": ["ts_panchanga_days", "ts_almanac_disagreements", "ts_almanac_sankalpa", "ts_almanac_festival_calendar"]
 }

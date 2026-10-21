@@ -1,5 +1,5 @@
 //! The parts every request record a binding writes spells the same way: a
-//! civil day as `{year, month, day}`, a place as `latitudeDeg`,
+//! civil day as `{year, month, day}`, an instant as a UTC Julian day, a place as `latitudeDeg`,
 //! `longitudeDeg` and `altitudeM`, and an offset in seconds, each refused
 //! by its own field.
 
@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_core::catalogue::Calendar;
 use teistro_core::error::Error;
-use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::time::UtcOffset;
 
 /// A civil day as a request names it.
@@ -45,4 +45,9 @@ pub(crate) fn place_of(
 pub(crate) fn offset_of(seconds: i32) -> Result<UtcOffset, Error> {
     UtcOffset::try_from_seconds(seconds)
         .map_err(|why| Error::from(why).with_field("utcOffsetSeconds"))
+}
+
+/// A UTC Julian day a request names, refused by its field.
+pub(crate) fn instant(jd: f64, field: &str) -> Result<JulianDay<Utc>, Error> {
+    JulianDay::<Utc>::try_new(jd).map_err(|why| Error::from(why).with_field(field))
 }

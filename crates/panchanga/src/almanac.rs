@@ -41,6 +41,7 @@ use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
 use crate::period::{self, Durmuhurta, Kaalas, Muhurtas, Part};
+use crate::sankalpa::{self, AyanaReckoning, Sankalpa};
 use crate::sky::{self, MoonDay, SunDay};
 use crate::span::{self, Span, Sunrises};
 use crate::year::{LunarYear, name_counts};
@@ -294,6 +295,22 @@ struct Input {
     longitude_deg: f64,
     altitude_m: f64,
 }
+
+/// What a sankalpa's answer is a function of.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+struct SankalpaInput {
+    at: f64,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    altitude_m: f64,
+    ayana: AyanaReckoning,
+}
+
+/// How long a moment is, days, over which a body's sign at an instant is
+/// read: a tenth of a second, inside which no body changes sign but on
+/// the instant itself.
+const MOMENT_DAYS: f64 = 1e-6;
 
 /// The same, for a range.
 #[derive(Serialize, Deserialize)]
@@ -566,6 +583,121 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             frame,
         );
         Ok(Envelope::new(values, provenance))
+    }
+
+    /// The time a sankalpa recites for a rite begun at `at`
+    /// (`03-design/sankalpa.md`): the day's year, ayana, season and month
+    /// as its sunrise holds them, and the tithi, nakshatra, yoga, karana
+    /// and the Sun's, the Moon's and Jupiter's signs as the instant does.
+    ///
+    /// The day is the one the instant falls in, sunrise to sunrise, so a
+    /// rite before dawn is the day before's. The month and the season are
+    /// reckoned as the profile's days are, and the half of the year under
+    /// `ayana`; the answer names each.
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::day`] for the instant's day and the one before, and
+    /// [`Almanac::years`] for its year.
+    pub fn sankalpa(
+        &self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        ayana: AyanaReckoning,
+    ) -> Result<Envelope<Sankalpa>, Error> {
+        let settings = self.settings();
+        // The civil day the instant falls on, and the day before it when
+        // the instant is before that day's sunrise.
+        let (civil, _) = FixedDay::from_local_jd(self.clock.local_jd(at));
+        let mut found = None;
+        for back in [0, 1] {
+            let date = self.calendar.date_of(civil.plus_days(-back))?;
+            let (day, frame) = self.value(&date, place, &mut Memo::default())?;
+            if day.window.from.get() <= at.get() && at.get() < day.window.to.get() {
+                found = Some((day, frame));
+                break;
+            }
+        }
+        let Some((day, frame)) = found else {
+            return Err(Error::new(
+                Status::OutOfRange,
+                format!(
+                    "the instant {at} falls in neither its civil day's window nor the day before's"
+                ),
+            ));
+        };
+        let year = self
+            .years(&day.day.date, &day.day.date, place)?
+            .value
+            .into_iter()
+            .next()
+            .ok_or_else(|| Error::internal("a day's own range answered no lunar year"))?;
+        let completion = Completion::new(self.provider, settings.provider.overrides, self.delta_t);
+        let (instant_frame, zodiac) = self.at_instant(&completion, at)?;
+        let mut longitudes = completion.longitudes(instant_frame);
+        if instant_frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(*place);
+        }
+        let sign = |body: Body, from: JulianDay<Utc>, zodiac: Zodiac| -> Result<Rashi, Error> {
+            Self::signs(
+                &longitudes,
+                body,
+                Interval::new(from, next_by(from, MOMENT_DAYS))?,
+                zodiac,
+            )?
+            .first()
+            .map(|span| span.member)
+            .ok_or_else(|| Error::internal(format!("{body:?} stood in no sign at {from}")))
+        };
+        let ayana_at_sunrise = match ayana {
+            AyanaReckoning::Sidereal => day.sun.ayana,
+            AyanaReckoning::Tropical => sky::ayana_of(sign(
+                Body::Sun,
+                day.day.sunrise,
+                Zodiac {
+                    ayanamsha: None,
+                    ..zodiac
+                },
+            )?),
+        };
+        let limb = |name: &str| {
+            Error::internal(format!(
+                "the day's {name} spans do not hold the instant {at}"
+            ))
+        };
+        let tithi = sankalpa::at(&day.limbs.tithi, at).ok_or_else(|| limb("tithi"))?;
+        let value = Sankalpa {
+            at,
+            year,
+            ayana: ayana_at_sunrise,
+            ayana_reckoning: ayana,
+            ritu: day.sun.ritu,
+            ritu_reckoning: settings.panchanga.ritu,
+            month: day.month,
+            paksha: tithi.attributes().paksha,
+            tithi,
+            nakshatra: sankalpa::at(&day.limbs.nakshatra, at).ok_or_else(|| limb("nakshatra"))?,
+            yoga: sankalpa::at(&day.limbs.yoga, at).ok_or_else(|| limb("yoga"))?,
+            karana: sankalpa::at(&day.limbs.karana, at).ok_or_else(|| limb("karana"))?,
+            sun: sign(Body::Sun, at, zodiac)?,
+            moon: sign(Body::Moon, at, zodiac)?,
+            jupiter: sign(Body::Jupiter, at, zodiac)?,
+            date: day.day.date,
+            vara: day.day.vara,
+            sunrise: day.day.sunrise,
+            next_sunrise: day.day.next_sunrise,
+        };
+        let provenance = self.provenance(
+            content_hash(&SankalpaInput {
+                at: at.get(),
+                latitude_deg: place.latitude.get(),
+                longitude_deg: place.longitude.get(),
+                altitude_m: place.altitude.get(),
+                ayana,
+            }),
+            frame,
+        );
+        Ok(Envelope::new(value, provenance))
     }
 
     /// The lunar years the days of a range fall in, each named by the

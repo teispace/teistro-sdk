@@ -194,6 +194,10 @@ name = "samvatsara"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "sankalpa"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "ritu"
 required-features = ["builtin-ephemeris"]
 

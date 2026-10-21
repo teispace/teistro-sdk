@@ -1595,6 +1595,49 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac says the time a sankalpa recites", () -> {
+            // 08:00 on 15 January 2026 in Kathmandu, the morning after Makara
+            // sankranti: Siddharthi's year, Magha (purnimanta) and Shishira at
+            // sunrise, Krishna Dwadashi in Jyeshtha at the rite, the Sun in
+            // Capricorn and Jupiter in Gemini; at 04:00 it is still the 14th's,
+            // and the tropical ayana turned at the solstice.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            var sidereal = com.teispace.teistro.request.AyanaReckoning.SIDEREAL;
+            var tropical = com.teispace.teistro.request.AyanaReckoning.TROPICAL;
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                SankalpaAnswer found = sky.almanac().sankalpa(2_461_055.593_75, kathmandu, 20_700, null);
+                Sankalpa value = found.value();
+                check(!found.provenance().inputHash().isEmpty(), "the request is sealed");
+                same(List.of(2026, 1, 15), List.of(value.date().year(), value.date().month(), value.date().day()),
+                        "the civil day");
+                same(Vara.GURUVARA, value.vara(), "a Thursday");
+                same(Samvatsara.SIDDHARTHI, value.year().samvatsara(), "the year's name");
+                same(2082, value.year().vikrama(), "the Vikrama year");
+                same(Masa.MAGHA, value.month().month(), "the purnimanta month");
+                same(Masa.PAUSHA, value.month().amanta(), "the amanta month");
+                same(Ritu.SHISHIRA, value.ritu(), "the season");
+                same(Ayana.UTTARAYANA, value.ayana(), "past Makara sankranti");
+                same("SIDEREAL", value.ayanaReckoning(), "the default reckoning");
+                same(Tithi.KRISHNA_DWADASHI, value.tithi(), "the tithi at the rite");
+                same(Nakshatra.JYESHTHA, value.nakshatra(), "the nakshatra at the rite");
+                same(List.of(Rashi.CAPRICORN, Rashi.SCORPIO, Rashi.GEMINI),
+                        List.of(value.sun(), value.moon(), value.jupiter()), "the three signs");
+                check(value.sunrise() < value.at() && value.at() < value.nextSunrise(), "inside its day");
+
+                same(14, sky.almanac().sankalpa(2_461_055.593_75 - 4.0 / 24, kathmandu, 20_700, sidereal)
+                        .value().date().day(), "a rite before dawn is the day before's");
+                double between = 2_461_045.6;
+                same(Ayana.DAKSHINAYANA, sky.almanac().sankalpa(between, kathmandu, 20_700, sidereal).value().ayana(),
+                        "not yet in Makara");
+                same(Ayana.UTTARAYANA, sky.almanac().sankalpa(between, kathmandu, 20_700, tropical).value().ayana(),
+                        "past the solstice");
+                same("sankalpa.utcOffsetSeconds",
+                        refusal(() -> sky.almanac().sankalpa(between, kathmandu, 999_999, null)).field(),
+                        "a clock out of range is refused by name");
+            }
+        });
+
         tests.put("an almanac writes its festivals as an iCalendar feed", () -> {
             // Dashain 2025 at Kathmandu: one event for each observance and fast
             // the festival answer gives, Vijaya Dashami on 2 October, every

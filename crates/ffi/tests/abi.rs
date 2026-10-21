@@ -11075,6 +11075,57 @@ fn two_reckonings_compare_as_the_facade_compares_them() {
     );
 }
 
+fn sankalpa_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_sankalpa(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// A sankalpa crosses as the façade answers it, written in full, and a
+/// place out of range is refused by name (`03-design/sankalpa.md`).
+#[test]
+fn a_sankalpa_crosses_as_the_facade_answers_it() {
+    let morning = r#"{"at": 2461055.59375, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+        "altitudeM": 1400, "utcOffsetSeconds": 20700, "ayana": "TROPICAL"}"#;
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&sankalpa_json(&ctx, morning).unwrap()).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-default")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .sankalpa_request(&teistro::SankalpaRequest::from_json(morning).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    assert_eq!(crossed["value"]["ayanaReckoning"], "TROPICAL");
+    assert_eq!(crossed["value"]["sun"], "rashi.CAPRICORN");
+
+    let nowhere = r#"{"at": 2461055.59375, "latitudeDeg": 97, "longitudeDeg": 85.324,
+        "utcOffsetSeconds": 20700}"#;
+    assert_eq!(
+        sankalpa_json(&ctx, nowhere).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("sankalpa.latitudeDeg"));
+}
+
 fn festival_calendar_text(ctx: &Ctx, request: &str) -> Result<String, Status> {
     let request = CString::new(request).unwrap();
     let mut text = TsString::empty();

@@ -269,22 +269,6 @@ pub fn records() -> Vec<Record> {
             run: |_, json| Answered::plain(&crate::NaamRequest::from_json(json)?.answer()?),
             schemas: schemas!(crate::NaamRequest => crate::NaamMilan),
         },
-        Record {
-            name: "almanac.days",
-            boundary: "ts_panchanga_days",
-            title: "Every day of a range at a place, and what is asked beside them",
-            reads: Some(crate::DaysRequest::DESCRIPTION),
-            run: days,
-            schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
-        },
-        Record {
-            name: "almanac.festival_calendar",
-            boundary: "ts_almanac_festival_calendar",
-            title: "A range's festivals as an iCalendar feed",
-            reads: None,
-            run: festival_calendar,
-            schemas: schemas!(crate::area::FestivalCalendarAsked => String),
-        },
         #[cfg(feature = "chart")]
         Record {
             name: "chart.found",
@@ -353,10 +337,45 @@ pub fn records() -> Vec<Record> {
             schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
         },
     ];
+    all.extend(almanac_records());
     all.extend(time_records());
     all.extend(engine_records());
     all.sort_by_key(|record| record.name);
     all
+}
+
+/// The almanac's records every build carries: a range's days with what is
+/// asked beside them, its festivals as a feed, and a sankalpa's time.
+fn almanac_records() -> [Record; 3] {
+    [
+        Record {
+            name: "almanac.days",
+            boundary: "ts_panchanga_days",
+            title: "Every day of a range at a place, and what is asked beside them",
+            reads: Some(crate::DaysRequest::DESCRIPTION),
+            run: days,
+            schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
+        },
+        Record {
+            name: "almanac.festival_calendar",
+            boundary: "ts_almanac_festival_calendar",
+            title: "A range's festivals as an iCalendar feed",
+            reads: None,
+            run: festival_calendar,
+            schemas: schemas!(crate::area::FestivalCalendarAsked => String),
+        },
+        Record {
+            name: "almanac.sankalpa",
+            boundary: "ts_almanac_sankalpa",
+            title: "The time a sankalpa recites at an instant and a place",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::SankalpaRequest::from_json(json)?;
+                Answered::sealed(context.almanac().sankalpa_request(&asked)?)
+            },
+            schemas: schemas!(crate::sankalpa_request::SankalpaAsked => crate::Sankalpa),
+        },
+    ]
 }
 
 /// The engine passthrough (ADR-0030): what the engine says it offers,

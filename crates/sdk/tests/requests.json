@@ -187,6 +187,17 @@
     }
   },
   {
+    "record": "almanac.sankalpa",
+    "request": {
+      "at": 2461055.59375,
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "ayana": "TROPICAL"
+    }
+  },
+  {
     "record": "chart.rashifal",
     "request": {
       "periods": [

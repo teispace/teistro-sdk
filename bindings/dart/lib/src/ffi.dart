@@ -1940,6 +1940,8 @@ typedef TsPanchangaDaysNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsPanchangaDaysDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsAlmanacDisagreementsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacDisagreementsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSankalpaNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSankalpaDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
@@ -2012,6 +2014,7 @@ final class TeistroLibrary {
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_almanac_disagreements = library.lookupFunction<TsAlmanacDisagreementsNative, TsAlmanacDisagreementsDart>('ts_almanac_disagreements'),
+        ts_almanac_sankalpa = library.lookupFunction<TsAlmanacSankalpaNative, TsAlmanacSankalpaDart>('ts_almanac_sankalpa'),
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
@@ -2299,6 +2302,29 @@ final class TeistroLibrary {
   /// context without an ephemeris `CAPABILITY`. A failure of either
   /// context's reckoning is recorded on this one.
   final TsAlmanacDisagreementsDart ts_almanac_disagreements;
+
+  /// The time a sankalpa recites at an instant and a place
+  /// (`03-design/sankalpa.md`), answered with `{value, provenance}` as
+  /// canonical JSON, every catalogue member a full key.
+  ///
+  /// `value` is `{at, day, year, ayana, ayanaReckoning, ritu,
+  /// rituReckoning, month, paksha, tithi, nakshatra, yoga, karana, sun,
+  /// moon, jupiter}`: `day` the civil day whose sunrise the instant follows,
+  /// so a rite before dawn is the day before's; `year`, `ayana`, `ritu`
+  /// and `month` as that day's sunrise has them, the lunar year with its
+  /// samvatsara, Vikrama and Shaka numbers and the month under both
+  /// conventions; the limbs and the Sun's, Moon's and Jupiter's sidereal
+  /// signs as they stand at the instant.
+  ///
+  /// `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+  /// and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
+  /// left out, or `TROPICAL` (at the solstices). A key it does not read or
+  /// an instant, place or offset out of range is `INVALID_ARG`, named under
+  /// `sankalpa`; a context without an ephemeris is `CAPABILITY`, and an
+  /// instant in no day's window (a polar day the policy leaves undefined)
+  /// `OUT_OF_RANGE`.
+  final TsAlmanacSankalpaDart ts_almanac_sankalpa;
 
   /// A range's observances and Ekadashi fasts at one place as an iCalendar
   /// feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
@@ -5659,6 +5685,38 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_disagreements(_handle, other._handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The time a sankalpa recites at an instant and a place
+  /// (`03-design/sankalpa.md`), answered with `{value, provenance}` as
+  /// canonical JSON, every catalogue member a full key.
+  ///
+  /// `value` is `{at, day, year, ayana, ayanaReckoning, ritu,
+  /// rituReckoning, month, paksha, tithi, nakshatra, yoga, karana, sun,
+  /// moon, jupiter}`: `day` the civil day whose sunrise the instant follows,
+  /// so a rite before dawn is the day before's; `year`, `ayana`, `ritu`
+  /// and `month` as that day's sunrise has them, the lunar year with its
+  /// samvatsara, Vikrama and Shaka numbers and the month under both
+  /// conventions; the limbs and the Sun's, Moon's and Jupiter's sidereal
+  /// signs as they stand at the instant.
+  ///
+  /// `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+  /// and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
+  /// left out, or `TROPICAL` (at the solstices). A key it does not read or
+  /// an instant, place or offset out of range is `INVALID_ARG`, named under
+  /// `sankalpa`; a context without an ephemeris is `CAPABILITY`, and an
+  /// instant in no day's window (a polar day the policy leaves undefined)
+  /// `OUT_OF_RANGE`.
+  String almanacSankalpa(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_sankalpa(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

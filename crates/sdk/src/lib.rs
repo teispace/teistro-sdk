@@ -126,6 +126,7 @@ mod rectify;
 mod remedy_request;
 #[cfg(feature = "research")]
 mod research_request;
+mod sankalpa_request;
 // The record entry points: every area a binding reaches with one JSON
 // record, by name (`03-design/mcp-server.md` D3).
 pub mod records;
@@ -218,6 +219,9 @@ pub use teistro_time::ghati::GhatiPala;
 // years that ran in it: what `sdk.almanac().years` answers with.
 pub use teistro_calendar::samvatsara::JovianYear;
 pub use teistro_panchanga::year::LunarYear;
+// The time a sankalpa recites and how its ayana is reckoned: what
+// `sdk.almanac().sankalpa` answers with and asks.
+pub use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
 // A day's Nepal Sambat date, which `Panchanga::nepal_sambat` reads and
 // `AlmanacRequest::with_nepal_sambat` answers beside the days.
 pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
@@ -511,6 +515,7 @@ pub use teistro_lalkitab as lalkitab;
 pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
 #[cfg(feature = "research")]
 pub use crate::research_request::{ResearchAnswer, ResearchRequest, ResearchStudy};
+pub use crate::sankalpa_request::SankalpaRequest;
 #[cfg(feature = "pakshi")]
 pub use teistro_pakshi as pakshi;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS

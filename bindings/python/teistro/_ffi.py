@@ -4106,6 +4106,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_disagreements.restype = ctypes.c_int32
+        self.ts_almanac_sankalpa: Any = library.ts_almanac_sankalpa
+        self.ts_almanac_sankalpa.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_sankalpa.restype = ctypes.c_int32
         self.ts_almanac_festival_calendar: Any = library.ts_almanac_festival_calendar
         self.ts_almanac_festival_calendar.argtypes = [
             ctypes.POINTER(_Context),
@@ -4867,6 +4874,44 @@ class TeistroContext:
         status = Status(self._lib.ts_almanac_disagreements(
             self._raw,
             other._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
+
+    def almanac_sankalpa(self, request_json: str) -> str:
+        """The time a sankalpa recites at an instant and a place
+        (`03-design/sankalpa.md`), answered with `{value, provenance}` as
+        canonical JSON, every catalogue member a full key.
+
+        `value` is `{at, day, year, ayana, ayanaReckoning, ritu,
+        rituReckoning, month, paksha, tithi, nakshatra, yoga, karana, sun,
+        moon, jupiter}`: `day` the civil day whose sunrise the instant follows,
+        so a rite before dawn is the day before's; `year`, `ayana`, `ritu`
+        and `month` as that day's sunrise has them, the lunar year with its
+        samvatsara, Vikrama and Shaka numbers and the month under both
+        conventions; the limbs and the Sun's, Moon's and Jupiter's sidereal
+        signs as they stand at the instant.
+
+        `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
+        "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+        and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
+        left out, or `TROPICAL` (at the solstices). A key it does not read or
+        an instant, place or offset out of range is `INVALID_ARG`, named under
+        `sankalpa`; a context without an ephemeris is `CAPABILITY`, and an
+        instant in no day's window (a polar day the policy leaves undefined)
+        `OUT_OF_RANGE`.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_almanac_sankalpa(
+            self._raw,
             _request_json,
             ctypes.byref(_out_json),
         ))

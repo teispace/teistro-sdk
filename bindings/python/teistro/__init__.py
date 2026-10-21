@@ -679,6 +679,8 @@ __all__ = [
     "FestivalUnjudged",
     "EkadashiFast",
     "LunarYears",
+    "Sankalpa",
+    "SankalpaAnswer",
     "Eclipses",
     "EclipsesFound",
     "LunarEclipseHere",
@@ -2528,6 +2530,37 @@ class AlmanacArea(_Area):
             value=tuple(_pakshi_day(one) for one in envelope["value"]),
             provenance=decode_provenance(envelope["provenance"]),
         )
+
+    def sankalpa(
+        self,
+        *,
+        at: float,
+        place: Observer,
+        utc_offset_seconds: int,
+        ayana: Literal["SIDEREAL", "TROPICAL"] = "SIDEREAL",
+    ) -> "SankalpaAnswer":
+        """**The time a sankalpa recites** at the instant `at`, a UTC
+        Julian day, and a place (`03-design/sankalpa.md`): the samvatsara,
+        ayana, ritu, lunar month and vara as the sunrise of the day holding
+        the instant has them, and the paksha, tithi, nakshatra, yoga,
+        karana and the Sun's, Moon's and Jupiter's signs as they stand at
+        the instant. A rite before dawn recites the day before's. `ayana`
+        turns at Makara and Karka sankranti (`"SIDEREAL"`) or at the
+        solstices (`"TROPICAL"`).
+
+        >>> # found = ctx.almanac.sankalpa(at=2461055.59375, place=kathmandu, utc_offset_seconds=20700)
+        >>> # found.value.tithi  # Tithi.KRISHNA_DWADASHI
+        """
+        asked: Dict[str, Any] = {
+            "at": at,
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "ayana": ayana,
+        }
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_sankalpa(json.dumps(asked)))
+        return _sankalpa_answer(answered)
 
     def disagreements(
         self,
@@ -7538,6 +7571,84 @@ class LunarYears:
     value: Tuple[LunarYear, ...]
     provenance: Provenance
     """What computed them, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class Sankalpa:
+    """The time a sankalpa recites (`03-design/sankalpa.md`): the year,
+    ayana, ritu, month and vara at the sunrise of the day holding the
+    instant, and the limbs and three signs at the instant itself."""
+
+    at: float
+    """The instant of the rite, a UTC Julian day."""
+
+    date: CalendarDate
+    """The civil day whose sunrise the instant follows: a rite before dawn
+    is the day before's."""
+
+    vara: Vara
+    """That day's weekday, which runs from its sunrise."""
+
+    sunrise: float
+    """That day's sunrise, a UTC Julian day."""
+
+    next_sunrise: float
+    """The next day's sunrise, where the day ends, a UTC Julian day."""
+
+    year: LunarYear
+    """The lunar year the day's sunrise falls in."""
+
+    ayana: Ayana
+    """The half of the year at the day's sunrise."""
+
+    ayana_reckoning: Literal["SIDEREAL", "TROPICAL"]
+    """How `ayana` was reckoned: the request's."""
+
+    ritu: Ritu
+    """The season at the day's sunrise."""
+
+    ritu_reckoning: Literal["SOLAR", "LUNAR", "TROPICAL"]
+    """How `ritu` was reckoned: `panchanga.ritu`."""
+
+    month: "Month"
+    """The lunar month at the day's sunrise, under both conventions."""
+
+    paksha: Paksha
+    """The fortnight of the tithi at the rite."""
+
+    tithi: Tithi
+    """The tithi at the rite."""
+
+    nakshatra: Nakshatra
+    """The nakshatra at the rite."""
+
+    yoga: Yoga
+    """The yoga at the rite."""
+
+    karana: Karana
+    """The karana at the rite."""
+
+    sun: Rashi
+    """The Sun's sidereal sign at the rite."""
+
+    moon: Rashi
+    """The Moon's sidereal sign at the rite."""
+
+    jupiter: Rashi
+    """Jupiter's sidereal sign at the rite."""
+
+
+@dataclass(frozen=True)
+class SankalpaAnswer:
+    """What `almanac.sankalpa` answers.
+
+    >>> # found = ctx.almanac.sankalpa(at=2461055.59375, place=kathmandu, utc_offset_seconds=20700)
+    >>> # name = found.value.year.samvatsara
+    """
+
+    value: Sankalpa
+    provenance: Provenance
+    """What computed it, and the hash of `value`."""
 
 
 @dataclass(frozen=True)
@@ -14144,28 +14255,69 @@ def _years_answer(text: str) -> LunarYears:
     """The `years` section: the envelope's years as frozen records, with
     the provenance beside them."""
     envelope = json.loads(text)
-
-    def jovian(raw: Mapping[str, Any]) -> JovianYear:
-        return JovianYear(
-            member=_member(Samvatsara, raw["member"]), count=raw["count"], from_=raw["from"], to=raw["to"]
-        )
-
-    def year(raw: Mapping[str, Any]) -> LunarYear:
-        lupta = raw["lupta"]
-        return LunarYear(
-            samvatsara=_member(Samvatsara, raw["samvatsara"]),
-            count=raw["count"],
-            vikrama=raw["vikrama"],
-            shaka=raw["shaka"],
-            opened=raw["opened"],
-            began=raw["began"],
-            ended=raw["ended"],
-            jovian=tuple(jovian(j) for j in raw["jovian"]),
-            lupta=None if lupta is None else _member(Samvatsara, lupta),
-        )
-
     return LunarYears(
-        value=tuple(year(y) for y in envelope["value"]),
+        value=tuple(_lunar_year(y) for y in envelope["value"]),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
+    """One lunar year as a JSON answer writes it, as a frozen record."""
+
+    def jovian(one: Mapping[str, Any]) -> JovianYear:
+        return JovianYear(
+            member=_member(Samvatsara, one["member"]), count=one["count"], from_=one["from"], to=one["to"]
+        )
+
+    lupta = raw["lupta"]
+    return LunarYear(
+        samvatsara=_member(Samvatsara, raw["samvatsara"]),
+        count=raw["count"],
+        vikrama=raw["vikrama"],
+        shaka=raw["shaka"],
+        opened=raw["opened"],
+        began=raw["began"],
+        ended=raw["ended"],
+        jovian=tuple(jovian(j) for j in raw["jovian"]),
+        lupta=None if lupta is None else _member(Samvatsara, lupta),
+    )
+
+
+def _sankalpa_answer(text: str) -> "SankalpaAnswer":
+    """`ts_almanac_sankalpa`'s answer: the time recited as a frozen record,
+    members as this binding's enums, with the provenance beside it."""
+    envelope = json.loads(text)
+    raw = envelope["value"]
+    month = raw["month"]
+    return SankalpaAnswer(
+        value=Sankalpa(
+            at=raw["at"],
+            date=_serde_date(raw["date"]),
+            vara=_member(Vara, raw["vara"]),
+            sunrise=raw["sunrise"],
+            next_sunrise=raw["nextSunrise"],
+            year=_lunar_year(raw["year"]),
+            ayana=_member(Ayana, raw["ayana"]),
+            ayana_reckoning=raw["ayanaReckoning"],
+            ritu=_member(Ritu, raw["ritu"]),
+            ritu_reckoning=raw["rituReckoning"],
+            month=Month(
+                month=_member(Masa, month["month"]),
+                amanta=_member(Masa, month["amanta"]),
+                purnimanta=_member(Masa, month["purnimanta"]),
+                paksha=_member(Paksha, month["paksha"]),
+                convention=_member(LunarMonth, month["convention"]),
+                kind=_member(MonthKind, month["kind"]),
+            ),
+            paksha=_member(Paksha, raw["paksha"]),
+            tithi=_member(Tithi, raw["tithi"]),
+            nakshatra=_member(Nakshatra, raw["nakshatra"]),
+            yoga=_member(Yoga, raw["yoga"]),
+            karana=_member(Karana, raw["karana"]),
+            sun=_member(Rashi, raw["sun"]),
+            moon=_member(Rashi, raw["moon"]),
+            jupiter=_member(Rashi, raw["jupiter"]),
+        ),
         provenance=decode_provenance(envelope["provenance"]),
     )
 

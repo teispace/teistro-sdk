@@ -213,24 +213,60 @@ final class AlmanacReads {
     /** The {@code years} section: the envelope's years, with the provenance beside them. */
     static LunarYears yearsAnswer(String text) {
         Map<?, ?> envelope = Reads.object(Json.read(text));
-        return new LunarYears(Reads.each(envelope, "value", raw -> {
-            Map<?, ?> y = Reads.object(raw);
-            Object lupta = Reads.field(y, "lupta");
-            return new LunarYear(
-                    member(y, "samvatsara", "Samvatsara", Samvatsara::byKey),
-                    Reads.string(y, "count"),
-                    Reads.integer(y, "vikrama"),
-                    Reads.integer(y, "shaka"),
-                    Reads.number(y, "opened"),
-                    Reads.number(y, "began"),
-                    Reads.number(y, "ended"),
-                    Reads.each(y, "jovian", one -> {
-                        Map<?, ?> j = Reads.object(one);
-                        return new JovianYear(member(j, "member", "Samvatsara", Samvatsara::byKey),
-                                Reads.integer(j, "count"), Reads.number(j, "from"), Reads.number(j, "to"));
-                    }),
-                    lupta == null ? null : Reads.member(Samvatsara.byKey(Reads.string(lupta)), "Samvatsara", lupta));
-        }), provenance(envelope));
+        return new LunarYears(Reads.each(envelope, "value", AlmanacReads::lunarYear), provenance(envelope));
+    }
+
+    /** One lunar year as a JSON answer writes it. */
+    private static LunarYear lunarYear(Object raw) {
+        Map<?, ?> y = Reads.object(raw);
+        Object lupta = Reads.field(y, "lupta");
+        return new LunarYear(
+                member(y, "samvatsara", "Samvatsara", Samvatsara::byKey),
+                Reads.string(y, "count"),
+                Reads.integer(y, "vikrama"),
+                Reads.integer(y, "shaka"),
+                Reads.number(y, "opened"),
+                Reads.number(y, "began"),
+                Reads.number(y, "ended"),
+                Reads.each(y, "jovian", one -> {
+                    Map<?, ?> j = Reads.object(one);
+                    return new JovianYear(member(j, "member", "Samvatsara", Samvatsara::byKey),
+                            Reads.integer(j, "count"), Reads.number(j, "from"), Reads.number(j, "to"));
+                }),
+                lupta == null ? null : Reads.member(Samvatsara.byKey(Reads.string(lupta)), "Samvatsara", lupta));
+    }
+
+    /** {@code ts_almanac_sankalpa}'s answer: the time recited, its members resolved, with the provenance beside it. */
+    static SankalpaAnswer sankalpaAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        Map<?, ?> v = Reads.object(envelope, "value");
+        Map<?, ?> m = Reads.object(v, "month");
+        return new SankalpaAnswer(new Sankalpa(
+                Reads.number(v, "at"),
+                Reads.serdeDate(Reads.field(v, "date")),
+                member(v, "vara", "Vara", Vara::byKey),
+                Reads.number(v, "sunrise"),
+                Reads.number(v, "nextSunrise"),
+                lunarYear(Reads.field(v, "year")),
+                member(v, "ayana", "Ayana", Ayana::byKey),
+                Reads.string(v, "ayanaReckoning"),
+                member(v, "ritu", "Ritu", Ritu::byKey),
+                Reads.string(v, "rituReckoning"),
+                new Month(
+                        member(m, "month", "Masa", Masa::byKey),
+                        member(m, "amanta", "Masa", Masa::byKey),
+                        member(m, "purnimanta", "Masa", Masa::byKey),
+                        member(m, "paksha", "Paksha", Paksha::byKey),
+                        member(m, "convention", "LunarMonth", LunarMonth::byKey),
+                        member(m, "kind", "MonthKind", MonthKind::byKey)),
+                member(v, "paksha", "Paksha", Paksha::byKey),
+                member(v, "tithi", "Tithi", Tithi::byKey),
+                member(v, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                member(v, "yoga", "Yoga", Yoga::byKey),
+                member(v, "karana", "Karana", Karana::byKey),
+                member(v, "sun", "Rashi", Rashi::byKey),
+                member(v, "moon", "Rashi", Rashi::byKey),
+                member(v, "jupiter", "Rashi", Rashi::byKey)), provenance(envelope));
     }
 
     /** The {@code nepal_sambat} section: one date a day, with the provenance beside them. */

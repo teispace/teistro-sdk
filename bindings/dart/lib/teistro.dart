@@ -1298,6 +1298,38 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **The time a sankalpa recites** at the instant [at], a UTC Julian
+  /// day, and a place (`03-design/sankalpa.md`): the samvatsara, ayana,
+  /// ritu, lunar month and vara as the sunrise of the day holding the
+  /// instant has them, and the paksha, tithi, nakshatra, yoga, karana and
+  /// the Sun's, Moon's and Jupiter's signs as they stand at the instant. A
+  /// rite before dawn recites the day before's.
+  ///
+  /// ```dart
+  /// final found = sdk.almanac.sankalpa(
+  ///   at: 2461055.59375, place: kathmandu, utcOffsetSeconds: 20700,
+  /// );
+  /// final name = found.value.year.samvatsara; // Samvatsara.siddharthi
+  /// ```
+  SankalpaAnswer sankalpa({
+    required double at,
+    required Observer place,
+    required int utcOffsetSeconds,
+    AyanaReckoning ayana = AyanaReckoning.sidereal,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'at': at,
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      'ayana': ayana.key,
+    });
+    return _sankalpa(
+      _context._guarded(() => _context._inner.almanacSankalpa(asked)),
+    );
+  }
+
   /// **Where this context's reckoning and [other]'s disagree**, and why
   /// (`03-design/setup-disagreements.md`): the official day an app shows
   /// beside the modern one. [Disagreements.days] holds only the days on
@@ -15048,7 +15080,19 @@ NepalSambatDates _nepalSambat(String json) {
 /// provenance beside them.
 LunarYears _lunarYears(String json) {
   final envelope = jsonDecode(json) as Map<String, Object?>;
-  Map<String, Object?> at(Object? raw) => raw! as Map<String, Object?>;
+  return LunarYears(
+    value: List.unmodifiable([
+      for (final item in envelope['value']! as List<Object?>)
+        _lunarYear(item! as Map<String, Object?>),
+    ]),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
+/// One lunar year as a JSON answer writes it.
+LunarYear _lunarYear(Map<String, Object?> raw) {
   double jd(Object? raw) => (raw! as num).toDouble();
   Samvatsara named(Object? raw) =>
       _key(raw, Samvatsara.byKey, Samvatsara.unknown);
@@ -15058,7 +15102,7 @@ LunarYears _lunarYears(String json) {
     from: jd(raw['from']),
     to: jd(raw['to']),
   );
-  LunarYear year(Map<String, Object?> raw) => LunarYear(
+  return LunarYear(
     samvatsara: named(raw['samvatsara']),
     count: raw['count']! as String,
     vikrama: raw['vikrama']! as int,
@@ -15067,15 +15111,195 @@ LunarYears _lunarYears(String json) {
     began: jd(raw['began']),
     ended: jd(raw['ended']),
     jovian: List.unmodifiable([
-      for (final item in raw['jovian']! as List<Object?>) jovian(at(item)),
+      for (final item in raw['jovian']! as List<Object?>)
+        jovian(item! as Map<String, Object?>),
     ]),
     lupta: raw['lupta'] == null ? null : named(raw['lupta']),
   );
-  return LunarYears(
-    value: List.unmodifiable([
-      for (final item in envelope['value']! as List<Object?>) year(at(item)),
-    ]),
-    provenance: Provenance.fromJson(at(envelope['provenance'])),
+}
+
+/// How a sankalpa's ayana turns (`03-design/sankalpa.md`).
+enum AyanaReckoning {
+  /// At Makara and Karka sankranti, the sidereal Sun's entries into
+  /// Capricorn and Cancer: the almanac's own ayana.
+  sidereal('SIDEREAL'),
+
+  /// At the solstices, the tropical Sun's.
+  tropical('TROPICAL');
+
+  const AyanaReckoning(this.key);
+
+  /// The key the boundary spells it with.
+  final String key;
+
+  static AyanaReckoning _byKey(Object? key) => values.firstWhere(
+    (reckoning) => reckoning.key == key,
+    orElse: () => throw StateError('an ayana reckoning $key'),
+  );
+}
+
+/// The time a sankalpa recites (`03-design/sankalpa.md`): the year, ayana,
+/// ritu, month and vara at the sunrise of the day holding the instant, and
+/// the limbs and three signs at the instant itself.
+final class Sankalpa extends _Value {
+  const Sankalpa({
+    required this.at,
+    required this.date,
+    required this.vara,
+    required this.sunrise,
+    required this.nextSunrise,
+    required this.year,
+    required this.ayana,
+    required this.ayanaReckoning,
+    required this.ritu,
+    required this.rituReckoning,
+    required this.month,
+    required this.paksha,
+    required this.tithi,
+    required this.nakshatra,
+    required this.yoga,
+    required this.karana,
+    required this.sun,
+    required this.moon,
+    required this.jupiter,
+  });
+
+  /// The instant of the rite, a UTC Julian day.
+  final double at;
+
+  /// The civil day whose sunrise the instant follows: a rite before dawn
+  /// is the day before's.
+  final CalendarDate date;
+
+  /// That day's weekday, which runs from its sunrise.
+  final Vara vara;
+
+  /// That day's sunrise, a UTC Julian day.
+  final double sunrise;
+
+  /// The next day's sunrise, where the day ends, a UTC Julian day.
+  final double nextSunrise;
+
+  /// The lunar year the day's sunrise falls in.
+  final LunarYear year;
+
+  /// The half of the year at the day's sunrise.
+  final Ayana ayana;
+
+  /// How [ayana] was reckoned: the request's.
+  final AyanaReckoning ayanaReckoning;
+
+  /// The season at the day's sunrise.
+  final Ritu ritu;
+
+  /// How [ritu] was reckoned, `panchanga.ritu`: `SOLAR`, `LUNAR` or
+  /// `TROPICAL`.
+  final String rituReckoning;
+
+  /// The lunar month at the day's sunrise, under both conventions.
+  final Month month;
+
+  /// The fortnight of the tithi at the rite.
+  final Paksha paksha;
+
+  /// The tithi at the rite.
+  final Tithi tithi;
+
+  /// The nakshatra at the rite.
+  final Nakshatra nakshatra;
+
+  /// The yoga at the rite.
+  final Yoga yoga;
+
+  /// The karana at the rite.
+  final Karana karana;
+
+  /// The Sun's sidereal sign at the rite.
+  final Rashi sun;
+
+  /// The Moon's sidereal sign at the rite.
+  final Rashi moon;
+
+  /// Jupiter's sidereal sign at the rite.
+  final Rashi jupiter;
+
+  @override
+  List<Object?> get _fields => [
+    at,
+    date,
+    vara,
+    sunrise,
+    nextSunrise,
+    year,
+    ayana,
+    ayanaReckoning,
+    ritu,
+    rituReckoning,
+    month,
+    paksha,
+    tithi,
+    nakshatra,
+    yoga,
+    karana,
+    sun,
+    moon,
+    jupiter,
+  ];
+}
+
+/// What `almanac.sankalpa` answers.
+final class SankalpaAnswer {
+  const SankalpaAnswer({required this.value, required this.provenance});
+
+  /// The time recited.
+  final Sankalpa value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_sankalpa`'s answer: the time recited as a value, with the
+/// provenance beside it.
+SankalpaAnswer _sankalpa(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final raw = envelope['value']! as Map<String, Object?>;
+  final month = raw['month']! as Map<String, Object?>;
+  double jd(Object? raw) => (raw! as num).toDouble();
+  T must<T>(Object? key, T? Function(String) byKey, String kind) =>
+      byKey(key! as String) ??
+      (throw ArgumentError.value(key, kind, 'not a $kind'));
+  return SankalpaAnswer(
+    value: Sankalpa(
+      at: jd(raw['at']),
+      date: _serdeDate(raw['date']! as Map<String, Object?>),
+      vara: _key(raw['vara'], Vara.byKey, Vara.unknown),
+      sunrise: jd(raw['sunrise']),
+      nextSunrise: jd(raw['nextSunrise']),
+      year: _lunarYear(raw['year']! as Map<String, Object?>),
+      ayana: _key(raw['ayana'], Ayana.byKey, Ayana.unknown),
+      ayanaReckoning: AyanaReckoning._byKey(raw['ayanaReckoning']),
+      ritu: _key(raw['ritu'], Ritu.byKey, Ritu.unknown),
+      rituReckoning: raw['rituReckoning']! as String,
+      month: Month(
+        month: _key(month['month'], Masa.byKey, Masa.unknown),
+        amanta: _key(month['amanta'], Masa.byKey, Masa.unknown),
+        purnimanta: _key(month['purnimanta'], Masa.byKey, Masa.unknown),
+        paksha: _key(month['paksha'], Paksha.byKey, Paksha.unknown),
+        convention: must(month['convention'], LunarMonth.byKey, 'LunarMonth'),
+        kind: must(month['kind'], MonthKind.byKey, 'MonthKind'),
+      ),
+      paksha: _key(raw['paksha'], Paksha.byKey, Paksha.unknown),
+      tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+      nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+      yoga: _key(raw['yoga'], Yoga.byKey, Yoga.unknown),
+      karana: _key(raw['karana'], Karana.byKey, Karana.unknown),
+      sun: _key(raw['sun'], Rashi.byKey, Rashi.unknown),
+      moon: _key(raw['moon'], Rashi.byKey, Rashi.unknown),
+      jupiter: _key(raw['jupiter'], Rashi.byKey, Rashi.unknown),
+    ),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
   );
 }
 

@@ -4695,6 +4695,49 @@ test('two reckonings say where they disagree and why', () => {
 });
 
 /**
+ * A sankalpa at 08:00 on 15 January 2026 in Kathmandu, the morning after
+ * Makara sankranti: Siddharthi's year, Magha (purnimanta) and Shishira at
+ * sunrise, Krishna Dwadashi in Jyeshtha at the rite, the Sun in Capricorn
+ * and Jupiter in Gemini; at 04:00 it is still the 14th's, and the
+ * tropical ayana turned at the solstice (`03-design/sankalpa.md`).
+ */
+test('an almanac says the time a sankalpa recites', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const ask = (at, ayana) =>
+    ctx.almanac.sankalpa({ at, place: kathmandu, utcOffsetSeconds: 20700, ...(ayana ? { ayana } : {}) });
+  const { value, provenance } = ask(2461055.59375);
+  assert.equal(typeof provenance.inputHash, 'string', 'the request is sealed');
+  assert.deepEqual([value.date.year, value.date.month, value.date.day], [2026, 1, 15]);
+  assert.equal(value.date.calendar, 'calendar.GREGORIAN');
+  assert.equal(value.vara, 'vara.GURUVARA');
+  assert.equal(value.year.samvatsara, 'samvatsara.SIDDHARTHI');
+  assert.equal(value.year.vikrama, 2082);
+  assert.equal(value.month.month, 'masa.MAGHA');
+  assert.equal(value.month.amanta, 'masa.PAUSHA');
+  assert.equal(value.ritu, 'ritu.SHISHIRA');
+  assert.equal(value.ayana, 'ayana.UTTARAYANA');
+  assert.equal(value.ayanaReckoning, 'SIDEREAL');
+  assert.equal(value.tithi, 'tithi.KRISHNA_DWADASHI');
+  assert.equal(value.paksha, 'paksha.KRISHNA');
+  assert.equal(value.nakshatra, 'nakshatra.JYESHTHA');
+  assert.deepEqual([value.sun, value.moon, value.jupiter], ['rashi.CAPRICORN', 'rashi.SCORPIO', 'rashi.GEMINI']);
+  assert.ok(value.sunrise < value.at && value.at < value.nextSunrise);
+  assert.ok(Object.isFrozen(value.year.jovian[0]), 'frozen to its leaves');
+
+  const dawn = ask(2461055.59375 - 4 / 24).value;
+  assert.equal(dawn.date.day, 14, 'a rite before dawn is the day before\'s');
+  const between = 2461045.6; // 5 January: past the solstice, before Makara
+  assert.equal(ask(between).value.ayana, 'ayana.DAKSHINAYANA');
+  assert.equal(ask(between, 'TROPICAL').value.ayana, 'ayana.UTTARAYANA');
+  assert.throws(
+    () => ctx.almanac.sankalpa({ at: 2461055.6, place: kathmandu, utcOffsetSeconds: 20700, when: 1 }),
+    (error) => error.field === 'sankalpa.when',
+  );
+  assert.throws(() => ctx.almanac.sankalpa(null), TypeError);
+});
+
+/**
  * Dashain 2025 at Kathmandu as an iCalendar feed: one event for each
  * observance and fast the festival answer gives, Vijaya Dashami on 2
  * October, every line CRLF and at most 75 octets, and the same request

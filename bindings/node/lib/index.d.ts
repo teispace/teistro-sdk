@@ -8062,6 +8062,20 @@ export declare class AlmanacArea {
    */
   pakshi(request: PakshiRequest): PakshiDays;
   /**
+   * **The time a sankalpa recites** at an instant and a place
+   * (`03-design/sankalpa.md`): the year, ayana, ritu, month and vara at
+   * the sunrise of the day holding the instant, and the limbs and three
+   * signs at the instant itself. A rite before dawn is the day before's.
+   *
+   * @example
+   * const { value } = sdk.almanac.sankalpa({
+   *   at: 2461055.59375,
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   * });
+   */
+  sankalpa(request: SankalpaRequest): SankalpaAnswer;
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the days on which some limb's
    * member at sunrise differs, with the instant the two members meet
@@ -8117,6 +8131,68 @@ export interface FestivalCalendarRequest {
   readonly product?: string;
   /** How often a subscriber fetches it again; a day when left out, none when zero. */
   readonly refreshMinutes?: number;
+}
+
+/** An instant and a place, as `almanac.sankalpa` reads them. */
+export interface SankalpaRequest {
+  /** The instant of the rite, a UTC Julian day. */
+  readonly at: number;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** How the ayana turns: at Makara and Karka sankranti, or at the solstices; `'SIDEREAL'` when left out. */
+  readonly ayana?: 'SIDEREAL' | 'TROPICAL';
+}
+
+/** What `almanac.sankalpa` answers, frozen to its leaves. */
+export interface SankalpaAnswer {
+  /** The time recited. */
+  readonly value: Sankalpa;
+  /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** The time a sankalpa recites (`03-design/sankalpa.md`). */
+export interface Sankalpa {
+  /** The instant of the rite, a UTC Julian day. */
+  readonly at: number;
+  /** The civil day whose sunrise the instant follows. */
+  readonly date: CalendarDate;
+  /** That day's weekday, which runs from its sunrise. */
+  readonly vara: Vara;
+  /** That day's sunrise, a UTC Julian day. */
+  readonly sunrise: number;
+  /** The next day's sunrise, where the day ends, a UTC Julian day. */
+  readonly nextSunrise: number;
+  /** The lunar year the day's sunrise falls in. */
+  readonly year: LunarYear;
+  /** The half of the year at the day's sunrise. */
+  readonly ayana: Ayana;
+  /** How `ayana` was reckoned: the request's. */
+  readonly ayanaReckoning: 'SIDEREAL' | 'TROPICAL';
+  /** The season at the day's sunrise. */
+  readonly ritu: Ritu;
+  /** How `ritu` was reckoned: `panchanga.ritu`. */
+  readonly rituReckoning: 'SOLAR' | 'LUNAR' | 'TROPICAL';
+  /** The lunar month at the day's sunrise, under both conventions. */
+  readonly month: Month;
+  /** The fortnight of the tithi at the rite. */
+  readonly paksha: Paksha;
+  /** The tithi at the rite. */
+  readonly tithi: Tithi;
+  /** The nakshatra at the rite. */
+  readonly nakshatra: Nakshatra;
+  /** The yoga at the rite. */
+  readonly yoga: Yoga;
+  /** The karana at the rite. */
+  readonly karana: Karana;
+  /** The Sun's sidereal sign at the rite. */
+  readonly sun: Rashi;
+  /** The Moon's sidereal sign at the rite. */
+  readonly moon: Rashi;
+  /** Jupiter's sidereal sign at the rite. */
+  readonly jupiter: Rashi;
 }
 
 /** Two reckonings of one range at one place, as `almanac.disagreements` compares them. */

@@ -9486,6 +9486,33 @@ ts_status ts_panchanga_days(const ts_context * context, const ts_panchanga_reque
 ts_status ts_almanac_disagreements(const ts_context * context, const ts_context * other, const char * request_json, ts_string * out_json);
 
 /**
+ * The time a sankalpa recites at an instant and a place
+ * (`03-design/sankalpa.md`), answered with `{value, provenance}` as
+ * canonical JSON, every catalogue member a full key.
+ *
+ * `value` is `{at, day, year, ayana, ayanaReckoning, ritu,
+ * rituReckoning, month, paksha, tithi, nakshatra, yoga, karana, sun,
+ * moon, jupiter}`: `day` the civil day whose sunrise the instant follows,
+ * so a rite before dawn is the day before's; `year`, `ayana`, `ritu`
+ * and `month` as that day's sunrise has them, the lunar year with its
+ * samvatsara, Vikrama and Shaka numbers and the month under both
+ * conventions; the limbs and the Sun's, Moon's and Jupiter's sidereal
+ * signs as they stand at the instant.
+ *
+ * `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
+ * "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+ * and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
+ * left out, or `TROPICAL` (at the solstices). A key it does not read or
+ * an instant, place or offset out of range is `INVALID_ARG`, named under
+ * `sankalpa`; a context without an ephemeris is `CAPABILITY`, and an
+ * instant in no day's window (a polar day the policy leaves undefined)
+ * `OUT_OF_RANGE`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_almanac_sankalpa(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * A range's observances and Ekadashi fasts at one place as an iCalendar
  * feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
  * ordered by day and then rule, its `SUMMARY` the festival's name in the
