@@ -31,8 +31,9 @@ arguments. It is corrected, and the fit's rate is its derivative.
 `Builtin::default()` is now `Builtin::new()`: it was the theory without
 its bija. `Builtin::with_series()` sums every theory at every instant as
 before, and the provider's `data_version` ends in `+ fitted` when it
-fits. One almanac day takes 2.40 ms instead of 32.4 and a month grid
-39.6 instead of 460, 1.5× and 1.8× Teimeris against the 3× asked.
+fits. One almanac day takes 2.34 ms instead of 32.3, a month grid 38.5
+instead of 462 and a year 348 instead of 3805: 1.8×, 1.9× and 2.0×
+Teimeris, against the 3× asked.
 
 **Padmini and Parama ekadashi** (`festival-rule-language.md` §3.10,
 C694).

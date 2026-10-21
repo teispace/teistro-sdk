@@ -106,12 +106,18 @@ cut the calls the trigonometry gets by about thirty times. `libm` stays.
 
 ## What it bought
 
-Medians on the M2 Pro, one thread, a fresh context each run:
+Medians on the M2 Pro, one thread, a fresh context each run, from the
+gated record (`05-testing/app-speed-measured.md`):
 
 | request | before | after | Teimeris | built-in ÷ Teimeris |
 |---|---:|---:|---:|---:|
-| one almanac day | 32.4 ms | 2.40 ms | 1.57 ms | 1.5× |
-| a month grid | 460 ms | 39.6 ms | 22.2 ms | 1.8× |
+| one almanac day | 32.3 ms | 2.34 ms | 1.33 ms | 1.8× |
+| a month grid | 462 ms | 38.5 ms | 19.9 ms | 1.9× |
+| a year of almanac days | 3805 ms | 348 ms | 173 ms | 2.0× |
+| a year of festivals | 1645 ms | 125 ms | 55.9 ms | 2.2× |
+| a 90-day muhurta search | 3045 ms | 492 ms | 143 ms | 3.5× |
+| a birth chart | 2.61 ms | 1.54 ms | 1.04 ms | 1.5× |
 
-The acceptance was 3×. `05-testing/app-speed-measured.md` carries the
-gated record.
+The acceptance was 3× for a day and a month grid, and both hold. The
+muhurta search is past 3× and has not been profiled since the fit; it is
+the next place to look.
