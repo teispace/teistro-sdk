@@ -22938,6 +22938,11 @@
               "name": "chandrashtama",
               "scalar": "u32",
               "doc": "How many rows of `chandrashtama` belong to this day."
+            },
+            {
+              "name": "amrit_kalam",
+              "scalar": "u32",
+              "doc": "How many rows of `amrit_kalam` belong to this day."
             }
           ]
         },
@@ -23858,6 +23863,61 @@
               "scalar": "u16",
               "doc": "The natal Moon sign the span is chandrashtama for.",
               "enum": "Rashi"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "name": "amrit_kalam",
+          "doc": "The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Whose amrita kalam it is.",
+              "enum": "Nakshatra"
             },
             {
               "name": "whole_from",

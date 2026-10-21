@@ -1,8 +1,7 @@
 # Amrita kalam, the day's lagna table, and the day page's names
 
-Status: `draft`, 2026-10-20. Research and design, written from the texts
-before any code. Nothing here is built. The defaults marked
-**maintainer** are proposals until the maintainer confirms them.
+Status: `design`, 2026-10-21. §1, the amrita kalam, is **built** with its
+default decided on a published panchanga (§1.5); §2 and §3 are not yet.
 
 Three things a printed panchanga's day page carries that the almanac does
 not yet answer: the *amṛta ghaṭikā* (amrita kalam) beside the varjyam it
@@ -97,6 +96,37 @@ pub const AMRITA_GHATIS: f64 = 4.0;
   table.
 
 C399's action changes from "not built" to this page.
+
+### 1.5 Built, and the default measured
+
+A week of a published panchanga decides the default. Drik Panchang's day
+pages for Delhi, 15 to 21 June 2025, print an amrita kalam each day and
+a varjyam on six. Read as sixtieths of each star over the SDK's own
+nakshatra spans, every amrita start is reading (c)'s: Dhanishtha 34,
+Shatabhisha 42, Purva Bhadrapada 40, Uttara Bhadrapada 48, Revati 54,
+Ashwini 42, and Shravana's 34. Over the default context (Lahiri, the
+built-in ephemeris) the SDK's windows are the printed ones, every edge
+within the printed minute: seven of seven, and the varjyam's seven of
+seven on Muhurta Chintamani's table (Uttara Bhadrapada 24, where Raman's
+varjyam table has 30), including Bharani's before the sunrise of 22
+June, which the 21st's page prints unlabelled (`crates/sdk/tests/printed_day.rs`).
+
+So the almanacs pair Muhurta Chintamani's varjyam with Raman's amrita
+table, and that is the default: `panchanga.amrit_kalam` is `RAMAN`
+(C677 decided). Built as designed, with two changes:
+
+- **`MADHAVIYA` is not shipped.** Eleven of its starts are MV's printed
+  values with the verse that would check them undecoded, and no
+  almanac read prints it. It joins when the verse is read.
+- **Under `PRASNA_MARGA`, a star whose varjyam ends it has none.** The
+  commentary's four ghatis "immediately after" the visha fall past the
+  star's end where the visha starts after 52 (Muhurta Chintamani's Mula
+  at 56). The next star's span would scale them differently and no text
+  says which, so the reading gives none there rather than guess (C678).
+
+`Omens.amrit_kalam` is beside `varjyam`, by the same arithmetic
+(`omen::ghati_windows`), and crosses to every binding as the day's
+`amrit_kalam` span section (`amritKalam` in Node, Dart and Java).
 
 ## 2. The day's lagna table
 
@@ -196,7 +226,7 @@ other chart-scope kinds stay for `entity-names.md`'s own pass.
 
 | # | fork | proposed default | the other readings |
 |---|---|---|---|
-| C677 | the amrita's start | **maintainer**: (c) Raman's printed table | (a) visha + 4, the PM commentary, verified on the page; (b) 30 + n, the *matāntara* verse and MV |
+| C677 | the amrita's start | **decided**: (c) Raman's printed table, the published almanac's to the minute (§1.5) | (a) visha + 4, the PM commentary, verified on the page and shipped as `PRASNA_MARGA`; (b) 30 + n, the *matāntara* verse and MV, not shipped |
 | C678 | which visha table (a) rides on | the setting `panchanga.varjyam` already chosen | MC fixed |
 | C679 | scaling to the star's span | as the varjyam: sixtieths of the span | fixed ghatis of 24 minutes |
 | C680 | the lagna table's lagna | the context's sidereal ascendant; the Surya Siddhanta's own rising times under that profile | the context's ascendant always |

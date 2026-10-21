@@ -220,6 +220,19 @@ public final class AlmanacDay {
     }
 
     /**
+     * The amrita kalam: each nakshatra's four auspicious ghatis, placed by {@code panchanga.amrit_kalam} (crux
+     * C677). A span's whole is the window itself and its inside the part of it in the day; empty under
+     * {@code NONE}.
+     *
+     * @return the spans
+     */
+    public List<Span<Nakshatra>> amritKalam() {
+        Panchanga.AmritKalam c = batch.decoded().amritKalam();
+        return spans("amrit_kalam", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Nakshatra::of);
+    }
+
+    /**
      * The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction
      * (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402); empty on a day the Moon crosses none of them. The vara's
      * own direction is {@link #dishaShool()}.

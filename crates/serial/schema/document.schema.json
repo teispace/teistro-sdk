@@ -5127,6 +5127,13 @@
     "Omens": {
       "description": "What a day is said to be.",
       "properties": {
+        "amrit_kalam": {
+          "description": "The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677), `whole` and `inside` as the varjyam's.",
+          "items": {
+            "$ref": "#/$defs/NakshatraSpan"
+          },
+          "type": "array"
+        },
         "disha_shool": {
           "$ref": "#/$defs/Direction",
           "description": "The direction not to travel in, which is the vara's."
@@ -5157,6 +5164,7 @@
         "panchaka",
         "yogas",
         "varjyam",
+        "amrit_kalam",
         "disha_shool"
       ],
       "type": "object"

@@ -1959,6 +1959,7 @@ export function decodePanchanga(bytes) {
       nakshatraShool: column(blob, at, 14, 'u32', at.count),
       chandraVasa: column(blob, at, 15, 'u32', at.count),
       chandrashtama: column(blob, at, 16, 'u32', at.count),
+      amritKalam: column(blob, at, 17, 'u32', at.count),
       length: at.count,
     };
   }
@@ -2234,6 +2235,21 @@ export function decodePanchanga(bytes) {
   {
     const at = section(blob, 29, 'chandrashtama');
     out.chandrashtama = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      sunrises: column(blob, at, 5, 'u8', at.count),
+      endsGhati: column(blob, at, 6, 'u8', at.count),
+      endsPala: column(blob, at, 7, 'u8', at.count),
+      endsVipala: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 30, 'amrit_kalam');
+    out.amritKalam = {
       member: column(blob, at, 0, 'u16', at.count),
       wholeFrom: column(blob, at, 1, 'f64', at.count),
       wholeTo: column(blob, at, 2, 'f64', at.count),

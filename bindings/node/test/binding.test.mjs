@@ -3916,7 +3916,7 @@ test('an almanac carries the lunar years it was asked for', () => {
  * §5): asked by name, frozen, their kinds bare keys, each with how the
  * almanac's place sees it, and the shadow knob moving the umbra.
  */
-test('a day carries each star\'s varjyam, four sixtieths of it, unless the settings name none', () => {
+test('a day carries each star\'s varjyam and amrita kalam, four sixtieths of it, unless the settings name none', () => {
   const days = {
     from: date(Calendar.Gregorian, 2024, 6, 15),
     to: date(Calendar.Gregorian, 2024, 6, 21),
@@ -3928,7 +3928,7 @@ test('a day carries each star\'s varjyam, four sixtieths of it, unless the setti
     const week = ctx.almanac.of(days);
     const read = Array.from({ length: week.length }, (_, i) => {
       const day = week.at(i);
-      return { varjyam: day.varjyam, nakshatra: day.nakshatra };
+      return { varjyam: day.varjyam, amritKalam: day.amritKalam, nakshatra: day.nakshatra };
     });
     ctx.dispose();
     return read;
@@ -3945,6 +3945,18 @@ test('a day carries each star\'s varjyam, four sixtieths of it, unless the setti
   }
   assert.ok(seen >= 5 && seen <= 9, `${seen}`);
   assert.deepEqual(of({ panchanga: { varjyam: 'NONE' } }).map((day) => day.varjyam.length), [0, 0, 0, 0, 0, 0, 0]);
+  // The amrita kalam is the same arithmetic on the published table (C677).
+  let amrita = 0;
+  for (const day of of(undefined)) {
+    for (const window of day.amritKalam) {
+      const star = day.nakshatra.find((span) => span.member === window.member);
+      const length = (span) => span.whole.to - span.whole.from;
+      assert.ok(Math.abs(length(window) * 15 - length(star)) < 1e-6, window.member);
+      amrita += 1;
+    }
+  }
+  assert.ok(amrita >= 5 && amrita <= 9, `${amrita}`);
+  assert.deepEqual(of({ panchanga: { amrit_kalam: 'NONE' } }).map((day) => day.amritKalam.length), [0, 0, 0, 0, 0, 0, 0]);
 });
 
 test('a day marks its durmuhurtas and carries the shool, the chandra vasa and the chandrashtama', () => {

@@ -17968,6 +17968,15 @@ class AlmanacDay:
         return self._spans("varjyam", self.batch.decoded.varjyam, Nakshatra)
 
     @property
+    def amrit_kalam(self) -> list[Span[Nakshatra]]:
+        """The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677).
+
+        A span's ``whole`` is the window itself and ``inside`` the part of it
+        in the day; empty under ``NONE``.
+        """
+        return self._spans("amrit_kalam", self.batch.decoded.amrit_kalam, Nakshatra)
+
+    @property
     def nakshatra_shool(self) -> list[Span[Direction]]:
         """The nakshatra shool: while the Moon is in one of the four
         nakshatras that block a direction, that direction (Muhurta
@@ -18139,6 +18148,7 @@ class Almanac:
             "nakshatra_shool",
             "chandra_vasa",
             "chandrashtama",
+            "amrit_kalam",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

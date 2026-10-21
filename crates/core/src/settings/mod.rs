@@ -32,19 +32,19 @@ use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
-    AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
-    BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
-    Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya,
-    FirdariaNodes, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
-    NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy,
-    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
-    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
-    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
-    Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime,
-    Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    AfterCycle, AmritKalam, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance,
+    Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre,
+    CharaKarakas, Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras,
+    Drekkana, Drik, DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha,
+    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta,
+    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
+    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
+    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
+    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
+    ShantaSign, Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn,
+    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -521,6 +521,8 @@ group!(
         panchaka_start: PanchakaStart,
         /// Which table places each nakshatra's varjyam (crux C165).
         varjyam: Varjyam,
+        /// Which reading places each nakshatra's amrita kalam (crux C677).
+        amrit_kalam: AmritKalam,
         /// Which muhurtas of each weekday are censured, the durmuhurtas
         /// (crux C398).
         durmuhurta: DurmuhurtaTable,

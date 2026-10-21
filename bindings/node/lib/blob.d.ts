@@ -6076,6 +6076,10 @@ export interface PanchangaCounts {
    * How many rows of `chandrashtama` belong to this day.
    */
   readonly chandrashtama: Uint32Array;
+  /**
+   * How many rows of `amrit_kalam` belong to this day.
+   */
+  readonly amritKalam: Uint32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6796,6 +6800,55 @@ export interface PanchangaChandrashtama {
 }
 
 /**
+ * The `amrit_kalam` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.
+ */
+export interface PanchangaAmritKalam {
+  /**
+   * Whose amrita kalam it is.
+   * The values are `Nakshatra` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * A decoded Panchanga blob.
  *
  * A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -6939,6 +6992,10 @@ export interface Panchanga {
    * Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.
    */
   readonly chandrashtama: PanchangaChandrashtama;
+  /**
+   * The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.
+   */
+  readonly amritKalam: PanchangaAmritKalam;
 }
 
 /**

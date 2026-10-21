@@ -28244,6 +28244,7 @@ final class Almanac {
       'nakshatraShool': counts.nakshatraShool,
       'chandraVasa': counts.chandraVasa,
       'chandrashtama': counts.chandrashtama,
+      'amritKalam': counts.amritKalam,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -28414,6 +28415,24 @@ final class AlmanacDay {
     final c = batch.decoded.varjyam;
     return _spans(
       'varjyam',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Nakshatra.byId,
+    );
+  }
+
+  /// The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677).
+  ///
+  /// A span's `whole` is the window itself and `inside` the part of it in
+  /// the day; empty under `NONE`.
+  List<Span<Nakshatra>> get amritKalam {
+    final c = batch.decoded.amritKalam;
+    return _spans(
+      'amritKalam',
       c.member,
       c.wholeFrom,
       c.wholeTo,

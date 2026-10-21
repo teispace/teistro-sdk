@@ -31,7 +31,7 @@ use teistro_core::catalogue::{
 };
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
-use teistro_core::settings::{PanchakaStart, Varjyam};
+use teistro_core::settings::{AmritKalam, PanchakaStart, Varjyam};
 
 use crate::span::Span;
 
@@ -86,6 +86,10 @@ pub struct Omens {
     /// itself in `whole` and the part inside the day in `inside`, placed
     /// by `panchanga.varjyam` (crux C165).
     pub varjyam: Vec<Span<Nakshatra>>,
+    /// The amrita kalam: each nakshatra's four auspicious ghatis, placed
+    /// by `panchanga.amrit_kalam` (crux C677), `whole` and `inside` as the
+    /// varjyam's.
+    pub amrit_kalam: Vec<Span<Nakshatra>>,
     /// The direction not to travel in, which is the vara's.
     pub disha_shool: Direction,
 }
@@ -161,9 +165,75 @@ pub fn varjyam(
     nakshatras: &[Span<Nakshatra>],
     table: Varjyam,
 ) -> Result<Vec<Span<Nakshatra>>, Error> {
+    ghati_windows(nakshatras, |star| varjyam_start(table, star))
+}
+
+/// The ghati, of a star sixty ghatis long, each nakshatra's amrita kalam
+/// begins after under Raman's table, Ashwini first: the table printed in
+/// his translation of the *Praśna Mārga* (ch. 2 v. 21), the one the
+/// published panchangas print (crux C677).
+const AMRITA_RAMAN: [u8; 27] = [
+    42, 48, 54, 52, 38, 35, 54, 44, 56, 54, 44, 42, 45, 44, 38, 38, 28, 38, 44, 48, 44, 34, 34, 42,
+    40, 48, 54,
+];
+
+/// The ghati a nakshatra's amrita kalam begins after, of a star sixty
+/// ghatis long: Raman's table, or under `PRASNA_MARGA` the end of the
+/// varjyam `table` places (C678), or `None` under `NONE`, under a
+/// varjyam of `NONE`, and where the varjyam ends the star and leaves no
+/// four ghatis after it.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_core::settings::{AmritKalam, Varjyam};
+/// use teistro_panchanga::omen::amrit_kalam_start;
+///
+/// let raman = amrit_kalam_start(AmritKalam::Raman, Varjyam::MuhurtaChintamani, Nakshatra::Revati);
+/// assert_eq!(raman, Some(54));
+/// let adjacent = amrit_kalam_start(AmritKalam::PrasnaMarga, Varjyam::MuhurtaChintamani, Nakshatra::Revati);
+/// assert_eq!(adjacent, Some(34));
+/// ```
+#[must_use]
+pub fn amrit_kalam_start(reading: AmritKalam, table: Varjyam, nakshatra: Nakshatra) -> Option<u8> {
+    match reading {
+        AmritKalam::Raman => Nakshatra::ALL
+            .iter()
+            .zip(&AMRITA_RAMAN)
+            .find_map(|(member, start)| (*member == nakshatra).then_some(*start)),
+        AmritKalam::PrasnaMarga => varjyam_start(table, nakshatra)
+            .map(|visha| visha + 4)
+            .filter(|start| f64::from(*start) + VARJYAM_GHATIS <= 60.0),
+        // `NONE`, and any reading a later version adds that this one
+        // cannot know.
+        _ => None,
+    }
+}
+
+/// The amrita kalam windows of a day, from its nakshatra spans: four
+/// ghatis of each star from the reading's start, scaled to the star's
+/// own span as the varjyam is (C679).
+///
+/// # Errors
+///
+/// None in practice: a window is a fraction of an interval that exists.
+pub fn amrit_kalam(
+    nakshatras: &[Span<Nakshatra>],
+    reading: AmritKalam,
+    table: Varjyam,
+) -> Result<Vec<Span<Nakshatra>>, Error> {
+    ghati_windows(nakshatras, |star| amrit_kalam_start(reading, table, star))
+}
+
+/// Each star's four ghatis from the ghati `start_of` gives it, of a star
+/// sixty long, scaled to the star's span and kept when any of it falls
+/// in the day: the varjyam's arithmetic and the amrita kalam's.
+fn ghati_windows(
+    nakshatras: &[Span<Nakshatra>],
+    start_of: impl Fn(Nakshatra) -> Option<u8>,
+) -> Result<Vec<Span<Nakshatra>>, Error> {
     let mut found = Vec::new();
     for span in nakshatras {
-        let Some(start) = varjyam_start(table, span.member) else {
+        let Some(start) = start_of(span.member) else {
             continue;
         };
         let start = f64::from(start);
@@ -561,16 +631,16 @@ mod tests {
     )]
 
     use super::{
-        CLASSICAL, chandra_vasa, chandra_vasas, chandrashtama, chandrashtama_of, disha_shool,
-        nakshatra_shool, nakshatra_shools, panchaka, panchaka_of, panchaka_remainder, varjyam,
-        varjyam_start, yogas,
+        CLASSICAL, amrit_kalam, amrit_kalam_start, chandra_vasa, chandra_vasas, chandrashtama,
+        chandrashtama_of, disha_shool, nakshatra_shool, nakshatra_shools, panchaka, panchaka_of,
+        panchaka_remainder, varjyam, varjyam_start, yogas,
     };
     use teistro_core::catalogue::{
         Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, Vara,
     };
     use teistro_core::error::Error;
     use teistro_core::interval::Interval;
-    use teistro_core::settings::{PanchakaStart, Varjyam};
+    use teistro_core::settings::{AmritKalam, PanchakaStart, Varjyam};
 
     use crate::span::Span;
 
@@ -978,5 +1048,61 @@ mod tests {
         assert!(outside.is_empty(), "{outside:?}");
         let none = varjyam(&[span(Nakshatra::Ashwini)], Varjyam::None).unwrap();
         assert!(none.is_empty(), "{none:?}");
+    }
+
+    /// Raman's starts for the seven stars of 15 to 21 June 2025 at Delhi,
+    /// read off Drik Panchang's windows as sixtieths of each star (C677),
+    /// and the commentary's reading four ghatis past the chosen varjyam.
+    #[test]
+    fn an_amrita_kalam_starts_where_its_reading_places_it() {
+        let raman = |star| amrit_kalam_start(AmritKalam::Raman, Varjyam::MuhurtaChintamani, star);
+        for (star, printed) in [
+            (Nakshatra::Shravana, 34),
+            (Nakshatra::Dhanishtha, 34),
+            (Nakshatra::Shatabhisha, 42),
+            (Nakshatra::PurvaBhadrapada, 40),
+            (Nakshatra::UttaraBhadrapada, 48),
+            (Nakshatra::Revati, 54),
+            (Nakshatra::Ashwini, 42),
+        ] {
+            assert_eq!(raman(star), Some(printed), "{star:?}");
+        }
+        let adjacent = |table, star| amrit_kalam_start(AmritKalam::PrasnaMarga, table, star);
+        assert_eq!(
+            adjacent(Varjyam::MuhurtaChintamani, Nakshatra::Ashwini),
+            Some(54)
+        );
+        // Mula's varjyam ends at 60 under the text's table: no four
+        // ghatis follow it in the star; Raman's places it at 20.
+        assert_eq!(adjacent(Varjyam::MuhurtaChintamani, Nakshatra::Mula), None);
+        assert_eq!(adjacent(Varjyam::Raman, Nakshatra::Mula), Some(24));
+        assert_eq!(adjacent(Varjyam::None, Nakshatra::Ashwini), None);
+        assert_eq!(
+            amrit_kalam_start(
+                AmritKalam::None,
+                Varjyam::MuhurtaChintamani,
+                Nakshatra::Ashwini
+            ),
+            None
+        );
+    }
+
+    #[test]
+    fn an_amrita_kalam_is_four_sixtieths_of_a_star_of_any_length() {
+        // Revati, 64 hours long from day 100: Raman's window is its
+        // sixtieths 54 to 58, so 4.27 hours rather than four.
+        let star = Interval::literal(100.0, 100.0 + 64.0 / 24.0);
+        let spans = [Span::new(Nakshatra::Revati, star, star).unwrap()];
+        let found = amrit_kalam(&spans, AmritKalam::Raman, Varjyam::MuhurtaChintamani).unwrap();
+        let [window] = found.as_slice() else {
+            unreachable!("{found:?}")
+        };
+        let hours = |at: f64| (at - 100.0) * 24.0;
+        assert!((hours(window.whole.from.get()) - 64.0 * 54.0 / 60.0).abs() < 1e-6);
+        assert!((hours(window.whole.to.get()) - 64.0 * 58.0 / 60.0).abs() < 1e-6);
+        assert_eq!(
+            amrit_kalam(&spans, AmritKalam::None, Varjyam::MuhurtaChintamani).unwrap(),
+            []
+        );
     }
 }

@@ -237,6 +237,18 @@ knob!(
         None = "NONE" }
 );
 knob!(
+    /// Which reading places each nakshatra's amrita kalam, the four
+    /// auspicious ghatis beside its varjyam (`03-design/amrit-kalam-and-lagnas.md`,
+    /// crux C677).
+    ///
+    /// Each start is a ghati of a star sixty ghatis long, and the window is
+    /// scaled to the star's own span, as the varjyam is (C679).
+    AmritKalam { /// The table printed in Raman's translation of the *Praśna Mārga* (ch. 2 v. 21), which the published panchangas print: Drik Panchang's every window over a week at Delhi, to the minute.
+        Raman = "RAMAN", /// The *Praśna Mārga* commentary's own reading, from its page: the four ghatis right after the varjyam, on whichever table `panchanga.varjyam` names (C678); none in a star whose varjyam ends it.
+        PrasnaMarga = "PRASNA_MARGA", /// None: the day carries no amrita kalam.
+        None = "NONE" }
+);
+knob!(
     /// Which muhurtas of each weekday are censured, the durmuhurtas
     /// (`03-design/panchanga-day.md` §21, crux C398).
     ///

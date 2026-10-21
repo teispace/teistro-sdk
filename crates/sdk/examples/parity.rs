@@ -6089,6 +6089,7 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("nakshatra-shool", day.nakshatra_shool().len()),
         ("chandra-vasa", day.chandra_vasa().len()),
         ("chandrashtama", day.chandrashtama().len()),
+        ("amrit-kalam", day.omens.amrit_kalam.len()),
     ] {
         put(
             report,
@@ -6243,7 +6244,7 @@ fn limb_span<T>(
 /// One day's limb spans, which are the bulk of its rows.
 fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
     // And every span of every moving limb, member and bounds.
-    let limbs: [(&str, Vec<LimbSpan>); 8] = [
+    let limbs: [(&str, Vec<LimbSpan>); 9] = [
         (
             "tithi",
             day.limbs
@@ -6301,6 +6302,14 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         (
             "chandrashtama",
             day.chandrashtama()
+                .iter()
+                .map(|span| limb_span(day, span, span.member.full_key()))
+                .collect(),
+        ),
+        (
+            "amrit-kalam",
+            day.omens
+                .amrit_kalam
                 .iter()
                 .map(|span| limb_span(day, span, span.member.full_key()))
                 .collect(),

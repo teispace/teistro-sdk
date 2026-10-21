@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The amrita kalam** (`amrit-kalam-and-lagnas.md`, C677). **Numbers:**
+none move; every almanac day gains `omens.amrit_kalam` (`amrit_kalam`,
+`amritKalam` in the bindings), each nakshatra's four auspicious ghatis
+scaled to its span as the varjyam is. `panchanga.amrit_kalam` chooses
+the reading: `RAMAN`, the table the published panchangas print and the
+default, whose windows over a week of Drik Panchang's Delhi pages fall
+within the printed minute, seven of seven; `PRASNA_MARGA`, the four
+ghatis right after the varjyam, which the Praśna Mārga's commentary
+gives; or `NONE`.
+
 **A festival rule on the Sun's entry into a nakshatra**
 (`festival-rule-language.md` §3.6, C696). **Numbers:** a
 `NEPAL_PANCHANGA` answer gains Bhumiraj and the Bhumi puja in its

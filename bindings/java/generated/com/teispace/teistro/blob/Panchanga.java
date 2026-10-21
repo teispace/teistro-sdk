@@ -50,6 +50,7 @@ public final class Panchanga {
     private final NakshatraShool nakshatraShool;
     private final ChandraVasa chandraVasa;
     private final Chandrashtama chandrashtama;
+    private final AmritKalam amritKalam;
 
     private Panchanga(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -88,6 +89,7 @@ public final class Panchanga {
         this.nakshatraShool = new NakshatraShool(blob, 27, "nakshatra_shool");
         this.chandraVasa = new ChandraVasa(blob, 28, "chandra_vasa");
         this.chandrashtama = new Chandrashtama(blob, 29, "chandrashtama");
+        this.amritKalam = new AmritKalam(blob, 30, "amrit_kalam");
     }
 
     /**
@@ -409,6 +411,15 @@ public final class Panchanga {
      */
     public Chandrashtama chandrashtama() {
         return chandrashtama;
+    }
+
+    /**
+     * The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.
+     *
+     * @return the amritKalam
+     */
+    public AmritKalam amritKalam() {
+        return amritKalam;
     }
 
 
@@ -751,6 +762,7 @@ public final class Panchanga {
         private final int nakshatraShoolAt;
         private final int chandraVasaAt;
         private final int chandrashtamaAt;
+        private final int amritKalamAt;
 
         Counts(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -773,6 +785,7 @@ public final class Panchanga {
             this.nakshatraShoolAt = blob.column(at, 14, 4);
             this.chandraVasaAt = blob.column(at, 15, 4);
             this.chandrashtamaAt = blob.column(at, 16, 4);
+            this.amritKalamAt = blob.column(at, 17, 4);
         }
 
         /**
@@ -969,6 +982,17 @@ public final class Panchanga {
          */
         public long chandrashtama(int row) {
             return Integer.toUnsignedLong(bytes.getInt(chandrashtamaAt + Objects.checkIndex(row, length) * 4));
+        }
+
+        /**
+         * How many rows of `amrit_kalam` belong to this day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public long amritKalam(int row) {
+            return Integer.toUnsignedLong(bytes.getInt(amritKalamAt + Objects.checkIndex(row, length) * 4));
         }
     }
 
@@ -2973,6 +2997,152 @@ public final class Panchanga {
          * The natal Moon sign the span is chandrashtama for.
          *
          * The id of a {@code Rashi}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int member(int row) {
+            return Short.toUnsignedInt(bytes.getShort(memberAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double wholeFrom(int row) {
+            return bytes.getDouble(wholeFromAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double wholeTo(int row) {
+            return bytes.getDouble(wholeToAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Where the part inside the day begins: what an almanac row prints.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double insideFrom(int row) {
+            return bytes.getDouble(insideFromAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Where the part inside the day ends.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double insideTo(int row) {
+            return bytes.getDouble(insideToAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+         *
+         * The id of a {@code Sunrises}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int sunrises(int row) {
+            return Byte.toUnsignedInt(bytes.get(sunrisesAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsGhati(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsGhatiAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * And palas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsPala(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsPalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * And vipalas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsVipala(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `amrit_kalam` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.
+     */
+    public static final class AmritKalam {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int memberAt;
+        private final int wholeFromAt;
+        private final int wholeToAt;
+        private final int insideFromAt;
+        private final int insideToAt;
+        private final int sunrisesAt;
+        private final int endsGhatiAt;
+        private final int endsPalaAt;
+        private final int endsVipalaAt;
+
+        AmritKalam(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.memberAt = blob.column(at, 0, 2);
+            this.wholeFromAt = blob.column(at, 1, 8);
+            this.wholeToAt = blob.column(at, 2, 8);
+            this.insideFromAt = blob.column(at, 3, 8);
+            this.insideToAt = blob.column(at, 4, 8);
+            this.sunrisesAt = blob.column(at, 5, 1);
+            this.endsGhatiAt = blob.column(at, 6, 1);
+            this.endsPalaAt = blob.column(at, 7, 1);
+            this.endsVipalaAt = blob.column(at, 8, 1);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * Whose amrita kalam it is.
+         *
+         * The id of a {@code Nakshatra}.
          *
          * @param row the row, from 0
          * @return the value in that row

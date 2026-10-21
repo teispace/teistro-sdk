@@ -390,6 +390,10 @@ name = "twilight"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "printed_day"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "western_houses"
 required-features = ["builtin-ephemeris"]
 

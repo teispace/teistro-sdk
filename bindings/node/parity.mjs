@@ -1631,6 +1631,7 @@ for (const day of week) {
   put(`day-${i}-nakshatra-shool-count`, day.nakshatraShool.length);
   put(`day-${i}-chandra-vasa-count`, day.chandraVasa.length);
   put(`day-${i}-chandrashtama-count`, day.chandrashtama.length);
+  put(`day-${i}-amrit-kalam-count`, day.amritKalam.length);
   for (const [limb, spans] of [
     ['tithi', day.tithi],
     ['nakshatra', day.nakshatra],
@@ -1640,6 +1641,7 @@ for (const day of week) {
     ['nakshatra-shool', day.nakshatraShool],
     ['chandra-vasa', day.chandraVasa],
     ['chandrashtama', day.chandrashtama],
+    ['amrit-kalam', day.amritKalam],
   ]) {
     spans.forEach((span, j) => {
       put(`day-${i}-${limb}-${j}`, span.member);

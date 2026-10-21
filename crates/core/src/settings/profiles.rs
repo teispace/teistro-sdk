@@ -9,19 +9,19 @@ use crate::catalogue::{
 };
 
 use super::knobs::{
-    AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
-    BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
-    Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya,
-    FirdariaNodes, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
-    NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy,
-    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
-    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
-    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
-    Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime,
-    Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    AfterCycle, AmritKalam, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance,
+    Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre,
+    CharaKarakas, Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras,
+    Drekkana, Drik, DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha,
+    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta,
+    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
+    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
+    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
+    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
+    ShantaSign, Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn,
+    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -144,6 +144,10 @@ fn root_panchanga() -> Panchanga {
         panchaka_start: PanchakaStart::Aquarius,
         // Muhurta Chintamani's table, the rank-1 text (crux C165).
         varjyam: Varjyam::MuhurtaChintamani,
+        // The table the published panchangas print, which gives Drik
+        // Panchang's every window over a week at Delhi to the minute
+        // (crux C677).
+        amrit_kalam: AmritKalam::Raman,
         // Muhurta Chintamani's, the Sanskrit Raman's list departs from
         // (crux C398).
         durmuhurta: DurmuhurtaTable::MuhurtaChintamani,

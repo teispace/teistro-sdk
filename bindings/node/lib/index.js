@@ -2104,6 +2104,11 @@ export class AlmanacDay {
     return this.#spans('varjyam', NakshatraById);
   }
 
+  /** The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). */
+  get amritKalam() {
+    return this.#spans('amritKalam', NakshatraById);
+  }
+
   /** The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction (crux C402). */
   get nakshatraShool() {
     return this.#spans('nakshatraShool', DirectionById);

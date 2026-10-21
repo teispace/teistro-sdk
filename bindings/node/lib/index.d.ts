@@ -6458,6 +6458,11 @@ export declare class AlmanacDay {
    */
   readonly varjyam: readonly Span<Nakshatra>[];
   /**
+   * The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). A span's `whole` is the window itself and `inside` the part of it
+   * in the day; empty under `NONE`.
+   */
+  readonly amritKalam: readonly Span<Nakshatra>[];
+  /**
    * The nakshatra shool: while the Moon is in one of the four nakshatras that block a direction, that direction
    * (Muhurta Chintamani, Yatra Prakarana v. 10, crux C402); empty on a day the Moon crosses none of them. The
    * vara's own direction is `dishaShool`.

@@ -2629,6 +2629,7 @@ public final class ParityRunner {
             put(d + "-nakshatra-shool-count", almanacDay.nakshatraShool().size());
             put(d + "-chandra-vasa-count", almanacDay.chandraVasa().size());
             put(d + "-chandrashtama-count", almanacDay.chandrashtama().size());
+            put(d + "-amrit-kalam-count", almanacDay.amritKalam().size());
             putSpans(d + "-tithi", almanacDay.tithi(), Tithi::fullKey);
             putSpans(d + "-nakshatra", almanacDay.nakshatra(), Nakshatra::fullKey);
             putSpans(d + "-yoga", almanacDay.yoga(), Yoga::fullKey);
@@ -2637,6 +2638,7 @@ public final class ParityRunner {
             putSpans(d + "-nakshatra-shool", almanacDay.nakshatraShool(), Direction::fullKey);
             putSpans(d + "-chandra-vasa", almanacDay.chandraVasa(), Direction::fullKey);
             putSpans(d + "-chandrashtama", almanacDay.chandrashtama(), Rashi::fullKey);
+            putSpans(d + "-amrit-kalam", almanacDay.amritKalam(), Nakshatra::fullKey);
             for (int j = 0; j < almanacDay.kaalas().size(); j += 1) {
                 KaalaPeriod kaala = almanacDay.kaalas().get(j);
                 put(d + "-kaala-" + j, kaala.kaala().fullKey());

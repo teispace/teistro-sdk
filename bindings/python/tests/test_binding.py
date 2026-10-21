@@ -5386,6 +5386,42 @@ class ADaysVarjyam(AJuneWeek):
         self.assertEqual([len(day.varjyam) for day in days], [0] * len(days))
 
 
+class ADaysAmritKalam(AJuneWeek):
+    """Each star's four auspicious ghatis, placed by the table the
+    published panchangas print unless `panchanga.amrit_kalam` names
+    another (C677)."""
+
+    def test_an_amrit_kalam_is_four_sixtieths_of_its_own_star(self) -> None:
+        seen = 0
+        for day in self.days():
+            for window in day.amrit_kalam:
+                star = next(s for s in day.nakshatra if s.member is window.member)
+                whole = window.whole.to_jd - window.whole.from_jd
+                self.assertAlmostEqual(
+                    whole * 15, star.whole.to_jd - star.whole.from_jd, places=6
+                )
+                self.assertGreaterEqual(window.whole.from_jd, star.whole.from_jd)
+                seen += 1
+        self.assertIn(seen, range(5, 10))
+
+    def test_the_commentarys_reading_follows_the_varjyam(self) -> None:
+        days = self.days({"panchanga": {"amrit_kalam": "PRASNA_MARGA"}})
+        paired = 0
+        for day in days:
+            for window in day.amrit_kalam:
+                # The star's varjyam may have closed before the day began.
+                for visha in (v for v in day.varjyam if v.member is window.member):
+                    self.assertAlmostEqual(
+                        window.whole.from_jd, visha.whole.to_jd, places=6
+                    )
+                    paired += 1
+        self.assertGreater(paired, 0)
+
+    def test_none_leaves_the_day_without_one(self) -> None:
+        days = self.days({"panchanga": {"amrit_kalam": "NONE"}})
+        self.assertEqual([len(day.amrit_kalam) for day in days], [0] * len(days))
+
+
 class ADaysOmens(AJuneWeek):
     """The durmuhurtas marked on their muhurtas (C398), and the shool, the
     chandra vasa and the chandrashtama read off the day's spans (C402 to

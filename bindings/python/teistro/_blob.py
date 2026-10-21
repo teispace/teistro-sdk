@@ -7912,6 +7912,9 @@ class PanchangaCounts:
     chandrashtama: memoryview[int]
     """How many rows of `chandrashtama` belong to this day."""
 
+    amrit_kalam: memoryview[int]
+    """How many rows of `amrit_kalam` belong to this day."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8493,6 +8496,45 @@ class PanchangaChandrashtama:
 
 
 @dataclass(frozen=True)
+class PanchangaAmritKalam:
+    """The `amrit_kalam` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.
+    """
+
+    member: memoryview[int]
+    """Whose amrita kalam it is."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Panchanga:
     """A decoded Panchanga blob.
 
@@ -8601,6 +8643,9 @@ class Panchanga:
     chandrashtama: PanchangaChandrashtama
     """Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it."""
 
+    amrit_kalam: PanchangaAmritKalam
+    """The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -8639,6 +8684,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_nakshatra_shool = blob.section(27, "nakshatra_shool")
     at_chandra_vasa = blob.section(28, "chandra_vasa")
     at_chandrashtama = blob.section(29, "chandrashtama")
+    at_amrit_kalam = blob.section(30, "amrit_kalam")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -8703,6 +8749,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ).cast("I"),
             chandrashtama=blob.column(
                 at_counts, 16, 4, at_counts.count
+            ).cast("I"),
+            amrit_kalam=blob.column(
+                at_counts, 17, 4, at_counts.count
             ).cast("I"),
             length=at_counts.count,
         ),
@@ -9091,6 +9140,36 @@ def decode_panchanga(raw: bytes) -> Panchanga:
                 at_chandrashtama, 8, 1, at_chandrashtama.count
             ).cast("B"),
             length=at_chandrashtama.count,
+        ),
+        amrit_kalam=PanchangaAmritKalam(
+            member=blob.column(
+                at_amrit_kalam, 0, 2, at_amrit_kalam.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_amrit_kalam, 1, 8, at_amrit_kalam.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_amrit_kalam, 2, 8, at_amrit_kalam.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_amrit_kalam, 3, 8, at_amrit_kalam.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_amrit_kalam, 4, 8, at_amrit_kalam.count
+            ).cast("d"),
+            sunrises=blob.column(
+                at_amrit_kalam, 5, 1, at_amrit_kalam.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_amrit_kalam, 6, 1, at_amrit_kalam.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_amrit_kalam, 7, 1, at_amrit_kalam.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_amrit_kalam, 8, 1, at_amrit_kalam.count
+            ).cast("B"),
+            length=at_amrit_kalam.count,
         ),
     )
 

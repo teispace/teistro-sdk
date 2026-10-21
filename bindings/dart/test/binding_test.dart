@@ -2345,6 +2345,54 @@ void _engineTests() {
     ], List.filled(7, 0));
   });
 
+  test('a day carries each star\'s amrita kalam unless the settings name '
+      'none', () {
+    // The varjyam's arithmetic on the table the published panchangas
+    // print (C677).
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    List<(List<Span<Nakshatra>>, List<Span<Nakshatra>>)> week([
+      Map<String, Object?>? settings,
+    ]) {
+      final ctx = teistro.context(
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+        settings: settings,
+      );
+      final days = ctx.almanac.of(
+        from: gregorian(2024, 6, 15),
+        to: gregorian(2024, 6, 21),
+        place: place,
+        utcOffsetSeconds: 20700,
+      );
+      final read = [
+        for (var i = 0; i < days.length; i += 1)
+          (days.at(i).amritKalam, days.at(i).nakshatra),
+      ];
+      ctx.dispose();
+      return read;
+    }
+
+    var seen = 0;
+    for (final (amrita, stars) in week()) {
+      for (final window in amrita) {
+        final star = stars.firstWhere((span) => span.member == window.member);
+        double length(Span<Nakshatra> span) => span.whole.to - span.whole.from;
+        expect(length(window) * 15, closeTo(length(star), 1e-6));
+        seen += 1;
+      }
+    }
+    expect(seen, inInclusiveRange(5, 9));
+    expect([
+      for (final (amrita, _) in week({
+        'panchanga': {'amrit_kalam': 'NONE'},
+      }))
+        amrita.length,
+    ], List.filled(7, 0));
+  });
+
   test('a day marks its durmuhurtas and carries the shool, the chandra vasa '
       'and the chandrashtama', () {
     // 15 to 21 June 2024 at Kathmandu, Saturday first (crux C398): Muhurta

@@ -1327,6 +1327,20 @@ public final class BindingTest {
                     }
                 }
                 check(varjyam >= 5 && varjyam <= 9, "about a varjyam a day: " + varjyam);
+                // The amrita kalam is the varjyam's arithmetic on the table
+                // the published panchangas print (C677).
+                int amrita = 0;
+                for (AlmanacDay day : week) {
+                    for (Span<Nakshatra> window : day.amritKalam()) {
+                        Span<Nakshatra> star = day.nakshatra().stream()
+                                .filter(span -> span.member() == window.member()).findFirst().orElseThrow();
+                        double length = window.whole().toJd() - window.whole().fromJd();
+                        check(Math.abs(length * 15 - (star.whole().toJd() - star.whole().fromJd())) < 1e-6,
+                                "an amrita kalam is four sixtieths of its star");
+                        amrita += 1;
+                    }
+                }
+                check(amrita >= 5 && amrita <= 9, "about an amrita kalam a day: " + amrita);
                 // Every vara censures one muhurta or two (crux C398); the Moon's
                 // signs carry where she dwells and whose chandrashtama it is, the
                 // eighth sign from the natal one (C403, C404); and a shool is a
