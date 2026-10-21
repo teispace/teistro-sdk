@@ -80,7 +80,7 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
     let written = outputs(root);
     let failures = check(root, &written, "cargo xtask gen intl");
     let tree = Tree::load(&root.join("i18n")).expect("the i18n/ sources load");
-    let unnamed = unnamed_members(&tree, &document_kinds());
+    let unnamed = unnamed_members(&tree, &catalogue_kinds());
     let naming = named_or_listed(&unnamed, UNNAMED);
     let festivals = every_festival_is_named(&tree);
     let keywords = dart_parses(&written);
@@ -248,10 +248,11 @@ fn every_key_type_is_declared(written: &[Output]) -> i32 {
     wrong
 }
 
-/// The members a chart document can carry that no strict locale names
-/// yet, and why each kind has none: every one of them lacks a vetted
-/// source, and the policy refuses a translated stub
-/// (`docs/03-design/entity-names.md` §4).
+/// The catalogue members no strict locale names yet, and why each kind has
+/// none: every one of them lacks a vetted source, and the policy refuses a
+/// translated stub (`docs/03-design/entity-names.md` §4). Every kind is
+/// held, not only those a chart document carries: a day page, a match or
+/// a star list hands a reader its keys as surely (C682).
 ///
 /// The list fails both ways. A member missing a name that is not here
 /// fails, and so does one here that has since been named, so it can only
@@ -402,7 +403,377 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
          word rather than a source's",
         &["D1", "D5", "D6", "D8", "D11", "D150"],
     ),
+    (
+        "tithi_class",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &["BHADRA", "JAYA", "NANDA", "PURNA", "RIKTA"],
+    ),
+    (
+        "modality",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &["CHARA", "DWISWABHAVA", "STHIRA"],
+    ),
+    (
+        "muhurta_nature",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &[
+            "CHARA", "DHRUVA", "KSHIPRA", "MISHRA", "MRIDU", "TIKSHNA", "UGRA",
+        ],
+    ),
+    (
+        "guna",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &["RAJAS", "SATTVA", "TAMAS"],
+    ),
+    (
+        "gender",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &["FEMALE", "MALE", "NEUTRAL"],
+    ),
+    (
+        "rising",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &["PRISHTODAYA", "SIRSHODAYA", "UBHAYODAYA"],
+    ),
+    (
+        "blackout_kind",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &["ECLIPSE_STAR", "ECLIPSE_VEDHA", "KHARMAS"],
+    ),
+    (
+        "lunar_eclipse_kind",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &["PENUMBRAL"],
+    ),
+    (
+        "solar_eclipse_kind",
+        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
+         texts' own Sanskrit terms, and wait there for a reviewer of each language",
+        &["ANNULAR", "HYBRID"],
+    ),
+    (
+        "auspiciousness",
+        "a reading or a match shows these, and no name table in Devanagari from a rank-1 or \
+         rank-2 source has been read for them",
+        &["AUSPICIOUS", "HIGHLY_INAUSPICIOUS", "INAUSPICIOUS", "MIXED"],
+    ),
+    (
+        "sex",
+        "a reading or a match shows these, and no name table in Devanagari from a rank-1 or \
+         rank-2 source has been read for them",
+        &["FEMALE", "MALE"],
+    ),
+    (
+        "parity",
+        "a reading or a match shows these, and no name table in Devanagari from a rank-1 or \
+         rank-2 source has been read for them",
+        &["EVEN", "ODD"],
+    ),
+    (
+        "deity",
+        "a reading or a match shows these, and no name table in Devanagari from a rank-1 or \
+         rank-2 source has been read for them",
+        &[
+            "CHANDRA",
+            "DURGA",
+            "KAMADEVA",
+            "KARTIKEYA",
+            "SHANI",
+            "SHIVA",
+            "SHUKRA",
+            "SURYA",
+            "TVASHTA",
+            "VIDHATA",
+        ],
+    ),
+    (
+        "koota",
+        "a reading or a match shows these, and no name table in Devanagari from a rank-1 or \
+         rank-2 source has been read for them",
+        &[
+            "BHAKOOT",
+            "GANA",
+            "GRAHA_MAITRI",
+            "MAHENDRA",
+            "NADI",
+            "RAJJU",
+            "STREE_DEERGHA",
+            "TARA",
+            "VARNA",
+            "VASHYA",
+            "VEDHA",
+            "YONI",
+        ],
+    ),
+    (
+        "state",
+        "a reading or a match shows these, and no name table in Devanagari from a rank-1 or \
+         rank-2 source has been read for them",
+        &[
+            "COMBUST",
+            "ECLIPSED",
+            "GANDANTA",
+            "MARANA_KARAKA_STHANA",
+            "MRITYU_BHAGA",
+            "PLANETARY_WAR",
+            "PUSHKARA_BHAGA",
+            "PUSHKARA_NAVAMSA",
+            "RETROGRADE",
+            "SANDHI",
+            "STATIONARY",
+            "VARGOTTAMA",
+        ],
+    ),
+    (
+        "ayanamsha_category",
+        "the SDK's own classifications rather than any text's: an English name would be the \
+         SDK's coinage, and a strict locale would then bind a Nepali one to it",
+        &[
+            "EPOCH",
+            "GALACTIC",
+            "HISTORICAL",
+            "STAR_ANCHORED",
+            "VEDIC_CLASSICAL",
+            "VEDIC_STANDARD",
+            "WESTERN_SIDEREAL",
+        ],
+    ),
+    (
+        "bala_scheme",
+        "the SDK's own classifications rather than any text's: an English name would be the \
+         SDK's coinage, and a strict locale would then bind a Nepali one to it",
+        &["PARASHARA", "PARASHARA_EXTENDED"],
+    ),
+    (
+        "body_class",
+        "the SDK's own classifications rather than any text's: an English name would be the \
+         SDK's coinage, and a strict locale would then bind a Nepali one to it",
+        &["LUMINARY", "NODE", "OUTER", "PLANET"],
+    ),
+    (
+        "chart_layout",
+        "the SDK's own classifications rather than any text's: an English name would be the \
+         SDK's coinage, and a strict locale would then bind a Nepali one to it",
+        &[
+            "EAST_INDIAN",
+            "NEPALI_LOTUS",
+            "NORTH_INDIAN",
+            "SOUTH_INDIAN",
+            "SUDARSHAN_CHAKRA",
+            "WESTERN_WHEEL",
+        ],
+    ),
+    (
+        "dasha_family",
+        "the SDK's own classifications rather than any text's: an English name would be the \
+         SDK's coinage, and a strict locale would then bind a Nepali one to it",
+        &[
+            "COMPOSITION",
+            "DECENNIALS",
+            "FIRDARIA",
+            "KALACHAKRA",
+            "OWN",
+            "PROFECTION",
+            "RASHI",
+            "RELEASING",
+            "SCALE",
+            "UDU",
+        ],
+    ),
+    (
+        "degeneracy",
+        "the SDK's own classifications rather than any text's: an English name would be the \
+         SDK's coinage, and a strict locale would then bind a Nepali one to it",
+        &["NONE", "POLAR_UNDEFINED"],
+    ),
+    (
+        "point_family",
+        "the SDK's own classifications rather than any text's: an English name would be the \
+         SDK's coinage, and a strict locale would then bind a Nepali one to it",
+        &[
+            "ANGLE",
+            "ARUDHA",
+            "JAIMINI",
+            "MIDPOINT",
+            "SPECIAL_LAGNA",
+            "SPHUTA",
+            "UPAGRAHA_DAY",
+            "UPAGRAHA_SOLAR",
+        ],
+    ),
+    (
+        "star_class",
+        "the SDK's own classifications rather than any text's: an English name would be the \
+         SDK's coinage, and a strict locale would then bind a Nepali one to it",
+        &["DIRECTION", "RADIO_SOURCE", "STAR"],
+    ),
+    (
+        "star",
+        "the IAU's English proper names would bind a Nepali name to each star, since a strict \
+         locale carries every key the base names, and no star catalogue in Nepali has been read",
+        &[
+            "ACHERNAR",
+            "ACRUX",
+            "ADHARA",
+            "AIN",
+            "ALBALDAH",
+            "ALBIREO",
+            "ALCYONE",
+            "ALDEBARAN",
+            "ALDERAMIN",
+            "ALGEDI",
+            "ALGENIB",
+            "ALGIEBA",
+            "ALGOL",
+            "ALGORAB",
+            "ALHENA",
+            "ALIOTH",
+            "ALJANAH",
+            "ALKAID",
+            "ALMACH",
+            "ALNAIR",
+            "ALNASL",
+            "ALNILAM",
+            "ALNITAK",
+            "ALPHARD",
+            "ALPHECCA",
+            "ALPHERATZ",
+            "ALSEPHINA",
+            "ALSHAIN",
+            "ALTAIR",
+            "ALUDRA",
+            "ANKAA",
+            "ANTARES",
+            "ARCTURUS",
+            "ASCELLA",
+            "ASELLUS_AUSTRALIS",
+            "ASHLESHA",
+            "ASPIDISKE",
+            "ATRIA",
+            "AVIOR",
+            "BELLATRIX",
+            "BETELGEUSE",
+            "BHARANI",
+            "CANOPUS",
+            "CAPELLA",
+            "CAPH",
+            "CASTOR",
+            "CHAMUKUY",
+            "DENEB",
+            "DENEBOLA",
+            "DIPHDA",
+            "DSCHUBBA",
+            "DUBHE",
+            "ELNATH",
+            "ENIF",
+            "ERRAI",
+            "FANG",
+            "FOMALHAUT",
+            "GACRUX",
+            "GALACTIC_POLE",
+            "GALACTIC_POLE_IAU1958",
+            "HADAR",
+            "HAMAL",
+            "HEZE",
+            "HYDOR",
+            "IZAR",
+            "KAUS_AUSTRALIS",
+            "KAUS_BOREALIS",
+            "KAUS_MEDIA",
+            "KITALPHA",
+            "KORNEPHOROS",
+            "MARFIK",
+            "MARKAB",
+            "MEISSA",
+            "MENKALINAN",
+            "MENKAR",
+            "MENKENT",
+            "MERAK",
+            "MIAPLACIDUS",
+            "MIMOSA",
+            "MINTAKA",
+            "MIRACH",
+            "MIRFAK",
+            "MIZAR",
+            "NAOS",
+            "NIHAL",
+            "NUNKI",
+            "PEACOCK",
+            "PHECDA",
+            "POLARIS",
+            "POLLUX",
+            "PROCYON",
+            "RASALGETHI",
+            "RASALHAGUE",
+            "REGULUS",
+            "REVATI",
+            "RIGEL",
+            "RIGIL_KENTAURUS",
+            "ROTANEV",
+            "SABIK",
+            "SADALBARI",
+            "SADALMELIK",
+            "SADALSUUD",
+            "SADR",
+            "SAIPH",
+            "SARGAS",
+            "SCHEAT",
+            "SCHEDAR",
+            "SEGINUS",
+            "SGR_A_STAR",
+            "SHAULA",
+            "SHELIAK",
+            "SHERATAN",
+            "SIRIUS",
+            "SKAT",
+            "SPICA",
+            "SUHAIL",
+            "SYRMA",
+            "THUBAN",
+            "TUREIS",
+            "UNUKALHAI",
+            "VEGA",
+            "VINDEMIATRIX",
+            "WEZEN",
+            "YED_PRIOR",
+            "ZANIAH",
+            "ZOSMA",
+            "ZUBENELGENUBI",
+            "ZUBENESCHAMALI",
+        ],
+    ),
+    (
+        "tibetan_element",
+        "the Tibetan calendar's elements and animals; no source for the Lhosar calendar as \
+         printed in Nepal has been read",
+        &["EARTH", "FIRE", "IRON", "WATER", "WOOD"],
+    ),
+    (
+        "tibetan_animal",
+        "the Tibetan calendar's elements and animals; no source for the Lhosar calendar as \
+         printed in Nepal has been read",
+        &[
+            "BIRD", "DOG", "DRAGON", "HORSE", "MONKEY", "MOUSE", "OX", "PIG", "RABBIT", "SHEEP",
+            "SNAKE", "TIGER",
+        ],
+    ),
 ];
+
+/// Every catalogue kind, by name, from the catalogue itself.
+fn catalogue_kinds() -> BTreeSet<String> {
+    Kind::ALL
+        .iter()
+        .map(|kind| kind.name().to_owned())
+        .collect()
+}
 
 /// The catalogue kinds a chart document can carry, read from its schema's
 /// `x-teistro-kind` keywords rather than kept as a second list.
@@ -459,7 +830,7 @@ fn named_or_listed(
     let mut failures = 0;
     for (kind, key) in unnamed.difference(&listed) {
         println!(
-            "FAIL  {kind}.{key}: a document can carry it and a strict locale does not name it; \
+            "FAIL  {kind}.{key}: a strict locale does not name it; \
              name it from a vetted source, or list it in xtask/src/intl.rs with the reason"
         );
         failures += 1;
@@ -470,7 +841,7 @@ fn named_or_listed(
     }
     if failures == 0 {
         println!(
-            "ok    every catalogue member a document carries is named in every strict locale, \
+            "ok    every catalogue member is named in every strict locale, \
              but {} listed",
             listed.len()
         );

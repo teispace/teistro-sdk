@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every catalogue kind is named, or listed with its reason** (C682,
+`entity-names.md` §4). **Numbers:** none move. `check-intl` held the
+strict locales to the kinds a chart document carries, so a tithi's
+class, a muhurta's nature, a koota or a star could reach a reader with
+no name and every gate green. It now holds all 71 kinds; the 259
+members that had no vetted name are listed in `xtask/src/intl.rs` with
+each kind's reason, and a name added later must take its member off.
+
 **The day's lagna table** (`amrit-kalam-and-lagnas.md` §2, C680,
 C681). **Numbers:** none move; a day not asked for its table carries
 none and hashes as before. Asked for (`AlmanacRequest::with_lagnas`,

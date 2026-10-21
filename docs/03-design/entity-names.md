@@ -146,6 +146,28 @@ charts, the 7 chart kinds, the 6 calendars and the 3 outer planets.
 `era` in the two base-completeness locales (`hi-Deva-IN`, `sa-Deva`) is
 outside the rule, which covers strict locales.
 
+**Every kind since 2026-10-21 (C682).** A document is not the only
+reader of a key: a day page shows a tithi's class and a muhurta's
+nature, a match its kootas, a star list its stars. So the rule now
+holds every catalogue kind (`Kind::ALL`, 71), not the schema's. The
+widening found 259 members of 26 kinds unnamed and unlisted, and each
+kind went on the list with its reason, so the list holds 335:
+
+- the day page's kinds, whose names are proposed in
+  [`amrit-kalam-and-lagnas.md`](amrit-kalam-and-lagnas.md) §3.2 and
+  wait there for a reviewer of each language;
+- the kinds a reading or a match shows (`koota`, `state`, `deity`,
+  `auspiciousness`, `sex`, `parity`), for want of a Devanagari table
+  from a ranked source;
+- the SDK's own classifications (`dasha_family`, `point_family`,
+  `chart_layout` and five more), where an English name would be the
+  SDK's coinage and would bind a Nepali one;
+- the 128 stars, whose IAU names would bind a Nepali name each;
+- the Tibetan calendar's elements and animals.
+
+The schema's kinds still scope the coverage page
+(`locale-coverage-measured.md`), which measures what a document carries.
+
 ## 4a. The dasha systems, when a document first carried them
 
 The dasha section (2026-09-15) put `dasha_system` into the document schema,
@@ -239,8 +261,8 @@ Four rules kept members off:
   dashas and the tithi, yoga and karana dashas are not in BPHS.
 
 `chart_layout` is a catalogue kind, so `intl.entity("chart_layout.NEPALI_LOTUS")`
-resolves once a locale names it. No document carries it, so §4's list
-does not reach it, and no source names the layouts in Nepali.
+resolves once a locale names it. No source names the layouts in Nepali,
+so §4's list carries all six.
 
 ## 5. What this does not settle
 

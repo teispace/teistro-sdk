@@ -2,8 +2,8 @@
 
 Status: `design`, 2026-10-21. §1, the amrita kalam, is **built** with its
 default decided on a published panchanga (§1.5); §2, the lagna table, is
-**built** with the committee's own table as its fixture (§2.2); §3 is
-not yet.
+**built** with the committee's own table as its fixture (§2.2); §3's
+gate is **built** (C682) and its names wait for review.
 
 Three things a printed panchanga's day page carries that the almanac does
 not yet answer: the *amṛta ghaṭikā* (amrita kalam) beside the varjyam it
@@ -278,7 +278,7 @@ other chart-scope kinds stay for `entity-names.md`'s own pass.
 | C679 | scaling to the star's span | as the varjyam: sixtieths of the span | fixed ghatis of 24 minutes |
 | C680 | the lagna table's lagna | **decided** (§2.2): `panchanga.lagna_table`, `CHART` by default and the sphere in Lahiri under `nepali-committee`, measured on the committee's own table | the Surya Siddhanta's rising times under that profile, which miss the print by up to 4½ minutes |
 | C681 | the first and last spans | **decided**: both, as a limb's span carries them: `whole` the sign's rising, `inside` the part in the day | a `whole: false` flag |
-| C682 | the unlisted unnamed members | name the day page's kinds (§3.2) once vetted; list the rest in `UNNAMED` with a reason, so the gate's count reaches zero | leave the count as it stands |
+| C682 | the unlisted unnamed members | **decided**: `check-intl` holds every catalogue kind; all 259 are listed with a reason, and the day page's kinds leave the list as their §3.2 names are vetted | leave the count as it stands |
 
 ## 5. Order of work
 
@@ -286,4 +286,4 @@ other chart-scope kinds stay for `entity-names.md`'s own pass.
    reading tested on a star of 60 and of 64 ghatis.
 2. `LagnaSpan` and the `lagnas` section, the tiling and midpoint tests,
    then a printed week as the fixture.
-3. The names, after review, with the audit made a gate.
+3. The audit made a gate (done, C682), then the names after review.
