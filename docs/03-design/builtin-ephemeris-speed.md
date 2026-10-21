@@ -126,3 +126,24 @@ where a fit costs nine evaluations of its series, so fitting them would
 buy the search by taxing every chart. A fit chosen by how often a body is
 asked would make an answer depend on what was asked before it, which is
 the one thing the grid exists to prevent.
+
+## The three tiers side by side
+
+Each tier built alone (the façade with `default-features = false` and one
+of `builtin-compact`, `builtin-standard`, `builtin-full`), timed by the
+same day and month grid on the M2 Pro. The size is the stripped
+benchmark binary, the whole SDK with it, so the differences between rows
+are the tiers' tables. The truncation is each tier's own, against the
+whole theory (`ephemeris-builtin/src/tables/mod.rs`).
+
+| tier | one day | a month grid | stripped binary | Moon truncated | planets truncated |
+|---|---:|---:|---:|---:|---:|
+| `compact` | 2.65 ms | 38.1 ms | 4.02 MB | 18.09″ | 21.27″ |
+| `standard` | 2.63 ms | 37.7 ms | 4.52 MB | 0.71″ | 0.62″ |
+| `full` | 2.31 ms | 37.8 ms | 6.90 MB | 0″ | 0″ |
+
+Before the fit a tier was a trade of speed against accuracy, because
+every instant summed the tier's terms. Now nine instants a segment do,
+and the tiers run at one speed within the run-to-run noise: a tier is a
+choice of size against accuracy alone, and `full` costs 2.4 MB more than
+`standard` and nothing in time.
