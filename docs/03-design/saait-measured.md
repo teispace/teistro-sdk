@@ -38,9 +38,9 @@ narrow the year before the committee chose.
 |---|---|---|---:|---:|---:|---:|
 | bratabandha | `RAMAN_UPANAYANA` | the committee's | 12 | 12 | 12 | 131 of 365 |
 | bratabandha | `RAMAN_UPANAYANA` | modern | 12 | 12 | 12 | 129 of 365 |
-| vivaha | `RAMAN_MARRIAGE` | the committee's | 39 | 10 | 5 | 32 of 365 |
+| vivaha | `RAMAN_MARRIAGE` | the committee's | 39 | 10 | 4 | 32 of 365 |
 | vivaha | `RAMAN_MARRIAGE` | modern | 39 | 10 | 4 | 33 of 365 |
-| pasni | `RAMAN_ANNAPRASANA` | the committee's | 35 | 32 | 24 | 140 of 365 |
+| pasni | `RAMAN_ANNAPRASANA` | the committee's | 35 | 32 | 27 | 140 of 365 |
 | pasni | `RAMAN_ANNAPRASANA` | modern | 35 | 32 | 25 | 138 of 365 |
 | griha pravesh | `RAMAN_GRIHA_PRAVESHA` | the committee's | 2 | 2 | 2 | 37 of 365 |
 | griha pravesh | `RAMAN_GRIHA_PRAVESHA` | modern | 2 | 2 | 2 | 38 of 365 |
@@ -48,8 +48,8 @@ narrow the year before the committee chose.
 | proposed rule | verdict | measured |
 |---|---|---|
 | over the committee's sky, every printed bratabandha day has a clean window | **holds** | 0 of 12 disagree |
-| over the committee's sky, every printed vivaha day has a clean window | falsified | 34 of 39 disagree |
-| over the committee's sky, every printed pasni day has a clean window | falsified | 11 of 35 disagree |
+| over the committee's sky, every printed vivaha day has a clean window | falsified | 35 of 39 disagree |
+| over the committee's sky, every printed pasni day has a clean window | falsified | 8 of 35 disagree |
 | over the committee's sky, every printed griha pravesh day has a clean window | **holds** | 0 of 2 disagree |
 
 ## 3. What parts them
@@ -63,7 +63,7 @@ clause is counted under "no one clause".
 | rite | clause | printed days |
 |---|---|---:|
 | vivaha | VARA MANGALAVARA | 10 |
-| vivaha | no one clause | 9 |
+| vivaha | no one clause | 10 |
 | vivaha | MONTH PAUSHA | 5 |
 | vivaha | MOON_JOINED | 2 |
 | vivaha | TITHI KRISHNA_CHATURTHI | 2 |
@@ -80,8 +80,8 @@ clause is counted under "no one clause".
 | vivaha | YOGA GANDA | 1 |
 | vivaha | YOGA SHOOLA | 1 |
 | vivaha | YOGA VAJRA | 1 |
-| pasni | no one clause | 6 |
-| pasni | UNWANTED_PLACEMENT 10 | 4 |
+| pasni | no one clause | 5 |
+| pasni | UNWANTED_PLACEMENT 10 | 2 |
 | pasni | YOGA SHOOLA | 1 |
 
 Raman reports that "some sages" allow a marriage in Pausha while the
@@ -130,7 +130,7 @@ days are day-clean, against 10 under his rules as shipped.
 | vivaha | 8-19 | 2026-12-05 | SHANIVARA | TITHI KRISHNA_DWADASHI | TITHI KRISHNA_DWADASHI |
 | vivaha | 8-24 | 2026-12-10 | GURUVARA | each window by one of: YOGA GANDA, YOGA SHOOLA | each window by one of: YOGA GANDA, YOGA SHOOLA |
 | vivaha | 8-25 | 2026-12-11 | SHUKRAVARA | NAKSHATRA PURVA_ASHADHA | NAKSHATRA PURVA_ASHADHA |
-| vivaha | 8-26 | 2026-12-12 | SHANIVARA | clean | day clean; each window by one of: KARTARI, LAGNA CAPRICORN, LAGNA SCORPIO, MALEFIC_IN_LAGNA, MARS_IN_EIGHTH, MOON_JOINED, SEVENTH_OCCUPIED |
+| vivaha | 8-26 | 2026-12-12 | SHANIVARA | day clean; each window by one of: KARTARI, LAGNA CAPRICORN, LAGNA SCORPIO, MALEFIC_IN_LAGNA, MARS_IN_EIGHTH, MOON_JOINED, SEVENTH_OCCUPIED | day clean; each window by one of: KARTARI, LAGNA CAPRICORN, LAGNA SCORPIO, MALEFIC_IN_LAGNA, MARS_IN_EIGHTH, MOON_JOINED, SEVENTH_OCCUPIED |
 | vivaha | 10-04 | 2027-01-18 | SOMAVARA | MONTH PAUSHA | MONTH PAUSHA, NAKSHATRA KRITTIKA |
 | vivaha | 10-12 | 2027-01-26 | MANGALAVARA | MONTH PAUSHA, VARA MANGALAVARA, YOGA ATIGANDA | MONTH PAUSHA, VARA MANGALAVARA, YOGA ATIGANDA |
 | vivaha | 10-15 | 2027-01-29 | SHUKRAVARA | MONTH PAUSHA, YOGA SHOOLA | MONTH PAUSHA, TITHI KRISHNA_ASHTAMI |
@@ -152,7 +152,7 @@ days are day-clean, against 10 under his rules as shipped.
 | pasni | 1-07 | 2026-04-20 | SOMAVARA | day clean; UNWANTED_PLACEMENT 10 | day clean; each window by one of: LAGNA ARIES, UNWANTED_PLACEMENT 10 |
 | pasni | 1-10 | 2026-04-23 | GURUVARA | clean | day clean; each window by one of: LAGNA ARIES, UNWANTED_PLACEMENT 10 |
 | pasni | 1-21 | 2026-05-04 | SOMAVARA | day clean; each window by one of: LAGNA ARIES, UNWANTED_PLACEMENT 10 | day clean; each window by one of: LAGNA ARIES, UNWANTED_PLACEMENT 10 |
-| pasni | 2-04 | 2026-05-18 | SOMAVARA | day clean; UNWANTED_PLACEMENT 10 | clean |
+| pasni | 2-04 | 2026-05-18 | SOMAVARA | clean | clean |
 | pasni | 2-07 | 2026-05-21 | GURUVARA | each window by one of: TITHI SHUKLA_SHASHTHI, YOGA GANDA | each window by one of: TITHI SHUKLA_SHASHTHI, YOGA GANDA |
 | pasni | 2-22 | 2026-06-05 | SHUKRAVARA | day clean; UNWANTED_PLACEMENT 10 | day clean; UNWANTED_PLACEMENT 10 |
 | pasni | 3-03 | 2026-06-17 | BUDHAVARA | clean | clean |
@@ -170,9 +170,9 @@ days are day-clean, against 10 under his rules as shipped.
 | pasni | 5-29 | 2026-09-14 | SOMAVARA | clean | clean |
 | pasni | 6-05 | 2026-09-21 | SOMAVARA | clean | clean |
 | pasni | 6-26 | 2026-10-12 | SOMAVARA | clean | clean |
-| pasni | 7-13 | 2026-10-30 | SHUKRAVARA | day clean; UNWANTED_PLACEMENT 10 | day clean; UNWANTED_PLACEMENT 10 |
+| pasni | 7-13 | 2026-10-30 | SHUKRAVARA | clean | day clean; UNWANTED_PLACEMENT 10 |
 | pasni | 7-30 | 2026-11-16 | SOMAVARA | clean | clean |
-| pasni | 8-10 | 2026-11-26 | GURUVARA | day clean; each window by one of: LAGNA ARIES, LAGNA PISCES, LAGNA SCORPIO, UNWANTED_PLACEMENT 10 | clean |
+| pasni | 8-10 | 2026-11-26 | GURUVARA | clean | clean |
 | pasni | 8-17 | 2026-12-03 | GURUVARA | day clean; each window by one of: LAGNA PISCES, LAGNA SCORPIO, UNWANTED_PLACEMENT 10 | day clean; UNWANTED_PLACEMENT 10 |
 | pasni | 9-01 | 2026-12-16 | BUDHAVARA | clean | clean |
 | pasni | 9-15 | 2026-12-30 | BUDHAVARA | clean | clean |

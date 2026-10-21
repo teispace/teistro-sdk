@@ -274,7 +274,7 @@ pub struct Air {
 /// The settings **ask** and the ephemeris chain **supplies** (ADR-0029):
 /// `SURYA` needs a context opened over `SURYA_SIDDHANTA`, and the model
 /// that entry opens is the text with this bija applied.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Siddhanta {
@@ -288,6 +288,49 @@ pub enum Siddhanta {
         /// modern ephemeris's beside the text's sky.
         #[serde(default)]
         sunrise: SuryaSunrise,
+        /// Where the star planets and the node come from: the text (the
+        /// default) or a modern ephemeris beside it.
+        #[serde(default)]
+        planets: SuryaPlanets,
+    },
+}
+
+/// Where the Surya Siddhanta's star planets and node come from (crux
+/// C38, `03-design/committee-star-planets.md`).
+///
+/// Nepal's national panchanga committee prints the text's Sun and Moon
+/// beside modern star planets in Lahiri's zodiac: over 49 printed
+/// mornings a modern sky misses its Mars, Mercury, Jupiter, Venus and
+/// Saturn by 9′ to 33′, the text by 94′ to 459′.
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::settings::SuryaPlanets;
+///
+/// let modern = SuryaPlanets::Modern { ayanamsha: Ayanamsha::Lahiri.into() };
+/// assert_eq!(
+///     serde_json::to_value(modern)?,
+///     serde_json::json!({"kind": "MODERN", "ayanamsha": {"kind": "CATALOGUED", "id": "LAHIRI"}})
+/// );
+/// assert_eq!(SuryaPlanets::default(), SuryaPlanets::Text);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SuryaPlanets {
+    /// The text's, by its four steps (II.39 to 45), each from its own
+    /// mean motion under the bija.
+    #[default]
+    Text,
+    /// Mars, Mercury, Jupiter, Venus, Saturn and the mean node from the
+    /// modern ephemeris a modern sunrise comes from (the next entry of the
+    /// chain that opens, else the SDK's built-in one), apparent and
+    /// geocentric, less this ayanamsha's mean value. The Sun, the Moon,
+    /// the angles and the zodiac stay the text's.
+    Modern {
+        /// The zodiac the modern places are measured in.
+        ayanamsha: AyanamshaChoice,
     },
 }
 
@@ -296,16 +339,24 @@ impl Siddhanta {
     /// own sunrise.
     ///
     /// ```
-    /// use teistro_core::settings::{Siddhanta, SuryaBija, SuryaSunrise};
+    /// use teistro_core::settings::{Siddhanta, SuryaBija, SuryaPlanets, SuryaSunrise};
     ///
     /// let text = Siddhanta::surya(SuryaBija::None);
-    /// assert_eq!(text, Siddhanta::Surya { bija: SuryaBija::None, sunrise: SuryaSunrise::Text });
+    /// assert_eq!(
+    ///     text,
+    ///     Siddhanta::Surya {
+    ///         bija: SuryaBija::None,
+    ///         sunrise: SuryaSunrise::Text,
+    ///         planets: SuryaPlanets::Text,
+    ///     }
+    /// );
     /// ```
     #[must_use]
     pub const fn surya(bija: SuryaBija) -> Siddhanta {
         Siddhanta::Surya {
             bija,
             sunrise: SuryaSunrise::Text,
+            planets: SuryaPlanets::Text,
         }
     }
 }
@@ -1638,7 +1689,8 @@ mod tests {
             read(r#"{"kind": "SURYA", "bija": {"kind": "NONE"}, "sunrise": "MODERN"}"#),
             Siddhanta::Surya {
                 bija: SuryaBija::None,
-                sunrise: SuryaSunrise::Modern
+                sunrise: SuryaSunrise::Modern,
+                planets: SuryaPlanets::Text,
             }
         );
         // The committee's sky: the text's limbs at a modern sunrise, the
@@ -1650,7 +1702,10 @@ mod tests {
             committee.settings.frame.siddhanta,
             Siddhanta::Surya {
                 bija: SuryaBija::NepalCommittee,
-                sunrise: SuryaSunrise::Modern
+                sunrise: SuryaSunrise::Modern,
+                planets: SuryaPlanets::Modern {
+                    ayanamsha: crate::catalogue::Ayanamsha::Lahiri.into(),
+                },
             }
         );
         assert_eq!(

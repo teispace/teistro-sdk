@@ -220,16 +220,21 @@ on the geometric horizon; other conventions refused as unsupported). C
 ABI and bindings reach the model through the port's vtable the way they
 reach an engine.
 
-`ModernSunrise::new(text, modern)` is the text's sky with a modern
-sunrise: every place, angle and the zodiac from the text, and a rise or
-set from the SDK's solver over the modern ephemeris under whatever
-convention is asked, its stamp naming both (`sunrise from …`). The
+`ModernParts::new(text, modern)` is the text's sky with the parts asked
+for taken from a modern ephemeris, its stamp naming each. With
+`with_sunrise()` a rise or set is the SDK's solver over the modern
+ephemeris under whatever convention is asked (`sunrise from …`). With
+`with_planets(ayanamsha)` Mars, Mercury, Jupiter, Venus, Saturn and the
+mean node are the modern ephemeris's apparent geocentric places less
+that ayanamsha's mean value (`star planets from … in LAHIRI`). Every
+other place, the angles and the zodiac stay the text's. The
 `SURYA_SIDDHANTA` entry opens it when `frame.siddhanta.sunrise` is
-`MODERN`, the modern ephemeris being the first modern entry after it in
-the chain, else the built-in one; without either it refuses on
-`settings.frame.siddhanta.sunrise`. It is how Nepal's daily panchanga
-is computed: the text's limbs, a modern sunrise (C39,
-`nepal-day-measured.md`).
+`MODERN` or `frame.siddhanta.planets` is `MODERN`, the modern ephemeris
+being the first modern entry after it in the chain, else the built-in
+one; without either it refuses on the setting that asked. It is how
+Nepal's national panchanga is computed: the text's limbs, a modern
+sunrise (C39, `nepal-day-measured.md`), and modern star planets in
+Lahiri's zodiac (C38, `committee-star-planets.md`).
 
 ## 6. Errors and degenerate states
 

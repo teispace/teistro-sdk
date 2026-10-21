@@ -484,9 +484,10 @@ fn the_default_table_cuts_where_swiss_ephemeris_does() {
 
 /// The committee's printed places at sunrise (Kathmandu), the first row of
 /// each half-month page of VS 2082 and 2083 (page, the UT Julian day of
-/// that morning's sunrise, then Mars, Mercury, Jupiter, Venus and Saturn,
+/// that morning's sunrise, then Mars, Mercury, Jupiter, Venus, Saturn and
+/// Rahu,
 /// `sign:degree:minute:second` in its zodiac).
-const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
+const COMMITTEE_PLANETS: [(&str, f64, [&str; 6]); 49] = [
     (
         "2082-02",
         2_460_779.496_830,
@@ -496,6 +497,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "1:24:7:9",
             "11:1:21:24",
             "11:1:47:21",
+            "11:1:49:2",
         ],
     ),
     (
@@ -507,6 +509,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "1:26:40:16",
             "11:4:37:29",
             "11:3:15:55",
+            "11:1:4:31",
         ],
     ),
     (
@@ -518,6 +521,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "1:29:44:15",
             "11:13:54:25",
             "11:4:39:35",
+            "11:0:16:50",
         ],
     ),
     (
@@ -529,6 +533,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:2:59:15",
             "11:26:36:47",
             "11:5:50:38",
+            "10:29:29:8",
         ],
     ),
     (
@@ -540,6 +545,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:6:18:42",
             "0:11:11:55",
             "11:6:46:8",
+            "10:28:41:26",
         ],
     ),
     (
@@ -551,6 +557,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:9:26:38",
             "0:25:51:35",
             "11:7:18:24",
+            "10:27:56:55",
         ],
     ),
     (
@@ -562,6 +569,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:12:47:49",
             "1:12:20:42",
             "11:7:30:53",
+            "10:27:9:14",
         ],
     ),
     (
@@ -573,6 +581,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:15:51:52",
             "1:28:12:55",
             "11:7:25:1",
+            "10:26:24:43",
         ],
     ),
     (
@@ -584,6 +593,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:19:18:18",
             "2:16:47:49",
             "11:6:56:38",
+            "10:25:33:50",
         ],
     ),
     (
@@ -595,6 +605,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:22:2:4",
             "3:3:27:29",
             "11:6:12:28",
+            "10:24:49:19",
         ],
     ),
     (
@@ -606,6 +617,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:24:42:16",
             "3:21:30:25",
             "11:5:13:56",
+            "10:24:1:38",
         ],
     ),
     (
@@ -617,6 +629,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:26:57:31",
             "4:8:39:26",
             "11:4:8:33",
+            "10:23:17:7",
         ],
     ),
     (
@@ -628,6 +641,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:28:58:34",
             "4:28:30:16",
             "11:2:54:48",
+            "10:22:26:14",
         ],
     ),
     (
@@ -639,6 +653,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:0:10:31",
             "5:15:58:34",
             "11:1:59:59",
+            "10:21:41:44",
         ],
     ),
     (
@@ -650,6 +665,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:0:52:13",
             "6:4:40:43",
             "11:1:16:12",
+            "10:20:54:2",
         ],
     ),
     (
@@ -661,6 +677,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:0:46:41",
             "6:23:33:47",
             "11:0:50:8",
+            "10:20:6:20",
         ],
     ),
     (
@@ -672,6 +689,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:0:4:7",
             "7:11:7:56",
             "11:0:52:15",
+            "10:19:21:49",
         ],
     ),
     (
@@ -683,6 +701,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:28:40:23",
             "8:0:0:27",
             "11:1:13:2",
+            "10:18:34:8",
         ],
     ),
     (
@@ -694,6 +713,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:26:45:14",
             "8:18:51:21",
             "11:1:59:16",
+            "10:17:46:26",
         ],
     ),
     (
@@ -705,6 +725,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:24:37:43",
             "9:7:39:33",
             "11:3:8:41",
+            "10:16:58:44",
         ],
     ),
     (
@@ -716,6 +737,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:22:53:28",
             "9:25:12:13",
             "11:4:24:19",
+            "10:16:14:13",
         ],
     ),
     (
@@ -727,6 +749,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:21:28:27",
             "10:15:11:25",
             "11:6:5:41",
+            "10:15:23:21",
         ],
     ),
     (
@@ -738,6 +761,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:20:49:30",
             "11:2:38:27",
             "11:7:44:51",
+            "10:14:38:50",
         ],
     ),
     (
@@ -749,6 +773,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:20:55:35",
             "11:22:34:38",
             "11:9:46:24",
+            "10:13:47:58",
         ],
     ),
     (
@@ -760,6 +785,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:22:35:19",
             "0:23:28:53",
             "11:12:51:8",
+            "10:12:28:28",
         ],
     ),
     (
@@ -771,6 +797,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:22:59:21",
             "0:28:25:12",
             "11:13:20:19",
+            "10:12:15:45",
         ],
     ),
     (
@@ -782,6 +809,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:24:50:6",
             "1:15:36:6",
             "11:14:56:7",
+            "10:11:31:14",
         ],
     ),
     (
@@ -793,6 +821,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:27:14:15",
             "2:3:47:7",
             "11:16:27:35",
+            "10:10:43:33",
         ],
     ),
     (
@@ -804,6 +833,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "2:29:51:20",
             "2:21:49:7",
             "11:17:45:40",
+            "10:9:55:51",
         ],
     ),
     (
@@ -815,6 +845,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:2:47:23",
             "3:9:26:56",
             "11:18:53:18",
+            "10:9:8:9",
         ],
     ),
     (
@@ -826,6 +857,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:5:45:0",
             "3:25:31:5",
             "11:19:39:54",
+            "10:8:23:39",
         ],
     ),
     (
@@ -837,6 +869,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:8:59:35",
             "4:12:15:58",
             "11:20:5:38",
+            "10:7:35:57",
         ],
     ),
     (
@@ -848,6 +881,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:12:17:51",
             "4:28:13:35",
             "11:20:15:2",
+            "10:6:48:15",
         ],
     ),
     (
@@ -859,6 +893,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:15:23:22",
             "5:12:9:35",
             "11:20:0:22",
+            "10:6:3:44",
         ],
     ),
     (
@@ -870,6 +905,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:18:52:11",
             "5:26:23:35",
             "11:19:23:52",
+            "10:5:12:52",
         ],
     ),
     (
@@ -881,6 +917,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:21:51:45",
             "6:6:12:9",
             "11:18:36:30",
+            "10:4:28:21",
         ],
     ),
     (
@@ -892,6 +929,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:24:45:37",
             "6:12:17:27",
             "11:17:32:44",
+            "10:3:40:39",
         ],
     ),
     (
@@ -903,6 +941,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:27:12:29",
             "6:12:18:39",
             "11:16:25:29",
+            "10:2:56:8",
         ],
     ),
     (
@@ -914,6 +953,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:29:43:58",
             "6:5:30:39",
             "11:15:15:39",
+            "10:2:5:16",
         ],
     ),
     (
@@ -925,6 +965,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "4:1:23:42",
             "5:29:38:40",
             "11:14:26:10",
+            "10:1:20:45",
         ],
     ),
     (
@@ -936,6 +977,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "4:2:34:53",
             "6:1:59:52",
             "11:13:49:48",
+            "10:0:33:3",
         ],
     ),
     (
@@ -947,6 +989,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "4:3:7:31",
             "6:10:9:50",
             "11:13:35:24",
+            "9:29:48:32",
         ],
     ),
     (
@@ -958,6 +1001,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "4:2:50:19",
             "6:23:20:8",
             "11:13:45:26",
+            "9:28:57:40",
         ],
     ),
     (
@@ -969,6 +1013,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "4:1:59:27",
             "7:7:9:35",
             "11:14:16:50",
+            "9:28:13:9",
         ],
     ),
     (
@@ -980,6 +1025,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "4:0:23:22",
             "7:23:14:49",
             "11:15:14:34",
+            "9:27:25:27",
         ],
     ),
     (
@@ -991,6 +1037,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:28:21:35",
             "8:10:9:10",
             "11:16:29:33",
+            "9:26:37:46",
         ],
     ),
     (
@@ -1002,6 +1049,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:26:20:1",
             "8:26:25:20",
             "11:17:51:6",
+            "9:25:53:15",
         ],
     ),
     (
@@ -1013,6 +1061,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:24:24:20",
             "9:15:18:8",
             "11:19:37:5",
+            "9:25:2:22",
         ],
     ),
     (
@@ -1024,6 +1073,7 @@ const COMMITTEE_PLANETS: [(&str, f64, [&str; 5]); 49] = [
             "3:23:13:1",
             "10:1:59:22",
             "11:21:21:39",
+            "9:24:17:52",
         ],
     ),
 ];
@@ -1034,9 +1084,10 @@ fn printed_degrees(text: &str) -> f64 {
     parts[0] * 30.0 + parts[1] + parts[2] / 60.0 + parts[3] / 3600.0
 }
 
-/// Each star planet's root mean square miss of the print, in arcminutes,
-/// over a context's charts at the printed mornings.
-fn misses(context: &Context) -> [f64; 5] {
+/// Each star planet's and the node's root mean square miss of the print,
+/// and the node's worst, in arcminutes, over a context's charts at the
+/// printed mornings.
+fn misses(context: &Context) -> ([f64; 6], f64) {
     use teistro::catalogue::Graha;
     let kathmandu = Place::new(
         Latitude::literal(27.7172),
@@ -1049,8 +1100,10 @@ fn misses(context: &Context) -> [f64; 5] {
         Graha::Jupiter,
         Graha::Venus,
         Graha::Saturn,
+        Graha::Rahu,
     ];
-    let mut squares = [0.0; 5];
+    let mut squares = [0.0; 6];
+    let mut node: f64 = 0.0;
     for (_, jd, printed) in COMMITTEE_PLANETS {
         let chart = context
             .chart()
@@ -1072,33 +1125,51 @@ fn misses(context: &Context) -> [f64; 5] {
             let apart =
                 ((printed_degrees(printed[j]) - ours + 540.0).rem_euclid(360.0) - 180.0) * 60.0;
             squares[j] += apart * apart;
+            if graha == Graha::Rahu {
+                node = node.max(apart.abs());
+            }
         }
     }
     #[allow(clippy::cast_precision_loss, reason = "a row count")]
     let n = COMMITTEE_PLANETS.len() as f64;
-    squares.map(|s| (s / n).sqrt())
+    (squares.map(|s| (s / n).sqrt()), node)
 }
 
-/// The committee's star planets are not the text's (C38): over 49 printed
-/// mornings of VS 2082 and 2083, a modern sky in Lahiri's zodiac misses
-/// them by a root mean square of 9 to 33 arcminutes, the Surya
-/// Siddhanta's own planets under `nepal_official` by 94 to 460, and no
-/// whole bija on the text's counts comes nearer than 20
-/// (`03-design/committee-star-planets.md`).
+/// The committee's star planets and node are a modern sky's in Lahiri's
+/// zodiac, not the text's (C38): over 49 printed mornings of VS 2082 and
+/// 2083, `nepal_official` (`frame.siddhanta.planets` `MODERN` in
+/// `LAHIRI`) misses Mars, Mercury, Jupiter, Venus and Saturn by a root
+/// mean square of 9 to 33 arcminutes, as the default context's modern
+/// sky does, and the node by under two on every row. The text's own
+/// planets, asked for by `TEXT`, miss by 94 to 459, and no whole bija on
+/// its counts comes nearer than 20 (`03-design/committee-star-planets.md`).
 #[test]
-fn the_committees_star_planets_are_nearer_a_modern_sky_than_the_text() {
-    let modern = misses(
+fn the_committees_star_planets_are_a_modern_sky_in_lahiri() {
+    let (official, node) = misses(&Context::builder().nepal_official([]).build().unwrap());
+    let (modern, _) = misses(
         &Context::builder()
             .ephemeris([Ephemeris::Builtin])
             .build()
             .unwrap(),
     );
-    let text = misses(&Context::builder().nepal_official([]).build().unwrap());
+    let (text, _) = misses(
+        &Context::builder()
+            .nepal_official([])
+            .settings_json(
+                r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "NEPAL_COMMITTEE"}, "sunrise": "MODERN", "planets": {"kind": "TEXT"}}}}"#,
+            )
+            .build()
+            .unwrap(),
+    );
+    // Measured: 18, 33, 9, 31 and 9 arcminutes; the node 1.1 at worst.
+    let within = [20.0, 35.0, 10.0, 33.0, 10.0];
     for j in 0..5 {
-        assert!(modern[j] < 35.0, "{j}: {modern:?}");
+        assert!(official[j] < within[j], "{j}: {official:?}");
         assert!(
-            text[j] > 3.0 * modern[j],
-            "{j}: {text:?} against {modern:?}"
+            (official[j] - modern[j]).abs() < 0.5,
+            "{j}: {official:?} against {modern:?}"
         );
+        assert!(text[j] > 90.0, "{j}: {text:?}");
     }
+    assert!(node < 2.0, "the node misses by {node:.1}′");
 }

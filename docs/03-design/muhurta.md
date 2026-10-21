@@ -619,11 +619,13 @@ committee's VS 2083 muhurta sheet, 94 rows read off its page images,
 each printed day founded at Kathmandu over the committee's sky and the
 modern one and searched with the rite's rules. Six rows print a weekday
 their own date contradicts, and are read neither way. Every readable
-bratabandha and griha pravesh day has a clean window; 24 of 35 pasni
+bratabandha and griha pravesh day has a clean window; 27 of 35 pasni
 days do, most of the rest parting at the 10th that must be empty; and
-5 of 39 vivaha days do under Raman's marriage, which parts from the
+4 of 39 vivaha days do under Raman's marriage, which parts from the
 committee by Tuesday, Pausha, dark-half tithis and yogas (C206). The
-page also counts the days of the year each rite leaves open.
+counts are over the committee's sky as `nepali-committee` version 4
+reads it, with modern star planets (C38); the text's planets gave 24
+and 5. The page also counts the days of the year each rite leaves open.
 
 ## 5. What is measured
 

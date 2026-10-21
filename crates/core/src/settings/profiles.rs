@@ -26,7 +26,7 @@ use super::knobs::{
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
     LagnaTable, Output, Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch,
-    Siddhanta, State, Strength, SuryaBija, Time, Vargas,
+    Siddhanta, State, Strength, SuryaBija, SuryaPlanets, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -399,16 +399,20 @@ fn nepali_default() -> Profile {
 /// equation of time and stands up to twenty minutes from the print's,
 /// and with this one every printed vriddhi and kshaya agrees (C39). The
 /// modern sunrise comes from the chain's next modern entry, or the
-/// built-in ephemeris. The committee's five star planets are modern
-/// positions under Lahiri (C38), which this profile does not reproduce;
-/// its daily lagna table is the sphere's ascendant under Lahiri too
-/// (C680), which `panchanga.lagna_table` reproduces.
+/// built-in ephemeris. The committee's five star planets and its node
+/// are modern positions under Lahiri (C38), and so is its daily lagna
+/// table (C680): the profile takes the planets from that modern entry
+/// (`frame.siddhanta.planets`) and the table from the sphere
+/// (`panchanga.lagna_table`).
 fn nepali_committee() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.centre = Some(Centre::Geocentric);
     patch.frame.siddhanta = Some(Siddhanta::Surya {
         bija: SuryaBija::NepalCommittee,
         sunrise: SuryaSunrise::Modern,
+        planets: SuryaPlanets::Modern {
+            ayanamsha: Ayanamsha::Lahiri.into(),
+        },
     });
     patch.day.sunrise = Some(Sunrise::CentreRefraction.into());
     patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
@@ -418,14 +422,14 @@ fn nepali_committee() -> Profile {
     let committee = |what: &'static str| Source::new("Nepal Panchanga Nirnayak Vikas Samiti", what);
     Profile {
         id: ProfileId::new("nepali-committee"),
-        version: 3,
+        version: 4,
         base: Some(ProfileId::new("nepali-default")),
         patch,
         sources: vec![
             Citation::new(
                 "frame.siddhanta",
                 committee(
-                    "measured: the Rashtriya Panchangam 2082 and 2083 print the text's Moon with its apsis four revolutions an age fewer; docs/calendars/bikram-sambat.md R2 and docs/03-design/nepal-day-measured.md",
+                    "measured: the Rashtriya Panchangam 2082 and 2083 print the text's Moon with its apsis four revolutions an age fewer, and modern star planets in Lahiri's zodiac (a root mean square of 9 to 33 arcminutes over 49 printed mornings, the text's 94 to 459); docs/calendars/bikram-sambat.md R2, docs/03-design/nepal-day-measured.md and docs/03-design/committee-star-planets.md",
                 ),
             ),
             Citation::new(
@@ -450,7 +454,7 @@ fn nepali_committee() -> Profile {
             Citation::new(
                 "panchanga.lagna_table",
                 committee(
-                    "measured: the Rashtriya Panchangam 2082's daily lagna starts at Kathmandu are the sphere's ascendant in Lahiri's zodiac, each printed minute 15 to 92 seconds before the cut; the text's own rising times miss by up to four and a half minutes; docs/03-design/amrit-kalam-and-lagnas.md §2.2, C680",
+                    "measured: the Rashtriya Panchangam 2082's daily lagna starts at Kathmandu are the sphere's ascendant in Lahiri's zodiac, each printed minute 9 to 101 seconds before the cut; the text's own rising times miss by up to four and a half minutes; docs/03-design/amrit-kalam-and-lagnas.md §2.2, C680",
                 ),
             ),
         ],

@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The committee's star planets** (`committee-star-planets.md`, C38).
+**Numbers:** under `nepali-committee` (and so `nepal_official`) every
+chart's Mars, Mercury, Jupiter, Venus, Saturn and node move, by 1.6° to
+7.7° in root mean square over the printed mornings, Venus by up to 23°; nothing else moves, and no
+other profile. The committee prints a modern sky in Lahiri's zodiac for
+these and the text for the Sun and the Moon: over 49 printed mornings of
+VS 2082 and 2083 the new places miss the print by 9′ to 33′ and the node
+by under 2′, where the text's missed by 94′ to 459′. A new
+`frame.siddhanta.planets` (`TEXT`, the default, or `MODERN` with an
+ayanamsha) asks for it, and `nepali-committee` is version 4.
+`teistro_siddhanta::ModernSunrise` is now `ModernParts`, which takes the
+sunrise, the star planets or both from the modern entry.
+
 **Every catalogue kind is named, or listed with its reason** (C682,
 `entity-names.md` §4). **Numbers:** none move. `check-intl` held the
 strict locales to the kinds a chart document carries, so a tithi's

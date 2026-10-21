@@ -4,9 +4,9 @@
 use teistro_astro::DeltaTModel;
 use teistro_core::Status;
 use teistro_core::error::Error;
-use teistro_core::settings::{Siddhanta, SuryaSunrise};
+use teistro_core::settings::{Siddhanta, SuryaPlanets, SuryaSunrise};
 use teistro_port_ephemeris::{Astronomy, EphemerisProvider, TestProvider};
-use teistro_siddhanta::{ModernSunrise, SiddhantaProvider};
+use teistro_siddhanta::{ModernParts, SiddhantaProvider};
 
 /// One entry of the chain: an ephemeris the SDK carries, or one a
 /// consumer brings.
@@ -173,10 +173,11 @@ impl Ephemeris {
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
-    /// A day at a modern sunrise (`SuryaSunrise::Modern`) takes it from the
-    /// entries after this one in a context's chain; opened alone, as here,
-    /// there are none, so it takes the built-in ephemeris's, and refuses
-    /// without that feature.
+    /// A day at a modern sunrise (`SuryaSunrise::Modern`) and modern star
+    /// planets (`SuryaPlanets::Modern`) take them from the entries after
+    /// this one in a context's chain; opened alone, as here, there are
+    /// none, so they take the built-in ephemeris's, and refuse without
+    /// that feature.
     ///
     /// # Errors
     ///
@@ -204,20 +205,46 @@ impl Ephemeris {
                 teistro_ephemeris_builtin::provider::Builtin::new(),
             ))),
             Ephemeris::SuryaSiddhanta => {
-                let Siddhanta::Surya { bija, sunrise } = siddhanta else {
+                let Siddhanta::Surya {
+                    bija,
+                    sunrise,
+                    planets,
+                } = siddhanta
+                else {
                     return Ok(Some(Box::new(SiddhantaProvider::text())));
                 };
                 let text = SiddhantaProvider::with_bija(bija.revolutions());
-                match sunrise {
-                    SuryaSunrise::Text => Ok(Some(Box::new(text))),
-                    SuryaSunrise::Modern => Ok(Some(Box::new(
-                        ModernSunrise::new(text, modern_sunrise(rest)?).with_delta_t(delta_t),
-                    ))),
-                    other => Err(Error::unsupported(format!(
-                        "the {other} sunrise; this build knows TEXT and MODERN"
-                    ))
-                    .with_field("settings.frame.siddhanta.sunrise")),
+                let modern_sunrise = match sunrise {
+                    SuryaSunrise::Text => false,
+                    SuryaSunrise::Modern => true,
+                    other => {
+                        return Err(Error::unsupported(format!(
+                            "the {other} sunrise; this build knows TEXT and MODERN"
+                        ))
+                        .with_field("settings.frame.siddhanta.sunrise"));
+                    }
+                };
+                let modern_planets = match planets {
+                    SuryaPlanets::Text => None,
+                    SuryaPlanets::Modern { ayanamsha } => Some(ayanamsha),
+                };
+                if !modern_sunrise && modern_planets.is_none() {
+                    return Ok(Some(Box::new(text)));
                 }
+                let field = if modern_sunrise {
+                    "settings.frame.siddhanta.sunrise"
+                } else {
+                    "settings.frame.siddhanta.planets"
+                };
+                let mut sky =
+                    ModernParts::new(text, modern_entry(rest, field)?).with_delta_t(delta_t);
+                if modern_sunrise {
+                    sky = sky.with_sunrise();
+                }
+                if let Some(ayanamsha) = modern_planets {
+                    sky = sky.with_planets(ayanamsha);
+                }
+                Ok(Some(Box::new(sky)))
             }
             Ephemeris::Test => Ok(Some(Box::new(TestProvider::new()))),
             Ephemeris::Provider(provider) => Ok(Some(provider)),
@@ -226,14 +253,18 @@ impl Ephemeris {
     }
 }
 
-/// The modern ephemeris a day's sunrise comes from beside the text: the
-/// first of the remaining entries that opens a modern astronomy, else the
-/// SDK's built-in one.
+/// The modern ephemeris the text's modern parts (a day's sunrise, the
+/// star planets) come from: the first of the remaining entries that opens
+/// a modern astronomy, else the SDK's built-in one. `field` is the
+/// setting a refusal names.
 ///
 /// A classical entry is passed over rather than refused, because it gives
 /// the very sunrise this setting asks to replace; an entry that fails to
 /// open is passed over as the chain passes over it.
-fn modern_sunrise(rest: Vec<Ephemeris>) -> Result<Box<dyn EphemerisProvider>, Error> {
+fn modern_entry(
+    rest: Vec<Ephemeris>,
+    field: &'static str,
+) -> Result<Box<dyn EphemerisProvider>, Error> {
     for entry in rest {
         if let Ok(Some(provider)) = entry.open_under(Siddhanta::Drik) {
             if provider.capabilities().astronomy != Astronomy::Classical {
@@ -241,29 +272,29 @@ fn modern_sunrise(rest: Vec<Ephemeris>) -> Result<Box<dyn EphemerisProvider>, Er
             }
         }
     }
-    built_in_sunrise()
+    built_in_modern(field)
 }
 
-/// The built-in ephemeris, as the modern sunrise's last resort.
+/// The built-in ephemeris, as the modern parts' last resort.
 #[cfg(feature = "builtin-ephemeris")]
 #[allow(
     clippy::unnecessary_wraps,
     reason = "one signature for both builds; the other refuses"
 )]
-fn built_in_sunrise() -> Result<Box<dyn EphemerisProvider>, Error> {
+fn built_in_modern(_field: &'static str) -> Result<Box<dyn EphemerisProvider>, Error> {
     Ok(Box::new(teistro_ephemeris_builtin::provider::Builtin::new()))
 }
 
-/// Without the built-in ephemeris, a modern sunrise needs a modern entry
+/// Without the built-in ephemeris, a modern part needs a modern entry
 /// after the text's in the chain.
 #[cfg(not(feature = "builtin-ephemeris"))]
-fn built_in_sunrise() -> Result<Box<dyn EphemerisProvider>, Error> {
+fn built_in_modern(field: &'static str) -> Result<Box<dyn EphemerisProvider>, Error> {
     Err(Error::unsupported(
-        "a modern sunrise beside the Surya Siddhanta, with no modern ephemeris to give it",
+        "a modern sunrise or star planets beside the Surya Siddhanta, with no modern ephemeris to give them",
     )
-    .with_field("settings.frame.siddhanta.sunrise")
+    .with_field(field)
     .with_hint(
-        "name a modern ephemeris after 'SURYA_SIDDHANTA' in the chain, or set the sunrise to TEXT",
+        "name a modern ephemeris after 'SURYA_SIDDHANTA' in the chain, or set the sunrise and the planets to TEXT",
     ))
 }
 

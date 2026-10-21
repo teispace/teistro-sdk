@@ -1,16 +1,17 @@
 # The committee's star planets
 
-Status: `design`, 2026-10-21. §1 is measured and gated
-(`crates/sdk/tests/printed_day.rs`); §3 is proposed.
+Status: `built`, 2026-10-22. §1 is measured and §3 built, both gated by
+`crates/sdk/tests/printed_day.rs`.
 
 Nepal's national panchanga committee prints, on every half-month page of
 its *Rashtriya Panchangam*, a table of the nine grahas at each morning's
 sunrise at Kathmandu (उदयकालिक सूर्यादि स्पष्ट ग्रह). Its Sun and Moon are
 the Surya Siddhanta's with the committee's bija (C28). Its star planets
 and node were read on four rows as modern positions in Lahiri's zodiac
-(C38, `calendars/bikram-sambat.md`). `nepali-committee` still answers
-them from the text, so a chart under `nepal_official` places Venus up to
-eleven degrees from the planet the committee prints for that morning.
+(C38, `calendars/bikram-sambat.md`). Until version 4 `nepali-committee`
+answered them from the text, so a chart under `nepal_official` placed
+Venus up to 23 degrees from the planet the committee prints for that
+morning.
 
 ## 1. Measured
 
@@ -55,7 +56,7 @@ The same was true of its lagna table (C680), and
 `panchanga.lagna_table` answered it for one quantity. The planets are
 the chart's, so the answer belongs in the sky the profile opens.
 
-## 3. Proposed: the star planets from the modern entry
+## 3. Built: the star planets from the modern entry
 
 `Siddhanta::Surya` gains `planets`, beside `sunrise`:
 
@@ -66,12 +67,15 @@ the chart's, so the answer belongs in the sky the profile opens.
   stay the text's, and so do the angles, the obliquity and the
   ayanamsha the text defines.
 
-`nepali-committee` sets `MODERN { LAHIRI }`, citing this page. A
-sidereal place answered this way is the modern place less Lahiri's
+`nepali-committee` sets `MODERN { LAHIRI }`, citing this page, and is
+version 4. The composition is `teistro_siddhanta::ModernParts`, which
+also carries the modern sunrise (C39), so one modern entry answers
+both. A sidereal place answered this way is the modern place less Lahiri's
 ayanamsha, so a chart reads the committee's printed planet; a tropical
 one adds the text's ayanamsha back, so the two frames stay one sky.
 
-Acceptance: under `nepal_official`, each of the five within the modern
-row of §1's table, and the node within 2′ of the print on all 49 rows.
+Acceptance, held: under `nepal_official` each of the five reads as the
+modern row of §1's table (within half an arcminute of the default
+context's), and the node is within 2′ of the print on all 49 rows.
 Every chart under the profile changes its five planets and node, which
 is the documented, gated reason the brief's §4 asks for.
