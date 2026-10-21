@@ -5711,12 +5711,39 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.BHAKTAPUR_BRAHMAYANI_JATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhaktapurBrahmayaniJatra() {
+                    return r.entity("festival.BHAKTAPUR_BRAHMAYANI_JATRA");
+                }
+
+                /**
                  * The forms of `festival.BHAKTAPUR_CHANDI_BHAGAWATI_JATRA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms bhaktapurChandiBhagawatiJatra() {
                     return r.entity("festival.BHAKTAPUR_CHANDI_BHAGAWATI_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.BHAKTAPUR_CHHUMA_GANESH_JATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhaktapurChhumaGaneshJatra() {
+                    return r.entity("festival.BHAKTAPUR_CHHUMA_GANESH_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhaktapurMahakaliMahalaxmiJatra() {
+                    return r.entity("festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA");
                 }
 
                 /**
@@ -5798,6 +5825,24 @@ public final class Messages {
                  */
                 public EntityForms bishalnagarVaishnaviDeviJatra() {
                     return r.entity("festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.BISKET_JATRA_BEGINS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bisketJatraBegins() {
+                    return r.entity("festival.BISKET_JATRA_BEGINS");
+                }
+
+                /**
+                 * The forms of `festival.BISKET_JATRA_ENDS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bisketJatraEnds() {
+                    return r.entity("festival.BISKET_JATRA_ENDS");
                 }
 
                 /**
@@ -6068,6 +6113,15 @@ public final class Messages {
                  */
                 public EntityForms deopatanTrishulJatra() {
                     return r.entity("festival.DEOPATAN_TRISHUL_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.DEVGHAT_MAKAR_SNAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms devghatMakarSnan() {
+                    return r.entity("festival.DEVGHAT_MAKAR_SNAN");
                 }
 
                 /**
@@ -6719,6 +6773,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.KANDAKARAK_PUJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kandakarakPuja() {
+                    return r.entity("festival.KANDAKARAK_PUJA");
+                }
+
+                /**
                  * The forms of `festival.KANYA_SANKRANTI` in the current locale.
                  *
                  * @return the forms
@@ -6797,6 +6860,24 @@ public final class Messages {
                  */
                 public EntityForms khanchiSaraiParva() {
                     return r.entity("festival.KHANCHI_SARAI_PARVA");
+                }
+
+                /**
+                 * The forms of `festival.KHEER_KHANE_DIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kheerKhaneDin() {
+                    return r.entity("festival.KHEER_KHANE_DIN");
+                }
+
+                /**
+                 * The forms of `festival.KIRTIPUR_BAGH_BHAIRAV_JATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kirtipurBaghBhairavJatra() {
+                    return r.entity("festival.KIRTIPUR_BAGH_BHAIRAV_JATRA");
                 }
 
                 /**
@@ -6971,6 +7052,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.MAGHI_THARU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms maghiTharu() {
+                    return r.entity("festival.MAGHI_THARU");
+                }
+
+                /**
                  * The forms of `festival.MAGH_SNAN_BEGINS` in the current locale.
                  *
                  * @return the forms
@@ -7022,6 +7112,15 @@ public final class Messages {
                  */
                 public EntityForms makaraSankranti() {
                     return r.entity("festival.MAKARA_SANKRANTI");
+                }
+
+                /**
+                 * The forms of `festival.MAKAR_SNAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms makarSnan() {
+                    return r.entity("festival.MAKAR_SNAN");
                 }
 
                 /**
@@ -7871,12 +7970,39 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.THIMI_BALKUMARI_JATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms thimiBalkumariJatra() {
+                    return r.entity("festival.THIMI_BALKUMARI_JATRA");
+                }
+
+                /**
                  * The forms of `festival.TILAKUNDA_CHATURTHI` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms tilakundaChaturthi() {
                     return r.entity("festival.TILAKUNDA_CHATURTHI");
+                }
+
+                /**
+                 * The forms of `festival.TOKHA_CHANDESHWARI_JATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tokhaChandeshwariJatra() {
+                    return r.entity("festival.TOKHA_CHANDESHWARI_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.TOKHA_SAPAN_TIRTHA_SNAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tokhaSapanTirthaSnan() {
+                    return r.entity("festival.TOKHA_SAPAN_TIRTHA_SNAN");
                 }
 
                 /**
@@ -8069,6 +8195,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.VISHWAKARMA_PUJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vishwakarmaPuja() {
+                    return r.entity("festival.VISHWAKARMA_PUJA");
+                }
+
+                /**
                  * The forms of `festival.VIVAH_PANCHAMI` in the current locale.
                  *
                  * @return the forms
@@ -8156,6 +8291,15 @@ public final class Messages {
                  */
                 public EntityForms yomariPunhi() {
                     return r.entity("festival.YOMARI_PUNHI");
+                }
+
+                /**
+                 * The forms of `festival.YOSIN_PATAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yosinPatan() {
+                    return r.entity("festival.YOSIN_PATAN");
                 }
             }
 

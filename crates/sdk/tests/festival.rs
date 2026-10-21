@@ -461,50 +461,72 @@ fn the_adhika_month_alone_keeps_its_own_rules() {
     );
 }
 
-/// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
-/// at Kathmandu: exactly the rows read off the committee's print, each
-/// sankranti on its month's first day (pp. 2-24), the six national days,
-/// Tamu Lhosar and Walke parva; and VS 2083's rows checked (pp. 2, 20-23).
-#[test]
-fn the_dated_days_are_the_committees_printed_rows() {
+/// A Gregorian day, as a test writes it.
+type Day = (i32, u8, u8);
+
+/// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date at Kathmandu
+/// under the committee's setup, each with its rule.
+fn kept_dated(from: Day, to: Day) -> Vec<(String, Day)> {
     let sdk = Context::builder().nepal_official([]).build().unwrap();
     let kathmandu = Place::new(
         Latitude::literal(27.7172),
         Longitude::literal(85.324),
         Altitude::literal(1400.0),
     );
-    let kept = |from: (i32, u8, u8), to: (i32, u8, u8)| -> Vec<(String, (i32, u8, u8))> {
-        sdk.almanac()
-            .festivals(
-                &CalendarDate::defined(Calendar::Gregorian, from.0, from.1, from.2),
-                &CalendarDate::defined(Calendar::Gregorian, to.0, to.1, to.2),
-                &kathmandu,
-                UtcOffset::literal(5, 45, 0),
-                &FestivalRequest::from(FestivalPack::NepalPanchanga),
-            )
-            .unwrap()
-            .value
-            .dated
-            .into_iter()
-            .map(|kept| (kept.rule, (kept.day.year, kept.day.month, kept.day.day)))
-            .collect()
-    };
-    let printed = |rows: &[(&str, (i32, u8, u8))]| -> Vec<(String, (i32, u8, u8))> {
-        rows.iter()
-            .map(|(rule, day)| ((*rule).to_owned(), *day))
-            .collect()
-    };
+    sdk.almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, from.0, from.1, from.2),
+            &CalendarDate::defined(Calendar::Gregorian, to.0, to.1, to.2),
+            &kathmandu,
+            UtcOffset::literal(5, 45, 0),
+            &FestivalRequest::from(FestivalPack::NepalPanchanga),
+        )
+        .unwrap()
+        .value
+        .dated
+        .into_iter()
+        .map(|kept| (kept.rule, (kept.day.year, kept.day.month, kept.day.day)))
+        .collect()
+}
+
+fn printed(rows: &[(&str, Day)]) -> Vec<(String, Day)> {
+    rows.iter()
+        .map(|(rule, day)| ((*rule).to_owned(), *day))
+        .collect()
+}
+
+/// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
+/// at Kathmandu: exactly the rows read off the committee's print, each
+/// sankranti on its month's first day (pp. 2-24), the six national days,
+/// Tamu Lhosar, Walke parva and the sixteen festivals of a solar date
+/// (Bisket and the Baisakh jatras, Shrawan's, Bhadra's, Asoj's and Magh's
+/// firsts).
+#[test]
+fn the_dated_days_are_the_committees_printed_rows() {
+    let kept = kept_dated;
     assert_eq!(
         kept((2025, 4, 14), (2026, 4, 13)),
         printed(&[
             ("MESHA_SANKRANTI", (2025, 4, 14)),
+            ("TOKHA_SAPAN_TIRTHA_SNAN", (2025, 4, 14)),
+            ("YOSIN_PATAN", (2025, 4, 14)),
+            ("BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA", (2025, 4, 15)),
+            ("TOKHA_CHANDESHWARI_JATRA", (2025, 4, 15)),
+            ("THIMI_BALKUMARI_JATRA", (2025, 4, 15)),
+            ("BHAKTAPUR_BRAHMAYANI_JATRA", (2025, 4, 16)),
+            ("BHAKTAPUR_CHHUMA_GANESH_JATRA", (2025, 4, 17)),
+            ("BISKET_JATRA_ENDS", (2025, 4, 18)),
             ("LOKTANTRA_DIWAS", (2025, 4, 24)),
             ("VRISHABHA_SANKRANTI", (2025, 5, 15)),
             ("MITHUNA_SANKRANTI", (2025, 6, 15)),
             ("KARKATA_SANKRANTI", (2025, 7, 17)),
+            ("KANDAKARAK_PUJA", (2025, 7, 17)),
+            ("KHEER_KHANE_DIN", (2025, 7, 31)),
             ("SIMHA_SANKRANTI", (2025, 8, 17)),
             ("WALKE_PARVA", (2025, 8, 17)),
+            ("KIRTIPUR_BAGH_BHAIRAV_JATRA", (2025, 8, 17)),
             ("KANYA_SANKRANTI", (2025, 9, 17)),
+            ("VISHWAKARMA_PUJA", (2025, 9, 17)),
             ("CONSTITUTION_DAY", (2025, 9, 19)),
             ("TULA_SANKRANTI", (2025, 10, 18)),
             ("VRISHCHIKA_SANKRANTI", (2025, 11, 17)),
@@ -512,23 +534,52 @@ fn the_dated_days_are_the_committees_printed_rows() {
             ("TAMU_LHOSAR", (2025, 12, 30)),
             ("PRITHVI_JAYANTI", (2026, 1, 11)),
             ("MAKARA_SANKRANTI", (2026, 1, 15)),
+            ("MAGHI_THARU", (2026, 1, 15)),
+            ("MAKAR_SNAN", (2026, 1, 15)),
+            ("DEVGHAT_MAKAR_SNAN", (2026, 1, 15)),
             ("EARTHQUAKE_SAFETY_DAY", (2026, 1, 16)),
             ("MARTYRS_DAY", (2026, 1, 30)),
             ("KUMBHA_SANKRANTI", (2026, 2, 13)),
             ("DEMOCRACY_DAY", (2026, 2, 19)),
             ("MINA_SANKRANTI", (2026, 3, 15)),
+            ("BISKET_JATRA_BEGINS", (2026, 4, 10)),
         ])
     );
+}
+
+/// VS 2083's rows checked against the same pack (pp. 2-3, 9-13, 20-23, 27).
+#[test]
+fn the_dated_days_are_the_second_editions_printed_rows() {
+    let kept = kept_dated;
+    // VS 2083 pp. 2-3: Bisket and the Baisakh jatras, Thimi's and Chhuma
+    // Ganesh's continuing their rows after Ⓑ and Ⓒ.
     assert_eq!(
-        kept((2026, 4, 14), (2026, 4, 14)),
-        printed(&[("MESHA_SANKRANTI", (2026, 4, 14))])
-    );
-    // VS 2083 p. 11: वल्केपर्व on भाद्रसङ्क्रान्ति.
-    assert_eq!(
-        kept((2026, 8, 17), (2026, 8, 17)),
+        kept((2026, 4, 14), (2026, 4, 18)),
         printed(&[
-            ("SIMHA_SANKRANTI", (2026, 8, 17)),
+            ("MESHA_SANKRANTI", (2026, 4, 14)),
+            ("TOKHA_SAPAN_TIRTHA_SNAN", (2026, 4, 14)),
+            ("YOSIN_PATAN", (2026, 4, 14)),
+            ("BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA", (2026, 4, 15)),
+            ("TOKHA_CHANDESHWARI_JATRA", (2026, 4, 15)),
+            ("THIMI_BALKUMARI_JATRA", (2026, 4, 15)),
+            ("BHAKTAPUR_BRAHMAYANI_JATRA", (2026, 4, 16)),
+            ("BHAKTAPUR_CHHUMA_GANESH_JATRA", (2026, 4, 17)),
+            ("BISKET_JATRA_ENDS", (2026, 4, 18)),
+        ])
+    );
+    // VS 2083 pp. 9-13: Shrawan 1 and 15, Bhadra 1 (वल्केपर्व on
+    // भाद्रसङ्क्रान्ति) and Asoj 1.
+    assert_eq!(
+        kept((2026, 7, 17), (2026, 9, 17))
+            .into_iter()
+            .filter(|(rule, _)| !rule.ends_with("SANKRANTI"))
+            .collect::<Vec<_>>(),
+        printed(&[
+            ("KANDAKARAK_PUJA", (2026, 7, 17)),
+            ("KHEER_KHANE_DIN", (2026, 7, 31)),
             ("WALKE_PARVA", (2026, 8, 17)),
+            ("KIRTIPUR_BAGH_BHAIRAV_JATRA", (2026, 8, 17)),
+            ("VISHWAKARMA_PUJA", (2026, 9, 17)),
         ])
     );
     assert_eq!(
@@ -537,11 +588,19 @@ fn the_dated_days_are_the_committees_printed_rows() {
             ("TAMU_LHOSAR", (2026, 12, 30)),
             ("PRITHVI_JAYANTI", (2027, 1, 11)),
             ("MAKARA_SANKRANTI", (2027, 1, 15)),
+            ("MAGHI_THARU", (2027, 1, 15)),
+            ("MAKAR_SNAN", (2027, 1, 15)),
+            ("DEVGHAT_MAKAR_SNAN", (2027, 1, 15)),
             ("EARTHQUAKE_SAFETY_DAY", (2027, 1, 16)),
             ("MARTYRS_DAY", (2027, 1, 30)),
             ("KUMBHA_SANKRANTI", (2027, 2, 13)),
             ("DEMOCRACY_DAY", (2027, 2, 19)),
         ])
+    );
+    // VS 2083 p. 27: Bisket begins on Chaitra's fourth-last day.
+    assert_eq!(
+        kept((2027, 4, 10), (2027, 4, 10)),
+        printed(&[("BISKET_JATRA_BEGINS", (2027, 4, 10))])
     );
 }
 

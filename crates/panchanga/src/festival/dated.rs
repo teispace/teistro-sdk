@@ -18,6 +18,111 @@ use teistro_core::error::Error;
 
 use super::{FestivalDay, Observances};
 
+/// The festivals Nepal's national panchanga prints on a day of a Bikram
+/// Sambat month, each read off both editions with its continuation
+/// letters followed: key, month, day (negative counts back from the
+/// month's last), and where the day is printed. Each also gives every day
+/// a patro printed in Nepal verified for it, by a back-test kept outside
+/// the repository (`festival-classification.md`).
+const SOLAR_DAYS: [(&str, u8, i8, &str); 16] = [
+    (
+        "TOKHA_SAPAN_TIRTHA_SNAN",
+        1,
+        1,
+        "VS 2082 p. 2 and VS 2083 p. 2: \"टोखा सपन तीर्थस्नान\" on Baisakh 1",
+    ),
+    (
+        "YOSIN_PATAN",
+        1,
+        1,
+        "VS 2082 p. 2 and VS 2083 p. 2: \"भ.पु विश्वध्वजपतन\" on Baisakh 1",
+    ),
+    (
+        "BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA",
+        1,
+        2,
+        "VS 2082 p. 2 and VS 2083 p. 2: \"भ.पु.महाकाली महालक्ष्मी यात्रा\" on Baisakh 2",
+    ),
+    (
+        "TOKHA_CHANDESHWARI_JATRA",
+        1,
+        2,
+        "VS 2082 p. 2 and VS 2083 p. 2: \"टोखा चण्डेश्वरी मूलरथयात्रा\" on Baisakh 2",
+    ),
+    (
+        "THIMI_BALKUMARI_JATRA",
+        1,
+        2,
+        "VS 2082 p. 2 and VS 2083 p. 2: \"मध्यपुरठिमी बालकुमारी यात्रा\" on Baisakh 2, continuing its row",
+    ),
+    (
+        "BHAKTAPUR_BRAHMAYANI_JATRA",
+        1,
+        3,
+        "VS 2082 p. 2 and VS 2083 p. 2: \"भ.पु.ब्रह्मायणीयात्रा\" on Baisakh 3",
+    ),
+    (
+        "BHAKTAPUR_CHHUMA_GANESH_JATRA",
+        1,
+        4,
+        "VS 2082 p. 2 and VS 2083 p. 2: \"भ.पु छुमा गणेशयात्रा\" on Baisakh 4",
+    ),
+    (
+        "BISKET_JATRA_ENDS",
+        1,
+        5,
+        "VS 2082 p. 2 and VS 2083 p. 3: \"भ.पु.भैरवभद्रकाली रथयात्रा समापन\" on Baisakh 5",
+    ),
+    (
+        "KANDAKARAK_PUJA",
+        4,
+        1,
+        "VS 2082 p. 8 and VS 2083 p. 9: \"कण्डारकपूजा\" on Shrawan 1, the day of श्रावणसङ्क्रान्ति",
+    ),
+    (
+        "KHEER_KHANE_DIN",
+        4,
+        15,
+        "VS 2082 p. 9 and VS 2083 p. 10: \"खीरखाने दिन\" on Shrawan 15",
+    ),
+    (
+        "KIRTIPUR_BAGH_BHAIRAV_JATRA",
+        5,
+        1,
+        "VS 2082 p. 10 and VS 2083 p. 11: \"कीर्तिपुरमा बाघभैरवयात्रा\" on Bhadra 1, continuing its row",
+    ),
+    (
+        "VISHWAKARMA_PUJA",
+        6,
+        1,
+        "VS 2082 p. 12 and VS 2083 p. 13: \"विश्वकर्मापूजा\" on Asoj 1, the day of आश्विनसङ्क्रान्ति",
+    ),
+    (
+        "MAGHI_THARU",
+        10,
+        1,
+        "VS 2082 p. 20 and VS 2083 p. 21: \"माघीपर्व\" on Magh 1, the day of माघसङ्क्रान्ति",
+    ),
+    (
+        "MAKAR_SNAN",
+        10,
+        1,
+        "VS 2082 p. 20 and VS 2083 p. 21: \"मकरस्नान\" on Magh 1, continuing its row",
+    ),
+    (
+        "DEVGHAT_MAKAR_SNAN",
+        10,
+        1,
+        "VS 2082 p. 20 and VS 2083 p. 21: \"हरिहरक्षेत्र देवघाटस्थित प्रयागमा\" on Magh 1, continuing its row",
+    ),
+    (
+        "BISKET_JATRA_BEGINS",
+        12,
+        -4,
+        "VS 2082 p. 26 and VS 2083 p. 27: \"भ.पु.भैरवभद्रकाली रथयात्रारम्भ\" on Chaitra's fourth-last day, its 27th of 30",
+    ),
+];
+
 /// An observance on a date of a calendar.
 ///
 /// ```
@@ -203,7 +308,7 @@ impl DatedRule {
 
     /// The days Nepal's national panchanga prints on a Bikram Sambat date:
     /// the twelve sankrantis on the first of each month, the national days
-    /// it names, and the festivals it keeps on a date.
+    /// it names, and the festivals it keeps on a date ([`SOLAR_DAYS`]).
     #[must_use]
     pub fn nepal_panchanga() -> Vec<DatedRule> {
         let bs = |key: &str, month: u8, day: i8, source: &str| DatedRule {
@@ -226,7 +331,7 @@ impl DatedRule {
                 ),
             )
         };
-        vec![
+        let mut rules = vec![
             sankranti("MESHA_SANKRANTI", 1, "वैशाखसंक्रान्ति, नववर्षारम्भ"),
             sankranti("VRISHABHA_SANKRANTI", 2, "ज्येष्ठसंक्रान्ति"),
             sankranti("MITHUNA_SANKRANTI", 3, "आषाढसंक्रान्ति"),
@@ -287,7 +392,16 @@ impl DatedRule {
                 1,
                 "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 11: \"वल्केपर्व\" on Bhadra 1, the day of भाद्रसङ्क्रान्ति",
             ),
-        ]
+        ];
+        rules.extend(SOLAR_DAYS.iter().map(|&(key, month, day, printed)| {
+            bs(
+                key,
+                month,
+                day,
+                &format!("Nepal's national panchanga, {printed}"),
+            )
+        }));
+        rules
     }
 }
 

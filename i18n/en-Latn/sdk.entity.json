@@ -4108,6 +4108,70 @@
     "PARAMA_EKADASHI": {
       "name": "Parama Ekadashi",
       "prose": "Parama Ekadashi"
+    },
+    "TOKHA_SAPAN_TIRTHA_SNAN": {
+      "name": "Tokha Sapan Tirtha Snan",
+      "prose": "Tokha Sapan Tirtha Snan, Baisakh 1"
+    },
+    "YOSIN_PATAN": {
+      "name": "Yosin Patan",
+      "prose": "Yosin Patan, Bhaktapur's pole felled on Baisakh 1"
+    },
+    "BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA": {
+      "name": "Bhaktapur Mahakali Mahalaxmi Jatra",
+      "prose": "Bhaktapur Mahakali Mahalaxmi Jatra, Baisakh 2"
+    },
+    "TOKHA_CHANDESHWARI_JATRA": {
+      "name": "Tokha Chandeshwari Jatra",
+      "prose": "Tokha Chandeshwari Jatra, Baisakh 2"
+    },
+    "THIMI_BALKUMARI_JATRA": {
+      "name": "Thimi Balkumari Jatra",
+      "prose": "Thimi Balkumari Jatra, Baisakh 2"
+    },
+    "BHAKTAPUR_BRAHMAYANI_JATRA": {
+      "name": "Bhaktapur Brahmayani Jatra",
+      "prose": "Bhaktapur Brahmayani Jatra, Baisakh 3"
+    },
+    "BHAKTAPUR_CHHUMA_GANESH_JATRA": {
+      "name": "Bhaktapur Chhuma Ganesh Jatra",
+      "prose": "Bhaktapur Chhuma Ganesh Jatra, Baisakh 4"
+    },
+    "BISKET_JATRA_ENDS": {
+      "name": "Bisket Jatra Ends",
+      "prose": "the end of Bisket Jatra, Baisakh 5"
+    },
+    "KANDAKARAK_PUJA": {
+      "name": "Kandakarak Puja",
+      "prose": "Kandakarak Puja, Shrawan 1"
+    },
+    "KHEER_KHANE_DIN": {
+      "name": "Kheer Khane Din",
+      "prose": "Kheer Khane Din, Shrawan 15"
+    },
+    "KIRTIPUR_BAGH_BHAIRAV_JATRA": {
+      "name": "Kirtipur Bagh Bhairav Jatra",
+      "prose": "Kirtipur Bagh Bhairav Jatra, Bhadra 1"
+    },
+    "VISHWAKARMA_PUJA": {
+      "name": "Vishwakarma Puja",
+      "prose": "Vishwakarma Puja, Asoj 1"
+    },
+    "MAGHI_THARU": {
+      "name": "Maghi",
+      "prose": "Maghi, the Tharu new year, Magh 1"
+    },
+    "MAKAR_SNAN": {
+      "name": "Makar Snan",
+      "prose": "Makar Snan, Magh 1"
+    },
+    "DEVGHAT_MAKAR_SNAN": {
+      "name": "Devghat Makar Snan",
+      "prose": "Devghat Makar Snan, Magh 1"
+    },
+    "BISKET_JATRA_BEGINS": {
+      "name": "Bisket Jatra Begins",
+      "prose": "the beginning of Bisket Jatra, Chaitra's fourth-last day"
     }
   }
 }

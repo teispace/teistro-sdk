@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Sixteen festivals of a solar date in `NEPAL_PANCHANGA`**
+(`festival-classification.md`, C619). **Numbers:** a `NEPAL_PANCHANGA`
+festival answer gains these days in its `dated` list, and its iCalendar
+feed their events; no day already given moves. Bisket's beginning and
+end, the Baisakh jatras of Bhaktapur, Tokha and Thimi, Kandakarak puja,
+Kheer khane din, Kirtipur's Bagh Bhairav jatra, Vishwakarma puja, Maghi
+and the Makar snans, each on the Bikram Sambat day both of the
+committee's editions print, and named in en-Latn and ne-Deva-NP.
+
 **Festival rules on a Tibetan date** (`calendars/tibetan.md`).
 **Numbers:** none move; a rule on a Tibetan `civilDate` was refused
 before. It now keeps the day Dharamsala's almanac prints: in the first

@@ -330,7 +330,12 @@ Baisakh 11, संविधानदिवस on Asoj 3, पृथ्वीज�
 earthquake safety day on Magh 2, तमुल्होछार on Poush 15 (p. 19), सहिद
 दिवस on Magh 16 (p. 21) and राष्ट्रिय प्रजातन्त्र दिवस on Phalgun 7
 (p. 23), with VS 2083's Baisakh and Poush to Phalgun rows checked too (`crates/sdk/tests/festival.rs`). Each is an event in
-the iCalendar feed.
+the iCalendar feed. Sixteen festivals of a solar date follow, each on the
+day both editions print: Bisket's beginning on Chaitra's fourth-last day
+and its end on Baisakh 5, the Baisakh jatras of Bhaktapur, Tokha and
+Thimi on Baisakh 1 to 4, Kandakarak puja and Kheer khane din on Shrawan 1
+and 15, Kirtipur's Bagh Bhairav jatra on Bhadra 1, Vishwakarma puja on
+Asoj 1, and Maghi and the Makar snans on Magh 1 (`SOLAR_DAYS`).
 
 A `civilDate` on the Tibetan calendar keeps the day its observance falls
 on, the first of a doubled month and of a repeated day, and the day

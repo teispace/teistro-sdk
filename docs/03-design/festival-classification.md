@@ -390,36 +390,36 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 
 ### Solar (26)
 
-A day of the solar month (C619), as `SOLAR_DAY` would say it (`festival-rule-language.md` §3.6).
+A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 19 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it; the note says why each other is not.
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
-| `BHAKTAPUR_BRAHMAYANI_JATRA` | Bhaktapur Brahmayani Jatra | भक्तपुर ब्रह्मायणी जात्रा | Newar |  |
-| `BHAKTAPUR_CHHUMA_GANESH_JATRA` | Bhaktapur Chhuma Ganesh Jatra | भक्तपुर छुमा गणेश जात्रा | Newar |  |
-| `BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA` | Bhaktapur Mahakali Mahalaxmi Jatra | भक्तपुर महाकाली महालक्ष्मी जात्रा | Newar |  |
-| `BHUMIRAJ` | Bhumiraj | भूमिरज |  |  |
-| `BHUMI_PUJA` | Bhumi Puja | भूमि पूजा |  |  |
-| `BISKET_JATRA_BEGINS` | Bisket Jatra Begins | बिस्केट जात्रा आरम्भ | Newar |  |
-| `BISKET_JATRA_ENDS` | Bisket Jatra Ends | बिस्केट जात्रा समाप्ति | Newar |  |
-| `BODE_JIBRO_CHHEDNE_JATRA` | Bode Jibro Chhedne Jatra | बोडे जिब्रो छेड्ने जात्रा | Newar |  |
-| `DEVGHAT_MAKAR_SNAN` | Devghat Makar Snan | देवघाट मकर स्नान |  |  |
-| `GURIYA_PARVA` | Guriya Parva | गुरिया पर्व | Tharu |  |
-| `KANDAKARAK_PUJA` | Kandakarak Puja | कण्डकारक पूजा |  |  |
-| `KHEER_KHANE_DIN` | Kheer Khane Din | खीर खाने दिन |  |  |
-| `KIRTIPUR_BAGH_BHAIRAV_JATRA` | Kirtipur Bagh Bhairav Jatra | कीर्तिपुर बाघभैरव जात्रा | Newar |  |
+| `BHAKTAPUR_BRAHMAYANI_JATRA` | Bhaktapur Brahmayani Jatra | भक्तपुर ब्रह्मायणी जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 3 |
+| `BHAKTAPUR_CHHUMA_GANESH_JATRA` | Bhaktapur Chhuma Ganesh Jatra | भक्तपुर छुमा गणेश जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 4 |
+| `BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA` | Bhaktapur Mahakali Mahalaxmi Jatra | भक्तपुर महाकाली महालक्ष्मी जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 2 |
+| `BHUMIRAJ` | Bhumiraj | भूमिरज |  | the Sun's entry into Ardra, not Asar 8: 22 June each year, Asar 7 in 2023 (`SUN_IN`, C608) |
+| `BHUMI_PUJA` | Bhumi Puja | भूमि पूजा |  | counted from Bhumiraj, which waits on `SUN_IN` (C608) |
+| `BISKET_JATRA_BEGINS` | Bisket Jatra Begins | बिस्केट जात्रा आरम्भ | Newar | shipped: a dated day in NEPAL_PANCHANGA, Chaitra's fourth-last day |
+| `BISKET_JATRA_ENDS` | Bisket Jatra Ends | बिस्केट जात्रा समाप्ति | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 5 |
+| `BODE_JIBRO_CHHEDNE_JATRA` | Bode Jibro Chhedne Jatra | बोडे जिब्रो छेड्ने जात्रा | Newar | not printed in either edition |
+| `DEVGHAT_MAKAR_SNAN` | Devghat Makar Snan | देवघाट मकर स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
+| `GURIYA_PARVA` | Guriya Parva | गुरिया पर्व | Tharu | printed on Shrawan 1 in both editions, but a patro printed in Nepal keeps a second day in most years and not Shrawan 1 in two (C621) |
+| `KANDAKARAK_PUJA` | Kandakarak Puja | कण्डारक पूजा |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 1 |
+| `KHEER_KHANE_DIN` | Kheer Khane Din | खीर खाने दिन |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 15 |
+| `KIRTIPUR_BAGH_BHAIRAV_JATRA` | Kirtipur Bagh Bhairav Jatra | कीर्तिपुर बाघभैरव जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Bhadra 1 |
 | `MAGHE_SANKRANTI` | Maghe Sankranti | माघे सङ्क्रान्ति |  | shipped as `MAKARA_SANKRANTI` in NEPAL_PANCHANGA |
-| `MAGHI_THARU` | Maghi (Tharu) | माघी | Tharu |  |
-| `MAKAR_SNAN` | Makar Snan | मकर स्नान |  |  |
+| `MAGHI_THARU` | Maghi (Tharu) | माघी | Tharu | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
+| `MAKAR_SNAN` | Makar Snan | मकर स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
 | `NEPALI_NEW_YEAR` | Nepali New Year | नव वर्ष |  | shipped as `MESHA_SANKRANTI` in NEPAL_PANCHANGA |
-| `SINDOOR_JATRA` | Sindoor Jatra | सिन्दूर जात्रा | Newar |  |
-| `SIRUWA` | Siruwa | सिरुवा पर्व | Maithil, Tharu and Rajbanshi |  |
+| `SINDOOR_JATRA` | Sindoor Jatra | सिन्दूर जात्रा | Newar | not printed in either edition |
+| `SIRUWA` | Siruwa | सिरुवा पर्व | Maithil, Tharu and Rajbanshi | not printed in either edition |
 | `TAMU_LHOSAR` | Tamu Lhosar | तमु ल्होसार | Gurung | shipped: a dated day in NEPAL_PANCHANGA, Poush 15 |
-| `THIMI_BALKUMARI_JATRA` | Thimi Balkumari Jatra | ठिमी बालकुमारी जात्रा | Newar |  |
-| `TOKHA_CHANDESHWARI_JATRA` | Tokha Chandeshwari Jatra | टोखा चण्डेश्वरी जात्रा | Newar |  |
-| `TOKHA_SAPAN_TIRTHA_SNAN` | Tokha Sapan Tirtha Snan | टोखा सपनतीर्थ स्नान |  |  |
-| `VISHWAKARMA_PUJA` | Vishwakarma Puja | विश्वकर्मा पूजा |  |  |
-| `YOSIN_PATAN` | Yosin Patan | योसिं पतन | Newar |  |
-| `YOSIN_UTTHAN` | Yosin Utthan | योसिं उत्थान | Newar |  |
+| `THIMI_BALKUMARI_JATRA` | Thimi Balkumari Jatra | ठिमी बालकुमारी जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 2 |
+| `TOKHA_CHANDESHWARI_JATRA` | Tokha Chandeshwari Jatra | टोखा चण्डेश्वरी जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 2 |
+| `TOKHA_SAPAN_TIRTHA_SNAN` | Tokha Sapan Tirtha Snan | टोखा सपनतीर्थ स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 1 |
+| `VISHWAKARMA_PUJA` | Vishwakarma Puja | विश्वकर्मा पूजा |  | shipped: a dated day in NEPAL_PANCHANGA, Asoj 1 |
+| `YOSIN_PATAN` | Yosin Patan | योसिं पतन | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 1 |
+| `YOSIN_UTTHAN` | Yosin Utthan | योसिं उत्थान | Newar | VS 2083 prints it on Chaitra's last day and VS 2082 not at all; a patro printed in Nepal has Baisakh 1 in its early years |
 
 ### Community (6)
 

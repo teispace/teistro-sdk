@@ -594,6 +594,22 @@ class FestivalKey(enum.StrEnum):
     NARASIMHA_JAYANTI = "festival.NARASIMHA_JAYANTI"
     PADMINI_EKADASHI = "festival.PADMINI_EKADASHI"
     PARAMA_EKADASHI = "festival.PARAMA_EKADASHI"
+    TOKHA_SAPAN_TIRTHA_SNAN = "festival.TOKHA_SAPAN_TIRTHA_SNAN"
+    YOSIN_PATAN = "festival.YOSIN_PATAN"
+    BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA = "festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA"
+    TOKHA_CHANDESHWARI_JATRA = "festival.TOKHA_CHANDESHWARI_JATRA"
+    THIMI_BALKUMARI_JATRA = "festival.THIMI_BALKUMARI_JATRA"
+    BHAKTAPUR_BRAHMAYANI_JATRA = "festival.BHAKTAPUR_BRAHMAYANI_JATRA"
+    BHAKTAPUR_CHHUMA_GANESH_JATRA = "festival.BHAKTAPUR_CHHUMA_GANESH_JATRA"
+    BISKET_JATRA_ENDS = "festival.BISKET_JATRA_ENDS"
+    KANDAKARAK_PUJA = "festival.KANDAKARAK_PUJA"
+    KHEER_KHANE_DIN = "festival.KHEER_KHANE_DIN"
+    KIRTIPUR_BAGH_BHAIRAV_JATRA = "festival.KIRTIPUR_BAGH_BHAIRAV_JATRA"
+    VISHWAKARMA_PUJA = "festival.VISHWAKARMA_PUJA"
+    MAGHI_THARU = "festival.MAGHI_THARU"
+    MAKAR_SNAN = "festival.MAKAR_SNAN"
+    DEVGHAT_MAKAR_SNAN = "festival.DEVGHAT_MAKAR_SNAN"
+    BISKET_JATRA_BEGINS = "festival.BISKET_JATRA_BEGINS"
 
 
 class GanaKey(enum.StrEnum):
@@ -4082,9 +4098,24 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.BASANTA_PANCHAMI")
 
     @property
+    def bhaktapur_brahmayani_jatra(self) -> EntityForms:
+        """The forms of `festival.BHAKTAPUR_BRAHMAYANI_JATRA` in the current locale."""
+        return self._r.entity("festival.BHAKTAPUR_BRAHMAYANI_JATRA")
+
+    @property
     def bhaktapur_chandi_bhagawati_jatra(self) -> EntityForms:
         """The forms of `festival.BHAKTAPUR_CHANDI_BHAGAWATI_JATRA` in the current locale."""
         return self._r.entity("festival.BHAKTAPUR_CHANDI_BHAGAWATI_JATRA")
+
+    @property
+    def bhaktapur_chhuma_ganesh_jatra(self) -> EntityForms:
+        """The forms of `festival.BHAKTAPUR_CHHUMA_GANESH_JATRA` in the current locale."""
+        return self._r.entity("festival.BHAKTAPUR_CHHUMA_GANESH_JATRA")
+
+    @property
+    def bhaktapur_mahakali_mahalaxmi_jatra(self) -> EntityForms:
+        """The forms of `festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA` in the current locale."""
+        return self._r.entity("festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA")
 
     @property
     def bhaktapur_siddha_pokhari_mela(self) -> EntityForms:
@@ -4130,6 +4161,16 @@ class MessagesSdkEntityFestival:
     def bishalnagar_vaishnavi_devi_jatra(self) -> EntityForms:
         """The forms of `festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA` in the current locale."""
         return self._r.entity("festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA")
+
+    @property
+    def bisket_jatra_begins(self) -> EntityForms:
+        """The forms of `festival.BISKET_JATRA_BEGINS` in the current locale."""
+        return self._r.entity("festival.BISKET_JATRA_BEGINS")
+
+    @property
+    def bisket_jatra_ends(self) -> EntityForms:
+        """The forms of `festival.BISKET_JATRA_ENDS` in the current locale."""
+        return self._r.entity("festival.BISKET_JATRA_ENDS")
 
     @property
     def buddhavatar(self) -> EntityForms:
@@ -4280,6 +4321,11 @@ class MessagesSdkEntityFestival:
     def deopatan_trishul_jatra(self) -> EntityForms:
         """The forms of `festival.DEOPATAN_TRISHUL_JATRA` in the current locale."""
         return self._r.entity("festival.DEOPATAN_TRISHUL_JATRA")
+
+    @property
+    def devghat_makar_snan(self) -> EntityForms:
+        """The forms of `festival.DEVGHAT_MAKAR_SNAN` in the current locale."""
+        return self._r.entity("festival.DEVGHAT_MAKAR_SNAN")
 
     @property
     def devi_visarjan(self) -> EntityForms:
@@ -4642,6 +4688,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.KAMIKA_EKADASHI")
 
     @property
+    def kandakarak_puja(self) -> EntityForms:
+        """The forms of `festival.KANDAKARAK_PUJA` in the current locale."""
+        return self._r.entity("festival.KANDAKARAK_PUJA")
+
+    @property
     def kanya_sankranti(self) -> EntityForms:
         """The forms of `festival.KANYA_SANKRANTI` in the current locale."""
         return self._r.entity("festival.KANYA_SANKRANTI")
@@ -4685,6 +4736,16 @@ class MessagesSdkEntityFestival:
     def khanchi_sarai_parva(self) -> EntityForms:
         """The forms of `festival.KHANCHI_SARAI_PARVA` in the current locale."""
         return self._r.entity("festival.KHANCHI_SARAI_PARVA")
+
+    @property
+    def kheer_khane_din(self) -> EntityForms:
+        """The forms of `festival.KHEER_KHANE_DIN` in the current locale."""
+        return self._r.entity("festival.KHEER_KHANE_DIN")
+
+    @property
+    def kirtipur_bagh_bhairav_jatra(self) -> EntityForms:
+        """The forms of `festival.KIRTIPUR_BAGH_BHAIRAV_JATRA` in the current locale."""
+        return self._r.entity("festival.KIRTIPUR_BAGH_BHAIRAV_JATRA")
 
     @property
     def kirtipur_indrayani_jatra(self) -> EntityForms:
@@ -4782,6 +4843,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.MAGHA_SHRADDHA")
 
     @property
+    def maghi_tharu(self) -> EntityForms:
+        """The forms of `festival.MAGHI_THARU` in the current locale."""
+        return self._r.entity("festival.MAGHI_THARU")
+
+    @property
     def magh_snan_begins(self) -> EntityForms:
         """The forms of `festival.MAGH_SNAN_BEGINS` in the current locale."""
         return self._r.entity("festival.MAGH_SNAN_BEGINS")
@@ -4810,6 +4876,11 @@ class MessagesSdkEntityFestival:
     def makara_sankranti(self) -> EntityForms:
         """The forms of `festival.MAKARA_SANKRANTI` in the current locale."""
         return self._r.entity("festival.MAKARA_SANKRANTI")
+
+    @property
+    def makar_snan(self) -> EntityForms:
+        """The forms of `festival.MAKAR_SNAN` in the current locale."""
+        return self._r.entity("festival.MAKAR_SNAN")
 
     @property
     def mangala_chaturthi(self) -> EntityForms:
@@ -5282,9 +5353,24 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.THANKOT_MAHALAXMI_JATRA")
 
     @property
+    def thimi_balkumari_jatra(self) -> EntityForms:
+        """The forms of `festival.THIMI_BALKUMARI_JATRA` in the current locale."""
+        return self._r.entity("festival.THIMI_BALKUMARI_JATRA")
+
+    @property
     def tilakunda_chaturthi(self) -> EntityForms:
         """The forms of `festival.TILAKUNDA_CHATURTHI` in the current locale."""
         return self._r.entity("festival.TILAKUNDA_CHATURTHI")
+
+    @property
+    def tokha_chandeshwari_jatra(self) -> EntityForms:
+        """The forms of `festival.TOKHA_CHANDESHWARI_JATRA` in the current locale."""
+        return self._r.entity("festival.TOKHA_CHANDESHWARI_JATRA")
+
+    @property
+    def tokha_sapan_tirtha_snan(self) -> EntityForms:
+        """The forms of `festival.TOKHA_SAPAN_TIRTHA_SNAN` in the current locale."""
+        return self._r.entity("festival.TOKHA_SAPAN_TIRTHA_SNAN")
 
     @property
     def tol_lhosar(self) -> EntityForms:
@@ -5392,6 +5478,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.VIJAYA_EKADASHI")
 
     @property
+    def vishwakarma_puja(self) -> EntityForms:
+        """The forms of `festival.VISHWAKARMA_PUJA` in the current locale."""
+        return self._r.entity("festival.VISHWAKARMA_PUJA")
+
+    @property
     def vivah_panchami(self) -> EntityForms:
         """The forms of `festival.VIVAH_PANCHAMI` in the current locale."""
         return self._r.entity("festival.VIVAH_PANCHAMI")
@@ -5440,6 +5531,11 @@ class MessagesSdkEntityFestival:
     def yomari_punhi(self) -> EntityForms:
         """The forms of `festival.YOMARI_PUNHI` in the current locale."""
         return self._r.entity("festival.YOMARI_PUNHI")
+
+    @property
+    def yosin_patan(self) -> EntityForms:
+        """The forms of `festival.YOSIN_PATAN` in the current locale."""
+        return self._r.entity("festival.YOSIN_PATAN")
 
 
 class MessagesSdkEntityEra:

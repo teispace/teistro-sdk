@@ -4100,6 +4100,70 @@
     "PARAMA_EKADASHI": {
       "name": "परमा एकादशी",
       "prose": "परमा एकादशी"
+    },
+    "TOKHA_SAPAN_TIRTHA_SNAN": {
+      "name": "टोखा सपनतीर्थ स्नान",
+      "prose": "टोखा सपनतीर्थ स्नान"
+    },
+    "YOSIN_PATAN": {
+      "name": "योसिं पतन",
+      "prose": "योसिं पतन"
+    },
+    "BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA": {
+      "name": "भक्तपुर महाकाली महालक्ष्मी जात्रा",
+      "prose": "भक्तपुर महाकाली महालक्ष्मी जात्रा"
+    },
+    "TOKHA_CHANDESHWARI_JATRA": {
+      "name": "टोखा चण्डेश्वरी जात्रा",
+      "prose": "टोखा चण्डेश्वरी जात्रा"
+    },
+    "THIMI_BALKUMARI_JATRA": {
+      "name": "ठिमी बालकुमारी जात्रा",
+      "prose": "ठिमी बालकुमारी जात्रा"
+    },
+    "BHAKTAPUR_BRAHMAYANI_JATRA": {
+      "name": "भक्तपुर ब्रह्मायणी जात्रा",
+      "prose": "भक्तपुर ब्रह्मायणी जात्रा"
+    },
+    "BHAKTAPUR_CHHUMA_GANESH_JATRA": {
+      "name": "भक्तपुर छुमा गणेश जात्रा",
+      "prose": "भक्तपुर छुमा गणेश जात्रा"
+    },
+    "BISKET_JATRA_ENDS": {
+      "name": "बिस्केट जात्रा समाप्ति",
+      "prose": "बिस्केट जात्रा समाप्ति"
+    },
+    "KANDAKARAK_PUJA": {
+      "name": "कण्डारक पूजा",
+      "prose": "कण्डारक पूजा"
+    },
+    "KHEER_KHANE_DIN": {
+      "name": "खीर खाने दिन",
+      "prose": "खीर खाने दिन"
+    },
+    "KIRTIPUR_BAGH_BHAIRAV_JATRA": {
+      "name": "कीर्तिपुर बाघभैरव जात्रा",
+      "prose": "कीर्तिपुर बाघभैरव जात्रा"
+    },
+    "VISHWAKARMA_PUJA": {
+      "name": "विश्वकर्मा पूजा",
+      "prose": "विश्वकर्मा पूजा"
+    },
+    "MAGHI_THARU": {
+      "name": "माघी",
+      "prose": "माघी"
+    },
+    "MAKAR_SNAN": {
+      "name": "मकर स्नान",
+      "prose": "मकर स्नान"
+    },
+    "DEVGHAT_MAKAR_SNAN": {
+      "name": "देवघाट मकर स्नान",
+      "prose": "देवघाट मकर स्नान"
+    },
+    "BISKET_JATRA_BEGINS": {
+      "name": "बिस्केट जात्रा आरम्भ",
+      "prose": "बिस्केट जात्रा आरम्भ"
     }
   }
 }
