@@ -37,7 +37,7 @@ const SPANS: [(Day, Day); 8] = [
 
 /// What the committee printed for the fitted rules: the Vikram year, the
 /// rule, the Gregorian day, and the page and the words it prints.
-static PRINTED: [(i32, &str, Day, &str); 558] = [
+static PRINTED: [(i32, &str, Day, &str); 579] = [
     (
         2082,
         "VARUTHINI_EKADASHI",
@@ -1731,6 +1731,77 @@ static PRINTED: [(i32, &str, Day, &str); 558] = [
         (2026, 12, 25),
         "p. 20: कोशीकोका सङ्गममा मेला",
     ),
+    (2082, "NARASIMHA_JAYANTI", (2025, 5, 11), "p. 3: नृसिंहजयन्ती"),
+    (2083, "NARASIMHA_JAYANTI", (2026, 4, 30), "p. 3: नृसिंहजयन्ती"),
+    (2082, "VARAHA_JAYANTI", (2025, 7, 27), "p. 9: वराहजयन्ती"),
+    (2082, "KALKI_JAYANTI", (2025, 7, 30), "p. 9: कल्कीजयन्ती"),
+    (2082, "BAHIDYO_BOYEGU", (2025, 8, 6), "p. 9: बहिद्यब्वोय"),
+    (
+        2082,
+        "SHIVA_PAVITRAROPAN",
+        (2025, 8, 8),
+        "p. 9: श्रीशिवजीमा पवित्रारोपण",
+    ),
+    (
+        2082,
+        "HAYAGRIVA_JAYANTI",
+        (2025, 8, 8),
+        "p. 9: हयग्रीवोत्पत्ति",
+    ),
+    (
+        2082,
+        "LALITPUR_NARSINGH_JATRA",
+        (2025, 8, 14),
+        "p. 10: ल.पु. नृसिंहयात्रा (उपाकलं सायाः)",
+    ),
+    (2082, "KOJAGRAT_PURNIMA", (2025, 10, 6), "p. 13: कोजाग्रतव्रत"),
+    (
+        2082,
+        "ARJUNDHARA_MELA",
+        (2025, 11, 18),
+        "p. 16: सताक्षीधाम तथा अर्जुनधारा मेला",
+    ),
+    (2082, "SI_PUNHI", (2026, 2, 1), "p. 21: (सिपून्हि)"),
+    (
+        2082,
+        "KAMADA_EKADASHI",
+        (2026, 3, 29),
+        "p. 25: कामदाएकादशीव्रत",
+    ),
+    (2083, "VARAHA_JAYANTI", (2026, 8, 15), "p. 11: वराहजयन्ती"),
+    (2083, "KALKI_JAYANTI", (2026, 8, 18), "p. 11: कल्कीजयन्ती"),
+    (2083, "BAHIDYO_BOYEGU", (2026, 8, 24), "p. 11: बहिद्यब्बोय"),
+    (
+        2083,
+        "SHIVA_PAVITRAROPAN",
+        (2026, 8, 27),
+        "p. 11: श्रीशिवजीमा पवित्रारोपण",
+    ),
+    (
+        2083,
+        "HAYAGRIVA_JAYANTI",
+        (2026, 8, 27),
+        "p. 11: हयग्रीवोत्पत्ति",
+    ),
+    (
+        2083,
+        "LALITPUR_NARSINGH_JATRA",
+        (2026, 9, 1),
+        "p. 12: ल.पु. नृसिंहयात्रा (उपाकलं सायाः)",
+    ),
+    (
+        2083,
+        "KOJAGRAT_PURNIMA",
+        (2026, 10, 25),
+        "p. 15: कोजाग्रतव्रत",
+    ),
+    (
+        2083,
+        "ARJUNDHARA_MELA",
+        (2026, 12, 6),
+        "p. 18: झापा सताक्षीधाम तथा अर्जुनधारामेला",
+    ),
+    (2083, "SI_PUNHI", (2027, 2, 20), "p. 23: (सिपून्हि)"),
 ];
 
 /// Why the pack over the committee's sky parts from the print, per (year,

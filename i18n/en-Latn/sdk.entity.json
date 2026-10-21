@@ -4052,6 +4052,54 @@
     "YOGINI_EKADASHI": {
       "name": "Yogini Ekadashi",
       "prose": "Yogini Ekadashi"
+    },
+    "KOJAGRAT_PURNIMA": {
+      "name": "Kojagrat Purnima",
+      "prose": "Kojagrat Purnima"
+    },
+    "KAMADA_EKADASHI": {
+      "name": "Kamada Ekadashi",
+      "prose": "Kamada Ekadashi"
+    },
+    "SI_PUNHI": {
+      "name": "Si Punhi",
+      "prose": "Si Punhi"
+    },
+    "HAYAGRIVA_JAYANTI": {
+      "name": "Hayagriva Jayanti",
+      "prose": "Hayagriva Jayanti"
+    },
+    "SHIVA_PAVITRAROPAN": {
+      "name": "Shiva Pavitraropan",
+      "prose": "Shiva Pavitraropan"
+    },
+    "ARJUNDHARA_MELA": {
+      "name": "Arjundhara Mela",
+      "prose": "Arjundhara Mela"
+    },
+    "WALKE_PARVA": {
+      "name": "Walke Parva",
+      "prose": "Walke Parva"
+    },
+    "KALKI_JAYANTI": {
+      "name": "Kalki Jayanti",
+      "prose": "Kalki Jayanti"
+    },
+    "VARAHA_JAYANTI": {
+      "name": "Varaha Jayanti",
+      "prose": "Varaha Jayanti"
+    },
+    "BAHIDYO_BOYEGU": {
+      "name": "Bahidyo Boyegu",
+      "prose": "Bahidyo Boyegu"
+    },
+    "LALITPUR_NARSINGH_JATRA": {
+      "name": "Lalitpur Narsingh Jatra",
+      "prose": "Lalitpur Narsingh Jatra"
+    },
+    "NARASIMHA_JAYANTI": {
+      "name": "Narasimha Jayanti",
+      "prose": "Narasimha Jayanti"
     }
   }
 }

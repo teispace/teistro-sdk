@@ -21,7 +21,14 @@
 //!   it (C603). Purvahna is the daylight's first six muhurtas, its first
 //!   two fifths (C602);
 //! - **on a vara**: the udaya day, kept only when it is the vara the rule
-//!   names, and not at all otherwise (C618).
+//!   names, and not at all otherwise (C618);
+//! - **the earlier alone**: the earlier day only when it alone holds the
+//!   tithi at a window, the later otherwise, as the full-moon fast is kept
+//!   at sunset (C200).
+//!
+//! Two rules are not fitted but read (`BY_TEXT`): *Dharmasindhu* gives
+//! Kojagara and Nrisimha jayanti that last decision, at nishitha and at
+//! sunset, and the print agrees with it in both editions.
 //!
 //! Most of the days are the plain udaya rule (`AT_SUNRISE`): the
 //! festivals of a patro printed in Nepal that its own sunrise rule
@@ -61,6 +68,9 @@ enum Fit {
     /// The earlier day when the tithi holds its last day muhurta wholly,
     /// the muhurta before sunset; the later otherwise (C684).
     Crescent,
+    /// The earlier day only when it alone holds the tithi at a window, the
+    /// later otherwise: the full-moon fast's decision at sunset (C200).
+    EarlierAlone(Window),
 }
 
 impl Fit {
@@ -100,6 +110,15 @@ impl Fit {
                 Later,
                 "the earlier day when the tithi holds its last muhurta before sunset wholly, the later otherwise (C684)".to_owned(),
             ),
+            Fit::EarlierAlone(window) => (
+                window,
+                vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
+                Later,
+                format!(
+                    "{}: the earlier day only when it alone holds the tithi there, the later otherwise",
+                    Fit::name(window)
+                ),
+            ),
             Fit::OnVara(vara) => {
                 let on = |day| Predicate::OnVara { day, vara };
                 (
@@ -134,18 +153,18 @@ impl Fit {
             },
             Window::Pradosha => "pradosha",
             Window::Moonrise => "moonrise",
-            Window::Sunrise
-            | Window::Sunset
-            | Window::Nishitha
-            | Window::NightMuhurta { .. }
-            | Window::DayMuhurta { .. } => "the window",
+            Window::Sunset => "sunset",
+            Window::Nishitha => "nishitha",
+            Window::Sunrise | Window::NightMuhurta { .. } | Window::DayMuhurta { .. } => {
+                "the window"
+            }
         }
     }
 }
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 60] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 67] = [
     (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
@@ -566,6 +585,75 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 60] = [
         Fit::Udaya,
         "Nepal's national panchanga, VS 2082 p. 25: वैशाखस्नान सुरु",
     ),
+    (
+        "SI_PUNHI",
+        Masa::Magha,
+        Tithi::Purnima,
+        Fit::EarlierAlone(Window::Sunset),
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: (सिपून्हि), on the day of पूर्णिमाव्रत; a patro printed in Nepal gives Magha's bright 5th instead, which neither edition prints",
+    ),
+    (
+        "HAYAGRIVA_JAYANTI",
+        Masa::Shravana,
+        Tithi::Purnima,
+        Fit::EarlierAlone(Window::Sunset),
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: हयग्रीवोत्पत्ति, on the day of पूर्णिमाव्रत",
+    ),
+    (
+        "SHIVA_PAVITRAROPAN",
+        Masa::Shravana,
+        Tithi::Purnima,
+        Fit::EarlierAlone(Window::Sunset),
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: श्रीशिवजीमा पवित्रारोपण, on the day of पूर्णिमाव्रत",
+    ),
+    (
+        "VARAHA_JAYANTI",
+        Masa::Shravana,
+        Tithi::ShuklaTritiya,
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: वराहजयन्ती; a patro printed in Nepal gives Bhadrapada's bright 3rd in most years, a lunation later",
+    ),
+    (
+        "KALKI_JAYANTI",
+        Masa::Shravana,
+        Tithi::ShuklaShashthi,
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: कल्कीजयन्ती; a patro printed in Nepal gives the bright 5th, a day before both printed days",
+    ),
+    (
+        "BAHIDYO_BOYEGU",
+        Masa::Shravana,
+        Tithi::ShuklaDwadashi,
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2082 p. 9: बहिद्यब्वोय; VS 2083 p. 11: बहिद्यब्बोय",
+    ),
+    (
+        "LALITPUR_NARSINGH_JATRA",
+        Masa::Shravana,
+        Tithi::KrishnaPanchami,
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: ल.पु. नृसिंहयात्रा (उपाकलं सायाः)",
+    ),
+];
+
+/// The rules a text gives, which the committee's print follows in both
+/// editions: key, month (amanta, the nija month), tithi, the decision,
+/// and the text with the page it was read from.
+const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 2] = [
+    (
+        "NARASIMHA_JAYANTI",
+        Masa::Vaishakha,
+        Tithi::ShuklaChaturdashi,
+        Fit::EarlierAlone(Window::Sunset),
+        "Dharmasindhu p. 37, read off the page image: \"वैशाखशुक्लचतुर्दशी नृसिंहजयन्ती सा सूर्यास्तमयकालव्यापिनी ग्राह्या दिनद्वये तद्व्याप्तौ तदव्याप्तौ वा परैव\"; Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: नृसिंहजयन्ती",
+    ),
+    (
+        "KOJAGRAT_PURNIMA",
+        Masa::Ashwina,
+        Tithi::Purnima,
+        Fit::EarlierAlone(Window::Nishitha),
+        "Dharmasindhu p. 74, read off the page image: \"सा पूर्वत्रैव निशीथव्याप्तौ पूर्वा, उत्तरदिने एव दिनद्वयेऽपि वा निशीथव्याप्तौ दिनद्वये निशीथास्पर्शे वा उत्तरैव\", pradosha being only some authorities' reading (C617); Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: कोजाग्रतव्रत",
+    ),
 ];
 
 /// The days the committee prints on the udaya rule, each read off both
@@ -573,7 +661,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 60] = [
 /// is printed. Each also gives every day a patro printed in Nepal verified
 /// for it from 2013 to 2027, by a back-test kept outside the repository
 /// (`festival-classification.md`).
-const AT_SUNRISE: [(&str, Masa, Tithi, &str); 161] = [
+const AT_SUNRISE: [(&str, Masa, Tithi, &str); 162] = [
     (
         "SAMVATSARA_ARAMBHA",
         Masa::Chaitra,
@@ -1540,6 +1628,12 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 161] = [
         Tithi::KrishnaEkadashi,
         "Nepal's national panchanga, VS 2082 p. 24 and VS 2083 p. 26: पापमोचनी एकादशीव्रत",
     ),
+    (
+        "KAMADA_EKADASHI",
+        Masa::Chaitra,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 25: कामदाएकादशीव्रत; the Smartas' day, as Varuthini and Yogini ekadashi (C688)",
+    ),
 ];
 
 /// The fitted rules kept in every month, the adhika included, as the
@@ -1596,7 +1690,7 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
 
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
-const SAME_DAY: [(&str, &str, &str); 13] = [
+const SAME_DAY: [(&str, &str, &str); 14] = [
     (
         "SETO_MACHHINDRANATH_JATRA",
         "CHAITE_DASHAIN",
@@ -1662,6 +1756,11 @@ const SAME_DAY: [(&str, &str, &str); 13] = [
         "SHIVARATRI",
         "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: (शिलाचःह्रेपूजा): the day of SHIVARATRI; the Newar name of Shivaratri's night (C614)",
     ),
+    (
+        "ARJUNDHARA_MELA",
+        "PASHUPATI_HALESI_MELA",
+        "Nepal's national panchanga, VS 2082 p. 16: सताक्षीधाम तथा अर्जुनधारा मेला; VS 2083 p. 18: झापा सताक्षीधाम तथा अर्जुनधारामेला, each continuing the row of हलेसीमहादेवमेला: the day of PASHUPATI_HALESI_MELA; a patro printed in Nepal gives Bala chaturdashi's day, the day after, which VS 2083 does not print",
+    ),
 ];
 
 /// The days printed the day after another rule's day: key, the rule, and
@@ -1706,22 +1805,33 @@ impl FestivalRule {
             }
         }
         let yearly = RULES.iter().map(|&(key, month, tithi, fit, printed)| {
-            (key, Some(month), tithi.into(), fit, printed)
+            (key, Some(month), tithi.into(), fit, printed, "fitted")
         });
         let at_sunrise = AT_SUNRISE.iter().map(|&(key, month, tithi, printed)| {
-            (key, Some(month), tithi.into(), Fit::Udaya, printed)
+            (
+                key,
+                Some(month),
+                tithi.into(),
+                Fit::Udaya,
+                printed,
+                "fitted",
+            )
         });
         let monthly = EVERY_MONTH
             .iter()
-            .map(|&(key, occurs, fit, printed)| (key, None, occurs, fit, printed));
+            .map(|&(key, occurs, fit, printed)| (key, None, occurs, fit, printed, "fitted"));
+        let by_text = BY_TEXT.iter().map(|&(key, month, tithi, fit, read)| {
+            (key, Some(month), tithi.into(), fit, read, "the text's rule")
+        });
         yearly
             .chain(at_sunrise)
             .chain(monthly)
-            .map(|(key, month, occurs, fit, printed)| {
+            .chain(by_text)
+            .map(|(key, month, occurs, fit, printed, how)| {
                 let (at, decide, otherwise, reading) = fit.decide();
                 FestivalRule {
                     key: key.to_owned(),
-                    source: format!("{printed}; fitted: {reading}"),
+                    source: format!("{printed}; {how}: {reading}"),
                     month,
                     convention: Convention::Amanta,
                     occurs,
@@ -1829,5 +1939,28 @@ mod tests {
             ("madhyahna", "sayahna")
         );
         assert!(Fit::name(PURVAHNA).contains("C602"));
+    }
+
+    #[test]
+    fn the_earlier_alone_is_the_text_s_decision() {
+        // Dharmasindhu p. 74: the earlier day only when nishitha holds the
+        // full moon there alone; both days, or neither, give the later.
+        let (at, decide, otherwise, reading) = Fit::EarlierAlone(Window::Nishitha).decide();
+        assert_eq!(
+            (at, decide, otherwise),
+            (
+                Window::Nishitha,
+                vec![Guard::new([case(Case::EarlierOnly)], Choice::Earlier)],
+                Choice::Later
+            )
+        );
+        assert!(reading.starts_with("nishitha"));
+        let kojagrat = FestivalRule::nepal_panchanga()
+            .into_iter()
+            .find(|rule| rule.key == "KOJAGRAT_PURNIMA")
+            .unwrap();
+        assert!(kojagrat.source.contains("Dharmasindhu p. 74"));
+        assert!(kojagrat.source.contains("the text's rule: nishitha"));
+        assert!(!kojagrat.source.contains("fitted"));
     }
 }

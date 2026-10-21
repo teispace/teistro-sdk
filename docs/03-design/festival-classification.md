@@ -1,6 +1,6 @@
 # Festival classification
 
-Status: `research`, 2026-10-20. Cruxes C600, C613, C619, C622 to C623 and C685 to C692
+Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623 and C685 to C693
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.
@@ -41,10 +41,10 @@ no rule. This page's classes split each of those counts:
 
 | track 04 | count | this page |
 |---|---|---|
-| lunar | 295 | rule, shipped 246; rule, not yet shipped 9; rule, needs a form 40 |
+| lunar | 295 | rule, shipped 257; rule, not yet shipped 9; rule, needs a form 29 |
 | Bikram Sambat | 68 | solar 24; fixed civil 44 |
 | Gregorian | 113 | fixed civil 113 |
-| both | 2 | solar 1 (Guriya parva, printed on Shrawan 1 in both editions, C621); rule, needs a form 1 (Walke parva) |
+| both | 2 | solar 1 (Guriya parva, printed on Shrawan 1 in both editions, C621); rule, shipped 1 (Walke parva, printed on Bhadra 1 in both editions) |
 | no rule | 24 | rule, shipped 2; fixed civil 8; solar 1; community 6; published only 5; rule, needs a form 2 |
 
 Where the two counts differ, and why:
@@ -62,12 +62,12 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 248; rule, not yet shipped 9; rule, needs a form 43; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 260; rule, not yet shipped 9; rule, needs a form 31; solar 26; fixed civil 165; community 6; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (248)
+### Rule, shipped (260)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
@@ -86,8 +86,10 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `ANNAPURNA_JATRA` | Annapurna Jatra | अन्नपूर्ण जात्रा |  | NEPAL_PANCHANGA |
 | `APARA_EKADASHI` | Apara Ekadashi | अपरा एकादशी |  | NEPAL_PANCHANGA |
 | `ARGHA_SARAI_PARVA` | Argha Sarai Parva | अर्घा सराय पर्व |  | NEPAL_PANCHANGA |
+| `ARJUNDHARA_MELA` | Arjundhara Mela | अर्जुनधारा मेला |  | NEPAL_PANCHANGA |
 | `ARYAGHAT_MADHAV_NARAYAN_MELA` | Aryaghat Madhav Narayan Mela | आर्यघाट माधवनारायण मेला |  | NEPAL_PANCHANGA |
 | `ASHTAMI_SHRADDHA` | Ashtami Shraddha | अष्टमी श्राद्ध |  | NEPAL_PANCHANGA |
+| `BAHIDYO_BOYEGU` | Bahidyo Boyegu | बहीद्यः बोयेगु | Newar | NEPAL_PANCHANGA |
 | `BAISAKH_SNAN_ENDS` | Baisakh Snan Ends | वैशाख स्नान समाप्ति |  | NEPAL_PANCHANGA |
 | `BAKHUMADA` | Bakhumada | बखुमद |  | NEPAL_PANCHANGA |
 | `BALAJU_BAISDHARA_MELA` | Balaju Baisdhara Mela | बालाजु बाइसधारा मेला |  | NEPAL_PANCHANGA |
@@ -178,6 +180,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `HARISHAYANI_EKADASHI` | Harishayani Ekadashi | हरिशयनी एकादशी |  | NEPAL_PANCHANGA |
 | `HARITALIKA` | Haritalika Teej | हरितालिका तीज |  | NEPAL |
 | `HATYAMOCHANA_SNANA` | Hatyamochan Snan | हत्यामोचन स्नान |  | NEPAL_PANCHANGA |
+| `HAYAGRIVA_JAYANTI` | Hayagriva Jayanti | हयग्रीव जयन्ती |  | NEPAL_PANCHANGA |
 | `HETAUDA_KUSHMANDA_SAROBAR_MELA` | Hetauda Kushmanda Sarobar Mela | हेटौडा कुष्माण्ड सरोवर मेला |  | NEPAL_PANCHANGA |
 | `HILE_JATRA` | Hile Jatra | हिले जात्रा |  | NEPAL_PANCHANGA |
 | `HOLI_HILLS` | Holi (Hills) | होली (पहाड) |  | NEPAL |
@@ -193,6 +196,8 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `KABIR_JAYANTI` | Kabir Jayanti | कबीर जयन्ती |  | NEPAL_PANCHANGA |
 | `KAG_TIHAR` | Kag Tihar | काग तिहार |  | NEPAL_PANCHANGA |
 | `KALI_YUGADI` | Kaliyugadi | कलियुगादि |  | NEPAL_PANCHANGA |
+| `KALKI_JAYANTI` | Kalki Jayanti | कल्कि जयन्ती |  | NEPAL_PANCHANGA |
+| `KAMADA_EKADASHI` | Kamada Ekadashi | कामदा एकादशी |  | NEPAL_PANCHANGA |
 | `KAMIKA_EKADASHI` | Kamika Ekadashi | कामिका एकादशी |  | NEPAL_PANCHANGA |
 | `KARTIK_SNAN_BEGINS` | Kartik Snan Begins | कार्तिक स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `KARTIK_SNAN_ENDS` | Kartik Snan Ends | कार्तिक स्नान समाप्ति |  | NEPAL_PANCHANGA |
@@ -201,6 +206,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `KHADGA_JATRA` | Khadga Jatra | खड्ग जात्रा | Newar | NEPAL_PANCHANGA |
 | `KHANCHI_SARAI_PARVA` | Khanchi Sarai Parva | खाँचीमा सराय पर्व |  | NEPAL_PANCHANGA |
 | `KIRTIPUR_INDRAYANI_JATRA` | Kirtipur Indrayani Jatra | कीर्तिपुर इन्द्रायणी जात्रा | Newar | NEPAL_PANCHANGA |
+| `KOJAGRAT_PURNIMA` | Kojagrat Purnima | कोजाग्रत पूर्णिमा |  | NEPAL_PANCHANGA |
 | `KOKA_KAUSHIKI_SANGAM_MELA` | Koka Kaushiki Sangam Mela | कोका कौशिकी सङ्गम मेला |  | NEPAL_PANCHANGA |
 | `KOKHAJA_BIYE` | Kokhaja Biye | कोखजा बिये |  | NEPAL_PANCHANGA |
 | `KUCHHI_BHOYE` | Kuchhi Bhoye | कुछिभ्वय् | Newar | NEPAL_PANCHANGA |
@@ -213,6 +219,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `KWATI_PUNHI` | Kwati Punhi | क्वाति पुन्ही | Newar | NEPAL_PANCHANGA |
 | `LAI_CHARHE` | Lai Charhe | लै चह्रे | Newar | NEPAL_PANCHANGA |
 | `LAKSHMI_PUJA` | Laxmi Puja | लक्ष्मी पूजा |  | NEPAL |
+| `LALITPUR_NARSINGH_JATRA` | Lalitpur Narsingh Jatra | ललितपुर नृसिंह जात्रा | Newar | NEPAL_PANCHANGA |
 | `LAXMI_PRASAD_DEVKOTA_JAYANTI` | Laxmi Prasad Devkota Jayanti | महाकवि लक्ष्मीप्रसाद देवकोटा जयन्ती |  | NEPAL_PANCHANGA |
 | `MAGHA_SHRADDHA` | Magha Shraddha | मघा श्राद्ध |  | NEPAL_PANCHANGA |
 | `MAGH_SNAN_BEGINS` | Magh Snan Begins | माघ स्नान आरम्भ |  | NEPAL_PANCHANGA |
@@ -234,6 +241,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `NAKWA_DISHI` | Nakwa Dishi | नक्वः दिसि | Newar | NEPAL_PANCHANGA |
 | `NALA_MACHHINDRANATH_RATH_JATRA` | Nala Machhindranath Rath Jatra | नाला मच्छिन्द्रनाथ रथ जात्रा | Newar | NEPAL_PANCHANGA |
 | `NARAK_CHATURDASHI` | Narak Chaturdashi | नरक चतुर्दशी |  | NEPAL_PANCHANGA |
+| `NARASIMHA_JAYANTI` | Narasimha Jayanti | नृसिंह जयन्ती |  | NEPAL_PANCHANGA |
 | `NAVAMI_SHRADDHA` | Navami Shraddha | नवमी श्राद्ध |  | NEPAL_PANCHANGA |
 | `NAVARATRA_ARAMBHA` | Ghatasthapana | घटस्थापना |  | NEPAL |
 | `NEPAL_SAMBAT_NEW_YEAR` | Nepal Sambat New Year | नेपाल संवत् नयाँ वर्ष | Newar | NEPAL_PANCHANGA |
@@ -280,12 +288,14 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `SHITALASHTAMI` | Shitalashtami | शीतलाष्टमी |  | NEPAL_PANCHANGA |
 | `SHIVARATRI` | Maha Shivaratri | महाशिवरात्रि |  | NEPAL |
 | `SHIVA_BAIKUNTHA_CHATURDASHI` | Shiva Baikuntha Chaturdashi | शिव बैकुण्ठ चतुर्दशी |  | NEPAL_PANCHANGA |
+| `SHIVA_PAVITRAROPAN` | Shiva Pavitraropan | शिव पवित्रारोपण |  | NEPAL_PANCHANGA |
 | `SHRAWAN_PUTRADA_EKADASHI` | Shrawan Putrada Ekadashi | श्रावण पुत्रदा एकादशी |  | NEPAL_PANCHANGA |
 | `SHREEGHA_JATRA` | Shreegha Jatra | श्रीघः जात्रा | Newar | NEPAL_PANCHANGA |
 | `SHREE_BALLABH_JAYANTI` | Shree Ballabh Jayanti | श्री बल्लभ जयन्ती |  | NEPAL_PANCHANGA |
 | `SILANGA_MAHARUDRA_KOTIHOM_MELA` | Silanga Maharudra Kotihom Mela | सिलङ्गा महारुद्र कोटिहोम मेला |  | NEPAL_PANCHANGA |
 | `SITA_NAVAMI` | Sita Jayanti | सीता जयन्ती |  | NEPAL_PANCHANGA |
 | `SITHI_NAKHA` | Sithi Nakha | सिथि नखः | Newar | NEPAL_PANCHANGA |
+| `SI_PUNHI` | Si Punhi | सिपुन्ही | Newar | NEPAL_PANCHANGA |
 | `SKANDA_SHASHTHI` | Skanda Shashthi | स्कन्द षष्ठी |  | NEPAL_PANCHANGA |
 | `SONAM_LHOSAR` | Sonam Lhosar | सोनम ल्होसार | Tamang | NEPAL_PANCHANGA |
 | `SORHA_SHRADDHA_ARAMBHA` | Sorha Shraddha Begins | सोह्र श्राद्ध आरम्भ |  | NEPAL_PANCHANGA |
@@ -310,11 +320,13 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `UTPATTIKA_EKADASHI` | Utpattika Ekadashi | उत्पत्तिका एकादशी |  | NEPAL_PANCHANGA |
 | `VAISHAKHA_SNANA_ARAMBHA` | Baisakh Snan Begins | वैशाख स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `VAMANA_DWADASHI` | Vamana Dwadashi | वामन द्वादशी |  | NEPAL_PANCHANGA |
+| `VARAHA_JAYANTI` | Varaha Jayanti | वराह जयन्ती |  | NEPAL_PANCHANGA |
 | `VARUTHINI_EKADASHI` | Varuthini Ekadashi | वरुथिनी एकादशी |  | NEPAL_PANCHANGA |
 | `VAYU_ASHTAMI` | Vayu Ashtami | वायु अष्टमी |  | NEPAL_PANCHANGA |
 | `VIJAYA_DASHAMI` | Bijaya Dashami | विजया दशमी |  | NEPAL |
 | `VIJAYA_EKADASHI` | Vijaya Ekadashi | विजया एकादशी |  | NEPAL_PANCHANGA |
 | `VIVAH_PANCHAMI` | Vivah Panchami | विवाह पञ्चमी |  | NEPAL_PANCHANGA |
+| `WALKE_PARVA` | Walke Parva | वल्के पर्व |  | NEPAL_PANCHANGA |
 | `WATU_MAGH_JATRA` | Watu Magh Jatra | वटु माघ जात्रा | Newar | NEPAL_PANCHANGA |
 | `YALA_PANCHADAN` | Yala Panchadan | यल पञ्चदान | Newar | NEPAL_PANCHANGA |
 | `YAMAPANCHAKA_ARAMBHA` | Yamapanchak Begins | यमपञ्चक आरम्भ |  | NEPAL_PANCHANGA |
@@ -338,14 +350,12 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689) |
 | `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687) |
 
-### Rule, needs a form (43)
+### Rule, needs a form (31)
 
 `festival-rule-language.md` §4 maps each to the form it needs, or says why none fits.
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
-| `ARJUNDHARA_MELA` | Arjundhara Mela | अर्जुनधारा मेला |  |  |
-| `BAHIDYO_BOYEGU` | Bahidyo Boyegu | बहीद्यः बोयेगु | Newar |  |
 | `DEOPATAN_DESHODDHAR_PUJA` | Deopatan Deshoddhar Puja | देवपाटन देशोद्धार पूजा |  |  |
 | `FAGU_PURNIMA` | Fagu Purnima | फागु पूर्णिमा |  |  |
 | `GAI_TIHAR` | Gai Tihar | गाई तिहार |  |  |
@@ -353,15 +363,10 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `GAURA_PARVA` | Gaura Parva | गौरा पर्व |  |  |
 | `GHANTAKARNA_CHATURDASHI` | Ghantakarna Chaturdashi | घण्टाकर्ण चतुर्दशी |  |  |
 | `GOVATSA_DWADASHI` | Govatsa Dwadashi | गोवत्स द्वादशी |  |  |
-| `HAYAGRIVA_JAYANTI` | Hayagriva Jayanti | हयग्रीव जयन्ती |  |  |
 | `INDRADHWAJA_PATAN` | Indradhwaja Patan | इन्द्रध्वज पातन | Newar |  |
 | `JUGA_CHARHE` | Juga Charhe | जुगः चह्रे | Newar |  |
-| `KALKI_JAYANTI` | Kalki Jayanti | कल्कि जयन्ती |  |  |
-| `KAMADA_EKADASHI` | Kamada Ekadashi | कामदा एकादशी |  |  |
 | `KASHI_BADA_GANESH_UTSAV` | Kashi Bada Ganesh Utsav | काशी बडागणेश उत्सव |  |  |
-| `KOJAGRAT_PURNIMA` | Kojagrat Purnima | कोजाग्रत पूर्णिमा |  |  |
 | `KRISHNA_RATH_JATRA` | Krishna Rath Jatra | कृष्ण रथ जात्रा |  |  |
-| `LALITPUR_NARSINGH_JATRA` | Lalitpur Narsingh Jatra | ललितपुर नृसिंह जात्रा | Newar |  |
 | `MAHALAXMI_VRAT_BEGINS` | Mahalaxmi Vrat Begins | महालक्ष्मी व्रत आरम्भ |  |  |
 | `MAHALAXMI_VRAT_ENDS` | Mahalaxmi Vrat Ends | महालक्ष्मी व्रत समाप्ति |  |  |
 | `MAJHI_LADI_PUJA` | Majhi Ladi Puja | माझी लदी पूजा | Majhi |  |
@@ -370,7 +375,6 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `NALASWANE_CHARHE` | Nalaswane Charhe | नःलास्वने चह्रे | Newar |  |
 | `NALA_MACHHINDRANATH_SNAN` | Nala Machhindranath Snan | नाला मच्छिन्द्रनाथ स्नान | Newar |  |
 | `NANICHAYA` | Nanichaya | नानिचाया |  |  |
-| `NARASIMHA_JAYANTI` | Narasimha Jayanti | नृसिंह जयन्ती |  |  |
 | `PADMINI_EKADASHI` | Padmini Ekadashi | पद्मिनी एकादशी |  | the adhika month only (§3.7) |
 | `PANAUTI_JATRA` | Panauti Jatra | पनौती जात्रा | Newar | both editions print it on Jyeshtha's full moon |
 | `PANAUTI_SNAN_MELA` | Panauti Snan Mela | पनौती स्नान मेला |  | both editions print it on Jyeshtha's full moon |
@@ -380,13 +384,9 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `RADHA_KRISHNA_RATH_JATRA` | Radha Krishna Rath Jatra | राधाकृष्ण रथ जात्रा |  |  |
 | `RAMANUJACHARYA_JAYANTI` | Ramanujacharya Jayanti | रामानुजाचार्य जयन्ती |  |  |
 | `RATO_MACHHINDRANATH_SNAN` | Rato Machhindranath Snan | रातो मच्छिन्द्रनाथ स्नान | Newar |  |
-| `SHIVA_PAVITRAROPAN` | Shiva Pavitraropan | शिव पवित्रारोपण |  |  |
 | `SITHI_CHARHE` | Sithi Charhe | सिथि चह्रे | Newar |  |
-| `SI_PUNHI` | Si Punhi | सिपुन्ही | Newar |  |
-| `VARAHA_JAYANTI` | Varaha Jayanti | वराह जयन्ती |  |  |
 | `VAT_SAVITRI_VRAT` | Vat Savitri Vrat | वटसावित्री व्रत |  |  |
 | `VISHNU_BAIKUNTHA_CHATURDASHI` | Vishnu Baikuntha Chaturdashi | विष्णु बैकुण्ठ चतुर्दशी |  |  |
-| `WALKE_PARVA` | Walke Parva | वल्के पर्व |  | BS 5/1 or Shravana bright 13th, 2 of 3 |
 
 ### Solar (26)
 

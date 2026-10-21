@@ -4044,6 +4044,54 @@
     "YOGINI_EKADASHI": {
       "name": "योगिनी एकादशी",
       "prose": "योगिनी एकादशी"
+    },
+    "KOJAGRAT_PURNIMA": {
+      "name": "कोजाग्रत पूर्णिमा",
+      "prose": "कोजाग्रत पूर्णिमा"
+    },
+    "KAMADA_EKADASHI": {
+      "name": "कामदा एकादशी",
+      "prose": "कामदा एकादशी"
+    },
+    "SI_PUNHI": {
+      "name": "सिपुन्ही",
+      "prose": "सिपुन्ही"
+    },
+    "HAYAGRIVA_JAYANTI": {
+      "name": "हयग्रीव जयन्ती",
+      "prose": "हयग्रीव जयन्ती"
+    },
+    "SHIVA_PAVITRAROPAN": {
+      "name": "शिव पवित्रारोपण",
+      "prose": "शिव पवित्रारोपण"
+    },
+    "ARJUNDHARA_MELA": {
+      "name": "अर्जुनधारा मेला",
+      "prose": "अर्जुनधारा मेला"
+    },
+    "WALKE_PARVA": {
+      "name": "वल्के पर्व",
+      "prose": "वल्के पर्व"
+    },
+    "KALKI_JAYANTI": {
+      "name": "कल्कि जयन्ती",
+      "prose": "कल्कि जयन्ती"
+    },
+    "VARAHA_JAYANTI": {
+      "name": "वराह जयन्ती",
+      "prose": "वराह जयन्ती"
+    },
+    "BAHIDYO_BOYEGU": {
+      "name": "बहीद्यः बोयेगु",
+      "prose": "बहीद्यः बोयेगु"
+    },
+    "LALITPUR_NARSINGH_JATRA": {
+      "name": "ललितपुर नृसिंह जात्रा",
+      "prose": "ललितपुर नृसिंह जात्रा"
+    },
+    "NARASIMHA_JAYANTI": {
+      "name": "नृसिंह जयन्ती",
+      "prose": "नृसिंह जयन्ती"
     }
   }
 }

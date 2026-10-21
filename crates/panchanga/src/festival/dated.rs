@@ -164,8 +164,8 @@ impl DatedRule {
     }
 
     /// The days Nepal's national panchanga prints on a Bikram Sambat date:
-    /// the twelve sankrantis on the first of each month, and the national
-    /// days it names.
+    /// the twelve sankrantis on the first of each month, the national days
+    /// it names, and the festivals it keeps on a date.
     #[must_use]
     pub fn nepal_panchanga() -> Vec<DatedRule> {
         let bs = |key: &str, month: u8, day: i8, source: &str| DatedRule {
@@ -241,6 +241,12 @@ impl DatedRule {
                 11,
                 7,
                 "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 23: \"राष्ट्रिय प्रजातन्त्र दिवस\" on Phalgun 7",
+            ),
+            bs(
+                "WALKE_PARVA",
+                5,
+                1,
+                "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 11: \"वल्केपर्व\" on Bhadra 1, the day of भाद्रसङ्क्रान्ति",
             ),
         ]
     }

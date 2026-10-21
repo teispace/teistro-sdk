@@ -421,8 +421,8 @@ fn a_doubled_jyeshtha_keeps_dashahara_in_its_adhika_month_however_short_the_rang
 
 /// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
 /// at Kathmandu: exactly the rows read off the committee's print, each
-/// sankranti on its month's first day (pp. 2-24), the six national days
-/// and Tamu Lhosar; and VS 2083's rows checked (pp. 2, 20-23).
+/// sankranti on its month's first day (pp. 2-24), the six national days,
+/// Tamu Lhosar and Walke parva; and VS 2083's rows checked (pp. 2, 20-23).
 #[test]
 fn the_dated_days_are_the_committees_printed_rows() {
     let sdk = Context::builder().nepal_official([]).build().unwrap();
@@ -461,6 +461,7 @@ fn the_dated_days_are_the_committees_printed_rows() {
             ("MITHUNA_SANKRANTI", (2025, 6, 15)),
             ("KARKATA_SANKRANTI", (2025, 7, 17)),
             ("SIMHA_SANKRANTI", (2025, 8, 17)),
+            ("WALKE_PARVA", (2025, 8, 17)),
             ("KANYA_SANKRANTI", (2025, 9, 17)),
             ("CONSTITUTION_DAY", (2025, 9, 19)),
             ("TULA_SANKRANTI", (2025, 10, 18)),
@@ -479,6 +480,14 @@ fn the_dated_days_are_the_committees_printed_rows() {
     assert_eq!(
         kept((2026, 4, 14), (2026, 4, 14)),
         printed(&[("MESHA_SANKRANTI", (2026, 4, 14))])
+    );
+    // VS 2083 p. 11: वल्केपर्व on भाद्रसङ्क्रान्ति.
+    assert_eq!(
+        kept((2026, 8, 17), (2026, 8, 17)),
+        printed(&[
+            ("SIMHA_SANKRANTI", (2026, 8, 17)),
+            ("WALKE_PARVA", (2026, 8, 17)),
+        ])
     );
     assert_eq!(
         kept((2026, 12, 30), (2027, 2, 19)),

@@ -305,8 +305,8 @@
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 3810000,
-      "gzip": 1210000
+      "raw": 3900000,
+      "gzip": 1230000
     }
   ],
   "history": [
@@ -408,6 +408,15 @@
       "raw": 3732063,
       "gzip": 1182031,
       "why": "the festival work of 2026-10-20 (the moonrise search and the chaturthis kept at it, the first crescent, days kept on a civil date, the four-valued inAdhika, the iCalendar feed as an agent tool) and its names in three locales; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-21",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 3816219,
+      "gzip": 1204337,
+      "why": "twelve more of NEPAL_PANCHANGA's festivals with the text each cites, and the ayanamsha's kept epoch; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
     }
   ]
 }

@@ -12,6 +12,25 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Twelve festivals that needed a form** (`festival-rule-language.md` §4,
+C617, C693).
+**Numbers:** `NEPAL_PANCHANGA` now keeps twelve more festivals, each on
+the day the committee prints in VS 2082 and VS 2083; all 21 printed rows
+agree under the committee's sky, and over the modern sky Lalitpur Narsingh
+jatra moves a day in both years. Narasimha jayanti and Kojagrat purnima
+take *Dharmasindhu*'s own rule, read off the page images: the earlier day
+only when it alone holds the tithi, at sunset (p. 37) and at nishitha
+(p. 74). C617 is corrected: the text keeps Kojagara at nishitha, and
+pradosha is only some authorities' reading. Si punhi, Hayagriva jayanti
+and Shiva pavitraropan are printed on the full-moon fast's day and take
+its rule (C200). Kamada ekadashi is the Smartas' 11th (C688). Varaha and
+Kalki jayanti, Bahidyo boyegu and Lalitpur Narsingh jatra are kept at
+sunrise, and Arjundhara mela on Halesi mela's day. Walke parva falls on
+Bhadra 1. Where a consumer's list gives another day, the print refutes it
+in at least one edition: Kalki's bright 5th, Varaha's Bhadrapada days,
+Si punhi's bright 5th and Arjundhara's day after. The rows still held are
+named in C693.
+
 **162 more of Nepal's festivals** (`festival-rules.md` §10.2,
 `festival-classification.md`).
 **Numbers:** `NEPAL_PANCHANGA` now keeps 162 more festivals: 161 by the

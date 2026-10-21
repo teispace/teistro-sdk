@@ -784,11 +784,32 @@ measures the fit and not a text (C600).
 | 2083 | PAPMOCHANI_EKADASHI | 2 Apr | p. 26: पापमोचनी एकादशीव्रत | 2 Apr | 2 Apr |
 | 2082 | KOKA_KAUSHIKI_SANGAM_MELA | 5 Dec | p. 18: कोशिकोका सङ्गममा मेला | 5 Dec | 5 Dec |
 | 2083 | KOKA_KAUSHIKI_SANGAM_MELA | 25 Dec | p. 20: कोशीकोका सङ्गममा मेला | 25 Dec | 25 Dec |
+| 2082 | NARASIMHA_JAYANTI | 11 May | p. 3: नृसिंहजयन्ती | 11 May | 11 May |
+| 2083 | NARASIMHA_JAYANTI | 30 Apr | p. 3: नृसिंहजयन्ती | 30 Apr | 30 Apr |
+| 2082 | VARAHA_JAYANTI | 27 Jul | p. 9: वराहजयन्ती | 27 Jul | 27 Jul |
+| 2082 | KALKI_JAYANTI | 30 Jul | p. 9: कल्कीजयन्ती | 30 Jul | 30 Jul |
+| 2082 | BAHIDYO_BOYEGU | 6 Aug | p. 9: बहिद्यब्वोय | 6 Aug | 6 Aug |
+| 2082 | SHIVA_PAVITRAROPAN | 8 Aug | p. 9: श्रीशिवजीमा पवित्रारोपण | 8 Aug | 8 Aug |
+| 2082 | HAYAGRIVA_JAYANTI | 8 Aug | p. 9: हयग्रीवोत्पत्ति | 8 Aug | 8 Aug |
+| 2082 | LALITPUR_NARSINGH_JATRA | 14 Aug | p. 10: ल.पु. नृसिंहयात्रा (उपाकलं सायाः) | 14 Aug | 13 Aug ✗ |
+| 2082 | KOJAGRAT_PURNIMA | 6 Oct | p. 13: कोजाग्रतव्रत | 6 Oct | 6 Oct |
+| 2082 | ARJUNDHARA_MELA | 18 Nov | p. 16: सताक्षीधाम तथा अर्जुनधारा मेला | 18 Nov | 18 Nov |
+| 2082 | SI_PUNHI | 1 Feb | p. 21: (सिपून्हि) | 1 Feb | 1 Feb |
+| 2082 | KAMADA_EKADASHI | 29 Mar | p. 25: कामदाएकादशीव्रत | 29 Mar | 29 Mar |
+| 2083 | VARAHA_JAYANTI | 15 Aug | p. 11: वराहजयन्ती | 15 Aug | 15 Aug |
+| 2083 | KALKI_JAYANTI | 18 Aug | p. 11: कल्कीजयन्ती | 18 Aug | 18 Aug |
+| 2083 | BAHIDYO_BOYEGU | 24 Aug | p. 11: बहिद्यब्बोय | 24 Aug | 24 Aug |
+| 2083 | SHIVA_PAVITRAROPAN | 27 Aug | p. 11: श्रीशिवजीमा पवित्रारोपण | 27 Aug | 27 Aug |
+| 2083 | HAYAGRIVA_JAYANTI | 27 Aug | p. 11: हयग्रीवोत्पत्ति | 27 Aug | 27 Aug |
+| 2083 | LALITPUR_NARSINGH_JATRA | 1 Sep | p. 12: ल.पु. नृसिंहयात्रा (उपाकलं सायाः) | 1 Sep | 2 Sep ✗ |
+| 2083 | KOJAGRAT_PURNIMA | 25 Oct | p. 15: कोजाग्रतव्रत | 25 Oct | 25 Oct |
+| 2083 | ARJUNDHARA_MELA | 6 Dec | p. 18: झापा सताक्षीधाम तथा अर्जुनधारामेला | 6 Dec | 6 Dec |
+| 2083 | SI_PUNHI | 20 Feb | p. 23: (सिपून्हि) | 20 Feb | 20 Feb |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 558 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 58 of 558 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 579 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 60 of 579 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 

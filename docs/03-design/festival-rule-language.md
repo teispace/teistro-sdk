@@ -410,10 +410,12 @@ it:
   days says.
 
 **Source.** The consumer's source lists Kojagrat purnima on the eve and the
-day in VS 2081–2083 (C617). *Dharmasindhu* p. 74 keeps Kojagara at
-nishitha with pradosha deciding, and its "both days" answers are
-otherwise always one day. So `BOTH` is for printing practice, and no text
-gives it.
+day in VS 2081–2083 (C617). *Dharmasindhu* p. 74, read off the page image,
+keeps Kojagara on the earlier day only when that day alone holds the full
+moon at nishitha, and on the later otherwise; pradosha is only some
+authorities' reading. The committee prints one day in both editions, the
+text's, and `NEPAL_PANCHANGA` ships that rule. So no rule in hand needs
+`BOTH`; it would be for a listing's practice, which no text gives.
 
 Mahalakshmi's vrata lasts sixteen days. Its end is a following rule of
 15 days from its start, within today's limit. Indra jatra's pole falls a
@@ -422,11 +424,12 @@ measurement.
 
 ### 3.10 A named ekadashi
 
-A named ekadashi (Kamada, Padmini, Parama) is the month's 11th as an
+A named ekadashi (Padmini, Parama) is the month's 11th as an
 Ekadashi observer keeps it, and not as a karmakala rule. The proposal is a
 `month` on `EkadashiRule` and a key per name, so that the observers'
-vedha and dashami rules decide (`festival-rules.md` §8). Kamada ekadashi's
-11-or-12 rule is the observers' "11th or 12th" question.
+vedha and dashami rules decide (`festival-rules.md` §8). Kamada ekadashi
+needed none: the committee prints the Smartas' 11th, which the sunrise rule
+gives, as for Varuthini and Yogini (C688), and `NEPAL_PANCHANGA` ships it.
 
 ### 3.11 What is not proposed
 
@@ -446,21 +449,21 @@ is missing is evidence. "None" means no form would decide the row.
 
 | # | key | the consumer's reason | best found here, committee sky | form | verdict |
 |---:|---|---|---|---|---|
-| 1 | `KAMADA_EKADASHI` | the source gives the 11th or the 12th; 11 of 14 at best | sunrise, 11 of 14 | §3.10 a named ekadashi | the month's ekadashi as the Ekadashi observers keep it, which is how the shipped `EKADASHI_SMARTA` already decides; to measure |
+| 1 | `KAMADA_EKADASHI` | the source gives the 11th or the 12th; 11 of 14 at best | sunrise, 11 of 14 | none new | **shipped** at sunrise: VS 2082 prints the 11th (29 March 2026), the Smartas' day as Varuthini's and Yogini's (C688), and the rule gives every one of the source's 11 verified days |
 | 2 | `MATATI_CHARHE` | a charhe; 11 of 14 at aparahna | aparahna, sayahna or pradosha, 11 of 14 | none | C614: no one window fits the charhe |
 | 3 | `RAMANUJACHARYA_JAYANTI` | 12 of 14 at sunrise | moonrise, 13 of 14 | §3.1 moonrise | a candidate only: one more year for a new window is an overfit until a source names the time |
-| 4 | `NARASIMHA_JAYANTI` | 11 of 14 | day muhurtas 14–15, 12 of 14 | §3.2 day muhurtas; or sunset | *Dharmasindhu* p. 37 gives the 14th at sunset ("सूर्यास्तमयकालव्यापिनी"); the instant rule is `SUNSET`, which the language has; to measure |
+| 4 | `NARASIMHA_JAYANTI` | 11 of 14 | day muhurtas 14–15, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 37, sunset, the later day unless the earlier alone holds it; both printed days, and 12 of 14 verified |
 | 5 | `SITHI_CHARHE` | a charhe; 11 of 14 at aparahna | aparahna, sunset, 11 of 14 | none | C614 |
 | 6 | `VAT_SAVITRI_VRAT` | 12 of 14 at sunrise, Jyeshtha's new moon | sunrise, 12 of 14 | none | *Dharmasindhu* p. 39 keeps the vrata on the 13th to the full moon, which is another region's form; no window lifts the new moon's; evidence |
 | 7 | `MATSYA_DARSHAN` | 11 of 13 | sunrise, 11 of 13 | none | evidence |
 | 8 | `GHANTAKARNA_CHATURDASHI` | no part of the day fits two years whose 14th began 46 and 85 minutes before sunset and were kept a day apart | pradosha, 12 of 14 | none | C614: the same days as Gathamuga charhe; the two years contradict any window |
 | 9 | `GATHAMUGA_CHARHE` | the same days as Ghantakarna | pradosha, 12 of 14 | none | C614 |
-| 10 | `KALKI_JAYANTI` | 12 of 14 at pradosha | pradosha, 12 of 14 | none new | the language has pradosha; evidence |
-| 11 | `SHIVA_PAVITRAROPAN` | 10 of 14 | pradosha or nishitha, 10 of 14 | none | evidence |
-| 12 | `HAYAGRIVA_JAYANTI` | 10 of 14 | sunrise, 10 of 14 | none | evidence |
+| 10 | `KALKI_JAYANTI` | 12 of 14 at pradosha | pradosha, 12 of 14 | none new | **shipped** on Shravana's bright 6th at sunrise, both printed days; the source's 5th falls the day before both (C693) |
+| 11 | `SHIVA_PAVITRAROPAN` | 10 of 14 | pradosha or nishitha, 10 of 14 | none new | **shipped**: both editions print it on the full-moon fast's day, and it takes that rule (C200) |
+| 12 | `HAYAGRIVA_JAYANTI` | 10 of 14 | sunrise, 10 of 14 | none new | **shipped**: both editions print it on the full-moon fast's day, and it takes that rule (C200) |
 | 13 | `JANMASHTAMI` | the nirnaya rule gives 12 of 14; the source lists two days in 2071 and the sunrise day in 2072 | the shipped rule | none new | §5: the shipped `JANMASHTAMI` is the nirnaya rule exactly; the two misses are the source's, a double listing and a Vaishnava day (C175, C616) |
 | 14 | `JUGA_CHARHE` | a charhe; 11 of 13 | sayahna or pradosha, 11 of 13 | none | C614 |
-| 15 | `VARAHA_JAYANTI` | the source's rule names Shravana's bright 3rd; 12 verified days are Bhadrapada's | Bhadrapada's bright 3rd at sunrise, 12 of 14 | none new | a corrected month; the other two days are the source's error or a second practice |
+| 15 | `VARAHA_JAYANTI` | the source's rule names Shravana's bright 3rd; 12 verified days are Bhadrapada's | Bhadrapada's bright 3rd at sunrise, 12 of 14 | none new | **shipped** on Shravana's bright 3rd, the source's rule, which both editions print; the Bhadrapada days are the source's list (C693) |
 | 16 | `MAHALAXMI_VRAT_BEGINS` | 11 of 14 at nishitha | nishitha, 11 of 14 | none new | evidence; the end is counted from it (§3.9) |
 | 17 | `GAURA_PARVA` | 10 of 14 | day muhurtas 2–6, 11 of 14 | §3.2 day muhurtas | a candidate only |
 | 18 | `INDRADHWAJA_PATAN` | 10 of 14 in the morning | madhyahna or sayahna, 10 of 14 | §3.9 a count | the pole falls a set number of days after it is raised (`INDRADHWAJA_UTTHAN`); a count from that day is to be measured |
@@ -468,13 +471,13 @@ is missing is evidence. "None" means no form would decide the row.
 | 20 | `MAHALAXMI_VRAT_ENDS` | 10 of 14 at pradosha | pradosha or nishitha, 10 of 14 | §3.9 a count | sixteen days from the start: a following rule of 15 days, the most the language allows |
 | 21 | `PHARPING_HARISHANKAR_JATRA` | 9 of 14 | sunrise, 9 of 14 | none | evidence |
 | 22 | `NALASWANE_CHARHE` | a charhe; 9 of 14 | aparahna to pradosha, 9 of 14 | none | C614 |
-| 23 | `KOJAGRAT_PURNIMA` | 9 of 14; the Kojagara rule (midnight) 7 of 14; the source lists the eve and the day in 2081–2083 | sunrise, 12 of 14 | §3.9 two days | *Dharmasindhu* p. 74 keeps it at nishitha with pradosha deciding (C617); a listing of two days is a rule that answers both |
+| 23 | `KOJAGRAT_PURNIMA` | 9 of 14; the Kojagara rule (midnight) 7 of 14; the source lists the eve and the day in 2081–2083 | sunrise, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 74, nishitha, the earlier day only when it alone holds it (C617); both editions print one day, the text's |
 | 24 | `GOVATSA_DWADASHI` | 8 of 14 | madhyahna, aparahna or sayahna with `GREATER`, 13 of 14 | §3.3 `GREATER` | *Dharmasindhu* p. 76 gives pradosha, which fits worse; the share of a daylight window with `GREATER` is the candidate |
 | 25 | `VISHNU_BAIKUNTHA_CHATURDASHI` | 9 of 14 | sayahna or pradosha, 12 of 14 | none | *Dharmasindhu* p. 82 keeps the vrata on the 14th at arunodaya; evidence |
-| 26 | `ARJUNDHARA_MELA` | 12 of 14 in the morning | day muhurtas 1–6, 12 of 14 | §3.2 day muhurtas | a candidate only |
+| 26 | `ARJUNDHARA_MELA` | 12 of 14 in the morning | day muhurtas 1–6, 12 of 14 | none new | **shipped** on Halesi mela's day: both editions print it in the continuation of that row; the source's day after is not printed in VS 2083 (C693) |
 | 27 | `GURU_GOBIND_SINGH_JAYANTI` | Poush 21 or 20, or 5 January; 12 of 14 at best | a civil date | §3.6 a civil date | the community's own calendar sets it (C619) |
 | 28 | `KASHI_BADA_GANESH_UTSAV` | 8 of 14 | moonrise, sayahna or pradosha, 12 of 14 | §3.1 moonrise | Magha's dark 4th is a Sankashta chaturthi, kept at moonrise (*Dharmasindhu* p. 9); the rule is the text's |
-| 29 | `SI_PUNHI` | the source's rule names Magha's full moon; 12 verified days are Magha's bright 5th | Magha's bright 5th at sunrise, 12 of 14 | none new | a corrected tithi |
+| 29 | `SI_PUNHI` | the source's rule names Magha's full moon; 12 verified days are Magha's bright 5th | Magha's bright 5th at sunrise, 12 of 14 | none new | **shipped** on Magha's full moon, the source's rule: both editions print it on the full-moon fast's day, so it takes that rule (C200); the source's bright 5th days are not printed (C693) |
 | 30 | `PASHUPATINATH_CHHAYA_DARSHAN` | 11 of 14 | sunrise, 11 of 14 | none | evidence |
 | 31 | `FAGU_PURNIMA` | 11 of 14 | day muhurtas 2–6, 13 of 14 | §3.2 day muhurtas | a candidate only |
 | 32 | `DEOPATAN_DESHODDHAR_PUJA` | 11 of 13 | day muhurtas 1–4, 12 of 13 | §3.2 day muhurtas | a candidate only |
@@ -489,10 +492,10 @@ is missing is evidence. "None" means no form would decide the row.
 | 41 | `PANAUTI_JATRA` | as the mela | Jyeshtha's full moon at sunrise | none new | as the mela |
 | 42 | `BARAHAKSHETRA_MELA` | one verified day | none | none | evidence |
 | 43 | `JANA_YUDDHA_DIWAS` | the source ended every rule | none | none | no longer kept |
-| 44 | `BAHIDYO_BOYEGU` | 2 of 3 | sunrise, 2 of 3 | none | evidence |
+| 44 | `BAHIDYO_BOYEGU` | 2 of 3 | sunrise, 2 of 3 | none new | **shipped** at sunrise: both printed days (C693) |
 | 45 | `WORLD_SOIL_CONSERVATION_DAY` | 0 of 3 by 7 or 8 August | none | §3.6 a civil date | the date is not settled; evidence |
-| 46 | `LALITPUR_NARSINGH_JATRA` | 1 of 2 | sunrise, 1 of 2 | none | evidence |
-| 47 | `WALKE_PARVA` | 2 of 3 by Bhadra 1 or Shravana's bright 13th in the morning | none | §3.6 a solar day | evidence |
+| 46 | `LALITPUR_NARSINGH_JATRA` | 1 of 2 | sunrise, 1 of 2 | none new | **shipped** at sunrise: both printed days (C693) |
+| 47 | `WALKE_PARVA` | 2 of 3 by Bhadra 1 or Shravana's bright 13th in the morning | none | none new | **shipped** on Bhadra 1, a civil date: both editions print it on भाद्रसङ्क्रान्ति, and all three verified days are Bhadra 1 |
 | 48 | `KRISHNA_RATH_JATRA` | 0 of 3 by the source; 1 of 3 at best | madhyahna to moonrise, 2 of 3 | none new | evidence |
 | 49 | `RADHA_KRISHNA_RATH_JATRA` | 2 of 2 in the morning | madhyahna to moonrise, 2 of 2 | none new | two years; evidence |
 | 50 | `NALA_MACHHINDRANATH_SNAN` | 1 of 3 | sayahna to moonrise, 2 of 3 | none new | evidence |
@@ -507,13 +510,12 @@ is missing is evidence. "None" means no form would decide the row.
 | form | rows |
 |---|---:|
 | moonrise (§3.1) | 2 |
-| day muhurtas (§3.2) | 5 |
+| day muhurtas (§3.2) | 3 |
 | `GREATER` (§3.3) | 1 |
-| civil and solar dates (§3.6) | 4 |
-| counts and two days (§3.9) | 3 |
-| a named ekadashi (§3.10) | 1 |
-| none new: the language can say it, and the evidence is short | 11 |
-| none: a charhe, a sighting, a day set each year, or one verified day | 30 |
+| civil and solar dates (§3.6) | 3 |
+| counts and two days (§3.9) | 2 |
+| none new: the language can say it; 12 of them are shipped, the committee's print of both years settling each, and the evidence is short for the other 8 | 20 |
+| none: a charhe, a sighting, a day set each year, or one verified day | 26 |
 
 ## 5. Janmashtami
 
