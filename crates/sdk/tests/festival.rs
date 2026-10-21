@@ -544,3 +544,70 @@ fn the_dated_days_are_the_committees_printed_rows() {
         ])
     );
 }
+
+/// A rule's key, the day it was kept, and that day's Tibetan month and day.
+type Kept = (String, (i32, u8, u8), (u8, u8));
+
+/// Rules kept on a Tibetan date, read as a binding writes them, fall on
+/// the days Dharamsala printed: Saga Dawa Duchen 2016 in leap month 4,
+/// Chokhor Duchen 2024 on the first of leap month 6's two 4ths, and
+/// Chotrul Duchen 2018, its 15th skipped, on the 14th (FPMT) or the 16th
+/// (Tushita) as the rule asks (`calendars/tibetan.md`).
+#[test]
+fn a_rule_on_a_tibetan_date_keeps_the_printed_day() {
+    let sdk = context();
+    let request = FestivalRequest::from_json(
+        r#"{"rules": [
+            {"key": "SAGA_DAWA_DUCHEN", "source": "a test", "civilDate": {"calendar": "TIBETAN_PHUGPA", "month": 4, "day": 15}},
+            {"key": "CHOKHOR_DUCHEN", "source": "a test", "civilDate": {"calendar": "calendar.TIBETAN_PHUGPA", "month": 6, "day": 4}},
+            {"key": "CHOTRUL_DUCHEN", "source": "a test", "civilDate": {"calendar": "TIBETAN_PHUGPA", "month": 1, "day": 15}},
+            {"key": "CHOTRUL_DUCHEN_AFTER", "source": "a test", "civilDate": {"calendar": "TIBETAN_PHUGPA", "month": 1, "day": 15, "skipped": "AFTER"}}
+        ]}"#,
+    )
+    .unwrap();
+    let kept = |from: (i32, u8, u8), to: (i32, u8, u8)| -> Vec<Kept> {
+        sdk.almanac()
+            .festivals(
+                &CalendarDate::defined(Calendar::Gregorian, from.0, from.1, from.2),
+                &CalendarDate::defined(Calendar::Gregorian, to.0, to.1, to.2),
+                &delhi(),
+                UtcOffset::literal(5, 30, 0),
+                &request,
+            )
+            .unwrap()
+            .value
+            .dated
+            .into_iter()
+            .map(|kept| {
+                (
+                    kept.rule,
+                    (kept.day.year, kept.day.month, kept.day.day),
+                    (kept.on.month, kept.on.day),
+                )
+            })
+            .collect()
+    };
+    assert_eq!(
+        kept((2016, 5, 18), (2016, 6, 22)),
+        [("SAGA_DAWA_DUCHEN".to_owned(), (2016, 5, 21), (4, 15))]
+    );
+    assert_eq!(
+        kept((2024, 7, 5), (2024, 8, 10)),
+        [("CHOKHOR_DUCHEN".to_owned(), (2024, 7, 9), (6, 4))]
+    );
+    assert_eq!(
+        kept((2018, 2, 27), (2018, 3, 4)),
+        [
+            ("CHOTRUL_DUCHEN".to_owned(), (2018, 3, 1), (1, 14)),
+            ("CHOTRUL_DUCHEN_AFTER".to_owned(), (2018, 3, 2), (1, 16)),
+        ]
+    );
+    let refused = FestivalRequest::from_json(
+        r#"{"rules": [{"key": "X", "source": "a test", "civilDate": {"calendar": "BIKRAM_SAMBAT", "month": 1, "day": 1, "skipped": "BEFORE"}}]}"#,
+    )
+    .unwrap_err();
+    assert_eq!(
+        refused.field(),
+        Some("festivals.rules[0].civilDate.skipped")
+    );
+}

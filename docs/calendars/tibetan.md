@@ -3,7 +3,8 @@
 Status: `shipped`, 2026-10-21. P2-1 step 5: `calendar.TIBETAN_PHUGPA`
 (`crates/calendar/src/tibetan.rs`) converts every day from the Tibetan
 year 1027 to 9998, and gives Losar on every date the source lists. A
-festival rule on a Tibetan date is not reckoned yet (The festival day).
+festival rule on a Tibetan date falls on the day the almanacs print, the
+first of a doubled month and of a repeated day (The festival day).
 
 The Tibetan new year, Losar, is the first day of the first month of the
 Tibetan calendar. This page designs the Phugpa calendar: in Janson's
@@ -137,13 +138,36 @@ no shipped calendar repeats a month or a day.
   waits on a vetted source, as the month names do.
 - **The festival day.** Losar is the first day of month 1, or of the leap
   month 1 when there is one, and the day after month 12's day 30 when day 1
-  is skipped (Janson §8); `tibetan::losar` gives it. A `DatedRule` on a
-  Tibetan date is refused for now, by name: its label alone does not say
-  which of a repeated month's two months keeps a festival (Janson's
-  Remark 17: holidays are usually not kept in a leap month, Losar
-  excepted), nor which day stands in for a skipped number. Nepal's
-  `GYALPO_LHOSAR` is another day in some years, so it does not wait on
-  this.
+  is skipped (Janson §8); `tibetan::losar` gives it. Any other date's
+  observance is `tibetan::observed`, and a `DatedRule` on a Tibetan
+  `civilDate` keeps that day:
+  - **A doubled month: the first, the leap month.** Janson §11 reports,
+    from his [21] and unchecked against print, that holidays are not kept
+    in a leap month. Dharamsala's almanac keeps them there. The Tibetan
+    Nuns Project printed Saga Dawa Duchen 2016 on 21 May, the 15th of
+    leap month 4 (its Saga Dawa month "7 May to 5 June", the leap month
+    whole); Lhabab Duchen 2021 on 27 October, the 22nd of leap month 9;
+    and Chokhor Duchen 2024 on 9 July, in leap month 6. Three of three
+    leap-month years, and none the other way.
+  - **A repeated day: the first, the leap day** (Janson §11, from [21]).
+    Chokhor Duchen 2024 is the first of leap month 6's two 4ths, 9 July,
+    not the 10th.
+  - **A skipped day: the day before, unless the rule says `AFTER`.**
+    Janson's [21] keeps it on the preceding day, the day the skipped
+    lunar day ends in, and FPMT kept Chotrul Duchen 2018, whose 15th of
+    month 1 was skipped, on 1 March, the 14th. Tushita in Dharamsala
+    printed 2 March, the 16th. Print disagrees, so a rule names its
+    choice: `"skipped": "AFTER"` in its `civilDate`, `BEFORE` when left
+    out (no answer's hash moves, as the field is not written then).
+  - The month is chosen first: a number skipped in a leap month is kept
+    beside it there, never on the regular month's day of that number. A
+    day counted back is numbered from 30 (`-1` is the 30th), as every
+    month's numbers run to 30 with one missing when it has 29 days. A
+    `civilWeekday` on the Tibetan calendar is refused by name: no source
+    says which weeks of a doubled month count.
+
+  Nepal's `GYALPO_LHOSAR` is another day in some years, so it stays on
+  its lunar date.
 - **Names.** en-Latn names the months by number ("month 1", "leap month
   1") and a repeated day "leap day 17", as Janson does. ne-Deva-NP says the
   same plainly ("अधिक महिना १", "तिथि १७ (दोहोरिएको)"). The Tibetan month
@@ -160,6 +184,12 @@ no shipped calendar repeats a month or a day.
   2046 and 2047): each year's cycle, place, element, animal and name, and
   table 3's gender (tested); and every year's names recur sixty years on
   (tested).
+- Twelve holy days printed for 2016 to 2026 by the Tibetan Nuns Project
+  and FPMT, three in a leap month and one on a repeated day, and Chotrul
+  Duchen 2018's skipped 15th on either neighbour (tested, and again
+  through a festival request); over 1900 to 2100, every date's
+  observance is the first day carrying its number in the first month, or
+  beside a skipped one, more than a thousand skips among them (tested).
 - The committee's print, where it agrees: 18 February 2026 is both the
   Phugpa Losar and the printed Gyalpo Lhosar.
 - Not yet: the sample dates in *Calendrical Calculations*' appendix C,

@@ -185,6 +185,86 @@ pub fn losar(year: i32) -> FixedDay {
     FixedDay::new(ends_on(k) + 1 - JD_OFFSET)
 }
 
+/// Which neighbour keeps an observance whose date's number is skipped.
+///
+/// Janson §11, after his [21]: "if that date is skipped, the holiday is
+/// on the preceding day", and FPMT kept Chotrul Duchen 2018, whose 15th
+/// of month 1 was skipped, on 1 March, the 14th; Tushita, in Dharamsala,
+/// printed 2 March, the 16th. The preceding day is the one in which the
+/// skipped lunar day ends.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SkippedDay {
+    /// The day before, the one the skipped lunar day ends in.
+    #[default]
+    Before,
+    /// The day after, the next number's.
+    After,
+}
+
+/// The day an observance kept on `day` of `month` of `year` falls on. The
+/// month is the first of a doubled pair, the leap month; in it, the day
+/// is the first of a repeated number, and a neighbour of a skipped one
+/// (`skipped`), never the other month's day of that number. Month 1's
+/// first day is [`losar`], the year's first day, which is day 2 when day
+/// 1 is skipped (Janson §8, Remark 17).
+///
+/// The first month and the first day are the almanac's: the Tibetan Nuns
+/// Project, in Dharamsala, printed Saga Dawa Duchen 2016 on 21 May, the
+/// 15th of leap month 4, Lhabab Duchen 2021 on 27 October, the 22nd of
+/// leap month 9, and Chokhor Duchen 2024 on 9 July, the first of the two
+/// 4ths of leap month 6. Janson's [21] holds holidays out of a leap month,
+/// a reading those three years do not follow (`calendars/tibetan.md`).
+///
+/// ```
+/// use teistro_calendar::tibetan::{SkippedDay, observed};
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+///
+/// let chokhor = observed(2024, 6, 4, SkippedDay::Before)?;
+/// let date = Gregorian.date_of(chokhor)?;
+/// assert_eq!((date.year, date.month, date.day), (2024, 7, 9));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// `OUT_OF_RANGE` for a year outside [`TIBETAN_RANGE`], named `year`, or
+/// a day past the calendar's range; `INVALID_ARG` with the
+/// `NONEXISTENT_DATE` detail for a month outside 1 to 12 or a day
+/// outside 1 to 30, named `month` or `day`.
+pub fn observed(year: i32, month: u8, day: u8, skipped: SkippedDay) -> Result<FixedDay, Error> {
+    check_year(year)?;
+    check_month_and_day(&CalendarDate::defined(
+        Calendar::TibetanPhugpa,
+        year,
+        month,
+        day,
+    ))?;
+    if (month, day) == (1, 1) {
+        return Ok(losar(year));
+    }
+    let (year, month) = (i64::from(year), i64::from(month));
+    let k = 30 * true_month(year, month, leap_month_in(year, month)) + i64::from(day) - 1;
+    let (ends, before) = (ends_on(k), ends_on(k - 1));
+    let jd = match (ends - before, skipped) {
+        // No lunar day ends the day before: it repeats the number, first.
+        (2, _) => ends - 1,
+        // Two end in one day, the second's number skipped: that day holds
+        // the number before, and the day after the next.
+        (0, SkippedDay::After) => ends + 1,
+        // One ends in the day, or a skipped number kept the day before.
+        _ => ends,
+    };
+    let fixed = FixedDay::new(jd - JD_OFFSET);
+    check_fixed(
+        Calendar::TibetanPhugpa,
+        TibetanPhugpa.capabilities().range,
+        fixed,
+    )?;
+    Ok(fixed)
+}
+
 /// A Tibetan year's names (Janson §4, Appendix B): its place in the
 /// numbered sixty-year rabjung cycles, with the Indian cycle's name, and
 /// the Chinese cycle's element, gender and animal, which name it as
@@ -861,5 +941,106 @@ mod tests {
             Some(&serde_json::json!("tibetan_animal.HORSE"))
         );
         assert_eq!(serde_json::from_value::<TibetanYear>(full).unwrap(), year);
+    }
+
+    /// Holy days the Tibetan Nuns Project (Dharamsala) printed for 2016 to
+    /// 2024, with FPMT's Saga Dawa Duchen 2025 and Chokhor Duchen 2026 as
+    /// calendars print it: the Tibetan month and day, and the day kept.
+    /// Three are in a leap month and one on the first of a repeated day.
+    const PRINTED: [(u8, u8, (i32, u8, u8)); 12] = [
+        (4, 15, (2016, 5, 21)),
+        (4, 15, (2019, 6, 17)),
+        (4, 15, (2021, 5, 26)),
+        (5, 15, (2021, 6, 24)),
+        (6, 4, (2021, 7, 14)),
+        (9, 22, (2021, 10, 27)),
+        (4, 15, (2024, 5, 23)),
+        (5, 15, (2024, 6, 22)),
+        (6, 4, (2024, 7, 9)),
+        (9, 22, (2024, 11, 22)),
+        (4, 15, (2025, 6, 11)),
+        (6, 4, (2026, 7, 18)),
+    ];
+
+    #[test]
+    fn an_observance_falls_on_the_day_the_almanac_printed() {
+        for (month, day, (year, g_month, g_day)) in PRINTED {
+            let kept = observed(year, month, day, SkippedDay::Before).unwrap();
+            assert_eq!(
+                kept,
+                gregorian_day(year, g_month, g_day),
+                "{year} {month}/{day}"
+            );
+        }
+        // Losar is the year's first day, in leap month 1 in 2000 and 2019.
+        for year in [2000, 2019, 2026] {
+            assert_eq!(
+                observed(year, 1, 1, SkippedDay::After).unwrap(),
+                losar(year)
+            );
+        }
+    }
+
+    /// Chotrul Duchen 2018: the 15th of month 1 was skipped. FPMT kept the
+    /// 14th, 1 March; Tushita printed the 16th, 2 March.
+    #[test]
+    fn a_skipped_date_is_kept_on_the_neighbour_asked() {
+        let day = |skipped| gregorian_from_fixed(observed(2018, 1, 15, skipped).unwrap());
+        assert_eq!(day(SkippedDay::Before), (2018, 3, 1));
+        assert_eq!(day(SkippedDay::After), (2018, 3, 2));
+    }
+
+    /// Over two centuries, every date's observance is the leap month's when
+    /// the month is doubled, the first day carrying the number in it, and
+    /// beside the days around a skipped one; Losar aside.
+    #[test]
+    fn an_observance_is_the_first_day_of_its_number_in_the_first_month() {
+        use std::collections::BTreeMap;
+        let first = gregorian_day(1_900, 1, 1).get();
+        let last = gregorian_day(2_100, 12, 31).get();
+        // (year, month, leap month) to its days, in order, with numbers.
+        let mut months: BTreeMap<(i64, i64, bool), Vec<(i64, i64)>> = BTreeMap::new();
+        for fixed in first..=last {
+            let (year, month, leap, day) = tibetan_from_fixed(fixed);
+            let leap_month = leap.is_some_and(Leap::month);
+            months
+                .entry((year, month, leap_month))
+                .or_default()
+                .push((day, fixed));
+        }
+        let mut skips = 0;
+        for (&(year, month, leap_month), days) in &months {
+            // The first and last months are cut by the range; the regular
+            // month of a doubled pair keeps nothing.
+            if year <= 1_900 || year >= 2_100 || (!leap_month && leap_month_in(year, month)) {
+                continue;
+            }
+            let (y, m) = (i32::try_from(year).unwrap(), u8::try_from(month).unwrap());
+            for number in 1..=30 {
+                if (m, number) == (1, 1) {
+                    continue;
+                }
+                let held = days.iter().find(|(day, _)| *day == i64::from(number));
+                let before = observed(y, m, number, SkippedDay::Before).unwrap().get();
+                let after = observed(y, m, number, SkippedDay::After).unwrap().get();
+                if let Some(&(_, fixed)) = held {
+                    assert_eq!((before, after), (fixed, fixed));
+                    continue;
+                }
+                skips += 1;
+                // The day before carries a smaller number, or ends the month
+                // before; the day after a larger one.
+                let (_, _, _, below) = tibetan_from_fixed(before);
+                let (_, _, _, above) = tibetan_from_fixed(after);
+                assert_eq!(after, before + 1, "{y} {m}/{number}");
+                assert!(below < i64::from(number) || number == 1, "{y} {m}/{number}");
+                assert!(
+                    above > i64::from(number) || number == 30,
+                    "{y} {m}/{number}"
+                );
+            }
+        }
+        // About one lunar day in sixty-four is skipped.
+        assert!(skips > 1_000, "{skips}");
     }
 }

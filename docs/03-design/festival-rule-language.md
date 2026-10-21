@@ -332,6 +332,16 @@ earthquake safety day on Magh 2, तमुल्होछार on Poush 15 (p. 
 (p. 23), with VS 2083's Baisakh and Poush to Phalgun rows checked too (`crates/sdk/tests/festival.rs`). Each is an event in
 the iCalendar feed.
 
+A `civilDate` on the Tibetan calendar keeps the day its observance falls
+on, the first of a doubled month and of a repeated day, and the day
+before a skipped number unless its `"skipped": "AFTER"` says the day
+after (`calendars/tibetan.md`, The festival day). `skipped` is refused
+on every other calendar, which skips no number.
+
+```json
+{"key": "CHOTRUL_DUCHEN", "source": "...", "civilDate": {"calendar": "TIBETAN_PHUGPA", "month": 1, "day": 15, "skipped": "AFTER"}}
+```
+
 **Settles:** the 24 solar festivals and the 165 fixed civil ones of the
 classification, Guriya parva (C621), and Safer internet day's weekday rule.
 

@@ -11,7 +11,8 @@
 //! month.
 
 use serde::{Deserialize, Serialize};
-use teistro_calendar::{CalendarDate, CalendarSystem, shipped};
+use teistro_calendar::tibetan::{self, SkippedDay, TIBETAN_RANGE};
+use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, shipped};
 use teistro_core::catalogue::{Calendar, Vara};
 use teistro_core::error::Error;
 
@@ -24,7 +25,7 @@ use super::{FestivalDay, Observances};
 /// use teistro_core::catalogue::Calendar;
 ///
 /// let maghe = DatedRule::nepal_panchanga().into_iter().find(|rule| rule.key == "MAKARA_SANKRANTI").ok_or("shipped")?;
-/// assert_eq!(maghe.on, Dated::CivilDate { calendar: Calendar::BikramSambat, month: 10, day: 1 });
+/// assert_eq!(maghe.on, Dated::CivilDate { calendar: Calendar::BikramSambat, month: 10, day: 1, skipped: None });
 /// # Ok::<(), &str>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -54,6 +55,11 @@ pub enum Dated {
         month: u8,
         /// The day; never 0.
         day: i8,
+        /// Which neighbour keeps the date when its number is skipped, in
+        /// the calendar that skips numbers, the Tibetan; left out, the
+        /// day before ([`SkippedDay`]). Refused for any other calendar.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        skipped: Option<SkippedDay>,
     },
     /// The `nth` `weekday` of a month of `calendar`; a negative `nth`
     /// counts back from the month's end, -1 for its last.
@@ -138,16 +144,28 @@ impl DatedRule {
             ))
             .with_field(format!("{form}.calendar")));
         }
-        // A Tibetan month may come twice and a day may be skipped or
-        // repeated, so "the 1st of month 1" is not one day by its label:
-        // which day keeps it (the leap month's or the regular's, the day
-        // standing in for a skipped number) waits on a source that says.
-        if calendar == Calendar::TibetanPhugpa {
+        let tibetan = calendar == Calendar::TibetanPhugpa;
+        // A Tibetan date is kept by `tibetan::observed`; a weekday of a
+        // Tibetan month has no source that says which month of a doubled
+        // pair, or which weeks, count.
+        if tibetan && form == "civilWeekday" {
             return Err(Error::unsupported(format!(
-                "{}: a festival on a Tibetan date is not reckoned yet; its month may repeat and its days skip or repeat (docs/calendars/tibetan.md)",
+                "{}: a weekday of a Tibetan month is not reckoned; keep the rule on a date (docs/calendars/tibetan.md)",
                 self.key
             ))
-            .with_field(format!("{form}.calendar")));
+            .with_field("civilWeekday.calendar"));
+        }
+        if let Dated::CivilDate {
+            skipped: Some(_), ..
+        } = self.on
+            && !tibetan
+        {
+            return Err(Error::invalid_arg(format!(
+                "{}: `{}` numbers no day twice and skips none, so a skipped date needs no neighbour",
+                self.key,
+                calendar.key()
+            ))
+            .with_field("civilDate.skipped"));
         }
         if self.on.month() == 0 {
             return Err(
@@ -156,6 +174,15 @@ impl DatedRule {
             );
         }
         match self.on {
+            Dated::CivilDate { day, .. }
+                if tibetan && (day == 0 || day.unsigned_abs() > 30) =>
+            {
+                Err(Error::invalid_arg(format!(
+                    "{}: a Tibetan month numbers its days 1 to 30, or back from -1, not {day}",
+                    self.key
+                ))
+                .with_field("civilDate.day"))
+            }
             Dated::CivilDate { day, .. } if day == 0 || day.unsigned_abs() > 32 => {
                 Err(Error::invalid_arg(format!(
                     "{}: a day is counted from 1, or back from the month's end from -1, not {day}",
@@ -186,6 +213,7 @@ impl DatedRule {
                 calendar: Calendar::BikramSambat,
                 month,
                 day,
+                skipped: None,
             },
         };
         let sankranti = |key: &str, month: u8, printed: &str| {
@@ -292,8 +320,19 @@ pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, E
         for rule in rules {
             let calendar = system(rule.on.calendar())?;
             let on = calendar.date_of(fixed)?;
-            let length = calendar.month_length(on.year, on.month)?;
-            if rule.on.holds(&on, length, day.vara) {
+            let held = if let Dated::CivilDate {
+                calendar: Calendar::TibetanPhugpa,
+                month,
+                day: wanted,
+                skipped,
+            } = rule.on
+            {
+                keeps_tibetan(fixed, on.year, month, wanted, skipped.unwrap_or_default())
+            } else {
+                let length = calendar.month_length(on.year, on.month)?;
+                rule.on.holds(&on, length, day.vara)
+            };
+            if held {
                 answer.dated.push(DatedObservance {
                     rule: rule.key.clone(),
                     day: day.date.clone(),
@@ -303,6 +342,24 @@ pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, E
         }
     }
     Ok(answer)
+}
+
+/// Whether `fixed`, a day of Tibetan year `year`, is the day a date's
+/// observance falls on (`tibetan::observed`). A day may keep the year
+/// before's date, a skipped 30th of month 12 kept on the day after being
+/// the next year's first, so that year is asked too. The rule's month and
+/// day are checked, so the one refusal left is a day past the range's
+/// edge, which keeps nothing.
+fn keeps_tibetan(fixed: FixedDay, year: i32, month: u8, day: i8, skipped: SkippedDay) -> bool {
+    // -1 is the 30th: a month's days are numbered to 30, a skipped one
+    // missing.
+    let Ok(number) = u8::try_from(if day > 0 { day } else { 31 + day }) else {
+        return false;
+    };
+    [year - 1, year]
+        .into_iter()
+        .filter(|year| (TIBETAN_RANGE.0..=TIBETAN_RANGE.1).contains(year))
+        .any(|year| tibetan::observed(year, month, number, skipped).is_ok_and(|kept| kept == fixed))
 }
 
 fn system(calendar: Calendar) -> Result<&'static dyn CalendarSystem, Error> {
@@ -329,6 +386,7 @@ mod tests {
             calendar: Calendar::BikramSambat,
             month,
             day,
+            skipped: None,
         }
     }
 
@@ -392,19 +450,71 @@ mod tests {
         for rule in DatedRule::nepal_panchanga() {
             rule.check().unwrap();
         }
-        let tibetan = DatedRule {
+        let tibetan = |month, day, skipped| Dated::CivilDate {
+            calendar: Calendar::TibetanPhugpa,
+            month,
+            day,
+            skipped,
+        };
+        let losar = DatedRule {
             key: String::from("LOSAR"),
             source: String::from("a test"),
-            on: Dated::CivilDate {
+            on: tibetan(1, 1, Some(SkippedDay::After)),
+        };
+        losar.check().unwrap();
+        assert_eq!(
+            refused(tibetan(1, 31, None)).as_deref(),
+            Some("civilDate.day")
+        );
+        assert_eq!(
+            refused(tibetan(1, -31, None)).as_deref(),
+            Some("civilDate.day")
+        );
+        assert_eq!(
+            refused(Dated::CivilWeekday {
                 calendar: Calendar::TibetanPhugpa,
                 month: 1,
-                day: 1,
-            },
-        };
-        assert_eq!(
-            tibetan.check().unwrap_err().field(),
-            Some("civilDate.calendar")
+                weekday: Vara::Ravivara,
+                nth: 1
+            })
+            .as_deref(),
+            Some("civilWeekday.calendar")
         );
+        let skipped_bs = Dated::CivilDate {
+            calendar: Calendar::BikramSambat,
+            month: 1,
+            day: 1,
+            skipped: Some(SkippedDay::Before),
+        };
+        assert_eq!(refused(skipped_bs).as_deref(), Some("civilDate.skipped"));
+    }
+
+    /// Chokhor Duchen 2024 on the first of leap month 6's two 4ths, and
+    /// Chotrul Duchen 2018, its 15th skipped, on either neighbour.
+    #[test]
+    fn a_tibetan_day_keeps_the_date_its_observance_falls_on() {
+        let fixed = |year, month, date| {
+            teistro_calendar::Gregorian
+                .fixed_of(&CalendarDate::defined(
+                    Calendar::Gregorian,
+                    year,
+                    month,
+                    date,
+                ))
+                .unwrap()
+        };
+        let keeps = |at, year, month, day, skipped| keeps_tibetan(at, year, month, day, skipped);
+        let before = SkippedDay::Before;
+        assert!(keeps(fixed(2024, 7, 9), 2024, 6, 4, before));
+        assert!(!keeps(fixed(2024, 7, 10), 2024, 6, 4, before));
+        assert!(!keeps(fixed(2024, 8, 8), 2024, 6, 4, before));
+        assert!(keeps(fixed(2018, 3, 1), 2018, 1, 15, before));
+        assert!(!keeps(fixed(2018, 3, 2), 2018, 1, 15, before));
+        assert!(keeps(fixed(2018, 3, 2), 2018, 1, 15, SkippedDay::After));
+        // -1 is the 30th, kept on the last day of the month.
+        let last = tibetan::observed(2026, 3, 30, before).unwrap();
+        assert!(keeps(last, 2026, 3, -1, before));
+        assert!(keeps(last, 2026, 3, 30, before));
     }
 
     #[test]

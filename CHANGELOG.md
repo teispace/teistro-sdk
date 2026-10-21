@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Festival rules on a Tibetan date** (`calendars/tibetan.md`).
+**Numbers:** none move; a rule on a Tibetan `civilDate` was refused
+before. It now keeps the day Dharamsala's almanac prints: in the first
+of a doubled month, on the first of a repeated day, and on the day
+before a skipped number, or the day after when its `civilDate` says
+`"skipped": "AFTER"`. `tibetan::observed` gives the day alone. A
+`civilWeekday` on the Tibetan calendar stays refused by name.
+
 **A Tibetan year's names** (`calendars/tibetan.md`). **Numbers:** none
 move. `sdk.calendar().tibetan_year`, `ts_calendar_tibetan_year` and every
 binding's `tibetanYear` give a year's rabjung cycle and place, the Indian
