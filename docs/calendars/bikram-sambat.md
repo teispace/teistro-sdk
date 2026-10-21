@@ -100,7 +100,10 @@ and sunset, eight tithi ends. Measured against the SDK
   (the node always 1′ ahead), Mars, Mercury and Venus within 7′ to 94′
   (worst for Mercury in April 2025, just after its station), which is
   the precision of a fitted modern method rather than of an ephemeris;
-  the text's places are 2° to 11° away (C38).
+  the text's places are 2° to 11° away (C38). Over 49 printed mornings
+  the modern sky misses by a root mean square of 9′ to 33′ and the text
+  by 94′ to 459′, and no bija on the text comes as near
+  (`03-design/committee-star-planets.md`).
 - **Sunrise and sunset are modern too, under a convention of the
   committee's own.** Over 22 printed days the SDK's almanac convention
   (the upper limb with 34′ of refraction) rises 1.8 to 2.8 minutes early
