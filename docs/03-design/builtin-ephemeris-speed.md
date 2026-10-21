@@ -119,5 +119,10 @@ gated record (`05-testing/app-speed-measured.md`):
 | a birth chart | 2.61 ms | 1.54 ms | 1.04 ms | 1.5× |
 
 The acceptance was 3× for a day and a month grid, and both hold. The
-muhurta search is past 3× and has not been profiled since the fit; it is
-the next place to look.
+muhurta search is past 3×. Sampled after the fit, a quarter of its time
+(26%) is VSOP87A's other planets, which a muhurta's rules read at every
+candidate and which are not fitted: a chart asks for each planet once,
+where a fit costs nine evaluations of its series, so fitting them would
+buy the search by taxing every chart. A fit chosen by how often a body is
+asked would make an answer depend on what was asked before it, which is
+the one thing the grid exists to prevent.
