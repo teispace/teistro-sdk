@@ -58,6 +58,7 @@ macro_rules! hand_schema {
 pub mod angle;
 pub mod boundary;
 pub mod catalogue;
+pub mod chebyshev;
 pub mod envelope;
 pub mod error;
 pub mod house;

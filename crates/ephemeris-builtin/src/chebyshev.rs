@@ -127,30 +127,8 @@ impl Table {
     }
 }
 
-/// A Chebyshev series and its derivative at `x` in `[-1, 1]`, by
-/// Clenshaw's recurrence.
-///
-/// Clenshaw rather than the power form because the power form loses
-/// digits catastrophically at high degree, and rather than two passes
-/// because the derivative's recurrence rides along with the value's for
-/// the cost of two more additions per term.
-#[must_use]
-pub fn evaluate(coefficients: &[f64], x: f64) -> (f64, f64) {
-    let Some((first, rest)) = coefficients.split_first() else {
-        return (0.0, 0.0);
-    };
-    let (mut b1, mut b2) = (0.0, 0.0);
-    let (mut d1, mut d2) = (0.0, 0.0);
-    for coefficient in rest.iter().rev() {
-        let b0 = 2.0f64.mul_add(x * b1, -b2) + coefficient;
-        let d0 = 2.0f64.mul_add(x * d1, 2.0 * b1) - d2;
-        b2 = b1;
-        b1 = b0;
-        d2 = d1;
-        d1 = d0;
-    }
-    (x.mul_add(b1, -b2) + first, x.mul_add(d1, b1) - d2)
-}
+/// A Chebyshev series and its derivative, the SDK's one evaluator.
+pub use teistro_core::chebyshev::evaluate;
 
 #[cfg(test)]
 mod tests {
@@ -164,32 +142,7 @@ mod tests {
                   compares a span it constructed exactly"
     )]
 
-    use super::{Table, evaluate};
-
-    /// `T_0 = 1`, `T_1 = x`, `T_2 = 2x^2 - 1`: the series a reader can
-    /// check by hand, with the derivatives it must produce.
-    #[test]
-    fn the_recurrence_is_the_polynomials_it_claims() {
-        for x in [-1.0, -0.5, 0.0, 0.25, 1.0_f64] {
-            assert!((evaluate(&[1.0], x).0 - 1.0).abs() < 1e-15, "T0 at {x}");
-            assert!(evaluate(&[1.0], x).1.abs() < 1e-15, "T0' at {x}");
-            assert!((evaluate(&[0.0, 1.0], x).0 - x).abs() < 1e-15, "T1 at {x}");
-            assert!(
-                (evaluate(&[0.0, 1.0], x).1 - 1.0).abs() < 1e-15,
-                "T1' at {x}"
-            );
-            let t2 = 2.0f64.mul_add(x * x, -1.0);
-            assert!(
-                (evaluate(&[0.0, 0.0, 1.0], x).0 - t2).abs() < 1e-15,
-                "T2 at {x}"
-            );
-            assert!(
-                (evaluate(&[0.0, 0.0, 1.0], x).1 - 4.0 * x).abs() < 1e-14,
-                "T2' at {x}"
-            );
-        }
-        assert_eq!(evaluate(&[], 0.5), (0.0, 0.0));
-    }
+    use super::Table;
 
     /// The table's rate is the derivative of its own position, which is
     /// the property the port's speed contract rests on. A central

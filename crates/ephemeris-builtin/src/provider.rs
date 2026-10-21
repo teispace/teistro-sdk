@@ -60,6 +60,7 @@ use teistro_port_ephemeris::{
 };
 
 use crate::elp;
+use crate::fitted;
 use crate::series::{self, DAYS_PER_MILLENNIUM, millennia};
 use crate::tables;
 
@@ -124,13 +125,27 @@ const BODIES: [Body; 14] = [
 /// let provider = Builtin::new();
 /// assert!(provider.capabilities().deterministic);
 /// ```
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 pub struct Builtin {
     /// Whether the Moon's mean longitude carries ADR-0027's correction.
     bija: bool,
     /// Which Delta T model turns a UT1 request into the dynamical time
     /// the theories are stated in.
     delta_t: DeltaTModel,
+    /// Whether the Moon and the Earth are answered from fitted series
+    /// ([`crate::fitted`]) rather than from their theories at every
+    /// instant.
+    fitted: bool,
+}
+
+/// The provider as it should normally be used: [`Builtin::new`]. A
+/// derived default would have been the theory without its bija and with
+/// the Moon summed at every instant, which nobody asks for by writing
+/// `default()`.
+impl Default for Builtin {
+    fn default() -> Builtin {
+        Builtin::new()
+    }
 }
 
 impl Builtin {
@@ -140,7 +155,21 @@ impl Builtin {
         Builtin {
             bija: true,
             delta_t: DeltaTModel::TableThenModel,
+            fitted: true,
         }
+    }
+
+    /// The same provider with the Moon and the Earth summed from their
+    /// theories at every instant asked, rather than answered from fitted
+    /// series ([`crate::fitted`]).
+    ///
+    /// For a consumer checking the fit, or reproducing the theories to
+    /// the last bit. It is several times slower for an almanac, and
+    /// differs by less than the resolution of the instant asked.
+    #[must_use]
+    pub const fn with_series(mut self) -> Builtin {
+        self.fitted = false;
+        self
     }
 
     /// The same provider under another Delta T model, for a consumer who
@@ -179,6 +208,7 @@ impl Builtin {
         Builtin {
             bija: false,
             delta_t: DeltaTModel::TableThenModel,
+            fitted: true,
         }
     }
 
@@ -190,6 +220,21 @@ impl Builtin {
             "full" => Tier::Full,
             _ => Tier::Standard,
         }
+    }
+
+    /// The Earth's heliocentric position and rate, astronomical units and
+    /// astronomical units a day: from its fitted series unless the
+    /// theory was asked for at every instant.
+    fn earth(self, jd: f64) -> Option<([f64; 3], [f64; 3])> {
+        if !self.fitted {
+            return Builtin::heliocentric("Earth", jd);
+        }
+        let (_, coordinates) = tables::PLANETS.iter().find(|(body, _)| *body == "Earth")?;
+        let position = |at: f64| {
+            let t = millennia(at);
+            coordinates.each_ref().map(|terms| series::sum(terms, t))
+        };
+        fitted::earth(jd, position).or_else(|| Builtin::heliocentric("Earth", jd))
     }
 
     /// A body's heliocentric position and rate, in astronomical units and
@@ -259,8 +304,11 @@ impl Builtin {
     /// by a third across a month. The reason was true and the trade was
     /// not, which is the kind of thing a kit is for.
     fn moon(self, jd: f64) -> ([f64; 3], [f64; 3]) {
-        let (km, km_per_day) =
-            elp::position_and_rate_from(&tables::MOON_MAIN, &tables::MOON_PERTURBATIONS, jd);
+        let (km, km_per_day) = if self.fitted {
+            fitted::moon(jd)
+        } else {
+            elp::position_and_rate_from(&tables::MOON_MAIN, &tables::MOON_PERTURBATIONS, jd)
+        };
         let mut position = [km[0] / KM_PER_AU, km[1] / KM_PER_AU, km[2] / KM_PER_AU];
         let mut rate = [
             km_per_day[0] / KM_PER_AU,
@@ -519,8 +567,9 @@ impl EphemerisProvider for Builtin {
                 name: String::from("teistro-builtin"),
                 version: String::from(env!("CARGO_PKG_VERSION")),
                 data_version: format!(
-                    "VSOP87A/CDS-VI-81 + ELP2000-82B/CDS-VI-79{}",
-                    if self.bija { " + bija" } else { "" }
+                    "VSOP87A/CDS-VI-81 + ELP2000-82B/CDS-VI-79{}{}",
+                    if self.bija { " + bija" } else { "" },
+                    if self.fitted { " + fitted" } else { "" }
                 ),
                 tier: Some(Builtin::tier()),
                 data_hashes: Vec::new(),
@@ -565,7 +614,7 @@ impl EphemerisProvider for Builtin {
             // computed once an instant rather than once a body.
             let earth = capabilities
                 .covers(*jd)
-                .then(|| Builtin::heliocentric("Earth", dynamical))
+                .then(|| self.earth(dynamical))
                 .flatten();
             for (body_index, body) in request.bodies.iter().enumerate() {
                 let cell = match (earth, body) {

@@ -21,12 +21,12 @@ design chose between.
 | gamma is the catalogue's | **holds** | worst 0.0001 Earth radii, bound 0.0005 Earth radii |
 | every magnitude is the catalogue's, the umbra's under Danjon's rule | **holds** | worst 0.0003, bound 0.001 |
 | a lunar eclipse's phases last as long as the catalogue says | **holds** | worst 0.6096 min, bound 1 min |
-| a solar eclipse is greatest where the catalogue says | **holds** | worst 0.3130 °, bound 0.5 ° |
+| a solar eclipse is greatest where the catalogue says | **holds** | worst 0.3132 °, bound 0.5 ° |
 | a lunar eclipse reads both bodies apparent, nearer the catalogue than either other placing | **holds** | median +0.16 s |
 | the catalogue enlarges the shadow by Danjon's rule and not Chauvenet's | **holds** | Chauvenet's median +0.0083 umbral, +0.0285 penumbral |
 | every bulletin city sees the contacts the bulletin prints, and any other only below the horizon | **holds** | 0 of 214 disagree; 50 contacts below the horizon |
 | every local contact is the bulletin's to the seconds it prints | **holds** | worst 2.54 s, bound 5 s |
-| every local maximum is the bulletin's, as flat as a shallow eclipse's is | **holds** | worst 6.84 s, bound 10 s |
+| every local maximum is the bulletin's, as flat as a shallow eclipse's is | **holds** | worst 6.83 s, bound 10 s |
 | every local magnitude is the bulletin's | **holds** | worst 0.0009, bound 0.002 |
 
 ## 2. The records
@@ -49,7 +49,7 @@ catalogued solar: 0.
 
 | quantity, ours less the catalogue's | eclipses | least | median | greatest | bound |
 |---|---|---|---|---|---|
-| greatest moment | 459 | -2.13 | +0.16 | +2.88 | 5 s |
+| greatest moment | 459 | -2.14 | +0.16 | +2.88 | 5 s |
 | gamma | 459 | -0.00014 | +0.00000 | +0.00013 | 0.0005 |
 | umbral magnitude | 459 | -0.00027 | -0.00006 | +0.00017 | 0.001 |
 | penumbral magnitude | 459 | -0.00032 | -0.00011 | +0.00005 | 0.001 |
@@ -65,7 +65,7 @@ differences are the shallowest eclipses.
 
 | quantity, ours less the catalogue's | eclipses | least | median | greatest | bound |
 |---|---|---|---|---|---|
-| greatest moment | 454 | -0.94 | +0.12 | +1.00 | 5 s |
+| greatest moment | 454 | -0.94 | +0.13 | +1.00 | 5 s |
 | gamma | 454 | -0.00011 | -0.00000 | +0.00012 | 0.0005 |
 | magnitude | 454 | -0.00018 | -0.00001 | +0.00016 | 0.001 |
 | latitude of greatest eclipse | 454 | -0.21 | -0.00 | +0.21 | 0.5 ° |
@@ -113,7 +113,7 @@ second.
 | second contact | 65 | -1.05 | -0.40 | +0.15 | 5 s |
 | third contact | 65 | -0.65 | -0.16 | +0.54 | 5 s |
 | fourth contact | 213 | -0.78 | -0.14 | +2.54 | 5 s |
-| maximum | 214 | -6.84 | -0.01 | +2.38 | 10 s |
+| maximum | 214 | -6.83 | -0.01 | +2.38 | 10 s |
 | magnitude | 214 | -0.0005 | +0.0002 | +0.0009 | 0.002 |
 
 The contacts are crossings and agree to a few seconds. The maximum is

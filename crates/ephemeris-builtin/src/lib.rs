@@ -21,6 +21,7 @@
 
 pub mod chebyshev;
 pub mod elp;
+pub mod fitted;
 #[rustfmt::skip]
 pub mod pluto;
 pub mod provider;

@@ -587,16 +587,43 @@ pub fn perturbation_contribution(term: &PerturbationTerm, file: u8, arguments: &
     amplitude * math::sin(angle)
 }
 
-/// The multipliers that go with Delaunay's arguments for a file, which
-/// differ by group and are what the argument's rate is taken over.
-fn argument_multipliers(term: &PerturbationTerm, file: u8) -> &[i8] {
+/// How fast a perturbation term's argument turns, per Julian century:
+/// every argument its angle sums, paired as the angle pairs them.
+///
+/// Only the first two powers of time enter a perturbation's argument, so
+/// the rate is the power-one row alone. The figure terms turn with zeta
+/// beside Delaunay's four, and the planetary terms with the planets'
+/// longitudes; table 1 takes D, l and F, skipping l'.
+fn perturbation_turning(term: &PerturbationTerm, file: u8, arguments: &Arguments) -> f64 {
+    let [_, delaunay] = arguments
+        .del
+        .first_chunk::<2>()
+        .copied()
+        .unwrap_or([[0.0; 4]; 2]);
+    let [_, planets] = arguments.p;
+    let [_, zeta] = arguments.zeta;
+    let sum = |multipliers: &[i8], rates: &[f64]| -> f64 {
+        multipliers
+            .iter()
+            .zip(rates)
+            .map(|(multiplier, rate)| f64::from(*multiplier) * rate)
+            .sum()
+    };
     match Group::of(file) {
-        // The zeta multiplier leads, then the four Delaunay ones.
-        Some(Group::Figure) => term.multipliers.get(1..5).unwrap_or(&[]),
-        // Table 1 takes D, l and F out of order; table 2 takes all four.
-        Some(Group::Planetary) if file <= 15 => term.multipliers.get(8..11).unwrap_or(&[]),
-        Some(Group::Planetary) => term.multipliers.get(7..11).unwrap_or(&[]),
-        Some(Group::Main) | None => &[],
+        Some(Group::Figure) => {
+            let (zeta_multiplier, rest) = term.multipliers.split_first().unwrap_or((&0, &[]));
+            f64::from(*zeta_multiplier) * zeta + sum(rest.get(..4).unwrap_or(&[]), &delaunay)
+        }
+        Some(Group::Planetary) if file <= 15 => {
+            let (planetary, lunar) = term.multipliers.split_at(8);
+            let [d, _, l, f] = delaunay;
+            sum(planetary, &planets) + sum(lunar, &[d, l, f])
+        }
+        Some(Group::Planetary) => {
+            let (planetary, lunar) = term.multipliers.split_at(7);
+            sum(planetary, &planets) + sum(lunar, &delaunay)
+        }
+        Some(Group::Main) | None => 0.0,
     }
 }
 
@@ -638,8 +665,7 @@ pub fn position_from(
 pub fn perturbation_rate(term: &PerturbationTerm, file: u8, arguments: &Arguments) -> f64 {
     let power = time_power(file);
     let (amplitude, angle) = perturbation_amplitude_and_angle(term, file, arguments);
-    // Only the first two powers of time enter a perturbation's argument.
-    let turning = argument_rate(argument_multipliers(term, file), arguments, 2);
+    let turning = perturbation_turning(term, file, arguments);
     let from_argument = amplitude * math::cos(angle) * turning;
     if power == 0 {
         return from_argument;

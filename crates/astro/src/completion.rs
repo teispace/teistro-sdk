@@ -852,7 +852,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }
         for (jd_index, jd) in request.jds.iter().enumerate() {
             let tt = self.tt_at(*jd, request.scale, steps)?;
-            let earth = sky::earth_at(tt);
+            let earth = sky::earth_at_fitted(tt);
             let obliquity = self.obliquity(*jd, request.scale, steps)?;
             // Nutation in longitude, which on the ecliptic is added to the
             // longitude directly. The obliquity alone carries only the

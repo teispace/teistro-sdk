@@ -269,6 +269,58 @@ pub fn earth_at(tt: JulianDay<Tt>) -> EarthAt {
     }
 }
 
+/// The length of a segment [`earth_at_fitted`] fits, days.
+const EARTH_SEGMENT_DAYS: f64 = 2.0;
+
+/// The values a segment of [`earth_at_fitted`] is fitted through.
+const EARTH_NODES: usize = 9;
+
+thread_local! {
+    /// The segments of the Earth's state this thread has fitted, from
+    /// J2000: the velocity, then the heliocentric position.
+    static EARTH: core::cell::RefCell<teistro_core::chebyshev::Segments<EARTH_NODES, 6>> =
+        const {
+            core::cell::RefCell::new(teistro_core::chebyshev::Segments::new(
+                2_451_545.0,
+                EARTH_SEGMENT_DAYS,
+            ))
+        };
+}
+
+/// [`earth_at`], answered from a Chebyshev series fitted through nine of
+/// its values over a two-day segment
+/// ([`teistro_core::chebyshev::Segments`]).
+///
+/// `eraEpv00` is hundreds of terms with a cosine each, and the
+/// completion asks for it at every instant it turns from geometric to
+/// apparent: with a series provider that was most of an almanac's time.
+/// The state is a smooth arc over two days — its shortest periods are the
+/// Moon's pull on the Earth, a month, and the nutation's, five and a half
+/// days — so the fit is within 1e-11 of the velocity and of the position,
+/// measured in `tests`, which is the resolution of the instant itself and
+/// a ten-millionth of a milliarcsecond of aberration.
+/// The segments are a fixed grid from J2000, so an instant's answer is
+/// the same bits whatever was asked before it.
+#[must_use]
+pub fn earth_at_fitted(tt: JulianDay<Tt>) -> EarthAt {
+    let state = |jd: f64| {
+        let at = earth_at(JulianDay::<Tt>::literal(jd));
+        let [vx, vy, vz] = at.velocity_au_per_day;
+        let [hx, hy, hz] = at.heliocentric_au;
+        [vx, vy, vz, hx, hy, hz]
+    };
+    let fitted = EARTH.with(|segments| segments.borrow_mut().at(tt.get(), state));
+    let Some(([vx, vy, vz, hx, hy, hz], _)) = fitted else {
+        return earth_at(tt);
+    };
+    let heliocentric_au = [hx, hy, hz];
+    EarthAt {
+        velocity_au_per_day: [vx, vy, vz],
+        sun_distance_au: iau::vector::pm(&heliocentric_au),
+        heliocentric_au,
+    }
+}
+
 /// Rotates ecliptic longitude and latitude to right ascension and
 /// declination with an obliquity, all degrees.
 #[must_use]
@@ -466,6 +518,32 @@ mod tests {
     use teistro_core::angle::difference_deg;
 
     use super::*;
+
+    /// The fitted Earth against `eraEpv00` itself at instants spread over
+    /// 1800 to 2400, seams included: the velocity and the heliocentric
+    /// position within 1e-11 of their size, and the Sun's distance with
+    /// them. The bound is the instant's own: a Julian day is an `f64`
+    /// good to 40 microseconds, in which the velocity turns by 8e-12.
+    #[test]
+    fn the_fitted_earth_is_the_series_to_a_part_in_a_hundred_billion() {
+        let (mut velocity, mut position) = (0.0_f64, 0.0_f64);
+        for i in 0..4_000 {
+            let jd = 2_378_497.0 + f64::from(i) * 54.789_123;
+            for at in [jd, jd.floor() + 0.5] {
+                let tt = JulianDay::<Tt>::literal(at);
+                let (exact, fitted) = (earth_at(tt), earth_at_fitted(tt));
+                let off = |a: Vector3, b: Vector3| {
+                    iau::vector::pm(&[a[0] - b[0], a[1] - b[1], a[2] - b[2]]) / iau::vector::pm(&a)
+                };
+                velocity = velocity.max(off(exact.velocity_au_per_day, fitted.velocity_au_per_day));
+                position = position.max(off(exact.heliocentric_au, fitted.heliocentric_au));
+                let distance = (exact.sun_distance_au - fitted.sun_distance_au).abs();
+                assert!(distance < 1e-12, "the Sun's distance at {at}: {distance}");
+            }
+        }
+        assert!(velocity < 1e-11, "the velocity, {velocity}");
+        assert!(position < 1e-11, "the position, {position}");
+    }
 
     #[test]
     fn rotation_round_trips_and_keeps_the_ecliptic_pole() {

@@ -39,8 +39,8 @@ sky is one. The lords they part on, over every cusp and planet:
 | level | lords that differ |
 |---|---:|
 | star | 2 of 1155 |
-| sub | 13 of 1155 |
-| sub-sub | 151 of 1155 |
+| sub | 11 of 1155 |
+| sub-sub | 149 of 1155 |
 
 ## 3. Horary numbers a place cannot raise
 

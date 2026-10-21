@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The built-in ephemeris, made fast** (`03-design/builtin-ephemeris-speed.md`,
+P2-6).
+**Numbers:** every built-in answer that reads the Sun or the Moon moves
+in its last digits, and its content hash with it; no answer over Teimeris
+moves. The Moon and the Earth are answered from Chebyshev series fitted
+through nine values of their theories over fixed two-day segments, and
+the completion's geometric-to-apparent step fits the Earth's state the
+same way: within 1.1e-5″ of the Moon's series and 7e-7″ of the Sun's,
+which is the resolution of a Julian day itself. The measured pages moved
+by as much: the eclipse maxima by 0.0002° and 0.01 s, two KP sub-lords
+of 1155 now agree with the reference, Neptune by 0.0001″, the muhurta
+search by 202 of 117 808 calls. The Moon's analytic rate was wrong by
+4e-5 of itself, inside the provider kit's bound: a perturbation term's
+rate turned with Delaunay's arguments alone, leaving out zeta and the
+planets' longitudes and pairing table 1's multipliers with the wrong
+arguments. It is corrected, and the fit's rate is its derivative.
+`Builtin::default()` is now `Builtin::new()`: it was the theory without
+its bija. `Builtin::with_series()` sums every theory at every instant as
+before, and the provider's `data_version` ends in `+ fitted` when it
+fits. One almanac day takes 2.40 ms instead of 32.4 and a month grid
+39.6 instead of 460, 1.5× and 1.8× Teimeris against the 3× asked.
+
 **Padmini and Parama ekadashi** (`festival-rule-language.md` §3.10,
 C694).
 **Numbers:** `NEPAL_PANCHANGA` keeps two more festivals, the bright and
