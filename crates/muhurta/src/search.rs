@@ -273,7 +273,7 @@ fn dates<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Vec<Cale
 /// the day does not: a calendar's own `date_of` attaches the era view and
 /// its resolution, which a caller's date need not carry.
 pub(crate) fn same_day(a: &CalendarDate, b: &CalendarDate) -> bool {
-    (a.calendar, a.year, a.month, a.day) == (b.calendar, b.year, b.month, b.day)
+    (a.calendar, a.year, a.month, a.day, a.leap) == (b.calendar, b.year, b.month, b.day, b.leap)
 }
 
 /// A day's windows, judged.

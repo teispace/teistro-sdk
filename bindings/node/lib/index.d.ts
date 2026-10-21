@@ -20,6 +20,7 @@ import type {
   Body,
   Burning,
   Calendar,
+  Leap,
   ChartKind,
   ChartLayout,
   Choghadiya,
@@ -158,11 +159,14 @@ export type * from './blob.js';
 /**
  * A date in a calendar, without naming the fields a call fills in: the era
  * and the era year are what the call resolves them to, and the resolution
- * is `DEFINED`, which is what a date a caller states means.
+ * is `DEFINED`, which is what a date a caller states means. `leap` marks
+ * the first of a repeated month or day, in a calendar that repeats them
+ * (the Tibetan); every other calendar refuses it.
  *
  * @example date(Calendar.Gregorian, 2015, 4, 14)
+ * @example date(Calendar.TibetanPhugpa, 2000, 1, 1, Leap.Month)
  */
-export declare function date(calendar: Calendar, year: number, month: number, day: number): CalendarDate;
+export declare function date(calendar: Calendar, year: number, month: number, day: number, leap?: Leap): CalendarDate;
 
 /**
  * A date at a time of day.

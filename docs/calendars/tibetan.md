@@ -1,7 +1,9 @@
 # The Tibetan calendar, Phugpa
 
-Status: `designed`, 2026-10-20. P2-1 step 5. Nothing is shipped yet. The
-arithmetic is prototyped and matches every Losar date the source lists.
+Status: `shipped`, 2026-10-21. P2-1 step 5: `calendar.TIBETAN_PHUGPA`
+(`crates/calendar/src/tibetan.rs`) converts every day from the Tibetan
+year 1027 to 9998, and gives Losar on every date the source lists. A
+festival rule on a Tibetan date is not reckoned yet (The festival day).
 
 The Tibetan new year, Losar, is the first day of the first month of the
 Tibetan calendar. This page designs the Phugpa calendar: in Janson's
@@ -58,8 +60,22 @@ that names Henning's value can follow if an almanac is found to print it.
 
 ## Measured
 
-A prototype of the table above, in exact fractions, gives Losar on the
-day Janson's Table 1 prints for all 120 years from 1927 to 2046.
+The calendar is integer arithmetic over one common denominator,
+102,317,040: the least common multiple of the mean date's 11,312, the
+moon equation's 126 · 60 and the sun equation's 402 · 60. Every end of a
+lunar day it computes equals a prototype's in exact fractions, over
+32,000 months either side of the epoch. Its tests hold:
+
+- Losar on the day Janson's Table 1 prints, all 120 years from 1927 to
+  2046, as the day after the last day of the year before's month 12; and
+  2000's beginning with a leap month 1 on Sunday 6 February (§8).
+- Every day from 1900 to 2100 converts and converts back, its marks
+  included; the dates rise strictly, a leap month before its twin and a
+  leap day before its; and every leap month falls where (5.24) puts it.
+- Every month holds 29 or 30 days, and a year's months, its leap month
+  included, sum to the days from its Losar to the next.
+- A skipped day, a leap day that is not repeated, and a leap month the
+  year does not have are each refused by name.
 
 **Gyalpo Lhosar in Nepal is a Hindu-month day.** The committee prints it
 on 18 February 2026 (VS 2082 p. 23), which is also the Phugpa Losar. But
@@ -83,7 +99,7 @@ modern sky Tol Lhosar's 2025 day moves to 21 December, because there Paush's
 new moon ends after sunrise on the 20th. An earlier note here read that as
 the sunrise rule failing. It was the sky.
 
-## The design
+## What crosses
 
 A Tibetan date is a year, a month, a day, and two marks: whether the
 month is the leap month, and whether the day is the leap day. The
@@ -91,11 +107,14 @@ calendar systems in `crates/calendar` carry neither mark today, because
 no shipped calendar repeats a month or a day.
 
 - **`CalendarDate` gains `leap: Option<Leap>`** (`MONTH`, `DAY`, or
-  `MONTH_AND_DAY`), left out of the wire when absent. No date any shipped
-  calendar answers carries it, so no existing answer's hash changes. At
-  the C boundary it takes one of `ts_calendar_date`'s three reserved
-  bytes, so the struct keeps its 24 bytes and every compiled caller
-  keeps working; each binding's date type gains the field.
+  `MONTH_AND_DAY`), left out of the wire when absent. No date any other
+  calendar answers carries it, so no existing answer's hash changes, and
+  every other calendar refuses a date that carries one. At the C boundary
+  it takes one of `ts_calendar_date`'s three reserved bytes (`ts_leap`,
+  `0xFF` for none), so the struct keeps its 24 bytes; `0`, what a caller
+  compiled before left there, is read as none too, so every compiled
+  caller keeps working. Each binding's date carries it as an optional
+  field, and each `date` helper takes it as an optional last argument.
 - **`calendar.TIBETAN_PHUGPA`**, a `CalendarSystem` with no place and no
   ephemeris. Its constants are one record (β*, the epoch and the eight
   fractions), so Tsurphu, Bhutan and Mongolia follow as further members
@@ -103,24 +122,33 @@ no shipped calendar repeats a month or a day.
   not exist that year is refused by name. A skipped day is refused too,
   and the refusal says which day stands in for it.
 - **The year.** Years are counted as Janson's *Y*, the Gregorian year in
-  which most of the Tibetan year falls. The Tibetan royal year (*Y* + 127)
-  is an era, `era.TIBETAN_ROYAL`. The rabjung cycle and the element and
-  animal name are a view on the year, as the samvatsara already is.
-- **The festival day.** Losar is the first day of month 1, or the leap
+  which the Tibetan year starts and most of it falls. A date carries no
+  era: the date forms print the year they are given, so a royal-year era
+  would print 2153 for 2026. The royal year is *Y* + 127. The rabjung
+  cycle and the element and animal name are a view on the year still to
+  come, as the samvatsara already is.
+- **The festival day.** Losar is the first day of month 1, or of the leap
   month 1 when there is one, and the day after month 12's day 30 when day 1
-  is skipped (Janson §8). A `DatedRule` over the Tibetan calendar gives it
-  with the existing machinery: `TIBETAN_PHUGPA` 1/1, under its own key,
-  since Nepal's `GYALPO_LHOSAR` is another day in some years.
-- **Names.** en-Latn names the months by number ("month 1"), as Janson and
-  the almanacs in English do. Nepali and Hindi names wait on a vetted
-  source.
+  is skipped (Janson §8); `tibetan::losar` gives it. A `DatedRule` on a
+  Tibetan date is refused for now, by name: its label alone does not say
+  which of a repeated month's two months keeps a festival (Janson's
+  Remark 17: holidays are usually not kept in a leap month, Losar
+  excepted), nor which day stands in for a skipped number. Nepal's
+  `GYALPO_LHOSAR` is another day in some years, so it does not wait on
+  this.
+- **Names.** en-Latn names the months by number ("month 1", "leap month
+  1") and a repeated day "leap day 17", as Janson does. ne-Deva-NP says the
+  same plainly ("अधिक महिना १", "तिथि १७ (दोहोरिएको)"). The Tibetan month
+  names, and Nepali or Hindi ones, wait on a vetted source.
 
-## How it will be checked
+## How it is checked
 
-- The 120 Losar dates of Janson's Table 1, every one.
-- The sample dates in *Calendrical Calculations*' appendix C, where its
-  table gives the Tibetan column.
-- Every day of the range converts and converts back, the marks included,
-  and every leap month falls where (5.24) puts it.
+- The 120 Losar dates of Janson's Table 1, every one (tested).
+- Every day from 1900 to 2100 converts and converts back, the marks
+  included, and every leap month falls where (5.24) puts it (tested).
+- Every binding converts 6 February 2000 to the leap month 1's first day
+  of 2000, and back.
 - The committee's print, where it agrees: 18 February 2026 is both the
   Phugpa Losar and the printed Gyalpo Lhosar.
+- Not yet: the sample dates in *Calendrical Calculations*' appendix C,
+  which is not in hand here.

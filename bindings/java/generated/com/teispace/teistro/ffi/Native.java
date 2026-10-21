@@ -1832,7 +1832,8 @@ public final class Native {
             JAVA_BYTE.withName("resolution"),
             JAVA_BYTE.withName("computed_month"),
             JAVA_BYTE.withName("computed_day"),
-            MemoryLayout.sequenceLayout(3, JAVA_BYTE).withName("reserved")
+            JAVA_BYTE.withName("leap"),
+            MemoryLayout.sequenceLayout(2, JAVA_BYTE).withName("reserved")
         ).withName("ts_calendar_date");
 
         /** The size the C compiler gives the struct. */
@@ -1930,9 +1931,20 @@ public final class Native {
         public static final VarHandle COMPUTED_DAY = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("computed_day"));
 
         /**
+         * The offset of `leap`. Whether the month or the day is the first of a repeated pair, in a
+         * calendar that repeats them; `0xFF` for neither, which is every date
+         * of every other calendar (`0` is read as neither too).
+         * Enum: TsLeap. Example: 1. May be null.
+         */
+        public static final long LEAP_OFFSET = 21;
+
+        /** The handle that reads and writes `leap`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle LEAP = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("leap"));
+
+        /**
          * The offset of `reserved`. Reserved, zero.
          */
-        public static final long RESERVED_OFFSET = 21;
+        public static final long RESERVED_OFFSET = 22;
 
     }
 

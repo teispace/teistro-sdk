@@ -1980,8 +1980,10 @@ final Finalizer<HostProvider> _hostFinaliser = Finalizer(
 extension CalendarDates on Calendar {
   /// A date in this calendar. `era` and the era year are what the call
   /// resolves them to, and the resolution is [Resolution.defined], which
-  /// is what a date a caller states means.
-  CalendarDate date(int year, int month, int day) => CalendarDate(
+  /// is what a date a caller states means. `leap` marks the first of a
+  /// repeated month or day, in a calendar that repeats them (the
+  /// Tibetan); every other calendar refuses it.
+  CalendarDate date(int year, int month, int day, {Leap? leap}) => CalendarDate(
     calendar: this,
     year: year,
     eraYear: 0,
@@ -1990,6 +1992,7 @@ extension CalendarDates on Calendar {
     resolution: Resolution.defined,
     computedMonth: 0,
     computedDay: 0,
+    leap: leap,
   );
 }
 
@@ -14143,6 +14146,7 @@ CalendarDate _serdeDate(Map<String, Object?> raw) {
         Resolution.byKey(resolution['kind']! as String) ?? Resolution.defined,
     computedMonth: computed == null ? 0 : computed['month']! as int,
     computedDay: computed == null ? 0 : computed['day']! as int,
+    leap: raw['leap'] == null ? null : Leap.byKey(raw['leap']! as String),
   );
 }
 

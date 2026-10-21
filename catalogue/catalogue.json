@@ -12927,6 +12927,23 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "TIBETAN_PHUGPA",
+          "id": 8,
+          "doc": "Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "docs/calendars/tibetan.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     },

@@ -66,6 +66,15 @@
    "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} AH"
   }
  },
+ "TIBETAN_PHUGPA": {
+  "monthName": ".input {$leap :string} .match $leap MONTH {{leap month {$month :integer}}} MONTH_AND_DAY {{leap month {$month :integer}}} * {{month {$month :integer}}}",
+  "monthShort": ".input {$leap :string} .match $leap MONTH {{leap {$month :integer}}} MONTH_AND_DAY {{leap {$month :integer}}} * {{{$month :integer}}}",
+  "date": {
+   "numeric": ".input {$leap :string} .match $leap MONTH {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (leap month)}} DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (leap day)}} MONTH_AND_DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (leap month, leap day)}} * {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}}}",
+   "long": ".input {$leap :string} .match $leap DAY {{{$monthName}, leap day {$day :integer}, {$year :integer useGrouping=false}}} MONTH_AND_DAY {{{$monthName}, leap day {$day :integer}, {$year :integer useGrouping=false}}} * {{{$monthName}, day {$day :integer}, {$year :integer useGrouping=false}}}",
+   "full": ".input {$leap :string} .match $leap DAY {{{$weekdayName}, {$monthName}, leap day {$day :integer}, {$year :integer useGrouping=false}}} MONTH_AND_DAY {{{$weekdayName}, {$monthName}, leap day {$day :integer}, {$year :integer useGrouping=false}}} * {{{$weekdayName}, {$monthName}, day {$day :integer}, {$year :integer useGrouping=false}}}"
+  }
+ },
  "time": {
   "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
   "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",

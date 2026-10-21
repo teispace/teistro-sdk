@@ -318,10 +318,12 @@ impl CalendarSystem for BikramSambat {
                 year,
             }),
             resolution: self.resolution(year, *start, fixed, tabular),
+            leap: None,
         })
     }
 
     fn fixed_of(&self, date: &CalendarDate) -> Result<FixedDay, Error> {
+        crate::date::check_no_leap(date)?;
         let months = self.row(date.year)?;
         let length = months
             .get(usize::from(date.month.saturating_sub(1)))

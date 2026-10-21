@@ -2778,6 +2778,8 @@ enum Calendar implements KeyOf<Calendar> {
   indianNational(6, 'INDIAN_NATIONAL'),
   /// Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
   hijriTabular(7, 'HIJRI_TABULAR'),
+  /// Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
+  tibetanPhugpa(8, 'TIBETAN_PHUGPA'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.
@@ -4899,6 +4901,44 @@ enum Resolution {
 
   /// The member with a key, or `null` for one this build does not know.
   static Resolution? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which part of a date is the first of a repeated pair, in a calendar
+/// that repeats them (the Tibetan). A date marked neither holds
+/// `TsLeap::NONE`.
+enum Leap {
+  /// The leap month, before the month whose number it takes.
+  month(1, 'MONTH'),
+  /// The leap day, before the day whose number it repeats.
+  day(2, 'DAY'),
+  /// The leap day of the leap month.
+  monthAndDay(3, 'MONTH_AND_DAY');
+
+  const Leap(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Leap byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Leap'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Leap? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

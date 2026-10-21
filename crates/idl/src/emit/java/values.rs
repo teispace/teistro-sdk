@@ -384,7 +384,12 @@ final class Values {
 
     /** A member, or null for the id a nullable catalogue field holds for none. */
     static <E> E memberOrNull(int id, IntFunction<E> of) {
-        return id == NO_MEMBER ? null : of.apply(id);
+        return memberOrNull(id, NO_MEMBER, of);
+    }
+
+    /** A member, or null for {@code none}, what a field of its width holds for none. */
+    static <E> E memberOrNull(int id, int none, IntFunction<E> of) {
+        return id == none ? null : of.apply(id);
     }
 
     /** What a nullable catalogue field holds for none. */
@@ -561,7 +566,10 @@ fn write_plain(api: &Api, s: &StructDef, f: &FieldDef, value: &str) -> String {
         format!("{value}.value()")
     } else if enum_of(f).is_some() {
         if f.meta.nullable {
-            format!("({value} == null ? Values.NO_MEMBER : Values.id({label}, {value}))")
+            format!(
+                "({value} == null ? {} : Values.id({label}, {value}))",
+                crate::emit::no_member_of(f).unwrap_or("Values.NO_MEMBER")
+            )
         } else {
             format!("Values.id({label}, {value})")
         }
@@ -719,7 +727,10 @@ fn read_plain(api: &Api, s: &StructDef, f: &FieldDef) -> String {
             widened
         };
         if f.meta.nullable {
-            return format!("Values.memberOrNull({id}, {name}::of)");
+            return match crate::emit::no_member_of(f) {
+                Some(none) => format!("Values.memberOrNull({id}, {none}, {name}::of)"),
+                None => format!("Values.memberOrNull({id}, {name}::of)"),
+            };
         }
         return format!("{name}.of({id})");
     }

@@ -14,7 +14,7 @@
 
 use std::sync::Arc;
 
-use teistro_calendar::{CalendarDate, shipped};
+use teistro_calendar::{CalendarDate, Leap, shipped};
 use teistro_core::catalogue::{Calendar, Era};
 use teistro_core::quantity::JulianDay;
 use teistro_intl::analysis::{ParamType, signature};
@@ -732,4 +732,68 @@ fn a_zone_types_the_value_as_an_instant() {
     assert_eq!(sig.params["when"], ParamType::Instant);
     assert_eq!(sig.params["zone"], ParamType::String);
     assert_eq!(sig.params["civil"], ParamType::Time);
+}
+
+#[test]
+fn a_tibetan_date_says_its_leap_month_and_its_leap_day() {
+    let english = engine("en-Latn");
+    let nepali = engine("ne-Deva-NP");
+    let tibetan = |year, month, day, leap| {
+        Value::Date(
+            CalendarDate::defined(Calendar::TibetanPhugpa, year, month, day).with_leap(leap),
+        )
+    };
+    // Losar 2026, Wednesday 18 February.
+    assert_eq!(
+        text(&english, "{$v :date style=full}", tibetan(2026, 1, 1, None)),
+        "Wednesday, month 1, day 1, 2026"
+    );
+    assert_eq!(
+        text(&english, "{$v :date}", tibetan(2026, 1, 1, None)),
+        "2026-01-01"
+    );
+    // 2000 began with a leap month 1, on Sunday 6 February (Janson §8).
+    assert_eq!(
+        text(
+            &english,
+            "{$v :date style=full}",
+            tibetan(2000, 1, 1, Some(Leap::Month))
+        ),
+        "Sunday, leap month 1, day 1, 2000"
+    );
+    // Friday 3 April 2026 is the first of two days numbered 17.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :date style=long}",
+            tibetan(2026, 2, 17, Some(Leap::Day))
+        ),
+        "month 2, leap day 17, 2026"
+    );
+    assert_eq!(
+        text(
+            &english,
+            "{$v :date}",
+            tibetan(2026, 2, 17, Some(Leap::Day))
+        ),
+        "2026-02-17 (leap day)"
+    );
+    assert_eq!(
+        text(
+            &nepali,
+            "{$v :date style=long}",
+            tibetan(2026, 2, 17, Some(Leap::Day))
+        ),
+        "२०२६ महिना २, तिथि १७ (दोहोरिएको)"
+    );
+    // The Gregorian day, asked in the Tibetan calendar.
+    let losar = Value::Date(CalendarDate::defined(Calendar::Gregorian, 2026, 2, 18));
+    assert_eq!(
+        text(
+            &english,
+            "{$v :date calendar=TIBETAN_PHUGPA style=long}",
+            losar
+        ),
+        "month 1, day 1, 2026"
+    );
 }

@@ -463,6 +463,7 @@ pub fn engine_params(key: &str) -> &'static [&'static str] {
         "year",
         "month",
         "day",
+        "leap",
         "era",
         "weekday",
         "weekdayName",
@@ -1615,7 +1616,8 @@ impl<'a> Eval<'a> {
     }
 
     /// The parameters a date pattern reads: `year` (the era's year when
-    /// the date carries an era), `month`, `day`, `era` (the era's short
+    /// the date carries an era), `month`, `day`, `leap` (`MONTH`, `DAY`,
+    /// `MONTH_AND_DAY`, or empty), `era` (the era's short
     /// form from `sdk.entity`), `weekday` (0 Sunday to 6 Saturday) with
     /// `weekdayName`, and `monthName` from the calendar's own messages.
     fn date_params(&mut self, date: &CalendarDate) -> Params {
@@ -1628,6 +1630,13 @@ impl<'a> Eval<'a> {
         params.insert(String::from("year"), Value::Int(i64::from(year)));
         params.insert(String::from("month"), Value::Int(i64::from(date.month)));
         params.insert(String::from("day"), Value::Int(i64::from(date.day)));
+        params.insert(
+            String::from("leap"),
+            Value::Str(
+                date.leap
+                    .map_or_else(String::new, |leap| leap.key().to_owned()),
+            ),
+        );
         let era_text = era.map_or_else(String::new, |era| {
             self.entity_form(&format!("era.{}", era.key()), "short")
         });

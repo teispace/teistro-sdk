@@ -32,7 +32,7 @@
 use std::collections::BTreeSet;
 use std::fmt::Write;
 
-use crate::emit::{DocStyle, NO_MEMBER, field_doc_with, line_comment, reserved};
+use crate::emit::{DocStyle, NO_MEMBER, field_doc_with, line_comment, no_member_of, reserved};
 use crate::layout::{Target, struct_layout};
 use crate::model::{
     Api, BlobSchema, EnumDef, EnumValue, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar,
@@ -822,7 +822,8 @@ fn render_write(out: &mut String, s: &StructDef, roles: &[FieldRole]) {
                 _ => format!("raw.{field} = _c_value(self.{field})"),
             },
             FieldRole::Value if f.meta.nullable && f.meta.enum_name.is_some() => format!(
-                "raw.{field} = NO_MEMBER if self.{field} is None else int(self.{field})"
+                "raw.{field} = {} if self.{field} is None else int(self.{field})",
+                no_member_of(f).unwrap_or("NO_MEMBER")
             ),
             FieldRole::Value => format!("raw.{field} = _c_value(self.{field})"),
         };
@@ -898,7 +899,10 @@ fn read_plain(field: &FieldDef, ty: &TypeRef, name: &str) -> String {
     if let Some(enum_name) = &field.meta.enum_name {
         let member = format!("{}(raw.{name})", binding_type_name(enum_name));
         if field.meta.nullable {
-            return format!("None if raw.{name} == NO_MEMBER else {member}");
+            return format!(
+                "None if raw.{name} == {} else {member}",
+                no_member_of(field).unwrap_or("NO_MEMBER")
+            );
         }
         return member;
     }

@@ -101,6 +101,7 @@ impl CalendarSystem for Mixed {
     }
 
     fn fixed_of(&self, date: &CalendarDate) -> Result<FixedDay, Error> {
+        crate::date::check_no_leap(date)?;
         check_year(Calendar::Mixed, date.year)?;
         let as_gregorian =
             CalendarDate::defined(Calendar::Gregorian, date.year, date.month, date.day);

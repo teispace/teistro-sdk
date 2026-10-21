@@ -24,6 +24,7 @@ import com.teispace.teistro.ffi.Native;
  * @param resolution How the date was resolved. Enum: TsResolution. Example: 0.
  * @param computedMonth The engine's month when the resolution is divergent, else zero.
  * @param computedDay The engine's day when the resolution is divergent, else zero.
+ * @param leap Whether the month or the day is the first of a repeated pair, in a calendar that repeats them; `0xFF` for neither, which is every date of every other calendar (`0` is read as neither too). Enum: TsLeap. Example: 1. May be null.
  */
 @SuppressWarnings("unused")
 public record CalendarDate(
@@ -35,7 +36,8 @@ public record CalendarDate(
         int day,
         Resolution resolution,
         int computedMonth,
-        int computedDay) {
+        int computedDay,
+        Leap leap) {
     /** The value, checked: what may not be absent is present, and what is mutable is copied. */
     public CalendarDate {
         Objects.requireNonNull(calendar, "calendar");
@@ -49,7 +51,7 @@ public record CalendarDate(
      * @return a copy with {@code calendar} replaced
      */
     public CalendarDate withCalendar(Calendar value) {
-        return new CalendarDate(value, era, year, eraYear, month, day, resolution, computedMonth, computedDay);
+        return new CalendarDate(value, era, year, eraYear, month, day, resolution, computedMonth, computedDay, leap);
     }
 
     /**
@@ -59,7 +61,7 @@ public record CalendarDate(
      * @return a copy with {@code era} replaced
      */
     public CalendarDate withEra(Era value) {
-        return new CalendarDate(calendar, value, year, eraYear, month, day, resolution, computedMonth, computedDay);
+        return new CalendarDate(calendar, value, year, eraYear, month, day, resolution, computedMonth, computedDay, leap);
     }
 
     /**
@@ -69,7 +71,7 @@ public record CalendarDate(
      * @return a copy with {@code year} replaced
      */
     public CalendarDate withYear(int value) {
-        return new CalendarDate(calendar, era, value, eraYear, month, day, resolution, computedMonth, computedDay);
+        return new CalendarDate(calendar, era, value, eraYear, month, day, resolution, computedMonth, computedDay, leap);
     }
 
     /**
@@ -79,7 +81,7 @@ public record CalendarDate(
      * @return a copy with {@code eraYear} replaced
      */
     public CalendarDate withEraYear(int value) {
-        return new CalendarDate(calendar, era, year, value, month, day, resolution, computedMonth, computedDay);
+        return new CalendarDate(calendar, era, year, value, month, day, resolution, computedMonth, computedDay, leap);
     }
 
     /**
@@ -89,7 +91,7 @@ public record CalendarDate(
      * @return a copy with {@code month} replaced
      */
     public CalendarDate withMonth(int value) {
-        return new CalendarDate(calendar, era, year, eraYear, value, day, resolution, computedMonth, computedDay);
+        return new CalendarDate(calendar, era, year, eraYear, value, day, resolution, computedMonth, computedDay, leap);
     }
 
     /**
@@ -99,7 +101,7 @@ public record CalendarDate(
      * @return a copy with {@code day} replaced
      */
     public CalendarDate withDay(int value) {
-        return new CalendarDate(calendar, era, year, eraYear, month, value, resolution, computedMonth, computedDay);
+        return new CalendarDate(calendar, era, year, eraYear, month, value, resolution, computedMonth, computedDay, leap);
     }
 
     /**
@@ -109,7 +111,7 @@ public record CalendarDate(
      * @return a copy with {@code resolution} replaced
      */
     public CalendarDate withResolution(Resolution value) {
-        return new CalendarDate(calendar, era, year, eraYear, month, day, value, computedMonth, computedDay);
+        return new CalendarDate(calendar, era, year, eraYear, month, day, value, computedMonth, computedDay, leap);
     }
 
     /**
@@ -119,7 +121,7 @@ public record CalendarDate(
      * @return a copy with {@code computedMonth} replaced
      */
     public CalendarDate withComputedMonth(int value) {
-        return new CalendarDate(calendar, era, year, eraYear, month, day, resolution, value, computedDay);
+        return new CalendarDate(calendar, era, year, eraYear, month, day, resolution, value, computedDay, leap);
     }
 
     /**
@@ -129,7 +131,17 @@ public record CalendarDate(
      * @return a copy with {@code computedDay} replaced
      */
     public CalendarDate withComputedDay(int value) {
-        return new CalendarDate(calendar, era, year, eraYear, month, day, resolution, computedMonth, value);
+        return new CalendarDate(calendar, era, year, eraYear, month, day, resolution, computedMonth, value, leap);
+    }
+
+    /**
+     * This value with another leap.
+     *
+     * @param value the leap
+     * @return a copy with {@code leap} replaced
+     */
+    public CalendarDate withLeap(Leap value) {
+        return new CalendarDate(calendar, era, year, eraYear, month, day, resolution, computedMonth, computedDay, value);
     }
 
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
@@ -144,6 +156,7 @@ public record CalendarDate(
         Native.TsCalendarDate.RESOLUTION.set(raw, 0L, Values.u8("resolution", Values.id("resolution", resolution)));
         Native.TsCalendarDate.COMPUTED_MONTH.set(raw, 0L, Values.u8("computedMonth", computedMonth));
         Native.TsCalendarDate.COMPUTED_DAY.set(raw, 0L, Values.u8("computedDay", computedDay));
+        Native.TsCalendarDate.LEAP.set(raw, 0L, Values.u8("leap", (leap == null ? 0xFF : Values.id("leap", leap))));
     }
 
     /** This value as a fresh C struct in {@code arena}, ready to be passed by pointer. */
@@ -164,7 +177,8 @@ public record CalendarDate(
             Byte.toUnsignedInt((byte) Native.TsCalendarDate.DAY.get(raw, 0L)),
             Resolution.of(Byte.toUnsignedInt((byte) Native.TsCalendarDate.RESOLUTION.get(raw, 0L))),
             Byte.toUnsignedInt((byte) Native.TsCalendarDate.COMPUTED_MONTH.get(raw, 0L)),
-            Byte.toUnsignedInt((byte) Native.TsCalendarDate.COMPUTED_DAY.get(raw, 0L)));
+            Byte.toUnsignedInt((byte) Native.TsCalendarDate.COMPUTED_DAY.get(raw, 0L)),
+            Values.memberOrNull(Byte.toUnsignedInt((byte) Native.TsCalendarDate.LEAP.get(raw, 0L)), 0xFF, Leap::of));
     }
 
 }

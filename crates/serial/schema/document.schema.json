@@ -1280,7 +1280,8 @@
             "BIKRAM_SAMBAT",
             "INDIAN_LUNISOLAR",
             "INDIAN_NATIONAL",
-            "HIJRI_TABULAR"
+            "HIJRI_TABULAR",
+            "TIBETAN_PHUGPA"
           ],
           "type": "string"
         },
@@ -1294,7 +1295,8 @@
             "calendar.BIKRAM_SAMBAT",
             "calendar.INDIAN_LUNISOLAR",
             "calendar.INDIAN_NATIONAL",
-            "calendar.HIJRI_TABULAR"
+            "calendar.HIJRI_TABULAR",
+            "calendar.TIBETAN_PHUGPA"
           ],
           "type": "string",
           "writeOnly": true
@@ -1327,6 +1329,17 @@
             }
           ],
           "description": "The era view, when the calendar has one."
+        },
+        "leap": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Leap"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether the month or the day is the first of two bearing the same number, in a calendar that repeats them (the Tibetan); left out of the wire when absent, and refused by every calendar that repeats neither."
         },
         "month": {
           "description": "The month, 1-based; for the ISO week date, the week.",
@@ -4226,6 +4239,26 @@
       "description": "A geographic latitude in degrees, north positive.",
       "format": "double",
       "type": "number"
+    },
+    "Leap": {
+      "description": "Which part of a date is the first of a repeated pair: the leap month comes before the month whose number it takes, and the leap day before the day whose number it repeats.",
+      "oneOf": [
+        {
+          "const": "MONTH",
+          "description": "The leap month.",
+          "type": "string"
+        },
+        {
+          "const": "DAY",
+          "description": "The leap day.",
+          "type": "string"
+        },
+        {
+          "const": "MONTH_AND_DAY",
+          "description": "The leap day of the leap month.",
+          "type": "string"
+        }
+      ]
     },
     "Length": {
       "description": "How long a sign's period runs.",

@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, Lilith, Varga, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, Leap, ChartKind, Lilith, Varga, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -665,6 +665,15 @@ export interface CalendarDate {
    * The engine's day when the resolution is divergent, else zero.
    */
   readonly computedDay: number;
+  /**
+   * Whether the month or the day is the first of a repeated pair, in a
+   * calendar that repeats them; `0xFF` for neither, which is every date
+   * of every other calendar (`0` is read as neither too).
+   * @enum Leap
+   * @example 1
+   * @nullable
+   */
+  readonly leap?: Leap;
 }
 
 /**

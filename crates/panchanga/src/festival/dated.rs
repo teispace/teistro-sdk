@@ -138,6 +138,17 @@ impl DatedRule {
             ))
             .with_field(format!("{form}.calendar")));
         }
+        // A Tibetan month may come twice and a day may be skipped or
+        // repeated, so "the 1st of month 1" is not one day by its label:
+        // which day keeps it (the leap month's or the regular's, the day
+        // standing in for a skipped number) waits on a source that says.
+        if calendar == Calendar::TibetanPhugpa {
+            return Err(Error::unsupported(format!(
+                "{}: a festival on a Tibetan date is not reckoned yet; its month may repeat and its days skip or repeat (docs/calendars/tibetan.md)",
+                self.key
+            ))
+            .with_field(format!("{form}.calendar")));
+        }
         if self.on.month() == 0 {
             return Err(
                 Error::invalid_arg(format!("{}: months are counted from 1", self.key))
@@ -381,6 +392,19 @@ mod tests {
         for rule in DatedRule::nepal_panchanga() {
             rule.check().unwrap();
         }
+        let tibetan = DatedRule {
+            key: String::from("LOSAR"),
+            source: String::from("a test"),
+            on: Dated::CivilDate {
+                calendar: Calendar::TibetanPhugpa,
+                month: 1,
+                day: 1,
+            },
+        };
+        assert_eq!(
+            tibetan.check().unwrap_err().field(),
+            Some("civilDate.calendar")
+        );
     }
 
     #[test]

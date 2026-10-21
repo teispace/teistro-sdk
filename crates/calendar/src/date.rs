@@ -36,6 +36,62 @@ pub struct CalendarDate {
     pub era: Option<EraNumber>,
     /// How the date was resolved.
     pub resolution: CalendarResolution,
+    /// Whether the month or the day is the first of two bearing the same
+    /// number, in a calendar that repeats them (the Tibetan); left out of
+    /// the wire when absent, and refused by every calendar that repeats
+    /// neither.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub leap: Option<Leap>,
+}
+
+/// Which part of a date is the first of a repeated pair: the leap month
+/// comes before the month whose number it takes, and the leap day before
+/// the day whose number it repeats.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Leap {
+    /// The leap month.
+    Month,
+    /// The leap day.
+    Day,
+    /// The leap day of the leap month.
+    MonthAndDay,
+}
+
+impl Leap {
+    /// The mark of a month and a day, `None` when neither is a leap.
+    #[must_use]
+    pub const fn of(month: bool, day: bool) -> Option<Leap> {
+        match (month, day) {
+            (false, false) => None,
+            (true, false) => Some(Leap::Month),
+            (false, true) => Some(Leap::Day),
+            (true, true) => Some(Leap::MonthAndDay),
+        }
+    }
+
+    /// Whether the month is the leap month.
+    #[must_use]
+    pub const fn month(self) -> bool {
+        matches!(self, Leap::Month | Leap::MonthAndDay)
+    }
+
+    /// Whether the day is the leap day.
+    #[must_use]
+    pub const fn day(self) -> bool {
+        matches!(self, Leap::Day | Leap::MonthAndDay)
+    }
+
+    /// The mark's key, as the wire spells it.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Leap::Month => "MONTH",
+            Leap::Day => "DAY",
+            Leap::MonthAndDay => "MONTH_AND_DAY",
+        }
+    }
 }
 
 impl CalendarDate {
@@ -49,7 +105,15 @@ impl CalendarDate {
             day,
             era: None,
             resolution: CalendarResolution::Defined,
+            leap: None,
         }
+    }
+
+    /// The same date with its leap mark.
+    #[must_use]
+    pub const fn with_leap(mut self, leap: Option<Leap>) -> CalendarDate {
+        self.leap = leap;
+        self
     }
 
     /// The same date with an era attached.
@@ -157,6 +221,20 @@ pub(crate) fn nonexistent(message: String) -> Error {
     Error::invalid_arg(message).with_detail(Detail::NonexistentDate)
 }
 
+/// Refuses a leap mark on a date of a calendar that repeats neither a
+/// month nor a day.
+pub(crate) fn check_no_leap(date: &CalendarDate) -> Result<(), Error> {
+    match date.leap {
+        None => Ok(()),
+        Some(leap) => Err(nonexistent(format!(
+            "{} repeats neither a month nor a day, so a date cannot be marked {}",
+            date.calendar.key(),
+            leap.key()
+        ))
+        .with_field("leap")),
+    }
+}
+
 /// `OUT_OF_RANGE`.
 pub(crate) fn out_of_range(message: String) -> Error {
     Error::new(Status::OutOfRange, message)
@@ -221,6 +299,7 @@ pub fn shipped(id: Calendar) -> Option<&'static dyn CalendarSystem> {
         Calendar::BikramSambat => Some(crate::bikram_sambat::BikramSambat::shipped()),
         Calendar::IndianNational => Some(&crate::indian_national::IndianNational),
         Calendar::HijriTabular => Some(&crate::hijri::HijriTabular),
+        Calendar::TibetanPhugpa => Some(&crate::tibetan::TibetanPhugpa),
         _ => None,
     }
 }

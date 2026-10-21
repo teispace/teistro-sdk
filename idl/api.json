@@ -4267,6 +4267,12 @@
           "value": 7,
           "doc": "Hijri Tabular: the arithmetic Islamic calendar of the civil epoch",
           "key": "HIJRI_TABULAR"
+        },
+        {
+          "name": "TibetanPhugpa",
+          "value": 8,
+          "doc": "Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806",
+          "key": "TIBETAN_PHUGPA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6712,6 +6718,32 @@
           "value": 3,
           "doc": "Inside the range and the table and the engine disagree; the table\nwas followed and the engine's month and day are reported beside it.",
           "key": "DIVERGENT"
+        }
+      ],
+      "source": "crates/ffi/src/calendar.rs"
+    },
+    {
+      "name": "TsLeap",
+      "doc": "Which part of a date is the first of a repeated pair, in a calendar\nthat repeats them (the Tibetan). A date marked neither holds\n`TsLeap::NONE`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Month",
+          "value": 1,
+          "doc": "The leap month, before the month whose number it takes.",
+          "key": "MONTH"
+        },
+        {
+          "name": "Day",
+          "value": 2,
+          "doc": "The leap day, before the day whose number it repeats.",
+          "key": "DAY"
+        },
+        {
+          "name": "MonthAndDay",
+          "value": 3,
+          "doc": "The leap day of the leap month.",
+          "key": "MONTH_AND_DAY"
         }
       ],
       "source": "crates/ffi/src/calendar.rs"
@@ -12198,6 +12230,19 @@
           "meta": {}
         },
         {
+          "name": "leap",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Whether the month or the day is the first of a repeated pair, in a\ncalendar that repeats them; `0xFF` for neither, which is every date\nof every other calendar (`0` is read as neither too).",
+          "meta": {
+            "example": "1",
+            "enum": "TsLeap",
+            "nullable": true
+          }
+        },
+        {
           "name": "reserved",
           "ty": {
             "kind": "array",
@@ -12205,7 +12250,7 @@
               "kind": "scalar",
               "scalar": "u8"
             },
-            "len": 3
+            "len": 2
           },
           "doc": "Reserved, zero.",
           "meta": {}

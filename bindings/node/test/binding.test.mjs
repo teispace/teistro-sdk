@@ -19,6 +19,7 @@ import {
   RashiById,
   SahamById,
   ChartLayout,
+  Leap,
   Lilith,
   DashaSystem,
   Varga,
@@ -731,8 +732,8 @@ test('every catalogue enum has a complete id table', () => {
   // `TsSignification`, thirteen, and `TsChosenBy`, five; 1377 since the
   // dispositors' `TsChainEnd`, two; 1378 since `TsCalendar` gained the
   // Indian national calendar; 1380 since the tabular Hijri calendar and
-  // its era.
-  assert.equal(entries, 1380, 'every member of every enum is in a table');
+  // its era; 1384 since the Tibetan calendar and `TsLeap`, three.
+  assert.equal(entries, 1384, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4391,6 +4392,12 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   // And the tabular Hijri calendar's: 1 Ramadan 1446 is 1 March 2025.
   const ramadan = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 3, day: 1 }, Calendar.HijriTabular);
   assert.deepEqual([ramadan.era, ramadan.year, ramadan.month, ramadan.day], ['era.HIJRI', 1446, 9, 1]);
+  // The Tibetan year 2000 began with a leap month 1, on 6 February.
+  const losar = ctx.calendar.convert(date(Calendar.Gregorian, 2000, 2, 6), Calendar.TibetanPhugpa);
+  assert.deepEqual([losar.year, losar.month, losar.day, losar.leap], [2000, 1, 1, Leap.Month]);
+  const back = ctx.calendar.convert(date(Calendar.TibetanPhugpa, 2000, 1, 1, Leap.Month), Calendar.Gregorian);
+  assert.deepEqual([back.year, back.month, back.day, back.leap ?? null], [2000, 2, 6, null]);
+  assert.throws(() => ctx.calendar.convert(date(Calendar.Gregorian, 2000, 2, 6, Leap.Month), Calendar.Julian), TeistroError);
   assert.equal(day.vara, 'vara.SHANIVARA');
   assert.ok(day.sunrise < day.sunset && day.sunset < 2451545 && 2451545 < day.nextSunrise);
   assert.equal(day.polar, null);

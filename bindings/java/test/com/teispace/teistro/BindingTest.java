@@ -199,7 +199,7 @@ public final class BindingTest {
                 same(1, first.day(), "on its first");
                 same(1, calendar.weekdayOf(first), "a Monday");
                 CalendarDate today = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 10, 8,
-                        Resolution.DEFINED, 0, 0);
+                        Resolution.DEFINED, 0, 0, null);
                 long fixed = calendar.fixedOf(today);
                 CalendarDate bs = calendar.convert(today, Calendar.BIKRAM_SAMBAT);
                 same(Calendar.BIKRAM_SAMBAT, bs.calendar(), "the calendar asked for");
@@ -207,17 +207,24 @@ public final class BindingTest {
                 same(fixed, calendar.fixedOf(bs), "the same day");
                 same(today.day(), calendar.convert(bs, Calendar.GREGORIAN).day(), "and back");
                 CalendarDate independence = new CalendarDate(Calendar.GREGORIAN, null, 1947, 0, 8, 15,
-                        Resolution.DEFINED, 0, 0);
+                        Resolution.DEFINED, 0, 0, null);
                 CalendarDate saka = calendar.convert(independence, Calendar.INDIAN_NATIONAL);
                 same(1869, saka.year(), "Shravana 24, 1869 (Saka)");
                 same(5, saka.month(), "Shravana");
                 same(24, saka.day(), "the 24th");
                 CalendarDate march = new CalendarDate(Calendar.GREGORIAN, null, 2025, 0, 3, 1,
-                        Resolution.DEFINED, 0, 0);
+                        Resolution.DEFINED, 0, 0, null);
                 CalendarDate ramadan = calendar.convert(march, Calendar.HIJRI_TABULAR);
                 same(1446, ramadan.year(), "1 Ramadan 1446 AH");
                 same(9, ramadan.month(), "Ramadan");
                 same(1, ramadan.day(), "its first day");
+                CalendarDate sixth = new CalendarDate(Calendar.GREGORIAN, null, 2000, 0, 2, 6,
+                        Resolution.DEFINED, 0, 0, null);
+                CalendarDate losar = calendar.convert(sixth, Calendar.TIBETAN_PHUGPA);
+                same(2000, losar.year(), "the Tibetan year 2000");
+                same(1, losar.day(), "began on day 1");
+                same(Leap.MONTH, losar.leap(), "of a leap month 1");
+                same(6, calendar.convert(losar, Calendar.GREGORIAN).day(), "and back");
                 check(calendar.isLeap(Calendar.GREGORIAN, 2024), "2024 is a leap year");
                 check(!calendar.isLeap(Calendar.GREGORIAN, 2100), "2100 is not");
                 same(28, calendar.monthLength(Calendar.GREGORIAN, 2026, 2), "February 2026");
@@ -227,7 +234,7 @@ public final class BindingTest {
         tests.put("a value C cannot hold is refused by the name the caller wrote", () -> {
             try (Context sky = context(teistro)) {
                 CalendarDate bad = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 300, 8,
-                        Resolution.DEFINED, 0, 0);
+                        Resolution.DEFINED, 0, 0, null);
                 try {
                     sky.calendar().fixedOf(bad);
                     throw new AssertionError("a month of 300 was sent");
@@ -235,7 +242,7 @@ public final class BindingTest {
                     check(expected.getMessage().contains("`month`"), expected.getMessage());
                 }
                 CalendarDate unknown = new CalendarDate(Calendar.UNKNOWN, null, 2026, 0, 1, 1,
-                        Resolution.DEFINED, 0, 0);
+                        Resolution.DEFINED, 0, 0, null);
                 try {
                     sky.calendar().fixedOf(unknown);
                     throw new AssertionError("an unknown calendar was sent");
@@ -517,8 +524,8 @@ public final class BindingTest {
         tests.put("an almanac reads a native's bird over its days", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer madras = new Observer(new Longitude(80.2707), new Latitude(13.0827), new Altitude(6));
-                CalendarDate tuesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 30, Resolution.DEFINED, 0, 0);
-                CalendarDate wednesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 31, Resolution.DEFINED, 0, 0);
+                CalendarDate tuesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 30, Resolution.DEFINED, 0, 0, null);
+                CalendarDate wednesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 31, Resolution.DEFINED, 0, 0, null);
                 PakshiDays sealed = sky.almanac().pakshi(tuesday, wednesday, madras, 19_800,
                         PakshiNative.star(Nakshatra.UTTARA_ASHADHA, Paksha.SHUKLA));
                 check(!sealed.provenance().inputHash().isEmpty(), "the request is sealed");
@@ -551,7 +558,7 @@ public final class BindingTest {
             try (Context polar = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN)
                     .settingsJson("{\"day\": {\"polar_day_policy\": \"NEAREST_EVENT\"}}").build())) {
                 Observer tromso = new Observer(new Longitude(18.9553), new Latitude(69.6492), new Altitude(0));
-                CalendarDate midsummer = new CalendarDate(Calendar.GREGORIAN, null, 2024, 0, 6, 21, Resolution.DEFINED, 0, 0);
+                CalendarDate midsummer = new CalendarDate(Calendar.GREGORIAN, null, 2024, 0, 6, 21, Resolution.DEFINED, 0, 0, null);
                 List<PakshiDay> days = polar.almanac().pakshi(midsummer, null, tromso, 7_200, PakshiNative.bird("OWL"))
                         .value();
                 check(days.get(0).reading() == null, "no sunset, no yamas");

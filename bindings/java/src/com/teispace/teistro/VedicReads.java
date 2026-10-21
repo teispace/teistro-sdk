@@ -115,7 +115,8 @@ final class VedicReads {
                 section.dayOfMonth(i),
                 Resolution.of(section.resolution(i)),
                 section.computedMonth(i),
-                section.computedDay(i));
+                section.computedDay(i),
+                null);
         return new LocalDay(
                 date,
                 Vara.of(section.vara(i)),

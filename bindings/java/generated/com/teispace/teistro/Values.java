@@ -199,7 +199,12 @@ final class Values {
 
     /** A member, or null for the id a nullable catalogue field holds for none. */
     static <E> E memberOrNull(int id, IntFunction<E> of) {
-        return id == NO_MEMBER ? null : of.apply(id);
+        return memberOrNull(id, NO_MEMBER, of);
+    }
+
+    /** A member, or null for {@code none}, what a field of its width holds for none. */
+    static <E> E memberOrNull(int id, int none, IntFunction<E> of) {
+        return id == none ? null : of.apply(id);
     }
 
     /** What a nullable catalogue field holds for none. */

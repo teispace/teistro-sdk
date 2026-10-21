@@ -49,6 +49,11 @@ public enum Calendar implements Catalogued {
      */
     HIJRI_TABULAR(7, "HIJRI_TABULAR"),
 
+    /**
+     * Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
+     */
+    TIBETAN_PHUGPA(8, "TIBETAN_PHUGPA"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

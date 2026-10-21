@@ -213,6 +213,7 @@ from .catalogue import (
     HouseSystem,
     Kaala,
     Karana,
+    Leap,
     Lilith,
     LunarMonth,
     Masa,
@@ -1142,6 +1143,7 @@ __all__ = [
     "Kaala",
     "Karana",
     "Koota",
+    "Leap",
     "Lilith",
     "LunarMonth",
     "Masa",
@@ -13943,6 +13945,7 @@ def _serde_date(raw: Mapping[str, Any]) -> CalendarDate:
         resolution=_member(Resolution, resolution["kind"]),
         computed_month=resolution["computed"]["month"] if divergent else 0,
         computed_day=resolution["computed"]["day"] if divergent else 0,
+        leap=None if raw.get("leap") is None else _member(Leap, raw["leap"]),
         era=None if era is None else _member(Era, era["era"]),
     )
 
@@ -18129,14 +18132,17 @@ class _Renderer:
         return self._context.intl.entity(key)
 
 
-def date(calendar: Calendar, year: int, month: int, day: int) -> CalendarDate:
+def date(calendar: Calendar, year: int, month: int, day: int, leap: Optional[Leap] = None) -> CalendarDate:
     """A date in a calendar, without naming the fields a call fills in.
 
     The era and the era year are what the call resolves them to, and the
     resolution is `DEFINED`, which is what a date a caller states means.
+    `leap` marks the first of a repeated month or day, in a calendar that
+    repeats them (the Tibetan); every other calendar refuses it.
 
     ```python
     date(Calendar.GREGORIAN, 2015, 4, 14)
+    date(Calendar.TIBETAN_PHUGPA, 2000, 1, 1, Leap.MONTH)
     ```
     """
     return CalendarDate(
@@ -18148,6 +18154,7 @@ def date(calendar: Calendar, year: int, month: int, day: int) -> CalendarDate:
         resolution=Resolution.DEFINED,
         computed_month=0,
         computed_day=0,
+        leap=leap,
     )
 
 

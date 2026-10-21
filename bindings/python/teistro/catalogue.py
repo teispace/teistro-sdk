@@ -2278,6 +2278,9 @@ class Calendar(Catalogued):
     HIJRI_TABULAR = 7
     """Hijri Tabular: the arithmetic Islamic calendar of the civil epoch"""
 
+    TIBETAN_PHUGPA = 8
+    """Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -3673,6 +3676,22 @@ class Resolution(Member):
     """Inside the range and the table and the engine disagree; the table
     was followed and the engine's month and day are reported beside it.
     """
+
+
+class Leap(Member):
+    """Which part of a date is the first of a repeated pair, in a calendar
+    that repeats them (the Tibetan). A date marked neither holds
+    `TsLeap::NONE`.
+    """
+
+    MONTH = 1
+    """The leap month, before the month whose number it takes."""
+
+    DAY = 2
+    """The leap day, before the day whose number it repeats."""
+
+    MONTH_AND_DAY = 3
+    """The leap day of the leap month."""
 
 
 class DayPart(Member):
@@ -6241,6 +6260,7 @@ _KEYS: dict[str, dict[int, str]] = {
         5: "INDIAN_LUNISOLAR",
         6: "INDIAN_NATIONAL",
         7: "HIJRI_TABULAR",
+        8: "TIBETAN_PHUGPA",
         -1: "UNKNOWN",
     },
     "Era": {
@@ -6698,6 +6718,11 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "TABULAR",
         2: "COMPUTED",
         3: "DIVERGENT",
+    },
+    "Leap": {
+        1: "MONTH",
+        2: "DAY",
+        3: "MONTH_AND_DAY",
     },
     "DayPart": {
         0: "DAYLIGHT",

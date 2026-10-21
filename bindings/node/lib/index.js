@@ -5963,6 +5963,7 @@ function dateFrom(json) {
     resolution: resolution.kind,
     computedMonth: divergent ? resolution.computed.month : 0,
     computedDay: divergent ? resolution.computed.day : 0,
+    ...(json.leap == null ? {} : { leap: json.leap }),
   };
 }
 
@@ -7737,12 +7738,14 @@ export const unpackFrame = (bits) => native.frameUnpack(bits);
  *
  * The era and the era year are what the call resolves them to, and the
  * resolution is `DEFINED`, which is what a date a caller states means.
- * The Dart and Python bindings have the same helper, so the three read
- * alike.
+ * `leap` marks the first of a repeated month or day, in a calendar that
+ * repeats them (the Tibetan); every other calendar refuses it. The Dart
+ * and Python bindings have the same helper, so the three read alike.
  *
  * @example date(Calendar.Gregorian, 2015, 4, 14)
+ * @example date(Calendar.TibetanPhugpa, 2000, 1, 1, Leap.Month)
  */
-export const date = (calendar, year, month, day) => ({
+export const date = (calendar, year, month, day, leap) => ({
   calendar,
   year,
   eraYear: 0,
@@ -7751,6 +7754,7 @@ export const date = (calendar, year, month, day) => ({
   resolution: 'DEFINED',
   computedMonth: 0,
   computedDay: 0,
+  ...(leap == null ? {} : { leap }),
 });
 
 /**

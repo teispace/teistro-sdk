@@ -578,6 +578,9 @@ fn time_and_calendar(api: &Api) -> Vec<&'static str> {
         unit(api, "TsSunrises", |s: &Sunrises| {
             id(TsSunrises::from(*s) as u8)
         }),
+        unit(api, "TsLeap", |l: &teistro_calendar::Leap| {
+            id(teistro_ffi::calendar::TsLeap::of(Some(*l)))
+        }),
     ]
 }
 

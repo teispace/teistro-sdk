@@ -307,6 +307,7 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
             "INDIAN_LUNISOLAR",
             "INDIAN_NATIONAL",
             "HIJRI_TABULAR",
+            "TIBETAN_PHUGPA",
         ],
     ),
     (

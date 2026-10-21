@@ -331,6 +331,7 @@ pub fn calendar_from_str(value: &str) -> Result<u16> {
         "calendar.INDIAN_LUNISOLAR" => Ok(5),
         "calendar.INDIAN_NATIONAL" => Ok(6),
         "calendar.HIJRI_TABULAR" => Ok(7),
+        "calendar.TIBETAN_PHUGPA" => Ok(8),
         other => Err(Error::from_reason(format!("`{other}` is not a Calendar"))),
     }
 }
@@ -347,6 +348,7 @@ pub fn calendar_to_str(value: u16) -> String {
         5 => "calendar.INDIAN_LUNISOLAR",
         6 => "calendar.INDIAN_NATIONAL",
         7 => "calendar.HIJRI_TABULAR",
+        8 => "calendar.TIBETAN_PHUGPA",
         _ => "unknown",
     }
     .to_string()
@@ -599,6 +601,28 @@ pub fn resolution_to_str(value: u8) -> String {
         1 => "TABULAR",
         2 => "COMPUTED",
         3 => "DIVERGENT",
+        _ => "unknown",
+    }
+    .to_string()
+}
+
+/// A `Leap` from the string `catalogue.js` names it by.
+pub fn leap_from_str(value: &str) -> Result<u8> {
+    match value {
+        "MONTH" => Ok(1),
+        "DAY" => Ok(2),
+        "MONTH_AND_DAY" => Ok(3),
+        other => Err(Error::from_reason(format!("`{other}` is not a Leap"))),
+    }
+}
+
+/// The string for a `Leap`; a value from a newer library is
+/// `unknown`.
+pub fn leap_to_str(value: u8) -> String {
+    match value {
+        1 => "MONTH",
+        2 => "DAY",
+        3 => "MONTH_AND_DAY",
         _ => "unknown",
     }
     .to_string()
@@ -1796,6 +1820,12 @@ pub struct CalendarDate {
     pub computed_month: u32,
     /// The engine's day when the resolution is divergent, else zero.
     pub computed_day: u32,
+    /// Whether the month or the day is the first of a repeated pair, in a
+    /// calendar that repeats them; `0xFF` for neither, which is every date
+    /// of every other calendar (`0` is read as neither too).
+    /// Enum: TsLeap. Example: `1`. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub leap: Option<String>,
 }
 
 /// What a `CalendarDate` lends the C struct built from it: the buffers its
@@ -1810,6 +1840,7 @@ pub struct HeldCalendarDate {
     resolution: u8,
     computed_month: u8,
     computed_day: u8,
+    leap: u8,
 }
 
 impl HeldCalendarDate {
@@ -1826,6 +1857,7 @@ impl HeldCalendarDate {
             resolution: self.resolution,
             computed_month: self.computed_month,
             computed_day: self.computed_day,
+            leap: self.leap,
             reserved: Default::default(),
         }
     }
@@ -1847,6 +1879,10 @@ impl CalendarDate {
             resolution: resolution_from_str(&self.resolution)?,
             computed_month: self.computed_month as u8,
             computed_day: self.computed_day as u8,
+            leap: match self.leap.as_deref() {
+                Some(v) => leap_from_str(v)?,
+                None => u8::MAX,
+            },
         })
     }
 
@@ -1867,6 +1903,7 @@ impl CalendarDate {
             resolution: resolution_to_str(raw.resolution),
             computed_month: raw.computed_month as _,
             computed_day: raw.computed_day as _,
+            leap: (raw.leap != u8::MAX).then(|| leap_to_str(raw.leap)),
         }
     }
 }

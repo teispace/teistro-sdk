@@ -261,7 +261,8 @@ final class Reads {
                 integer(date, "day"),
                 member(Resolution.byKey(kind), "Resolution", kind),
                 computed == null ? 0 : integer(computed, "month"),
-                computed == null ? 0 : integer(computed, "day"));
+                computed == null ? 0 : integer(computed, "day"),
+                date.get("leap") == null ? null : member(Leap.byKey(string(date, "leap")), "Leap", date.get("leap")));
     }
 
     /**

@@ -27,7 +27,22 @@ public final class Civil {
      * @return the date
      */
     public static CalendarDate date(Calendar calendar, int year, int month, int day) {
-        return new CalendarDate(calendar, null, year, 0, month, day, Resolution.DEFINED, 0, 0);
+        return date(calendar, year, month, day, null);
+    }
+
+    /**
+     * A date marked as the first of a repeated month or day, in a calendar
+     * that repeats them (the Tibetan); every other calendar refuses a mark.
+     *
+     * @param calendar the calendar the date is in
+     * @param year the astronomical year
+     * @param month the month, 1-based
+     * @param day the day, 1-based
+     * @param leap the mark, or null for none
+     * @return the date
+     */
+    public static CalendarDate date(Calendar calendar, int year, int month, int day, Leap leap) {
+        return new CalendarDate(calendar, null, year, 0, month, day, Resolution.DEFINED, 0, 0, leap);
     }
 
     /**

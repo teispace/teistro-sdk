@@ -3794,6 +3794,7 @@ export type Calendar =
   | 'calendar.INDIAN_LUNISOLAR'
   | 'calendar.INDIAN_NATIONAL'
   | 'calendar.HIJRI_TABULAR'
+  | 'calendar.TIBETAN_PHUGPA'
   | 'unknown';
 
 /** Every Calendar by name; the values are the strings the union accepts. */
@@ -3830,6 +3831,10 @@ export declare const Calendar: {
    * Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
    */
   readonly HijriTabular: 'calendar.HIJRI_TABULAR';
+  /**
+   * Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
+   */
+  readonly TibetanPhugpa: 'calendar.TIBETAN_PHUGPA';
 };
 
 /**
@@ -6141,6 +6146,35 @@ export declare const Resolution: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const ResolutionById: ReadonlyMap<number, Resolution>;
+
+/**
+ * Which part of a date is the first of a repeated pair, in a calendar
+ * that repeats them (the Tibetan). A date marked neither holds
+ * `TsLeap::NONE`.
+ */
+export type Leap = 'MONTH' | 'DAY' | 'MONTH_AND_DAY';
+
+/** Every Leap by name; the values are the strings the union accepts. */
+export declare const Leap: {
+  /**
+   * The leap month, before the month whose number it takes.
+   */
+  readonly Month: 'MONTH';
+  /**
+   * The leap day, before the day whose number it repeats.
+   */
+  readonly Day: 'DAY';
+  /**
+   * The leap day of the leap month.
+   */
+  readonly MonthAndDay: 'MONTH_AND_DAY';
+};
+
+/**
+ * Every Leap by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const LeapById: ReadonlyMap<number, Leap>;
 
 /**
  * Which arc of its day an instant falls in.

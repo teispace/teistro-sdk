@@ -82,7 +82,8 @@ fn date(calendar: Calendar, year: i32, month: u8, day: u8) -> TsCalendarDate {
             resolution: 0,
             computed_month: 0,
             computed_day: 0,
-            reserved: [0; 3],
+            leap: 0xFF,
+            reserved: [0; 2],
         },
         |d, s| d.struct_size = s,
     )
@@ -6585,7 +6586,16 @@ fn a_panchanga_request_answers_festivals_over_its_own_days() {
     assert_eq!(answer, expected.value);
     assert_eq!(provenance.input_hash, expected.provenance.input_hash);
     let rules: Vec<&str> = answer.observances.iter().map(|o| o.rule.as_str()).collect();
-    assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA", "BALI_PRATIPADA"]);
+    assert_eq!(
+        rules,
+        [
+            "VIJAYA_DASHAMI",
+            "SANKASHTA_CHATURTHI",
+            "KARAKA_CHATURTHI",
+            "LAKSHMI_PUJA",
+            "BALI_PRATIPADA"
+        ]
+    );
 }
 
 /// The lunar years beside a panchanga request's days

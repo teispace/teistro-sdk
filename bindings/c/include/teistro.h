@@ -2945,6 +2945,10 @@ typedef enum ts_calendar {
      * Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
      */
     TS_CALENDAR_HIJRI_TABULAR = 7,
+    /**
+     * Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
+     */
+    TS_CALENDAR_TIBETAN_PHUGPA = 8,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CALENDAR_UNKNOWN = -1,
 } ts_calendar;
@@ -4673,6 +4677,26 @@ typedef enum ts_resolution {
      */
     TS_RESOLUTION_DIVERGENT = 3,
 } ts_resolution;
+
+/**
+ * Which part of a date is the first of a repeated pair, in a calendar
+ * that repeats them (the Tibetan). A date marked neither holds
+ * `TsLeap::NONE`.
+ */
+typedef enum ts_leap {
+    /**
+     * The leap month, before the month whose number it takes.
+     */
+    TS_LEAP_MONTH = 1,
+    /**
+     * The leap day, before the day whose number it repeats.
+     */
+    TS_LEAP_DAY = 2,
+    /**
+     * The leap day of the leap month.
+     */
+    TS_LEAP_MONTH_AND_DAY = 3,
+} ts_leap;
 
 /**
  * Which arc of its day an instant falls in.
@@ -7911,9 +7935,16 @@ struct ts_calendar_date {
      */
     uint8_t computed_day;
     /**
+     * Whether the month or the day is the first of a repeated pair, in a
+     * calendar that repeats them; `0xFF` for neither, which is every date
+     * of every other calendar (`0` is read as neither too).
+     * Enum: ts_leap. Example: 1. May be null.
+     */
+    uint8_t leap;
+    /**
      * Reserved, zero.
      */
-    uint8_t reserved[3];
+    uint8_t reserved[2];
 };
 
 /**

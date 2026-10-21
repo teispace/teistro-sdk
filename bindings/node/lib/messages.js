@@ -71,6 +71,15 @@ export function messages(r) {
           monthName: () => r.render('sdk.calendar.MIXED.monthName'),
           monthShort: () => r.render('sdk.calendar.MIXED.monthShort'),
         },
+        tibetanPhugpa: {
+          date: {
+            full: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.date.full', { day: p.day, leap: p.leap, monthName: p.monthName, weekdayName: p.weekdayName, year: p.year }),
+            long: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.date.long', { day: p.day, leap: p.leap, monthName: p.monthName, year: p.year }),
+            numeric: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.date.numeric', { day: p.day, leap: p.leap, month: p.month, year: p.year }),
+          },
+          monthName: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.monthName', { leap: p.leap, month: p.month }),
+          monthShort: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.monthShort', { leap: p.leap, month: p.month }),
+        },
         datetime: {
           inZone: (p) => r.render('sdk.calendar.datetime.inZone', { at: { '$instant': p.at }, zone: p.zone }),
           join: (p) => r.render('sdk.calendar.datetime.join', { date: p.date, time: p.time }),

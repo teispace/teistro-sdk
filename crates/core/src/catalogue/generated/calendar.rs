@@ -28,9 +28,11 @@ pub enum Calendar {
     IndianNational = 6,
     /// Hijri Tabular: the arithmetic Islamic calendar of the civil epoch
     HijriTabular = 7,
+    /// Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
+    TibetanPhugpa = 8,
 }
 
-const BY_KEY: [(&str, Calendar); 8] = [
+const BY_KEY: [(&str, Calendar); 9] = [
     ("BIKRAM_SAMBAT", Calendar::BikramSambat),
     ("GREGORIAN", Calendar::Gregorian),
     ("HIJRI_TABULAR", Calendar::HijriTabular),
@@ -39,6 +41,7 @@ const BY_KEY: [(&str, Calendar); 8] = [
     ("ISO_WEEK", Calendar::IsoWeek),
     ("JULIAN", Calendar::Julian),
     ("MIXED", Calendar::Mixed),
+    ("TIBETAN_PHUGPA", Calendar::TibetanPhugpa),
 ];
 
 const ALIASES: [(&str, Calendar); 0] = [
@@ -49,7 +52,7 @@ impl Calendar {
     pub const KIND: Kind = Kind::Calendar;
 
     /// Every member, in id order.
-    pub const ALL: [Calendar; 8] = [
+    pub const ALL: [Calendar; 9] = [
         Calendar::Gregorian,
         Calendar::Julian,
         Calendar::Mixed,
@@ -58,6 +61,7 @@ impl Calendar {
         Calendar::IndianLunisolar,
         Calendar::IndianNational,
         Calendar::HijriTabular,
+        Calendar::TibetanPhugpa,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -72,6 +76,7 @@ impl Calendar {
             Calendar::IndianLunisolar => "INDIAN_LUNISOLAR",
             Calendar::IndianNational => "INDIAN_NATIONAL",
             Calendar::HijriTabular => "HIJRI_TABULAR",
+            Calendar::TibetanPhugpa => "TIBETAN_PHUGPA",
         }
     }
 
@@ -87,6 +92,7 @@ impl Calendar {
             Calendar::IndianLunisolar => "calendar.INDIAN_LUNISOLAR",
             Calendar::IndianNational => "calendar.INDIAN_NATIONAL",
             Calendar::HijriTabular => "calendar.HIJRI_TABULAR",
+            Calendar::TibetanPhugpa => "calendar.TIBETAN_PHUGPA",
         }
     }
 
@@ -102,6 +108,7 @@ impl Calendar {
             Calendar::IndianLunisolar => "Indian Lunisolar",
             Calendar::IndianNational => "Indian National: the Saka-era civil calendar of 1957",
             Calendar::HijriTabular => "Hijri Tabular: the arithmetic Islamic calendar of the civil epoch",
+            Calendar::TibetanPhugpa => "Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806",
         }
     }
 
@@ -117,6 +124,7 @@ impl Calendar {
             Calendar::IndianLunisolar => None,
             Calendar::IndianNational => None,
             Calendar::HijriTabular => None,
+            Calendar::TibetanPhugpa => None,
         }
     }
 
@@ -132,6 +140,7 @@ impl Calendar {
             Calendar::IndianLunisolar => Mark::Verified,
             Calendar::IndianNational => Mark::Verified,
             Calendar::HijriTabular => Mark::Verified,
+            Calendar::TibetanPhugpa => Mark::Verified,
         }
     }
 
@@ -147,6 +156,7 @@ impl Calendar {
             Calendar::IndianLunisolar => false,
             Calendar::IndianNational => false,
             Calendar::HijriTabular => false,
+            Calendar::TibetanPhugpa => false,
         }
     }
 
@@ -162,6 +172,7 @@ impl Calendar {
             Calendar::IndianLunisolar => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
             Calendar::IndianNational => &[Source { text: "Report of the Calendar Reform Committee, 1955, part C", reference: "docs/calendars/indian-national.md" }],
             Calendar::HijriTabular => &[Source { text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7", reference: "docs/calendars/hijri.md" }],
+            Calendar::TibetanPhugpa => &[Source { text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014", reference: "docs/calendars/tibetan.md" }],
         }
     }
 
@@ -177,6 +188,7 @@ impl Calendar {
             Calendar::IndianLunisolar => &[],
             Calendar::IndianNational => &[],
             Calendar::HijriTabular => &[],
+            Calendar::TibetanPhugpa => &[],
         }
     }
 
@@ -210,6 +222,7 @@ impl Calendar {
             5 => Some(Calendar::IndianLunisolar),
             6 => Some(Calendar::IndianNational),
             7 => Some(Calendar::HijriTabular),
+            8 => Some(Calendar::TibetanPhugpa),
             _ => None,
         }
     }

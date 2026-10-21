@@ -704,6 +704,130 @@ pub mod sdk {
 
         }
 
+        /// The `TIBETAN_PHUGPA` group.
+        pub mod tibetan_phugpa {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.TIBETAN_PHUGPA.date.full`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `leap` parameter.
+                    pub leap: String,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `weekdayName` parameter.
+                    pub weekday_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.TIBETAN_PHUGPA.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("leap", crate::Value::Str(self.leap.clone())),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("weekdayName", crate::Value::Str(self.weekday_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.TIBETAN_PHUGPA.date.long`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `leap` parameter.
+                    pub leap: String,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.TIBETAN_PHUGPA.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("leap", crate::Value::Str(self.leap.clone())),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.TIBETAN_PHUGPA.date.numeric`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `leap` parameter.
+                    pub leap: String,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.TIBETAN_PHUGPA.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("leap", crate::Value::Str(self.leap.clone())),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The message `sdk.calendar.TIBETAN_PHUGPA.monthName`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthName {
+                /// The `leap` parameter.
+                pub leap: String,
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthName {
+                const KEY: &'static str = "sdk.calendar.TIBETAN_PHUGPA.monthName";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("leap", crate::Value::Str(self.leap.clone())),
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.TIBETAN_PHUGPA.monthShort`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthShort {
+                /// The `leap` parameter.
+                pub leap: String,
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthShort {
+                const KEY: &'static str = "sdk.calendar.TIBETAN_PHUGPA.monthShort";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("leap", crate::Value::Str(self.leap.clone())),
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+        }
+
         /// The `datetime` group.
         pub mod datetime {
             /// The message `sdk.calendar.datetime.inZone`.

@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Tibetan calendar, Phugpa** (`calendars/tibetan.md`).
+**Numbers:** none move. `calendar.TIBETAN_PHUGPA` converts any day from
+the Tibetan year 1027 to 9998: Janson's arithmetic in integers, giving
+Losar on the day his Table 1 prints in all 120 years from 1927 to 2046.
+A date gains an optional `leap` mark (`MONTH`, `DAY` or `MONTH_AND_DAY`)
+for the first of a repeated month or day. It is left out of the JSON when
+absent, so no existing answer's hash changes. At the C boundary it takes
+one of `ts_calendar_date`'s reserved bytes, `0xFF` for none, and `0` is
+read as none, so a caller compiled before keeps working. Every binding's
+date carries it as an optional field, and each `date` helper takes it.
+Every other calendar refuses a marked date by name. A skipped number, or
+a leap day that is not repeated, is refused saying which day stands in.
+English and Nepali date forms say "leap month" and "leap day". A
+festival rule on a Tibetan date is refused by name for now. The binding
+generators now write a one-byte nullable enum's none as `0xFF`, the most
+a byte holds, where they wrote `0xFFFF`, which no byte can hold.
+
 **Twelve festivals that needed a form** (`festival-rule-language.md` §4,
 C617, C693).
 **Numbers:** `NEPAL_PANCHANGA` now keeps twelve more festivals, each on

@@ -41,6 +41,14 @@ use crate::model::FieldDef;
 /// would read back as a real one.
 pub const NO_MEMBER: &str = "0xFFFF";
 
+/// What a nullable enum field holds for none, by its width: a one-byte
+/// field cannot hold [`NO_MEMBER`], so it holds `0xFF`, the most a byte
+/// holds, as a two-byte field holds the most two do.
+#[must_use]
+pub fn no_member_of(field: &FieldDef) -> Option<&'static str> {
+    matches!(field.ty.as_scalar(), Some(crate::model::Scalar::U8)).then_some("0xFF")
+}
+
 /// How a field's metadata is spelled inside its documentation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DocStyle {

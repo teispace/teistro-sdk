@@ -59,3 +59,10 @@ members:
       - text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7"
         ref: "docs/calendars/hijri.md"
     mark: V
+  - key: TIBETAN_PHUGPA
+    id: 8
+    doc: "Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806"
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "docs/calendars/tibetan.md"
+    mark: V

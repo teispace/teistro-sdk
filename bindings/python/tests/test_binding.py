@@ -44,6 +44,7 @@ from teistro import (
     Ephemeris,
     EphemerisProvider,
     Latitude,
+    Leap,
     Lilith,
     Nakshatra,
     Observer,
@@ -230,6 +231,15 @@ class TheCalendars(WithLibrary):
         self.assertEqual((ramadan.year, ramadan.month, ramadan.day), (1446, 9, 1))
         assert ramadan.era is not None
         self.assertEqual(ramadan.era.key, "HIJRI")
+
+    def test_the_tibetan_year_2000_began_with_a_leap_month_on_6_february(self) -> None:
+        losar = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2000, 2, 6), Calendar.TIBETAN_PHUGPA)
+        self.assertEqual((losar.year, losar.month, losar.day, losar.leap), (2000, 1, 1, Leap.MONTH))
+        back = self.ctx.calendar.convert(date(Calendar.TIBETAN_PHUGPA, 2000, 1, 1, Leap.MONTH), Calendar.GREGORIAN)
+        self.assertEqual((back.year, back.month, back.day), (2000, 2, 6))
+        # A Gregorian date has no leap month to name.
+        with self.assertRaises(TeistroError):
+            self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2000, 2, 6, Leap.MONTH), Calendar.JULIAN)
 
     def test_the_new_year_of_2072_bs_is_14_april_2015(self) -> None:
         bs = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)

@@ -698,7 +698,8 @@
     "BIKRAM_SAMBAT": {},
     "INDIAN_LUNISOLAR": {},
     "INDIAN_NATIONAL": {},
-    "HIJRI_TABULAR": {}
+    "HIJRI_TABULAR": {},
+    "TIBETAN_PHUGPA": {}
   },
   "era": {
     "VIKRAMA": {},

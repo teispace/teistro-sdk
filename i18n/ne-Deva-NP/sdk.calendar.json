@@ -66,6 +66,15 @@
    "full": "AH {$year :integer useGrouping=false} {$monthName} {$day :integer}, {$weekdayName}"
   }
  },
+ "TIBETAN_PHUGPA": {
+  "monthName": ".input {$leap :string} .match $leap MONTH {{अधिक महिना {$month :integer}}} MONTH_AND_DAY {{अधिक महिना {$month :integer}}} * {{महिना {$month :integer}}}",
+  "monthShort": ".input {$leap :string} .match $leap MONTH {{अधिक {$month :integer}}} MONTH_AND_DAY {{अधिक {$month :integer}}} * {{{$month :integer}}}",
+  "date": {
+   "numeric": ".input {$leap :string} .match $leap MONTH {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (अधिक महिना)}} DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (दोहोरिएको तिथि)}} MONTH_AND_DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (अधिक महिना, दोहोरिएको तिथि)}} * {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}}}",
+   "long": ".input {$leap :string} .match $leap DAY {{{$year :integer useGrouping=false} {$monthName}, तिथि {$day :integer} (दोहोरिएको)}} MONTH_AND_DAY {{{$year :integer useGrouping=false} {$monthName}, तिथि {$day :integer} (दोहोरिएको)}} * {{{$year :integer useGrouping=false} {$monthName}, तिथि {$day :integer}}}",
+   "full": ".input {$leap :string} .match $leap DAY {{{$year :integer useGrouping=false} {$monthName}, तिथि {$day :integer} (दोहोरिएको), {$weekdayName}}} MONTH_AND_DAY {{{$year :integer useGrouping=false} {$monthName}, तिथि {$day :integer} (दोहोरिएको), {$weekdayName}}} * {{{$year :integer useGrouping=false} {$monthName}, तिथि {$day :integer}, {$weekdayName}}}"
+  }
+ },
  "time": {
   "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
   "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",

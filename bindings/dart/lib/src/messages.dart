@@ -1439,6 +1439,31 @@ final class MessagesSdkCalendarMixed {
   String monthShort() => _r.render('sdk.calendar.MIXED.monthShort');
 }
 
+final class MessagesSdkCalendarTibetanPhugpaDate {
+  const MessagesSdkCalendarTibetanPhugpaDate(this._r);
+
+  final Renderer _r;
+
+  String full({required int day, required String leap, required String monthName, required String weekdayName, required int year}) =>
+      _r.render('sdk.calendar.TIBETAN_PHUGPA.date.full', {'day': day, 'leap': leap, 'monthName': monthName, 'weekdayName': weekdayName, 'year': year});
+  String long({required int day, required String leap, required String monthName, required int year}) =>
+      _r.render('sdk.calendar.TIBETAN_PHUGPA.date.long', {'day': day, 'leap': leap, 'monthName': monthName, 'year': year});
+  String numeric({required int day, required String leap, required int month, required int year}) =>
+      _r.render('sdk.calendar.TIBETAN_PHUGPA.date.numeric', {'day': day, 'leap': leap, 'month': month, 'year': year});
+}
+
+final class MessagesSdkCalendarTibetanPhugpa {
+  const MessagesSdkCalendarTibetanPhugpa(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkCalendarTibetanPhugpaDate get date => MessagesSdkCalendarTibetanPhugpaDate(_r);
+  String monthName({required String leap, required int month}) =>
+      _r.render('sdk.calendar.TIBETAN_PHUGPA.monthName', {'leap': leap, 'month': month});
+  String monthShort({required String leap, required int month}) =>
+      _r.render('sdk.calendar.TIBETAN_PHUGPA.monthShort', {'leap': leap, 'month': month});
+}
+
 final class MessagesSdkCalendarDatetime {
   const MessagesSdkCalendarDatetime(this._r);
 
@@ -1516,6 +1541,7 @@ final class MessagesSdkCalendar {
   MessagesSdkCalendarIsoWeek get isoWeek => MessagesSdkCalendarIsoWeek(_r);
   MessagesSdkCalendarJulian get julian => MessagesSdkCalendarJulian(_r);
   MessagesSdkCalendarMixed get mixed => MessagesSdkCalendarMixed(_r);
+  MessagesSdkCalendarTibetanPhugpa get tibetanPhugpa => MessagesSdkCalendarTibetanPhugpa(_r);
   MessagesSdkCalendarDatetime get datetime => MessagesSdkCalendarDatetime(_r);
   MessagesSdkCalendarDayPeriod get dayPeriod => MessagesSdkCalendarDayPeriod(_r);
   MessagesSdkCalendarDuration get duration => MessagesSdkCalendarDuration(_r);

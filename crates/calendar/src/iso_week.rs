@@ -99,6 +99,7 @@ impl CalendarSystem for IsoWeek {
     }
 
     fn fixed_of(&self, date: &CalendarDate) -> Result<FixedDay, Error> {
+        crate::date::check_no_leap(date)?;
         check_year(Calendar::IsoWeek, date.year)?;
         let weeks = if is_long_year(date.year) { 53 } else { 52 };
         if date.month == 0 || date.month > weeks {

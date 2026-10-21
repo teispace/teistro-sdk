@@ -98,6 +98,7 @@ impl CalendarSystem for Julian {
     }
 
     fn fixed_of(&self, date: &CalendarDate) -> Result<FixedDay, Error> {
+        crate::date::check_no_leap(date)?;
         check_year(Calendar::Julian, date.year)?;
         let length = month_length(date.year, date.month).unwrap_or(0);
         check_day(

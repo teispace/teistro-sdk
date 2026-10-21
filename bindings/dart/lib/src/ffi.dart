@@ -805,8 +805,15 @@ final class CalendarDateStruct extends ffi.Struct {
   @ffi.Uint8()
   external int computedDay;
 
+  /// Whether the month or the day is the first of a repeated pair, in a
+  /// calendar that repeats them; `0xFF` for neither, which is every date
+  /// of every other calendar (`0` is read as neither too).
+  /// Enum: TsLeap. Example: 1. May be null.
+  @ffi.Uint8()
+  external int leap;
+
   /// Reserved, zero.
-  @ffi.Array(3)
+  @ffi.Array(2)
   external ffi.Array<ffi.Uint8> reserved;
 
 }
@@ -3487,7 +3494,7 @@ final class Frame {
 /// is presentation only and is filled by the library, ignored on input.
 final class CalendarDate {
   /// A CalendarDate with every field named.
-  const CalendarDate({required this.calendar, this.era, required this.year, required this.eraYear, required this.month, required this.day, required this.resolution, required this.computedMonth, required this.computedDay});
+  const CalendarDate({required this.calendar, this.era, required this.year, required this.eraYear, required this.month, required this.day, required this.resolution, required this.computedMonth, required this.computedDay, this.leap});
 
   /// The calendar's id.
   /// Enum: Calendar. Example: 0.
@@ -3524,8 +3531,14 @@ final class CalendarDate {
   /// The engine's day when the resolution is divergent, else zero.
   final int computedDay;
 
+  /// Whether the month or the day is the first of a repeated pair, in a
+  /// calendar that repeats them; `0xFF` for neither, which is every date
+  /// of every other calendar (`0` is read as neither too).
+  /// Enum: TsLeap. Example: 1. May be null.
+  final Leap? leap;
+
   /// This value with the fields given replaced, and the rest kept.
-  CalendarDate copyWith({Calendar? calendar, Era? era, int? year, int? eraYear, int? month, int? day, Resolution? resolution, int? computedMonth, int? computedDay}) => CalendarDate(
+  CalendarDate copyWith({Calendar? calendar, Era? era, int? year, int? eraYear, int? month, int? day, Resolution? resolution, int? computedMonth, int? computedDay, Leap? leap}) => CalendarDate(
     calendar: calendar ?? this.calendar,
     era: era ?? this.era,
     year: year ?? this.year,
@@ -3535,6 +3548,7 @@ final class CalendarDate {
     resolution: resolution ?? this.resolution,
     computedMonth: computedMonth ?? this.computedMonth,
     computedDay: computedDay ?? this.computedDay,
+    leap: leap ?? this.leap,
   );
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -3555,6 +3569,7 @@ final class CalendarDate {
     raw.resolution = resolution.id;
     raw.computedMonth = computedMonth;
     raw.computedDay = computedDay;
+    raw.leap = leap?.id ?? 0xFF;
   }
 
   /// Reads the value a call filled in.
@@ -3571,6 +3586,7 @@ final class CalendarDate {
         resolution: Resolution.byId(raw.resolution),
         computedMonth: raw.computedMonth,
         computedDay: raw.computedDay,
+        leap: raw.leap == 0xFF ? null : Leap.byId(raw.leap),
       );
 }
 

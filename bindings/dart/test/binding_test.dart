@@ -244,6 +244,20 @@ void main() {
       [ramadan.era, ramadan.year, ramadan.month, ramadan.day],
       [Era.hijri, 1446, 9, 1],
     );
+    // The Tibetan year 2000 began with a leap month 1, on 6 February.
+    final losar = ctx.calendar.convert(
+      gregorian(2000, 2, 6),
+      Calendar.tibetanPhugpa,
+    );
+    expect(
+      [losar.year, losar.month, losar.day, losar.leap],
+      [2000, 1, 1, Leap.month],
+    );
+    final back = ctx.calendar.convert(
+      Calendar.tibetanPhugpa.date(2000, 1, 1, leap: Leap.month),
+      Calendar.gregorian,
+    );
+    expect([back.year, back.month, back.day, back.leap], [2000, 2, 6, null]);
     expect(bs.year, 2072);
     expect(bs.month, 1);
     expect(bs.day, 1);

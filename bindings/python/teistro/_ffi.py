@@ -92,6 +92,7 @@ from .catalogue import (
     Karana,
     Kind,
     Koota,
+    Leap,
     Lilith,
     Lot,
     LunarEclipseKind,
@@ -689,7 +690,8 @@ class _CalendarDateStruct(ctypes.Structure):
         ("resolution", ctypes.c_uint8),
         ("computed_month", ctypes.c_uint8),
         ("computed_day", ctypes.c_uint8),
-        ("reserved", ctypes.c_uint8 * 3),
+        ("leap", ctypes.c_uint8),
+        ("reserved", ctypes.c_uint8 * 2),
     ]
 
 
@@ -2193,6 +2195,13 @@ class CalendarDate:
     Enum: Era. Example: 7. May be null.
     """
 
+    leap: Optional[Leap] = None
+    """Whether the month or the day is the first of a repeated pair, in a
+    calendar that repeats them; `0xFF` for neither, which is every date
+    of every other calendar (`0` is read as neither too).
+    Enum: TsLeap. Example: 1. May be null.
+    """
+
     def _into(self, raw: _CalendarDateStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2210,6 +2219,7 @@ class CalendarDate:
         raw.resolution = _c_value(self.resolution)
         raw.computed_month = _c_value(self.computed_month)
         raw.computed_day = _c_value(self.computed_day)
+        raw.leap = 0xFF if self.leap is None else int(self.leap)
 
     def _to_c(self, owned: list[Any]) -> _CalendarDateStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2235,6 +2245,7 @@ class CalendarDate:
             resolution=Resolution(raw.resolution),
             computed_month=raw.computed_month,
             computed_day=raw.computed_day,
+            leap=None if raw.leap == 0xFF else Leap(raw.leap),
         )
 
 

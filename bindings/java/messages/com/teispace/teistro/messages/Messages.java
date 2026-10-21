@@ -2804,6 +2804,106 @@ public final class Messages {
 
 
             /**
+             * The messages under `TIBETAN_PHUGPA`.
+             *
+             * @return the group
+             */
+            public SdkCalendarTibetanPhugpa tibetanPhugpa() {
+                return new SdkCalendarTibetanPhugpa(r);
+            }
+
+            /** The messages under `SdkCalendarTibetanPhugpa`, each rendered by its own key. */
+            public static final class SdkCalendarTibetanPhugpa {
+                private final Renderer r;
+
+                SdkCalendarTibetanPhugpa(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `date`.
+                 *
+                 * @return the group
+                 */
+                public SdkCalendarTibetanPhugpaDate date() {
+                    return new SdkCalendarTibetanPhugpaDate(r);
+                }
+
+                /** The messages under `SdkCalendarTibetanPhugpaDate`, each rendered by its own key. */
+                public static final class SdkCalendarTibetanPhugpaDate {
+                    private final Renderer r;
+
+                    SdkCalendarTibetanPhugpaDate(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.calendar.TIBETAN_PHUGPA.date.full`
+                     *
+                     * @param day `day`
+                     * @param leap `leap`
+                     * @param monthName `monthName`
+                     * @param weekdayName `weekdayName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String full(long day, String leap, String monthName, String weekdayName, long year) {
+                        return r.render("sdk.calendar.TIBETAN_PHUGPA.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("leap", leap), Map.entry("monthName", monthName), Map.entry("weekdayName", weekdayName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.TIBETAN_PHUGPA.date.long`
+                     *
+                     * @param day `day`
+                     * @param leap `leap`
+                     * @param monthName `monthName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String long_(long day, String leap, String monthName, long year) {
+                        return r.render("sdk.calendar.TIBETAN_PHUGPA.date.long", Map.ofEntries(Map.entry("day", day), Map.entry("leap", leap), Map.entry("monthName", monthName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.TIBETAN_PHUGPA.date.numeric`
+                     *
+                     * @param day `day`
+                     * @param leap `leap`
+                     * @param month `month`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String numeric(long day, String leap, long month, long year) {
+                        return r.render("sdk.calendar.TIBETAN_PHUGPA.date.numeric", Map.ofEntries(Map.entry("day", day), Map.entry("leap", leap), Map.entry("month", month), Map.entry("year", year)));
+                    }
+                }
+
+
+                /**
+                 * `sdk.calendar.TIBETAN_PHUGPA.monthName`
+                 *
+                 * @param leap `leap`
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthName(String leap, long month) {
+                    return r.render("sdk.calendar.TIBETAN_PHUGPA.monthName", Map.ofEntries(Map.entry("leap", leap), Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.TIBETAN_PHUGPA.monthShort`
+                 *
+                 * @param leap `leap`
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthShort(String leap, long month) {
+                    return r.render("sdk.calendar.TIBETAN_PHUGPA.monthShort", Map.ofEntries(Map.entry("leap", leap), Map.entry("month", month)));
+                }
+            }
+
+
+            /**
              * The messages under `datetime`.
              *
              * @return the group

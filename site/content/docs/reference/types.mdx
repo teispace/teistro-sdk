@@ -260,6 +260,7 @@ A date in a calendar. Years are astronomical (1 BCE is 0); the era view is prese
 | `resolution` | `uint8_t` | How the date was resolved. One of `ts_resolution`. Example `0`. |
 | `computed_month` | `uint8_t` | The engine's month when the resolution is divergent, else zero. |
 | `computed_day` | `uint8_t` | The engine's day when the resolution is divergent, else zero. |
+| `leap` | `uint8_t` | Whether the month or the day is the first of a repeated pair, in a calendar that repeats them; `0xFF` for neither, which is every date of every other calendar (`0` is read as neither too). One of `ts_leap`. Example `1`. |
 
 ## ts_chart_request
 

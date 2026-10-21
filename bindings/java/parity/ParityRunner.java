@@ -351,7 +351,7 @@ public final class ParityRunner {
 
     /** Python's {@code date(Calendar.GREGORIAN, year, month, day)}. */
     private static CalendarDate date(int year, int month, int day) {
-        return new CalendarDate(Calendar.GREGORIAN, null, year, 0, month, day, Resolution.DEFINED, 0, 0);
+        return new CalendarDate(Calendar.GREGORIAN, null, year, 0, month, day, Resolution.DEFINED, 0, 0, null);
     }
 
     /** The build's text, as Python's {@code BuildInfo.text} reads it. */

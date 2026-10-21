@@ -17,7 +17,7 @@
 use std::collections::BTreeSet;
 use std::fmt::Write;
 
-use crate::emit::{DocStyle, NO_MEMBER, field_doc_with, line_comment, reserved};
+use crate::emit::{DocStyle, NO_MEMBER, field_doc_with, line_comment, no_member_of, reserved};
 use crate::model::{
     Api, BlobSchema, EnumDef, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar,
     SectionKind, SectionSchema, StructDef, StructRole, TypeRef,
@@ -620,7 +620,10 @@ fn render_write(out: &mut String, s: &StructDef, roles: &[FieldRole]) {
             FieldRole::Value => {
                 if f.meta.enum_name.is_some() {
                     if f.meta.nullable {
-                        format!("raw.{field} = {field}?.id ?? noMember;")
+                        format!(
+                            "raw.{field} = {field}?.id ?? {};",
+                            no_member_of(f).unwrap_or("noMember")
+                        )
                     } else {
                         format!("raw.{field} = {field}.id;")
                     }
@@ -697,7 +700,10 @@ fn render_read(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole], 
                 if let Some(enum_name) = &f.meta.enum_name {
                     let e = binding_type_name(enum_name);
                     if f.meta.nullable {
-                        format!("raw.{field} == noMember ? null : {e}.byId(raw.{field})")
+                        format!(
+                            "raw.{field} == {} ? null : {e}.byId(raw.{field})",
+                            no_member_of(f).unwrap_or("noMember")
+                        )
                     } else {
                         format!("{e}.byId(raw.{field})")
                     }

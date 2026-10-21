@@ -1822,6 +1822,7 @@ export const Calendar = /* @__PURE__ */ Object.freeze({
   IndianLunisolar: 'calendar.INDIAN_LUNISOLAR',
   IndianNational: 'calendar.INDIAN_NATIONAL',
   HijriTabular: 'calendar.HIJRI_TABULAR',
+  TibetanPhugpa: 'calendar.TIBETAN_PHUGPA',
 });
 
 /**
@@ -1837,6 +1838,7 @@ export const CalendarById = /* @__PURE__ */ new Map([
   [5, 'calendar.INDIAN_LUNISOLAR'],
   [6, 'calendar.INDIAN_NATIONAL'],
   [7, 'calendar.HIJRI_TABULAR'],
+  [8, 'calendar.TIBETAN_PHUGPA'],
 ]);
 
 /** Every Era by name. */
@@ -2968,6 +2970,23 @@ export const ResolutionById = /* @__PURE__ */ new Map([
   [1, 'TABULAR'],
   [2, 'COMPUTED'],
   [3, 'DIVERGENT'],
+]);
+
+/** Every Leap by name. */
+export const Leap = /* @__PURE__ */ Object.freeze({
+  Month: 'MONTH',
+  Day: 'DAY',
+  MonthAndDay: 'MONTH_AND_DAY',
+});
+
+/**
+ * Every Leap by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const LeapById = /* @__PURE__ */ new Map([
+  [1, 'MONTH'],
+  [2, 'DAY'],
+  [3, 'MONTH_AND_DAY'],
 ]);
 
 /** Every DayPart by name. */

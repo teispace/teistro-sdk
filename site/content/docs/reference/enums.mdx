@@ -898,6 +898,7 @@ The calendars the SDK ships. Members are the catalogue's ids; the full key id is
 | `TS_CALENDAR_INDIAN_LUNISOLAR` | 5 | Indian Lunisolar |
 | `TS_CALENDAR_INDIAN_NATIONAL` | 6 | Indian National: the Saka-era civil calendar of 1957 |
 | `TS_CALENDAR_HIJRI_TABULAR` | 7 | Hijri Tabular: the arithmetic Islamic calendar of the civil epoch |
+| `TS_CALENDAR_TIBETAN_PHUGPA` | 8 | Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806 |
 
 ## ts_era
 
@@ -1547,6 +1548,16 @@ How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
 | `TS_RESOLUTION_TABULAR` | 1 | From the authority's published table. |
 | `TS_RESOLUTION_COMPUTED` | 2 | Computed by the SDK's engine outside the table's range. |
 | `TS_RESOLUTION_DIVERGENT` | 3 | Inside the range and the table and the engine disagree; the table was followed and the engine's month and day are reported beside it. |
+
+## ts_leap
+
+Which part of a date is the first of a repeated pair, in a calendar that repeats them (the Tibetan). A date marked neither holds `TsLeap::NONE`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_LEAP_MONTH` | 1 | The leap month, before the month whose number it takes. |
+| `TS_LEAP_DAY` | 2 | The leap day, before the day whose number it repeats. |
+| `TS_LEAP_MONTH_AND_DAY` | 3 | The leap day of the leap month. |
 
 ## ts_day_part
 

@@ -6661,6 +6661,11 @@ class MessagesSdkCalendar:
         return MessagesSdkCalendarMixed(self._r)
 
     @property
+    def tibetan_phugpa(self) -> MessagesSdkCalendarTibetanPhugpa:
+        """The messages under `TIBETAN_PHUGPA`."""
+        return MessagesSdkCalendarTibetanPhugpa(self._r)
+
+    @property
     def datetime(self) -> MessagesSdkCalendarDatetime:
         """The messages under `datetime`."""
         return MessagesSdkCalendarDatetime(self._r)
@@ -6873,6 +6878,62 @@ class MessagesSdkCalendarDatetime:
         return self._r.render(
             "sdk.calendar.datetime.join",
             {"date": date, "time": time},
+        )
+
+
+class MessagesSdkCalendarTibetanPhugpa:
+    """The messages under `MessagesSdkCalendarTibetanPhugpa`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def date(self) -> MessagesSdkCalendarTibetanPhugpaDate:
+        """The messages under `date`."""
+        return MessagesSdkCalendarTibetanPhugpaDate(self._r)
+
+    def month_name(self, *, leap: str, month: int) -> str:
+        """`sdk.calendar.TIBETAN_PHUGPA.monthName`"""
+        return self._r.render(
+            "sdk.calendar.TIBETAN_PHUGPA.monthName",
+            {"leap": leap, "month": month},
+        )
+
+    def month_short(self, *, leap: str, month: int) -> str:
+        """`sdk.calendar.TIBETAN_PHUGPA.monthShort`"""
+        return self._r.render(
+            "sdk.calendar.TIBETAN_PHUGPA.monthShort",
+            {"leap": leap, "month": month},
+        )
+
+
+class MessagesSdkCalendarTibetanPhugpaDate:
+    """The messages under `MessagesSdkCalendarTibetanPhugpaDate`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def full(self, *, day: int, leap: str, month_name: str, weekday_name: str, year: int) -> str:
+        """`sdk.calendar.TIBETAN_PHUGPA.date.full`"""
+        return self._r.render(
+            "sdk.calendar.TIBETAN_PHUGPA.date.full",
+            {"day": day, "leap": leap, "monthName": month_name, "weekdayName": weekday_name, "year": year},
+        )
+
+    def long(self, *, day: int, leap: str, month_name: str, year: int) -> str:
+        """`sdk.calendar.TIBETAN_PHUGPA.date.long`"""
+        return self._r.render(
+            "sdk.calendar.TIBETAN_PHUGPA.date.long",
+            {"day": day, "leap": leap, "monthName": month_name, "year": year},
+        )
+
+    def numeric(self, *, day: int, leap: str, month: int, year: int) -> str:
+        """`sdk.calendar.TIBETAN_PHUGPA.date.numeric`"""
+        return self._r.render(
+            "sdk.calendar.TIBETAN_PHUGPA.date.numeric",
+            {"day": day, "leap": leap, "month": month, "year": year},
         )
 
 

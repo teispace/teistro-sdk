@@ -8,7 +8,7 @@
     reason = "the C boundary: every block carries a SAFETY comment"
 )]
 
-use teistro_calendar::{CalendarDate, CalendarSystem, EraNumber, FixedDay, shipped};
+use teistro_calendar::{CalendarDate, CalendarSystem, EraNumber, FixedDay, Leap, shipped};
 use teistro_core::Status;
 use teistro_core::catalogue::{Calendar, Catalogued, Era};
 use teistro_core::envelope::CalendarResolution;
@@ -31,6 +31,56 @@ pub enum TsResolution {
     /// Inside the range and the table and the engine disagree; the table
     /// was followed and the engine's month and day are reported beside it.
     Divergent = 3,
+}
+
+/// Which part of a date is the first of a repeated pair, in a calendar
+/// that repeats them (the Tibetan). A date marked neither holds
+/// [`TsLeap::NONE`].
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsLeap {
+    /// The leap month, before the month whose number it takes.
+    Month = 1,
+    /// The leap day, before the day whose number it repeats.
+    Day = 2,
+    /// The leap day of the leap month.
+    MonthAndDay = 3,
+}
+
+impl TsLeap {
+    /// What a date marked neither holds, as a nullable catalogue field
+    /// holds `0xFFFF`; `0`, what a caller compiled before the field
+    /// existed left in its reserved byte, is read as none too.
+    pub const NONE: u8 = 0xFF;
+
+    /// The boundary form of a date's mark.
+    #[must_use]
+    pub const fn of(leap: Option<Leap>) -> u8 {
+        match leap {
+            None => TsLeap::NONE,
+            Some(Leap::Month) => TsLeap::Month as u8,
+            Some(Leap::Day) => TsLeap::Day as u8,
+            Some(Leap::MonthAndDay) => TsLeap::MonthAndDay as u8,
+        }
+    }
+
+    /// The mark a byte names.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` for a byte that is no mark.
+    pub fn read(byte: u8) -> Result<Option<Leap>, Error> {
+        match byte {
+            0 | TsLeap::NONE => Ok(None),
+            1 => Ok(Some(Leap::Month)),
+            2 => Ok(Some(Leap::Day)),
+            3 => Ok(Some(Leap::MonthAndDay)),
+            other => Err(Error::invalid_arg(format!(
+                "a date's leap is 1 (the month), 2 (the day), 3 (both) or 0xFF (neither), not {other}"
+            ))
+            .with_field("leap")),
+        }
+    }
 }
 
 impl From<&CalendarResolution> for TsResolution {
@@ -77,8 +127,13 @@ pub struct TsCalendarDate {
     pub computed_month: u8,
     /// The engine's day when the resolution is divergent, else zero.
     pub computed_day: u8,
+    /// Whether the month or the day is the first of a repeated pair, in a
+    /// calendar that repeats them; `0xFF` for neither, which is every date
+    /// of every other calendar (`0` is read as neither too).
+    /// `api: enum=TsLeap nullable example=1`
+    pub leap: u8,
     /// Reserved, zero.
-    pub reserved: [u8; 3],
+    pub reserved: [u8; 2],
 }
 
 c_struct!(TsCalendarDate);
@@ -103,7 +158,8 @@ impl TsCalendarDate {
             resolution: resolution as u8,
             computed_month: computed.map_or(0, |c| c.month),
             computed_day: computed.map_or(0, |c| c.day),
-            reserved: [0; 3],
+            leap: TsLeap::of(date.leap),
+            reserved: [0; 2],
         }
     }
 
@@ -114,7 +170,8 @@ impl TsCalendarDate {
     /// A calendar or era id the catalogue does not have.
     pub fn to_date(&self) -> Result<CalendarDate, Error> {
         let calendar = calendar_of(self.calendar)?;
-        let mut date = CalendarDate::defined(calendar, self.year, self.month, self.day);
+        let mut date = CalendarDate::defined(calendar, self.year, self.month, self.day)
+            .with_leap(TsLeap::read(self.leap)?);
         if self.era != KeyId::NONE_ID {
             let era =
                 Era::from_id(self.era).ok_or_else(|| unknown_member::<Era>(self.era, "era"))?;
