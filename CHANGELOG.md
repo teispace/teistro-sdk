@@ -30,8 +30,11 @@ festivals are not shipped, each named with its reason and a crux (C685 to
 C689): five the committee prints in neither year, Jamare aunsi, two the
 print moves (Biruda panchami, Thakali phalo parva), and Sankhu jatra. The measured
 page now counts 558 printed rows, of which the same 6 part. A year of the
-pack's festivals takes 29.8 ms under the committee's setup over Teimeris
-and 84.7 ms under the modern one, past its 80 ms target. Writing the
+pack's festivals takes 28.6 ms under the committee's setup over Teimeris
+and 63.7 ms under the modern one, under its 80 ms target: a sidereal
+longitude no longer recomputes its ayanamsha's epoch, which a year asked
+for about 3,000 times (82 ms before). Every value is the same to the bit.
+Writing the
 canonical JSON that every answer is sealed with no longer allocates for
 each string and number. The bytes, and so every hash, are unchanged.
 

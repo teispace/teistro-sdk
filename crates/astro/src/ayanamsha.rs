@@ -39,7 +39,7 @@ pub use teistro_core::settings::AyanamshaBasis as Basis;
 use teistro_core::settings::AyanamshaChoice;
 
 use crate::delta_t::{DeltaTModel, delta_t};
-use crate::iau::vector::c2s;
+use crate::iau::vector::{Matrix3, c2s, ir, rx, rxp};
 use crate::iau::{DEG2RAD, DJ00, DJY, RAD2DEG, nut00b};
 use crate::precession::{self, PrecessionModel};
 use crate::scale::tt_from_ut1;
@@ -306,17 +306,63 @@ fn epoch_value_deg(
     model: PrecessionModel,
     delta_t_model: DeltaTModel,
 ) -> Result<f64, Error> {
-    let t0 = epoch_tt(epoch, delta_t_model)?;
+    let fixed = at_epoch(epoch, model, delta_t_model)?;
     // The vernal point of the date, a unit vector along x by construction,
     // carried to J2000.0 and on to the epoch, read on the epoch's ecliptic.
     let mut x = [1.0, 0.0, 0.0];
     if at.get() != DJ00 {
         x = precession::to_j2000(model, at, x);
     }
-    x = precession::to_date(model, t0, x);
-    let longitude_at_t0 = ecliptic_longitude_deg(x, model, t0);
-    let value = -longitude_at_t0 + epoch.value_deg - fitted_correction_deg(epoch, t0, model);
+    x = rxp(&fixed.to_epoch, &x);
+    let (lon, _) = c2s(&rxp(&fixed.to_ecliptic, &x));
+    let longitude_at_t0 = lon * RAD2DEG;
+    let value = -longitude_at_t0 + epoch.value_deg - fixed.correction_deg;
     Ok(normalise_deg(value))
+}
+
+/// What an epoch definition's value needs of the epoch alone: the
+/// precession matrix to it, the rotation onto its ecliptic, and the
+/// fitted model's correction. None of it depends on the instant, and it
+/// was most of the cost of every instant: a year of `NEPAL_PANCHANGA`'s
+/// festivals over Teimeris spent a third of its time reading the
+/// ayanamsha, two thirds of that at the epoch (82 ms a year before it was
+/// kept, 64 after). Each is the very value the instant's own computation
+/// made, kept, so every result is the same to the bit.
+#[derive(Clone, Copy)]
+struct AtEpoch {
+    to_epoch: Matrix3,
+    to_ecliptic: Matrix3,
+    correction_deg: f64,
+}
+
+/// [`AtEpoch`] for a definition under the models, kept for the last
+/// definition asked on this thread: a context reads one ayanamsha, so one
+/// is all a run of instants needs, and a second definition only takes the
+/// place of the first.
+fn at_epoch(
+    epoch: &Epoch,
+    model: PrecessionModel,
+    delta_t_model: DeltaTModel,
+) -> Result<AtEpoch, Error> {
+    type Kept = Option<(Epoch, PrecessionModel, DeltaTModel, AtEpoch)>;
+    thread_local! {
+        static LAST: std::cell::Cell<Kept> = const { std::cell::Cell::new(None) };
+    }
+    if let Some((kept, kept_model, kept_delta_t, fixed)) = LAST.get() {
+        if kept == *epoch && kept_model == model && kept_delta_t == delta_t_model {
+            return Ok(fixed);
+        }
+    }
+    let t0 = epoch_tt(epoch, delta_t_model)?;
+    let mut to_ecliptic = ir();
+    rx(precession::mean_obliquity_rad(model, t0), &mut to_ecliptic);
+    let fixed = AtEpoch {
+        to_epoch: precession::matrix(model, t0),
+        to_ecliptic,
+        correction_deg: fitted_correction_deg(epoch, t0, model),
+    };
+    LAST.set(Some((*epoch, model, delta_t_model, fixed)));
+    Ok(fixed)
 }
 
 /// The mean value of an anchored definition: the anchor's place on the
@@ -629,6 +675,63 @@ mod tests {
                 "{id:?}: {}\"",
                 (a - b) * 3600.0
             );
+        }
+    }
+
+    /// The value computed the way it was before the epoch's part was
+    /// kept: every epoch quantity recomputed at the instant.
+    fn recomputed(epoch: &Epoch, at: JulianDay<Tt>, model: PrecessionModel) -> f64 {
+        let t0 = epoch_tt(epoch, DELTA_T).unwrap();
+        let mut x = [1.0, 0.0, 0.0];
+        if at.get() != DJ00 {
+            x = precession::to_j2000(model, at, x);
+        }
+        x = precession::to_date(model, t0, x);
+        let value = -ecliptic_longitude_deg(x, model, t0) + epoch.value_deg
+            - fitted_correction_deg(epoch, t0, model);
+        normalise_deg(value)
+    }
+
+    #[test]
+    fn the_kept_epoch_gives_every_value_to_the_bit() {
+        let epochs: Vec<(Ayanamsha, Epoch)> = [
+            Ayanamsha::Lahiri,
+            Ayanamsha::FaganBradley,
+            Ayanamsha::Raman,
+            Ayanamsha::Krishnamurti,
+        ]
+        .into_iter()
+        .filter_map(|id| match definition(id) {
+            Definition::Epoch(epoch) | Definition::Frame(epoch) => Some((id, epoch)),
+            _ => None,
+        })
+        .collect();
+        assert_eq!(epochs.len(), 4);
+        let models = [
+            PrecessionModel::Vondrak2011,
+            PrecessionModel::Iau2006,
+            PrecessionModel::Iau1976,
+            PrecessionModel::Newcomb,
+        ];
+        // Each instant asks every definition under every model in turn, so
+        // the one kept epoch is replaced on almost every call, and then the
+        // same one twice running, so it is also read back.
+        for step in 0..40 {
+            let at = JulianDay::<Tt>::literal(2_378_496.5 + f64::from(step) * 5_479.25);
+            for model in models {
+                for (id, epoch) in &epochs {
+                    let want = recomputed(epoch, at, model);
+                    for _ in 0..2 {
+                        let got = mean_deg(&(*id).into(), at, model, DELTA_T).unwrap();
+                        assert_eq!(
+                            got.to_bits(),
+                            want.to_bits(),
+                            "{id:?} {model:?} at {}",
+                            at.get()
+                        );
+                    }
+                }
+            }
         }
     }
 }
