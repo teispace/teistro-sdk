@@ -22,7 +22,8 @@
 //! The moon's anomaly per lunar day is the rounded 1/28 the almanacs use,
 //! not Henning's exact 3781/105840 (Janson, Remark 14).
 
-use teistro_core::catalogue::Calendar;
+use serde::{Deserialize, Serialize};
+use teistro_core::catalogue::{Calendar, Gender, Kind, Samvatsara, TibetanAnimal, TibetanElement};
 use teistro_core::error::Error;
 
 use crate::date::{
@@ -182,6 +183,98 @@ fn tibetan_from_fixed(fixed: i64) -> (i64, i64, Option<Leap>, i64) {
 pub fn losar(year: i32) -> FixedDay {
     let k = 30 * true_month(i64::from(year) - 1, 12, false) + 29;
     FixedDay::new(ends_on(k) + 1 - JD_OFFSET)
+}
+
+/// A Tibetan year's names (Janson §4, Appendix B): its place in the
+/// numbered sixty-year rabjung cycles, with the Indian cycle's name, and
+/// the Chinese cycle's element, gender and animal, which name it as
+/// "Fire–male–Horse".
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct TibetanYear {
+    /// The year, Janson's *Y*.
+    pub year: i32,
+    /// The rabjung cycle, the first beginning in 1027 (4.3): 2026 is in
+    /// the 17th, which began in 1987.
+    pub rabjung: i32,
+    /// The year's place in its cycle, 1 to 60 (4.2): 1 is *rab byung*,
+    /// Prabhava, which names the cycle.
+    pub year_in_rabjung: u8,
+    /// The Indian cycle's name for that place, which the Tibetan year
+    /// takes without expunging any (Appendix B): the samvatsara list read
+    /// in order.
+    pub samvatsara: Samvatsara,
+    /// The element, held for two years (table 2).
+    pub element: TibetanElement,
+    /// Male in a year of odd place in the Chinese cycle, female in an even
+    /// one; the animal decides it too (table 3).
+    pub gender: Gender,
+    /// The animal (table 3).
+    pub animal: TibetanAnimal,
+}
+
+impl TibetanYear {
+    /// Where a year names catalogue members, and of which kind: what the
+    /// boundary writes in full. The crate's tests hold it to serde, both
+    /// ways.
+    pub const MEMBERS: [(&'static str, Kind); 4] = [
+        ("samvatsara", Kind::Samvatsara),
+        ("element", Kind::TibetanElement),
+        ("gender", Kind::Gender),
+        ("animal", Kind::TibetanAnimal),
+    ];
+}
+
+/// The names of a Tibetan year (Janson (4.1)–(4.4)).
+///
+/// ```
+/// use teistro_calendar::tibetan::year_name;
+/// use teistro_core::catalogue::{Gender, Samvatsara, TibetanAnimal, TibetanElement};
+///
+/// let year = year_name(2026)?;
+/// assert_eq!((year.rabjung, year.year_in_rabjung), (17, 40));
+/// assert_eq!(year.samvatsara, Samvatsara::Parabhava);
+/// assert_eq!(
+///     (year.element, year.gender, year.animal),
+///     (TibetanElement::Fire, Gender::Male, TibetanAnimal::Horse)
+/// );
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// `OUT_OF_RANGE` for a year outside [`TIBETAN_RANGE`], named `year`.
+pub fn year_name(year: i32) -> Result<TibetanYear, Error> {
+    check_year(year)?;
+    // `amod`: the remainder in 1..=n rather than 0..n.
+    let amod = |value: i32, n: i32| (value - 1).rem_euclid(n) + 1;
+    let place = amod(year - 1_026, 60);
+    let stem = amod(year - 3, 10);
+    let branch = amod(year - 3, 12);
+    // Each index is in range by construction; a miss is a catalogue that
+    // lost a member.
+    let id = |index: i32| u16::try_from(index).ok();
+    let member = |what: &str| Error::internal(format!("the {what} of {year} is no member"));
+    Ok(TibetanYear {
+        year,
+        rabjung: (year - 1_026 + 59).div_euclid(60),
+        year_in_rabjung: u8::try_from(place).map_err(|_| member("place"))?,
+        samvatsara: id(place - 1)
+            .and_then(Samvatsara::from_id)
+            .ok_or_else(|| member("samvatsara"))?,
+        element: id((stem + 1) / 2 - 1)
+            .and_then(TibetanElement::from_id)
+            .ok_or_else(|| member("element"))?,
+        gender: if stem % 2 == 1 {
+            Gender::Male
+        } else {
+            Gender::Female
+        },
+        animal: id(branch - 1)
+            .and_then(TibetanAnimal::from_id)
+            .ok_or_else(|| member("animal"))?,
+    })
 }
 
 fn check_year(year: i32) -> Result<(), Error> {
@@ -624,5 +717,149 @@ mod tests {
             );
         }
         assert_eq!(TibetanPhugpa.is_leap(2000), has_leap_month(2000, 1));
+    }
+
+    /// Rows of Janson's Appendix B, table 10 (from Henning), read off the
+    /// page: the place, the element and animal, and the Sanskrit name, for
+    /// the years of the current cycle, with the gender table 3 gives the
+    /// animal; and the first year of the first cycle.
+    #[test]
+    fn a_year_takes_the_names_janson_tabulates() {
+        use teistro_core::catalogue::{Gender, Samvatsara, TibetanAnimal, TibetanElement};
+        let rows = [
+            (
+                1_027,
+                1,
+                1,
+                TibetanElement::Fire,
+                TibetanAnimal::Rabbit,
+                Samvatsara::Prabhava,
+            ),
+            (
+                1_987,
+                17,
+                1,
+                TibetanElement::Fire,
+                TibetanAnimal::Rabbit,
+                Samvatsara::Prabhava,
+            ),
+            (
+                2_000,
+                17,
+                14,
+                TibetanElement::Iron,
+                TibetanAnimal::Dragon,
+                Samvatsara::Vikrama,
+            ),
+            (
+                2_007,
+                17,
+                21,
+                TibetanElement::Fire,
+                TibetanAnimal::Pig,
+                Samvatsara::Sarvajit,
+            ),
+            (
+                2_026,
+                17,
+                40,
+                TibetanElement::Fire,
+                TibetanAnimal::Horse,
+                Samvatsara::Parabhava,
+            ),
+            (
+                2_044,
+                17,
+                58,
+                TibetanElement::Wood,
+                TibetanAnimal::Mouse,
+                Samvatsara::Raktakshi,
+            ),
+            (
+                2_046,
+                17,
+                60,
+                TibetanElement::Fire,
+                TibetanAnimal::Tiger,
+                Samvatsara::Akshaya,
+            ),
+            (
+                2_047,
+                18,
+                1,
+                TibetanElement::Fire,
+                TibetanAnimal::Rabbit,
+                Samvatsara::Prabhava,
+            ),
+        ];
+        for (year, rabjung, place, element, animal, samvatsara) in rows {
+            let named = year_name(year).unwrap();
+            assert_eq!(
+                (
+                    named.rabjung,
+                    named.year_in_rabjung,
+                    named.element,
+                    named.animal,
+                    named.samvatsara
+                ),
+                (rabjung, place, element, animal, samvatsara),
+                "{year}"
+            );
+            let male = matches!(
+                animal,
+                TibetanAnimal::Mouse
+                    | TibetanAnimal::Tiger
+                    | TibetanAnimal::Dragon
+                    | TibetanAnimal::Horse
+                    | TibetanAnimal::Monkey
+                    | TibetanAnimal::Dog
+            );
+            assert_eq!(
+                named.gender,
+                if male { Gender::Male } else { Gender::Female },
+                "{year}"
+            );
+        }
+        assert_eq!(year_name(1_026).unwrap_err().field(), Some("year"));
+    }
+
+    /// The names recur every sixty years, and the cycle's number counts up.
+    #[test]
+    fn a_year_names_the_year_sixty_after_it_alike() {
+        for year in TIBETAN_RANGE.0..TIBETAN_RANGE.0 + 120 {
+            let (this, next) = (year_name(year).unwrap(), year_name(year + 60).unwrap());
+            assert_eq!(
+                (this.samvatsara, this.element, this.gender, this.animal),
+                (next.samvatsara, next.element, next.gender, next.animal)
+            );
+            assert_eq!(next.rabjung, this.rabjung + 1);
+        }
+    }
+
+    /// `TibetanYear::MEMBERS` names every string a year serialises to, and
+    /// what it writes in full reads back.
+    #[test]
+    fn a_year_names_its_members_where_its_table_says() {
+        let year = year_name(2026).unwrap();
+        let value = serde_json::to_value(year).unwrap();
+        let strings: Vec<&str> = value
+            .as_object()
+            .unwrap()
+            .iter()
+            .filter(|(_, field)| field.is_string())
+            .map(|(key, _)| key.as_str())
+            .collect();
+        let mut listed: Vec<&str> = TibetanYear::MEMBERS.iter().map(|(path, _)| *path).collect();
+        listed.sort_unstable();
+        assert_eq!(strings, listed);
+        let mut full = value;
+        for (path, kind) in TibetanYear::MEMBERS {
+            teistro_core::catalogue::write_in_full(&mut full, path, kind);
+        }
+        assert_eq!(
+            full.get("animal"),
+            Some(&serde_json::json!("tibetan_animal.HORSE"))
+        );
+        assert_eq!(serde_json::from_value::<TibetanYear>(full).unwrap(), year);
     }
 }

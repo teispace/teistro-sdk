@@ -235,6 +235,8 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   BlackoutKind: 'blackout_kind',
   LunarEclipseKind: 'lunar_eclipse_kind',
   SolarEclipseKind: 'solar_eclipse_kind',
+  TibetanElement: 'tibetan_element',
+  TibetanAnimal: 'tibetan_animal',
 });
 
 /**
@@ -307,6 +309,8 @@ export const KindById = /* @__PURE__ */ new Map([
   [67, 'blackout_kind'],
   [68, 'lunar_eclipse_kind'],
   [69, 'solar_eclipse_kind'],
+  [71, 'tibetan_element'],
+  [72, 'tibetan_animal'],
 ]);
 
 /** Every Graha by name. */
@@ -2728,6 +2732,62 @@ export const SolarEclipseKindById = /* @__PURE__ */ new Map([
   [1, 'solar_eclipse_kind.ANNULAR'],
   [2, 'solar_eclipse_kind.TOTAL'],
   [3, 'solar_eclipse_kind.HYBRID'],
+]);
+
+/** Every TibetanElement by name. */
+export const TibetanElement = /* @__PURE__ */ Object.freeze({
+  Wood: 'tibetan_element.WOOD',
+  Fire: 'tibetan_element.FIRE',
+  Earth: 'tibetan_element.EARTH',
+  Iron: 'tibetan_element.IRON',
+  Water: 'tibetan_element.WATER',
+});
+
+/**
+ * Every TibetanElement by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TibetanElementById = /* @__PURE__ */ new Map([
+  [0, 'tibetan_element.WOOD'],
+  [1, 'tibetan_element.FIRE'],
+  [2, 'tibetan_element.EARTH'],
+  [3, 'tibetan_element.IRON'],
+  [4, 'tibetan_element.WATER'],
+]);
+
+/** Every TibetanAnimal by name. */
+export const TibetanAnimal = /* @__PURE__ */ Object.freeze({
+  Mouse: 'tibetan_animal.MOUSE',
+  Ox: 'tibetan_animal.OX',
+  Tiger: 'tibetan_animal.TIGER',
+  Rabbit: 'tibetan_animal.RABBIT',
+  Dragon: 'tibetan_animal.DRAGON',
+  Snake: 'tibetan_animal.SNAKE',
+  Horse: 'tibetan_animal.HORSE',
+  Sheep: 'tibetan_animal.SHEEP',
+  Monkey: 'tibetan_animal.MONKEY',
+  Bird: 'tibetan_animal.BIRD',
+  Dog: 'tibetan_animal.DOG',
+  Pig: 'tibetan_animal.PIG',
+});
+
+/**
+ * Every TibetanAnimal by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TibetanAnimalById = /* @__PURE__ */ new Map([
+  [0, 'tibetan_animal.MOUSE'],
+  [1, 'tibetan_animal.OX'],
+  [2, 'tibetan_animal.TIGER'],
+  [3, 'tibetan_animal.RABBIT'],
+  [4, 'tibetan_animal.DRAGON'],
+  [5, 'tibetan_animal.SNAKE'],
+  [6, 'tibetan_animal.HORSE'],
+  [7, 'tibetan_animal.SHEEP'],
+  [8, 'tibetan_animal.MONKEY'],
+  [9, 'tibetan_animal.BIRD'],
+  [10, 'tibetan_animal.DOG'],
+  [11, 'tibetan_animal.PIG'],
 ]);
 
 /** Every Status by name. */

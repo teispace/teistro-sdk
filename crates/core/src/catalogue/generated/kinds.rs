@@ -146,9 +146,13 @@ pub enum Kind {
     SolarEclipseKind = 69,
     /// A festival or observance a festival rule decides, by the rule's key, as `SHIVARATRI`; the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs.
     Festival = 70,
+    /// The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.
+    TibetanElement = 71,
+    /// The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
+    TibetanAnimal = 72,
 }
 
-const BY_NAME: [(&str, Kind); 69] = [
+const BY_NAME: [(&str, Kind); 71] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_cheshta", Kind::AvasthaCheshta),
@@ -210,6 +214,8 @@ const BY_NAME: [(&str, Kind); 69] = [
     ("star_class", Kind::StarClass),
     ("state", Kind::State),
     ("tatwa", Kind::Tatwa),
+    ("tibetan_animal", Kind::TibetanAnimal),
+    ("tibetan_element", Kind::TibetanElement),
     ("tithi", Kind::Tithi),
     ("tithi_class", Kind::TithiClass),
     ("vaiseshikamsa", Kind::Vaiseshikamsa),
@@ -222,7 +228,7 @@ const BY_NAME: [(&str, Kind); 69] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 69] = [
+    pub const ALL: [Kind; 71] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -292,6 +298,8 @@ impl Kind {
         Kind::LunarEclipseKind,
         Kind::SolarEclipseKind,
         Kind::Festival,
+        Kind::TibetanElement,
+        Kind::TibetanAnimal,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -367,6 +375,8 @@ impl Kind {
             Kind::LunarEclipseKind => "lunar_eclipse_kind",
             Kind::SolarEclipseKind => "solar_eclipse_kind",
             Kind::Festival => "festival",
+            Kind::TibetanElement => "tibetan_element",
+            Kind::TibetanAnimal => "tibetan_animal",
         }
     }
 
@@ -449,6 +459,8 @@ impl Kind {
             Kind::LunarEclipseKind => 3,
             Kind::SolarEclipseKind => 4,
             Kind::Festival => 0,
+            Kind::TibetanElement => 5,
+            Kind::TibetanAnimal => 12,
         }
     }
 
@@ -531,6 +543,8 @@ impl Kind {
             68 => Some(Kind::LunarEclipseKind),
             69 => Some(Kind::SolarEclipseKind),
             70 => Some(Kind::Festival),
+            71 => Some(Kind::TibetanElement),
+            72 => Some(Kind::TibetanAnimal),
             _ => None,
         }
     }

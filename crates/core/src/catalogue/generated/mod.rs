@@ -67,6 +67,8 @@ mod avastha_cheshta;
 mod blackout_kind;
 mod lunar_eclipse_kind;
 mod solar_eclipse_kind;
+mod tibetan_element;
+mod tibetan_animal;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -134,6 +136,8 @@ pub use avastha_cheshta::*;
 pub use blackout_kind::*;
 pub use lunar_eclipse_kind::*;
 pub use solar_eclipse_kind::*;
+pub use tibetan_element::*;
+pub use tibetan_animal::*;
 
 use crate::key::KeyId;
 
@@ -206,6 +210,8 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::BlackoutKind => BlackoutKind::from_key(key).map(BlackoutKind::key_id),
         Kind::LunarEclipseKind => LunarEclipseKind::from_key(key).map(LunarEclipseKind::key_id),
         Kind::SolarEclipseKind => SolarEclipseKind::from_key(key).map(SolarEclipseKind::key_id),
+        Kind::TibetanElement => TibetanElement::from_key(key).map(TibetanElement::key_id),
+        Kind::TibetanAnimal => TibetanAnimal::from_key(key).map(TibetanAnimal::key_id),
         _ => None,
     }
 }
@@ -279,6 +285,8 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::BlackoutKind => BlackoutKind::from_id(id.id()).map(BlackoutKind::key),
         Kind::LunarEclipseKind => LunarEclipseKind::from_id(id.id()).map(LunarEclipseKind::key),
         Kind::SolarEclipseKind => SolarEclipseKind::from_id(id.id()).map(SolarEclipseKind::key),
+        Kind::TibetanElement => TibetanElement::from_id(id.id()).map(TibetanElement::key),
+        Kind::TibetanAnimal => TibetanAnimal::from_id(id.id()).map(TibetanAnimal::key),
         _ => None,
     }
 }

@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 56 entry points over 27 structs and 164 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 57 entry points over 27 structs and 166 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -69,6 +69,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 | [`ts_calendar_month_length`](calendar/ts_calendar_month_length) | The length of a month in a calendar. |
 | [`ts_calendar_is_leap`](calendar/ts_calendar_is_leap) | Whether a year is a leap year in a calendar: `1` or `0`. |
 | [`ts_calendar_weekday`](calendar/ts_calendar_weekday) | The weekday of a date as its ISO number: Monday is `1`, Sunday `7`. |
+| [`ts_calendar_tibetan_year`](calendar/ts_calendar_tibetan_year) | A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON: `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`, the rabjung cycle (the first began in 1027) and the year's place in it, 1 to 60, with the Indian cycle's name for that place, and the element, gender and animal it is called by, every member a full key: 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse. |
 | [`ts_calendar_jd_of_fixed`](calendar/ts_calendar_jd_of_fixed) | The Julian day at the UTC midnight that begins a fixed day (fixed day 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`). |
 | [`ts_calendar_fixed_of_jd`](calendar/ts_calendar_fixed_of_jd) | The fixed day a Julian day falls in, and, when `out_fraction` is not null, the fraction of that day elapsed since its midnight. |
 

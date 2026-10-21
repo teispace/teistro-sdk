@@ -1,0 +1,47 @@
+kind: tibetan_element
+number: 71
+version: 1
+doc: "The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female."
+attributes:
+  tibetan: str
+members:
+  - key: WOOD
+    id: 0
+    doc: "Wood"
+    attributes: { tibetan: "shing" }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 2"
+    mark: V
+  - key: FIRE
+    id: 1
+    doc: "Fire"
+    attributes: { tibetan: "me" }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 2"
+    mark: V
+  - key: EARTH
+    id: 2
+    doc: "Earth"
+    attributes: { tibetan: "sa" }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 2"
+    mark: V
+  - key: IRON
+    id: 3
+    doc: "Iron"
+    attributes: { tibetan: "lcags" }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 2"
+    mark: V
+  - key: WATER
+    id: 4
+    doc: "Water"
+    attributes: { tibetan: "chu" }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 2"
+    mark: V

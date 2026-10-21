@@ -45,6 +45,9 @@ import type {
   Rashi,
   Ritu,
   Samvatsara,
+  Gender,
+  TibetanAnimal,
+  TibetanElement,
   Shodhana,
   Ekadhipatya,
   Vaiseshikamsa,
@@ -7933,6 +7936,32 @@ export declare class CalendarArea {
   monthLength(calendar: Calendar, year: number, month: number): number;
   /** Whether a year is a leap year. */
   isLeap(calendar: Calendar, year: number): boolean;
+  /**
+   * A Tibetan year's names (`calendars/tibetan.md`): its rabjung cycle and
+   * place, the Indian cycle's name, and its element, gender and animal.
+   *
+   * @example
+   * const { animal } = sdk.calendar.tibetanYear(2026); // 'tibetan_animal.HORSE'
+   */
+  tibetanYear(year: number): TibetanYear;
+}
+
+/** A Tibetan year's names, as `calendar.tibetanYear` gives them, frozen. */
+export interface TibetanYear {
+  /** The year, the Gregorian year the Tibetan year begins in. */
+  readonly year: number;
+  /** The rabjung cycle, the first beginning in 1027: 2026 is in the 17th. */
+  readonly rabjung: number;
+  /** The year's place in its cycle, 1 to 60. */
+  readonly yearInRabjung: number;
+  /** The Indian cycle's name for that place, read in order with none expunged. */
+  readonly samvatsara: Samvatsara;
+  /** The element, held for two years. */
+  readonly element: TibetanElement;
+  /** Male or female, alternating; the animal decides it too. */
+  readonly gender: Gender;
+  /** The animal. */
+  readonly animal: TibetanAnimal;
 }
 
 /** `sdk.time` — the scales, the zones and what separates them. */

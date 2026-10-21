@@ -1904,6 +1904,8 @@ typedef TsCalendarIsLeapNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Ui
 typedef TsCalendarIsLeapDart = int Function(ffi.Pointer<Context>, int, int, ffi.Pointer<ffi.Uint8>);
 typedef TsCalendarWeekdayNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Pointer<ffi.Uint8>);
 typedef TsCalendarWeekdayDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Pointer<ffi.Uint8>);
+typedef TsCalendarTibetanYearNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Int32, ffi.Pointer<StringStruct>);
+typedef TsCalendarTibetanYearDart = int Function(ffi.Pointer<Context>, int, ffi.Pointer<StringStruct>);
 typedef TsCalendarJdOfFixedNative = ffi.Double Function(ffi.Int64);
 typedef TsCalendarJdOfFixedDart = double Function(int);
 typedef TsCalendarFixedOfJdNative = ffi.Int64 Function(ffi.Double, ffi.Pointer<ffi.Double>);
@@ -1996,6 +1998,7 @@ final class TeistroLibrary {
         ts_calendar_month_length = library.lookupFunction<TsCalendarMonthLengthNative, TsCalendarMonthLengthDart>('ts_calendar_month_length'),
         ts_calendar_is_leap = library.lookupFunction<TsCalendarIsLeapNative, TsCalendarIsLeapDart>('ts_calendar_is_leap'),
         ts_calendar_weekday = library.lookupFunction<TsCalendarWeekdayNative, TsCalendarWeekdayDart>('ts_calendar_weekday'),
+        ts_calendar_tibetan_year = library.lookupFunction<TsCalendarTibetanYearNative, TsCalendarTibetanYearDart>('ts_calendar_tibetan_year'),
         ts_calendar_jd_of_fixed = library.lookupFunction<TsCalendarJdOfFixedNative, TsCalendarJdOfFixedDart>('ts_calendar_jd_of_fixed'),
         ts_calendar_fixed_of_jd = library.lookupFunction<TsCalendarFixedOfJdNative, TsCalendarFixedOfJdDart>('ts_calendar_fixed_of_jd'),
         ts_chart_layout_row = library.lookupFunction<TsChartLayoutRowNative, TsChartLayoutRowDart>('ts_chart_layout_row'),
@@ -2146,6 +2149,16 @@ final class TeistroLibrary {
 
   /// The weekday of a date as its ISO number: Monday is `1`, Sunday `7`.
   final TsCalendarWeekdayDart ts_calendar_weekday;
+
+  /// A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
+  /// `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
+  /// the rabjung cycle (the first began in 1027) and the year's place in
+  /// it, 1 to 60, with the Indian cycle's name for that place, and the
+  /// element, gender and animal it is called by, every member a full key:
+  /// 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.
+  /// `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
+  /// to 9998 is `OUT_OF_RANGE`, naming `year`.
+  final TsCalendarTibetanYearDart ts_calendar_tibetan_year;
 
   /// The Julian day at the UTC midnight that begins a fixed day (fixed day
   /// 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`).
@@ -5381,6 +5394,24 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_calendar_weekday(_handle, rawdate, outWeekday);
         if (status != 0) _fail(status);
         return outWeekday.value;
+    });
+  }
+
+  /// A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
+  /// `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
+  /// the rabjung cycle (the first began in 1027) and the year's place in
+  /// it, 1 to 60, with the Indian cycle's name for that place, and the
+  /// element, gender and animal it is called by, every member a full key:
+  /// 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.
+  /// `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
+  /// to 9998 is `OUT_OF_RANGE`, naming `year`.
+  String calendarTibetanYear(int year) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_calendar_tibetan_year(_handle, year, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

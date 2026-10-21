@@ -83,6 +83,9 @@ from teistro import (
 from teistro._ffi import Longitude
 from teistro.catalogue import (
     Ayana,
+    Gender,
+    TibetanAnimal,
+    TibetanElement,
     Ayanamsha,
     BrahmaOutcome,
     BrahmaRule,
@@ -771,6 +774,21 @@ class AnEngine(WithLibrary):
             with self.teistro.context(**nepal_official()) as official:
                 official.almanac.disagreements(modern, **month)
         self.assertIn("closed", str(closed.exception))
+
+    def test_a_tibetan_year_says_its_names(self) -> None:
+        """2026 is the 40th year of the 17th rabjung, Parabhava,
+        Fire–male–Horse (Janson, appendix B); a year before the first
+        rabjung is refused by name (`calendars/tibetan.md`)."""
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            year = ctx.calendar.tibetan_year(2026)
+            self.assertEqual((year.year, year.rabjung, year.year_in_rabjung), (2026, 17, 40))
+            self.assertEqual(
+                (year.samvatsara, year.element, year.gender, year.animal),
+                (Samvatsara.PARABHAVA, TibetanElement.FIRE, Gender.MALE, TibetanAnimal.HORSE),
+            )
+            with self.assertRaises(TeistroError) as early:
+                ctx.calendar.tibetan_year(1026)
+            self.assertEqual(early.exception.field, "year")
 
     def test_an_almanac_says_the_time_a_sankalpa_recites(self) -> None:
         """08:00 on 15 January 2026 in Kathmandu, the morning after Makara

@@ -348,6 +348,35 @@ pub unsafe extern "C" fn ts_calendar_weekday(
     })
 }
 
+/// A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
+/// `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
+/// the rabjung cycle (the first began in 1027) and the year's place in
+/// it, 1 to 60, with the Indian cycle's name for that place, and the
+/// element, gender and animal it is called by, every member a full key:
+/// 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.
+/// `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
+/// to 9998 is `OUT_OF_RANGE`, naming `year`.
+///
+/// `api: year: example=2026`
+///
+/// # Safety
+///
+/// `context` must be a live handle; `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_calendar_tibetan_year(
+    context: *const TsContext,
+    year: i32,
+    out_json: *mut crate::string::TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        let value = ctx.sdk().calendar().tibetan_year_in_full(year)?;
+        let json =
+            crate::string::TsString::from_string(teistro_core::envelope::canonical_json(&value));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// The Julian day at the UTC midnight that begins a fixed day (fixed day
 /// 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`).
 ///

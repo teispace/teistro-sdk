@@ -11126,6 +11126,34 @@ fn a_sankalpa_crosses_as_the_facade_answers_it() {
     assert_eq!(ctx.last_error().2.as_deref(), Some("sankalpa.latitudeDeg"));
 }
 
+/// A Tibetan year's names cross as the calendar gives them, written in
+/// full, and a year before the first rabjung is refused by name.
+#[test]
+fn a_tibetan_year_crosses_with_its_names() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context and a valid slot.
+    let status =
+        unsafe { teistro_ffi::calendar::ts_calendar_tibetan_year(ctx.handle, 2026, &raw mut json) };
+    assert_eq!(status, Status::Ok);
+    let crossed: serde_json::Value = serde_json::from_str(&owned(json)).unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::json!({"year": 2026, "rabjung": 17, "yearInRabjung": 40,
+            "samvatsara": "samvatsara.PARABHAVA", "element": "tibetan_element.FIRE",
+            "gender": "gender.MALE", "animal": "tibetan_animal.HORSE"})
+    );
+    let mut refused = TsString::empty();
+    // SAFETY: as above.
+    let status = unsafe {
+        teistro_ffi::calendar::ts_calendar_tibetan_year(ctx.handle, 1026, &raw mut refused)
+    };
+    assert_eq!(status, Status::OutOfRange);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("year"));
+    // SAFETY: the empty descriptor a refusal leaves.
+    unsafe { ts_string_free(&raw mut refused) };
+}
+
 fn festival_calendar_text(ctx: &Ctx, request: &str) -> Result<String, Status> {
     let request = CString::new(request).unwrap();
     let mut text = TsString::empty();

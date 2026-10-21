@@ -332,7 +332,17 @@ public enum Kind implements Member {
     /**
      * How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
      */
-    SOLAR_ECLIPSE_KIND(69, "solar_eclipse_kind");
+    SOLAR_ECLIPSE_KIND(69, "solar_eclipse_kind"),
+
+    /**
+     * The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.
+     */
+    TIBETAN_ELEMENT(71, "tibetan_element"),
+
+    /**
+     * The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
+     */
+    TIBETAN_ANIMAL(72, "tibetan_animal");
 
     private static final Kind[] MEMBERS = values();
 

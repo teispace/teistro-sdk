@@ -266,7 +266,11 @@ enum Kind {
   /// How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3).
   lunarEclipseKind(68, 'lunar_eclipse_kind'),
   /// How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
-  solarEclipseKind(69, 'solar_eclipse_kind');
+  solarEclipseKind(69, 'solar_eclipse_kind'),
+  /// The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.
+  tibetanElement(71, 'tibetan_element'),
+  /// The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
+  tibetanAnimal(72, 'tibetan_animal');
 
   const Kind(this.id, this.key);
 
@@ -4398,6 +4402,114 @@ enum SolarEclipseKind implements KeyOf<SolarEclipseKind> {
 
   /// The member with a key, or `null` for one this build does not know.
   static SolarEclipseKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ELEMENT << 16) | member`.
+enum TibetanElement implements KeyOf<TibetanElement> {
+  /// Wood
+  wood(0, 'WOOD'),
+  /// Fire
+  fire(1, 'FIRE'),
+  /// Earth
+  earth(2, 'EARTH'),
+  /// Iron
+  iron(3, 'IRON'),
+  /// Water
+  water(4, 'WATER'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const TibetanElement(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'tibetan_element.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<TibetanElement> registered(String key) => Registered._('tibetan_element.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static TibetanElement byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => TibetanElement.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static TibetanElement? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ANIMAL << 16) | member`.
+enum TibetanAnimal implements KeyOf<TibetanAnimal> {
+  /// Mouse
+  mouse(0, 'MOUSE'),
+  /// Ox
+  ox(1, 'OX'),
+  /// Tiger
+  tiger(2, 'TIGER'),
+  /// Rabbit
+  rabbit(3, 'RABBIT'),
+  /// Dragon
+  dragon(4, 'DRAGON'),
+  /// Snake
+  snake(5, 'SNAKE'),
+  /// Horse
+  horse(6, 'HORSE'),
+  /// Sheep
+  sheep(7, 'SHEEP'),
+  /// Monkey
+  monkey(8, 'MONKEY'),
+  /// Bird
+  bird(9, 'BIRD'),
+  /// Dog
+  dog(10, 'DOG'),
+  /// Pig
+  pig(11, 'PIG'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const TibetanAnimal(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'tibetan_animal.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<TibetanAnimal> registered(String key) => Registered._('tibetan_animal.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static TibetanAnimal byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => TibetanAnimal.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static TibetanAnimal? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

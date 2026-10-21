@@ -235,7 +235,9 @@ export type Kind =
   | 'avastha_cheshta'
   | 'blackout_kind'
   | 'lunar_eclipse_kind'
-  | 'solar_eclipse_kind';
+  | 'solar_eclipse_kind'
+  | 'tibetan_element'
+  | 'tibetan_animal';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -499,6 +501,14 @@ export declare const Kind: {
    * How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
    */
   readonly SolarEclipseKind: 'solar_eclipse_kind';
+  /**
+   * The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.
+   */
+  readonly TibetanElement: 'tibetan_element';
+  /**
+   * The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
+   */
+  readonly TibetanAnimal: 'tibetan_animal';
 };
 
 /**
@@ -5688,6 +5698,117 @@ export declare const SolarEclipseKind: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const SolarEclipseKindById: ReadonlyMap<number, SolarEclipseKind>;
+
+/**
+ * The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ELEMENT << 16) | member`.
+ */
+export type TibetanElement = 'tibetan_element.WOOD' | 'tibetan_element.FIRE' | 'tibetan_element.EARTH' | 'tibetan_element.IRON' | 'tibetan_element.WATER' | 'unknown';
+
+/** Every TibetanElement by name; the values are the strings the union accepts. */
+export declare const TibetanElement: {
+  /**
+   * Wood
+   */
+  readonly Wood: 'tibetan_element.WOOD';
+  /**
+   * Fire
+   */
+  readonly Fire: 'tibetan_element.FIRE';
+  /**
+   * Earth
+   */
+  readonly Earth: 'tibetan_element.EARTH';
+  /**
+   * Iron
+   */
+  readonly Iron: 'tibetan_element.IRON';
+  /**
+   * Water
+   */
+  readonly Water: 'tibetan_element.WATER';
+};
+
+/**
+ * Every TibetanElement by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TibetanElementById: ReadonlyMap<number, TibetanElement>;
+
+/**
+ * The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ANIMAL << 16) | member`.
+ */
+export type TibetanAnimal =
+  | 'tibetan_animal.MOUSE'
+  | 'tibetan_animal.OX'
+  | 'tibetan_animal.TIGER'
+  | 'tibetan_animal.RABBIT'
+  | 'tibetan_animal.DRAGON'
+  | 'tibetan_animal.SNAKE'
+  | 'tibetan_animal.HORSE'
+  | 'tibetan_animal.SHEEP'
+  | 'tibetan_animal.MONKEY'
+  | 'tibetan_animal.BIRD'
+  | 'tibetan_animal.DOG'
+  | 'tibetan_animal.PIG'
+  | 'unknown';
+
+/** Every TibetanAnimal by name; the values are the strings the union accepts. */
+export declare const TibetanAnimal: {
+  /**
+   * Mouse
+   */
+  readonly Mouse: 'tibetan_animal.MOUSE';
+  /**
+   * Ox
+   */
+  readonly Ox: 'tibetan_animal.OX';
+  /**
+   * Tiger
+   */
+  readonly Tiger: 'tibetan_animal.TIGER';
+  /**
+   * Rabbit
+   */
+  readonly Rabbit: 'tibetan_animal.RABBIT';
+  /**
+   * Dragon
+   */
+  readonly Dragon: 'tibetan_animal.DRAGON';
+  /**
+   * Snake
+   */
+  readonly Snake: 'tibetan_animal.SNAKE';
+  /**
+   * Horse
+   */
+  readonly Horse: 'tibetan_animal.HORSE';
+  /**
+   * Sheep
+   */
+  readonly Sheep: 'tibetan_animal.SHEEP';
+  /**
+   * Monkey
+   */
+  readonly Monkey: 'tibetan_animal.MONKEY';
+  /**
+   * Bird
+   */
+  readonly Bird: 'tibetan_animal.BIRD';
+  /**
+   * Dog
+   */
+  readonly Dog: 'tibetan_animal.DOG';
+  /**
+   * Pig
+   */
+  readonly Pig: 'tibetan_animal.PIG';
+};
+
+/**
+ * Every TibetanAnimal by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TibetanAnimalById: ReadonlyMap<number, TibetanAnimal>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

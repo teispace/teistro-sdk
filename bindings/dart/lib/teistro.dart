@@ -691,6 +691,80 @@ final class CalendarArea extends _Area {
   /// Whether a year is a leap year.
   bool isLeap(Calendar calendar, int year) =>
       _context._inner.calendarIsLeap(calendar, year) == 1;
+
+  /// A Tibetan year's names (`calendars/tibetan.md`): its rabjung cycle
+  /// and place in it, 1 to 60, with the Indian cycle's name for that place,
+  /// and the element, gender and animal it is called by. [year] is the one
+  /// a `TIBETAN_PHUGPA` date carries.
+  ///
+  /// ```dart
+  /// final animal = sdk.calendar.tibetanYear(2026).animal; // horse
+  /// ```
+  TibetanYear tibetanYear(int year) {
+    final raw =
+        jsonDecode(_context._inner.calendarTibetanYear(year))
+            as Map<String, Object?>;
+    return TibetanYear(
+      year: raw['year']! as int,
+      rabjung: raw['rabjung']! as int,
+      yearInRabjung: raw['yearInRabjung']! as int,
+      samvatsara: _key(raw['samvatsara'], Samvatsara.byKey, Samvatsara.unknown),
+      element: _key(
+        raw['element'],
+        TibetanElement.byKey,
+        TibetanElement.unknown,
+      ),
+      gender: _key(raw['gender'], Gender.byKey, Gender.unknown),
+      animal: _key(raw['animal'], TibetanAnimal.byKey, TibetanAnimal.unknown),
+    );
+  }
+}
+
+/// A Tibetan year's names (`calendars/tibetan.md`, Janson §4): 2026 is the
+/// 40th year of the 17th rabjung, Parabhava, Fire–male–Horse.
+final class TibetanYear extends _Value {
+  const TibetanYear({
+    required this.year,
+    required this.rabjung,
+    required this.yearInRabjung,
+    required this.samvatsara,
+    required this.element,
+    required this.gender,
+    required this.animal,
+  });
+
+  /// The year, the Gregorian year the Tibetan year begins in.
+  final int year;
+
+  /// The rabjung cycle, the first beginning in 1027.
+  final int rabjung;
+
+  /// The year's place in its cycle, 1 to 60.
+  final int yearInRabjung;
+
+  /// The Indian cycle's name for that place, read in order with none
+  /// expunged.
+  final Samvatsara samvatsara;
+
+  /// The element, held for two years.
+  final TibetanElement element;
+
+  /// Male or female, alternating; the animal decides it too.
+  final Gender gender;
+
+  /// The animal.
+  final TibetanAnimal animal;
+
+  @override
+  List<Object?> get _fields => [
+    year,
+    rabjung,
+    yearInRabjung,
+    samvatsara,
+    element,
+    gender,
+    animal,
+  ];
 }
 
 /// `sdk.time` — the scales, the zones and what separates them.

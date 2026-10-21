@@ -589,6 +589,18 @@
           "value": 69,
           "doc": "How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).",
           "key": "solar_eclipse_kind"
+        },
+        {
+          "name": "TibetanElement",
+          "value": 71,
+          "doc": "The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.",
+          "key": "tibetan_element"
+        },
+        {
+          "name": "TibetanAnimal",
+          "value": 72,
+          "doc": "The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.",
+          "key": "tibetan_animal"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6292,6 +6304,126 @@
           "value": 3,
           "doc": "Annular at the path's ends and total at its middle, read at the greatest eclipse",
           "key": "HYBRID"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "TibetanElement",
+      "doc": "The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ELEMENT << 16) | member`.",
+      "repr": "u16",
+      "kind": "tibetan_element",
+      "values": [
+        {
+          "name": "Wood",
+          "value": 0,
+          "doc": "Wood",
+          "key": "WOOD"
+        },
+        {
+          "name": "Fire",
+          "value": 1,
+          "doc": "Fire",
+          "key": "FIRE"
+        },
+        {
+          "name": "Earth",
+          "value": 2,
+          "doc": "Earth",
+          "key": "EARTH"
+        },
+        {
+          "name": "Iron",
+          "value": 3,
+          "doc": "Iron",
+          "key": "IRON"
+        },
+        {
+          "name": "Water",
+          "value": 4,
+          "doc": "Water",
+          "key": "WATER"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "TibetanAnimal",
+      "doc": "The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ANIMAL << 16) | member`.",
+      "repr": "u16",
+      "kind": "tibetan_animal",
+      "values": [
+        {
+          "name": "Mouse",
+          "value": 0,
+          "doc": "Mouse",
+          "key": "MOUSE"
+        },
+        {
+          "name": "Ox",
+          "value": 1,
+          "doc": "Ox",
+          "key": "OX"
+        },
+        {
+          "name": "Tiger",
+          "value": 2,
+          "doc": "Tiger",
+          "key": "TIGER"
+        },
+        {
+          "name": "Rabbit",
+          "value": 3,
+          "doc": "Rabbit",
+          "key": "RABBIT"
+        },
+        {
+          "name": "Dragon",
+          "value": 4,
+          "doc": "Dragon",
+          "key": "DRAGON"
+        },
+        {
+          "name": "Snake",
+          "value": 5,
+          "doc": "Snake",
+          "key": "SNAKE"
+        },
+        {
+          "name": "Horse",
+          "value": 6,
+          "doc": "Horse",
+          "key": "HORSE"
+        },
+        {
+          "name": "Sheep",
+          "value": 7,
+          "doc": "Sheep",
+          "key": "SHEEP"
+        },
+        {
+          "name": "Monkey",
+          "value": 8,
+          "doc": "Monkey",
+          "key": "MONKEY"
+        },
+        {
+          "name": "Bird",
+          "value": 9,
+          "doc": "Bird",
+          "key": "BIRD"
+        },
+        {
+          "name": "Dog",
+          "value": 10,
+          "doc": "Dog",
+          "key": "DOG"
+        },
+        {
+          "name": "Pig",
+          "value": 11,
+          "doc": "Pig",
+          "key": "PIG"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -14780,6 +14912,56 @@
             "mutable": true
           },
           "role": "scalar_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/calendar.rs"
+    },
+    {
+      "name": "ts_calendar_tibetan_year",
+      "doc": "A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:\n`{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,\nthe rabjung cycle (the first began in 1027) and the year's place in\nit, 1 to 60, with the Indian cycle's name for that place, and the\nelement, gender and animal it is called by, every member a full key:\n2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.\n`year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027\nto 9998 is `OUT_OF_RANGE`, naming `year`.",
+      "safety": "`context` must be a live handle; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "year",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "role": "value",
+          "meta": {
+            "example": "2026"
+          }
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
           "meta": {}
         }
       ],

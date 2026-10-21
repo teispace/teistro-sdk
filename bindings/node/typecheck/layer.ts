@@ -175,6 +175,7 @@ import type {
   Sankalpa,
   SankalpaAnswer,
   SankalpaRequest,
+  TibetanYear,
   Disagreements,
   DayDisagreement,
   LimbChange,
@@ -214,6 +215,9 @@ import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib
 import type {
   Ayanamsha,
   ChainEnd,
+  Gender,
+  TibetanAnimal,
+  TibetanElement,
   ChosenBy,
   Gana,
   Graha,
@@ -1329,6 +1333,16 @@ function theSankalpa(ctx: Context): string {
   return `${tithi} ${masa} ${sun} ${vara} ${date.year} ${value.year.samvatsara} ${answer.provenance.inputHash}`;
 }
 void theSankalpa;
+
+// A Tibetan year's names by their catalogue types.
+function theTibetanYear(ctx: Context): string {
+  const year: TibetanYear = ctx.calendar.tibetanYear(2026);
+  const animal: TibetanAnimal = year.animal;
+  const element: TibetanElement = year.element;
+  const gender: Gender = year.gender;
+  return `${year.rabjung} ${year.yearInRabjung} ${year.samvatsara} ${element} ${gender} ${animal}`;
+}
+void theTibetanYear;
 
 // A feed is text, and its request names its festivals.
 function theFeed(ctx: Context): string {

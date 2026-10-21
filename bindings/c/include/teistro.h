@@ -419,6 +419,14 @@ typedef enum ts_kind {
      * How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
      */
     TS_KIND_SOLAR_ECLIPSE_KIND = 69,
+    /**
+     * The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.
+     */
+    TS_KIND_TIBETAN_ELEMENT = 71,
+    /**
+     * The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
+     */
+    TS_KIND_TIBETAN_ANIMAL = 72,
 } ts_kind;
 
 /**
@@ -4352,6 +4360,90 @@ typedef enum ts_solar_eclipse_kind {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_SOLAR_ECLIPSE_KIND_UNKNOWN = -1,
 } ts_solar_eclipse_kind;
+
+/**
+ * The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ELEMENT << 16) | member`.
+ */
+typedef enum ts_tibetan_element {
+    /**
+     * Wood
+     */
+    TS_TIBETAN_ELEMENT_WOOD = 0,
+    /**
+     * Fire
+     */
+    TS_TIBETAN_ELEMENT_FIRE = 1,
+    /**
+     * Earth
+     */
+    TS_TIBETAN_ELEMENT_EARTH = 2,
+    /**
+     * Iron
+     */
+    TS_TIBETAN_ELEMENT_IRON = 3,
+    /**
+     * Water
+     */
+    TS_TIBETAN_ELEMENT_WATER = 4,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_TIBETAN_ELEMENT_UNKNOWN = -1,
+} ts_tibetan_element;
+
+/**
+ * The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ANIMAL << 16) | member`.
+ */
+typedef enum ts_tibetan_animal {
+    /**
+     * Mouse
+     */
+    TS_TIBETAN_ANIMAL_MOUSE = 0,
+    /**
+     * Ox
+     */
+    TS_TIBETAN_ANIMAL_OX = 1,
+    /**
+     * Tiger
+     */
+    TS_TIBETAN_ANIMAL_TIGER = 2,
+    /**
+     * Rabbit
+     */
+    TS_TIBETAN_ANIMAL_RABBIT = 3,
+    /**
+     * Dragon
+     */
+    TS_TIBETAN_ANIMAL_DRAGON = 4,
+    /**
+     * Snake
+     */
+    TS_TIBETAN_ANIMAL_SNAKE = 5,
+    /**
+     * Horse
+     */
+    TS_TIBETAN_ANIMAL_HORSE = 6,
+    /**
+     * Sheep
+     */
+    TS_TIBETAN_ANIMAL_SHEEP = 7,
+    /**
+     * Monkey
+     */
+    TS_TIBETAN_ANIMAL_MONKEY = 8,
+    /**
+     * Bird
+     */
+    TS_TIBETAN_ANIMAL_BIRD = 9,
+    /**
+     * Dog
+     */
+    TS_TIBETAN_ANIMAL_DOG = 10,
+    /**
+     * Pig
+     */
+    TS_TIBETAN_ANIMAL_PIG = 11,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_TIBETAN_ANIMAL_UNKNOWN = -1,
+} ts_tibetan_animal;
 
 /**
  * The status of a call, with the code it has at the C boundary.
@@ -9256,6 +9348,19 @@ ts_status ts_calendar_is_leap(const ts_context * context, uint16_t calendar, int
  * valid for a write.
  */
 ts_status ts_calendar_weekday(const ts_context * context, const ts_calendar_date * date, uint8_t * out_weekday);
+
+/**
+ * A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
+ * `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
+ * the rabjung cycle (the first began in 1027) and the year's place in
+ * it, 1 to 60, with the Indian cycle's name for that place, and the
+ * element, gender and animal it is called by, every member a full key:
+ * 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.
+ * `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
+ * to 9998 is `OUT_OF_RANGE`, naming `year`.
+ * Safety: `context` must be a live handle; `out_json` valid for a write.
+ */
+ts_status ts_calendar_tibetan_year(const ts_context * context, int32_t year, ts_string * out_json);
 
 /**
  * The Julian day at the UTC midnight that begins a fixed day (fixed day

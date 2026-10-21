@@ -20856,6 +20856,366 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "tibetan_element",
+      "number": 71,
+      "version": 1,
+      "doc": "The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.",
+      "types": {},
+      "attributes": {
+        "tibetan": "str"
+      },
+      "members": [
+        {
+          "key": "WOOD",
+          "id": 0,
+          "doc": "Wood",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "shing"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "FIRE",
+          "id": 1,
+          "doc": "Fire",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "me"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "EARTH",
+          "id": 2,
+          "doc": "Earth",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "sa"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "IRON",
+          "id": 3,
+          "doc": "Iron",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "lcags"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "WATER",
+          "id": 4,
+          "doc": "Water",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "chu"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "tibetan_animal",
+      "number": 72,
+      "version": 1,
+      "doc": "The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.",
+      "types": {},
+      "attributes": {
+        "tibetan": "str",
+        "gender": "key:gender"
+      },
+      "members": [
+        {
+          "key": "MOUSE",
+          "id": 0,
+          "doc": "Mouse",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "byi ba",
+            "gender": "MALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "OX",
+          "id": 1,
+          "doc": "Ox",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "glang",
+            "gender": "FEMALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "TIGER",
+          "id": 2,
+          "doc": "Tiger",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "stag",
+            "gender": "MALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RABBIT",
+          "id": 3,
+          "doc": "Rabbit",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "yos",
+            "gender": "FEMALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DRAGON",
+          "id": 4,
+          "doc": "Dragon",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "'brug",
+            "gender": "MALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SNAKE",
+          "id": 5,
+          "doc": "Snake",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "sbrul",
+            "gender": "FEMALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HORSE",
+          "id": 6,
+          "doc": "Horse",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "rta",
+            "gender": "MALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SHEEP",
+          "id": 7,
+          "doc": "Sheep",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "lug",
+            "gender": "FEMALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MONKEY",
+          "id": 8,
+          "doc": "Monkey",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "spre'u",
+            "gender": "MALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BIRD",
+          "id": 9,
+          "doc": "Bird",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "bya",
+            "gender": "FEMALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DOG",
+          "id": 10,
+          "doc": "Dog",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "khyi",
+            "gender": "MALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "PIG",
+          "id": 11,
+          "doc": "Pig",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "tibetan": "phag",
+            "gender": "FEMALE"
+          },
+          "sources": [
+            {
+              "text": "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014",
+              "ref": "§4, table 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

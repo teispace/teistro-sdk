@@ -732,8 +732,10 @@ test('every catalogue enum has a complete id table', () => {
   // `TsSignification`, thirteen, and `TsChosenBy`, five; 1377 since the
   // dispositors' `TsChainEnd`, two; 1378 since `TsCalendar` gained the
   // Indian national calendar; 1380 since the tabular Hijri calendar and
-  // its era; 1384 since the Tibetan calendar and `TsLeap`, three.
-  assert.equal(entries, 1384, 'every member of every enum is in a table');
+  // its era; 1384 since the Tibetan calendar and `TsLeap`, three; 1403
+  // since the Tibetan year's `TsTibetanElement`, five, and
+  // `TsTibetanAnimal`, twelve, with their two members of `TsKind`.
+  assert.equal(entries, 1403, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4735,6 +4737,27 @@ test('an almanac says the time a sankalpa recites', () => {
     (error) => error.field === 'sankalpa.when',
   );
   assert.throws(() => ctx.almanac.sankalpa(null), TypeError);
+});
+
+/**
+ * 2026 is the 40th year of the 17th rabjung, Parabhava, Fire–male–Horse
+ * (Janson, appendix B), and a year before the first rabjung is refused by
+ * name (`calendars/tibetan.md`).
+ */
+test('a Tibetan year says its names', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const year = ctx.calendar.tibetanYear(2026);
+  assert.deepEqual(year, {
+    year: 2026,
+    rabjung: 17,
+    yearInRabjung: 40,
+    samvatsara: 'samvatsara.PARABHAVA',
+    element: 'tibetan_element.FIRE',
+    gender: 'gender.MALE',
+    animal: 'tibetan_animal.HORSE',
+  });
+  assert.ok(Object.isFrozen(year));
+  assert.throws(() => ctx.calendar.tibetanYear(1026), (error) => error.field === 'year');
 });
 
 /**

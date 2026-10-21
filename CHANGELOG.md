@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A Tibetan year's names** (`calendars/tibetan.md`). **Numbers:** none
+move. `sdk.calendar().tibetan_year`, `ts_calendar_tibetan_year` and every
+binding's `tibetanYear` give a year's rabjung cycle and place, the Indian
+cycle's name for it and its element, gender and animal: 2026 is the 40th
+year of the 17th rabjung, Parabhava, Fire–male–Horse. Two catalogue kinds
+are new, `tibetan_element` and `tibetan_animal`.
+
 **The time a sankalpa recites** (`03-design/sankalpa.md`, P2-3).
 **Numbers:** none move. A new call, `sankalpa` in the façade, the C
 boundary (`ts_almanac_sankalpa`), the agent server and every binding,

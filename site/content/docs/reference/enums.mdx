@@ -76,6 +76,8 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_BLACKOUT_KIND` | 67 | The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports. |
 | `TS_KIND_LUNAR_ECLIPSE_KIND` | 68 | How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3). |
 | `TS_KIND_SOLAR_ECLIPSE_KIND` | 69 | How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). |
+| `TS_KIND_TIBETAN_ELEMENT` | 71 | The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female. |
+| `TS_KIND_TIBETAN_ANIMAL` | 72 | The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. |
 
 ## ts_graha
 
@@ -1384,6 +1386,37 @@ How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). Membe
 | `TS_SOLAR_ECLIPSE_KIND_ANNULAR` | 1 | The Moon's disc inside the Sun's: the antumbra reaches the Earth |
 | `TS_SOLAR_ECLIPSE_KIND_TOTAL` | 2 | The Sun wholly hidden: the umbra reaches the Earth |
 | `TS_SOLAR_ECLIPSE_KIND_HYBRID` | 3 | Annular at the path's ends and total at its middle, read at the greatest eclipse |
+
+## ts_tibetan_element
+
+The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ELEMENT << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TIBETAN_ELEMENT_WOOD` | 0 | Wood |
+| `TS_TIBETAN_ELEMENT_FIRE` | 1 | Fire |
+| `TS_TIBETAN_ELEMENT_EARTH` | 2 | Earth |
+| `TS_TIBETAN_ELEMENT_IRON` | 3 | Iron |
+| `TS_TIBETAN_ELEMENT_WATER` | 4 | Water |
+
+## ts_tibetan_animal
+
+The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ANIMAL << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TIBETAN_ANIMAL_MOUSE` | 0 | Mouse |
+| `TS_TIBETAN_ANIMAL_OX` | 1 | Ox |
+| `TS_TIBETAN_ANIMAL_TIGER` | 2 | Tiger |
+| `TS_TIBETAN_ANIMAL_RABBIT` | 3 | Rabbit |
+| `TS_TIBETAN_ANIMAL_DRAGON` | 4 | Dragon |
+| `TS_TIBETAN_ANIMAL_SNAKE` | 5 | Snake |
+| `TS_TIBETAN_ANIMAL_HORSE` | 6 | Horse |
+| `TS_TIBETAN_ANIMAL_SHEEP` | 7 | Sheep |
+| `TS_TIBETAN_ANIMAL_MONKEY` | 8 | Monkey |
+| `TS_TIBETAN_ANIMAL_BIRD` | 9 | Bird |
+| `TS_TIBETAN_ANIMAL_DOG` | 10 | Dog |
+| `TS_TIBETAN_ANIMAL_PIG` | 11 | Pig |
 
 ## ts_status
 

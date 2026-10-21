@@ -222,6 +222,9 @@ pub use teistro_panchanga::year::LunarYear;
 // The time a sankalpa recites and how its ayana is reckoned: what
 // `sdk.almanac().sankalpa` answers with and asks.
 pub use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
+// A Tibetan year's rabjung place and element-animal name: what
+// `sdk.calendar().tibetan_year` answers.
+pub use teistro_calendar::tibetan::TibetanYear;
 // A day's Nepal Sambat date, which `Panchanga::nepal_sambat` reads and
 // `AlmanacRequest::with_nepal_sambat` answers beside the days.
 pub use teistro_panchanga::nepal_sambat::NepalSambatDate;

@@ -124,9 +124,17 @@ no shipped calendar repeats a month or a day.
 - **The year.** Years are counted as Janson's *Y*, the Gregorian year in
   which the Tibetan year starts and most of it falls. A date carries no
   era: the date forms print the year they are given, so a royal-year era
-  would print 2153 for 2026. The royal year is *Y* + 127. The rabjung
-  cycle and the element and animal name are a view on the year still to
-  come, as the samvatsara already is.
+  would print 2153 for 2026. The royal year is *Y* + 127. The year's
+  names are a view on it: `tibetan::year_name`, `sdk.calendar().tibetan_year`
+  and `ts_calendar_tibetan_year` give the rabjung cycle (the first began in
+  1027) and the year's place in it, 1 to 60, with the Indian cycle's name
+  for that place read in order with none expunged, and the Chinese cycle's
+  element, gender and animal (Janson (4.1)–(4.4), tables 2 and 3,
+  appendix B). 2026 is the 40th of the 17th, Parabhava, Fire–male–Horse.
+  The elements and animals are the catalogue's `tibetan_element` and
+  `tibetan_animal`. No locale names them yet: the English is in each
+  member's catalogue entry, and the Nepali that Nepal's Lhosar notices use
+  waits on a vetted source, as the month names do.
 - **The festival day.** Losar is the first day of month 1, or of the leap
   month 1 when there is one, and the day after month 12's day 30 when day 1
   is skipped (Janson §8); `tibetan::losar` gives it. A `DatedRule` on a
@@ -148,6 +156,10 @@ no shipped calendar repeats a month or a day.
   included, and every leap month falls where (5.24) puts it (tested).
 - Every binding converts 6 February 2000 to the leap month 1's first day
   of 2000, and back.
+- Eight rows of Janson's appendix B (1027, 1987, 2000, 2007, 2026, 2044,
+  2046 and 2047): each year's cycle, place, element, animal and name, and
+  table 3's gender (tested); and every year's names recur sixty years on
+  (tested).
 - The committee's print, where it agrees: 18 February 2026 is both the
   Phugpa Losar and the printed Gyalpo Lhosar.
 - Not yet: the sample dates in *Calendrical Calculations*' appendix C,

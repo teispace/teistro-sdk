@@ -1,8 +1,9 @@
 //! `sdk.calendar`: dates in the calendars the SDK carries, and the
 //! arithmetic over them.
 
+use teistro_calendar::tibetan::{TibetanYear, year_name};
 use teistro_calendar::{CalendarDate, FixedDay, Weekday};
-use teistro_core::catalogue::Calendar;
+use teistro_core::catalogue::{Calendar, write_in_full};
 use teistro_core::error::Error;
 
 use crate::area::system_of;
@@ -80,5 +81,44 @@ impl<'a> CalendarArea<'a> {
     /// A calendar the SDK does not ship.
     pub fn is_leap(self, calendar: Calendar, year: i32) -> Result<bool, Error> {
         Ok(system_of(calendar)?.is_leap(year))
+    }
+
+    /// A Tibetan year's names (`calendars/tibetan.md`): its rabjung cycle
+    /// and place in it with the Indian cycle's name, and the element,
+    /// gender and animal it is called by, "Fire–male–Horse" for 2026. The
+    /// year is the one a `TIBETAN_PHUGPA` date carries: the Gregorian year
+    /// in which the Tibetan year begins.
+    ///
+    /// ```
+    /// use teistro::Context;
+    /// use teistro::catalogue::{Samvatsara, TibetanAnimal};
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let year = sdk.calendar().tibetan_year(2026)?;
+    /// assert_eq!((year.rabjung, year.year_in_rabjung), (17, 40));
+    /// assert_eq!((year.samvatsara, year.animal), (Samvatsara::Parabhava, TibetanAnimal::Horse));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `OUT_OF_RANGE` for a year outside 1027 to 9998, named `year`.
+    pub fn tibetan_year(self, year: i32) -> Result<TibetanYear, Error> {
+        year_name(year)
+    }
+
+    /// As [`CalendarArea::tibetan_year`], every catalogue member written as
+    /// its full key: what the boundary carries.
+    ///
+    /// # Errors
+    ///
+    /// As [`CalendarArea::tibetan_year`].
+    pub fn tibetan_year_in_full(self, year: i32) -> Result<serde_json::Value, Error> {
+        let mut value = serde_json::to_value(year_name(year)?)
+            .map_err(|why| Error::internal(format!("the Tibetan year did not serialise: {why}")))?;
+        for (path, kind) in TibetanYear::MEMBERS {
+            write_in_full(&mut value, path, kind);
+        }
+        Ok(value)
     }
 }

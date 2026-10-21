@@ -161,6 +161,8 @@ from .catalogue import (
     TajikaYoga,
     Tatwa,
     Terms,
+    TibetanAnimal,
+    TibetanElement,
     TimeScale,
     Tithi,
     TithiClass,
@@ -3974,6 +3976,13 @@ class TeistroLibrary:
             ctypes.POINTER(ctypes.c_uint8),
         ]
         self.ts_calendar_weekday.restype = ctypes.c_int32
+        self.ts_calendar_tibetan_year: Any = library.ts_calendar_tibetan_year
+        self.ts_calendar_tibetan_year.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_int32,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_calendar_tibetan_year.restype = ctypes.c_int32
         self.ts_calendar_jd_of_fixed: Any = library.ts_calendar_jd_of_fixed
         self.ts_calendar_jd_of_fixed.argtypes = [
             ctypes.c_int64,
@@ -4493,6 +4502,27 @@ class TeistroContext:
         owned.clear()
         weekday = _out_weekday.value
         return weekday
+
+    def calendar_tibetan_year(self, year: int) -> str:
+        """A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
+        `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
+        the rabjung cycle (the first began in 1027) and the year's place in
+        it, 1 to 60, with the Indian cycle's name for that place, and the
+        element, gender and animal it is called by, every member a full key:
+        2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.
+        `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
+        to 9998 is `OUT_OF_RANGE`, naming `year`.
+        """
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_calendar_tibetan_year(
+            self._raw,
+            _c_value(year),
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        json = _take_string(self._lib, _out_json)
+        return json
 
     def chart_layout_row(self, key: str) -> str:
         """A chart layout this context can draw in, shipped or registered, as its

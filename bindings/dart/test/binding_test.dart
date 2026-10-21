@@ -811,6 +811,32 @@ void _engineTests() {
     expect(feed(refreshMinutes: null), isNot(contains('REFRESH-INTERVAL')));
   });
 
+  // 2026 is the 40th year of the 17th rabjung, Parabhava, Fire–male–Horse
+  // (Janson, appendix B); a year before the first rabjung is refused by
+  // name (`calendars/tibetan.md`).
+  test('a Tibetan year says its names', () {
+    final sky = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    expect(
+      sky.calendar.tibetanYear(2026),
+      const TibetanYear(
+        year: 2026,
+        rabjung: 17,
+        yearInRabjung: 40,
+        samvatsara: Samvatsara.parabhava,
+        element: TibetanElement.fire,
+        gender: Gender.male,
+        animal: TibetanAnimal.horse,
+      ),
+    );
+    expect(
+      () => sky.calendar.tibetanYear(1026),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'year')),
+    );
+  });
+
   // 08:00 on 15 January 2026 in Kathmandu, the morning after Makara
   // sankranti: Siddharthi's year, Magha (purnimanta) and Shishira at
   // sunrise, Krishna Dwadashi in Jyeshtha at the rite, the Sun in Capricorn

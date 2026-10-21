@@ -160,6 +160,8 @@ from .catalogue import (
     VargaRelation,
     Affliction,
     Vaiseshikamsa,
+    TibetanAnimal,
+    TibetanElement,
     DashaPhase,
     Nature,
     BrahmaRule,
@@ -1164,6 +1166,9 @@ __all__ = [
     "Ritu",
     "Samvatsara",
     "Sex",
+    "TibetanAnimal",
+    "TibetanElement",
+    "TibetanYear",
     "BlackoutKind",
     "LunarEclipseKind",
     "SolarEclipseKind",
@@ -1855,6 +1860,25 @@ class CalendarArea(_Area):
     def is_leap(self, calendar: Calendar, year: int) -> bool:
         """Whether a year is a leap year in a calendar."""
         return self._context.inner.calendar_is_leap(calendar, year) != 0
+
+    def tibetan_year(self, year: int) -> "TibetanYear":
+        """A Tibetan year's names (`calendars/tibetan.md`): its rabjung
+        cycle and place in it, 1 to 60, with the Indian cycle's name for
+        that place, and the element, gender and animal it is called by.
+        `year` is the one a `TIBETAN_PHUGPA` date carries.
+
+        >>> # ctx.calendar.tibetan_year(2026).animal  # TibetanAnimal.HORSE
+        """
+        raw = json.loads(self._context.inner.calendar_tibetan_year(year))
+        return TibetanYear(
+            year=raw["year"],
+            rabjung=raw["rabjung"],
+            year_in_rabjung=raw["yearInRabjung"],
+            samvatsara=_member(Samvatsara, raw["samvatsara"]),
+            element=_member(TibetanElement, raw["element"]),
+            gender=_member(Gender, raw["gender"]),
+            animal=_member(TibetanAnimal, raw["animal"]),
+        )
 
 
 class TimeArea(_Area):
@@ -7571,6 +7595,34 @@ class LunarYears:
     value: Tuple[LunarYear, ...]
     provenance: Provenance
     """What computed them, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class TibetanYear:
+    """A Tibetan year's names (`calendars/tibetan.md`, Janson §4): 2026 is
+    the 40th year of the 17th rabjung, Parabhava, Fire–male–Horse."""
+
+    year: int
+    """The year, the Gregorian year the Tibetan year begins in."""
+
+    rabjung: int
+    """The rabjung cycle, the first beginning in 1027."""
+
+    year_in_rabjung: int
+    """The year's place in its cycle, 1 to 60."""
+
+    samvatsara: Samvatsara
+    """The Indian cycle's name for that place, read in order with none
+    expunged."""
+
+    element: TibetanElement
+    """The element, held for two years."""
+
+    gender: Gender
+    """Male or female, alternating; the animal decides it too."""
+
+    animal: TibetanAnimal
+    """The animal."""
 
 
 @dataclass(frozen=True)

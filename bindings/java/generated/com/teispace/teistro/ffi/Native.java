@@ -3912,6 +3912,7 @@ public final class Native {
         "ts_calendar_month_length",
         "ts_calendar_is_leap",
         "ts_calendar_weekday",
+        "ts_calendar_tibetan_year",
         "ts_calendar_jd_of_fixed",
         "ts_calendar_fixed_of_jd",
         "ts_chart_layout_row",
@@ -4112,6 +4113,18 @@ public final class Native {
      * The weekday of a date as its ISO number: Monday is `1`, Sunday `7`.
      */
     public final MethodHandle ts_calendar_weekday;
+
+    /**
+     * A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
+     * `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
+     * the rabjung cycle (the first began in 1027) and the year's place in
+     * it, 1 to 60, with the Indian cycle's name for that place, and the
+     * element, gender and animal it is called by, every member a full key:
+     * 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.
+     * `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
+     * to 9998 is `OUT_OF_RANGE`, naming `year`.
+     */
+    public final MethodHandle ts_calendar_tibetan_year;
 
     /**
      * The Julian day at the UTC midnight that begins a fixed day (fixed day
@@ -4558,6 +4571,7 @@ public final class Native {
         ts_calendar_month_length = linker.downcallHandle(symbols.find("ts_calendar_month_length").orElseThrow(() -> missing("ts_calendar_month_length")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_SHORT, JAVA_INT, JAVA_BYTE, ADDRESS));
         ts_calendar_is_leap = linker.downcallHandle(symbols.find("ts_calendar_is_leap").orElseThrow(() -> missing("ts_calendar_is_leap")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_SHORT, JAVA_INT, ADDRESS));
         ts_calendar_weekday = linker.downcallHandle(symbols.find("ts_calendar_weekday").orElseThrow(() -> missing("ts_calendar_weekday")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_calendar_tibetan_year = linker.downcallHandle(symbols.find("ts_calendar_tibetan_year").orElseThrow(() -> missing("ts_calendar_tibetan_year")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));
         ts_calendar_jd_of_fixed = linker.downcallHandle(symbols.find("ts_calendar_jd_of_fixed").orElseThrow(() -> missing("ts_calendar_jd_of_fixed")), FunctionDescriptor.of(JAVA_DOUBLE, JAVA_LONG));
         ts_calendar_fixed_of_jd = linker.downcallHandle(symbols.find("ts_calendar_fixed_of_jd").orElseThrow(() -> missing("ts_calendar_fixed_of_jd")), FunctionDescriptor.of(JAVA_LONG, JAVA_DOUBLE, ADDRESS));
         ts_chart_layout_row = linker.downcallHandle(symbols.find("ts_chart_layout_row").orElseThrow(() -> missing("ts_chart_layout_row")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

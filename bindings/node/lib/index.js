@@ -2511,6 +2511,23 @@ export class CalendarArea extends Area {
   isLeap(calendar, year) {
     return run(this, (inner) => inner.calendarIsLeap(calendar, year)) === 1;
   }
+
+  /**
+   * A Tibetan year's names (`calendars/tibetan.md`): its rabjung cycle and
+   * place in it, 1 to 60, with the Indian cycle's name for that place, and
+   * the element, gender and animal it is called by. The year is the one a
+   * `calendar.TIBETAN_PHUGPA` date carries.
+   *
+   * @example
+   * const { rabjung, yearInRabjung, element, animal } = sdk.calendar.tibetanYear(2026);
+   * // 17, 40, 'tibetan_element.FIRE', 'tibetan_animal.HORSE'
+   *
+   * @param {number} year the Gregorian year the Tibetan year begins in, 1027 to 9998
+   * @returns {object} `{ year, rabjung, yearInRabjung, samvatsara, element, gender, animal }`
+   */
+  tibetanYear(year) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.calendarTibetanYear(finite(year, 'year')))));
+  }
 }
 
 /** `sdk.time` — the scales, the zones and what separates them. */

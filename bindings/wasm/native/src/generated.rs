@@ -4129,6 +4129,27 @@ impl Context {
         Ok(out_weekday as _)
     }
 
+    /// A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
+    /// `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
+    /// the rabjung cycle (the first began in 1027) and the year's place in
+    /// it, 1 to 60, with the Indian cycle's name for that place, and the
+    /// element, gender and animal it is called by, every member a full key:
+    /// 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.
+    /// `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
+    /// to 9998 is `OUT_OF_RANGE`, naming `year`.
+    #[wasm_bindgen(js_name = calendarTibetanYear)]
+    pub fn calendar_tibetan_year(&self, year: i32) -> Result<String> {
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::calendar::ts_calendar_tibetan_year(self.handle, year as i32, &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// A chart layout this context can draw in, shipped or registered, as its
     /// JSON row: the record `options.layouts_json` takes. Read a shipped row,
     /// give it a key of its own, change what differs and register it

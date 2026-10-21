@@ -273,6 +273,12 @@ class Kind(Member):
     solar_eclipse_kind = 69
     """How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3)."""
 
+    tibetan_element = 71
+    """The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female."""
+
+    tibetan_animal = 72
+    """The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3418,6 +3424,75 @@ class SolarEclipseKind(Catalogued):
     """
 
 
+class TibetanElement(Catalogued):
+    """The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ELEMENT << 16) | member`."""
+
+    WOOD = 0
+    """Wood"""
+
+    FIRE = 1
+    """Fire"""
+
+    EARTH = 2
+    """Earth"""
+
+    IRON = 3
+    """Iron"""
+
+    WATER = 4
+    """Water"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class TibetanAnimal(Catalogued):
+    """The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. Members are the catalogue's ids; the full key id is `(TS_KIND_TIBETAN_ANIMAL << 16) | member`."""
+
+    MOUSE = 0
+    """Mouse"""
+
+    OX = 1
+    """Ox"""
+
+    TIGER = 2
+    """Tiger"""
+
+    RABBIT = 3
+    """Rabbit"""
+
+    DRAGON = 4
+    """Dragon"""
+
+    SNAKE = 5
+    """Snake"""
+
+    HORSE = 6
+    """Horse"""
+
+    SHEEP = 7
+    """Sheep"""
+
+    MONKEY = 8
+    """Monkey"""
+
+    BIRD = 9
+    """Bird"""
+
+    DOG = 10
+    """Dog"""
+
+    PIG = 11
+    """Pig"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -5591,6 +5666,8 @@ _KEYS: dict[str, dict[int, str]] = {
         67: "blackout_kind",
         68: "lunar_eclipse_kind",
         69: "solar_eclipse_kind",
+        71: "tibetan_element",
+        72: "tibetan_animal",
     },
     "Graha": {
         0: "SUN",
@@ -6640,6 +6717,29 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "HYBRID",
         -1: "UNKNOWN",
     },
+    "TibetanElement": {
+        0: "WOOD",
+        1: "FIRE",
+        2: "EARTH",
+        3: "IRON",
+        4: "WATER",
+        -1: "UNKNOWN",
+    },
+    "TibetanAnimal": {
+        0: "MOUSE",
+        1: "OX",
+        2: "TIGER",
+        3: "RABBIT",
+        4: "DRAGON",
+        5: "SNAKE",
+        6: "HORSE",
+        7: "SHEEP",
+        8: "MONKEY",
+        9: "BIRD",
+        10: "DOG",
+        11: "PIG",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -7370,4 +7470,6 @@ _KINDS: dict[str, str] = {
     "BlackoutKind": "blackout_kind",
     "LunarEclipseKind": "lunar_eclipse_kind",
     "SolarEclipseKind": "solar_eclipse_kind",
+    "TibetanElement": "tibetan_element",
+    "TibetanAnimal": "tibetan_animal",
 }

@@ -259,6 +259,27 @@ final class Calls {
     }
 
     /**
+     * `ts_calendar_tibetan_year`: A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
+     * `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
+     * the rabjung cycle (the first began in 1027) and the year's place in
+     * it, 1 to 60, with the Indian cycle's name for that place, and the
+     * element, gender and animal it is called by, every member a full key:
+     * 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.
+     * `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
+     * to 9998 is `OUT_OF_RANGE`, naming `year`.
+     */
+    static String calendarTibetanYear(Native lib, MemorySegment context, int year) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_calendar_tibetan_year.invokeExact(context, year, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_chart_layout_row`: A chart layout this context can draw in, shipped or registered, as its
      * JSON row: the record `options.layouts_json` takes. Read a shipped row,
      * give it a key of its own, change what differs and register it

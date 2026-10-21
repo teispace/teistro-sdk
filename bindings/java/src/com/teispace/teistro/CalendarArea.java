@@ -81,4 +81,28 @@ public final class CalendarArea {
     public boolean isLeap(Calendar calendar, int year) {
         return context.locked((lib, raw) -> Calls.calendarIsLeap(lib, raw, calendar, year)) != 0;
     }
+
+    /**
+     * A Tibetan year's names ({@code calendars/tibetan.md}): its rabjung cycle and place in it, 1 to 60,
+     * with the Indian cycle's name for that place, and the element, gender and animal it is called by.
+     *
+     * <pre>{@code
+     * TibetanAnimal animal = sdk.calendar().tibetanYear(2026).animal(); // HORSE
+     * }</pre>
+     *
+     * @param year the Gregorian year the Tibetan year begins in, 1027 to 9998
+     * @return its names
+     */
+    public TibetanYear tibetanYear(int year) {
+        java.util.Map<?, ?> raw = Reads.object(Json.read(
+                context.locked((lib, handle) -> Calls.calendarTibetanYear(lib, handle, year))));
+        return new TibetanYear(
+                Reads.integer(raw, "year"),
+                Reads.integer(raw, "rabjung"),
+                Reads.integer(raw, "yearInRabjung"),
+                Reads.member(Samvatsara.byKey(Reads.string(raw, "samvatsara")), "Samvatsara", raw.get("samvatsara")),
+                Reads.member(TibetanElement.byKey(Reads.string(raw, "element")), "TibetanElement", raw.get("element")),
+                Reads.member(Gender.byKey(Reads.string(raw, "gender")), "Gender", raw.get("gender")),
+                Reads.member(TibetanAnimal.byKey(Reads.string(raw, "animal")), "TibetanAnimal", raw.get("animal")));
+    }
 }

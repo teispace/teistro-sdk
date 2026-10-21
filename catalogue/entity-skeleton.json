@@ -1050,5 +1050,26 @@
     "ANNULAR": {},
     "TOTAL": {},
     "HYBRID": {}
+  },
+  "tibetan_element": {
+    "WOOD": {},
+    "FIRE": {},
+    "EARTH": {},
+    "IRON": {},
+    "WATER": {}
+  },
+  "tibetan_animal": {
+    "MOUSE": {},
+    "OX": {},
+    "TIGER": {},
+    "RABBIT": {},
+    "DRAGON": {},
+    "SNAKE": {},
+    "HORSE": {},
+    "SHEEP": {},
+    "MONKEY": {},
+    "BIRD": {},
+    "DOG": {},
+    "PIG": {}
   }
 }

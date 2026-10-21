@@ -1,0 +1,104 @@
+kind: tibetan_animal
+number: 72
+version: 1
+doc: "The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse."
+attributes:
+  tibetan: str
+  gender: key:gender
+members:
+  - key: MOUSE
+    id: 0
+    doc: "Mouse"
+    attributes: { tibetan: "byi ba", gender: MALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: OX
+    id: 1
+    doc: "Ox"
+    attributes: { tibetan: "glang", gender: FEMALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: TIGER
+    id: 2
+    doc: "Tiger"
+    attributes: { tibetan: "stag", gender: MALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: RABBIT
+    id: 3
+    doc: "Rabbit"
+    attributes: { tibetan: "yos", gender: FEMALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: DRAGON
+    id: 4
+    doc: "Dragon"
+    attributes: { tibetan: "'brug", gender: MALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: SNAKE
+    id: 5
+    doc: "Snake"
+    attributes: { tibetan: "sbrul", gender: FEMALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: HORSE
+    id: 6
+    doc: "Horse"
+    attributes: { tibetan: "rta", gender: MALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: SHEEP
+    id: 7
+    doc: "Sheep"
+    attributes: { tibetan: "lug", gender: FEMALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: MONKEY
+    id: 8
+    doc: "Monkey"
+    attributes: { tibetan: "spre'u", gender: MALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: BIRD
+    id: 9
+    doc: "Bird"
+    attributes: { tibetan: "bya", gender: FEMALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: DOG
+    id: 10
+    doc: "Dog"
+    attributes: { tibetan: "khyi", gender: MALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V
+  - key: PIG
+    id: 11
+    doc: "Pig"
+    attributes: { tibetan: "phag", gender: FEMALE }
+    sources:
+      - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
+        ref: "§4, table 3"
+    mark: V

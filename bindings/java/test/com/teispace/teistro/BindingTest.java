@@ -1595,6 +1595,17 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a Tibetan year says its names", () -> {
+            // 2026 is the 40th year of the 17th rabjung, Parabhava,
+            // Fire–male–Horse (Janson, appendix B); a year before the first
+            // rabjung is refused by name.
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                same(new TibetanYear(2026, 17, 40, Samvatsara.PARABHAVA, TibetanElement.FIRE, Gender.MALE,
+                        TibetanAnimal.HORSE), sky.calendar().tibetanYear(2026), "2026's names");
+                same("year", refusal(() -> sky.calendar().tibetanYear(1026)).field(), "before the first rabjung");
+            }
+        });
+
         tests.put("an almanac says the time a sankalpa recites", () -> {
             // 08:00 on 15 January 2026 in Kathmandu, the morning after Makara
             // sankranti: Siddharthi's year, Magha (purnimanta) and Shishira at
