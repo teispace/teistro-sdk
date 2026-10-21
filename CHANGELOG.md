@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Padmini and Parama ekadashi** (`festival-rule-language.md` §3.10,
+C694).
+**Numbers:** `NEPAL_PANCHANGA` keeps two more festivals, the bright and
+the dark 11th of the adhika month, in whichever month is doubled, at
+sunrise. VS 2083 prints them on 27 May and 11 June 2026, VS 2082 prints
+neither, and the rule gives both printed days and all 17 of the
+consumer's days from 2020 to 2042 under the committee's sky. No other
+rule's day moves.
+
 **The Tibetan calendar, Phugpa** (`calendars/tibetan.md`).
 **Numbers:** none move. `calendar.TIBETAN_PHUGPA` converts any day from
 the Tibetan year 1027 to 9998: Janson's arithmetic in integers, giving

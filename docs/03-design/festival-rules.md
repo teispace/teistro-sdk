@@ -916,6 +916,9 @@ The fitted window is kept, and the text's is recorded as the other reading.
   (C606), as VS 2083 prints them. Varuthini and Yogini ekadashi are the
   Smartas' day, as the print names them (C688), and so is Kamada ekadashi. The nine the print does not confirm
   are listed, each with its reason, in `festival-classification.md`;
+- 2 udaya rules for the adhika month alone (`IN_ADHIKA`): Padmini and
+  Parama ekadashi, the bright and the dark 11th of whichever month is
+  doubled (C694);
 - 15 counted days (`FollowingRule::nepal_panchanga`): 14 on the day of
   the rule they follow, Arjundhara mela on Halesi mela's among them
   (C693), and the Koka Kaushiki sangam mela on the day after Dhanya

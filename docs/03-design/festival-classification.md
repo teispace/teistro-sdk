@@ -1,6 +1,6 @@
 # Festival classification
 
-Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623 and C685 to C693
+Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623 and C685 to C694
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.
@@ -41,7 +41,7 @@ no rule. This page's classes split each of those counts:
 
 | track 04 | count | this page |
 |---|---|---|
-| lunar | 295 | rule, shipped 257; rule, not yet shipped 9; rule, needs a form 29 |
+| lunar | 295 | rule, shipped 259; rule, not yet shipped 9; rule, needs a form 27 |
 | Bikram Sambat | 68 | solar 24; fixed civil 44 |
 | Gregorian | 113 | fixed civil 113 |
 | both | 2 | solar 1 (Guriya parva, printed on Shrawan 1 in both editions, C621); rule, shipped 1 (Walke parva, printed on Bhadra 1 in both editions) |
@@ -62,12 +62,12 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 260; rule, not yet shipped 9; rule, needs a form 31; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 262; rule, not yet shipped 9; rule, needs a form 29; solar 26; fixed civil 165; community 6; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (260)
+### Rule, shipped (262)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
@@ -94,8 +94,8 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `BAKHUMADA` | Bakhumada | बखुमद |  | NEPAL_PANCHANGA |
 | `BALAJU_BAISDHARA_MELA` | Balaju Baisdhara Mela | बालाजु बाइसधारा मेला |  | NEPAL_PANCHANGA |
 | `BALAMBU_MAHALAXMI_JATRA` | Balambu Mahalaxmi Jatra | बलम्बु महालक्ष्मी जात्रा | Newar | NEPAL_PANCHANGA |
-| `BALA_CHATURDASHI` | Bala Charhe | बाला चह्रे | Newar | NEPAL_PANCHANGA |
 | `BALA_CHATURDASHI_BALA` | Bala Chaturdashi | बाला चतुर्दशी |  | NEPAL_PANCHANGA |
+| `BALA_CHATURDASHI` | Bala Charhe | बाला चह्रे | Newar | NEPAL_PANCHANGA |
 | `BALI_PRATIPADA` | Bali Puja | बलि पूजा |  | NEPAL |
 | `BASANTA_PANCHAMI` | Basanta Panchami | वसन्त पञ्चमी |  | NEPAL_PANCHANGA |
 | `BHAKTAPUR_CHANDI_BHAGAWATI_JATRA` | Bhaktapur Chandi Bhagawati Jatra | भक्तपुर चण्डी भगवती जात्रा | Newar | NEPAL_PANCHANGA |
@@ -248,11 +248,13 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `NIRJALA_EKADASHI` | Nirjala Ekadashi | निर्जला एकादशी |  | NEPAL_PANCHANGA |
 | `NUWAKOT_DUPCHESHWAR_MELA` | Nuwakot Dupcheshwar Mela | नुवाकोट दुप्चेश्वर मेला |  | NEPAL_PANCHANGA |
 | `PACHALI_BHAIRAV_JATRA` | Pachali Bhairav Jatra | पचली भैरव जात्रा | Newar | NEPAL_PANCHANGA |
+| `PADMINI_EKADASHI` | Padmini Ekadashi | पद्मिनी एकादशी |  | NEPAL_PANCHANGA |
 | `PAHAN_CHARHE` | Pahan Charhe | पाहाँ चह्रे | Newar | NEPAL_PANCHANGA |
 | `PANCHAMI_SHRADDHA` | Panchami Shraddha | पञ्चमी श्राद्ध |  | NEPAL_PANCHANGA |
 | `PANGA_VAISHNAVI_DEVI_JATRA` | Panga Vaishnavi Devi Jatra | पाँगा वैष्णवी देवी जात्रा | Newar | NEPAL_PANCHANGA |
 | `PAPANKUSHA_EKADASHI` | Papankusha Ekadashi | पापाङ्कुशा एकादशी |  | NEPAL_PANCHANGA |
 | `PAPMOCHANI_EKADASHI` | Papmochani Ekadashi | पापमोचनी एकादशी |  | NEPAL_PANCHANGA |
+| `PARAMA_EKADASHI` | Parama Ekadashi | परमा एकादशी |  | NEPAL_PANCHANGA |
 | `PARASHURAMA_JAYANTI` | Parashuram Jayanti | परशुराम जयन्ती |  | NEPAL_PANCHANGA |
 | `PASHUPATINATH_DAMAN_PUSHPARPAN` | Pashupatinath Daman Pushparpan | पशुपतिनाथमा दमन पुष्पार्पण |  | NEPAL_PANCHANGA |
 | `PASHUPATI_HALESI_MELA` | Pashupatinath and Halesi Mahadev Mela | पशुपतिनाथ तथा हलेसी महादेव मेला |  | NEPAL_PANCHANGA |
@@ -350,7 +352,7 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689) |
 | `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687) |
 
-### Rule, needs a form (31)
+### Rule, needs a form (29)
 
 `festival-rule-language.md` §4 maps each to the form it needs, or says why none fits.
 
@@ -375,10 +377,8 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `NALASWANE_CHARHE` | Nalaswane Charhe | नःलास्वने चह्रे | Newar |  |
 | `NALA_MACHHINDRANATH_SNAN` | Nala Machhindranath Snan | नाला मच्छिन्द्रनाथ स्नान | Newar |  |
 | `NANICHAYA` | Nanichaya | नानिचाया |  |  |
-| `PADMINI_EKADASHI` | Padmini Ekadashi | पद्मिनी एकादशी |  | the adhika month only (§3.7) |
 | `PANAUTI_JATRA` | Panauti Jatra | पनौती जात्रा | Newar | both editions print it on Jyeshtha's full moon |
 | `PANAUTI_SNAN_MELA` | Panauti Snan Mela | पनौती स्नान मेला |  | both editions print it on Jyeshtha's full moon |
-| `PARAMA_EKADASHI` | Parama Ekadashi | परमा एकादशी |  | the adhika month only (§3.7) |
 | `PASHUPATINATH_CHHAYA_DARSHAN` | Pashupatinath Chhaya Darshan | पशुपतिनाथ छाया दर्शन |  |  |
 | `PHARPING_HARISHANKAR_JATRA` | Pharping Harishankar Jatra | फर्पिङ हरिशङ्कर जात्रा |  |  |
 | `RADHA_KRISHNA_RATH_JATRA` | Radha Krishna Rath Jatra | राधाकृष्ण रथ जात्रा |  |  |
@@ -668,7 +668,7 @@ here by its name, without the days the list gives it:
 | rule, needs a form | a tithi on a weekday (§3.5) | Bhaumastami, Budhashtami Barta, Mangal Chauthi Brata, Ravi Saptami Brat, Sombare Ausi |
 | rule, needs a form | either paksha's 8th (§3.4) | Asthami Barta |
 | rule, needs a form | pradosha on either paksha's 13th, and on a weekday (§3.4, §3.5) | Pradosh Brata, Shani Pradosh Brata, Som Pradosh Brata |
-| rule, needs a form | the adhika month only (§3.7) | Padmini Ekadashi Brata |
+| rule, shipped | `PADMINI_EKADASHI`, the adhika month only (§3.7) | Padmini Ekadashi Brata |
 | rule, needs a form | the moonrise of the dark 4th (§3.1) | Chandrodaya |
 | rule, not yet shipped | a tithi (or nakshatra) of each month or of a named month, which the language holds today | Darsha Shraddha, Manwadi, SaraswatI avahan garne, Snan and Daan Ausi, Snandan Garne Ausi, Yamadip Danam |
 | rule, shipped | the monthly full-moon fast | Purnima Brata |

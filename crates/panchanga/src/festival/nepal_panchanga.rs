@@ -1636,6 +1636,23 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 162] = [
     ),
 ];
 
+/// The ekadashis kept in an adhika month alone, whichever month is
+/// doubled, on the udaya rule as the committee prints them: key, tithi,
+/// and where the day is printed (§3.7, §3.10). VS 2082, with no adhika
+/// month, prints neither.
+const IN_ADHIKA: [(&str, Tithi, &str); 2] = [
+    (
+        "PADMINI_EKADASHI",
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2083 p. 5: पद्मिनी एकादशीव्रत, the adhika Jyeshtha's bright 11th",
+    ),
+    (
+        "PARAMA_EKADASHI",
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2083 p. 6: परमा एकादशीव्रत, the adhika Jyeshtha's dark 11th",
+    ),
+];
+
 /// The fitted rules kept in every month, the adhika included, as the
 /// committee prints them in both editions: key, what is kept, fit, and
 /// where the days are printed (§3.4, §3.5).
@@ -1799,7 +1816,7 @@ impl FestivalRule {
                 | "GANGA_PUJA"
                 | "RAMESHWAR_PUJA"
                 | "GURU_PADMASAMBHAVA_JAYANTI" => InAdhika::First,
-                "ANALA_PUNHI" => InAdhika::Only,
+                "ANALA_PUNHI" | "PADMINI_EKADASHI" | "PARAMA_EKADASHI" => InAdhika::Only,
                 _ if month.is_none() => InAdhika::Also,
                 _ => InAdhika::Nija,
             }
@@ -1817,6 +1834,9 @@ impl FestivalRule {
                 "fitted",
             )
         });
+        let adhika = IN_ADHIKA
+            .iter()
+            .map(|&(key, tithi, printed)| (key, None, tithi.into(), Fit::Udaya, printed, "fitted"));
         let monthly = EVERY_MONTH
             .iter()
             .map(|&(key, occurs, fit, printed)| (key, None, occurs, fit, printed, "fitted"));
@@ -1825,6 +1845,7 @@ impl FestivalRule {
         });
         yearly
             .chain(at_sunrise)
+            .chain(adhika)
             .chain(monthly)
             .chain(by_text)
             .map(|(key, month, occurs, fit, printed, how)| {

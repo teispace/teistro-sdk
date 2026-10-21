@@ -419,6 +419,48 @@ fn a_doubled_jyeshtha_keeps_dashahara_in_its_adhika_month_however_short_the_rang
     assert_eq!(dashahara((2025, 6, 1), (2025, 6, 10)).len(), 1);
 }
 
+/// The rules `NEPAL_PANCHANGA` keeps in an adhika month alone, at
+/// Kathmandu: none in VS 2082, which has no adhika month, and in VS 2083's
+/// adhika Jyeshtha Padmini ekadashi (p. 5), Anala punhi (p. 5) and Parama
+/// ekadashi (p. 6) on the printed days (C607, C694).
+#[test]
+fn the_adhika_month_alone_keeps_its_own_rules() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let kathmandu = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let adhika = |from: (i32, u8, u8), to: (i32, u8, u8)| -> Vec<(String, (i32, u8, u8))> {
+        sdk.almanac()
+            .festivals(
+                &CalendarDate::defined(Calendar::Gregorian, from.0, from.1, from.2),
+                &CalendarDate::defined(Calendar::Gregorian, to.0, to.1, to.2),
+                &kathmandu,
+                UtcOffset::literal(5, 45, 0),
+                &FestivalRequest::from(FestivalPack::NepalPanchanga),
+            )
+            .unwrap()
+            .value
+            .observances
+            .into_iter()
+            .filter(|kept| {
+                ["PADMINI_EKADASHI", "ANALA_PUNHI", "PARAMA_EKADASHI"].contains(&kept.rule.as_str())
+            })
+            .map(|kept| (kept.rule, (kept.day.year, kept.day.month, kept.day.day)))
+            .collect()
+    };
+    assert_eq!(adhika((2025, 4, 14), (2026, 4, 13)), []);
+    assert_eq!(
+        adhika((2026, 4, 14), (2027, 4, 13)),
+        [
+            ("PADMINI_EKADASHI".to_owned(), (2026, 5, 27)),
+            ("ANALA_PUNHI".to_owned(), (2026, 5, 31)),
+            ("PARAMA_EKADASHI".to_owned(), (2026, 6, 11)),
+        ]
+    );
+}
+
 /// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
 /// at Kathmandu: exactly the rows read off the committee's print, each
 /// sankranti on its month's first day (pp. 2-24), the six national days,

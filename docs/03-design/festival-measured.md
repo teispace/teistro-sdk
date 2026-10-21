@@ -348,7 +348,9 @@ measures the fit and not a text (C600).
 | 2083 | GANGA_DASHAHARA | 26 May | p. 5: गङ्गादशहरा | 26 May | 25 May ✗ |
 | 2083 | GOSAIKUNDA_SNANA_SAMAPTI | 26 May | p. 5: गोसाइँकुण्ड स्नानसमाप्ति | 26 May | 25 May ✗ |
 | 2083 | HATYAMOCHANA_SNANA | 26 May | p. 5: हत्यामोचन तीर्थस्नान | 26 May | 25 May ✗ |
+| 2083 | PADMINI_EKADASHI | 27 May | p. 5: पद्मिनी एकादशीव्रत | 27 May | 27 May |
 | 2083 | ANALA_PUNHI | 31 May | p. 5: अनलापुन्हि | 31 May | 31 May |
+| 2083 | PARAMA_EKADASHI | 11 Jun | p. 6: परमा एकादशीव्रत | 11 Jun | 11 Jun |
 | 2083 | KUMARA_JATRA | 21 Jun | p. 7: कुमारयात्रा | 21 Jun | 21 Jun |
 | 2083 | NIRJALA_EKADASHI | 25 Jun | p. 7: निर्जला एकादशीव्रत | 25 Jun | 25 Jun |
 | 2083 | DILA_CHARHE | 13 Jul | p. 8: (दिल्ला चःह्रे पूजा) | 13 Jul | 13 Jul |
@@ -808,8 +810,8 @@ measures the fit and not a text (C600).
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 579 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 60 of 579 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 581 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 60 of 581 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 

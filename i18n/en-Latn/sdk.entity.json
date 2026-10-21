@@ -4100,6 +4100,14 @@
     "NARASIMHA_JAYANTI": {
       "name": "Narasimha Jayanti",
       "prose": "Narasimha Jayanti"
+    },
+    "PADMINI_EKADASHI": {
+      "name": "Padmini Ekadashi",
+      "prose": "Padmini Ekadashi"
+    },
+    "PARAMA_EKADASHI": {
+      "name": "Parama Ekadashi",
+      "prose": "Parama Ekadashi"
     }
   }
 }

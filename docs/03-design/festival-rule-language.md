@@ -374,7 +374,7 @@ VS 2082, with no adhika month, prints Anala punhi nowhere and the pack
 keeps none.
 
 **Settles:** C606 (the five partings of VS 2083) and C607, both closed;
-Padmini and Parama ekadashi wait on the Ekadashi table taking the form.
+Padmini and Parama ekadashi took `ONLY` with `month` empty at sunrise (§3.10, C694).
 
 ### 3.8 The Sun's sign: `SUN_IN`
 
@@ -417,19 +417,31 @@ authorities' reading. The committee prints one day in both editions, the
 text's, and `NEPAL_PANCHANGA` ships that rule. So no rule in hand needs
 `BOTH`; it would be for a listing's practice, which no text gives.
 
-Mahalakshmi's vrata lasts sixteen days. Its end is a following rule of
-15 days from its start, within today's limit. Indra jatra's pole falls a
-set number of days after it is raised. Both need only today's form and a
-measurement.
+Mahalakshmi's vrata lasts sixteen days, and Indra jatra's pole falls some
+days after it is raised; both were taken for counts. Measured, neither
+is: the consumer's days end the vrata 14 to 16 days after its start, on
+the dark 8th, and the print lowers the pole 7 days after raising it in
+VS 2082 and 6 in VS 2083. Both editions print the vrata's start the day
+before Bhadrapada's bright 8th fast and its end on the dark 8th fast, so
+it waits on the committee's ashtami fast (C695). No row in hand needs a
+count backwards or a count of more than 15 days.
 
 ### 3.10 A named ekadashi
 
-A named ekadashi (Padmini, Parama) is the month's 11th as an
-Ekadashi observer keeps it, and not as a karmakala rule. The proposal is a
-`month` on `EkadashiRule` and a key per name, so that the observers'
-vedha and dashami rules decide (`festival-rules.md` §8). Kamada ekadashi
-needed none: the committee prints the Smartas' 11th, which the sunrise rule
-gives, as for Varuthini and Yogini (C688), and `NEPAL_PANCHANGA` ships it.
+A named ekadashi is the Smartas' 11th at sunrise wherever the committee
+prints one day, as for Varuthini and Yogini (C688), and the Vaishnavas'
+day stays the Ekadashi observers' answer (`festival-rules.md` §8). Kamada
+ekadashi needed no form, and Padmini and Parama, the adhika month's
+bright and dark 11th, needed only §3.7's `ONLY` with `month` empty, which
+the engine already read: a rule with no month is kept in whichever month
+is doubled. VS 2083 prints पद्मिनी एकादशीव्रत on 27 May 2026 and परमा
+एकादशीव्रत on 11 June, the adhika Jyeshtha's 11ths, and VS 2082, with no
+adhika month, prints neither. Over the committee's sky the rule gives
+both printed days and all 17 of the consumer's days from 2020 to 2042,
+two adhika months in 2028 and 2029 among them; over the modern sky the
+adhika month itself moves in 2028 and 2042, and Parama by a day in 2023
+and 2039 (C694). `NEPAL_PANCHANGA` ships both. The `month` on
+`EkadashiRule` proposed here is not needed for any day in hand.
 
 ### 3.11 What is not proposed
 
@@ -466,9 +478,9 @@ is missing is evidence. "None" means no form would decide the row.
 | 15 | `VARAHA_JAYANTI` | the source's rule names Shravana's bright 3rd; 12 verified days are Bhadrapada's | Bhadrapada's bright 3rd at sunrise, 12 of 14 | none new | **shipped** on Shravana's bright 3rd, the source's rule, which both editions print; the Bhadrapada days are the source's list (C693) |
 | 16 | `MAHALAXMI_VRAT_BEGINS` | 11 of 14 at nishitha | nishitha, 11 of 14 | none new | evidence; the end is counted from it (§3.9) |
 | 17 | `GAURA_PARVA` | 10 of 14 | day muhurtas 2–6, 11 of 14 | §3.2 day muhurtas | a candidate only |
-| 18 | `INDRADHWAJA_PATAN` | 10 of 14 in the morning | madhyahna or sayahna, 10 of 14 | §3.9 a count | the pole falls a set number of days after it is raised (`INDRADHWAJA_UTTHAN`); a count from that day is to be measured |
+| 18 | `INDRADHWAJA_PATAN` | 10 of 14 in the morning | madhyahna or sayahna, 10 of 14 | none | not a count: the print lowers the pole 7 days after raising it in VS 2082 (4 to 11 September 2025) and 6 in VS 2083 (23 to 29 September 2026); evidence |
 | 19 | `NANICHAYA` | 11 of 14 | sunrise, 11 of 14 | none | evidence |
-| 20 | `MAHALAXMI_VRAT_ENDS` | 10 of 14 at pradosha | pradosha or nishitha, 10 of 14 | §3.9 a count | sixteen days from the start: a following rule of 15 days, the most the language allows |
+| 20 | `MAHALAXMI_VRAT_ENDS` | 10 of 14 at pradosha | pradosha or nishitha, 10 of 14 | none new | not a count: the consumer's days fall 14 to 16 days after the start, so the end is a tithi. Both editions print the start the day before Bhadrapada's bright 8th fast and the end on its dark 8th fast, which wait on the committee's ashtami fast (C695) |
 | 21 | `PHARPING_HARISHANKAR_JATRA` | 9 of 14 | sunrise, 9 of 14 | none | evidence |
 | 22 | `NALASWANE_CHARHE` | a charhe; 9 of 14 | aparahna to pradosha, 9 of 14 | none | C614 |
 | 23 | `KOJAGRAT_PURNIMA` | 9 of 14; the Kojagara rule (midnight) 7 of 14; the source lists the eve and the day in 2081–2083 | sunrise, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 74, nishitha, the earlier day only when it alone holds it (C617); both editions print one day, the text's |
@@ -513,9 +525,9 @@ is missing is evidence. "None" means no form would decide the row.
 | day muhurtas (§3.2) | 3 |
 | `GREATER` (§3.3) | 1 |
 | civil and solar dates (§3.6) | 3 |
-| counts and two days (§3.9) | 2 |
-| none new: the language can say it; 12 of them are shipped, the committee's print of both years settling each, and the evidence is short for the other 8 | 20 |
-| none: a charhe, a sighting, a day set each year, or one verified day | 26 |
+| counts and two days (§3.9) | 0: both rows proposed for a count are refuted by the print (rows 18 and 20) |
+| none new: the language can say it; 12 of them are shipped, the committee's print of both years settling each, and the evidence is short for the other 9 | 21 |
+| none: a charhe, a sighting, a day set each year, one verified day, or a count the print refutes | 27 |
 
 ## 5. Janmashtami
 
