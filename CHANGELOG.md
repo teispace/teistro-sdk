@@ -12,6 +12,12 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**What each locale says** (`03-design/locale-coverage-measured.md`, P2-5).
+**Numbers:** none move. A generated page counts, for every locale, the
+catalogue members a document carries that it names and the base messages
+it translates, and `check-locale-coverage` fails when a count falls below
+its floor in `locale-coverage-floor.json`.
+
 **The built-in ephemeris, made fast** (`03-design/builtin-ephemeris-speed.md`,
 P2-6).
 **Numbers:** every built-in answer that reads the Sun or the Moon moves

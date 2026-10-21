@@ -218,6 +218,8 @@ jobs:
         run: cargo xtask check-accuracy
       - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
         run: cargo xtask check-intl
+      - name: Locale coverage page (each locale's share of the catalogue members and base messages, held to its floor)
+        run: cargo xtask check-locale-coverage
       - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
         run: cargo xtask check-state
       - name: Canonical form page (the seal, the number grammar and the form's invariants reproduce)

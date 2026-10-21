@@ -154,6 +154,10 @@
 //!   births — each sub lord's margin in minutes of birth time, read back
 //!   through the founder, the lords Krishnamurti's and VP291's ayanamshas
 //!   part on, and the horary numbers each place can raise.
+//! - `locale-coverage` and `check-locale-coverage`: what each locale
+//!   says — the share of the catalogue members a document carries that it
+//!   names, kind by kind, and of the base messages it translates — each
+//!   held to a floor raised by hand.
 //! - `muhurta` and `check-muhurta`: the muhurta search over the built-in
 //!   ephemeris at Kathmandu — the baseline engine's regression through its
 //!   own rules and ranking, Guru and Shukra asta against the published BS
@@ -315,6 +319,7 @@ mod java_package;
 mod kalachakra;
 mod kp;
 mod lints;
+mod locale_coverage;
 mod lots;
 mod lunisolar;
 mod matching;
@@ -429,6 +434,11 @@ const PASSES: &[Pass] = &[
     ("rashifal", rashifal::generate, rashifal::check_generated),
     ("research", research::generate, research::check_generated),
     ("kp", kp::generate, kp::check_generated),
+    (
+        "locale-coverage",
+        locale_coverage::generate,
+        locale_coverage::check_generated,
+    ),
     ("muhurta", muhurta::generate, muhurta::check_generated),
     ("festival", festival::generate, festival::check_generated),
     (

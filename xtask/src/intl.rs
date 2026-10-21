@@ -406,7 +406,7 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
 
 /// The catalogue kinds a chart document can carry, read from its schema's
 /// `x-teistro-kind` keywords rather than kept as a second list.
-fn document_kinds() -> BTreeSet<String> {
+pub(crate) fn document_kinds() -> BTreeSet<String> {
     let schema: serde_json::Value = serde_json::from_str(teistro_serial::schema::DOCUMENT)
         .expect("the document schema is JSON");
     schema["$defs"]
